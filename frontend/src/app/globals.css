@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --apix-orange:        #ca631f;
+  --apix-orange-light:  #e07a3a;
+  --apix-orange-dark:   #a84e18;
+  --apix-blue:          #004f91;
+  --apix-blue-light:    #1a6ab0;
+  --surface-0:          #F2F0EF;
+  --surface-1:          #E8E5E3;
+  --surface-2:          #DEDAD7;
+  --surface-3:          #D0CBC7;
+  --border:             #C5BFBB;
+  --border-light:       #B8B1AC;
+  --text-primary:       #1a1a2e;
+  --text-secondary:     #4a5568;
+  --text-muted:         #9aa5b4;
+  --font-display:       var(--font-syne), sans-serif;
+  --font-body:          var(--font-dm-sans), sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-1); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--apix-orange); }
+::selection { background: rgba(202, 99, 31, 0.2); color: var(--text-primary); }
+
+/* ── Utilitaires design ── */
+.font-display { font-family: var(--font-display); }
+.font-body    { font-family: var(--font-body); }
+
+.text-primary   { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted     { color: var(--text-muted); }
+
+.text-gradient-orange {
+  background: linear-gradient(135deg, #ca631f, #e8935a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-orange { background: linear-gradient(135deg, #ca631f 0%, #a84e18 100%); }
+.bg-gradient-blue   { background: linear-gradient(135deg, #004f91 0%, #003a6e 100%); }
+
+.glass {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+}
+.glass-strong {
+  background: rgba(242, 240, 239, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+.shadow-orange { box-shadow: 0 0 30px rgba(202, 99, 31, 0.2); }
+.shadow-blue   { box-shadow: 0 0 30px rgba(0, 79, 145, 0.15); }
+.shadow-card   { box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+.shadow-card-hover { box-shadow: 0 8px 40px rgba(0,0,0,0.15); }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fade-up  { animation: fadeUp 0.6s ease forwards; }
+.animate-fade-in  { animation: fadeIn 0.4s ease forwards; }
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
