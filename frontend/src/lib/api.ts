@@ -14,11 +14,17 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
 
 export const api = {
   evenements: {
-    liste:         (params?: string) => apiFetch<any>(`/evenements${params ? `?${params}` : ""}`),
-    chronogramme:  (annee: number)   => apiFetch<any>(`/evenements/chronogramme?annee=${annee}`),
-    detail:        (id: string)      => apiFetch<any>(`/evenements/${id}`),
-    creer:         (data: any)       => apiFetch<any>("/evenements", { method: "POST", body: JSON.stringify(data) }),
-    modifier:      (id: string, data: any) => apiFetch<any>(`/evenements/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
-    supprimer:     (id: string)      => apiFetch<any>(`/evenements/${id}`, { method: "DELETE" }),
+    liste:        (params?: string)        => apiFetch<any>(`/evenements${params ? `?${params}` : ""}`),
+    chronogramme: (annee: number)          => apiFetch<any>(`/evenements/chronogramme?annee=${annee}`),
+    detail:       (id: string)             => apiFetch<any>(`/evenements/${id}`),
+    creer:        (data: any)              => apiFetch<any>("/evenements", { method: "POST", body: JSON.stringify(data) }),
+    modifier:     (id: string, data: any)  => apiFetch<any>(`/evenements/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    supprimer:    (id: string)             => apiFetch<any>(`/evenements/${id}`, { method: "DELETE" }),
+  },
+  accords: {
+    liste:        (params?: string)        => apiFetch<any>(`/accords${params ? `?${params}` : ""}`),
+    detail:       (id: string)             => apiFetch<any>(`/accords/${id}`),
+    modifier:     (id: string, data: any)  => apiFetch<any>(`/accords/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    supprimer:    (id: string)             => apiFetch<any>(`/accords/${id}`, { method: "DELETE" }),
   },
 };

@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.core.config import get_settings
-from app.api.routes import evenements
+from app.api.routes import evenements, accords
+import os
 
 settings = get_settings()
 
@@ -20,8 +22,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Fichiers statiques (PDFs uploadés)
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "../uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 # Routers
 app.include_router(evenements.router, prefix=settings.API_PREFIX)
+app.include_router(accords.router,    prefix=settings.API_PREFIX)
 
 
 @app.get("/")
