@@ -26,13 +26,14 @@ const TYPE_COLORS: Record<string, string> = {
   autre:               "#6b7280",
 };
 
-const STATUT_COLORS: Record<string, { bg: string; text: string }> = {
-  planifie:  { bg: "#dbeafe", text: "#1d4ed8" },
-  en_cours:  { bg: "#dcfce7", text: "#15803d" },
-  termine:   { bg: "#f3f4f6", text: "#6b7280" },
-  annule:    { bg: "#fee2e2", text: "#dc2626" },
-  reporte:   { bg: "#fef9c3", text: "#a16207" },
-};
+function getStatut(dateDebut: string, dateFin: string) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d0    = new Date(dateDebut); d0.setHours(0,0,0,0);
+  const d1    = new Date(dateFin);   d1.setHours(0,0,0,0);
+  if (d0 > today)  return { bg: "#dbeafe", text: "#1d4ed8", label: "À venir"  };
+  if (d1 >= today) return { bg: "#dcfce7", text: "#15803d", label: "En cours" };
+  return               { bg: "#f3f4f6", text: "#6b7280", label: "Terminé"  };
+}
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
@@ -40,7 +41,7 @@ function formatDate(d: string) {
 
 export default function EvenementCard({ event, onClick }: { event: any; onClick: () => void }) {
   const accentColor = TYPE_COLORS[event.type_evenement] || "#ca631f";
-  const statut      = STATUT_COLORS[event.statut] || STATUT_COLORS.planifie;
+  const statut      = getStatut(event.date_debut, event.date_fin);
   const isSameDay   = event.date_debut === event.date_fin;
 
   return (
@@ -75,7 +76,7 @@ export default function EvenementCard({ event, onClick }: { event: any; onClick:
           background: statut.bg, color: statut.text,
           padding: "3px 10px", borderRadius: 999,
         }}>
-          {event.statut.charAt(0).toUpperCase() + event.statut.slice(1).replace("_", " ")}
+          {statut.label}
         </span>
       </div>
 
@@ -101,7 +102,10 @@ export default function EvenementCard({ event, onClick }: { event: any; onClick:
         </div>
         {(event.ville || event.pays_nom) && (
           <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#4a5568", fontSize: 13 }}>
-            {event.est_virtuel ? <Globe size={13} style={{ color: accentColor }} /> : <MapPin size={13} style={{ color: accentColor }} />}
+            {event.est_virtuel
+              ? <Globe size={13} style={{ color: accentColor }} />
+              : <MapPin size={13} style={{ color: accentColor }} />
+            }
             {event.est_virtuel ? "Virtuel" : [event.ville, event.pays_nom].filter(Boolean).join(", ")}
           </div>
         )}
@@ -129,7 +133,6 @@ export default function EvenementCard({ event, onClick }: { event: any; onClick:
         </div>
       )}
 
-      {/* Lien externe */}
       {event.lien_site_officiel && (
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: accentColor, fontWeight: 600 }}>
           Voir le site <ExternalLink size={11} />
