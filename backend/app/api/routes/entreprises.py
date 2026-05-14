@@ -333,3 +333,29 @@ async def supprimer_activite(activite_id: int, db: AsyncSession = Depends(get_db
         raise HTTPException(status_code=404, detail="Activité introuvable")
     await db.delete(activite)
     await db.flush()
+
+
+# ── Référentiel pays ──────────────────────────────────────────────────────────
+
+from app.models.entreprise import RefSecteur  # déjà importé plus haut
+from sqlalchemy import Column, Integer, String, Boolean
+from app.core.database import Base as _Base
+
+class RefPays(_Base):
+    __tablename__ = "ref_pays"
+    id          = Column(Integer, primary_key=True)
+    code_iso2   = Column(String(2))
+    code_iso3   = Column(String(3))
+    nom_fr      = Column(String(100))
+    nom_en      = Column(String(100))
+    region_monde= Column(String(100))
+    actif       = Column(Boolean, default=True)
+
+@router.get("/ref/pays")
+async def liste_pays(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(
+        select(RefPays).where(RefPays.actif == True).order_by(RefPays.nom_fr)
+    )
+    pays = result.scalars().all()
+    return [{"id": p.id, "code_iso2": p.code_iso2, "nom_fr": p.nom_fr, "region_monde": p.region_monde} for p in pays]
