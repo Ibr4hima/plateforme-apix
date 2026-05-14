@@ -62,7 +62,7 @@ function EventModal({ event, onClose }: { event: any; onClose: () => void }) {
               }}>
                 {TL[event.type_evenement] || event.type_evenement}
               </span>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.3, fontFamily: "var(--font-display)" }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.3, fontFamily: "var(--font-google-sans)" }}>
                 {event.nom_event}
               </h3>
               {event.edition && (
@@ -236,7 +236,7 @@ export default function Chronogramme({
           <p style={{ fontSize: 11, fontWeight: 700, color: "#ca631f", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>
             Frise chronologique
           </p>
-          <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.5rem", color: "#1a1a2e" }}>
+          <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.5rem", color: "#1a1a2e" }}>
             Calendrier {annee}
           </h2>
           <p style={{ fontSize: 12, color: "#9aa5b4", marginTop: 4 }}>

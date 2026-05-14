@@ -67,7 +67,7 @@ export default function AccordModal({ accord, onClose }: { accord: any; onClose:
                   {statut.label}
                 </span>
               </div>
-              <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e", lineHeight: 1.3 }}>
+              <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e", lineHeight: 1.3 }}>
                 {accord.titre}
               </h2>
               {accord.reference && (

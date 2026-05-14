@@ -84,7 +84,7 @@ export default function HomePage() {
 
           {/* Titre */}
           <h1 style={{
-            fontFamily: "var(--font-display)", fontWeight: 800,
+            fontFamily: "var(--font-google-sans)", fontWeight: 800,
             fontSize: "clamp(2.6rem, 6vw, 4.75rem)",
             lineHeight: 1.04, letterSpacing: "-0.03em",
             color: "#1a1a2e", marginBottom: 24,
@@ -188,7 +188,7 @@ export default function HomePage() {
               e.currentTarget.style.boxShadow = "none";
             }}>
               <div style={{
-                fontFamily: "var(--font-display)", fontWeight: 800,
+                fontFamily: "var(--font-google-sans)", fontWeight: 800,
                 fontSize: "2.25rem", color: "#ca631f", marginBottom: 8,
               }}>
                 <AnimatedCounter target={s.value} suffix={s.suffix} />
@@ -217,7 +217,7 @@ export default function HomePage() {
                 Modules de données
               </p>
               <h2 style={{
-                fontFamily: "var(--font-display)", fontWeight: 700,
+                fontFamily: "var(--font-google-sans)", fontWeight: 700,
                 fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
                 color: "#1a1a2e", lineHeight: 1.15,
               }}>
@@ -267,7 +267,7 @@ export default function HomePage() {
                     </div>
                     <div>
                       <h3 style={{
-                        fontFamily: "var(--font-display)", fontWeight: 700,
+                        fontFamily: "var(--font-google-sans)", fontWeight: 700,
                         fontSize: 16, color: "#1a1a2e", marginBottom: 6,
                       }}>{m.label}</h3>
                       <p style={{ color: "#9aa5b4", fontSize: 13, lineHeight: 1.55 }}>{m.desc}</p>
@@ -312,7 +312,7 @@ export default function HomePage() {
               Espace Investisseur
             </p>
             <h2 style={{
-              fontFamily: "var(--font-display)", fontWeight: 700,
+              fontFamily: "var(--font-google-sans)", fontWeight: 700,
               fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
               color: "#1a1a2e", marginBottom: 14, lineHeight: 1.2,
             }}>

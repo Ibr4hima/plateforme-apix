@@ -86,7 +86,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
             <div>
-              <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.25rem", color: "#1a1a2e" }}>
+              <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.25rem", color: "#1a1a2e" }}>
                 Nouvel accord / traité
               </h2>
               <p style={{ fontSize: 13, color: "#9aa5b4", marginTop: 2 }}>Remplissez les informations de l'accord</p>

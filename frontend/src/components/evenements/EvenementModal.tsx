@@ -57,7 +57,7 @@ export default function EvenementModal({ event, onClose }: { event: any; onClose
                 {event.type_evenement?.replace("_", " ").toUpperCase()}
               </span>
               <h2 style={{
-                fontFamily: "var(--font-display)", fontWeight: 800,
+                fontFamily: "var(--font-google-sans)", fontWeight: 800,
                 fontSize: "1.35rem", color: "#1a1a2e", lineHeight: 1.3,
               }}>
                 {event.nom_event}
@@ -124,13 +124,13 @@ export default function EvenementModal({ event, onClose }: { event: any; onClose
               <div style={{ display: "flex", gap: 20 }}>
                 {event.nombre_prospects_rencontres && (
                   <div>
-                    <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 22, color: accent }}>{event.nombre_prospects_rencontres}</div>
+                    <div style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: 22, color: accent }}>{event.nombre_prospects_rencontres}</div>
                     <div style={{ fontSize: 12, color: "#4a5568" }}>Prospects rencontrés</div>
                   </div>
                 )}
                 {event.montant_intentions_usd && (
                   <div>
-                    <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 22, color: accent }}>
+                    <div style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: 22, color: accent }}>
                       {(event.montant_intentions_usd / 1_000_000).toFixed(0)} M$
                     </div>
                     <div style={{ fontSize: 12, color: "#4a5568" }}>Intentions générées</div>

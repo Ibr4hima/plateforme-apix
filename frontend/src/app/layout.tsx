@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { Syne, DM_Sans } from "next/font/google";
+import { Google_Sans } from "next/font/google";
 import "./globals.css";
 
-const syne = Syne({
+const googleSans = Google_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-syne",
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  variable: "--font-dm-sans",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-google-sans",
   display: "swap",
 });
 
@@ -31,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${syne.variable} ${dmSans.variable}`}>
-      <body className="font-body antialiased">
+    <html lang="fr" className={googleSans.variable}>
+      <body style={{ fontFamily: "var(--font-google-sans), sans-serif" }}>
         {children}
       </body>
     </html>

@@ -56,7 +56,7 @@ export default function AccordCard({ accord, onClick }: { accord: any; onClick: 
       {/* Titre */}
       <div>
         <h3 style={{
-          fontFamily: "var(--font-display)", fontWeight: 700,
+          fontFamily: "var(--font-google-sans)", fontWeight: 700,
           fontSize: 15, color: "#1a1a2e", lineHeight: 1.35, marginBottom: 4,
         }}>
           {accord.titre}

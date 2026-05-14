@@ -79,7 +79,7 @@ export default function EvenementsPage() {
             Module 8
           </p>
           <h1 style={{
-            fontFamily: "var(--font-display)", fontWeight: 800,
+            fontFamily: "var(--font-google-sans)", fontWeight: 800,
             fontSize: "clamp(2rem, 4vw, 3rem)", color: "#1a1a2e",
             lineHeight: 1.1, marginBottom: 12,
           }}>
