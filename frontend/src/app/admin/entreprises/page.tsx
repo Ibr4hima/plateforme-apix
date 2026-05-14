@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, Building2, User, Trash } from "lucide-react";
+import { NaemaCascadeMulti } from "@/components/shared/NaemaSelects";
+import { Building2, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -13,7 +14,7 @@ const EMPTY_FORM = {
   nom:"", forme_juridique:"", date_creation:"",
   pays:"Sénégal", region:"", departement:"", commune:"", adresse:"",
   telephone:"", mail:"", siteweb:"",
-  secteur_id:"", branche_id:"", activite_id:"",
+secteurs:[], branches:[], activites:[],
   statut:"actif", est_publie:true, note_interne:"",
 };
 
@@ -288,34 +289,18 @@ export default function AdminEntreprises() {
               </div>
 
               {/* Section : Classification NAEMA */}
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#ca631f", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
-                  Classification NAEMA
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                  <div style={fieldStyle}>
-                    <label style={labelStyle}>Secteur d'activité</label>
-                    <select value={form.secteur_id} onChange={e => update("secteur_id", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-                      <option value="">— Sélectionner —</option>
-                      {secteurs.map((s: any) => <option key={s.id} value={s.id}>{s.nom}</option>)}
-                    </select>
-                  </div>
-                  <div style={fieldStyle}>
-                    <label style={labelStyle}>Branche d'activité</label>
-                    <select value={form.branche_id} onChange={e => update("branche_id", e.target.value)} disabled={!branches.length} style={{ ...inputStyle, cursor: branches.length ? "pointer" : "not-allowed", opacity: branches.length ? 1 : 0.5 }}>
-                      <option value="">— Sélectionner —</option>
-                      {branches.map((b: any) => <option key={b.id} value={b.id}>{b.nom}</option>)}
-                    </select>
-                  </div>
-                  <div style={fieldStyle}>
-                    <label style={labelStyle}>Activité</label>
-                    <select value={form.activite_id} onChange={e => update("activite_id", e.target.value)} disabled={!activites.length} style={{ ...inputStyle, cursor: activites.length ? "pointer" : "not-allowed", opacity: activites.length ? 1 : 0.5 }}>
-                      <option value="">— Sélectionner —</option>
-                      {activites.map((a: any) => <option key={a.id} value={a.id}>{a.nom}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </div>
+<div>
+  <p style={{ fontSize: 11, fontWeight: 700, color: "#ca631f", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
+    Classification NAEMA
+  </p>
+  <NaemaCascadeMulti
+    onChange={({ secteurs, branches, activites }) => {
+      update("secteurs", secteurs);
+      update("branches", branches);
+      update("activites", activites);
+    }}
+  />
+</div>
 
               {/* Section : Points focaux */}
               <div>

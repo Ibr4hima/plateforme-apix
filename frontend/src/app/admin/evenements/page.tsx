@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, Calendar } from "lucide-react";
+import { NaemaCascadeMulti } from "@/components/shared/NaemaSelects";
 import { api } from "@/lib/api";
+import { Calendar, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -244,21 +245,35 @@ export default function AdminEvenements() {
                 <input value={form.organisateur} onChange={e => update("organisateur", e.target.value)} placeholder="Nom de l'organisateur" style={inputStyle} />
               </div>
 
-              {/* Thématiques / Pays / Entreprises */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Thématiques <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(virgules)</span></label>
-                  <input value={form.thematiques} onChange={e => update("thematiques", e.target.value)} placeholder="Agriculture, Énergie..." style={inputStyle} />
-                </div>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Pays invités <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(virgules)</span></label>
-                  <input value={form.pays_invites} onChange={e => update("pays_invites", e.target.value)} placeholder="France, Maroc..." style={inputStyle} />
-                </div>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Entreprises invitées <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(virgules)</span></label>
-                  <input value={form.entreprises_invitees} onChange={e => update("entreprises_invitees", e.target.value)} placeholder="TotalEnergies..." style={inputStyle} />
-                </div>
-              </div>
+              {/* Thématiques NAEMA multi-sélection */}
+<div style={{ background: "#F8F7F6", borderRadius: 12, padding: "16px" }}>
+  <p style={{ fontSize: 11, fontWeight: 700, color: "#004f91", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
+    Thématiques (NAEMA)
+  </p>
+  <NaemaCascadeMulti
+    onChange={({ secteurs, branches, activites }) => {
+      const tous = [...secteurs, ...branches, ...activites];
+      update("thematiques", tous.join(", "));
+    }}
+  />
+  {form.thematiques && (
+    <p style={{ fontSize: 12, color: "#4a5568", marginTop: 10 }}>
+      <strong>Sélectionnées :</strong> {form.thematiques}
+    </p>
+  )}
+</div>
+
+{/* Pays / Entreprises */}
+<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+  <div style={fieldStyle}>
+    <label style={labelStyle}>Pays invités <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(virgules)</span></label>
+    <input value={form.pays_invites} onChange={e => update("pays_invites", e.target.value)} placeholder="France, Maroc..." style={inputStyle} />
+  </div>
+  <div style={fieldStyle}>
+    <label style={labelStyle}>Entreprises invitées <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(virgules)</span></label>
+    <input value={form.entreprises_invitees} onChange={e => update("entreprises_invitees", e.target.value)} placeholder="TotalEnergies..." style={inputStyle} />
+  </div>
+</div>
 
               {/* Description */}
               <div style={fieldStyle}>

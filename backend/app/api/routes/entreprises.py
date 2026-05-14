@@ -52,15 +52,19 @@ async def liste_activites(
 
 @router.get("", response_model=EntrepriseListResponse)
 async def liste_entreprises(
-    page:       int           = Query(1, ge=1),
-    per_page:   int           = Query(12, ge=1, le=100),
-    statut:     Optional[str] = None,
-    secteur_id: Optional[int] = None,
-    branche_id: Optional[int] = None,
-    region:     Optional[str] = None,
-    pays:       Optional[str] = None,
-    search:     Optional[str] = None,
-    db:         AsyncSession  = Depends(get_db),
+    page:         int           = Query(1, ge=1),
+    per_page:     int           = Query(12, ge=1, le=100),
+    statut:       Optional[str] = None,
+    secteur_id:   Optional[int] = None,
+    branche_id:   Optional[int] = None,
+    region:       Optional[str] = None,
+    pays:         Optional[str] = None,
+    search:       Optional[str] = None,
+    # Filtres multi (noms séparés par virgules)
+    secteur_nom:  Optional[str] = None,
+    branche_nom:  Optional[str] = None,
+    activite_nom: Optional[str] = None,
+    db:           AsyncSession  = Depends(get_db),
 ):
     filters = [
         EntrepriseIntallee.is_deleted == False,
@@ -78,6 +82,32 @@ async def liste_entreprises(
             EntrepriseIntallee.commune.ilike(f"%{search}%"),
             EntrepriseIntallee.adresse.ilike(f"%{search}%"),
         ))
+
+    # Filtres NAEMA multi-valeurs
+    if secteur_nom:
+        noms = [n.strip() for n in secteur_nom.split(",") if n.strip()]
+        if noms:
+            filters.append(
+                EntrepriseIntallee.secteur_id.in_(
+                    select(RefSecteur.id).where(RefSecteur.nom.in_(noms))
+                )
+            )
+    if branche_nom:
+        noms = [n.strip() for n in branche_nom.split(",") if n.strip()]
+        if noms:
+            filters.append(
+                EntrepriseIntallee.branche_id.in_(
+                    select(RefBranche.id).where(RefBranche.nom.in_(noms))
+                )
+            )
+    if activite_nom:
+        noms = [n.strip() for n in activite_nom.split(",") if n.strip()]
+        if noms:
+            filters.append(
+                EntrepriseIntallee.activite_id.in_(
+                    select(RefActivite.id).where(RefActivite.nom.in_(noms))
+                )
+            )
 
     total_q = await db.execute(
         select(func.count()).select_from(EntrepriseIntallee).where(and_(*filters))
@@ -211,7 +241,6 @@ async def ajouter_point_focal(
     )
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Entreprise introuvable")
-
     focal = EntreprisePointFocal(entreprise_id=entreprise_id, **payload.model_dump())
     db.add(focal)
     await db.flush()
@@ -241,10 +270,7 @@ async def supprimer_point_focal(
 # ── CRUD Branches ─────────────────────────────────────────────────────────────
 
 @router.post("/ref/branches", response_model=RefBrancheResponse, status_code=201)
-async def creer_branche(
-    payload: dict,
-    db: AsyncSession = Depends(get_db),
-):
+async def creer_branche(payload: dict, db: AsyncSession = Depends(get_db)):
     branche = RefBranche(**payload)
     db.add(branche)
     await db.flush()
@@ -253,11 +279,7 @@ async def creer_branche(
 
 
 @router.patch("/ref/branches/{branche_id}", response_model=RefBrancheResponse)
-async def modifier_branche(
-    branche_id: int,
-    payload: dict,
-    db: AsyncSession = Depends(get_db),
-):
+async def modifier_branche(branche_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(RefBranche).where(RefBranche.id == branche_id))
     branche = result.scalar_one_or_none()
     if not branche:
@@ -270,10 +292,7 @@ async def modifier_branche(
 
 
 @router.delete("/ref/branches/{branche_id}", status_code=204)
-async def supprimer_branche(
-    branche_id: int,
-    db: AsyncSession = Depends(get_db),
-):
+async def supprimer_branche(branche_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(RefBranche).where(RefBranche.id == branche_id))
     branche = result.scalar_one_or_none()
     if not branche:
@@ -285,10 +304,7 @@ async def supprimer_branche(
 # ── CRUD Activités ────────────────────────────────────────────────────────────
 
 @router.post("/ref/activites", response_model=RefActiviteResponse, status_code=201)
-async def creer_activite(
-    payload: dict,
-    db: AsyncSession = Depends(get_db),
-):
+async def creer_activite(payload: dict, db: AsyncSession = Depends(get_db)):
     activite = RefActivite(**payload)
     db.add(activite)
     await db.flush()
@@ -297,11 +313,7 @@ async def creer_activite(
 
 
 @router.patch("/ref/activites/{activite_id}", response_model=RefActiviteResponse)
-async def modifier_activite(
-    activite_id: int,
-    payload: dict,
-    db: AsyncSession = Depends(get_db),
-):
+async def modifier_activite(activite_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(RefActivite).where(RefActivite.id == activite_id))
     activite = result.scalar_one_or_none()
     if not activite:
@@ -314,10 +326,7 @@ async def modifier_activite(
 
 
 @router.delete("/ref/activites/{activite_id}", status_code=204)
-async def supprimer_activite(
-    activite_id: int,
-    db: AsyncSession = Depends(get_db),
-):
+async def supprimer_activite(activite_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(RefActivite).where(RefActivite.id == activite_id))
     activite = result.scalar_one_or_none()
     if not activite:

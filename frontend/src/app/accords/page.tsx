@@ -14,18 +14,21 @@ export default function AccordsPage() {
   const [loading,     setLoading]     = useState(true);
   const [accordSelec, setAccordSelec] = useState<any>(null);
   const [filtres,     setFiltres]     = useState({
-    search: "", statut: "", type_accord: "", secteur_activite: "", pays_signataires: "",
+    search: "", statut: "", type_accord: "",
+    secteurs: [], branches: [], activites: [],
+    pays_signataires: "",
   });
 
   const charger = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filtres.search)           params.append("search",           filtres.search);
-      if (filtres.statut)           params.append("statut",           filtres.statut);
-      if (filtres.type_accord)      params.append("type_accord",      filtres.type_accord);
-      if (filtres.secteur_activite) params.append("secteur_activite", filtres.secteur_activite);
-      if (filtres.pays_signataires) params.append("pays_signataires", filtres.pays_signataires);
+      if (filtres.search)                        params.append("search",           filtres.search);
+      if (filtres.statut)                        params.append("statut",           filtres.statut);
+      if (filtres.type_accord)                   params.append("type_accord",      filtres.type_accord);
+      if (filtres.pays_signataires)              params.append("pays_signataires", filtres.pays_signataires);
+      if (filtres.secteurs.length > 0)           params.append("secteur_activite", filtres.secteurs[0]);
+      if (filtres.branches.length > 0)           params.append("branche_activite", filtres.branches[0]);
       params.append("per_page", "50");
 
       const res = await api.accords.liste(params.toString());

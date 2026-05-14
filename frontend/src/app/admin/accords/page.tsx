@@ -2,7 +2,7 @@
 
 import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { NaemaCascade } from "@/components/shared/NaemaSelects";
+import { NaemaCascade, NaemaCascadeMulti } from "@/components/shared/NaemaSelects";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -230,10 +230,10 @@ export default function AdminAccords() {
               {/* Dates */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
                 {[
-                  { key: "date_signature",      label: "Date de signature"   },
-                  { key: "date_ratification",   label: "Date de ratification"},
-                  { key: "date_entree_vigueur", label: "Entrée en vigueur"   },
-                  { key: "date_expiration",     label: "Date d'expiration"   },
+                  { key: "date_signature",      label: "Date de signature"    },
+                  { key: "date_ratification",   label: "Date de ratification" },
+                  { key: "date_entree_vigueur", label: "Entrée en vigueur"    },
+                  { key: "date_expiration",     label: "Date d'expiration"    },
                 ].map(f => (
                   <div key={f.key} style={fieldStyle}>
                     <label style={labelStyle}>{f.label}</label>
@@ -242,22 +242,39 @@ export default function AdminAccords() {
                 ))}
               </div>
 
-              {/* Classification NAEMA en cascade */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: "16px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                <NaemaCascade
-                  secteurVal={form.secteur_activite}
-                  brancheVal={form.branche_activite}
-                  activiteVal={form.activite_detail}
-                  onSecteurChange={val => { update("secteur_activite", val); update("branche_activite", ""); update("activite_detail", ""); }}
-                  onBrancheChange={val => { update("branche_activite", val); update("activite_detail", ""); }}
-                  onActiviteChange={val => update("activite_detail", val)}
-                />
+              {/* Classification NAEMA — secteur/branche principal (cascade simple) */}
+              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: "16px" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
+                  Secteur & Branche principaux
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                  <NaemaCascade
+                    secteurVal={form.secteur_activite}
+                    brancheVal={form.branche_activite}
+                    activiteVal={form.activite_detail}
+                    onSecteurChange={val => { update("secteur_activite", val); update("branche_activite", ""); update("activite_detail", ""); }}
+                    onBrancheChange={val => { update("branche_activite", val); update("activite_detail", ""); }}
+                    onActiviteChange={val => update("activite_detail", val)}
+                  />
+                </div>
               </div>
 
-              {/* Domaines */}
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Domaines couverts <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(séparés par des virgules)</span></label>
-                <input value={form.domaines_couverts} onChange={e => update("domaines_couverts", e.target.value)} placeholder="Ex: Investissement, Commerce, Fiscalité" style={inputStyle} />
+              {/* Domaines couverts — sélection multiple NAEMA */}
+              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: "16px" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
+                  Domaines couverts (multi-sélection)
+                </p>
+                <NaemaCascadeMulti
+                  onChange={({ secteurs, branches, activites }) => {
+                    const tous = [...secteurs, ...branches, ...activites];
+                    update("domaines_couverts", tous.join(", "));
+                  }}
+                />
+                {form.domaines_couverts && (
+                  <p style={{ fontSize: 12, color: "#4a5568", marginTop: 10 }}>
+                    <strong>Sélectionnés :</strong> {form.domaines_couverts}
+                  </p>
+                )}
               </div>
 
               {/* Commentaires */}
