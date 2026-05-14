@@ -359,3 +359,61 @@ async def liste_pays(db: AsyncSession = Depends(get_db)):
     )
     pays = result.scalars().all()
     return [{"id": p.id, "code_iso2": p.code_iso2, "nom_fr": p.nom_fr, "region_monde": p.region_monde} for p in pays]
+
+
+# ── Référentiel géographie Sénégal ────────────────────────────────────────────
+
+class RefRegion(_Base):
+    __tablename__ = "ref_regions"
+    id    = Column(Integer, primary_key=True)
+    code  = Column(String(10))
+    nom   = Column(String(100))
+    actif = Column(Boolean, default=True)
+
+class RefDepartement(_Base):
+    __tablename__ = "ref_departements"
+    id        = Column(Integer, primary_key=True)
+    region_id = Column(Integer)
+    code      = Column(String(10))
+    nom       = Column(String(100))
+    actif     = Column(Boolean, default=True)
+
+class RefArrondissement(_Base):
+    __tablename__ = "ref_arrondissements"
+    id             = Column(Integer, primary_key=True)
+    departement_id = Column(Integer)
+    code           = Column(String(10))
+    nom            = Column(String(100))
+    actif          = Column(Boolean, default=True)
+
+@router.get("/ref/regions")
+async def liste_regions(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(
+        select(RefRegion).where(RefRegion.actif == True).order_by(RefRegion.nom)
+    )
+    return [{"id": r.id, "code": r.code, "nom": r.nom} for r in result.scalars().all()]
+
+@router.get("/ref/departements")
+async def liste_departements(
+    region_id: Optional[int] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    from sqlalchemy import select
+    q = select(RefDepartement).where(RefDepartement.actif == True)
+    if region_id:
+        q = q.where(RefDepartement.region_id == region_id)
+    result = await db.execute(q.order_by(RefDepartement.nom))
+    return [{"id": d.id, "code": d.code, "nom": d.nom, "region_id": d.region_id} for d in result.scalars().all()]
+
+@router.get("/ref/arrondissements")
+async def liste_arrondissements(
+    departement_id: Optional[int] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    from sqlalchemy import select
+    q = select(RefArrondissement).where(RefArrondissement.actif == True)
+    if departement_id:
+        q = q.where(RefArrondissement.departement_id == departement_id)
+    result = await db.execute(q.order_by(RefArrondissement.nom))
+    return [{"id": a.id, "code": a.code, "nom": a.nom, "departement_id": a.departement_id} for a in result.scalars().all()]
