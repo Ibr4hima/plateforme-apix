@@ -1,0 +1,417 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, FileText, Upload } from "lucide-react";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+const STATUTS = ["en_vigueur","signe_non_ratifie","expire","suspendu","negocie"];
+const STATUT_LABELS: Record<string,string> = {
+  en_vigueur:"En vigueur", signe_non_ratifie:"Signé non ratifié",
+  expire:"Expiré", suspendu:"Suspendu", negocie:"En négociation",
+};
+const STATUT_COLORS: Record<string,{bg:string;text:string}> = {
+  en_vigueur:        {bg:"#dcfce7",text:"#15803d"},
+  signe_non_ratifie: {bg:"#dbeafe",text:"#1d4ed8"},
+  expire:            {bg:"#f3f4f6",text:"#6b7280"},
+  suspendu:          {bg:"#fee2e2",text:"#dc2626"},
+  negocie:           {bg:"#fef9c3",text:"#a16207"},
+};
+
+const EMPTY_FORM = {
+  titre:"", reference:"", type_accord:"", pays_signataires:"",
+  organisation_partenaire:"", date_signature:"", date_ratification:"",
+  date_entree_vigueur:"", date_expiration:"",
+  secteur_activite:"", branche_activite:"",
+  commentaires:"", domaines_couverts:"", avantages_principaux:"",
+  statut:"en_vigueur", lien_texte_officiel:"", est_publie:true, note_interne:"",
+};
+
+export default function AdminAccords() {
+  const [accords,   setAccords]  = useState<any[]>([]);
+  const [total,     setTotal]    = useState(0);
+  const [loading,   setLoading]  = useState(true);
+  const [showForm,  setShowForm] = useState(false);
+  const [editItem,  setEditItem] = useState<any>(null);
+  const [saving,    setSaving]   = useState(false);
+  const [saveOk,    setSaveOk]   = useState(false);
+  const [error,     setError]    = useState("");
+  const [form,      setForm]     = useState<any>({ ...EMPTY_FORM });
+  const [fichier,   setFichier]  = useState<File|null>(null);
+  const [deleting,  setDeleting] = useState<string|null>(null);
+
+  const charger = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/accords?per_page=100`);
+      const data = await res.json();
+      setAccords(data.data || []);
+      setTotal(data.total || 0);
+    } catch {} finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { charger(); }, [charger]);
+
+  const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
+
+  const openCreate = () => {
+    setForm({ ...EMPTY_FORM }); setEditItem(null);
+    setFichier(null); setShowForm(true); setError(""); setSaveOk(false);
+  };
+
+  const openEdit = (a: any) => {
+    setForm({
+      titre: a.titre || "", reference: a.reference || "",
+      type_accord: a.type_accord || "", pays_signataires: a.pays_signataires || "",
+      organisation_partenaire: a.organisation_partenaire || "",
+      date_signature: a.date_signature || "", date_ratification: a.date_ratification || "",
+      date_entree_vigueur: a.date_entree_vigueur || "", date_expiration: a.date_expiration || "",
+      secteur_activite: a.secteur_activite || "", branche_activite: a.branche_activite || "",
+      commentaires: a.commentaires || "", domaines_couverts: a.domaines_couverts || "",
+      avantages_principaux: a.avantages_principaux || "",
+      statut: a.statut || "en_vigueur", lien_texte_officiel: a.lien_texte_officiel || "",
+      est_publie: a.est_publie ?? true, note_interne: a.note_interne || "",
+    });
+    setEditItem(a); setFichier(null); setShowForm(true); setError(""); setSaveOk(false);
+  };
+
+  const handleSave = async () => {
+    if (!form.titre.trim()) { setError("Le titre est obligatoire"); return; }
+    setSaving(true); setError("");
+    try {
+      if (editItem) {
+        // PATCH JSON
+        const payload: any = { ...form };
+        Object.keys(payload).forEach(k => { if (payload[k] === "") payload[k] = null; });
+        const res = await fetch(`${API_BASE}/accords/${editItem.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`Erreur ${res.status}`);
+      } else {
+        // POST multipart
+        const fd = new FormData();
+        Object.entries(form).forEach(([k, v]) => {
+          if (v !== "" && v !== null && v !== undefined) fd.append(k, String(v));
+        });
+        if (fichier) fd.append("fichier", fichier);
+        const res = await fetch(`${API_BASE}/accords`, { method: "POST", body: fd });
+        if (!res.ok) throw new Error(`Erreur ${res.status}`);
+      }
+      setSaveOk(true);
+      setTimeout(() => { setShowForm(false); charger(); }, 1000);
+    } catch (e: any) {
+      setError(e.message || "Erreur lors de la sauvegarde");
+    } finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Supprimer cet accord ?")) return;
+    setDeleting(id);
+    try {
+      await fetch(`${API_BASE}/accords/${id}`, { method: "DELETE" });
+      charger();
+    } finally { setDeleting(null); }
+  };
+
+  const handleTogglePublie = async (a: any) => {
+    await fetch(`${API_BASE}/accords/${a.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ est_publie: !a.est_publie }),
+    });
+    charger();
+  };
+
+  const inputStyle = {
+    width: "100%", background: "#F2F0EF", border: "1px solid #C5BFBB",
+    borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e",
+    outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const,
+  };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 4, display: "block" };
+  const fieldStyle = { display: "flex", flexDirection: "column" as const, gap: 3 };
+
+  return (
+    <div style={{ padding: "36px 40px 80px" }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
+          <h1 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>
+            Accords & Traités
+          </h1>
+          <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 2 }}>{total} accord{total > 1 ? "s" : ""} au total</p>
+        </div>
+        <button onClick={openCreate} style={{
+          display: "flex", alignItems: "center", gap: 8,
+          background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
+          color: "#fff", fontWeight: 600, fontSize: 14,
+          padding: "11px 20px", borderRadius: 12, border: "none", cursor: "pointer",
+          boxShadow: "0 4px 14px rgba(124,58,237,0.3)",
+        }}>
+          <Plus size={16} /> Ajouter un accord
+        </button>
+      </div>
+
+      {/* Formulaire */}
+      {showForm && (
+        <div style={{
+          background: "#fff", border: "1px solid #C5BFBB", borderRadius: 20,
+          marginBottom: 32, overflow: "hidden",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
+        }}>
+          <div style={{ height: 4, background: "linear-gradient(90deg, #7c3aed, #6d28d9)" }} />
+          <div style={{ padding: "24px 28px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+              <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.1rem", color: "#1a1a2e" }}>
+                {editItem ? "Modifier l'accord" : "Nouvel accord / traité"}
+              </h2>
+              <button onClick={() => setShowForm(false)} style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: 8 }}>
+                <X size={15} color="#4a5568" />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+              {/* Titre + Référence */}
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Titre *</label>
+                  <input value={form.titre} onChange={e => update("titre", e.target.value)} placeholder="Intitulé complet de l'accord" style={inputStyle} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Référence</label>
+                  <input value={form.reference} onChange={e => update("reference", e.target.value)} placeholder="Ex: TBI-2024-01" style={inputStyle} />
+                </div>
+              </div>
+
+              {/* Type + Statut */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Type d'accord</label>
+                  <input value={form.type_accord} onChange={e => update("type_accord", e.target.value)} placeholder="Ex: TBI, APE, Coopération..." style={inputStyle} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Statut</label>
+                  <select value={form.statut} onChange={e => update("statut", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                    {STATUTS.map(s => <option key={s} value={s}>{STATUT_LABELS[s]}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Pays + Organisation */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Pays signataires</label>
+                  <input value={form.pays_signataires} onChange={e => update("pays_signataires", e.target.value)} placeholder="Ex: France, Allemagne" style={inputStyle} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Organisation partenaire</label>
+                  <input value={form.organisation_partenaire} onChange={e => update("organisation_partenaire", e.target.value)} placeholder="Ex: Union Européenne" style={inputStyle} />
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
+                {[
+                  {key:"date_signature",      label:"Date de signature"},
+                  {key:"date_ratification",   label:"Date de ratification"},
+                  {key:"date_entree_vigueur", label:"Entrée en vigueur"},
+                  {key:"date_expiration",     label:"Date d'expiration"},
+                ].map(f => (
+                  <div key={f.key} style={fieldStyle}>
+                    <label style={labelStyle}>{f.label}</label>
+                    <input type="date" value={(form as any)[f.key]} onChange={e => update(f.key, e.target.value)} style={inputStyle} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Secteur + Branche */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Secteur d'activité</label>
+                  <input value={form.secteur_activite} onChange={e => update("secteur_activite", e.target.value)} placeholder="Ex: Secteur primaire" style={inputStyle} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Branche d'activité</label>
+                  <input value={form.branche_activite} onChange={e => update("branche_activite", e.target.value)} placeholder="Ex: Agriculture, pêche" style={inputStyle} />
+                </div>
+              </div>
+
+              {/* Domaines */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Domaines couverts <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(séparés par des virgules)</span></label>
+                <input value={form.domaines_couverts} onChange={e => update("domaines_couverts", e.target.value)} placeholder="Ex: Investissement, Commerce, Fiscalité" style={inputStyle} />
+              </div>
+
+              {/* Commentaires */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Résumé / Commentaires</label>
+                <textarea value={form.commentaires} onChange={e => update("commentaires", e.target.value)} rows={4} placeholder="Description et résumé des termes de l'accord..." style={{ ...inputStyle, resize: "vertical" as const }} />
+              </div>
+
+              {/* Avantages */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Avantages principaux</label>
+                <textarea value={form.avantages_principaux} onChange={e => update("avantages_principaux", e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" as const }} />
+              </div>
+
+              {/* Lien officiel */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Lien texte officiel</label>
+                <input value={form.lien_texte_officiel} onChange={e => update("lien_texte_officiel", e.target.value)} placeholder="https://..." style={inputStyle} />
+              </div>
+
+              {/* PDF — seulement à la création */}
+              {!editItem && (
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Fichier PDF</label>
+                  <label style={{
+                    display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
+                    borderRadius: 8, cursor: "pointer",
+                    border: "2px dashed #C5BFBB",
+                    background: fichier ? "rgba(124,58,237,0.04)" : "#F2F0EF",
+                  }}>
+                    <Upload size={15} color={fichier ? "#7c3aed" : "#9aa5b4"} />
+                    <span style={{ fontSize: 13, color: fichier ? "#7c3aed" : "#9aa5b4" }}>
+                      {fichier ? fichier.name : "Cliquer pour sélectionner un PDF"}
+                    </span>
+                    <input type="file" accept=".pdf" style={{ display: "none" }} onChange={e => setFichier(e.target.files?.[0] || null)} />
+                  </label>
+                </div>
+              )}
+
+              {/* Note interne */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Note interne</label>
+                <input value={form.note_interne} onChange={e => update("note_interne", e.target.value)} placeholder="Note visible uniquement en admin" style={inputStyle} />
+              </div>
+
+              {/* Publié */}
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: "#4a5568" }}>
+                <input type="checkbox" checked={form.est_publie} onChange={e => update("est_publie", e.target.checked)} style={{ width: 16, height: 16 }} />
+                Publier sur le site public
+              </label>
+
+              {error && (
+                <div style={{ background: "#fee2e2", color: "#dc2626", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>
+                  {error}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                <button onClick={() => setShowForm(false)} style={{
+                  padding: "10px 20px", borderRadius: 10, border: "1px solid #C5BFBB",
+                  background: "transparent", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}>Annuler</button>
+                <button onClick={handleSave} disabled={saving || saveOk} style={{
+                  padding: "10px 24px", borderRadius: 10, border: "none",
+                  background: saveOk ? "#dcfce7" : "linear-gradient(135deg, #7c3aed, #6d28d9)",
+                  color: saveOk ? "#15803d" : "#fff",
+                  fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 8,
+                }}>
+                  {saveOk ? <><Check size={14} /> Enregistré !</> :
+                   saving  ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Sauvegarde...</> :
+                   editItem ? "Modifier" : "Créer l'accord"}
+                  <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tableau */}
+      <div style={{ background: "#fff", border: "1px solid #C5BFBB", borderRadius: 20, overflow: "hidden" }}>
+        <div style={{ padding: "18px 24px", borderBottom: "1px solid #E8E5E3", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "0.95rem", color: "#1a1a2e" }}>
+            Liste des accords
+          </h2>
+          <span style={{ fontSize: 12, color: "#9aa5b4" }}>{total} résultat{total > 1 ? "s" : ""}</span>
+        </div>
+
+        {loading ? (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 200, gap: 10, color: "#9aa5b4" }}>
+            <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
+            <span style={{ fontSize: 13 }}>Chargement...</span>
+          </div>
+        ) : accords.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 24px", color: "#9aa5b4" }}>
+            <FileText size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
+            <p style={{ fontSize: 14, color: "#4a5568" }}>Aucun accord</p>
+            <p style={{ fontSize: 13, marginTop: 4 }}>Cliquez sur "Ajouter un accord" pour commencer.</p>
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: "#F8F7F6" }}>
+                  {["Titre","Type","Pays signataires","Date signature","Statut","Publié","Actions"].map(h => (
+                    <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {accords.map((a, i) => {
+                  const statut = STATUT_COLORS[a.statut] || STATUT_COLORS.en_vigueur;
+                  return (
+                    <tr key={a.id} style={{ borderTop: "1px solid #F2F0EF", background: i % 2 === 0 ? "#fff" : "#FAFAF9" }}>
+                      <td style={{ padding: "14px 16px", maxWidth: 260 }}>
+                        <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 2 }}>
+                          {a.titre.length > 50 ? a.titre.slice(0, 50) + "…" : a.titre}
+                        </div>
+                        {a.reference && <div style={{ fontSize: 11, color: "#9aa5b4" }}>Réf. {a.reference}</div>}
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <span style={{ fontSize: 11, color: "#7c3aed", background: "rgba(124,58,237,0.1)", padding: "2px 8px", borderRadius: 999 }}>
+                          {a.type_accord || "—"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "14px 16px", color: "#4a5568", maxWidth: 180 }}>
+                        {a.pays_signataires || "—"}
+                      </td>
+                      <td style={{ padding: "14px 16px", color: "#4a5568", whiteSpace: "nowrap" }}>
+                        {a.date_signature ? new Date(a.date_signature).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, background: statut.bg, color: statut.text, padding: "3px 10px", borderRadius: 999 }}>
+                          {STATUT_LABELS[a.statut] || a.statut}
+                        </span>
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <button onClick={() => handleTogglePublie(a)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                          {a.est_publie
+                            ? <Eye size={16} style={{ color: "#15803d" }} />
+                            : <EyeOff size={16} style={{ color: "#9aa5b4" }} />
+                          }
+                        </button>
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button onClick={() => openEdit(a)} style={{ background: "rgba(124,58,237,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 8px" }}>
+                            <Pencil size={13} style={{ color: "#7c3aed" }} />
+                          </button>
+                          <button onClick={() => handleDelete(a.id)} disabled={deleting === a.id} style={{ background: "rgba(220,38,38,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 8px" }}>
+                            {deleting === a.id
+                              ? <Loader2 size={13} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} />
+                              : <Trash2 size={13} style={{ color: "#dc2626" }} />
+                            }
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

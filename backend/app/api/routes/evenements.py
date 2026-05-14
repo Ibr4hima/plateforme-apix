@@ -14,7 +14,20 @@ from app.schemas.evenement import (
 router = APIRouter(prefix="/evenements", tags=["Événements"])
 
 
-# ── GET /evenements — Liste publique avec filtres ──
+def clean_payload(data: dict) -> dict:
+    """Convertit les chaînes vides en None pour les champs optionnels."""
+    optional_fields = [
+        "edition", "role_apix", "description", "lien_site_officiel",
+        "frequence", "pays_nom", "ville", "lieu_nom", "lien_virtuel",
+        "thematiques", "pays_invites", "entreprises_invitees",
+        "lien_rapport", "note_interne", "created_by",
+    ]
+    for field in optional_fields:
+        if field in data and data[field] == "":
+            data[field] = None
+    return data
+
+
 @router.get("", response_model=EvenementListResponse)
 async def liste_evenements(
     page:           int             = Query(1, ge=1),
@@ -30,7 +43,6 @@ async def liste_evenements(
         Evenement.is_deleted == False,
         Evenement.est_publie == True,
     ]
-
     if type_evenement:  filters.append(Evenement.type_evenement == type_evenement)
     if statut:          filters.append(Evenement.statut == statut)
     if pays_nom:        filters.append(Evenement.pays_nom.ilike(f"%{pays_nom}%"))
@@ -63,10 +75,9 @@ async def liste_evenements(
     )
 
 
-# ── GET /evenements/chronogramme — Regroupés par mois pour la timeline ──
 @router.get("/chronogramme")
 async def chronogramme(
-    annee: int = Query(default=2025),
+    annee: int = Query(default=2026),
     db:    AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -79,7 +90,6 @@ async def chronogramme(
     )
     evenements = result.scalars().all()
 
-    # Grouper par mois
     from collections import defaultdict
     mois_labels = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"]
     grouped: dict = defaultdict(list)
@@ -95,7 +105,6 @@ async def chronogramme(
     }
 
 
-# ── GET /evenements/:id — Détail d'un événement ──
 @router.get("/{evenement_id}", response_model=EvenementResponse)
 async def detail_evenement(
     evenement_id: UUID,
@@ -113,7 +122,6 @@ async def detail_evenement(
     return EvenementResponse.model_validate(evenement)
 
 
-# ── POST /evenements — Créer (admin) ──
 @router.post("", response_model=EvenementResponse, status_code=201)
 async def creer_evenement(
     payload: EvenementCreate,
@@ -122,14 +130,14 @@ async def creer_evenement(
     if payload.date_fin < payload.date_debut:
         raise HTTPException(status_code=422, detail="date_fin ne peut pas être avant date_debut")
 
-    evenement = Evenement(**payload.model_dump())
+    data = clean_payload(payload.model_dump())
+    evenement = Evenement(**data)
     db.add(evenement)
     await db.flush()
     await db.refresh(evenement)
     return EvenementResponse.model_validate(evenement)
 
 
-# ── PATCH /evenements/:id — Modifier (admin) ──
 @router.patch("/{evenement_id}", response_model=EvenementResponse)
 async def modifier_evenement(
     evenement_id: UUID,
@@ -146,7 +154,8 @@ async def modifier_evenement(
     if not evenement:
         raise HTTPException(status_code=404, detail="Événement introuvable")
 
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    data = clean_payload(payload.model_dump(exclude_unset=True))
+    for field, value in data.items():
         setattr(evenement, field, value)
 
     await db.flush()
@@ -154,7 +163,6 @@ async def modifier_evenement(
     return EvenementResponse.model_validate(evenement)
 
 
-# ── DELETE /evenements/:id — Soft delete (admin) ──
 @router.delete("/{evenement_id}", status_code=204)
 async def supprimer_evenement(
     evenement_id: UUID,
