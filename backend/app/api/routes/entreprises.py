@@ -236,3 +236,91 @@ async def supprimer_point_focal(
         raise HTTPException(status_code=404, detail="Point focal introuvable")
     await db.delete(focal)
     await db.flush()
+
+
+# ── CRUD Branches ─────────────────────────────────────────────────────────────
+
+@router.post("/ref/branches", response_model=RefBrancheResponse, status_code=201)
+async def creer_branche(
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+):
+    branche = RefBranche(**payload)
+    db.add(branche)
+    await db.flush()
+    await db.refresh(branche)
+    return RefBrancheResponse.model_validate(branche)
+
+
+@router.patch("/ref/branches/{branche_id}", response_model=RefBrancheResponse)
+async def modifier_branche(
+    branche_id: int,
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(RefBranche).where(RefBranche.id == branche_id))
+    branche = result.scalar_one_or_none()
+    if not branche:
+        raise HTTPException(status_code=404, detail="Branche introuvable")
+    for k, v in payload.items():
+        setattr(branche, k, v)
+    await db.flush()
+    await db.refresh(branche)
+    return RefBrancheResponse.model_validate(branche)
+
+
+@router.delete("/ref/branches/{branche_id}", status_code=204)
+async def supprimer_branche(
+    branche_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(RefBranche).where(RefBranche.id == branche_id))
+    branche = result.scalar_one_or_none()
+    if not branche:
+        raise HTTPException(status_code=404, detail="Branche introuvable")
+    await db.delete(branche)
+    await db.flush()
+
+
+# ── CRUD Activités ────────────────────────────────────────────────────────────
+
+@router.post("/ref/activites", response_model=RefActiviteResponse, status_code=201)
+async def creer_activite(
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+):
+    activite = RefActivite(**payload)
+    db.add(activite)
+    await db.flush()
+    await db.refresh(activite)
+    return RefActiviteResponse.model_validate(activite)
+
+
+@router.patch("/ref/activites/{activite_id}", response_model=RefActiviteResponse)
+async def modifier_activite(
+    activite_id: int,
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(RefActivite).where(RefActivite.id == activite_id))
+    activite = result.scalar_one_or_none()
+    if not activite:
+        raise HTTPException(status_code=404, detail="Activité introuvable")
+    for k, v in payload.items():
+        setattr(activite, k, v)
+    await db.flush()
+    await db.refresh(activite)
+    return RefActiviteResponse.model_validate(activite)
+
+
+@router.delete("/ref/activites/{activite_id}", status_code=204)
+async def supprimer_activite(
+    activite_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(RefActivite).where(RefActivite.id == activite_id))
+    activite = result.scalar_one_or_none()
+    if not activite:
+        raise HTTPException(status_code=404, detail="Activité introuvable")
+    await db.delete(activite)
+    await db.flush()

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, FileText, Upload } from "lucide-react";
+import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { NaemaCascade } from "@/components/shared/NaemaSelects";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -22,28 +23,28 @@ const EMPTY_FORM = {
   titre:"", reference:"", type_accord:"", pays_signataires:"",
   organisation_partenaire:"", date_signature:"", date_ratification:"",
   date_entree_vigueur:"", date_expiration:"",
-  secteur_activite:"", branche_activite:"",
+  secteur_activite:"", branche_activite:"", activite_detail:"",
   commentaires:"", domaines_couverts:"", avantages_principaux:"",
   statut:"en_vigueur", lien_texte_officiel:"", est_publie:true, note_interne:"",
 };
 
 export default function AdminAccords() {
-  const [accords,   setAccords]  = useState<any[]>([]);
-  const [total,     setTotal]    = useState(0);
-  const [loading,   setLoading]  = useState(true);
-  const [showForm,  setShowForm] = useState(false);
-  const [editItem,  setEditItem] = useState<any>(null);
-  const [saving,    setSaving]   = useState(false);
-  const [saveOk,    setSaveOk]   = useState(false);
-  const [error,     setError]    = useState("");
-  const [form,      setForm]     = useState<any>({ ...EMPTY_FORM });
-  const [fichier,   setFichier]  = useState<File|null>(null);
-  const [deleting,  setDeleting] = useState<string|null>(null);
+  const [accords,  setAccords]  = useState<any[]>([]);
+  const [total,    setTotal]    = useState(0);
+  const [loading,  setLoading]  = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [saving,   setSaving]   = useState(false);
+  const [saveOk,   setSaveOk]   = useState(false);
+  const [error,    setError]    = useState("");
+  const [form,     setForm]     = useState<any>({ ...EMPTY_FORM });
+  const [fichier,  setFichier]  = useState<File|null>(null);
+  const [deleting, setDeleting] = useState<string|null>(null);
 
   const charger = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/accords?per_page=100`);
+      const res  = await fetch(`${API_BASE}/accords?per_page=100`);
       const data = await res.json();
       setAccords(data.data || []);
       setTotal(data.total || 0);
@@ -55,24 +56,35 @@ export default function AdminAccords() {
   const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
   const openCreate = () => {
-    setForm({ ...EMPTY_FORM }); setEditItem(null);
-    setFichier(null); setShowForm(true); setError(""); setSaveOk(false);
+    setForm({ ...EMPTY_FORM });
+    setEditItem(null); setFichier(null);
+    setShowForm(true); setError(""); setSaveOk(false);
   };
 
   const openEdit = (a: any) => {
     setForm({
-      titre: a.titre || "", reference: a.reference || "",
-      type_accord: a.type_accord || "", pays_signataires: a.pays_signataires || "",
+      titre:                   a.titre                   || "",
+      reference:               a.reference               || "",
+      type_accord:             a.type_accord             || "",
+      pays_signataires:        a.pays_signataires        || "",
       organisation_partenaire: a.organisation_partenaire || "",
-      date_signature: a.date_signature || "", date_ratification: a.date_ratification || "",
-      date_entree_vigueur: a.date_entree_vigueur || "", date_expiration: a.date_expiration || "",
-      secteur_activite: a.secteur_activite || "", branche_activite: a.branche_activite || "",
-      commentaires: a.commentaires || "", domaines_couverts: a.domaines_couverts || "",
-      avantages_principaux: a.avantages_principaux || "",
-      statut: a.statut || "en_vigueur", lien_texte_officiel: a.lien_texte_officiel || "",
-      est_publie: a.est_publie ?? true, note_interne: a.note_interne || "",
+      date_signature:          a.date_signature          || "",
+      date_ratification:       a.date_ratification       || "",
+      date_entree_vigueur:     a.date_entree_vigueur     || "",
+      date_expiration:         a.date_expiration         || "",
+      secteur_activite:        a.secteur_activite        || "",
+      branche_activite:        a.branche_activite        || "",
+      activite_detail:         a.activite_detail         || "",
+      commentaires:            a.commentaires            || "",
+      domaines_couverts:       a.domaines_couverts       || "",
+      avantages_principaux:    a.avantages_principaux    || "",
+      statut:                  a.statut                  || "en_vigueur",
+      lien_texte_officiel:     a.lien_texte_officiel     || "",
+      est_publie:              a.est_publie              ?? true,
+      note_interne:            a.note_interne            || "",
     });
-    setEditItem(a); setFichier(null); setShowForm(true); setError(""); setSaveOk(false);
+    setEditItem(a); setFichier(null);
+    setShowForm(true); setError(""); setSaveOk(false);
   };
 
   const handleSave = async () => {
@@ -80,7 +92,6 @@ export default function AdminAccords() {
     setSaving(true); setError("");
     try {
       if (editItem) {
-        // PATCH JSON
         const payload: any = { ...form };
         Object.keys(payload).forEach(k => { if (payload[k] === "") payload[k] = null; });
         const res = await fetch(`${API_BASE}/accords/${editItem.id}`, {
@@ -90,7 +101,6 @@ export default function AdminAccords() {
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
       } else {
-        // POST multipart
         const fd = new FormData();
         Object.entries(form).forEach(([k, v]) => {
           if (v !== "" && v !== null && v !== undefined) fd.append(k, String(v));
@@ -138,11 +148,15 @@ export default function AdminAccords() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>
+            Administration
+          </p>
           <h1 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>
             Accords & Traités
           </h1>
-          <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 2 }}>{total} accord{total > 1 ? "s" : ""} au total</p>
+          <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 2 }}>
+            {total} accord{total > 1 ? "s" : ""} au total
+          </p>
         </div>
         <button onClick={openCreate} style={{
           display: "flex", alignItems: "center", gap: 8,
@@ -216,10 +230,10 @@ export default function AdminAccords() {
               {/* Dates */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
                 {[
-                  {key:"date_signature",      label:"Date de signature"},
-                  {key:"date_ratification",   label:"Date de ratification"},
-                  {key:"date_entree_vigueur", label:"Entrée en vigueur"},
-                  {key:"date_expiration",     label:"Date d'expiration"},
+                  { key: "date_signature",      label: "Date de signature"   },
+                  { key: "date_ratification",   label: "Date de ratification"},
+                  { key: "date_entree_vigueur", label: "Entrée en vigueur"   },
+                  { key: "date_expiration",     label: "Date d'expiration"   },
                 ].map(f => (
                   <div key={f.key} style={fieldStyle}>
                     <label style={labelStyle}>{f.label}</label>
@@ -228,16 +242,16 @@ export default function AdminAccords() {
                 ))}
               </div>
 
-              {/* Secteur + Branche */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Secteur d'activité</label>
-                  <input value={form.secteur_activite} onChange={e => update("secteur_activite", e.target.value)} placeholder="Ex: Secteur primaire" style={inputStyle} />
-                </div>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Branche d'activité</label>
-                  <input value={form.branche_activite} onChange={e => update("branche_activite", e.target.value)} placeholder="Ex: Agriculture, pêche" style={inputStyle} />
-                </div>
+              {/* Classification NAEMA en cascade */}
+              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: "16px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                <NaemaCascade
+                  secteurVal={form.secteur_activite}
+                  brancheVal={form.branche_activite}
+                  activiteVal={form.activite_detail}
+                  onSecteurChange={val => { update("secteur_activite", val); update("branche_activite", ""); update("activite_detail", ""); }}
+                  onBrancheChange={val => { update("branche_activite", val); update("activite_detail", ""); }}
+                  onActiviteChange={val => update("activite_detail", val)}
+                />
               </div>
 
               {/* Domaines */}
@@ -270,8 +284,7 @@ export default function AdminAccords() {
                   <label style={labelStyle}>Fichier PDF</label>
                   <label style={{
                     display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-                    borderRadius: 8, cursor: "pointer",
-                    border: "2px dashed #C5BFBB",
+                    borderRadius: 8, cursor: "pointer", border: "2px dashed #C5BFBB",
                     background: fichier ? "rgba(124,58,237,0.04)" : "#F2F0EF",
                   }}>
                     <Upload size={15} color={fichier ? "#7c3aed" : "#9aa5b4"} />

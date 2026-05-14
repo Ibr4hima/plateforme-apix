@@ -1,6 +1,21 @@
 "use client";
 
 import { Search, X } from "lucide-react";
+import { useEffect, useState } from "react";
+
+function SecteurSelect({ value, onChange, style }: { value: string; onChange: (v: string) => void; style?: any }) {
+  const [secteurs, setSecteurs] = useState<any[]>([]);
+  useEffect(() => {
+    fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1") + "/entreprises/ref/secteurs")
+      .then(r => r.json()).then(setSecteurs).catch(() => {});
+  }, []);
+  return (
+    <select value={value} onChange={e => onChange(e.target.value)} style={style}>
+      <option value="">Tous les secteurs</option>
+      {secteurs.map((s: any) => <option key={s.id} value={s.nom}>{s.nom}</option>)}
+    </select>
+  );
+}
 
 const STATUTS = [
   { value: "",                 label: "Tous les statuts"     },
@@ -68,12 +83,11 @@ export default function AccordFiltres({
       />
 
       {/* Secteur */}
-      <input
-        placeholder="Secteur..."
-        value={filtres.secteur_activite}
-        onChange={e => update("secteur_activite", e.target.value)}
-        style={{ ...inputStyle, minWidth: 120 }}
-      />
+<SecteurSelect
+  value={filtres.secteur_activite}
+  onChange={val => update("secteur_activite", val)}
+  style={{ ...inputStyle, minWidth: 160, cursor: "pointer" }}
+/>
 
       {/* Pays */}
       <input
