@@ -18,6 +18,7 @@ const MODULES = [
   { label: "IDE",           href: "/admin/ide",          icon: TrendingUp,      color: "#dc2626" },
   { label: "Intentions",    href: "/admin/intentions",   icon: Target,          color: "#0891b2" },
   { label: "Prospects",     href: "/admin/prospects",    icon: Globe,           color: "#65a30d" },
+  { label: "Géographie",     href: "/admin/geo",          icon: MapPin,          color: "#0891b2" },
   { label: "NAEMA",          href: "/admin/naema",          icon: LayoutDashboard, color: "#6b7280" },
 ];
 

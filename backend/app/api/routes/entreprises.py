@@ -473,3 +473,88 @@ async def supprimer_entreprise(
 
 
 # ── Points focaux ─────────────────────────────────────────────────────────────
+
+
+# ── CRUD Géographie ───────────────────────────────────────────────────────────
+
+@router.post("/ref/regions", status_code=201)
+async def creer_region(payload: dict, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    region = RefRegion(**payload)
+    db.add(region)
+    await db.flush()
+    await db.refresh(region)
+    return {"id": region.id, "code": region.code, "nom": region.nom}
+
+@router.patch("/ref/regions/{region_id}")
+async def modifier_region(region_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(select(RefRegion).where(RefRegion.id == region_id))
+    r = result.scalar_one_or_none()
+    if not r: raise HTTPException(status_code=404, detail="Région introuvable")
+    for k, v in payload.items(): setattr(r, k, v)
+    await db.flush()
+    return {"id": r.id, "code": r.code, "nom": r.nom}
+
+@router.delete("/ref/regions/{region_id}", status_code=204)
+async def supprimer_region(region_id: int, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(select(RefRegion).where(RefRegion.id == region_id))
+    r = result.scalar_one_or_none()
+    if not r: raise HTTPException(status_code=404, detail="Région introuvable")
+    await db.delete(r)
+    await db.flush()
+
+@router.post("/ref/departements", status_code=201)
+async def creer_departement(payload: dict, db: AsyncSession = Depends(get_db)):
+    dep = RefDepartement(**payload)
+    db.add(dep)
+    await db.flush()
+    await db.refresh(dep)
+    return {"id": dep.id, "code": dep.code, "nom": dep.nom, "region_id": dep.region_id}
+
+@router.patch("/ref/departements/{dep_id}")
+async def modifier_departement(dep_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(select(RefDepartement).where(RefDepartement.id == dep_id))
+    d = result.scalar_one_or_none()
+    if not d: raise HTTPException(status_code=404, detail="Département introuvable")
+    for k, v in payload.items(): setattr(d, k, v)
+    await db.flush()
+    return {"id": d.id, "code": d.code, "nom": d.nom, "region_id": d.region_id}
+
+@router.delete("/ref/departements/{dep_id}", status_code=204)
+async def supprimer_departement(dep_id: int, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(select(RefDepartement).where(RefDepartement.id == dep_id))
+    d = result.scalar_one_or_none()
+    if not d: raise HTTPException(status_code=404, detail="Département introuvable")
+    await db.delete(d)
+    await db.flush()
+
+@router.post("/ref/arrondissements", status_code=201)
+async def creer_arrondissement(payload: dict, db: AsyncSession = Depends(get_db)):
+    arr = RefArrondissement(**payload)
+    db.add(arr)
+    await db.flush()
+    await db.refresh(arr)
+    return {"id": arr.id, "code": arr.code, "nom": arr.nom, "departement_id": arr.departement_id}
+
+@router.patch("/ref/arrondissements/{arr_id}")
+async def modifier_arrondissement(arr_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(select(RefArrondissement).where(RefArrondissement.id == arr_id))
+    a = result.scalar_one_or_none()
+    if not a: raise HTTPException(status_code=404, detail="Arrondissement introuvable")
+    for k, v in payload.items(): setattr(a, k, v)
+    await db.flush()
+    return {"id": a.id, "code": a.code, "nom": a.nom, "departement_id": a.departement_id}
+
+@router.delete("/ref/arrondissements/{arr_id}", status_code=204)
+async def supprimer_arrondissement(arr_id: int, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(select(RefArrondissement).where(RefArrondissement.id == arr_id))
+    a = result.scalar_one_or_none()
+    if not a: raise HTTPException(status_code=404, detail="Arrondissement introuvable")
+    await db.delete(a)
+    await db.flush()
