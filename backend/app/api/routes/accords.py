@@ -7,11 +7,24 @@ from uuid import UUID
 import shutil, os, uuid as uuid_lib
 
 from app.core.database import get_db
-from app.models.accord import Accord
+from datetime import date as date_type
+from app.models.accord import Accord, AccordFichier
 from app.schemas.accord import (
     AccordCreate, AccordUpdate,
     AccordResponse, AccordListResponse
 )
+
+
+def get_statut_calcule(accord) -> str:
+    """Passe automatiquement en expiré si date_expiration < aujourd'hui"""
+    if accord.date_expiration and accord.date_expiration < date_type.today():
+        return "expire"
+    return accord.statut or "en_vigueur"
+
+def accord_to_response(a) -> AccordResponse:
+    r = AccordResponse.model_validate(a)
+    r.statut = get_statut_calcule(a)
+    return r
 
 router = APIRouter(prefix="/accords", tags=["Accords & Traités"])
 
@@ -32,7 +45,6 @@ async def liste_accords(
     db:              AsyncSession  = Depends(get_db),
 ):
     filters = [
-        Accord.is_deleted == False,
         Accord.est_publie == True,
     ]
     if statut:           filters.append(Accord.statut == statut)
@@ -64,7 +76,7 @@ async def liste_accords(
 
     return AccordListResponse(
         total=total, page=page, per_page=per_page,
-        data=[AccordResponse.model_validate(a) for a in accords]
+        data=[accord_to_response(a) for a in accords]
     )
 
 
@@ -75,12 +87,12 @@ async def detail_accord(
     db:        AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Accord).where(Accord.id == accord_id, Accord.is_deleted == False)
+        select(Accord).where(Accord.id == accord_id)
     )
     accord = result.scalar_one_or_none()
     if not accord:
         raise HTTPException(status_code=404, detail="Accord introuvable")
-    return AccordResponse.model_validate(accord)
+    return accord_to_response(accord)
 
 
 # ── POST /accords ── avec upload PDF optionnel
@@ -146,7 +158,7 @@ async def creer_accord(
     db.add(accord)
     await db.flush()
     await db.refresh(accord)
-    return AccordResponse.model_validate(accord)
+    return accord_to_response(accord)
 
 
 # ── GET /accords/:id/fichier — Télécharger le PDF ──
@@ -156,7 +168,7 @@ async def telecharger_fichier(
     db:        AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Accord).where(Accord.id == accord_id, Accord.is_deleted == False)
+        select(Accord).where(Accord.id == accord_id)
     )
     accord = result.scalar_one_or_none()
     if not accord or not accord.fichier_path:
@@ -178,7 +190,7 @@ async def modifier_accord(
     db:        AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Accord).where(Accord.id == accord_id, Accord.is_deleted == False)
+        select(Accord).where(Accord.id == accord_id)
     )
     accord = result.scalar_one_or_none()
     if not accord:
@@ -187,7 +199,7 @@ async def modifier_accord(
         setattr(accord, field, value)
     await db.flush()
     await db.refresh(accord)
-    return AccordResponse.model_validate(accord)
+    return accord_to_response(accord)
 
 
 # ── DELETE /accords/:id ──
@@ -197,10 +209,87 @@ async def supprimer_accord(
     db:        AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Accord).where(Accord.id == accord_id, Accord.is_deleted == False)
+        select(Accord).where(Accord.id == accord_id)
     )
     accord = result.scalar_one_or_none()
     if not accord:
         raise HTTPException(status_code=404, detail="Accord introuvable")
-    accord.is_deleted = True
+    await db.delete(accord)
+    await db.flush()
+
+
+# ── Fichiers PDF ──────────────────────────────────────────────────────────────
+
+@router.get("/{accord_id}/fichiers")
+async def liste_fichiers(accord_id: UUID, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
+    result = await db.execute(
+        select(AccordFichier)
+        .where(AccordFichier.accord_id == accord_id)
+        .order_by(AccordFichier.created_at.asc())
+    )
+    fichiers = result.scalars().all()
+    return [{"id": str(f.id), "titre": f.titre, "nom_fichier": f.nom_fichier, "chemin": f.chemin, "created_at": f.created_at} for f in fichiers]
+
+
+@router.post("/{accord_id}/fichiers", status_code=201)
+async def ajouter_fichier(
+    accord_id: UUID,
+    titre:    str  = Form(...),
+    fichier:  UploadFile = File(...),
+    db:       AsyncSession = Depends(get_db),
+):
+    import os, shutil
+    result = await db.execute(select(Accord).where(Accord.id == accord_id))
+    accord = result.scalar_one_or_none()
+    if not accord:
+        raise HTTPException(status_code=404, detail="Accord introuvable")
+
+    UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "../../../uploads/accords")
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+    import uuid as uuid_mod
+    ext = os.path.splitext(fichier.filename)[1]
+    nom_fichier = f"{uuid_mod.uuid4()}{ext}"
+    chemin = os.path.join(UPLOAD_DIR, nom_fichier)
+
+    with open(chemin, "wb") as f:
+        shutil.copyfileobj(fichier.file, f)
+
+    af = AccordFichier(
+        accord_id=accord_id,
+        titre=titre,
+        nom_fichier=fichier.filename,
+        chemin=f"/uploads/accords/{nom_fichier}",
+    )
+    db.add(af)
+    await db.flush()
+    await db.refresh(af)
+    return {"id": str(af.id), "titre": af.titre, "nom_fichier": af.nom_fichier, "chemin": af.chemin}
+
+
+@router.delete("/{accord_id}/fichiers/{fichier_id}", status_code=204)
+async def supprimer_fichier(
+    accord_id:  UUID,
+    fichier_id: UUID,
+    db:         AsyncSession = Depends(get_db),
+):
+    import os
+    from sqlalchemy import select
+    result = await db.execute(
+        select(AccordFichier).where(
+            AccordFichier.id == fichier_id,
+            AccordFichier.accord_id == accord_id,
+        )
+    )
+    af = result.scalar_one_or_none()
+    if not af:
+        raise HTTPException(status_code=404, detail="Fichier introuvable")
+
+    # Supprimer le fichier physique
+    chemin_physique = os.path.join(os.path.dirname(__file__), "../../../", af.chemin.lstrip("/"))
+    if os.path.exists(chemin_physique):
+        os.remove(chemin_physique)
+
+    await db.delete(af)
     await db.flush()

@@ -54,8 +54,7 @@ async def formes_juridiques_presentes(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(distinct(EntrepriseIntallee.forme_juridique))
         .where(
-            EntrepriseIntallee.is_deleted == False,
-            EntrepriseIntallee.forme_juridique != None,
+                EntrepriseIntallee.forme_juridique != None,
             EntrepriseIntallee.forme_juridique != "",
         )
         .order_by(EntrepriseIntallee.forme_juridique)
@@ -68,8 +67,7 @@ async def noms_entreprises(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(EntrepriseIntallee.nom)
         .where(
-            EntrepriseIntallee.is_deleted == False,
-            EntrepriseIntallee.est_publie == True,
+                EntrepriseIntallee.est_publie == True,
         )
         .order_by(EntrepriseIntallee.nom)
     )
@@ -241,7 +239,6 @@ async def liste_entreprises(
     db:           AsyncSession  = Depends(get_db),
 ):
     filters = [
-        EntrepriseIntallee.is_deleted == False,
         EntrepriseIntallee.est_publie == True,
     ]
     if statut:     filters.append(EntrepriseIntallee.statut == statut)
@@ -369,8 +366,7 @@ async def ajouter_point_focal(
     result = await db.execute(
         select(EntrepriseIntallee).where(
             EntrepriseIntallee.id == entreprise_id,
-            EntrepriseIntallee.is_deleted == False,
-        )
+            )
     )
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Entreprise introuvable")
@@ -414,7 +410,7 @@ async def detail_entreprise(
             selectinload(EntrepriseIntallee.branche),
             selectinload(EntrepriseIntallee.activite),
         )
-        .where(EntrepriseIntallee.id == entreprise_id, EntrepriseIntallee.is_deleted == False)
+        .where(EntrepriseIntallee.id == entreprise_id)
     )
     e = result.scalar_one_or_none()
     if not e:
@@ -430,8 +426,7 @@ async def modifier_entreprise(
     result = await db.execute(
         select(EntrepriseIntallee).where(
             EntrepriseIntallee.id == entreprise_id,
-            EntrepriseIntallee.is_deleted == False,
-        )
+            )
     )
     e = result.scalar_one_or_none()
     if not e:
@@ -462,13 +457,12 @@ async def supprimer_entreprise(
     result = await db.execute(
         select(EntrepriseIntallee).where(
             EntrepriseIntallee.id == entreprise_id,
-            EntrepriseIntallee.is_deleted == False,
-        )
+            )
     )
     e = result.scalar_one_or_none()
     if not e:
         raise HTTPException(status_code=404, detail="Entreprise introuvable")
-    e.is_deleted = True
+    await db.delete(e)
     await db.flush()
 
 

@@ -29,7 +29,7 @@ LOAD_OPTS = [
 async def get_full(prospect_id: UUID, db: AsyncSession) -> Prospect:
     result = await db.execute(
         select(Prospect).options(*LOAD_OPTS)
-        .where(Prospect.id == prospect_id, Prospect.is_deleted == False)
+        .where(Prospect.id == prospect_id)
     )
     p = result.scalar_one_or_none()
     if not p:
@@ -136,7 +136,7 @@ async def modifier_prospect(prospect_id: UUID, payload: ProspectUpdate, db: Asyn
 @router.delete("/{prospect_id}", status_code=204)
 async def supprimer_prospect(prospect_id: UUID, db: AsyncSession = Depends(get_db)):
     p = await get_full(prospect_id, db)
-    p.is_deleted = True
+    await db.delete(p)
     await db.flush()
 
 
@@ -148,7 +148,7 @@ async def liste_contacts(prospect_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(ProspectContact)
         .options(selectinload(ProspectContact.historique))
-        .where(ProspectContact.prospect_id == prospect_id, ProspectContact.is_deleted == False)
+        .where(ProspectContact.prospect_id == prospect_id)
         .order_by(ProspectContact.date_premier_contact.desc())
     )
     return [ContactResponse.model_validate(c) for c in result.scalars().all()]
@@ -219,5 +219,5 @@ async def supprimer_contact(
     contact = result.scalar_one_or_none()
     if not contact:
         raise HTTPException(status_code=404, detail="Contact introuvable")
-    contact.is_deleted = True
+    await db.delete(contact)
     await db.flush()

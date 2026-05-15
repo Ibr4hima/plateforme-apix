@@ -53,7 +53,6 @@ async def liste_evenements(
 ):
     today = date_type.today()
     filters = [
-        Evenement.is_deleted == False,
         Evenement.est_publie == True,
     ]
 
@@ -104,8 +103,7 @@ async def pays_hotes(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Evenement.pays_nom)
         .where(
-            Evenement.is_deleted == False,
-            Evenement.est_publie == True,
+                Evenement.est_publie == True,
             Evenement.pays_nom != None,
             Evenement.pays_nom != "",
         )
@@ -159,7 +157,7 @@ async def chronogramme(
 @router.get("/{evenement_id}", response_model=EvenementResponse)
 async def detail_evenement(evenement_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Evenement).where(Evenement.id == evenement_id, Evenement.is_deleted == False)
+        select(Evenement).where(Evenement.id == evenement_id)
     )
     evenement = result.scalar_one_or_none()
     if not evenement:
@@ -182,7 +180,7 @@ async def creer_evenement(payload: EvenementCreate, db: AsyncSession = Depends(g
 @router.patch("/{evenement_id}", response_model=EvenementResponse)
 async def modifier_evenement(evenement_id: UUID, payload: EvenementUpdate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Evenement).where(Evenement.id == evenement_id, Evenement.is_deleted == False)
+        select(Evenement).where(Evenement.id == evenement_id)
     )
     evenement = result.scalar_one_or_none()
     if not evenement:
@@ -198,10 +196,10 @@ async def modifier_evenement(evenement_id: UUID, payload: EvenementUpdate, db: A
 @router.delete("/{evenement_id}", status_code=204)
 async def supprimer_evenement(evenement_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Evenement).where(Evenement.id == evenement_id, Evenement.is_deleted == False)
+        select(Evenement).where(Evenement.id == evenement_id)
     )
     evenement = result.scalar_one_or_none()
     if not evenement:
         raise HTTPException(status_code=404, detail="Événement introuvable")
-    evenement.is_deleted = True
+    await db.delete(evenement)
     await db.flush()

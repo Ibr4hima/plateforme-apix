@@ -6,12 +6,8 @@ from uuid import UUID
 
 class AccordBase(BaseModel):
     titre:                  str
-    reference:              Optional[str]   = None
-    type_accord:            Optional[str]   = None
     pays_signataires:       Optional[str]   = None
-    organisation_partenaire:Optional[str]   = None
     date_signature:         Optional[date]  = None
-    date_ratification:      Optional[date]  = None
     date_entree_vigueur:    Optional[date]  = None
     date_expiration:        Optional[date]  = None
     secteur_activite:       Optional[str]   = None
@@ -20,9 +16,7 @@ class AccordBase(BaseModel):
     domaines_couverts:      Optional[str]   = None
     avantages_principaux:   Optional[str]   = None
     statut:                 str             = "en_vigueur"
-    lien_texte_officiel:    Optional[str]   = None
     est_publie:             bool            = True
-    note_interne:           Optional[str]   = None
 
 
 class AccordCreate(AccordBase):
@@ -31,12 +25,8 @@ class AccordCreate(AccordBase):
 
 class AccordUpdate(BaseModel):
     titre:                  Optional[str]   = None
-    reference:              Optional[str]   = None
-    type_accord:            Optional[str]   = None
     pays_signataires:       Optional[str]   = None
-    organisation_partenaire:Optional[str]   = None
     date_signature:         Optional[date]  = None
-    date_ratification:      Optional[date]  = None
     date_entree_vigueur:    Optional[date]  = None
     date_expiration:        Optional[date]  = None
     secteur_activite:       Optional[str]   = None
@@ -45,9 +35,7 @@ class AccordUpdate(BaseModel):
     domaines_couverts:      Optional[str]   = None
     avantages_principaux:   Optional[str]   = None
     statut:                 Optional[str]   = None
-    lien_texte_officiel:    Optional[str]   = None
     est_publie:             Optional[bool]  = None
-    note_interne:           Optional[str]   = None
 
 
 class AccordResponse(AccordBase):
