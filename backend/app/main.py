@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import get_settings
-from app.api.routes import evenements, accords, entreprises
+from app.api.routes import evenements, accords, entreprises, prospects
 import os
 
 settings = get_settings()
@@ -29,6 +29,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 app.include_router(evenements.router,  prefix=settings.API_PREFIX)
 app.include_router(accords.router,     prefix=settings.API_PREFIX)
 app.include_router(entreprises.router, prefix=settings.API_PREFIX)
+app.include_router(prospects.router,   prefix=settings.API_PREFIX)
 
 @app.get("/")
 async def root():
