@@ -314,8 +314,23 @@ export function NaemaCascade({
   const [brancheId, setBrancheId] = useState<number|null>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(setSecteurs).catch(() => {});
+    fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(data => {
+      setSecteurs(data);
+      // Initialiser secteurId si une valeur existe déjà
+      if (secteurVal) {
+        const sel = data.find((s: any) => s.nom === secteurVal);
+        if (sel) setSecteurId(sel.id);
+      }
+    }).catch(() => {});
   }, []);
+
+  // Initialiser brancheId quand secteurId est connu et brancheVal existe
+  useEffect(() => {
+    if (secteurId && brancheVal && branches.length > 0) {
+      const sel = branches.find((b: any) => b.nom === brancheVal);
+      if (sel) setBrancheId(sel.id);
+    }
+  }, [secteurId, branches, brancheVal]);
   useEffect(() => {
     if (secteurId) fetch(`${API_BASE}/entreprises/ref/branches?secteur_id=${secteurId}`).then(r => r.json()).then(setBranches).catch(() => {});
     else setBranches([]);

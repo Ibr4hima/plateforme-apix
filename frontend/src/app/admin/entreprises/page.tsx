@@ -157,6 +157,24 @@ export default function AdminEntreprises() {
       : [{ ...EMPTY_FOCAL }]
     );
     setEditItem(e); setShowForm(true); setErrors({}); setSaveOk(false);
+
+    // Initialiser les IDs géo pour que les cascades fonctionnent
+    if (e.region) {
+      fetch(`${API_BASE}/entreprises/ref/regions`)
+        .then(r => r.json())
+        .then(regions => {
+          const reg = regions.find((r: any) => r.nom === e.region);
+          if (reg) setRegionId(reg.id);
+          if (e.departement && reg) {
+            fetch(`${API_BASE}/entreprises/ref/departements?region_id=${reg.id}`)
+              .then(r => r.json())
+              .then(deps => {
+                const dep = deps.find((d: any) => d.nom === e.departement);
+                if (dep) setDepartementId(dep.id);
+              });
+          }
+        });
+    }
   };
 
   const handleSave = async () => {
