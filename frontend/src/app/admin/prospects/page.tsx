@@ -19,10 +19,10 @@ const FORMES_JURIDIQUES = [
 ];
 
 const ETATS = [
-  { value: "en_cours",  label: "En cours",  bg: "#dcfce7", text: "#15803d" },
-  { value: "en_attente",label: "En attente",bg: "#fef9c3", text: "#a16207" },
-  { value: "inactif",   label: "Inactif",   bg: "#f3f4f6", text: "#6b7280" },
-  { value: "termine",   label: "Terminé",   bg: "#dbeafe", text: "#1d4ed8" },
+  { value: "en_cours",   label: "En cours",   bg: "#dcfce7", text: "#15803d" },
+  { value: "en_attente", label: "En attente", bg: "#fef9c3", text: "#a16207" },
+  { value: "inactif",    label: "Inactif",    bg: "#f3f4f6", text: "#6b7280" },
+  { value: "termine",    label: "Terminé",    bg: "#dbeafe", text: "#1d4ed8" },
 ];
 
 function getEtat(val: string) {
@@ -35,6 +35,8 @@ function validatePhone(val: string) {
 }
 
 const EMPTY_FORM = {
+  type_prospect: "",
+  entreprise_installee_id: "",
   nom: "", forme_juridique: "", date_creation_ent: "",
   siege_pays: "", pays: "Sénégal",
   region: "", departement: "", arrondissement: "", adresse: "",
@@ -53,33 +55,42 @@ const EMPTY_CONTACT = {
 };
 
 export default function AdminProspects() {
-  const [onglet,     setOnglet]     = useState<"ciblees"|"contactees">("ciblees");
-  const [prospects,  setProspects]  = useState<any[]>([]);
-  const [total,      setTotal]      = useState(0);
-  const [loading,    setLoading]    = useState(true);
-  const [showForm,   setShowForm]   = useState(false);
-  const [editItem,   setEditItem]   = useState<any>(null);
-  const [saving,     setSaving]     = useState(false);
-  const [saveOk,     setSaveOk]     = useState(false);
-  const [errors,     setErrors]     = useState<Record<string,string>>({});
-  const [form,       setForm]       = useState<any>({ ...EMPTY_FORM });
-  const [focaux,     setFocaux]     = useState<any[]>([{ ...EMPTY_FOCAL }]);
-  const [deleting,   setDeleting]   = useState<string|null>(null);
-  const [regionId,   setRegionId]   = useState<number|null>(null);
-  const [depId,      setDepId]      = useState<number|null>(null);
+  const [onglet,      setOnglet]      = useState<"ciblees"|"contactees">("ciblees");
+  const [prospects,   setProspects]   = useState<any[]>([]);
+  const [total,       setTotal]       = useState(0);
+  const [loading,     setLoading]     = useState(true);
+  const [showForm,    setShowForm]    = useState(false);
+  const [editItem,    setEditItem]    = useState<any>(null);
+  const [saving,      setSaving]      = useState(false);
+  const [saveOk,      setSaveOk]      = useState(false);
+  const [errors,      setErrors]      = useState<Record<string,string>>({});
+  const [form,        setForm]        = useState<any>({ ...EMPTY_FORM });
+  const [focaux,      setFocaux]      = useState<any[]>([{ ...EMPTY_FOCAL }]);
+  const [deleting,    setDeleting]    = useState<string|null>(null);
+  const [regionId,    setRegionId]    = useState<number|null>(null);
+  const [depId,       setDepId]       = useState<number|null>(null);
+  const [entreprisesInstallees, setEntreprisesInstallees] = useState<any[]>([]);
 
   // Contact modal
-  const [showContact,    setShowContact]    = useState(false);
-  const [contactProspect,setContactProspect]= useState<any>(null);
-  const [contactForm,    setContactForm]    = useState<any>({ ...EMPTY_CONTACT });
-  const [editContact,    setEditContact]    = useState<any>(null);
-  const [savingContact,  setSavingContact]  = useState(false);
-  const [contactOk,      setContactOk]      = useState(false);
+  const [showContact,     setShowContact]     = useState(false);
+  const [contactProspect, setContactProspect] = useState<any>(null);
+  const [contactForm,     setContactForm]     = useState<any>({ ...EMPTY_CONTACT });
+  const [editContact,     setEditContact]     = useState<any>(null);
+  const [savingContact,   setSavingContact]   = useState(false);
+  const [contactOk,       setContactOk]       = useState(false);
 
-  // Détail prospect (historique)
-  const [showDetail,  setShowDetail]  = useState(false);
-  const [detailItem,  setDetailItem]  = useState<any>(null);
-  const [expandedContact, setExpandedContact] = useState<string|null>(null);
+  // Détail
+  const [showDetail,       setShowDetail]       = useState(false);
+  const [detailItem,       setDetailItem]       = useState<any>(null);
+  const [expandedContact,  setExpandedContact]  = useState<string|null>(null);
+
+  // Chargement entreprises installées
+  useEffect(() => {
+    fetch(`${API_BASE}/entreprises?per_page=500`)
+      .then(r => r.json())
+      .then(d => setEntreprisesInstallees(d.data || []))
+      .catch(() => {});
+  }, []);
 
   const charger = useCallback(async () => {
     setLoading(true);
@@ -97,10 +108,43 @@ export default function AdminProspects() {
 
   useEffect(() => { charger(); }, [charger]);
 
-  const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
+  const update   = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
+  const isLocked = form.type_prospect === "entreprise_installee" && !!form.entreprise_installee_id;
+
+  const prefillFromEntreprise = (ent: any) => {
+    setForm((f: any) => ({
+      ...f,
+      entreprise_installee_id: ent.id,
+      nom:            ent.nom             || "",
+      forme_juridique:ent.forme_juridique || "",
+      date_creation_ent: ent.date_creation || "",
+      siege_pays:     ent.siege_pays      || "",
+      region:         ent.region          || "",
+      departement:    ent.departement     || "",
+      arrondissement: ent.arrondissement  || ent.commune || "",
+      adresse:        ent.adresse         || "",
+      telephone:      ent.telephone       || "",
+      mail:           ent.mail            || "",
+      siteweb:        ent.siteweb         || "",
+      secteur_nom:    ent.secteur?.nom    || "",
+      branche_nom:    ent.branche?.nom    || "",
+      activite_nom:   ent.activite?.nom   || "",
+      secteur_id:     ent.secteur?.id?.toString()  || "",
+      branche_id:     ent.branche?.id?.toString()  || "",
+      activite_id:    ent.activite?.id?.toString() || "",
+    }));
+    // Pré-remplir les points focaux depuis l'entreprise
+    if (ent.points_focaux?.length > 0) {
+      setFocaux(ent.points_focaux.map((pf: any) => ({
+        nom: pf.nom || "", prenom: pf.prenom || "", poste: pf.poste || "",
+        telephone: pf.telephone || "", mail: pf.mail || "", est_principal: pf.est_principal || false,
+      })));
+    }
+  };
 
   const validate = () => {
     const e: Record<string,string> = {};
+    if (!form.type_prospect)         e.type_prospect   = "Choisir un type";
     if (!form.nom.trim())            e.nom             = "Obligatoire";
     if (!form.forme_juridique)       e.forme_juridique = "Obligatoire";
     if (!form.date_creation_ent)     e.date_creation_ent = "Obligatoire";
@@ -111,7 +155,7 @@ export default function AdminProspects() {
     if (!form.telephone)             e.telephone       = "Obligatoire";
     else if (!validatePhone(form.telephone)) e.telephone = "Format invalide (+221...)";
     if (!form.mail.trim())           e.mail            = "Obligatoire";
-    else if (!/\S+@\S+\.\S+/.test(form.mail)) e.mail = "Email invalide";
+    else if (!/\S+@\S+\.\S+/.test(form.mail)) e.mail  = "Email invalide";
     if (!form.secteur_id)            e.secteur_id      = "Obligatoire";
     if (!form.branche_id)            e.branche_id      = "Obligatoire";
     if (!form.activite_id)           e.activite_id     = "Obligatoire";
@@ -134,6 +178,8 @@ export default function AdminProspects() {
 
   const openEdit = (p: any) => {
     setForm({
+      type_prospect: p.type_prospect || "autre",
+      entreprise_installee_id: p.entreprise_installee_id || "",
       nom: p.nom || "", forme_juridique: p.forme_juridique || "",
       date_creation_ent: p.date_creation_ent || "",
       siege_pays: p.siege_pays || "", pays: "Sénégal",
@@ -185,31 +231,24 @@ export default function AdminProspects() {
     finally { setDeleting(null); }
   };
 
-  // ── Contact ───────────────────────────────────────────────────────────────
   const openAddContact = (prospect: any) => {
-    setContactProspect(prospect);
-    setContactForm({ ...EMPTY_CONTACT });
-    setEditContact(null);
-    setShowContact(true); setContactOk(false);
+    setContactProspect(prospect); setContactForm({ ...EMPTY_CONTACT });
+    setEditContact(null); setShowContact(true); setContactOk(false);
   };
 
   const openEditContact = (prospect: any, contact: any) => {
     setContactProspect(prospect);
     setContactForm({
-      projet_nom: contact.projet_nom || "",
-      projet_description: contact.projet_description || "",
+      projet_nom: contact.projet_nom || "", projet_description: contact.projet_description || "",
       date_premier_contact: contact.date_premier_contact || "",
       etat_avancement: contact.etat_avancement || "en_cours",
-      commentaires: contact.commentaires || "",
-      contraintes: contact.contraintes || "",
+      commentaires: contact.commentaires || "", contraintes: contact.contraintes || "",
     });
-    setEditContact(contact);
-    setShowContact(true); setContactOk(false);
+    setEditContact(contact); setShowContact(true); setContactOk(false);
   };
 
   const handleSaveContact = async () => {
-    if (!contactForm.projet_nom.trim()) return;
-    if (!contactForm.date_premier_contact) return;
+    if (!contactForm.projet_nom.trim() || !contactForm.date_premier_contact) return;
     setSavingContact(true);
     try {
       const payload = { ...contactForm };
@@ -217,25 +256,22 @@ export default function AdminProspects() {
       const url    = editContact
         ? `${API_BASE}/prospects/${contactProspect.id}/contacts/${editContact.id}`
         : `${API_BASE}/prospects/${contactProspect.id}/contacts`;
-      const method = editContact ? "PATCH" : "POST";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const res = await fetch(url, { method: editContact ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
       setContactOk(true);
       setTimeout(() => { setShowContact(false); charger(); }, 1000);
     } catch {} finally { setSavingContact(false); }
   };
 
-  // ── Détail ────────────────────────────────────────────────────────────────
   const openDetail = async (p: any) => {
-    const res = await fetch(`${API_BASE}/prospects/${p.id}`);
+    const res  = await fetch(`${API_BASE}/prospects/${p.id}`);
     const data = await res.json();
-    setDetailItem(data);
-    setShowDetail(true);
+    setDetailItem(data); setShowDetail(true);
   };
 
-  const updateFocal  = (i: number, k: string, v: any) => setFocaux(prev => prev.map((f, idx) => idx === i ? { ...f, [k]: v } : f));
-  const addFocal     = () => setFocaux(prev => [...prev, { ...EMPTY_FOCAL }]);
-  const removeFocal  = (i: number) => setFocaux(prev => prev.filter((_, idx) => idx !== i));
+  const updateFocal = (i: number, k: string, v: any) => setFocaux(prev => prev.map((f, idx) => idx === i ? { ...f, [k]: v } : f));
+  const addFocal    = () => setFocaux(prev => [...prev, { ...EMPTY_FOCAL }]);
+  const removeFocal = (i: number) => setFocaux(prev => prev.filter((_, idx) => idx !== i));
 
   const IS = (f?: string) => ({
     width: "100%", background: "#F2F0EF",
@@ -243,6 +279,7 @@ export default function AdminProspects() {
     borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e",
     outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const,
   });
+  const ISL = (f?: string) => ({ ...IS(f), background: "#E8E5E3", cursor: "not-allowed" as const });
   const LS = (f?: string) => ({ fontSize: 12, fontWeight: 600, color: f && errors[f] ? "#dc2626" : "#4a5568", marginBottom: 4, display: "block" });
   const FS = { display: "flex", flexDirection: "column" as const, gap: 3 };
   const ST = (title: string, color = "#ca631f") => (
@@ -252,6 +289,7 @@ export default function AdminProspects() {
 
   return (
     <div style={{ padding: "36px 40px 80px" }}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
@@ -274,26 +312,22 @@ export default function AdminProspects() {
       {/* Onglets */}
       <div style={{ display: "flex", gap: 4, background: "#F2F0EF", borderRadius: 12, padding: 4, marginBottom: 24, width: "fit-content" }}>
         {[
-          { key: "ciblees",    label: "Entreprises ciblées"   },
+          { key: "ciblees",    label: "Entreprises ciblées"    },
           { key: "contactees", label: "Entreprises contactées" },
         ].map(o => (
-          <button
-            key={o.key}
-            onClick={() => setOnglet(o.key as any)}
-            style={{
-              padding: "8px 20px", borderRadius: 8, border: "none", cursor: "pointer",
-              fontSize: 13, fontWeight: 600, transition: "all 0.2s",
-              background: onglet === o.key ? "#fff" : "transparent",
-              color:      onglet === o.key ? "#1a1a2e" : "#9aa5b4",
-              boxShadow:  onglet === o.key ? "0 2px 8px rgba(0,0,0,0.08)" : "none",
-            }}
-          >
+          <button key={o.key} onClick={() => setOnglet(o.key as any)} style={{
+            padding: "8px 20px", borderRadius: 8, border: "none", cursor: "pointer",
+            fontSize: 13, fontWeight: 600, transition: "all 0.2s",
+            background: onglet === o.key ? "#fff" : "transparent",
+            color:      onglet === o.key ? "#1a1a2e" : "#9aa5b4",
+            boxShadow:  onglet === o.key ? "0 2px 8px rgba(0,0,0,0.08)" : "none",
+          }}>
             {o.label}
           </button>
         ))}
       </div>
 
-      {/* Formulaire prospect */}
+      {/* Formulaire */}
       {showForm && (
         <div style={{ background: "#fff", border: "1px solid #C5BFBB", borderRadius: 20, marginBottom: 32, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
           <div style={{ height: 4, background: "linear-gradient(90deg, #004f91, #1a6ab0)" }} />
@@ -309,18 +343,88 @@ export default function AdminProspects() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-              {/* Identification */}
+              {/* ── Type de prospect ── */}
+              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
+                {ST("Type de prospect", "#004f91")}
+                {errors.type_prospect && <p style={{ fontSize: 11, color: "#dc2626", marginBottom: 8 }}>{errors.type_prospect}</p>}
+                <div style={{ display: "flex", gap: 10 }}>
+                  {[
+                    { value: "entreprise_installee", label: "Entreprise Installée", available: true  },
+                    { value: "autre",                label: "Autre",                available: false },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      disabled={!opt.available}
+                      onClick={() => {
+                        update("type_prospect", opt.value);
+                        if (opt.value !== "entreprise_installee") {
+                          update("entreprise_installee_id", "");
+                        }
+                      }}
+                      style={{
+                        padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+                        cursor: opt.available ? "pointer" : "not-allowed",
+                        border: `2px solid ${form.type_prospect === opt.value ? "#004f91" : "#C5BFBB"}`,
+                        background: form.type_prospect === opt.value ? "rgba(0,79,145,0.08)" : "#fff",
+                        color: !opt.available ? "#C5BFBB" : form.type_prospect === opt.value ? "#004f91" : "#4a5568",
+                        opacity: !opt.available ? 0.5 : 1,
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {opt.label}
+                      {!opt.available && <span style={{ fontSize: 10, marginLeft: 6 }}>(bientôt disponible)</span>}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sélecteur entreprise installée */}
+                {form.type_prospect === "entreprise_installee" && (
+                  <div style={{ marginTop: 14 }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 6, display: "block" }}>
+                      Sélectionner l'entreprise *
+                    </label>
+                    <select
+                      value={form.entreprise_installee_id}
+                      onChange={e => {
+                        const ent = entreprisesInstallees.find((x: any) => x.id === e.target.value);
+                        if (ent) prefillFromEntreprise(ent);
+                        else update("entreprise_installee_id", "");
+                      }}
+                      style={{ width: "100%", background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", cursor: "pointer", boxSizing: "border-box" as const }}
+                    >
+                      <option value="">— Sélectionner une entreprise —</option>
+                      {entreprisesInstallees.map((ent: any) => (
+                        <option key={ent.id} value={ent.id}>
+                          {ent.nom}{ent.forme_juridique ? ` · ${ent.forme_juridique.split("(")[0].trim()}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                    {form.entreprise_installee_id && (
+                      <p style={{ fontSize: 12, color: "#15803d", marginTop: 6 }}>
+                        ✓ Informations pré-remplies — non modifiables depuis Prospects
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Identification (locked si entreprise installée) ── */}
               <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
                 {ST("Identification", "#004f91")}
+                {isLocked && (
+                  <div style={{ background: "#dbeafe", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#1d4ed8", marginBottom: 12 }}>
+                    ℹ️ Ces informations sont récupérées depuis Entreprises Installées et ne peuvent pas être modifiées ici.
+                  </div>
+                )}
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 12 }}>
                   <div style={FS}>
                     <label style={LS("nom")}>Dénomination sociale *</label>
-                    <input value={form.nom} onChange={e => update("nom", e.target.value)} placeholder="Nom de l'entreprise" style={IS("nom")} />
+                    <input value={form.nom} disabled={isLocked} onChange={e => !isLocked && update("nom", e.target.value)} placeholder="Nom de l'entreprise" style={isLocked ? ISL("nom") : IS("nom")} />
                     {EM("nom")}
                   </div>
                   <div style={FS}>
                     <label style={LS("forme_juridique")}>Forme juridique *</label>
-                    <select value={form.forme_juridique} onChange={e => update("forme_juridique", e.target.value)} style={{ ...IS(), cursor: "pointer" }}>
+                    <select value={form.forme_juridique} disabled={isLocked} onChange={e => !isLocked && update("forme_juridique", e.target.value)} style={isLocked ? { ...ISL("forme_juridique") } : { ...IS("forme_juridique"), cursor: "pointer" }}>
                       <option value="">— Sélectionner —</option>
                       {FORMES_JURIDIQUES.map(f => <option key={f} value={f}>{f}</option>)}
                     </select>
@@ -328,80 +432,87 @@ export default function AdminProspects() {
                   </div>
                   <div style={FS}>
                     <label style={LS("date_creation_ent")}>Date de création *</label>
-                    <input type="date" value={form.date_creation_ent}
-                      max={new Date().toISOString().split("T")[0]}
-                      onChange={e => update("date_creation_ent", e.target.value)} style={IS("date_creation_ent")} />
+                    <input type="date" value={form.date_creation_ent} disabled={isLocked} max={new Date().toISOString().split("T")[0]} onChange={e => !isLocked && update("date_creation_ent", e.target.value)} style={isLocked ? ISL("date_creation_ent") : IS("date_creation_ent")} />
                     {EM("date_creation_ent")}
                   </div>
                 </div>
               </div>
 
-              {/* Siège + Localisation */}
+              {/* ── Siège + Localisation ── */}
               <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
                 {ST("Siège social & Localisation", "#004f91")}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
                   <div style={FS}>
                     <label style={LS("siege_pays")}>Pays du siège social *</label>
-                    <PaysSelect value={form.siege_pays} onChange={val => update("siege_pays", val)} placeholder="Pays du siège" />
+                    <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
+                      <PaysSelect value={form.siege_pays} onChange={val => update("siege_pays", val)} placeholder="Pays du siège" />
+                    </div>
                     {EM("siege_pays")}
                   </div>
                   <div style={FS}>
                     <label style={LS()}>Pays d'installation</label>
-                    <input value="Sénégal" disabled style={{ ...IS(), opacity: 0.6, cursor: "not-allowed", background: "#E8E5E3" }} />
+                    <input value="Sénégal" disabled style={{ ...ISL(), opacity: 0.6 }} />
                   </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
                   <div style={FS}>
                     <label style={LS("region")}>Région *</label>
-                    <RegionSelect value={form.region} onChange={(nom, id) => { update("region", nom); update("departement", ""); update("arrondissement", ""); setRegionId(id); setDepId(null); }} />
+                    <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
+                      <RegionSelect value={form.region} required onChange={(nom, id) => { update("region", nom); update("departement", ""); update("arrondissement", ""); setRegionId(id); setDepId(null); }} />
+                    </div>
                     {EM("region")}
                   </div>
                   <div style={FS}>
                     <label style={LS("departement")}>Département *</label>
-                    <DepartementSelect regionId={regionId} value={form.departement} onChange={(nom, id) => { update("departement", nom); update("arrondissement", ""); setDepId(id); }} />
+                    <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
+                      <DepartementSelect regionId={regionId} value={form.departement} required onChange={(nom, id) => { update("departement", nom); update("arrondissement", ""); setDepId(id); }} />
+                    </div>
                     {EM("departement")}
                   </div>
                   <div style={FS}>
                     <label style={LS()}>Arrondissement</label>
-                    <ArrondissementSelect departementId={depId} value={form.arrondissement} onChange={nom => update("arrondissement", nom)} />
+                    <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
+                      <ArrondissementSelect departementId={depId} value={form.arrondissement} onChange={nom => update("arrondissement", nom)} />
+                    </div>
                   </div>
                 </div>
                 <div style={FS}>
                   <label style={LS("adresse")}>Adresse *</label>
-                  <input value={form.adresse} onChange={e => update("adresse", e.target.value)} placeholder="Adresse physique" style={IS("adresse")} />
-                    {EM("adresse")}
+                  <input value={form.adresse} disabled={isLocked} onChange={e => !isLocked && update("adresse", e.target.value)} placeholder="Adresse physique" style={isLocked ? ISL("adresse") : IS("adresse")} />
+                  {EM("adresse")}
                 </div>
               </div>
 
-              {/* Contact */}
+              {/* ── Contact ── */}
               <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
                 {ST("Contact", "#004f91")}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                   <div style={FS}>
-                    <label style={LS("telephone")}>Téléphone <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(+221...)</span></label>
-                    <input value={form.telephone} onChange={e => update("telephone", e.target.value)} placeholder="+221 7X XXX XX XX" style={IS("telephone")} />
+                    <label style={LS("telephone")}>Téléphone * <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(+221...)</span></label>
+                    <input value={form.telephone} disabled={isLocked} onChange={e => !isLocked && update("telephone", e.target.value)} placeholder="+221 7X XXX XX XX" style={isLocked ? ISL("telephone") : IS("telephone")} />
                     {EM("telephone")}
                   </div>
                   <div style={FS}>
                     <label style={LS("mail")}>Email *</label>
-                    <input type="email" value={form.mail} onChange={e => update("mail", e.target.value)} placeholder="contact@entreprise.com" style={IS("mail")} />
+                    <input type="email" value={form.mail} disabled={isLocked} onChange={e => !isLocked && update("mail", e.target.value)} placeholder="contact@entreprise.com" style={isLocked ? ISL("mail") : IS("mail")} />
                     {EM("mail")}
                   </div>
                   <div style={FS}>
                     <label style={LS()}>Site web</label>
-                    <input value={form.siteweb} onChange={e => update("siteweb", e.target.value)} placeholder="https://..." style={IS()} />
+                    <input value={form.siteweb} disabled={isLocked} onChange={e => !isLocked && update("siteweb", e.target.value)} placeholder="https://..." style={isLocked ? ISL() : IS()} />
                   </div>
                 </div>
               </div>
 
-              {/* NAEMA */}
+              {/* ── NAEMA ── */}
               <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
                 {ST("Classification NAEMA", "#004f91")}
                 {(errors.secteur_id || errors.branche_id || errors.activite_id) && (
                   <p style={{ fontSize: 11, color: "#dc2626", marginBottom: 8 }}>Secteur, branche et activité sont obligatoires</p>
                 )}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, pointerEvents: isLocked ? "none" : "auto", opacity: isLocked ? 0.7 : 1 }}>
                   <NaemaCascade
+                    hasError={!!(errors.secteur_id || errors.branche_id || errors.activite_id)}
                     secteurVal={form.secteur_nom} brancheVal={form.branche_nom} activiteVal={form.activite_nom}
                     onSecteurChange={(val, id) => { update("secteur_nom", val); update("secteur_id", id?.toString()||""); update("branche_nom",""); update("branche_id",""); update("activite_nom",""); update("activite_id",""); }}
                     onBrancheChange={(val, id) => { update("branche_nom", val); update("branche_id", id?.toString()||""); update("activite_nom",""); update("activite_id",""); }}
@@ -410,24 +521,33 @@ export default function AdminProspects() {
                 </div>
               </div>
 
-              {/* Point d'entrée */}
+              {/* ── Point d'entrée — TOUJOURS éditable ── */}
               <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
                 {ST("Point d'entrée", "#004f91")}
                 <div style={FS}>
                   <label style={LS("point_entree")}>Canal / Outil utilisé pour cibler l'entreprise *</label>
-                  <textarea value={form.point_entree} onChange={e => update("point_entree", e.target.value)} rows={2} placeholder="Ex: FDI Markets, salon, recommandation partenaire..." style={{ ...IS("point_entree"), resize: "vertical" as const }} />
-                    {EM("point_entree")}
+                  <textarea value={form.point_entree} onChange={e => update("point_entree", e.target.value)} rows={2}
+                    placeholder="Ex: FDI Markets, salon, recommandation partenaire..."
+                    style={{ ...IS("point_entree"), resize: "vertical" as const }} />
+                  {EM("point_entree")}
                 </div>
               </div>
 
-              {/* Points focaux */}
+              {/* ── Points focaux ── */}
               <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   {ST("Points focaux", "#004f91")}
-                  <button onClick={addFocal} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.08)", border: "none", borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
-                    <Plus size={12} /> Ajouter
-                  </button>
+                  {!isLocked && (
+                    <button onClick={addFocal} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.08)", border: "none", borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
+                      <Plus size={12} /> Ajouter
+                    </button>
+                  )}
                 </div>
+                {isLocked && (
+                  <div style={{ background: "#dbeafe", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#1d4ed8", marginBottom: 12 }}>
+                    ℹ️ Points focaux récupérés depuis Entreprises Installées.
+                  </div>
+                )}
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {focaux.map((pf, i) => (
                     <div key={i} style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 12, padding: "14px 16px" }}>
@@ -438,10 +558,10 @@ export default function AdminProspects() {
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#4a5568", cursor: "pointer" }}>
-                            <input type="checkbox" checked={pf.est_principal} onChange={e => updateFocal(i, "est_principal", e.target.checked)} />
+                            <input type="checkbox" checked={pf.est_principal} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, "est_principal", e.target.checked)} />
                             Principal
                           </label>
-                          {focaux.length > 1 && (
+                          {!isLocked && focaux.length > 1 && (
                             <button onClick={() => removeFocal(i)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
                               <Trash size={13} style={{ color: "#dc2626" }} />
                             </button>
@@ -450,27 +570,27 @@ export default function AdminProspects() {
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 10 }}>
                         {[
-                          { key: "fn", field: "nom",    label: "Nom *",    ph: "Nom"       },
-                          { key: "fp", field: "prenom", label: "Prénom *", ph: "Prénom"    },
-                          { key: "",   field: "poste",  label: "Poste",    ph: "DG, Dir..."  },
+                          { key: "fn", field: "nom",    label: "Nom *",    ph: "Nom"        },
+                          { key: "fp", field: "prenom", label: "Prénom *", ph: "Prénom"     },
+                          { key: "",   field: "poste",  label: "Poste",    ph: "DG, Dir..." },
                         ].map(f => (
                           <div key={f.field} style={FS}>
                             <label style={{ fontSize: 11, fontWeight: 600, color: errors[`${f.key}_${i}`] ? "#dc2626" : "#4a5568", marginBottom: 3, display: "block" }}>{f.label}</label>
-                            <input value={pf[f.field]} onChange={e => updateFocal(i, f.field, e.target.value)} placeholder={f.ph}
-                              style={{ ...IS(), fontSize: 12, borderColor: errors[`${f.key}_${i}`] ? "#dc2626" : "#C5BFBB" }} />
+                            <input value={pf[f.field]} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, f.field, e.target.value)} placeholder={f.ph}
+                              style={{ ...(isLocked ? ISL() : IS()), fontSize: 12, borderColor: errors[`${f.key}_${i}`] ? "#dc2626" : "#C5BFBB" }} />
                             {errors[`${f.key}_${i}`] && <span style={{ fontSize: 10, color: "#dc2626" }}>{errors[`${f.key}_${i}`]}</span>}
                           </div>
                         ))}
                         <div style={FS}>
                           <label style={{ fontSize: 11, fontWeight: 600, color: errors[`ft_${i}`] ? "#dc2626" : "#4a5568", marginBottom: 3, display: "block" }}>Téléphone *</label>
-                          <input value={pf.telephone} onChange={e => updateFocal(i, "telephone", e.target.value)} placeholder="+221..."
-                            style={{ ...IS(), fontSize: 12, borderColor: errors[`ft_${i}`] ? "#dc2626" : "#C5BFBB" }} />
-                          {errors[`ft_${i}`] && <span style={{ fontSize: 10, color: "#dc2626" }}>{errors[`ft_${i}`]}</span>}
+                          <input value={pf.telephone} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, "telephone", e.target.value)} placeholder="+221..."
+                            style={{ ...(isLocked ? ISL() : IS()), fontSize: 12, borderColor: errors[`ft_${i}`] ? "#dc2626" : "#C5BFBB" }} />
                           {errors[`ft_${i}`] && <span style={{ fontSize: 10, color: "#dc2626" }}>{errors[`ft_${i}`]}</span>}
                         </div>
                         <div style={FS}>
                           <label style={{ fontSize: 11, fontWeight: 600, color: "#4a5568", marginBottom: 3, display: "block" }}>Email</label>
-                          <input value={pf.mail} onChange={e => updateFocal(i, "mail", e.target.value)} placeholder="email@..." style={{ ...IS(), fontSize: 12 }} />
+                          <input value={pf.mail} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, "mail", e.target.value)} placeholder="email@..."
+                            style={{ ...(isLocked ? ISL() : IS()), fontSize: 12 }} />
                         </div>
                       </div>
                     </div>
@@ -486,6 +606,12 @@ export default function AdminProspects() {
 
               {errors.global && <div style={{ background: "#fee2e2", color: "#dc2626", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>{errors.global}</div>}
 
+              {Object.keys(errors).filter(k => k !== "global").length > 0 && !errors.global && (
+                <div style={{ background: "#fef9c3", color: "#a16207", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>
+                  Veuillez corriger les champs obligatoires avant de continuer.
+                </div>
+              )}
+
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
                 <button onClick={() => setShowForm(false)} style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #C5BFBB", background: "transparent", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
                 <button onClick={handleSave} disabled={saving || saveOk} style={{
@@ -495,7 +621,6 @@ export default function AdminProspects() {
                   display: "flex", alignItems: "center", gap: 8,
                 }}>
                   {saveOk ? <><Check size={14} /> Enregistré !</> : saving ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Sauvegarde...</> : editItem ? "Modifier" : "Ajouter"}
-                  <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
                 </button>
               </div>
             </div>
@@ -529,9 +654,7 @@ export default function AdminProspects() {
                   {["Entreprise", "Secteur", "Localisation",
                     onglet === "contactees" ? "Dernier contact" : "Point d'entrée",
                     "Actions"].map(h => (
-                    <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
-                      {h}
-                    </th>
+                    <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -544,6 +667,9 @@ export default function AdminProspects() {
                       <td style={{ padding: "14px 16px", maxWidth: 220 }}>
                         <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3 }}>{p.nom.length > 35 ? p.nom.slice(0, 35) + "…" : p.nom}</div>
                         {p.mail && <div style={{ fontSize: 11, color: "#9aa5b4" }}>{p.mail}</div>}
+                        {p.type_prospect === "entreprise_installee" && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#059669", background: "#dcfce7", padding: "1px 6px", borderRadius: 999 }}>Installée</span>
+                        )}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         {p.secteur ? <span style={{ fontSize: 11, color: "#004f91", background: "rgba(0,79,145,0.1)", padding: "2px 8px", borderRadius: 999 }}>{p.secteur.nom}</span> : "—"}
@@ -555,9 +681,7 @@ export default function AdminProspects() {
                         {onglet === "contactees" && dernierContact ? (
                           <div>
                             <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a2e", marginBottom: 3 }}>{dernierContact.projet_nom}</div>
-                            <span style={{ fontSize: 11, fontWeight: 600, background: etat?.bg, color: etat?.text, padding: "2px 8px", borderRadius: 999 }}>
-                              {etat?.label}
-                            </span>
+                            <span style={{ fontSize: 11, fontWeight: 600, background: etat?.bg, color: etat?.text, padding: "2px 8px", borderRadius: 999 }}>{etat?.label}</span>
                           </div>
                         ) : (
                           <span style={{ fontSize: 12, color: "#4a5568" }}>{p.point_entree ? p.point_entree.slice(0, 40) + (p.point_entree.length > 40 ? "…" : "") : "—"}</span>
@@ -588,7 +712,7 @@ export default function AdminProspects() {
         )}
       </div>
 
-      {/* Modal : Ajouter/Modifier un contact */}
+      {/* Modal Contact */}
       {showContact && contactProspect && (
         <div onClick={e => { if (e.target === e.currentTarget) setShowContact(false); }}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 24 }}>
@@ -618,9 +742,7 @@ export default function AdminProspects() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div style={FS}>
                     <label style={LS()}>Date premier contact * <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(≤ aujourd'hui)</span></label>
-                    <input type="date" value={contactForm.date_premier_contact}
-                      max={new Date().toISOString().split("T")[0]}
-                      onChange={e => setContactForm((f: any) => ({ ...f, date_premier_contact: e.target.value }))} style={IS()} />
+                    <input type="date" value={contactForm.date_premier_contact} max={new Date().toISOString().split("T")[0]} onChange={e => setContactForm((f: any) => ({ ...f, date_premier_contact: e.target.value }))} style={IS()} />
                   </div>
                   <div style={FS}>
                     <label style={LS()}>État d'avancement</label>
@@ -636,7 +758,7 @@ export default function AdminProspects() {
                 <div style={FS}>
                   <label style={LS()}>Contraintes <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(préoccupations exprimées)</span></label>
                   <textarea value={contactForm.contraintes} onChange={e => setContactForm((f: any) => ({ ...f, contraintes: e.target.value }))} rows={3}
-                    placeholder="- Contrainte foncière&#10;- Besoin de garanties fiscales&#10;- ..."
+                    placeholder={"- Contrainte foncière\n- Besoin de garanties fiscales\n- ..."}
                     style={{ ...IS(), resize: "vertical" as const }} />
                 </div>
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
@@ -656,13 +778,13 @@ export default function AdminProspects() {
         </div>
       )}
 
-      {/* Modal : Historique prospect */}
+      {/* Modal Historique */}
       {showDetail && detailItem && (
         <div onClick={e => { if (e.target === e.currentTarget) setShowDetail(false); }}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 24 }}>
-          <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 680, maxHeight: "88vh", overflowY: "auto", border: "1px solid #C5BFBB", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden" }}>
+          <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 680, border: "1px solid #C5BFBB", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden" }}>
             <div style={{ height: 4, background: "linear-gradient(90deg, #004f91, #1a6ab0)" }} />
-            <div style={{ padding: "24px 28px", overflowY: "auto", maxHeight: "calc(88vh - 4px)" }}>
+            <div style={{ padding: "24px 28px", overflowY: "auto", maxHeight: "85vh" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                 <div>
                   <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e" }}>{detailItem.nom}</h2>
@@ -673,85 +795,54 @@ export default function AdminProspects() {
                 </button>
               </div>
 
-              {/* Infos */}
               <div style={{ background: "#F2F0EF", borderRadius: 12, padding: "12px 16px", marginBottom: 20, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, fontSize: 13 }}>
                 {detailItem.secteur && <div><span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, textTransform: "uppercase", display: "block", marginBottom: 2 }}>Secteur</span>{detailItem.secteur.nom}</div>}
                 {detailItem.region  && <div><span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, textTransform: "uppercase", display: "block", marginBottom: 2 }}>Région</span>{detailItem.region}</div>}
                 {detailItem.mail    && <div><span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, textTransform: "uppercase", display: "block", marginBottom: 2 }}>Email</span>{detailItem.mail}</div>}
               </div>
 
-              {/* Historique contacts */}
               <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
                 Historique des contacts ({detailItem.contacts?.length || 0})
               </p>
 
               {(!detailItem.contacts || detailItem.contacts.length === 0) ? (
-                <div style={{ textAlign: "center", padding: "32px", color: "#9aa5b4", fontSize: 13 }}>
-                  Aucun contact enregistré pour ce prospect.
-                </div>
+                <div style={{ textAlign: "center", padding: "32px", color: "#9aa5b4", fontSize: 13 }}>Aucun contact enregistré.</div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {detailItem.contacts.map((c: any) => {
-                    const etat = getEtat(c.etat_avancement);
+                    const etat   = getEtat(c.etat_avancement);
                     const isOpen = expandedContact === c.id;
                     return (
                       <div key={c.id} style={{ background: "#fff", border: "1px solid #C5BFBB", borderRadius: 14, overflow: "hidden" }}>
-                        {/* Header contact */}
-                        <div
-                          onClick={() => setExpandedContact(isOpen ? null : c.id)}
-                          style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer" }}
-                        >
+                        <div onClick={() => setExpandedContact(isOpen ? null : c.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer" }}>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e", marginBottom: 4 }}>{c.projet_nom}</div>
                             <div style={{ fontSize: 12, color: "#9aa5b4" }}>
                               Premier contact : {new Date(c.date_premier_contact).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                             </div>
                           </div>
-                          <span style={{ fontSize: 11, fontWeight: 700, background: etat.bg, color: etat.text, padding: "3px 12px", borderRadius: 999 }}>
-                            {etat.label}
-                          </span>
-                          <button
-                            onClick={e => { e.stopPropagation(); openEditContact(detailItem, c); }}
-                            style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 7px" }}
-                          >
+                          <span style={{ fontSize: 11, fontWeight: 700, background: etat.bg, color: etat.text, padding: "3px 12px", borderRadius: 999 }}>{etat.label}</span>
+                          <button onClick={e => { e.stopPropagation(); openEditContact(detailItem, c); }} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 7px" }}>
                             <Pencil size={12} style={{ color: "#004f91" }} />
                           </button>
                           {isOpen ? <ChevronUp size={14} style={{ color: "#9aa5b4" }} /> : <ChevronDown size={14} style={{ color: "#9aa5b4" }} />}
                         </div>
-
-                        {/* Détail contact */}
                         {isOpen && (
                           <div style={{ borderTop: "1px solid #E8E5E3", padding: "14px 16px" }}>
-                            {c.projet_description && (
-                              <div style={{ marginBottom: 12 }}>
-                                <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 4 }}>Description</p>
-                                <p style={{ fontSize: 13, color: "#4a5568" }}>{c.projet_description}</p>
-                              </div>
-                            )}
-                            {c.commentaires && (
-                              <div style={{ marginBottom: 12 }}>
-                                <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 4 }}>Commentaires</p>
-                                <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.6 }}>{c.commentaires}</p>
-                              </div>
-                            )}
+                            {c.projet_description && <div style={{ marginBottom: 12 }}><p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 4 }}>Description</p><p style={{ fontSize: 13, color: "#4a5568" }}>{c.projet_description}</p></div>}
+                            {c.commentaires && <div style={{ marginBottom: 12 }}><p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 4 }}>Commentaires</p><p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.6 }}>{c.commentaires}</p></div>}
                             {c.contraintes && (
                               <div style={{ marginBottom: 12 }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
                                   <AlertTriangle size={12} style={{ color: "#d97706" }} />
                                   <p style={{ fontSize: 10, fontWeight: 700, color: "#d97706", textTransform: "uppercase" }}>Contraintes</p>
                                 </div>
-                                <div style={{ background: "#fef9c3", borderRadius: 8, padding: "10px 12px", fontSize: 13, color: "#4a5568", lineHeight: 1.7, whiteSpace: "pre-line" }}>
-                                  {c.contraintes}
-                                </div>
+                                <div style={{ background: "#fef9c3", borderRadius: 8, padding: "10px 12px", fontSize: 13, color: "#4a5568", lineHeight: 1.7, whiteSpace: "pre-line" }}>{c.contraintes}</div>
                               </div>
                             )}
-
-                            {/* Timeline historique */}
                             {c.historique?.length > 0 && (
                               <div>
-                                <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 8 }}>
-                                  Évolution de l'état
-                                </p>
+                                <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 8 }}>Évolution de l'état</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                   {c.historique.map((h: any, idx: number) => {
                                     const he = getEtat(h.etat);
@@ -764,9 +855,7 @@ export default function AdminProspects() {
                                         <div style={{ flex: 1 }}>
                                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                             <span style={{ fontSize: 11, fontWeight: 700, color: he.text, background: he.bg, padding: "1px 8px", borderRadius: 999 }}>{he.label}</span>
-                                            <span style={{ fontSize: 11, color: "#9aa5b4" }}>
-                                              {new Date(h.date_changement).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
-                                            </span>
+                                            <span style={{ fontSize: 11, color: "#9aa5b4" }}>{new Date(h.date_changement).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</span>
                                           </div>
                                           {h.commentaire && <p style={{ fontSize: 12, color: "#4a5568", marginTop: 3 }}>{h.commentaire}</p>}
                                         </div>

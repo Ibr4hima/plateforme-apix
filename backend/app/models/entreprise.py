@@ -58,6 +58,7 @@ class EntrepriseIntallee(Base):
     nom             = Column(String(255), nullable=False)
     forme_juridique = Column(String(100))
     date_creation   = Column(Date)
+    siege_pays      = Column(String(100))
     pays            = Column(String(100), default="Sénégal")
     region          = Column(String(100))
     departement     = Column(String(100))

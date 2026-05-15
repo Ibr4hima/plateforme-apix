@@ -89,8 +89,10 @@ class ProspectCreate(BaseModel):
     secteur_id:        Optional[int] = None
     branche_id:        Optional[int] = None
     activite_id:       Optional[int] = None
-    point_entree:      Optional[str] = None
-    est_publie:        bool = True
+    point_entree:           Optional[str]  = None
+    type_prospect:          Optional[str]  = 'autre'
+    entreprise_installee_id:Optional[str]  = None
+    est_publie:             bool = True
     note_interne:      Optional[str] = None
     points_focaux:     List[PointFocalProspectCreate] = []
 
@@ -109,8 +111,10 @@ class ProspectUpdate(BaseModel):
     secteur_id:        Optional[int]  = None
     branche_id:        Optional[int]  = None
     activite_id:       Optional[int]  = None
-    point_entree:      Optional[str]  = None
-    est_publie:        Optional[bool] = None
+    point_entree:           Optional[str]  = None
+    type_prospect:          Optional[str]  = None
+    entreprise_installee_id:Optional[str]  = None
+    est_publie:             Optional[bool] = None
     note_interne:      Optional[str]  = None
 
 class ProspectResponse(BaseModel):
@@ -131,7 +135,9 @@ class ProspectResponse(BaseModel):
     secteur_id:        Optional[int]
     branche_id:        Optional[int]
     activite_id:       Optional[int]
-    point_entree:      Optional[str]
+    point_entree:           Optional[str]
+    type_prospect:          Optional[str]
+    entreprise_installee_id:Optional[str]
     est_publie:        bool
     note_interne:      Optional[str]
     created_at:        datetime

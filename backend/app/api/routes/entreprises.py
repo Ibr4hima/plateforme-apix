@@ -223,7 +223,7 @@ async def creer_activite(payload: dict, db: AsyncSession = Depends(get_db)):
 @router.get("", response_model=EntrepriseListResponse)
 async def liste_entreprises(
     page:         int           = Query(1, ge=1),
-    per_page:     int           = Query(12, ge=1, le=100),
+    per_page:     int           = Query(12, ge=1, le=500),
     statut:       Optional[str] = None,
     secteur_id:   Optional[int] = None,
     branche_id:   Optional[int] = None,

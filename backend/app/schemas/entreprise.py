@@ -50,6 +50,7 @@ class EntrepriseBase(BaseModel):
     nom:             str
     forme_juridique: Optional[str]  = None
     date_creation:   Optional[date] = None
+    siege_pays:      Optional[str]  = None
     pays:            Optional[str]  = "Sénégal"
     region:          Optional[str]  = None
     departement:     Optional[str]  = None
@@ -73,6 +74,7 @@ class EntrepriseUpdate(BaseModel):
     nom:             Optional[str]  = None
     forme_juridique: Optional[str]  = None
     date_creation:   Optional[date] = None
+    siege_pays:      Optional[str]  = None
     pays:            Optional[str]  = None
     region:          Optional[str]  = None
     departement:     Optional[str]  = None
