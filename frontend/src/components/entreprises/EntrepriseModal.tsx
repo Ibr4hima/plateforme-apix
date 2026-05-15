@@ -2,11 +2,6 @@
 
 import { X, MapPin, Phone, Mail, Globe, Building2, Calendar, User, Briefcase } from "lucide-react";
 
-const STATUT_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
-  actif:   { bg: "#dcfce7", text: "#15803d", label: "Active"   },
-  inactif: { bg: "#f3f4f6", text: "#6b7280", label: "Inactive" },
-};
-
 function fmtDate(s?: string) {
   if (!s) return "—";
   return new Date(s).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -28,7 +23,6 @@ function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string
 
 export default function EntrepriseModal({ entreprise, onClose }: { entreprise: any; onClose: () => void }) {
   if (!entreprise) return null;
-  const statut = STATUT_CONFIG[entreprise.statut] || STATUT_CONFIG.actif;
 
   return (
     <div
@@ -48,29 +42,24 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
 
         <div style={{ padding: "24px 28px 28px" }}>
 
-          {/* Header */}
+          {/* Header — sans badge statut */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                <div style={{
-                  width: 42, height: 42, borderRadius: 12,
-                  background: "rgba(202,99,31,0.1)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Building2 size={20} style={{ color: "#ca631f" }} />
-                </div>
-                <div>
-                  <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e", lineHeight: 1.2 }}>
-                    {entreprise.nom}
-                  </h2>
-                  {entreprise.forme_juridique && (
-                    <span style={{ fontSize: 12, color: "#9aa5b4" }}>{entreprise.forme_juridique}</span>
-                  )}
-                </div>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                width: 42, height: 42, borderRadius: 12,
+                background: "rgba(202,99,31,0.1)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <Building2 size={20} style={{ color: "#ca631f" }} />
               </div>
-              <span style={{ fontSize: 11, fontWeight: 600, background: statut.bg, color: statut.text, padding: "3px 12px", borderRadius: 999 }}>
-                {statut.label}
-              </span>
+              <div>
+                <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e", lineHeight: 1.2 }}>
+                  {entreprise.nom}
+                </h2>
+                {entreprise.forme_juridique && (
+                  <span style={{ fontSize: 12, color: "#9aa5b4" }}>{entreprise.forme_juridique}</span>
+                )}
+              </div>
             </div>
             <button onClick={onClose} style={{
               background: "#E8E5E3", border: "none", cursor: "pointer",
@@ -111,8 +100,8 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
             background: "#F2F0EF", borderRadius: 16, padding: "16px 20px",
             display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20,
           }}>
-            {entreprise.pays && (
-              <InfoItem icon={<Globe size={14} />} label="Pays" value={entreprise.pays} />
+            {entreprise.siege_pays && (
+              <InfoItem icon={<Globe size={14} />} label="Siège social" value={entreprise.siege_pays} />
             )}
             {entreprise.region && (
               <InfoItem icon={<MapPin size={14} />} label="Région" value={entreprise.region} />
@@ -120,8 +109,8 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
             {entreprise.departement && (
               <InfoItem icon={<MapPin size={14} />} label="Département" value={entreprise.departement} />
             )}
-            {entreprise.commune && (
-              <InfoItem icon={<MapPin size={14} />} label="Commune" value={entreprise.commune} />
+            {(entreprise.arrondissement || entreprise.commune) && (
+              <InfoItem icon={<MapPin size={14} />} label="Arrondissement" value={entreprise.arrondissement || entreprise.commune} />
             )}
             {entreprise.telephone && (
               <InfoItem icon={<Phone size={14} />} label="Téléphone" value={entreprise.telephone} />
@@ -137,9 +126,7 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
           {/* Adresse */}
           {entreprise.adresse && (
             <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
-                Adresse
-              </p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Adresse</p>
               <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.6 }}>{entreprise.adresse}</p>
             </div>
           )}
@@ -159,9 +146,7 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
           {/* Points focaux */}
           {entreprise.points_focaux?.length > 0 && (
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
-                Points focaux
-              </p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Points focaux</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {entreprise.points_focaux.map((pf: any) => (
                   <div key={pf.id} style={{
@@ -178,13 +163,9 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e" }}>
-                          {pf.prenom} {pf.nom}
-                        </span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e" }}>{pf.prenom} {pf.nom}</span>
                         {pf.est_principal && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "2px 8px", borderRadius: 999 }}>
-                            Principal
-                          </span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "2px 8px", borderRadius: 999 }}>Principal</span>
                         )}
                       </div>
                       {pf.poste && (

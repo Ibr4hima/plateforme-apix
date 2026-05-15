@@ -2,14 +2,7 @@
 
 import { MapPin, Phone, Mail, Globe, Building2, ChevronRight } from "lucide-react";
 
-const STATUT_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
-  actif:   { bg: "#dcfce7", text: "#15803d", label: "Active"   },
-  inactif: { bg: "#f3f4f6", text: "#6b7280", label: "Inactive" },
-};
-
 export default function EntrepriseCard({ entreprise, onClick }: { entreprise: any; onClick: () => void }) {
-  const statut = STATUT_CONFIG[entreprise.statut] || STATUT_CONFIG.actif;
-
   return (
     <div
       onClick={onClick}
@@ -52,13 +45,7 @@ export default function EntrepriseCard({ entreprise, onClick }: { entreprise: an
             )}
           </div>
         </div>
-        <span style={{
-          fontSize: 11, fontWeight: 600,
-          background: statut.bg, color: statut.text,
-          padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0,
-        }}>
-          {statut.label}
-        </span>
+
       </div>
 
       {/* Secteur / Branche */}

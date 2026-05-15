@@ -23,7 +23,6 @@ async def liste_secteurs(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(RefSecteur).where(RefSecteur.actif == True).order_by(RefSecteur.code))
     return [RefSecteurResponse.model_validate(s) for s in result.scalars().all()]
 
-
 @router.get("/ref/branches", response_model=list[RefBrancheResponse])
 async def liste_branches(
     secteur_id: Optional[int] = None,
@@ -34,7 +33,6 @@ async def liste_branches(
         q = q.where(RefBranche.secteur_id == secteur_id)
     result = await db.execute(q.order_by(RefBranche.code))
     return [RefBrancheResponse.model_validate(b) for b in result.scalars().all()]
-
 
 @router.get("/ref/activites", response_model=list[RefActiviteResponse])
 async def liste_activites(
@@ -50,233 +48,32 @@ async def liste_activites(
 
 # ── Entreprises ───────────────────────────────────────────────────────────────
 
-@router.get("", response_model=EntrepriseListResponse)
-async def liste_entreprises(
-    page:         int           = Query(1, ge=1),
-    per_page:     int           = Query(12, ge=1, le=100),
-    statut:       Optional[str] = None,
-    secteur_id:   Optional[int] = None,
-    branche_id:   Optional[int] = None,
-    region:       Optional[str] = None,
-    pays:         Optional[str] = None,
-    search:       Optional[str] = None,
-    # Filtres multi (noms séparés par virgules)
-    secteur_nom:  Optional[str] = None,
-    branche_nom:  Optional[str] = None,
-    activite_nom: Optional[str] = None,
-    db:           AsyncSession  = Depends(get_db),
-):
-    filters = [
-        EntrepriseIntallee.is_deleted == False,
-        EntrepriseIntallee.est_publie == True,
-    ]
-    if statut:     filters.append(EntrepriseIntallee.statut == statut)
-    if secteur_id: filters.append(EntrepriseIntallee.secteur_id == secteur_id)
-    if branche_id: filters.append(EntrepriseIntallee.branche_id == branche_id)
-    if region:     filters.append(EntrepriseIntallee.region.ilike(f"%{region}%"))
-    if pays:       filters.append(EntrepriseIntallee.pays.ilike(f"%{pays}%"))
-    if search:
-        filters.append(or_(
-            EntrepriseIntallee.nom.ilike(f"%{search}%"),
-            EntrepriseIntallee.mail.ilike(f"%{search}%"),
-            EntrepriseIntallee.commune.ilike(f"%{search}%"),
-            EntrepriseIntallee.adresse.ilike(f"%{search}%"),
-        ))
-
-    # Filtres NAEMA multi-valeurs
-    if secteur_nom:
-        noms = [n.strip() for n in secteur_nom.split(",") if n.strip()]
-        if noms:
-            filters.append(
-                EntrepriseIntallee.secteur_id.in_(
-                    select(RefSecteur.id).where(RefSecteur.nom.in_(noms))
-                )
-            )
-    if branche_nom:
-        noms = [n.strip() for n in branche_nom.split(",") if n.strip()]
-        if noms:
-            filters.append(
-                EntrepriseIntallee.branche_id.in_(
-                    select(RefBranche.id).where(RefBranche.nom.in_(noms))
-                )
-            )
-    if activite_nom:
-        noms = [n.strip() for n in activite_nom.split(",") if n.strip()]
-        if noms:
-            filters.append(
-                EntrepriseIntallee.activite_id.in_(
-                    select(RefActivite.id).where(RefActivite.nom.in_(noms))
-                )
-            )
-
-    total_q = await db.execute(
-        select(func.count()).select_from(EntrepriseIntallee).where(and_(*filters))
-    )
-    total = total_q.scalar()
-
+@router.get("/ref/formes-juridiques")
+async def formes_juridiques_presentes(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select, distinct
     result = await db.execute(
-        select(EntrepriseIntallee)
-        .options(
-            selectinload(EntrepriseIntallee.points_focaux),
-            selectinload(EntrepriseIntallee.secteur),
-            selectinload(EntrepriseIntallee.branche),
-            selectinload(EntrepriseIntallee.activite),
-        )
-        .where(and_(*filters))
-        .order_by(EntrepriseIntallee.nom.asc())
-        .offset((page - 1) * per_page)
-        .limit(per_page)
-    )
-    entreprises = result.scalars().all()
-
-    return EntrepriseListResponse(
-        total=total, page=page, per_page=per_page,
-        data=[EntrepriseResponse.model_validate(e) for e in entreprises]
-    )
-
-
-@router.get("/{entreprise_id}", response_model=EntrepriseResponse)
-async def detail_entreprise(
-    entreprise_id: UUID,
-    db:            AsyncSession = Depends(get_db),
-):
-    result = await db.execute(
-        select(EntrepriseIntallee)
-        .options(
-            selectinload(EntrepriseIntallee.points_focaux),
-            selectinload(EntrepriseIntallee.secteur),
-            selectinload(EntrepriseIntallee.branche),
-            selectinload(EntrepriseIntallee.activite),
-        )
-        .where(EntrepriseIntallee.id == entreprise_id, EntrepriseIntallee.is_deleted == False)
-    )
-    e = result.scalar_one_or_none()
-    if not e:
-        raise HTTPException(status_code=404, detail="Entreprise introuvable")
-    return EntrepriseResponse.model_validate(e)
-
-
-@router.post("", response_model=EntrepriseResponse, status_code=201)
-async def creer_entreprise(
-    payload: EntrepriseCreate,
-    db:      AsyncSession = Depends(get_db),
-):
-    points_focaux_data = payload.points_focaux or []
-    data = payload.model_dump(exclude={"points_focaux"})
-    entreprise = EntrepriseIntallee(**data)
-    db.add(entreprise)
-    await db.flush()
-
-    for pf in points_focaux_data:
-        focal = EntreprisePointFocal(entreprise_id=entreprise.id, **pf.model_dump())
-        db.add(focal)
-
-    await db.flush()
-    result = await db.execute(
-        select(EntrepriseIntallee)
-        .options(
-            selectinload(EntrepriseIntallee.points_focaux),
-            selectinload(EntrepriseIntallee.secteur),
-            selectinload(EntrepriseIntallee.branche),
-            selectinload(EntrepriseIntallee.activite),
-        )
-        .where(EntrepriseIntallee.id == entreprise.id)
-    )
-    return EntrepriseResponse.model_validate(result.scalar_one())
-
-
-@router.patch("/{entreprise_id}", response_model=EntrepriseResponse)
-async def modifier_entreprise(
-    entreprise_id: UUID,
-    payload:       EntrepriseUpdate,
-    db:            AsyncSession = Depends(get_db),
-):
-    result = await db.execute(
-        select(EntrepriseIntallee).where(
-            EntrepriseIntallee.id == entreprise_id,
+        select(distinct(EntrepriseIntallee.forme_juridique))
+        .where(
             EntrepriseIntallee.is_deleted == False,
+            EntrepriseIntallee.forme_juridique != None,
+            EntrepriseIntallee.forme_juridique != "",
         )
+        .order_by(EntrepriseIntallee.forme_juridique)
     )
-    e = result.scalar_one_or_none()
-    if not e:
-        raise HTTPException(status_code=404, detail="Entreprise introuvable")
-    for field, value in payload.model_dump(exclude_unset=True).items():
-        setattr(e, field, value)
-    await db.flush()
-    await db.refresh(e)
-    return EntrepriseResponse.model_validate(e)
+    return [row[0] for row in result.fetchall() if row[0]]
 
-
-@router.delete("/{entreprise_id}", status_code=204)
-async def supprimer_entreprise(
-    entreprise_id: UUID,
-    db:            AsyncSession = Depends(get_db),
-):
+@router.get("/ref/noms")
+async def noms_entreprises(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import select
     result = await db.execute(
-        select(EntrepriseIntallee).where(
-            EntrepriseIntallee.id == entreprise_id,
+        select(EntrepriseIntallee.nom)
+        .where(
             EntrepriseIntallee.is_deleted == False,
+            EntrepriseIntallee.est_publie == True,
         )
+        .order_by(EntrepriseIntallee.nom)
     )
-    e = result.scalar_one_or_none()
-    if not e:
-        raise HTTPException(status_code=404, detail="Entreprise introuvable")
-    e.is_deleted = True
-    await db.flush()
-
-
-# ── Points focaux ─────────────────────────────────────────────────────────────
-
-@router.post("/{entreprise_id}/points-focaux", response_model=PointFocalResponse, status_code=201)
-async def ajouter_point_focal(
-    entreprise_id: UUID,
-    payload:       PointFocalCreate,
-    db:            AsyncSession = Depends(get_db),
-):
-    result = await db.execute(
-        select(EntrepriseIntallee).where(
-            EntrepriseIntallee.id == entreprise_id,
-            EntrepriseIntallee.is_deleted == False,
-        )
-    )
-    if not result.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Entreprise introuvable")
-    focal = EntreprisePointFocal(entreprise_id=entreprise_id, **payload.model_dump())
-    db.add(focal)
-    await db.flush()
-    await db.refresh(focal)
-    return PointFocalResponse.model_validate(focal)
-
-
-@router.delete("/{entreprise_id}/points-focaux/{focal_id}", status_code=204)
-async def supprimer_point_focal(
-    entreprise_id: UUID,
-    focal_id:      UUID,
-    db:            AsyncSession = Depends(get_db),
-):
-    result = await db.execute(
-        select(EntreprisePointFocal).where(
-            EntreprisePointFocal.id == focal_id,
-            EntreprisePointFocal.entreprise_id == entreprise_id,
-        )
-    )
-    focal = result.scalar_one_or_none()
-    if not focal:
-        raise HTTPException(status_code=404, detail="Point focal introuvable")
-    await db.delete(focal)
-    await db.flush()
-
-
-# ── CRUD Branches ─────────────────────────────────────────────────────────────
-
-@router.post("/ref/branches", response_model=RefBrancheResponse, status_code=201)
-async def creer_branche(payload: dict, db: AsyncSession = Depends(get_db)):
-    branche = RefBranche(**payload)
-    db.add(branche)
-    await db.flush()
-    await db.refresh(branche)
-    return RefBrancheResponse.model_validate(branche)
-
+    return [row[0] for row in result.fetchall() if row[0]]
 
 @router.patch("/ref/branches/{branche_id}", response_model=RefBrancheResponse)
 async def modifier_branche(branche_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
@@ -290,7 +87,6 @@ async def modifier_branche(branche_id: int, payload: dict, db: AsyncSession = De
     await db.refresh(branche)
     return RefBrancheResponse.model_validate(branche)
 
-
 @router.delete("/ref/branches/{branche_id}", status_code=204)
 async def supprimer_branche(branche_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(RefBranche).where(RefBranche.id == branche_id))
@@ -303,15 +99,6 @@ async def supprimer_branche(branche_id: int, db: AsyncSession = Depends(get_db))
 
 # ── CRUD Activités ────────────────────────────────────────────────────────────
 
-@router.post("/ref/activites", response_model=RefActiviteResponse, status_code=201)
-async def creer_activite(payload: dict, db: AsyncSession = Depends(get_db)):
-    activite = RefActivite(**payload)
-    db.add(activite)
-    await db.flush()
-    await db.refresh(activite)
-    return RefActiviteResponse.model_validate(activite)
-
-
 @router.patch("/ref/activites/{activite_id}", response_model=RefActiviteResponse)
 async def modifier_activite(activite_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(RefActivite).where(RefActivite.id == activite_id))
@@ -323,7 +110,6 @@ async def modifier_activite(activite_id: int, payload: dict, db: AsyncSession = 
     await db.flush()
     await db.refresh(activite)
     return RefActiviteResponse.model_validate(activite)
-
 
 @router.delete("/ref/activites/{activite_id}", status_code=204)
 async def supprimer_activite(activite_id: int, db: AsyncSession = Depends(get_db)):
@@ -417,3 +203,273 @@ async def liste_arrondissements(
         q = q.where(RefArrondissement.departement_id == departement_id)
     result = await db.execute(q.order_by(RefArrondissement.nom))
     return [{"id": a.id, "code": a.code, "nom": a.nom, "departement_id": a.departement_id} for a in result.scalars().all()]
+
+@router.post("/ref/branches", response_model=RefBrancheResponse, status_code=201)
+async def creer_branche(payload: dict, db: AsyncSession = Depends(get_db)):
+    branche = RefBranche(**payload)
+    db.add(branche)
+    await db.flush()
+    await db.refresh(branche)
+    return RefBrancheResponse.model_validate(branche)
+
+@router.post("/ref/activites", response_model=RefActiviteResponse, status_code=201)
+async def creer_activite(payload: dict, db: AsyncSession = Depends(get_db)):
+    activite = RefActivite(**payload)
+    db.add(activite)
+    await db.flush()
+    await db.refresh(activite)
+    return RefActiviteResponse.model_validate(activite)
+
+@router.get("", response_model=EntrepriseListResponse)
+async def liste_entreprises(
+    page:         int           = Query(1, ge=1),
+    per_page:     int           = Query(12, ge=1, le=100),
+    statut:       Optional[str] = None,
+    secteur_id:   Optional[int] = None,
+    branche_id:   Optional[int] = None,
+    region:       Optional[str] = None,
+    pays:         Optional[str] = None,
+    search:       Optional[str] = None,
+    forme_juridique:    Optional[str] = None,
+    region_noms:        Optional[str] = None,
+    departement_noms:   Optional[str] = None,
+    arrondissement_noms:Optional[str] = None,
+    # Filtres multi (noms séparés par virgules)
+    secteur_nom:  Optional[str] = None,
+    branche_nom:  Optional[str] = None,
+    activite_nom: Optional[str] = None,
+    db:           AsyncSession  = Depends(get_db),
+):
+    filters = [
+        EntrepriseIntallee.is_deleted == False,
+        EntrepriseIntallee.est_publie == True,
+    ]
+    if statut:     filters.append(EntrepriseIntallee.statut == statut)
+    if secteur_id: filters.append(EntrepriseIntallee.secteur_id == secteur_id)
+    if branche_id: filters.append(EntrepriseIntallee.branche_id == branche_id)
+    if region:     filters.append(EntrepriseIntallee.region.ilike(f"%{region}%"))
+    if pays:       filters.append(EntrepriseIntallee.pays.ilike(f"%{pays}%"))
+    if search:
+        filters.append(or_(
+            EntrepriseIntallee.nom.ilike(f"%{search}%"),
+            EntrepriseIntallee.mail.ilike(f"%{search}%"),
+            EntrepriseIntallee.commune.ilike(f"%{search}%"),
+            EntrepriseIntallee.adresse.ilike(f"%{search}%"),
+        ))
+
+    if forme_juridique:
+        formes = [f.strip() for f in forme_juridique.split(",") if f.strip()]
+        if formes:
+            filters.append(EntrepriseIntallee.forme_juridique.in_(formes))
+
+    if forme_juridique:
+        formes = [f.strip() for f in forme_juridique.split(",") if f.strip()]
+        if formes:
+            filters.append(EntrepriseIntallee.forme_juridique.in_(formes))
+
+    # Filtres géographie multi-valeurs
+    if region_noms:
+        noms = [n.strip() for n in region_noms.split(",") if n.strip()]
+        if noms:
+            filters.append(EntrepriseIntallee.region.in_(noms))
+    if departement_noms:
+        noms = [n.strip() for n in departement_noms.split(",") if n.strip()]
+        if noms:
+            filters.append(EntrepriseIntallee.departement.in_(noms))
+    if arrondissement_noms:
+        noms = [n.strip() for n in arrondissement_noms.split(",") if n.strip()]
+        if noms:
+            filters.append(EntrepriseIntallee.commune.in_(noms))
+
+    # Filtres NAEMA multi-valeurs
+    if secteur_nom:
+        noms = [n.strip() for n in secteur_nom.split(",") if n.strip()]
+        if noms:
+            filters.append(
+                EntrepriseIntallee.secteur_id.in_(
+                    select(RefSecteur.id).where(RefSecteur.nom.in_(noms))
+                )
+            )
+    if branche_nom:
+        noms = [n.strip() for n in branche_nom.split(",") if n.strip()]
+        if noms:
+            filters.append(
+                EntrepriseIntallee.branche_id.in_(
+                    select(RefBranche.id).where(RefBranche.nom.in_(noms))
+                )
+            )
+    if activite_nom:
+        noms = [n.strip() for n in activite_nom.split(",") if n.strip()]
+        if noms:
+            filters.append(
+                EntrepriseIntallee.activite_id.in_(
+                    select(RefActivite.id).where(RefActivite.nom.in_(noms))
+                )
+            )
+
+    total_q = await db.execute(
+        select(func.count()).select_from(EntrepriseIntallee).where(and_(*filters))
+    )
+    total = total_q.scalar()
+
+    result = await db.execute(
+        select(EntrepriseIntallee)
+        .options(
+            selectinload(EntrepriseIntallee.points_focaux),
+            selectinload(EntrepriseIntallee.secteur),
+            selectinload(EntrepriseIntallee.branche),
+            selectinload(EntrepriseIntallee.activite),
+        )
+        .where(and_(*filters))
+        .order_by(EntrepriseIntallee.nom.asc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+    )
+    entreprises = result.scalars().all()
+
+    return EntrepriseListResponse(
+        total=total, page=page, per_page=per_page,
+        data=[EntrepriseResponse.model_validate(e) for e in entreprises]
+    )
+
+@router.post("", response_model=EntrepriseResponse, status_code=201)
+async def creer_entreprise(
+    payload: EntrepriseCreate,
+    db:      AsyncSession = Depends(get_db),
+):
+    points_focaux_data = payload.points_focaux or []
+    data = payload.model_dump(exclude={"points_focaux"})
+    entreprise = EntrepriseIntallee(**data)
+    db.add(entreprise)
+    await db.flush()
+
+    for pf in points_focaux_data:
+        focal = EntreprisePointFocal(entreprise_id=entreprise.id, **pf.model_dump())
+        db.add(focal)
+
+    await db.flush()
+    result = await db.execute(
+        select(EntrepriseIntallee)
+        .options(
+            selectinload(EntrepriseIntallee.points_focaux),
+            selectinload(EntrepriseIntallee.secteur),
+            selectinload(EntrepriseIntallee.branche),
+            selectinload(EntrepriseIntallee.activite),
+        )
+        .where(EntrepriseIntallee.id == entreprise.id)
+    )
+    return EntrepriseResponse.model_validate(result.scalar_one())
+
+@router.post("/{entreprise_id}/points-focaux", response_model=PointFocalResponse, status_code=201)
+async def ajouter_point_focal(
+    entreprise_id: UUID,
+    payload:       PointFocalCreate,
+    db:            AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(EntrepriseIntallee).where(
+            EntrepriseIntallee.id == entreprise_id,
+            EntrepriseIntallee.is_deleted == False,
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
+    focal = EntreprisePointFocal(entreprise_id=entreprise_id, **payload.model_dump())
+    db.add(focal)
+    await db.flush()
+    await db.refresh(focal)
+    return PointFocalResponse.model_validate(focal)
+
+@router.delete("/{entreprise_id}/points-focaux/{focal_id}", status_code=204)
+async def supprimer_point_focal(
+    entreprise_id: UUID,
+    focal_id:      UUID,
+    db:            AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(EntreprisePointFocal).where(
+            EntreprisePointFocal.id == focal_id,
+            EntreprisePointFocal.entreprise_id == entreprise_id,
+        )
+    )
+    focal = result.scalar_one_or_none()
+    if not focal:
+        raise HTTPException(status_code=404, detail="Point focal introuvable")
+    await db.delete(focal)
+    await db.flush()
+
+
+# ── CRUD Branches ─────────────────────────────────────────────────────────────
+
+@router.get("/{entreprise_id}", response_model=EntrepriseResponse)
+async def detail_entreprise(
+    entreprise_id: UUID,
+    db:            AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(EntrepriseIntallee)
+        .options(
+            selectinload(EntrepriseIntallee.points_focaux),
+            selectinload(EntrepriseIntallee.secteur),
+            selectinload(EntrepriseIntallee.branche),
+            selectinload(EntrepriseIntallee.activite),
+        )
+        .where(EntrepriseIntallee.id == entreprise_id, EntrepriseIntallee.is_deleted == False)
+    )
+    e = result.scalar_one_or_none()
+    if not e:
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
+    return EntrepriseResponse.model_validate(e)
+
+@router.patch("/{entreprise_id}", response_model=EntrepriseResponse)
+async def modifier_entreprise(
+    entreprise_id: UUID,
+    payload:       EntrepriseUpdate,
+    db:            AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(EntrepriseIntallee).where(
+            EntrepriseIntallee.id == entreprise_id,
+            EntrepriseIntallee.is_deleted == False,
+        )
+    )
+    e = result.scalar_one_or_none()
+    if not e:
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(e, field, value)
+    await db.flush()
+
+    # Recharger avec toutes les relations
+    result = await db.execute(
+        select(EntrepriseIntallee)
+        .options(
+            selectinload(EntrepriseIntallee.points_focaux),
+            selectinload(EntrepriseIntallee.secteur),
+            selectinload(EntrepriseIntallee.branche),
+            selectinload(EntrepriseIntallee.activite),
+        )
+        .where(EntrepriseIntallee.id == entreprise_id)
+    )
+    e = result.scalar_one()
+    return EntrepriseResponse.model_validate(e)
+
+@router.delete("/{entreprise_id}", status_code=204)
+async def supprimer_entreprise(
+    entreprise_id: UUID,
+    db:            AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(EntrepriseIntallee).where(
+            EntrepriseIntallee.id == entreprise_id,
+            EntrepriseIntallee.is_deleted == False,
+        )
+    )
+    e = result.scalar_one_or_none()
+    if not e:
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
+    e.is_deleted = True
+    await db.flush()
+
+
+# ── Points focaux ─────────────────────────────────────────────────────────────
