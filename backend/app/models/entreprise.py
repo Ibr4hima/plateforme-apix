@@ -63,6 +63,7 @@ class EntrepriseIntallee(Base):
     region          = Column(String(100))
     departement     = Column(String(100))
     commune         = Column(String(100))
+    arrondissement  = Column(String(100))
     adresse         = Column(Text)
     telephone       = Column(String(50))
     mail            = Column(String(255))

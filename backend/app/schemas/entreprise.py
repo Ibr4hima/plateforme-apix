@@ -55,6 +55,7 @@ class EntrepriseBase(BaseModel):
     region:          Optional[str]  = None
     departement:     Optional[str]  = None
     commune:         Optional[str]  = None
+    arrondissement:  Optional[str]  = None
     adresse:         Optional[str]  = None
     telephone:       Optional[str]  = None
     mail:            Optional[str]  = None
@@ -79,6 +80,7 @@ class EntrepriseUpdate(BaseModel):
     region:          Optional[str]  = None
     departement:     Optional[str]  = None
     commune:         Optional[str]  = None
+    arrondissement:  Optional[str]  = None
     adresse:         Optional[str]  = None
     telephone:       Optional[str]  = None
     mail:            Optional[str]  = None
