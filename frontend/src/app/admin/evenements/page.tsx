@@ -1,13 +1,26 @@
 "use client";
 
-import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
-import PaysSelect from "@/components/shared/PaysSelect";
-import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
+import { useEffect, useState, useCallback } from "react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, Calendar } from "lucide-react";
 import { api } from "@/lib/api";
-import { Calendar, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
+import PaysSelect from "@/components/shared/PaysSelect";
+import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+// Affiche une date YYYY-MM-DD sans décalage UTC (évite le -1 jour en heure locale)
+function formatDate(dateStr: string, opts?: Intl.DateTimeFormatOptions): string {
+  if (!dateStr) return "";
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(year, month - 1, day); // constructeur local, pas UTC
+  return d.toLocaleDateString("fr-FR", opts ?? { day: "numeric", month: "short", year: "numeric" });
+}
+
+// Retourne "1ère", "2ème", "3ème", etc.
+function ordinalEdition(n: number): string {
+  return n === 1 ? "1ère édition" : `${n}ème édition`;
+}
 
 const TYPES = ["salon","forum","conference","mission_prospection","roadshow","b2b","webinaire","visite_terrain","autre"];
 const TYPE_LABELS: Record<string,string> = {
@@ -268,7 +281,7 @@ export default function AdminEvenements() {
                   )}
                   {form.edition !== "" && parseInt(form.edition) > 0 && (
                     <span style={{ fontSize: 11, color: "#15803d", marginTop: 2 }}>
-                      {parseInt(form.edition)}ème édition
+                      {ordinalEdition(parseInt(form.edition))}
                     </span>
                   )}
                 </div>
@@ -405,7 +418,7 @@ export default function AdminEvenements() {
               {/* Pays invités / Entreprises invitées */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Pays invités <span style={{ fontWeight: 400, color: "#9aa5b4" }}></span></label>
+                  <label style={labelStyle}>Pays invités <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(séparés par des virgules)</span></label>
                   <PaysMultiSelect
                     value={form.pays_invites}
                     onChange={val => update("pays_invites", val)}
@@ -494,7 +507,7 @@ export default function AdminEvenements() {
                       <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 2 }}>
                         {e.nom_event.length > 40 ? e.nom_event.slice(0, 40) + "…" : e.nom_event}
                       </div>
-                      {e.edition != null && <div style={{ fontSize: 11, color: "#9aa5b4" }}>{e.edition}ème édition</div>}
+                      {e.edition != null && <div style={{ fontSize: 11, color: "#9aa5b4" }}>{ordinalEdition(e.edition)}</div>}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <span style={{ fontSize: 11, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.1)", padding: "2px 8px", borderRadius: 999 }}>
@@ -502,10 +515,10 @@ export default function AdminEvenements() {
                       </span>
                     </td>
                     <td style={{ padding: "14px 16px", color: "#4a5568", whiteSpace: "nowrap" }}>
-                      {new Date(e.date_debut).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                      {formatDate(e.date_debut)}
                       {e.date_debut !== e.date_fin && (
                         <div style={{ fontSize: 11, color: "#9aa5b4" }}>
-                          → {new Date(e.date_fin).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                          → {formatDate(e.date_fin, { day: "numeric", month: "short" })}
                         </div>
                       )}
                     </td>

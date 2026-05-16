@@ -28,18 +28,22 @@ const TYPE_COLORS: Record<string, string> = {
 
 function getStatut(dateDebut: string, dateFin: string) {
   const today = new Date(); today.setHours(0,0,0,0);
-  const d0    = new Date(dateDebut); d0.setHours(0,0,0,0);
-  const d1    = new Date(dateFin);   d1.setHours(0,0,0,0);
-  if (d0 > today)  return { bg: "#dbeafe", text: "#1d4ed8", label: "À venir"  };
-  if (d1 >= today) return { bg: "#dcfce7", text: "#15803d", label: "En cours" };
-  return               { bg: "#f3f4f6", text: "#6b7280", label: "Terminé"  };
+  const [y0,m0,d0] = dateDebut.split("-").map(Number);
+  const [y1,m1,d1] = dateFin.split("-").map(Number);
+  const debut = new Date(y0, m0-1, d0);
+  const fin   = new Date(y1, m1-1, d1);
+  if (debut > today)  return { bg: "#dbeafe", text: "#1d4ed8", label: "À venir"  };
+  if (fin >= today)   return { bg: "#dcfce7", text: "#15803d", label: "En cours" };
+  return               { bg: "#f3f4f6",  text: "#6b7280",  label: "Terminé"  };
 }
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+function formatDate(d: string, opts?: Intl.DateTimeFormatOptions) {
+  if (!d) return "";
+  const [year, month, day] = d.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("fr-FR", opts ?? { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function EvenementCard({ event, onClick }: { event: any; onClick: () => void }) {
+export default function EvenementCard({ event, onClick, nomsSecteursRef = [] }: { event: any; onClick: () => void; nomsSecteursRef?: string[] }) {
   const accentColor = TYPE_COLORS[event.type_evenement] || "#ca631f";
   const statut      = getStatut(event.date_debut, event.date_fin);
   const isSameDay   = event.date_debut === event.date_fin;
@@ -90,7 +94,9 @@ export default function EvenementCard({ event, onClick }: { event: any; onClick:
           {event.nom_event}
         </h3>
         {event.edition && (
-          <span style={{ fontSize: 12, color: "#9aa5b4" }}>{event.edition}</span>
+          <span style={{ fontSize: 12, color: "#9aa5b4" }}>
+            {event.edition === 1 ? "1ère édition" : `${event.edition}ème édition`}
+          </span>
         )}
       </div>
 
@@ -119,19 +125,31 @@ export default function EvenementCard({ event, onClick }: { event: any; onClick:
         )}
       </div>
 
-      {/* Thématiques */}
-      {event.thematiques && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {event.thematiques.split(",").slice(0, 3).map((t: string, i: number) => (
-            <span key={i} style={{
-              fontSize: 11, color: "#4a5568",
-              background: "#E8E5E3", padding: "2px 8px", borderRadius: 999,
-            }}>
-              {t.trim()}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Thématiques — secteurs uniquement */}
+      {event.thematiques && (() => {
+        const all = event.thematiques.split(",").map((t: string) => t.trim()).filter(Boolean);
+        // Nouveau format avec préfixes
+        const avecPrefixe = all.some((t: string) => t.startsWith("sec:") || t.startsWith("bra:") || t.startsWith("act:"));
+        const secteurs = avecPrefixe
+          ? all.filter((t: string) => t.startsWith("sec:")).map((t: string) => t.slice(4))
+          // Ancien format : filtrer via la liste de référence des secteurs si disponible
+          : nomsSecteursRef.length > 0
+            ? all.filter((t: string) => nomsSecteursRef.includes(t))
+            : all.slice(0, 1); // ultime fallback : juste le premier
+        return secteurs.length > 0 ? (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {secteurs.map((t: string, i: number) => (
+              <span key={i} style={{
+                fontSize: 11, color: "#ca631f",
+                background: "rgba(202,99,31,0.1)", padding: "2px 8px",
+                borderRadius: 999, fontWeight: 600,
+              }}>
+                {t}
+              </span>
+            ))}
+          </div>
+        ) : null;
+      })()}
 
       {event.lien_site_officiel && (
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: accentColor, fontWeight: 600 }}>

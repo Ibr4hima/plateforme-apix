@@ -3,8 +3,18 @@
 import { X, Calendar, MapPin, Globe, Building2, Users, TrendingUp, ExternalLink, RefreshCw } from "lucide-react";
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  if (!d) return "";
+  const [year, month, day] = d.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
+
+const ROLE_APIX_LABELS: Record<string, string> = {
+  organisateur:    "Organisateur",
+  co_organisateur: "Co-organisateur",
+  participant:     "Participant",
+  sponsor:         "Sponsor",
+  invite:          "Invité",
+};
 
 const TYPE_COLORS: Record<string, string> = {
   salon: "#ca631f", forum: "#004f91", conference: "#7c3aed",
@@ -61,7 +71,11 @@ export default function EvenementModal({ event, onClose }: { event: any; onClose
                 fontSize: "1.35rem", color: "#1a1a2e", lineHeight: 1.3,
               }}>
                 {event.nom_event}
-                {event.edition && <span style={{ fontSize: 14, fontWeight: 400, color: "#9aa5b4", marginLeft: 8 }}>{event.edition}</span>}
+                {event.edition && (
+                  <span style={{ fontSize: 14, fontWeight: 400, color: "#9aa5b4", marginLeft: 8 }}>
+                    {event.edition === 1 ? "1ère édition" : `${event.edition}ème édition`}
+                  </span>
+                )}
               </h2>
             </div>
             <button onClick={onClose} style={{
@@ -87,7 +101,7 @@ export default function EvenementModal({ event, onClose }: { event: any; onClose
             )}
             {event.role_apix && (
               <InfoItem icon={<TrendingUp size={14} />} label="Rôle APIX" accent={accent}
-                value={event.role_apix.replace("_", " ")} />
+                value={ROLE_APIX_LABELS[event.role_apix] || event.role_apix} />
             )}
             {event.est_recurrent && event.frequence && (
               <InfoItem icon={<RefreshCw size={14} />} label="Récurrence" accent={accent} value={event.frequence} />
@@ -106,10 +120,79 @@ export default function EvenementModal({ event, onClose }: { event: any; onClose
             </div>
           )}
 
-          {/* Thématiques */}
-          {event.thematiques && (
-            <TagSection label="Thématiques" items={event.thematiques.split(",")} accent={accent} />
-          )}
+          {/* Thématiques organisées */}
+          {event.thematiques && (() => {
+            const items = event.thematiques.split(",").map((t: string) => t.trim()).filter(Boolean);
+            const secteurs = items.filter((t: string) => t.startsWith("sec:")).map((t: string) => t.slice(4));
+            const branches = items.filter((t: string) => t.startsWith("bra:")).map((t: string) => t.slice(4));
+            const activites = items.filter((t: string) => t.startsWith("act:")).map((t: string) => t.slice(4));
+            // Fallback ancien format sans préfixe
+            const ancienFormat = items.every((t: string) => !t.startsWith("sec:") && !t.startsWith("bra:") && !t.startsWith("act:"));
+            if (ancienFormat) {
+              return <TagSection label="Thématiques" items={items} accent={accent} />;
+            }
+            return (
+              <div style={{ marginBottom: 14 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Thématiques</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {secteurs.map((sec: string, i: number) => (
+                    <div key={i}>
+                      {/* Secteur */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ca631f", flexShrink: 0 }} />
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#ca631f" }}>{sec}</span>
+                      </div>
+                      {/* Branches liées */}
+                      {branches.length > 0 && (
+                        <div style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+                          {branches.map((bra: string, j: number) => (
+                            <div key={j}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+                                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#004f91", flexShrink: 0 }} />
+                                <span style={{ fontSize: 12, fontWeight: 600, color: "#004f91" }}>{bra}</span>
+                              </div>
+                              {/* Activités liées à cette branche */}
+                              {activites.length > 0 && (
+                                <div style={{ paddingLeft: 16, display: "flex", flexWrap: "wrap", gap: 5 }}>
+                                  {activites.map((act: string, k: number) => (
+                                    <span key={k} style={{
+                                      fontSize: 11, color: "#059669", fontWeight: 600,
+                                      background: "rgba(5,150,105,0.08)", padding: "2px 8px",
+                                      borderRadius: 999, border: "1px solid rgba(5,150,105,0.2)",
+                                    }}>
+                                      {act}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Activités sans branche */}
+                      {branches.length === 0 && activites.length > 0 && (
+                        <div style={{ paddingLeft: 18, display: "flex", flexWrap: "wrap", gap: 5 }}>
+                          {activites.map((act: string, k: number) => (
+                            <span key={k} style={{
+                              fontSize: 11, color: "#059669", fontWeight: 600,
+                              background: "rgba(5,150,105,0.08)", padding: "2px 8px",
+                              borderRadius: 999, border: "1px solid rgba(5,150,105,0.2)",
+                            }}>
+                              {act}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {/* Branches sans secteur */}
+                  {secteurs.length === 0 && branches.length > 0 && (
+                    <TagSection label="" items={branches} accent="#004f91" />
+                  )}
+                </div>
+              </div>
+            );
+          })()}
           {event.pays_invites && (
             <TagSection label="Pays invités" items={event.pays_invites.split(",")} accent={accent} />
           )}

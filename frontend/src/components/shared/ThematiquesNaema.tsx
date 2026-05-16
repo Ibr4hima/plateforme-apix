@@ -262,10 +262,16 @@ export default function ThematiquesNaema({
   // Initialiser depuis la valeur existante (mode édition)
   useEffect(() => {
     if (!loaded || !value) return;
-    const noms = value.split(",").map(s => s.trim()).filter(Boolean);
-    const secIds = allSecteurs.filter(s => noms.includes(s.nom)).map(s => s.id);
-    const braIds = allBranches.filter(b => noms.includes(b.nom)).map(b => b.id);
-    const actIds = allActivites.filter(a => noms.includes(a.nom)).map(a => a.id);
+    const items = value.split(",").map(s => s.trim()).filter(Boolean);
+    // Support ancien format (sans préfixe) et nouveau format (avec préfixe sec:/bra:/act:)
+    const secNoms = items.filter(s => s.startsWith("sec:")).map(s => s.slice(4));
+    const braNoms = items.filter(s => s.startsWith("bra:")).map(s => s.slice(4));
+    const actNoms = items.filter(s => s.startsWith("act:")).map(s => s.slice(4));
+    // Fallback ancien format : essayer de matcher dans les 3 listes
+    const noPrefix = items.filter(s => !s.startsWith("sec:") && !s.startsWith("bra:") && !s.startsWith("act:"));
+    const secIds = allSecteurs.filter(s => secNoms.includes(s.nom) || noPrefix.includes(s.nom)).map(s => s.id);
+    const braIds = allBranches.filter(b => braNoms.includes(b.nom) || noPrefix.includes(b.nom)).map(b => b.id);
+    const actIds = allActivites.filter(a => actNoms.includes(a.nom) || noPrefix.includes(a.nom)).map(a => a.id);
     setSelSecIds(secIds);
     setSelBraIds(braIds);
     setSelActIds(actIds);
@@ -277,12 +283,12 @@ export default function ThematiquesNaema({
 
   // Mettre à jour onChange à chaque changement
   const emitChange = (secIds: number[], braIds: number[], actIds: number[]) => {
-    const toNom = (ids: number[], list: NaemaItem[]) =>
-      ids.map(id => list.find(i => i.id === id)?.nom || "").filter(Boolean);
+    const toNom = (ids: number[], list: NaemaItem[], prefix: string) =>
+      ids.map(id => list.find(i => i.id === id)?.nom || "").filter(Boolean).map(n => `${prefix}${n}`);
     const tous = [
-      ...toNom(secIds, allSecteurs),
-      ...toNom(braIds, allBranches),
-      ...toNom(actIds, allActivites),
+      ...toNom(secIds, allSecteurs, "sec:"),
+      ...toNom(braIds, allBranches, "bra:"),
+      ...toNom(actIds, allActivites, "act:"),
     ];
     onChange(tous.join(", "));
   };
