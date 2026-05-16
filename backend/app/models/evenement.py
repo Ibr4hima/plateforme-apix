@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, Integer, Date, Numeric, Text, ForeignKey
+from sqlalchemy import Column, String, Boolean, Integer, Date, Numeric, Text, ForeignKey, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
@@ -11,7 +11,7 @@ class Evenement(Base):
 
     id                          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nom_event                   = Column(String(500), nullable=False)
-    edition                     = Column(String(50))
+    edition                     = Column(Integer, CheckConstraint("edition > 0", name="chk_evenements_edition_positive"))
     type_evenement              = Column(String(50), nullable=False)
     organisateur                = Column(String(255))
     role_apix                   = Column(String(50))

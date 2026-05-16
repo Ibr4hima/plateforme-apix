@@ -1,207 +1,103 @@
 "use client";
 
 import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
-import { useCallback, useEffect, useState, useRef } from "react";
-import { NaemaCascade, NaemaCascadeMulti } from "@/components/shared/NaemaSelects";
-import PaysSelect from "@/components/shared/PaysSelect";
+import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const STATUTS = ["en_vigueur","expire"];
+const STATUTS = ["en_vigueur","signe_non_ratifie","expire","suspendu","negocie"];
 const STATUT_LABELS: Record<string,string> = {
-  en_vigueur:"En vigueur",
-  expire:"Expiré",
+  en_vigueur:"En vigueur", signe_non_ratifie:"Signé non ratifié",
+  expire:"Expiré", suspendu:"Suspendu", negocie:"En négociation",
 };
 const STATUT_COLORS: Record<string,{bg:string;text:string}> = {
   en_vigueur:        {bg:"#dcfce7",text:"#15803d"},
+  signe_non_ratifie: {bg:"#dbeafe",text:"#1d4ed8"},
   expire:            {bg:"#f3f4f6",text:"#6b7280"},
+  suspendu:          {bg:"#fee2e2",text:"#dc2626"},
+  negocie:           {bg:"#fef9c3",text:"#a16207"},
 };
 
 const EMPTY_FORM = {
-  titre:"", pays_signataires:[] as string[],
-  date_signature:"", date_entree_vigueur:"", date_expiration:"",
-  secteur_activite:"", branche_activite:"", activite_detail:"",
+  titre:"", reference:"", type_accord:"", pays_signataires:"",
+  organisation_partenaire:"", date_signature:"", date_ratification:"",
+  date_entree_vigueur:"", date_expiration:"",
+  secteur_activite:"", branche_activite:"",
   commentaires:"", domaines_couverts:"", avantages_principaux:"",
-  statut:"en_vigueur", est_publie:true,
+  statut:"en_vigueur", lien_texte_officiel:"", est_publie:true, note_interne:"",
+  domaines_naema: [] as string[],
 };
 
-
-function PaysMultiSelect({ selected, onToggle, onClear }: {
-  selected: string[];
-  onToggle: (pays: string) => void;
-  onClear:  (pays: string) => void;
-}) {
-  const [search, setSearch] = useState("");
-  const [open,   setOpen]   = useState(false);
-  const [pays,   setPays]   = useState<any[]>([]);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1") + "/entreprises/ref/pays")
-      .then(r => r.json()).then(setPays).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, []);
-
-  const filtered = pays.filter(p => p.nom_fr.toLowerCase().includes(search.toLowerCase()));
-  const grouped  = filtered.reduce((acc: any, p: any) => {
-    const r = p.region_monde || "Autre";
-    if (!acc[r]) acc[r] = [];
-    acc[r].push(p);
-    return acc;
-  }, {});
-
-  const IS = {
-    width: "100%", background: "#F2F0EF", border: `1px solid ${open ? "#7c3aed" : "#C5BFBB"}`,
-    borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e",
-    outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const,
-  };
-
-  return (
-    <div ref={ref} style={{ position: "relative" }}>
-      {/* Tags sélectionnés */}
-      {selected.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
-          {selected.map(p => (
-            <span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(124,58,237,0.1)", color: "#7c3aed", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 600 }}>
-              {p}
-              <button onClick={() => onClear(p)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
-                <X size={10} style={{ color: "#7c3aed" }} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-      {/* Input recherche */}
-      <div style={{ position: "relative" }}>
-        <input
-          value={search}
-          onChange={e => { setSearch(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
-          placeholder={selected.length > 0 ? "Ajouter un pays..." : "Rechercher un pays..."}
-          style={IS}
-        />
-      </div>
-      {/* Dropdown */}
-      {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, background: "#fff", border: "1px solid rgba(124,58,237,0.3)", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", maxHeight: 260, overflowY: "auto" }}>
-          {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([region, list]: any) => (
-            <div key={region}>
-              <div style={{ padding: "5px 12px 2px", fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", background: "#F8F7F6" }}>{region}</div>
-              {list.map((p: any) => {
-                const isSel = selected.includes(p.nom_fr);
-                return (
-                  <div key={p.id} onMouseDown={e => { e.preventDefault(); onToggle(p.nom_fr); setSearch(""); }}
-                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", cursor: "pointer", background: isSel ? "rgba(124,58,237,0.06)" : "transparent", borderBottom: "1px solid #F2F0EF" }}
-                    onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "#F8F7F6"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = isSel ? "rgba(124,58,237,0.06)" : "transparent"; }}
-                  >
-                    <div style={{ width: 15, height: 15, borderRadius: 3, border: `2px solid ${isSel ? "#7c3aed" : "#C5BFBB"}`, background: isSel ? "#7c3aed" : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      {isSel && <svg width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                    </div>
-                    <span style={{ fontSize: 16 }}>{String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c: string) => 127397 + c.charCodeAt(0)))}</span>
-                    <span style={{ fontSize: 13, color: isSel ? "#7c3aed" : "#1a1a2e", fontWeight: isSel ? 600 : 400 }}>{p.nom_fr}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-          {filtered.length === 0 && <div style={{ padding: "12px", fontSize: 13, color: "#9aa5b4", textAlign: "center" }}>Aucun pays trouvé</div>}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function AdminAccords() {
-  const [accords,  setAccords]  = useState<any[]>([]);
-  const [total,    setTotal]    = useState(0);
-  const [loading,  setLoading]  = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editItem, setEditItem] = useState<any>(null);
-  const [saving,   setSaving]   = useState(false);
-  const [saveOk,   setSaveOk]   = useState(false);
-  const [error,    setError]    = useState("");
-  const [form,     setForm]     = useState<any>({ ...EMPTY_FORM });
-  const [fichier,       setFichier]       = useState<File|null>(null);
-  const [titreFichier,  setTitreFichier]  = useState("");
-  const [fichiers,      setFichiers]       = useState<any[]>([]);
-  const [loadingFiles,  setLoadingFiles]   = useState(false);
-  const [deleting,      setDeleting]      = useState<string|null>(null);
-
+  const [accords,   setAccords]  = useState<any[]>([]);
+  const [total,     setTotal]    = useState(0);
+  const [loading,   setLoading]  = useState(true);
+  const [showForm,  setShowForm] = useState(false);
+  const [editItem,  setEditItem] = useState<any>(null);
+  const [saving,    setSaving]   = useState(false);
+  const [saveOk,    setSaveOk]   = useState(false);
+  const [error,     setError]    = useState("");
+  const [form,      setForm]     = useState<any>({ ...EMPTY_FORM });
+  const [fichier,   setFichier]  = useState<File|null>(null);
+const [deleting,       setDeleting]       = useState<string|null>(null);
+const [secteurs,       setSecteurs]       = useState<any[]>([]);
+const [branchesAccord, setBranchesAccord] = useState<any[]>([]);
   const charger = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`${API_BASE}/accords?per_page=100`);
+      const res = await fetch(`${API_BASE}/accords?per_page=100`);
       const data = await res.json();
       setAccords(data.data || []);
       setTotal(data.total || 0);
     } catch {} finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { charger(); }, [charger]);
+useEffect(() => { charger(); }, [charger]);
 
+useEffect(() => {
+  fetch(`${API_BASE}/entreprises/ref/secteurs`)
+    .then(r => r.json()).then(setSecteurs).catch(() => {});
+}, []);
+
+// Charger branches si secteur déjà sélectionné à l'édition
+useEffect(() => {
+  if (form.secteur_activite) {
+    const sid = secteurs.find((s: any) => s.nom === form.secteur_activite)?.id;
+    if (sid) fetch(`${API_BASE}/entreprises/ref/branches?secteur_id=${sid}`)
+      .then(r => r.json()).then(setBranchesAccord).catch(() => {});
+  }
+}, [form.secteur_activite, secteurs]);
   const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
   const openCreate = () => {
-    setForm({ ...EMPTY_FORM });
-    setEditItem(null); setFichier(null); setTitreFichier(""); setFichiers([]);
-    setShowForm(true); setError(""); setSaveOk(false);
+    setForm({ ...EMPTY_FORM }); setEditItem(null);
+    setFichier(null); setShowForm(true); setError(""); setSaveOk(false);
   };
 
   const openEdit = (a: any) => {
     setForm({
-      titre:                   a.titre                   || "",
-      pays_signataires:        a.pays_signataires ? a.pays_signataires.split(", ").filter(Boolean) : [] as string[],
-      date_signature:          a.date_signature          || "",
-      date_entree_vigueur:     a.date_entree_vigueur     || "",
-      date_expiration:         a.date_expiration         || "",
-      secteur_activite:        a.secteur_activite        || "",
-      branche_activite:        a.branche_activite        || "",
-      activite_detail:         a.activite_detail         || "",
-      commentaires:            a.commentaires            || "",
-      domaines_couverts:       a.domaines_couverts       || "",
-      avantages_principaux:    a.avantages_principaux    || "",
-      statut:                  a.statut                  || "en_vigueur",
-      est_publie:              a.est_publie              ?? true,
+      titre: a.titre || "", reference: a.reference || "",
+      type_accord: a.type_accord || "", pays_signataires: a.pays_signataires || "",
+      organisation_partenaire: a.organisation_partenaire || "",
+      date_signature: a.date_signature || "", date_ratification: a.date_ratification || "",
+      date_entree_vigueur: a.date_entree_vigueur || "", date_expiration: a.date_expiration || "",
+      secteur_activite: a.secteur_activite || "", branche_activite: a.branche_activite || "",
+      commentaires: a.commentaires || "", domaines_couverts: a.domaines_couverts || "",
+      avantages_principaux: a.avantages_principaux || "",
+      statut: a.statut || "en_vigueur", lien_texte_officiel: a.lien_texte_officiel || "",
+      est_publie: a.est_publie ?? true, note_interne: a.note_interne || "",
     });
-    setEditItem(a); setFichier(null); setTitreFichier(""); setFichiers([]);
-    setShowForm(true); setError(""); setSaveOk(false);
-    // Charger les fichiers existants
-    fetch(`${API_BASE}/accords/${a.id}/fichiers`)
-      .then(r => r.json()).then(setFichiers).catch(() => {});
+    setEditItem(a); setFichier(null); setShowForm(true); setError(""); setSaveOk(false);
   };
 
   const handleSave = async () => {
     if (!form.titre.trim()) { setError("Le titre est obligatoire"); return; }
-    if (!form.date_signature) { setError("La date de signature est obligatoire"); return; }
-    if (form.date_signature > new Date().toISOString().split("T")[0]) {
-      setError("La date de signature ne peut pas être dans le futur"); return;
-    }
-    if (!form.date_entree_vigueur) { setError("La date d'entrée en vigueur est obligatoire"); return; }
-    if (!form.date_expiration) { setError("La date d'expiration est obligatoire"); return; }
-    if (form.date_entree_vigueur <= form.date_signature) {
-      setError("L'entrée en vigueur doit être strictement après la date de signature"); return;
-    }
-    if (form.date_expiration <= form.date_entree_vigueur) {
-      setError("La date d'expiration doit être strictement après l'entrée en vigueur"); return;
-    }
-    if (!form.pays_signataires || form.pays_signataires.length === 0) {
-      setError("Au moins un pays signataire est obligatoire"); return;
-    }
     setSaving(true); setError("");
     try {
       if (editItem) {
+        // PATCH JSON
         const payload: any = { ...form };
-        // Convertir pays_signataires array en string
-        if (Array.isArray(payload.pays_signataires)) {
-          payload.pays_signataires = payload.pays_signataires.join(", ") || null;
-        }
-        Object.keys(payload).forEach(k => { if (payload[k] === "" || (Array.isArray(payload[k]) && payload[k].length === 0)) payload[k] = null; });
+        Object.keys(payload).forEach(k => { if (payload[k] === "") payload[k] = null; });
         const res = await fetch(`${API_BASE}/accords/${editItem.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -209,6 +105,7 @@ export default function AdminAccords() {
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
       } else {
+        // POST multipart
         const fd = new FormData();
         Object.entries(form).forEach(([k, v]) => {
           if (v !== "" && v !== null && v !== undefined) fd.append(k, String(v));
@@ -216,17 +113,6 @@ export default function AdminAccords() {
         if (fichier) fd.append("fichier", fichier);
         const res = await fetch(`${API_BASE}/accords`, { method: "POST", body: fd });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
-      }
-      // Upload les fichiers temporaires après création
-      const savedData = await (await fetch(`${API_BASE}/accords?per_page=1&search=${encodeURIComponent(form.titre)}`)).json();
-      const newId = savedData.data?.[0]?.id;
-      if (newId) {
-        for (const f of fichiers.filter((x: any) => x._file)) {
-          const fd = new FormData();
-          fd.append("titre", f.titre);
-          fd.append("fichier", f._file);
-          await fetch(`${API_BASE}/accords/${newId}/fichiers`, { method: "POST", body: fd });
-        }
       }
       setSaveOk(true);
       setTimeout(() => { setShowForm(false); charger(); }, 1000);
@@ -267,15 +153,11 @@ export default function AdminAccords() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>
-            Administration
-          </p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
           <h1 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>
             Accords & Traités
           </h1>
-          <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 2 }}>
-            {total} accord{total > 1 ? "s" : ""} au total
-          </p>
+          <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 2 }}>{total} accord{total > 1 ? "s" : ""} au total</p>
         </div>
         <button onClick={openCreate} style={{
           display: "flex", alignItems: "center", gap: 8,
@@ -308,85 +190,102 @@ export default function AdminAccords() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-              {/* Titre */}
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Titre *</label>
-                <input value={form.titre} onChange={e => update("titre", e.target.value)} placeholder="Intitulé complet de l'accord" style={inputStyle} />
+              {/* Titre + Référence */}
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Titre *</label>
+                  <input value={form.titre} onChange={e => update("titre", e.target.value)} placeholder="Intitulé complet de l'accord" style={inputStyle} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Référence</label>
+                  <input value={form.reference} onChange={e => update("reference", e.target.value)} placeholder="Ex: TBI-2024-01" style={inputStyle} />
+                </div>
               </div>
 
-              {/* Statut */}
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Statut</label>
-                <select value={form.statut} onChange={e => update("statut", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-                  {STATUTS.map(s => <option key={s} value={s}>{STATUT_LABELS[s]}</option>)}
-                </select>
-              </div>
-
-              {/* Pays signataire(s) + Organisation */}
+              {/* Type + Statut */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Pays signataire(s) *</label>
-                  <PaysMultiSelect
-                    selected={form.pays_signataires}
-                    onToggle={(pays: string) => {
-                      const current = form.pays_signataires as string[];
-                      const next = current.includes(pays)
-                        ? current.filter((p: string) => p !== pays)
-                        : [...current, pays];
-                      update("pays_signataires", next);
-                    }}
-                    onClear={(pays: string) => update("pays_signataires", (form.pays_signataires as string[]).filter((p: string) => p !== pays))}
-                  />
+                  <label style={labelStyle}>Type d'accord</label>
+                  <input value={form.type_accord} onChange={e => update("type_accord", e.target.value)} placeholder="Ex: TBI, APE, Coopération..." style={inputStyle} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Statut</label>
+                  <select value={form.statut} onChange={e => update("statut", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                    {STATUTS.map(s => <option key={s} value={s}>{STATUT_LABELS[s]}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Pays + Organisation */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Pays signataires</label>
+                  <input value={form.pays_signataires} onChange={e => update("pays_signataires", e.target.value)} placeholder="Ex: France, Allemagne" style={inputStyle} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Organisation partenaire</label>
+                  <input value={form.organisation_partenaire} onChange={e => update("organisation_partenaire", e.target.value)} placeholder="Ex: Union Européenne" style={inputStyle} />
                 </div>
               </div>
 
               {/* Dates */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
                 {[
-                  { key: "date_signature",      label: "Date de signature"    },
-                  { key: "date_entree_vigueur", label: "Entrée en vigueur"    },
-                  { key: "date_expiration",     label: "Date d'expiration"    },
+                  {key:"date_signature",      label:"Date de signature"},
+                  {key:"date_ratification",   label:"Date de ratification"},
+                  {key:"date_entree_vigueur", label:"Entrée en vigueur"},
+                  {key:"date_expiration",     label:"Date d'expiration"},
                 ].map(f => (
                   <div key={f.key} style={fieldStyle}>
                     <label style={labelStyle}>{f.label}</label>
-                    <input type="date" value={(form as any)[f.key]} max={(f as any).max} onChange={e => update(f.key, e.target.value)} style={inputStyle} />
+                    <input type="date" value={(form as any)[f.key]} onChange={e => update(f.key, e.target.value)} style={inputStyle} />
                   </div>
                 ))}
               </div>
 
-              {/* Classification NAEMA — secteur/branche principal (cascade simple) */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: "16px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
-                  Secteur & Branche principaux
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                  <NaemaCascade
-                    secteurVal={form.secteur_activite}
-                    brancheVal={form.branche_activite}
-                    activiteVal={form.activite_detail}
-                    onSecteurChange={val => { update("secteur_activite", val); update("branche_activite", ""); update("activite_detail", ""); }}
-                    onBrancheChange={val => { update("branche_activite", val); update("activite_detail", ""); }}
-                    onActiviteChange={val => update("activite_detail", val)}
-                  />
-                </div>
-              </div>
+              {/* Secteur + Branche */}
+              {/* Secteur + Branche en cascade */}
+<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+  <div style={fieldStyle}>
+    <label style={labelStyle}>Secteur d'activité</label>
+    <select
+      value={form.secteur_activite}
+      onChange={e => {
+        update("secteur_activite", e.target.value);
+        update("branche_activite", "");
+        const sid = secteurs.find((s: any) => s.nom === e.target.value)?.id;
+        if (sid) fetch(`${API_BASE}/entreprises/ref/branches?secteur_id=${sid}`)
+          .then(r => r.json()).then(setBranchesAccord);
+        else setBranchesAccord([]);
+      }}
+      style={{ ...inputStyle, cursor: "pointer" }}
+    >
+      <option value="">— Sélectionner —</option>
+      {secteurs.map((s: any) => (
+        <option key={s.id} value={s.nom}>{s.nom}</option>
+      ))}
+    </select>
+  </div>
+  <div style={fieldStyle}>
+    <label style={labelStyle}>Branche d'activité</label>
+    <select
+      value={form.branche_activite}
+      onChange={e => update("branche_activite", e.target.value)}
+      disabled={!branchesAccord.length}
+      style={{ ...inputStyle, cursor: branchesAccord.length ? "pointer" : "not-allowed", opacity: branchesAccord.length ? 1 : 0.5 }}
+    >
+      <option value="">— Sélectionner —</option>
+      {branchesAccord.map((b: any) => (
+        <option key={b.id} value={b.nom}>{b.nom}</option>
+      ))}
+    </select>
+  </div>
+</div>
 
-              {/* Domaines couverts — sélection multiple NAEMA */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: "16px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
-                  Domaines couverts (multi-sélection)
-                </p>
-                <NaemaCascadeMulti
-                  onChange={({ secteurs, branches, activites }) => {
-                    const tous = [...secteurs, ...branches, ...activites];
-                    update("domaines_couverts", tous.join(", "));
-                  }}
-                />
-                {form.domaines_couverts && (
-                  <p style={{ fontSize: 12, color: "#4a5568", marginTop: 10 }}>
-                    <strong>Sélectionnés :</strong> {form.domaines_couverts}
-                  </p>
-                )}
+              {/* Domaines */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Domaines couverts <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(séparés par des virgules)</span></label>
+                <input value={form.domaines_couverts} onChange={e => update("domaines_couverts", e.target.value)} placeholder="Ex: Investissement, Commerce, Fiscalité" style={inputStyle} />
               </div>
 
               {/* Commentaires */}
@@ -401,13 +300,20 @@ export default function AdminAccords() {
                 <textarea value={form.avantages_principaux} onChange={e => update("avantages_principaux", e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" as const }} />
               </div>
 
-{/* PDF — seulement à la création */}
+              {/* Lien officiel */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Lien texte officiel</label>
+                <input value={form.lien_texte_officiel} onChange={e => update("lien_texte_officiel", e.target.value)} placeholder="https://..." style={inputStyle} />
+              </div>
+
+              {/* PDF — seulement à la création */}
               {!editItem && (
                 <div style={fieldStyle}>
                   <label style={labelStyle}>Fichier PDF</label>
                   <label style={{
                     display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-                    borderRadius: 8, cursor: "pointer", border: "2px dashed #C5BFBB",
+                    borderRadius: 8, cursor: "pointer",
+                    border: "2px dashed #C5BFBB",
                     background: fichier ? "rgba(124,58,237,0.04)" : "#F2F0EF",
                   }}>
                     <Upload size={15} color={fichier ? "#7c3aed" : "#9aa5b4"} />
@@ -419,7 +325,13 @@ export default function AdminAccords() {
                 </div>
               )}
 
-{/* Publié */}
+              {/* Note interne */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Note interne</label>
+                <input value={form.note_interne} onChange={e => update("note_interne", e.target.value)} placeholder="Note visible uniquement en admin" style={inputStyle} />
+              </div>
+
+              {/* Publié */}
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: "#4a5568" }}>
                 <input type="checkbox" checked={form.est_publie} onChange={e => update("est_publie", e.target.checked)} style={{ width: 16, height: 16 }} />
                 Publier sur le site public
@@ -495,8 +407,14 @@ export default function AdminAccords() {
                         <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 2 }}>
                           {a.titre.length > 50 ? a.titre.slice(0, 50) + "…" : a.titre}
                         </div>
+                        {a.reference && <div style={{ fontSize: 11, color: "#9aa5b4" }}>Réf. {a.reference}</div>}
                       </td>
-<td style={{ padding: "14px 16px", color: "#4a5568", maxWidth: 180 }}>
+                      <td style={{ padding: "14px 16px" }}>
+                        <span style={{ fontSize: 11, color: "#7c3aed", background: "rgba(124,58,237,0.1)", padding: "2px 8px", borderRadius: 999 }}>
+                          {a.type_accord || "—"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "14px 16px", color: "#4a5568", maxWidth: 180 }}>
                         {a.pays_signataires || "—"}
                       </td>
                       <td style={{ padding: "14px 16px", color: "#4a5568", whiteSpace: "nowrap" }}>

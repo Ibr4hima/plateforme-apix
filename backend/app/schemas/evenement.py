@@ -6,7 +6,7 @@ from uuid import UUID
 
 class EvenementBase(BaseModel):
     nom_event:                  str             = Field(..., min_length=2, max_length=500)
-    edition:                    Optional[str]   = None
+    edition:                    Optional[int]   = Field(None, gt=0, description="Numéro d'édition, entier strictement positif")
     type_evenement:             str
     organisateur:               Optional[str]   = None
     role_apix:                  Optional[str]   = None
@@ -47,7 +47,7 @@ class EvenementCreate(EvenementBase):
 
 class EvenementUpdate(BaseModel):
     nom_event:                  Optional[str]   = None
-    edition:                    Optional[str]   = None
+    edition:                    Optional[int]   = Field(None, gt=0, description="Numéro d'édition, entier strictement positif")
     type_evenement:             Optional[str]   = None
     organisateur:               Optional[str]   = None
     role_apix:                  Optional[str]   = None

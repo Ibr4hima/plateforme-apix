@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, Calendar } from "lucide-react";
-import { api } from "@/lib/api";
-import { NaemaCascadeMulti } from "@/components/shared/NaemaSelects";
+import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
+import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
+import { api } from "@/lib/api";
+import { Calendar, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -36,14 +37,14 @@ const STATUT_LABELS: Record<string,string> = {
 };
 
 const EMPTY_FORM = {
-  nom_event:"", edition:"", type_evenement:"forum", type_autre:"",
-  organisateur:"", role_apix:"", description:"", lien_site_officiel:"",
+  nom_event:"", edition: "" as string, type_evenement:"forum", type_autre:"",
+  organisateur:"", role_apix:"", description:"",
   date_unique: true,   // true = date unique, false = plage de dates
   date_debut:"", date_fin:"",
   pays_nom:"", ville:"",
   est_virtuel: false, lien_virtuel:"",
   thematiques:"", pays_invites:"", entreprises_invitees:"",
-  est_publie: true, note_interne:"",
+  est_publie: true,
 };
 
 export default function AdminEvenements() {
@@ -81,13 +82,12 @@ export default function AdminEvenements() {
     const isSameDay = e.date_debut === e.date_fin;
     setForm({
       nom_event:    e.nom_event    || "",
-      edition:      e.edition      || "",
+      edition:      e.edition != null ? String(e.edition) : "",
       type_evenement: e.type_evenement || "forum",
       type_autre:   TYPES.includes(e.type_evenement) ? "" : e.type_evenement,
       organisateur: e.organisateur || "",
       role_apix:    e.role_apix    || "",
       description:  e.description  || "",
-      lien_site_officiel: e.lien_site_officiel || "",
       date_unique:  isSameDay,
       date_debut:   e.date_debut   || "",
       date_fin:     e.date_fin     || "",
@@ -99,7 +99,6 @@ export default function AdminEvenements() {
       pays_invites: e.pays_invites || "",
       entreprises_invitees: e.entreprises_invitees || "",
       est_publie:   e.est_publie   ?? true,
-      note_interne: e.note_interne || "",
     });
     setEditItem(e); setShowForm(true); setError(""); setSaveOk(false);
   };
@@ -107,6 +106,17 @@ export default function AdminEvenements() {
   const handleSave = async () => {
     if (!form.nom_event.trim()) { setError("Le nom est obligatoire"); return; }
     if (!form.date_debut)       { setError("La date est obligatoire"); return; }
+
+    // Validation édition : doit être un entier > 0 si renseignée
+    let editionInt: number | null = null;
+    if (form.edition !== "") {
+      const parsed = parseInt(form.edition, 10);
+      if (isNaN(parsed) || parsed <= 0) {
+        setError("L'édition doit être un nombre entier supérieur à 0 (ex : 1, 5, 12)");
+        return;
+      }
+      editionInt = parsed;
+    }
 
     // Validation date
     const dateDebut = new Date(form.date_debut);
@@ -124,12 +134,11 @@ export default function AdminEvenements() {
       const typeEvenement = form.type_evenement === "autre" ? (form.type_autre || "autre") : form.type_evenement;
       const payload: any = {
         nom_event:    form.nom_event,
-        edition:      form.edition      || null,
+        edition:      editionInt,
         type_evenement: typeEvenement,
         organisateur: form.organisateur || null,
         role_apix:    form.role_apix    || null,
         description:  form.description  || null,
-        lien_site_officiel: form.lien_site_officiel || null,
         date_debut:   form.date_debut,
         date_fin:     form.date_unique ? form.date_debut : form.date_fin,
         pays_nom:     form.pays_nom     || null,
@@ -141,7 +150,6 @@ export default function AdminEvenements() {
         entreprises_invitees: form.entreprises_invitees || null,
         statut:       "planifie",
         est_publie:   form.est_publie,
-        note_interne: form.note_interne || null,
       };
 
       if (editItem) {
@@ -223,8 +231,46 @@ export default function AdminEvenements() {
                   <input value={form.nom_event} onChange={e => update("nom_event", e.target.value)} placeholder="Intitulé de l'événement" style={inputStyle} />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Édition</label>
-                  <input value={form.edition} onChange={e => update("edition", e.target.value)} placeholder="Ex: 5ème édition" style={inputStyle} />
+                  <label style={labelStyle}>
+                    Édition
+                    <span style={{ fontWeight: 400, color: "#9aa5b4", marginLeft: 4 }}>(entier &gt; 0)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={form.edition}
+                    onChange={e => {
+                      const raw = e.target.value;
+                      // Bloquer les décimales et les négatifs à la frappe
+                      if (raw === "" || /^[1-9][0-9]*$/.test(raw)) {
+                        update("edition", raw);
+                      }
+                    }}
+                    onKeyDown={e => {
+                      // Bloquer e, +, -, . et ,
+                      if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    placeholder="Ex : 5"
+                    style={{
+                      ...inputStyle,
+                      borderColor: form.edition !== "" && (isNaN(parseInt(form.edition)) || parseInt(form.edition) <= 0)
+                        ? "#dc2626"
+                        : "#C5BFBB",
+                    }}
+                  />
+                  {form.edition !== "" && (isNaN(parseInt(form.edition)) || parseInt(form.edition) <= 0) && (
+                    <span style={{ fontSize: 11, color: "#dc2626", marginTop: 2 }}>
+                      Entier positif requis (1, 2, 3…)
+                    </span>
+                  )}
+                  {form.edition !== "" && parseInt(form.edition) > 0 && (
+                    <span style={{ fontSize: 11, color: "#15803d", marginTop: 2 }}>
+                      {parseInt(form.edition)}ème édition
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -347,29 +393,24 @@ export default function AdminEvenements() {
                 <input value={form.organisateur} onChange={e => update("organisateur", e.target.value)} placeholder="Nom de l'organisateur" style={inputStyle} />
               </div>
 
-              {/* Thématiques NAEMA */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: "16px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#004f91", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
-                  Thématiques (NAEMA)
-                </p>
-                <NaemaCascadeMulti
-                  onChange={({ secteurs, branches, activites }) => {
-                    const tous = [...secteurs, ...branches, ...activites];
-                    update("thematiques", tous.join(", "));
-                  }}
+              {/* Thématiques */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Thématiques</label>
+                <ThematiquesNaema
+                  value={form.thematiques}
+                  onChange={val => update("thematiques", val)}
                 />
-                {form.thematiques && (
-                  <p style={{ fontSize: 12, color: "#4a5568", marginTop: 10 }}>
-                    <strong>Sélectionnées :</strong> {form.thematiques}
-                  </p>
-                )}
               </div>
 
               {/* Pays invités / Entreprises invitées */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Pays invités <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(séparés par des virgules)</span></label>
-                  <input value={form.pays_invites} onChange={e => update("pays_invites", e.target.value)} placeholder="France, Maroc, Côte d'Ivoire..." style={inputStyle} />
+                  <label style={labelStyle}>Pays invités <span style={{ fontWeight: 400, color: "#9aa5b4" }}></span></label>
+                  <PaysMultiSelect
+                    value={form.pays_invites}
+                    onChange={val => update("pays_invites", val)}
+                    placeholder="Sélectionner les pays invités"
+                  />
                 </div>
                 <div style={fieldStyle}>
                   <label style={labelStyle}>Entreprises invitées <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(séparés par des virgules)</span></label>
@@ -381,18 +422,6 @@ export default function AdminEvenements() {
               <div style={fieldStyle}>
                 <label style={labelStyle}>Description</label>
                 <textarea value={form.description} onChange={e => update("description", e.target.value)} rows={3} placeholder="Description de l'événement..." style={{ ...inputStyle, resize: "vertical" as const }} />
-              </div>
-
-              {/* Lien + Note interne */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Lien site officiel</label>
-                  <input value={form.lien_site_officiel} onChange={e => update("lien_site_officiel", e.target.value)} placeholder="https://..." style={inputStyle} />
-                </div>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Note interne</label>
-                  <input value={form.note_interne} onChange={e => update("note_interne", e.target.value)} placeholder="Note visible uniquement en admin" style={inputStyle} />
-                </div>
               </div>
 
               {/* Publié */}
@@ -465,7 +494,7 @@ export default function AdminEvenements() {
                       <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 2 }}>
                         {e.nom_event.length > 40 ? e.nom_event.slice(0, 40) + "…" : e.nom_event}
                       </div>
-                      {e.edition && <div style={{ fontSize: 11, color: "#9aa5b4" }}>{e.edition}</div>}
+                      {e.edition != null && <div style={{ fontSize: 11, color: "#9aa5b4" }}>{e.edition}ème édition</div>}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <span style={{ fontSize: 11, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.1)", padding: "2px 8px", borderRadius: 999 }}>
