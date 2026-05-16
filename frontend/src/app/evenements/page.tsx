@@ -6,7 +6,7 @@ import EvenementCard from "@/components/evenements/EvenementCard";
 import EvenementModal from "@/components/evenements/EvenementModal";
 import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
 import { api } from "@/lib/api";
-import { CalendarDays, Loader2, Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { CalendarDays, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -18,8 +18,9 @@ function flag(code: string) {
 
 // ── Dropdown multi-sélection générique ───────────────────────────────────────
 function MultiDropdownFilter({
-  placeholder, selected, onToggle, color, items,
+  label, placeholder, selected, onToggle, color, items,
 }: {
+  label:       string;
   placeholder: string;
   selected:    string[];
   onToggle:    (val: string) => void;
@@ -41,77 +42,115 @@ function MultiDropdownFilter({
     fontFamily: "var(--font-google-sans)", width: "100%", boxSizing: "border-box" as const,
   };
 
+  const selectedLabels = items.filter(i => selected.includes(i.value));
+
   return (
-    <div ref={ref} style={{ position: "relative", minWidth: 180 }}>
-      {/* Trigger */}
-      <div
-        onClick={() => setOpen(o => !o)}
-        style={{
-          ...base, display: "flex", alignItems: "center",
-          justifyContent: "space-between", cursor: "pointer",
-          border: `1px solid ${open ? color : "#C5BFBB"}`,
-          transition: "border-color 0.2s",
-        }}
-      >
-        <span style={{ color: selected.length > 0 ? color : "#9aa5b4", fontWeight: selected.length > 0 ? 600 : 400 }}>
-          {selected.length > 0 ? `${selected.length} sélectionné${selected.length > 1 ? "s" : ""}` : placeholder}
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, minWidth: 160 }}>
+      {/* Label */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ width: 8, height: 8, borderRadius: "50%", background: selected.length > 0 ? color : "#C5BFBB", flexShrink: 0 }} />
+        <span style={{ fontSize: 11, fontWeight: 700, color: selected.length > 0 ? color : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
+          {label}
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          {selected.length > 0 && (
-            <button
-              onClick={e => { e.stopPropagation(); selected.forEach(v => onToggle(v)); }}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
-            >
-              <X size={12} style={{ color: "#9aa5b4" }} />
-            </button>
-          )}
-          {open ? <ChevronUp size={14} style={{ color, flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: "#9aa5b4", flexShrink: 0 }} />}
-        </div>
+        {selected.length > 0 && (
+          <span style={{ fontSize: 10, fontWeight: 700, color, background: color + "15", padding: "1px 6px", borderRadius: 999 }}>
+            {selected.length}
+          </span>
+        )}
       </div>
 
-      {/* Dropdown */}
-      {open && (
-        <div style={{
-          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 300,
-          background: "#fff", border: `1px solid ${color}40`, borderRadius: 10,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.12)", maxHeight: 260, overflowY: "auto",
-        }}>
-          {items.map(item => {
-            const isSel = selected.includes(item.value);
-            return (
-              <div
-                key={item.value}
-                onMouseDown={e => { e.preventDefault(); onToggle(item.value); }}
-                style={{
-                  display: "flex", alignItems: "center", gap: 10,
-                  padding: "9px 12px", cursor: "pointer",
-                  background: isSel ? color + "0d" : "transparent",
-                  borderBottom: "1px solid #F8F7F6", transition: "background 0.1s",
-                }}
-                onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "#F8F7F6"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = isSel ? color + "0d" : "transparent"; }}
+      <div ref={ref} style={{ position: "relative" }}>
+        {/* Trigger */}
+        <div
+          onClick={() => setOpen(o => !o)}
+          style={{
+            ...base, display: "flex", alignItems: "center",
+            justifyContent: "space-between", cursor: "pointer",
+            border: `1px solid ${open ? color : "#C5BFBB"}`,
+            transition: "border-color 0.2s",
+          }}
+        >
+          <span style={{ color: selected.length > 0 ? color : "#9aa5b4", fontWeight: selected.length > 0 ? 600 : 400 }}>
+            {selected.length > 0 ? `${selected.length} sélectionné${selected.length > 1 ? "s" : ""}` : placeholder}
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            {selected.length > 0 && (
+              <button
+                onClick={e => { e.stopPropagation(); selected.slice().forEach(v => onToggle(v)); }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
               >
-                {/* Checkbox */}
-                <div style={{
-                  width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                  border: `2px solid ${isSel ? color : "#C5BFBB"}`,
-                  background: isSel ? color : "transparent",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  transition: "all 0.12s",
-                }}>
-                  {isSel && (
-                    <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                      <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
+                <X size={12} style={{ color: "#9aa5b4" }} />
+              </button>
+            )}
+            {open ? <ChevronUp size={14} style={{ color, flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: "#9aa5b4", flexShrink: 0 }} />}
+          </div>
+        </div>
+
+        {/* Dropdown */}
+        {open && (
+          <div style={{
+            position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 300,
+            background: "#fff", border: `1px solid ${color}40`, borderRadius: 10,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.12)", maxHeight: 260, overflowY: "auto",
+          }}>
+            {items.map(item => {
+              const isSel = selected.includes(item.value);
+              return (
+                <div
+                  key={item.value}
+                  onMouseDown={e => { e.preventDefault(); onToggle(item.value); }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "9px 12px", cursor: "pointer",
+                    background: isSel ? color + "0d" : "transparent",
+                    borderBottom: "1px solid #F8F7F6", transition: "background 0.1s",
+                  }}
+                  onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "#F8F7F6"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = isSel ? color + "0d" : "transparent"; }}
+                >
+                  <div style={{
+                    width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+                    border: `2px solid ${isSel ? color : "#C5BFBB"}`,
+                    background: isSel ? color : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: "all 0.12s",
+                  }}>
+                    {isSel && (
+                      <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                        <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                  {item.flag && <span style={{ fontSize: 16 }}>{item.flag}</span>}
+                  <span style={{ fontSize: 13, color: isSel ? "#1a1a2e" : "#4a5568", fontWeight: isSel ? 600 : 400 }}>
+                    {item.label}
+                  </span>
                 </div>
-                {item.flag && <span style={{ fontSize: 16 }}>{item.flag}</span>}
-                <span style={{ fontSize: 13, color: isSel ? "#1a1a2e" : "#4a5568", fontWeight: isSel ? 600 : 400 }}>
-                  {item.label}
-                </span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Tags des sélections */}
+      {selectedLabels.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+          {selectedLabels.map(item => (
+            <span key={item.value} style={{
+              display: "inline-flex", alignItems: "center", gap: 4,
+              background: color + "15", color, border: `1px solid ${color}30`,
+              borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 600,
+            }}>
+              {item.flag && <span>{item.flag}</span>}
+              {item.label}
+              <button
+                onClick={() => onToggle(item.value)}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+              >
+                <X size={10} style={{ color }} />
+              </button>
+            </span>
+          ))}
         </div>
       )}
     </div>
@@ -146,7 +185,6 @@ export default function EvenementsPage() {
   const [nomsSecteursRef, setNomsSecteursRef] = useState<string[]>([]);
 
   // Filtres
-  const [search,       setSearch]       = useState("");
   const [statutFiltre, setStatutFiltre] = useState("");
   const [typeFiltres,  setTypeFiltres]  = useState<string[]>([]);
   const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
@@ -174,10 +212,9 @@ export default function EvenementsPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (search)                params.append("search",         search);
-      if (statutFiltre)          params.append("statut_calcule", statutFiltre);
-      typeFiltres.forEach(t  =>  params.append("type_evenement", t));
-      paysFiltres.forEach(p  =>  params.append("pays_nom",       p));
+      if (statutFiltre) params.append("statut_calcule", statutFiltre);
+      typeFiltres.forEach(t => params.append("type_evenement", t));
+      paysFiltres.forEach(p => params.append("pays_nom", p));
       if (thematiques) {
         thematiques.split(",").map((t: string) => t.trim()).filter(Boolean)
           .forEach((t: string) => params.append("thematique", t));
@@ -191,14 +228,14 @@ export default function EvenementsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, typeFiltres, statutFiltre, paysFiltres, thematiques]);
+  }, [typeFiltres, statutFiltre, paysFiltres, thematiques]);
 
   useEffect(() => { charger(); }, [charger]);
 
-  const hasFilter = search || typeFiltres.length > 0 || statutFiltre || paysFiltres.length > 0 || thematiques;
+  const hasFilter = typeFiltres.length > 0 || statutFiltre || paysFiltres.length > 0 || thematiques;
 
   const reinitialiser = () => {
-    setSearch(""); setTypeFiltres([]); setStatutFiltre(""); setPaysFiltres([]); setThematiques("");
+    setTypeFiltres([]); setStatutFiltre(""); setPaysFiltres([]); setThematiques("");
   };
 
   const toggleType = (val: string) =>
@@ -266,69 +303,67 @@ export default function EvenementsPage() {
             border: "1px solid #C5BFBB", borderRadius: 16,
             padding: "20px", marginBottom: 28,
           }}>
-            {/* Ligne 1 : search + reset */}
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <div style={{ position: "relative", flex: "1 1 220px" }}>
-                <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-                <input
-                  placeholder="Rechercher un événement..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  style={{ ...inputStyle, width: "100%", paddingLeft: 34, boxSizing: "border-box" as const }}
-                />
-              </div>
-              {hasFilter && (
-                <button onClick={reinitialiser} style={{ display: "flex", alignItems: "center", gap: 4, background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: 8, padding: "6px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                  <X size={12} /> Effacer tout
-                </button>
-              )}
-            </div>
+            {/* Grille filtres — 3 colonnes alignées */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, alignItems: "start", marginBottom: 16 }}>
 
-            {/* Ligne 2 : badges statut */}
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 7 }}>Statut</p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {STATUT_BADGES.map(b => (
-                  <button
-                    key={b.value}
-                    onClick={() => setStatutFiltre(b.value)}
-                    style={{
-                      padding: "6px 14px", borderRadius: 999, fontSize: 12, fontWeight: 700,
-                      border: `1px solid ${statutFiltre === b.value ? b.text : "transparent"}`,
-                      background: statutFiltre === b.value ? b.bg : "rgba(255,255,255,0.5)",
-                      color: statutFiltre === b.value ? b.text : "#9aa5b4",
-                      cursor: "pointer", transition: "all 0.15s",
-                    }}
-                  >
-                    {b.label}
-                  </button>
-                ))}
+              {/* Colonne 1 : Statut */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: statutFiltre ? "#4a5568" : "#C5BFBB" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: statutFiltre ? "#4a5568" : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Statut</span>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {STATUT_BADGES.map(b => (
+                    <button
+                      key={b.value}
+                      onClick={() => setStatutFiltre(b.value)}
+                      style={{
+                        padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700,
+                        border: `1px solid ${statutFiltre === b.value ? b.text : "transparent"}`,
+                        background: statutFiltre === b.value ? b.bg : "rgba(255,255,255,0.5)",
+                        color: statutFiltre === b.value ? b.text : "#9aa5b4",
+                        cursor: "pointer", transition: "all 0.15s",
+                      }}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Ligne 3 : dropdowns type + pays */}
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+              {/* Colonne 2 : Type */}
               <MultiDropdownFilter
-                placeholder="Type d'événement"
+                label="Type d'événement"
+                placeholder="Sélectionner"
                 selected={typeFiltres}
                 onToggle={toggleType}
                 color="#004f91"
                 items={TYPES.filter(t => t.value !== "").map(t => ({ value: t.value, label: t.label }))}
               />
-              {paysHotes.length > 0 && (
-                <MultiDropdownFilter
-                  placeholder="Pays hôte"
-                  selected={paysFiltres}
-                  onToggle={togglePays}
-                  color="#ca631f"
-                  items={paysHotes.map(p => ({
-                    value: p.nom,
-                    label: p.nom,
-                    flag: p.code_iso2 ? flag(p.code_iso2) : undefined,
-                  }))}
-                />
-              )}
+
+              {/* Colonne 3 : Pays hôte */}
+              <MultiDropdownFilter
+                label="Pays hôte"
+                placeholder="Sélectionner"
+                selected={paysFiltres}
+                onToggle={togglePays}
+                color="#ca631f"
+                items={paysHotes.map(p => ({
+                  value: p.nom,
+                  label: p.nom,
+                  flag: p.code_iso2 ? flag(p.code_iso2) : undefined,
+                }))}
+              />
             </div>
+
+            {/* Bouton effacer */}
+            {hasFilter && (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+                <button onClick={reinitialiser} style={{ display: "flex", alignItems: "center", gap: 4, background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  <X size={12} /> Effacer tout
+                </button>
+              </div>
+            )}
 
             {/* Ligne 5 : Thématiques cascade horizontale */}
             <ThematiquesNaema

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, cast, Date
 from sqlalchemy.sql.expression import text
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from datetime import date as date_type
 
@@ -43,12 +43,11 @@ def get_statut_calcule(e: Evenement) -> str:
 async def liste_evenements(
     page:           int             = Query(1, ge=1),
     per_page:       int             = Query(12, ge=1, le=100),
-    type_evenement: Optional[str]   = None,
+    type_evenement: List[str]       = Query(default=[]),
     statut_calcule: Optional[str]   = None,  # a_venir | en_cours | termine
-    pays_nom:       Optional[str]   = None,
+    pays_nom:       List[str]       = Query(default=[]),
     annee:          Optional[int]   = None,
-    search:         Optional[str]   = None,
-    thematique:     Optional[str]   = None,
+    thematique:     List[str]       = Query(default=[]),
     db:             AsyncSession    = Depends(get_db),
 ):
     today = date_type.today()
@@ -56,20 +55,21 @@ async def liste_evenements(
         Evenement.est_publie == True,
     ]
 
-    if type_evenement:  filters.append(Evenement.type_evenement == type_evenement)
-    if pays_nom:        filters.append(Evenement.pays_nom == pays_nom)
+    # Types — OR entre plusieurs types
+    if type_evenement:
+        filters.append(or_(*[Evenement.type_evenement == t for t in type_evenement]))
+
+    # Pays — OR entre plusieurs pays
+    if pays_nom:
+        filters.append(or_(*[Evenement.pays_nom == p for p in pays_nom]))
+
     if annee:
         from sqlalchemy import extract
         filters.append(extract("year", Evenement.date_debut) == annee)
-    if search:
-        filters.append(or_(
-            Evenement.nom_event.ilike(f"%{search}%"),
-            Evenement.description.ilike(f"%{search}%"),
-            Evenement.organisateur.ilike(f"%{search}%"),
-            Evenement.ville.ilike(f"%{search}%"),
-        ))
+
+    # Thématiques — OR entre plusieurs thématiques (chaque mot-clé cherché dans le champ texte)
     if thematique:
-        filters.append(Evenement.thematiques.ilike(f"%{thematique}%"))
+        filters.append(or_(*[Evenement.thematiques.ilike(f"%{t}%") for t in thematique]))
 
     # Statut calculé à partir des dates
     if statut_calcule == "a_venir":
