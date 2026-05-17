@@ -52,11 +52,12 @@ const STATUT_LABELS: Record<string,string> = {
 const EMPTY_FORM = {
   nom_event:"", edition: "" as string, type_evenement:"forum", type_autre:"",
   organisateur:"", role_apix:"", description:"",
-  date_unique: true,   // true = date unique, false = plage de dates
+  date_unique: true,
   date_debut:"", date_fin:"",
-  pays_nom:"", ville:"",
+  pays_hote_id: "" as string | number, pays_hote_nom: "",
+  ville:"",
   est_virtuel: false, lien_virtuel:"",
-  thematiques:"", pays_invites:"", entreprises_invitees:"",
+  thematiques_naema:"", pays_invites:"", entreprises_invitees:"",
   est_publie: true,
 };
 
@@ -75,7 +76,7 @@ export default function AdminEvenements() {
   const charger = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/evenements?per_page=100`);
+      const res = await fetch(`${API_BASE}/evenements/admin?per_page=100`);
       const data = await res.json();
       setEvenements(data.data || []);
       setTotal(data.total || 0);
@@ -104,11 +105,12 @@ export default function AdminEvenements() {
       date_unique:  isSameDay,
       date_debut:   e.date_debut   || "",
       date_fin:     e.date_fin     || "",
-      pays_nom:     e.pays_nom     || "",
+      pays_hote_id: e.pays_hote_id  || "",
+      pays_hote_nom:e.pays_hote_nom  || "",
       ville:        e.ville        || "",
       est_virtuel:  e.est_virtuel  || false,
       lien_virtuel: e.lien_virtuel || "",
-      thematiques:  e.thematiques  || "",
+      thematiques_naema: e.thematiques_naema || "",
       pays_invites: e.pays_invites || "",
       entreprises_invitees: e.entreprises_invitees || "",
       est_publie:   e.est_publie   ?? true,
@@ -154,11 +156,11 @@ export default function AdminEvenements() {
         description:  form.description  || null,
         date_debut:   form.date_debut,
         date_fin:     form.date_unique ? form.date_debut : form.date_fin,
-        pays_nom:     form.pays_nom     || null,
+        pays_hote_id: form.pays_hote_id ? parseInt(String(form.pays_hote_id)) : null,
         ville:        form.ville        || null,
         est_virtuel:  form.est_virtuel,
         lien_virtuel: form.lien_virtuel || null,
-        thematiques:  form.thematiques  || null,
+        thematiques_naema:    form.thematiques_naema  || null,
         pays_invites: form.pays_invites || null,
         entreprises_invitees: form.entreprises_invitees || null,
         statut:       "planifie",
@@ -378,8 +380,9 @@ export default function AdminEvenements() {
                 <div style={fieldStyle}>
                   <label style={labelStyle}>Pays hôte</label>
                   <PaysSelect
-                    value={form.pays_nom}
-                    onChange={val => update("pays_nom", val)}
+                    value={form.pays_hote_nom}
+                    onChange={nom => update("pays_hote_nom", nom)}
+                    onChangeId={id => update("pays_hote_id", id || "")}
                   />
                 </div>
                 <div style={fieldStyle}>
@@ -410,8 +413,8 @@ export default function AdminEvenements() {
               <div style={fieldStyle}>
                 <label style={labelStyle}>Thématiques</label>
                 <ThematiquesNaema
-                  value={form.thematiques}
-                  onChange={val => update("thematiques", val)}
+                  value={form.thematiques_naema}
+                  onChange={val => update("thematiques_naema", val)}
                 />
               </div>
 
@@ -523,7 +526,7 @@ export default function AdminEvenements() {
                       )}
                     </td>
                     <td style={{ padding: "14px 16px", color: "#4a5568" }}>
-                      {[e.ville, e.pays_nom].filter(Boolean).join(", ") || "—"}
+                      {[e.ville, e.pays_hote_nom].filter(Boolean).join(", ") || "—"}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <button onClick={() => handleTogglePublie(e)} style={{ background: "none", border: "none", cursor: "pointer" }}>

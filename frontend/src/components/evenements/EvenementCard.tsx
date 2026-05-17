@@ -106,13 +106,13 @@ export default function EvenementCard({ event, onClick, nomsSecteursRef = [] }: 
           <Calendar size={13} style={{ color: accentColor, flexShrink: 0 }} />
           {isSameDay ? formatDate(event.date_debut) : `${formatDate(event.date_debut)} → ${formatDate(event.date_fin)}`}
         </div>
-        {(event.ville || event.pays_nom) && (
+        {(event.ville || event.pays_hote_nom) && (
           <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#4a5568", fontSize: 13 }}>
             {event.est_virtuel
               ? <Globe size={13} style={{ color: accentColor }} />
               : <MapPin size={13} style={{ color: accentColor }} />
             }
-            {event.est_virtuel ? "Virtuel" : [event.ville, event.pays_nom].filter(Boolean).join(", ")}
+            {event.est_virtuel ? "Virtuel" : [event.ville, event.pays_hote_nom].filter(Boolean).join(", ")}
           </div>
         )}
         {event.organisateur && (
@@ -126,8 +126,8 @@ export default function EvenementCard({ event, onClick, nomsSecteursRef = [] }: 
       </div>
 
       {/* Thématiques — secteurs uniquement */}
-      {event.thematiques && (() => {
-        const all = event.thematiques.split(",").map((t: string) => t.trim()).filter(Boolean);
+      {event.thematiques_naema && (() => {
+        const all = event.thematiques_naema.split(",").map((t: string) => t.trim()).filter(Boolean);
         // Nouveau format avec préfixes
         const avecPrefixe = all.some((t: string) => t.startsWith("sec:") || t.startsWith("bra:") || t.startsWith("act:"));
         const secteurs = avecPrefixe

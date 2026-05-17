@@ -11,8 +11,11 @@ const SELECT_STYLE = {
   cursor: "pointer", boxSizing: "border-box" as const,
 };
 
+// value = ID (number | "") — onChange retourne (id, nom)
 export function RegionSelect({ value, onChange, required }: {
-  value: string; onChange: (nom: string, id: number | null) => void; required?: boolean;
+  value: number | string;
+  onChange: (id: number | null, nom: string) => void;
+  required?: boolean;
 }) {
   const [regions, setRegions] = useState<any[]>([]);
   useEffect(() => {
@@ -21,22 +24,25 @@ export function RegionSelect({ value, onChange, required }: {
   }, []);
   return (
     <select
-      value={value}
+      value={value || ""}
       required={required}
       onChange={e => {
-        const sel = regions.find(r => r.nom === e.target.value);
-        onChange(e.target.value, sel?.id || null);
+        const sel = regions.find(r => r.id === parseInt(e.target.value));
+        onChange(sel?.id || null, sel?.nom || "");
       }}
       style={{ ...SELECT_STYLE, borderColor: required && !value ? "#dc2626" : "#C5BFBB" }}
     >
       <option value="">— Sélectionner —</option>
-      {regions.map(r => <option key={r.id} value={r.nom}>{r.nom}</option>)}
+      {regions.map(r => <option key={r.id} value={r.id}>{r.nom}</option>)}
     </select>
   );
 }
 
 export function DepartementSelect({ regionId, value, onChange, required }: {
-  regionId: number | null; value: string; onChange: (nom: string, id: number | null) => void; required?: boolean;
+  regionId: number | null;
+  value:    number | string;
+  onChange: (id: number | null, nom: string) => void;
+  required?: boolean;
 }) {
   const [departements, setDepartements] = useState<any[]>([]);
   useEffect(() => {
@@ -47,23 +53,26 @@ export function DepartementSelect({ regionId, value, onChange, required }: {
   }, [regionId]);
   return (
     <select
-      value={value}
+      value={value || ""}
       required={required}
       disabled={!departements.length}
       onChange={e => {
-        const sel = departements.find(d => d.nom === e.target.value);
-        onChange(e.target.value, sel?.id || null);
+        const sel = departements.find(d => d.id === parseInt(e.target.value));
+        onChange(sel?.id || null, sel?.nom || "");
       }}
       style={{ ...SELECT_STYLE, opacity: departements.length ? 1 : 0.5, cursor: departements.length ? "pointer" : "not-allowed", borderColor: required && !value && regionId ? "#dc2626" : "#C5BFBB" }}
     >
       <option value="">— Sélectionner —</option>
-      {departements.map(d => <option key={d.id} value={d.nom}>{d.nom}</option>)}
+      {departements.map(d => <option key={d.id} value={d.id}>{d.nom}</option>)}
     </select>
   );
 }
 
 export function ArrondissementSelect({ departementId, value, onChange, required }: {
-  departementId: number | null; value: string; onChange: (nom: string) => void; required?: boolean;
+  departementId: number | null;
+  value:         number | string;
+  onChange:      (id: number | null, nom: string) => void;
+  required?:     boolean;
 }) {
   const [arrondissements, setArrondissements] = useState<any[]>([]);
   useEffect(() => {
@@ -74,14 +83,20 @@ export function ArrondissementSelect({ departementId, value, onChange, required 
   }, [departementId]);
   return (
     <select
-      value={value}
+      value={value || ""}
       required={required}
       disabled={!arrondissements.length}
-      onChange={e => onChange(e.target.value)}
+      onChange={e => {
+        const sel = arrondissements.find(a => a.id === parseInt(e.target.value));
+        onChange(sel?.id || null, sel?.nom || "");
+      }}
       style={{ ...SELECT_STYLE, opacity: arrondissements.length ? 1 : 0.5, cursor: arrondissements.length ? "pointer" : "not-allowed" }}
     >
       <option value="">— Sélectionner —</option>
-      {arrondissements.map(a => <option key={a.id} value={a.nom}>{a.nom}</option>)}
+      {arrondissements.map(a => <option key={a.id} value={a.id}>{a.nom}</option>)}
     </select>
   );
 }
+
+// Composants multi-sélection utilisés dans les filtres publics (LocalisationCascade)
+export { default as GeoCascadeMulti } from "./LocalisationCascade";

@@ -41,15 +41,15 @@ function formatPhoneDisplay(val: string): string {
 
 const EMPTY_FORM = {
   nom: "", forme_juridique: "", date_creation: "",
-  siege_pays: "",
+  siege_pays_id: "" as string | number,
   pays: "Sénégal",
-  region: "", departement: "", arrondissement: "",
+  region_id: "" as string | number, departement_id: "" as string | number, arrondissement_id: "" as string | number,
   adresse: "",
   telephone: "", mail: "", siteweb: "",
   thematiques: "",
   secteur_id: "", branche_id: "", activite_id: "",
   secteur_nom: "", branche_nom: "", activite_nom: "",
-  statut: "actif", est_publie: true, note_interne: "",
+  statut: "actif", est_publie: true,
 };
 
 const EMPTY_FOCAL = { civilite: "Monsieur", nom: "", prenom: "", poste: "", telephone: "", mail: "", est_principal: false };
@@ -70,6 +70,7 @@ export default function AdminEntreprises() {
   // IDs pour les cascades géographiques
   const [regionId,      setRegionId]      = useState<number|null>(null);
   const [departementId, setDepartementId] = useState<number|null>(null);
+  const [siegePaysNom,  setSiegePaysNom]  = useState("");
 
   // IDs pour NAEMA (nécessaires pour les selects cascades)
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
@@ -138,11 +139,11 @@ export default function AdminEntreprises() {
       nom:              e.nom              || "",
       forme_juridique:  e.forme_juridique  || "",
       date_creation:    e.date_creation    || "",
-      siege_pays:       e.siege_pays       || "",
+      siege_pays_id:    e.siege_pays_id    || "",
       pays:             "Sénégal",
-      region:           e.region           || "",
-      departement:      e.departement      || "",
-      arrondissement:   e.arrondissement   || e.commune || "",
+      region_id:        e.region_id        || "",
+      departement_id:   e.departement_id   || "",
+      arrondissement_id:e.arrondissement_id|| "",
       adresse:          e.adresse          || "",
       telephone:        e.telephone        || "",
       mail:             e.mail             || "",
@@ -156,7 +157,6 @@ export default function AdminEntreprises() {
       activite_nom:     e.activite?.nom            || "",
       statut:           e.statut           || "actif",
       est_publie:       e.est_publie       ?? true,
-      note_interne:     e.note_interne     || "",
     });
     setFocaux(e.points_focaux?.length > 0
       ? e.points_focaux.map((pf: any) => ({
@@ -173,22 +173,11 @@ export default function AdminEntreprises() {
     setEditItem(e); setShowForm(true); setErrors({}); setSaveOk(false);
 
     // Initialiser les IDs géo pour que les cascades fonctionnent
-    if (e.region) {
-      fetch(`${API_BASE}/entreprises/ref/regions`)
-        .then(r => r.json())
-        .then(regions => {
-          const reg = regions.find((r: any) => r.nom === e.region);
-          if (reg) setRegionId(reg.id);
-          if (e.departement && reg) {
-            fetch(`${API_BASE}/entreprises/ref/departements?region_id=${reg.id}`)
-              .then(r => r.json())
-              .then(deps => {
-                const dep = deps.find((d: any) => d.nom === e.departement);
-                if (dep) setDepartementId(dep.id);
-              });
-          }
-        });
+    if (e.region_id) {
+      setRegionId(e.region_id);
+      if (e.departement_id) setDepartementId(e.departement_id);
     }
+    setSiegePaysNom(e.siege_pays_nom || "");
   };
 
   const handleSave = async () => {
@@ -209,15 +198,23 @@ export default function AdminEntreprises() {
       payload.secteur_id  = secteur?.id  || null;
       payload.branche_id  = branche?.id  || null;
       payload.activite_id = activite?.id || null;
+      // IDs geo — déjà dans le form, s'assurer qu'ils sont des entiers
+      if (payload.region_id)         payload.region_id         = parseInt(payload.region_id)         || null;
+      if (payload.departement_id)    payload.departement_id    = parseInt(payload.departement_id)    || null;
+      if (payload.arrondissement_id) payload.arrondissement_id = parseInt(payload.arrondissement_id) || null;
       // Nettoyer les champs non nécessaires pour le backend
       delete payload.thematiques;
       delete payload.secteur_nom;
       delete payload.branche_nom;
       delete payload.activite_nom;
+      // Convertir les IDs en entiers
+      if (payload.siege_pays_id)     payload.siege_pays_id     = parseInt(payload.siege_pays_id)     || null;
+      if (payload.region_id)         payload.region_id         = parseInt(payload.region_id)         || null;
+      if (payload.departement_id)    payload.departement_id    = parseInt(payload.departement_id)    || null;
+      if (payload.arrondissement_id) payload.arrondissement_id = parseInt(payload.arrondissement_id) || null;
       // Nettoyer les champs vides
-      Object.keys(payload).forEach(k => { if (payload[k] === "") payload[k] = null; });
+      Object.keys(payload).forEach(k => { if (payload[k] === "" || payload[k] === 0) payload[k] = null; });
       payload.pays = "Sénégal";
-      payload.commune = payload.arrondissement;
 
       const pf = focaux.filter(f => f.nom.trim()).map(f => ({
         civilite: f.civilite || "Monsieur",
@@ -360,8 +357,9 @@ export default function AdminEntreprises() {
                   <div style={fieldStyle}>
                     <label style={labelStyle()}>Pays du siège social</label>
                     <PaysSelect
-                      value={form.siege_pays}
-                      onChange={val => update("siege_pays", val)}
+                      value={siegePaysNom}
+                      onChange={nom => setSiegePaysNom(nom)}
+                      onChangeId={id => update("siege_pays_id", id || "")}
                       placeholder="Pays du siège social"
                     />
                   </div>
@@ -381,40 +379,40 @@ export default function AdminEntreprises() {
                 {sectionTitle("Localisation au Sénégal")}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
                   <div style={fieldStyle}>
-                    <label style={labelStyle("region")}>Région *</label>
+                    <label style={labelStyle("region_id")}>Région *</label>
                     <RegionSelect
-                      value={form.region}
+                      value={form.region_id}
                       required
-                      onChange={(nom, id) => {
-                        update("region", nom);
-                        update("departement", "");
-                        update("arrondissement", "");
+                      onChange={(id, nom) => {
+                        update("region_id", id || "");
+                        update("departement_id", "");
+                        update("arrondissement_id", "");
                         setRegionId(id);
                         setDepartementId(null);
                       }}
                     />
-                    {errMsg("region")}
+                    {errMsg("region_id")}
                   </div>
                   <div style={fieldStyle}>
-                    <label style={labelStyle("departement")}>Département *</label>
+                    <label style={labelStyle("departement_id")}>Département *</label>
                     <DepartementSelect
                       regionId={regionId}
-                      value={form.departement}
+                      value={form.departement_id}
                       required
-                      onChange={(nom, id) => {
-                        update("departement", nom);
-                        update("arrondissement", "");
+                      onChange={(id, nom) => {
+                        update("departement_id", id || "");
+                        update("arrondissement_id", "");
                         setDepartementId(id);
                       }}
                     />
-                    {errMsg("departement")}
+                    {errMsg("departement_id")}
                   </div>
                   <div style={fieldStyle}>
-                    <label style={labelStyle("arrondissement")}>Arrondissement</label>
+                    <label style={labelStyle("arrondissement_id")}>Arrondissement</label>
                     <ArrondissementSelect
                       departementId={departementId}
-                      value={form.arrondissement}
-                      onChange={nom => update("arrondissement", nom)}
+                      value={form.arrondissement_id}
+                      onChange={(id, nom) => update("arrondissement_id", id || "")}
                     />
                   </div>
                 </div>
@@ -632,7 +630,7 @@ export default function AdminEntreprises() {
                       {e.forme_juridique ? e.forme_juridique.split("(")[0].trim() : "—"}
                     </td>
                     <td style={{ padding: "14px 16px", color: "#4a5568" }}>
-                      {[e.commune || e.arrondissement, e.region].filter(Boolean).join(", ") || "—"}
+                      {[e.arrondissement_nom, e.departement_nom, e.region_nom].filter(Boolean).join(", ") || "—"}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       {e.secteur ? (

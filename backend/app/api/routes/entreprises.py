@@ -6,7 +6,11 @@ from typing import Optional, List
 from uuid import UUID
 
 from app.core.database import get_db
-from app.models.entreprise import EntrepriseIntallee, EntreprisePointFocal, RefSecteur, RefBranche, RefActivite
+from app.models.entreprise import (
+    EntrepriseIntallee, EntreprisePointFocal,
+    RefSecteur, RefBranche, RefActivite,
+    RefRegion, RefDepartement, RefArrondissement,
+)
 from app.schemas.entreprise import (
     EntrepriseCreate, EntrepriseUpdate, EntrepriseResponse,
     EntrepriseListResponse, PointFocalCreate, PointFocalResponse,
@@ -121,19 +125,12 @@ async def supprimer_activite(activite_id: int, db: AsyncSession = Depends(get_db
 
 # ── Référentiel pays ──────────────────────────────────────────────────────────
 
-from app.models.entreprise import RefSecteur  # déjà importé plus haut
-from sqlalchemy import Column, Integer, String, Boolean
-from app.core.database import Base as _Base
-
-class RefPays(_Base):
-    __tablename__ = "ref_pays"
-    id          = Column(Integer, primary_key=True)
-    code_iso2   = Column(String(2))
-    code_iso3   = Column(String(3))
-    nom_fr      = Column(String(100))
-    nom_en      = Column(String(100))
-    region_monde= Column(String(100))
-    actif       = Column(Boolean, default=True)
+from app.models.entreprise import (
+    EntrepriseIntallee, EntreprisePointFocal,
+    RefSecteur, RefBranche, RefActivite,
+    RefRegion, RefDepartement, RefArrondissement,
+)
+from app.models.shared import RefPays
 
 @router.get("/ref/pays")
 async def liste_pays(db: AsyncSession = Depends(get_db)):
@@ -146,29 +143,6 @@ async def liste_pays(db: AsyncSession = Depends(get_db)):
 
 
 # ── Référentiel géographie Sénégal ────────────────────────────────────────────
-
-class RefRegion(_Base):
-    __tablename__ = "ref_regions"
-    id    = Column(Integer, primary_key=True)
-    code  = Column(String(10))
-    nom   = Column(String(100))
-    actif = Column(Boolean, default=True)
-
-class RefDepartement(_Base):
-    __tablename__ = "ref_departements"
-    id        = Column(Integer, primary_key=True)
-    region_id = Column(Integer)
-    code      = Column(String(10))
-    nom       = Column(String(100))
-    actif     = Column(Boolean, default=True)
-
-class RefArrondissement(_Base):
-    __tablename__ = "ref_arrondissements"
-    id             = Column(Integer, primary_key=True)
-    departement_id = Column(Integer)
-    code           = Column(String(10))
-    nom            = Column(String(100))
-    actif          = Column(Boolean, default=True)
 
 @router.get("/ref/regions")
 async def liste_regions(db: AsyncSession = Depends(get_db)):
@@ -244,13 +218,15 @@ async def liste_entreprises(
     if statut:     filters.append(EntrepriseIntallee.statut == statut)
     if secteur_id: filters.append(EntrepriseIntallee.secteur_id == secteur_id)
     if branche_id: filters.append(EntrepriseIntallee.branche_id == branche_id)
-    if region:     filters.append(EntrepriseIntallee.region.ilike(f"%{region}%"))
+    if region:     filters.append(
+        EntrepriseIntallee.region_id.in_(
+            select(RefRegion.id).where(RefRegion.nom.ilike(f"%{region}%"))
+        ))
     if pays:       filters.append(EntrepriseIntallee.pays.ilike(f"%{pays}%"))
     if search:
         filters.append(or_(
             EntrepriseIntallee.nom.ilike(f"%{search}%"),
             EntrepriseIntallee.mail.ilike(f"%{search}%"),
-            EntrepriseIntallee.commune.ilike(f"%{search}%"),
             EntrepriseIntallee.adresse.ilike(f"%{search}%"),
         ))
     # Sélection directe de noms — OR entre plusieurs entreprises
@@ -261,13 +237,19 @@ async def liste_entreprises(
     if forme_juridique_list:
         filters.append(or_(*[EntrepriseIntallee.forme_juridique == f for f in forme_juridique_list]))
 
-    # Géographie — OR intra-groupe, ET inter-groupes
+    # Géographie — OR intra-groupe, ET inter-groupes (via FK IDs)
     if region_list:
-        filters.append(or_(*[EntrepriseIntallee.region == r for r in region_list]))
+        filters.append(EntrepriseIntallee.region_id.in_(
+            select(RefRegion.id).where(or_(*[RefRegion.nom == r for r in region_list]))
+        ))
     if departement_list:
-        filters.append(or_(*[EntrepriseIntallee.departement == d for d in departement_list]))
+        filters.append(EntrepriseIntallee.departement_id.in_(
+            select(RefDepartement.id).where(or_(*[RefDepartement.nom == d for d in departement_list]))
+        ))
     if arrondissement_list:
-        filters.append(or_(*[EntrepriseIntallee.commune == a for a in arrondissement_list]))
+        filters.append(EntrepriseIntallee.arrondissement_id.in_(
+            select(RefArrondissement.id).where(or_(*[RefArrondissement.nom == a for a in arrondissement_list]))
+        ))
 
     # NAEMA — OR intra-groupe, ET inter-groupes
     if secteur_list:

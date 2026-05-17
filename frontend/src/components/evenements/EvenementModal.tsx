@@ -95,7 +95,7 @@ export default function EvenementModal({ event, onClose }: { event: any; onClose
               value={isSameDay ? formatDate(event.date_debut) : `${formatDate(event.date_debut)} — ${formatDate(event.date_fin)}`} />
             <InfoItem icon={event.est_virtuel ? <Globe size={14} /> : <MapPin size={14} />}
               label="Lieu" accent={accent}
-              value={event.est_virtuel ? "Événement virtuel" : [event.lieu_nom, event.ville, event.pays_nom].filter(Boolean).join(", ") || "—"} />
+              value={event.est_virtuel ? "Événement virtuel" : [event.ville, event.pays_hote_nom].filter(Boolean).join(", ") || "—"} />
             {event.organisateur && (
               <InfoItem icon={<Building2 size={14} />} label="Organisateur" accent={accent} value={event.organisateur} />
             )}
@@ -121,8 +121,8 @@ export default function EvenementModal({ event, onClose }: { event: any; onClose
           )}
 
           {/* Thématiques organisées */}
-          {event.thematiques && (() => {
-            const items = event.thematiques.split(",").map((t: string) => t.trim()).filter(Boolean);
+          {event.thematiques_naema && (() => {
+            const items = event.thematiques_naema.split(",").map((t: string) => t.trim()).filter(Boolean);
             const secteurs = items.filter((t: string) => t.startsWith("sec:")).map((t: string) => t.slice(4));
             const branches = items.filter((t: string) => t.startsWith("bra:")).map((t: string) => t.slice(4));
             const activites = items.filter((t: string) => t.startsWith("act:")).map((t: string) => t.slice(4));

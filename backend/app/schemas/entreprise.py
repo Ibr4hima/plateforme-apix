@@ -51,12 +51,11 @@ class EntrepriseBase(BaseModel):
     nom:             str
     forme_juridique: Optional[str]  = None
     date_creation:   Optional[date] = None
-    siege_pays:      Optional[str]  = None
+    siege_pays_id:   Optional[int]   = None
     pays:            Optional[str]  = "Sénégal"
-    region:          Optional[str]  = None
-    departement:     Optional[str]  = None
-    commune:         Optional[str]  = None
-    arrondissement:  Optional[str]  = None
+    region_id:       Optional[int]  = None
+    departement_id:  Optional[int]  = None
+    arrondissement_id: Optional[int] = None
     adresse:         Optional[str]  = None
     telephone:       Optional[str]  = None
     mail:            Optional[str]  = None
@@ -66,7 +65,6 @@ class EntrepriseBase(BaseModel):
     activite_id:     Optional[int]  = None
     statut:          str            = "actif"
     est_publie:      bool           = True
-    note_interne:    Optional[str]  = None
 
 class EntrepriseCreate(EntrepriseBase):
     created_by:    Optional[str]               = None
@@ -76,12 +74,11 @@ class EntrepriseUpdate(BaseModel):
     nom:             Optional[str]  = None
     forme_juridique: Optional[str]  = None
     date_creation:   Optional[date] = None
-    siege_pays:      Optional[str]  = None
+    siege_pays_id:   Optional[int]  = None
     pays:            Optional[str]  = None
-    region:          Optional[str]  = None
-    departement:     Optional[str]  = None
-    commune:         Optional[str]  = None
-    arrondissement:  Optional[str]  = None
+    region_id:       Optional[int]  = None
+    departement_id:  Optional[int]  = None
+    arrondissement_id: Optional[int] = None
     adresse:         Optional[str]  = None
     telephone:       Optional[str]  = None
     mail:            Optional[str]  = None
@@ -91,7 +88,6 @@ class EntrepriseUpdate(BaseModel):
     activite_id:     Optional[int]  = None
     statut:          Optional[str]  = None
     est_publie:      Optional[bool] = None
-    note_interne:    Optional[str]  = None
 
 class EntrepriseResponse(EntrepriseBase):
     id:            UUID
@@ -99,10 +95,27 @@ class EntrepriseResponse(EntrepriseBase):
     secteur:       Optional[RefSecteurResponse]  = None
     branche:       Optional[RefBrancheResponse]  = None
     activite:      Optional[RefActiviteResponse] = None
+    siege_pays_nom:      Optional[str]           = None
+    region_nom:          Optional[str]           = None
+    departement_nom:     Optional[str]           = None
+    arrondissement_nom:  Optional[str]           = None
     created_at:    Optional[datetime]            = None
     updated_at:    Optional[datetime]            = None
     created_by:    Optional[str]                 = None
     model_config = {"from_attributes": True}
+
+    @classmethod
+    def model_validate(cls, obj, *args, **kwargs):
+        instance = super().model_validate(obj, *args, **kwargs)
+        if hasattr(obj, "siege_pays_obj") and obj.siege_pays_obj:
+            instance.siege_pays_nom = obj.siege_pays_obj.nom_fr
+        if hasattr(obj, "region_obj") and obj.region_obj:
+            instance.region_nom = obj.region_obj.nom
+        if hasattr(obj, "departement_obj") and obj.departement_obj:
+            instance.departement_nom = obj.departement_obj.nom
+        if hasattr(obj, "arrondissement_obj") and obj.arrondissement_obj:
+            instance.arrondissement_nom = obj.arrondissement_obj.nom
+        return instance
 
 class EntrepriseListResponse(BaseModel):
     total:    int

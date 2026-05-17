@@ -8,12 +8,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 interface Pays { id: number; code_iso2: string; nom_fr: string; region_monde: string; }
 
 export default function PaysSelect({
-  value, onChange, placeholder = "Sélectionner un pays", style,
+  value, onChange, onChangeId, placeholder = "Sélectionner un pays", style,
 }: {
-  value:       string;
-  onChange:    (nom: string) => void;
+  value:        string;
+  onChange:     (nom: string) => void;
+  onChangeId?:  (id: number | null) => void;
   placeholder?: string;
-  style?:      any;
+  style?:       any;
 }) {
   const [pays,   setPays]   = useState<Pays[]>([]);
   const [search, setSearch] = useState("");
@@ -72,7 +73,7 @@ export default function PaysSelect({
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {value && (
             <button
-              onClick={e => { e.stopPropagation(); onChange(""); setSearch(""); }}
+              onClick={e => { e.stopPropagation(); onChange(""); if (onChangeId) onChangeId(null); setSearch(""); }}
               style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
             >
               <X size={13} style={{ color: "#9aa5b4" }} />
@@ -112,7 +113,7 @@ export default function PaysSelect({
               {list.map(p => (
                 <div
                   key={p.id}
-                  onMouseDown={e => { e.preventDefault(); onChange(p.nom_fr); setOpen(false); setSearch(""); }}
+                  onMouseDown={e => { e.preventDefault(); onChange(p.nom_fr); if (onChangeId) onChangeId(p.id); setOpen(false); setSearch(""); }}
                   style={{
                     padding: "9px 14px", cursor: "pointer", fontSize: 13,
                     color: value === p.nom_fr ? "#004f91" : "#1a1a2e",

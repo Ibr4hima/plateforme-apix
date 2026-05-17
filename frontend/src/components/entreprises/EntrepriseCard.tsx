@@ -59,10 +59,10 @@ export default function EntrepriseCard({ entreprise, onClick }: { entreprise: an
 
       {/* Localisation + contact */}
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {(entreprise.commune || entreprise.region) && (
+        {(entreprise.arrondissement_nom || entreprise.region_nom) && (
           <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "#4a5568" }}>
             <MapPin size={13} style={{ color: "#ca631f", flexShrink: 0 }} />
-            {[entreprise.commune, entreprise.departement, entreprise.region].filter(Boolean).join(", ")}
+            {[entreprise.arrondissement_nom, entreprise.departement_nom, entreprise.region_nom].filter(Boolean).join(", ")}
           </div>
         )}
         {entreprise.telephone && (

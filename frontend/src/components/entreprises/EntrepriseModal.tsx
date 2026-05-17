@@ -106,17 +106,17 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
             background: "#F2F0EF", borderRadius: 16, padding: "16px 20px",
             display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20,
           }}>
-            {entreprise.siege_pays && (
-              <InfoItem icon={<Globe size={14} />} label="Siège social" value={entreprise.siege_pays} />
+            {entreprise.siege_pays_nom && (
+              <InfoItem icon={<Globe size={14} />} label="Siège social" value={entreprise.siege_pays_nom} />
             )}
-            {entreprise.region && (
-              <InfoItem icon={<MapPin size={14} />} label="Région" value={entreprise.region} />
+            {entreprise.region_nom && (
+              <InfoItem icon={<MapPin size={14} />} label="Région" value={entreprise.region_nom} />
             )}
-            {entreprise.departement && (
-              <InfoItem icon={<MapPin size={14} />} label="Département" value={entreprise.departement} />
+            {entreprise.departement_nom && (
+              <InfoItem icon={<MapPin size={14} />} label="Département" value={entreprise.departement_nom} />
             )}
-            {(entreprise.arrondissement || entreprise.commune) && (
-              <InfoItem icon={<MapPin size={14} />} label="Arrondissement" value={entreprise.arrondissement || entreprise.commune} />
+            {entreprise.arrondissement_nom && (
+              <InfoItem icon={<MapPin size={14} />} label="Arrondissement" value={entreprise.arrondissement_nom} />
             )}
             {entreprise.telephone && (
               <InfoItem icon={<Phone size={14} />} label="Téléphone" value={entreprise.telephone} />
