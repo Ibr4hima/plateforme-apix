@@ -44,22 +44,22 @@ async def liste_evenements(
     page:           int             = Query(1, ge=1),
     per_page:       int             = Query(12, ge=1, le=100),
     type_evenement: List[str]       = Query(default=[]),
-    statut_calcule: Optional[str]   = None,  # a_venir | en_cours | termine
+    statut_calcule: Optional[str]   = None,
     pays_nom:       List[str]       = Query(default=[]),
     annee:          Optional[int]   = None,
-    thematique:     List[str]       = Query(default=[]),
+    secteur:        List[str]       = Query(default=[]),
+    branche:        List[str]       = Query(default=[]),
+    activite:       List[str]       = Query(default=[]),
     db:             AsyncSession    = Depends(get_db),
 ):
     today = date_type.today()
-    filters = [
-        Evenement.est_publie == True,
-    ]
+    filters = [Evenement.est_publie == True]
 
-    # Types — OR entre plusieurs types
+    # Types — OR intra-champ
     if type_evenement:
         filters.append(or_(*[Evenement.type_evenement == t for t in type_evenement]))
 
-    # Pays — OR entre plusieurs pays
+    # Pays — OR intra-champ
     if pays_nom:
         filters.append(or_(*[Evenement.pays_nom == p for p in pays_nom]))
 
@@ -67,11 +67,15 @@ async def liste_evenements(
         from sqlalchemy import extract
         filters.append(extract("year", Evenement.date_debut) == annee)
 
-    # Thématiques — OR entre plusieurs thématiques (chaque mot-clé cherché dans le champ texte)
-    if thematique:
-        filters.append(or_(*[Evenement.thematiques.ilike(f"%{t}%") for t in thematique]))
+    # Thématiques — OR intra-groupe, ET inter-groupes
+    if secteur:
+        filters.append(or_(*[Evenement.thematiques.ilike(f"%sec:{s}%") for s in secteur]))
+    if branche:
+        filters.append(or_(*[Evenement.thematiques.ilike(f"%bra:{b}%") for b in branche]))
+    if activite:
+        filters.append(or_(*[Evenement.thematiques.ilike(f"%act:{a}%") for a in activite]))
 
-    # Statut calculé à partir des dates
+    # Statut calculé
     if statut_calcule == "a_venir":
         filters.append(Evenement.date_debut > today)
     elif statut_calcule == "en_cours":

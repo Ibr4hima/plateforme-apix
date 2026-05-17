@@ -6,6 +6,7 @@ from uuid import UUID
 
 class AccordBase(BaseModel):
     titre:                  str
+    reference:              Optional[str]   = None
     pays_signataires:       Optional[str]   = None
     date_signature:         Optional[date]  = None
     date_entree_vigueur:    Optional[date]  = None
@@ -25,6 +26,7 @@ class AccordCreate(AccordBase):
 
 class AccordUpdate(BaseModel):
     titre:                  Optional[str]   = None
+    reference:              Optional[str]   = None
     pays_signataires:       Optional[str]   = None
     date_signature:         Optional[date]  = None
     date_entree_vigueur:    Optional[date]  = None

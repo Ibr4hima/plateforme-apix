@@ -2,117 +2,181 @@
 
 import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
+import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const STATUTS = ["en_vigueur","signe_non_ratifie","expire","suspendu","negocie"];
+const STATUTS = ["en_vigueur","expire"];
 const STATUT_LABELS: Record<string,string> = {
-  en_vigueur:"En vigueur", signe_non_ratifie:"Signé non ratifié",
-  expire:"Expiré", suspendu:"Suspendu", negocie:"En négociation",
+  en_vigueur: "En vigueur",
+  expire:     "Expiré",
 };
 const STATUT_COLORS: Record<string,{bg:string;text:string}> = {
-  en_vigueur:        {bg:"#dcfce7",text:"#15803d"},
-  signe_non_ratifie: {bg:"#dbeafe",text:"#1d4ed8"},
-  expire:            {bg:"#f3f4f6",text:"#6b7280"},
-  suspendu:          {bg:"#fee2e2",text:"#dc2626"},
-  negocie:           {bg:"#fef9c3",text:"#a16207"},
+  en_vigueur: {bg:"#dcfce7",text:"#15803d"},
+  expire:     {bg:"#f3f4f6",text:"#6b7280"},
 };
 
+const SENEGAL = "Sénégal";
+
 const EMPTY_FORM = {
-  titre:"", reference:"", type_accord:"", pays_signataires:"",
-  organisation_partenaire:"", date_signature:"", date_ratification:"",
-  date_entree_vigueur:"", date_expiration:"",
-  secteur_activite:"", branche_activite:"",
-  commentaires:"", domaines_couverts:"", avantages_principaux:"",
-  statut:"en_vigueur", lien_texte_officiel:"", est_publie:true, note_interne:"",
-  domaines_naema: [] as string[],
+  titre:"", reference:"", pays_signataires:[SENEGAL] as string[],
+  date_signature:"", date_entree_vigueur:"", date_expiration:"",
+  thematiques:"", commentaires:"",
+  statut:"en_vigueur", est_publie:true,
 };
 
 export default function AdminAccords() {
-  const [accords,   setAccords]  = useState<any[]>([]);
-  const [total,     setTotal]    = useState(0);
-  const [loading,   setLoading]  = useState(true);
-  const [showForm,  setShowForm] = useState(false);
-  const [editItem,  setEditItem] = useState<any>(null);
-  const [saving,    setSaving]   = useState(false);
-  const [saveOk,    setSaveOk]   = useState(false);
-  const [error,     setError]    = useState("");
-  const [form,      setForm]     = useState<any>({ ...EMPTY_FORM });
-  const [fichier,   setFichier]  = useState<File|null>(null);
-const [deleting,       setDeleting]       = useState<string|null>(null);
-const [secteurs,       setSecteurs]       = useState<any[]>([]);
-const [branchesAccord, setBranchesAccord] = useState<any[]>([]);
+  const [accords,  setAccords]  = useState<any[]>([]);
+  const [total,    setTotal]    = useState(0);
+  const [loading,  setLoading]  = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [saving,   setSaving]   = useState(false);
+  const [saveOk,   setSaveOk]   = useState(false);
+  const [error,    setError]    = useState("");
+  const [form,     setForm]     = useState<any>({ ...EMPTY_FORM });
+  const [fichiers,      setFichiers]       = useState<any[]>([]);
+  const [loadingFiles,  setLoadingFiles]   = useState(false);
+  const [deleting,      setDeleting]      = useState<string|null>(null);
+  // Multi-PDF : liste de { file: File, titre: string }
+  const [pdfQueue,      setPdfQueue]      = useState<{file: File; titre: string}[]>([]);
+
   const charger = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/accords?per_page=100`);
+      const res  = await fetch(`${API_BASE}/accords?per_page=100`);
       const data = await res.json();
       setAccords(data.data || []);
       setTotal(data.total || 0);
     } catch {} finally { setLoading(false); }
   }, []);
 
-useEffect(() => { charger(); }, [charger]);
+  useEffect(() => { charger(); }, [charger]);
 
-useEffect(() => {
-  fetch(`${API_BASE}/entreprises/ref/secteurs`)
-    .then(r => r.json()).then(setSecteurs).catch(() => {});
-}, []);
-
-// Charger branches si secteur déjà sélectionné à l'édition
-useEffect(() => {
-  if (form.secteur_activite) {
-    const sid = secteurs.find((s: any) => s.nom === form.secteur_activite)?.id;
-    if (sid) fetch(`${API_BASE}/entreprises/ref/branches?secteur_id=${sid}`)
-      .then(r => r.json()).then(setBranchesAccord).catch(() => {});
-  }
-}, [form.secteur_activite, secteurs]);
   const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
   const openCreate = () => {
-    setForm({ ...EMPTY_FORM }); setEditItem(null);
-    setFichier(null); setShowForm(true); setError(""); setSaveOk(false);
+    setForm({ ...EMPTY_FORM });
+    setEditItem(null); setPdfQueue([]); setFichiers([]);
+    setShowForm(true); setError(""); setSaveOk(false);
   };
 
   const openEdit = (a: any) => {
+    const paysExistants: string[] = a.pays_signataires
+      ? a.pays_signataires.split(", ").filter(Boolean)
+      : [];
+    // Sénégal toujours présent
+    const paysAvecSenegal = paysExistants.includes(SENEGAL)
+      ? paysExistants
+      : [SENEGAL, ...paysExistants];
+
     setForm({
-      titre: a.titre || "", reference: a.reference || "",
-      type_accord: a.type_accord || "", pays_signataires: a.pays_signataires || "",
-      organisation_partenaire: a.organisation_partenaire || "",
-      date_signature: a.date_signature || "", date_ratification: a.date_ratification || "",
-      date_entree_vigueur: a.date_entree_vigueur || "", date_expiration: a.date_expiration || "",
-      secteur_activite: a.secteur_activite || "", branche_activite: a.branche_activite || "",
-      commentaires: a.commentaires || "", domaines_couverts: a.domaines_couverts || "",
-      avantages_principaux: a.avantages_principaux || "",
-      statut: a.statut || "en_vigueur", lien_texte_officiel: a.lien_texte_officiel || "",
-      est_publie: a.est_publie ?? true, note_interne: a.note_interne || "",
+      titre:               a.titre               || "",
+      reference:           a.reference           || "",
+      pays_signataires:    paysAvecSenegal,
+      date_signature:      a.date_signature       || "",
+      date_entree_vigueur: a.date_entree_vigueur  || "",
+      date_expiration:     a.date_expiration      || "",
+      thematiques:         a.secteur_activite     || "",
+      commentaires:        a.commentaires         || "",
+      statut:              a.statut               || "en_vigueur",
+      est_publie:          a.est_publie           ?? true,
     });
-    setEditItem(a); setFichier(null); setShowForm(true); setError(""); setSaveOk(false);
+    setEditItem(a); setPdfQueue([]); setFichiers([]);
+    setShowForm(true); setError(""); setSaveOk(false);
+    // Charger les fichiers existants
+    fetch(`${API_BASE}/accords/${a.id}/fichiers`)
+      .then(r => r.json()).then(setFichiers).catch(() => {});
   };
 
   const handleSave = async () => {
-    if (!form.titre.trim()) { setError("Le titre est obligatoire"); return; }
+    if (!form.titre.trim())     { setError("Le titre est obligatoire"); return; }
+    if (!form.reference.trim()) { setError("La référence est obligatoire"); return; }
+    if (!form.date_signature) { setError("La date de signature est obligatoire"); return; }
+    if (!form.date_entree_vigueur) { setError("La date d'entrée en vigueur est obligatoire"); return; }
+    if (!form.date_expiration) { setError("La date d'expiration est obligatoire"); return; }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // Date de signature <= aujourd'hui (peut être aujourd'hui)
+    if (form.date_signature > today) {
+      setError("La date de signature doit être aujourd'hui ou dans le passé"); return;
+    }
+    // Entrée en vigueur >= date de signature
+    if (form.date_entree_vigueur < form.date_signature) {
+      setError("L'entrée en vigueur doit être égale ou postérieure à la date de signature"); return;
+    }
+    // Date d'expiration > date de signature (strictement)
+    if (form.date_expiration <= form.date_signature) {
+      setError("La date d'expiration doit être strictement après la date de signature"); return;
+    }
+    // Date d'expiration > entrée en vigueur (strictement)
+    if (form.date_expiration <= form.date_entree_vigueur) {
+      setError("La date d'expiration doit être strictement après la date d'entrée en vigueur"); return;
+    }
+    // Date d'expiration > aujourd'hui (strictement)
+    if (form.date_expiration <= today) {
+      setError("La date d'expiration doit être dans le futur (après aujourd'hui)"); return;
+    }
+    if (!form.pays_signataires || form.pays_signataires.length === 0) {
+      setError("Au moins un pays signataire est obligatoire"); return;
+    }
     setSaving(true); setError("");
     try {
+      // Mapper thematiques → secteur_activite pour la base
+      const paysStr = (form.pays_signataires as string[]).join(", ") || null;
+
       if (editItem) {
-        // PATCH JSON
-        const payload: any = { ...form };
-        Object.keys(payload).forEach(k => { if (payload[k] === "") payload[k] = null; });
+        const payload: any = {
+          titre:               form.titre,
+          reference:           form.reference       || null,
+          pays_signataires:    paysStr,
+          date_signature:      form.date_signature      || null,
+          date_entree_vigueur: form.date_entree_vigueur || null,
+          date_expiration:     form.date_expiration     || null,
+          secteur_activite:    form.thematiques         || null,
+          commentaires:        form.commentaires        || null,
+          statut:              form.statut,
+          est_publie:          form.est_publie,
+        };
         const res = await fetch(`${API_BASE}/accords/${editItem.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
+        // Upload les nouveaux PDFs en mode édition
+        for (const p of pdfQueue) {
+          const fd = new FormData();
+          fd.append("titre",   p.titre || p.file.name);
+          fd.append("fichier", p.file);
+          await fetch(`${API_BASE}/accords/${editItem.id}/fichiers`, { method: "POST", body: fd });
+        }
       } else {
-        // POST multipart
         const fd = new FormData();
-        Object.entries(form).forEach(([k, v]) => {
-          if (v !== "" && v !== null && v !== undefined) fd.append(k, String(v));
-        });
-        if (fichier) fd.append("fichier", fichier);
+        fd.append("titre",               form.titre);
+        fd.append("reference",           form.reference);
+        fd.append("pays_signataires",    paysStr || "");
+        if (form.date_signature)         fd.append("date_signature",      form.date_signature);
+        if (form.date_entree_vigueur)    fd.append("date_entree_vigueur", form.date_entree_vigueur);
+        if (form.date_expiration)        fd.append("date_expiration",     form.date_expiration);
+        if (form.thematiques)            fd.append("secteur_activite",    form.thematiques);
+        if (form.commentaires)           fd.append("commentaires",        form.commentaires);
+        fd.append("statut",              form.statut);
+        fd.append("est_publie",          String(form.est_publie));
+        // Premier PDF via le champ principal si présent
+        if (pdfQueue.length > 0) fd.append("fichier", pdfQueue[0].file);
         const res = await fetch(`${API_BASE}/accords`, { method: "POST", body: fd });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
+        const newAccord = await res.json();
+        // PDFs supplémentaires via /fichiers
+        for (const p of pdfQueue.slice(1)) {
+          const fd2 = new FormData();
+          fd2.append("titre",   p.titre || p.file.name);
+          fd2.append("fichier", p.file);
+          await fetch(`${API_BASE}/accords/${newAccord.id}/fichiers`, { method: "POST", body: fd2 });
+        }
       }
       setSaveOk(true);
       setTimeout(() => { setShowForm(false); charger(); }, 1000);
@@ -153,11 +217,15 @@ useEffect(() => {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>
+            Administration
+          </p>
           <h1 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>
             Accords & Traités
           </h1>
-          <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 2 }}>{total} accord{total > 1 ? "s" : ""} au total</p>
+          <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 2 }}>
+            {total} accord{total > 1 ? "s" : ""} au total
+          </p>
         </div>
         <button onClick={openCreate} style={{
           display: "flex", alignItems: "center", gap: 8,
@@ -190,102 +258,107 @@ useEffect(() => {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-              {/* Titre + Référence */}
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
+              {/* Titre + Référence sur 2 colonnes */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div style={fieldStyle}>
                   <label style={labelStyle}>Titre *</label>
                   <input value={form.titre} onChange={e => update("titre", e.target.value)} placeholder="Intitulé complet de l'accord" style={inputStyle} />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Référence</label>
-                  <input value={form.reference} onChange={e => update("reference", e.target.value)} placeholder="Ex: TBI-2024-01" style={inputStyle} />
+                  <label style={labelStyle}>Référence *</label>
+                  <input value={form.reference} onChange={e => update("reference", e.target.value)} placeholder="Ex : APIX/2024/ACC-001" style={inputStyle} />
                 </div>
               </div>
 
-              {/* Type + Statut */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Type d'accord</label>
-                  <input value={form.type_accord} onChange={e => update("type_accord", e.target.value)} placeholder="Ex: TBI, APE, Coopération..." style={inputStyle} />
-                </div>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Statut</label>
-                  <select value={form.statut} onChange={e => update("statut", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-                    {STATUTS.map(s => <option key={s} value={s}>{STATUT_LABELS[s]}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {/* Pays + Organisation */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Pays signataires</label>
-                  <input value={form.pays_signataires} onChange={e => update("pays_signataires", e.target.value)} placeholder="Ex: France, Allemagne" style={inputStyle} />
-                </div>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Organisation partenaire</label>
-                  <input value={form.organisation_partenaire} onChange={e => update("organisation_partenaire", e.target.value)} placeholder="Ex: Union Européenne" style={inputStyle} />
-                </div>
-              </div>
-
-              {/* Dates */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
-                {[
-                  {key:"date_signature",      label:"Date de signature"},
-                  {key:"date_ratification",   label:"Date de ratification"},
-                  {key:"date_entree_vigueur", label:"Entrée en vigueur"},
-                  {key:"date_expiration",     label:"Date d'expiration"},
-                ].map(f => (
-                  <div key={f.key} style={fieldStyle}>
-                    <label style={labelStyle}>{f.label}</label>
-                    <input type="date" value={(form as any)[f.key]} onChange={e => update(f.key, e.target.value)} style={inputStyle} />
-                  </div>
-                ))}
-              </div>
-
-              {/* Secteur + Branche */}
-              {/* Secteur + Branche en cascade */}
-<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-  <div style={fieldStyle}>
-    <label style={labelStyle}>Secteur d'activité</label>
-    <select
-      value={form.secteur_activite}
-      onChange={e => {
-        update("secteur_activite", e.target.value);
-        update("branche_activite", "");
-        const sid = secteurs.find((s: any) => s.nom === e.target.value)?.id;
-        if (sid) fetch(`${API_BASE}/entreprises/ref/branches?secteur_id=${sid}`)
-          .then(r => r.json()).then(setBranchesAccord);
-        else setBranchesAccord([]);
-      }}
-      style={{ ...inputStyle, cursor: "pointer" }}
-    >
-      <option value="">— Sélectionner —</option>
-      {secteurs.map((s: any) => (
-        <option key={s.id} value={s.nom}>{s.nom}</option>
-      ))}
-    </select>
-  </div>
-  <div style={fieldStyle}>
-    <label style={labelStyle}>Branche d'activité</label>
-    <select
-      value={form.branche_activite}
-      onChange={e => update("branche_activite", e.target.value)}
-      disabled={!branchesAccord.length}
-      style={{ ...inputStyle, cursor: branchesAccord.length ? "pointer" : "not-allowed", opacity: branchesAccord.length ? 1 : 0.5 }}
-    >
-      <option value="">— Sélectionner —</option>
-      {branchesAccord.map((b: any) => (
-        <option key={b.id} value={b.nom}>{b.nom}</option>
-      ))}
-    </select>
-  </div>
-</div>
-
-              {/* Domaines */}
+              {/* Statut */}
               <div style={fieldStyle}>
-                <label style={labelStyle}>Domaines couverts <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(séparés par des virgules)</span></label>
-                <input value={form.domaines_couverts} onChange={e => update("domaines_couverts", e.target.value)} placeholder="Ex: Investissement, Commerce, Fiscalité" style={inputStyle} />
+                <label style={labelStyle}>Statut</label>
+                <select value={form.statut} onChange={e => update("statut", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                  {STATUTS.map(s => <option key={s} value={s}>{STATUT_LABELS[s]}</option>)}
+                </select>
+              </div>
+
+              {/* Pays signataire(s) */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Pays signataire(s) *</label>
+                <PaysMultiSelect
+                  value={(form.pays_signataires as string[]).join(", ")}
+                  onChange={(val: string) => {
+                    const liste = val ? val.split(", ").map(s => s.trim()).filter(Boolean) : [];
+                    // Sénégal toujours présent — ne peut pas être décoché
+                    const avecSenegal = liste.includes(SENEGAL) ? liste : [SENEGAL, ...liste];
+                    update("pays_signataires", avecSenegal);
+                  }}
+                />
+                <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>
+                  Le Sénégal est toujours signataire et ne peut pas être retiré.
+                </span>
+              </div>
+
+              {/* Dates — 3 colonnes */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+
+                {/* Date de signature */}
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Date de signature *</label>
+                  <input
+                    type="date"
+                    value={form.date_signature}
+                    max={new Date().toISOString().split("T")[0]}
+                    onChange={e => update("date_signature", e.target.value)}
+                    style={{
+                      ...inputStyle,
+                      borderColor: form.date_signature && form.date_signature > new Date().toISOString().split("T")[0] ? "#dc2626" : "#C5BFBB",
+                    }}
+                  />
+                  <span style={{ fontSize: 11, color: "#9aa5b4" }}>≤ aujourd'hui</span>
+                </div>
+
+                {/* Entrée en vigueur */}
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Entrée en vigueur *</label>
+                  <input
+                    type="date"
+                    value={form.date_entree_vigueur}
+                    min={form.date_signature || undefined}
+                    onChange={e => update("date_entree_vigueur", e.target.value)}
+                    style={{
+                      ...inputStyle,
+                      borderColor: form.date_entree_vigueur && form.date_signature && form.date_entree_vigueur < form.date_signature ? "#dc2626" : "#C5BFBB",
+                    }}
+                  />
+                  <span style={{ fontSize: 11, color: "#9aa5b4" }}>≥ date de signature</span>
+                </div>
+
+                {/* Date d'expiration */}
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Date d'expiration *</label>
+                  <input
+                    type="date"
+                    value={form.date_expiration}
+                    min={form.date_entree_vigueur
+                      ? (() => { const d = new Date(form.date_entree_vigueur); d.setDate(d.getDate() + 1); return d.toISOString().split("T")[0]; })()
+                      : form.date_signature
+                        ? (() => { const d = new Date(form.date_signature); d.setDate(d.getDate() + 1); return d.toISOString().split("T")[0]; })()
+                        : new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split("T")[0]
+                    }
+                    onChange={e => update("date_expiration", e.target.value)}
+                    style={{
+                      ...inputStyle,
+                      borderColor: form.date_expiration && form.date_expiration <= new Date().toISOString().split("T")[0] ? "#dc2626" : "#C5BFBB",
+                    }}
+                  />
+                  <span style={{ fontSize: 11, color: "#9aa5b4" }}>{'>'} aujourd'hui, {'>'} entrée en vigueur</span>
+                </div>
+              </div>
+
+              {/* Thématiques — secteurs, branches, activités */}
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Thématiques</label>
+                <ThematiquesNaema
+                  value={form.thematiques}
+                  onChange={val => update("thematiques", val)}
+                />
               </div>
 
               {/* Commentaires */}
@@ -294,44 +367,110 @@ useEffect(() => {
                 <textarea value={form.commentaires} onChange={e => update("commentaires", e.target.value)} rows={4} placeholder="Description et résumé des termes de l'accord..." style={{ ...inputStyle, resize: "vertical" as const }} />
               </div>
 
-              {/* Avantages */}
+              {/* PDFs — multi-fichiers */}
               <div style={fieldStyle}>
-                <label style={labelStyle}>Avantages principaux</label>
-                <textarea value={form.avantages_principaux} onChange={e => update("avantages_principaux", e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" as const }} />
-              </div>
+                <label style={labelStyle}>Fichiers PDF</label>
 
-              {/* Lien officiel */}
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Lien texte officiel</label>
-                <input value={form.lien_texte_officiel} onChange={e => update("lien_texte_officiel", e.target.value)} placeholder="https://..." style={inputStyle} />
-              </div>
-
-              {/* PDF — seulement à la création */}
-              {!editItem && (
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Fichier PDF</label>
-                  <label style={{
-                    display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-                    borderRadius: 8, cursor: "pointer",
-                    border: "2px dashed #C5BFBB",
-                    background: fichier ? "rgba(124,58,237,0.04)" : "#F2F0EF",
-                  }}>
-                    <Upload size={15} color={fichier ? "#7c3aed" : "#9aa5b4"} />
-                    <span style={{ fontSize: 13, color: fichier ? "#7c3aed" : "#9aa5b4" }}>
-                      {fichier ? fichier.name : "Cliquer pour sélectionner un PDF"}
+                {/* Fichiers déjà enregistrés (mode édition) */}
+                {fichiers.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
+                      Fichiers enregistrés
                     </span>
-                    <input type="file" accept=".pdf" style={{ display: "none" }} onChange={e => setFichier(e.target.files?.[0] || null)} />
-                  </label>
-                </div>
-              )}
+                    {fichiers.map((f: any) => (
+                      <div key={f.id} style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.2)",
+                        borderRadius: 8, padding: "8px 12px",
+                      }}>
+                        <FileText size={14} style={{ color: "#004f91", flexShrink: 0 }} />
+                        <span style={{ fontSize: 13, color: "#1a1a2e", flex: 1, fontWeight: 500 }}>
+                          {f.titre || f.fichier_nom || "Document PDF"}
+                        </span>
+                        <a
+                          href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`}
+                          target="_blank" rel="noopener noreferrer"
+                          style={{ fontSize: 11, color: "#004f91", fontWeight: 600, textDecoration: "none" }}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          Voir
+                        </a>
+                        <button
+                          onClick={async () => {
+                            await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`, { method: "DELETE" });
+                            setFichiers(prev => prev.filter((x: any) => x.id !== f.id));
+                          }}
+                          style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+                        >
+                          <X size={13} style={{ color: "#dc2626" }} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-              {/* Note interne */}
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Note interne</label>
-                <input value={form.note_interne} onChange={e => update("note_interne", e.target.value)} placeholder="Note visible uniquement en admin" style={inputStyle} />
+                {/* Zone d'ajout de nouveaux PDFs */}
+                <label style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
+                  borderRadius: 8, cursor: "pointer", border: "2px dashed #C5BFBB",
+                  background: "#F2F0EF", transition: "border-color 0.2s",
+                }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = "#7c3aed"}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "#C5BFBB"}
+                >
+                  <Upload size={15} color="#9aa5b4" />
+                  <span style={{ fontSize: 13, color: "#9aa5b4" }}>
+                    Cliquer pour ajouter un ou plusieurs PDF
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={e => {
+                      const files = Array.from(e.target.files || []);
+                      const nouveaux = files.map(f => ({ file: f, titre: f.name.replace(/\.pdf$/i, "") }));
+                      setPdfQueue(prev => [...prev, ...nouveaux]);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+
+                {/* PDFs en attente d'upload */}
+                {pdfQueue.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
+                      À ajouter
+                    </span>
+                    {pdfQueue.map((p, i) => (
+                      <div key={i} style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)",
+                        borderRadius: 8, padding: "8px 12px",
+                      }}>
+                        <FileText size={14} style={{ color: "#7c3aed", flexShrink: 0 }} />
+                        <input
+                          value={p.titre}
+                          onChange={e => setPdfQueue(prev => prev.map((x, j) => j === i ? { ...x, titre: e.target.value } : x))}
+                          placeholder="Titre du document"
+                          style={{ ...inputStyle, flex: 1, padding: "5px 8px", fontSize: 12, background: "transparent", border: "none", borderBottom: "1px solid rgba(124,58,237,0.3)" }}
+                        />
+                        <span style={{ fontSize: 11, color: "#9aa5b4", flexShrink: 0 }}>
+                          {(p.file.size / 1024).toFixed(0)} Ko
+                        </span>
+                        <button
+                          onClick={() => setPdfQueue(prev => prev.filter((_, j) => j !== i))}
+                          style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+                        >
+                          <X size={13} style={{ color: "#dc2626" }} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Publié */}
+{/* Publié */}
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: "#4a5568" }}>
                 <input type="checkbox" checked={form.est_publie} onChange={e => update("est_publie", e.target.checked)} style={{ width: 16, height: 16 }} />
                 Publier sur le site public
@@ -391,7 +530,7 @@ useEffect(() => {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ background: "#F8F7F6" }}>
-                  {["Titre","Type","Pays signataires","Date signature","Statut","Publié","Actions"].map(h => (
+                  {["Titre","Référence","Date signature","Date expiration","Statut","Publié","Actions"].map(h => (
                     <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
                       {h}
                     </th>
@@ -401,24 +540,26 @@ useEffect(() => {
               <tbody>
                 {accords.map((a, i) => {
                   const statut = STATUT_COLORS[a.statut] || STATUT_COLORS.en_vigueur;
+                  const fmtDate = (d: string) => {
+                    if (!d) return "—";
+                    const [y,m,day] = d.split("-").map(Number);
+                    return new Date(y, m-1, day).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+                  };
                   return (
                     <tr key={a.id} style={{ borderTop: "1px solid #F2F0EF", background: i % 2 === 0 ? "#fff" : "#FAFAF9" }}>
-                      <td style={{ padding: "14px 16px", maxWidth: 260 }}>
-                        <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 2 }}>
-                          {a.titre.length > 50 ? a.titre.slice(0, 50) + "…" : a.titre}
+                      <td style={{ padding: "14px 16px", maxWidth: 240 }}>
+                        <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3 }}>
+                          {a.titre.length > 45 ? a.titre.slice(0, 45) + "…" : a.titre}
                         </div>
-                        {a.reference && <div style={{ fontSize: 11, color: "#9aa5b4" }}>Réf. {a.reference}</div>}
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <span style={{ fontSize: 11, color: "#7c3aed", background: "rgba(124,58,237,0.1)", padding: "2px 8px", borderRadius: 999 }}>
-                          {a.type_accord || "—"}
-                        </span>
-                      </td>
-                      <td style={{ padding: "14px 16px", color: "#4a5568", maxWidth: 180 }}>
-                        {a.pays_signataires || "—"}
                       </td>
                       <td style={{ padding: "14px 16px", color: "#4a5568", whiteSpace: "nowrap" }}>
-                        {a.date_signature ? new Date(a.date_signature).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                        {a.reference || "—"}
+                      </td>
+                      <td style={{ padding: "14px 16px", color: "#4a5568", whiteSpace: "nowrap" }}>
+                        {fmtDate(a.date_signature)}
+                      </td>
+                      <td style={{ padding: "14px 16px", color: "#4a5568", whiteSpace: "nowrap" }}>
+                        {fmtDate(a.date_expiration)}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <span style={{ fontSize: 11, fontWeight: 600, background: statut.bg, color: statut.text, padding: "3px 10px", borderRadius: 999 }}>

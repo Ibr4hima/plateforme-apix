@@ -215,9 +215,16 @@ export default function EvenementsPage() {
       if (statutFiltre) params.append("statut_calcule", statutFiltre);
       typeFiltres.forEach(t => params.append("type_evenement", t));
       paysFiltres.forEach(p => params.append("pays_nom", p));
+
+      // Thématiques — séparer par groupe pour OR intra / ET inter
       if (thematiques) {
-        thematiques.split(",").map((t: string) => t.trim()).filter(Boolean)
-          .forEach((t: string) => params.append("thematique", t));
+        const items = thematiques.split(",").map((t: string) => t.trim()).filter(Boolean);
+        items.filter(t => t.startsWith("sec:")).map(t => t.slice(4))
+          .forEach(t => params.append("secteur", t));
+        items.filter(t => t.startsWith("bra:")).map(t => t.slice(4))
+          .forEach(t => params.append("branche", t));
+        items.filter(t => t.startsWith("act:")).map(t => t.slice(4))
+          .forEach(t => params.append("activite", t));
       }
       params.append("per_page", "100");
 

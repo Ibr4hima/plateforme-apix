@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, 
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 import shutil, os, uuid as uuid_lib
 
@@ -35,30 +35,31 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ── GET /accords ──
 @router.get("", response_model=AccordListResponse)
 async def liste_accords(
-    page:            int           = Query(1, ge=1),
-    per_page:        int           = Query(12, ge=1, le=100),
-    statut:          Optional[str] = None,
-    type_accord:     Optional[str] = None,
-    secteur_activite:Optional[str] = None,
-    pays_signataires:Optional[str] = None,
-    search:          Optional[str] = None,
-    db:              AsyncSession  = Depends(get_db),
+    page:             int           = Query(1, ge=1),
+    per_page:         int           = Query(12, ge=1, le=100),
+    statut:           Optional[str] = None,
+    secteur:          List[str]     = Query(default=[]),
+    branche:          List[str]     = Query(default=[]),
+    activite:         List[str]     = Query(default=[]),
+    pays_signataires: List[str]     = Query(default=[]),
+    db:               AsyncSession  = Depends(get_db),
 ):
-    filters = [
-        Accord.est_publie == True,
-    ]
-    if statut:           filters.append(Accord.statut == statut)
-    if type_accord:      filters.append(Accord.type_accord.ilike(f"%{type_accord}%"))
-    if secteur_activite: filters.append(Accord.secteur_activite.ilike(f"%{secteur_activite}%"))
-    if pays_signataires: filters.append(Accord.pays_signataires.ilike(f"%{pays_signataires}%"))
-    if search:
-        filters.append(or_(
-            Accord.titre.ilike(f"%{search}%"),
-            Accord.reference.ilike(f"%{search}%"),
-            Accord.commentaires.ilike(f"%{search}%"),
-            Accord.pays_signataires.ilike(f"%{search}%"),
-            Accord.type_accord.ilike(f"%{search}%"),
-        ))
+    filters = [Accord.est_publie == True]
+
+    if statut:
+        filters.append(Accord.statut == statut)
+
+    # Pays — OR intra-champ, ET avec les autres filtres
+    if pays_signataires:
+        filters.append(or_(*[Accord.pays_signataires.ilike(f"%{p}%") for p in pays_signataires]))
+
+    # Thématiques — OR intra-groupe, ET inter-groupes
+    if secteur:
+        filters.append(or_(*[Accord.secteur_activite.ilike(f"%sec:{s}%") for s in secteur]))
+    if branche:
+        filters.append(or_(*[Accord.secteur_activite.ilike(f"%bra:{b}%") for b in branche]))
+    if activite:
+        filters.append(or_(*[Accord.secteur_activite.ilike(f"%act:{a}%") for a in activite]))
 
     total_q = await db.execute(
         select(func.count()).select_from(Accord).where(and_(*filters))
@@ -100,22 +101,15 @@ async def detail_accord(
 async def creer_accord(
     titre:                  str            = Form(...),
     reference:              Optional[str]  = Form(None),
-    type_accord:            Optional[str]  = Form(None),
     pays_signataires:       Optional[str]  = Form(None),
-    organisation_partenaire:Optional[str]  = Form(None),
     date_signature:         Optional[str]  = Form(None),
-    date_ratification:      Optional[str]  = Form(None),
     date_entree_vigueur:    Optional[str]  = Form(None),
     date_expiration:        Optional[str]  = Form(None),
     secteur_activite:       Optional[str]  = Form(None),
     branche_activite:       Optional[str]  = Form(None),
     commentaires:           Optional[str]  = Form(None),
-    domaines_couverts:      Optional[str]  = Form(None),
-    avantages_principaux:   Optional[str]  = Form(None),
     statut:                 str            = Form("en_vigueur"),
-    lien_texte_officiel:    Optional[str]  = Form(None),
     est_publie:             bool           = Form(True),
-    note_interne:           Optional[str]  = Form(None),
     created_by:             Optional[str]  = Form(None),
     fichier:                Optional[UploadFile] = File(None),
     db:                     AsyncSession   = Depends(get_db),
@@ -140,18 +134,16 @@ async def creer_accord(
         fichier_path = dest
 
     accord = Accord(
-        titre=titre, reference=reference, type_accord=type_accord,
+        titre=titre, reference=reference,
         pays_signataires=pays_signataires,
-        organisation_partenaire=organisation_partenaire,
         date_signature=parse_date(date_signature),
-        date_ratification=parse_date(date_ratification),
         date_entree_vigueur=parse_date(date_entree_vigueur),
         date_expiration=parse_date(date_expiration),
-        secteur_activite=secteur_activite, branche_activite=branche_activite,
-        commentaires=commentaires, domaines_couverts=domaines_couverts,
-        avantages_principaux=avantages_principaux,
-        statut=statut, lien_texte_officiel=lien_texte_officiel,
-        est_publie=est_publie, note_interne=note_interne,
+        secteur_activite=secteur_activite,
+        branche_activite=branche_activite,
+        commentaires=commentaires,
+        statut=statut,
+        est_publie=est_publie,
         created_by=created_by,
         fichier_nom=fichier_nom, fichier_path=fichier_path,
     )
