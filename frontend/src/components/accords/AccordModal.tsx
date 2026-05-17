@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, Calendar, Download, FileText, Globe, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -27,11 +28,10 @@ function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string
   );
 }
 
-// Affichage hiérarchique des thématiques (même logique que EvenementModal)
 function ThematiquesBlock({ value }: { value: string }) {
   const items = value.split(",").map((t: string) => t.trim()).filter(Boolean);
-  const secteurs = items.filter(t => t.startsWith("sec:")).map(t => t.slice(4));
-  const branches = items.filter(t => t.startsWith("bra:")).map(t => t.slice(4));
+  const secteurs  = items.filter(t => t.startsWith("sec:")).map(t => t.slice(4));
+  const branches  = items.filter(t => t.startsWith("bra:")).map(t => t.slice(4));
   const activites = items.filter(t => t.startsWith("act:")).map(t => t.slice(4));
   const ancienFormat = items.every(t => !t.startsWith("sec:") && !t.startsWith("bra:") && !t.startsWith("act:"));
 
@@ -83,9 +83,18 @@ function ThematiquesBlock({ value }: { value: string }) {
 }
 
 export default function AccordModal({ accord, onClose }: { accord: any; onClose: () => void }) {
+  const [fichiers, setFichiers] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!accord?.id) return;
+    fetch(`${API_BASE}/accords/${accord.id}/fichiers`)
+      .then(r => r.json())
+      .then(setFichiers)
+      .catch(() => setFichiers([]));
+  }, [accord?.id]);
+
   if (!accord) return null;
   const statut = STATUT_CONFIG[accord.statut] || STATUT_CONFIG.en_vigueur;
-  const fichierUrl = `${API_BASE}/accords/${accord.id}/fichier`;
 
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }} style={{
@@ -128,7 +137,7 @@ export default function AccordModal({ accord, onClose }: { accord: any; onClose:
           {/* Grille infos */}
           <div style={{ background: "#F2F0EF", borderRadius: 16, padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
             {accord.pays_signataires && (
-              <InfoItem icon={<Globe size={14} />} label="Pays signataires" value={accord.pays_signataires} />
+              <InfoItem icon={<Globe size={14} />} label="Parties signataires" value={accord.pays_signataires} />
             )}
             {accord.date_signature && (
               <InfoItem icon={<Calendar size={14} />} label="Date de signature" value={fmtDate(accord.date_signature)} />
@@ -141,7 +150,7 @@ export default function AccordModal({ accord, onClose }: { accord: any; onClose:
             )}
           </div>
 
-          {/* Thématiques hiérarchiques */}
+          {/* Thématiques */}
           {accord.secteur_activite && (
             <div style={{ marginBottom: 16 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>
@@ -161,17 +170,37 @@ export default function AccordModal({ accord, onClose }: { accord: any; onClose:
             </div>
           )}
 
-          {/* PDF */}
-          {accord.fichier_nom && (
+          {/* Documents */}
+          {fichiers.length > 0 && (
             <div style={{ marginTop: 8 }}>
-              <a href={fichierUrl} target="_blank" rel="noopener noreferrer" style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                background: "linear-gradient(135deg, #004f91, #003a6e)",
-                color: "#fff", fontWeight: 600, fontSize: 13,
-                padding: "10px 20px", borderRadius: 12, textDecoration: "none",
-              }}>
-                <Download size={14} /> Télécharger le PDF
-              </a>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>
+                Document{fichiers.length > 1 ? "s" : ""} disponible{fichiers.length > 1 ? "s" : ""} ({fichiers.length})
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {fichiers.map((f: any) => (
+                  <a
+                    key={f.id}
+                    href={`${API_BASE}/accords/${accord.id}/fichiers/${f.id}/download`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      background: "rgba(0,79,145,0.05)",
+                      border: "1px solid rgba(0,79,145,0.15)",
+                      borderRadius: 10, padding: "10px 14px",
+                      textDecoration: "none", transition: "background 0.15s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.1)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                  >
+                    <FileText size={16} style={{ color: "#004f91", flexShrink: 0 }} />
+                    <span style={{ flex: 1, fontSize: 13, color: "#1a1a2e", fontWeight: 500 }}>
+                      {f.titre || f.nom_fichier || "Document PDF"}
+                    </span>
+                    <Download size={14} style={{ color: "#004f91", flexShrink: 0 }} />
+                  </a>
+                ))}
+              </div>
             </div>
           )}
         </div>

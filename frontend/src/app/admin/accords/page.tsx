@@ -18,9 +18,11 @@ const STATUT_COLORS: Record<string,{bg:string;text:string}> = {
 };
 
 const SENEGAL = "Sénégal";
+const APIX    = "APIX S.A";
 
 const EMPTY_FORM = {
   titre:"", reference:"", pays_signataires:[SENEGAL] as string[],
+  mode_signataire: "pays" as "pays" | "organisation",
   date_signature:"", date_entree_vigueur:"", date_expiration:"",
   thematiques:"", commentaires:"",
   statut:"en_vigueur", est_publie:true,
@@ -36,6 +38,7 @@ export default function AdminAccords() {
   const [saveOk,   setSaveOk]   = useState(false);
   const [error,    setError]    = useState("");
   const [form,     setForm]     = useState<any>({ ...EMPTY_FORM });
+  const [saisieOrg, setSaisieOrg] = useState(""); // champ texte mode organisation
   const [fichiers,      setFichiers]       = useState<any[]>([]);
   const [loadingFiles,  setLoadingFiles]   = useState(false);
   const [deleting,      setDeleting]      = useState<string|null>(null);
@@ -58,23 +61,27 @@ export default function AdminAccords() {
 
   const openCreate = () => {
     setForm({ ...EMPTY_FORM });
-    setEditItem(null); setPdfQueue([]); setFichiers([]);
+    setEditItem(null); setPdfQueue([]); setFichiers([]); setSaisieOrg("");
     setShowForm(true); setError(""); setSaveOk(false);
   };
 
   const openEdit = (a: any) => {
-    const paysExistants: string[] = a.pays_signataires
+    // Détecter le mode : si les parties contiennent APIX c'est organisation, sinon pays
+    const partiesExistantes: string[] = a.pays_signataires
       ? a.pays_signataires.split(", ").filter(Boolean)
       : [];
-    // Sénégal toujours présent
-    const paysAvecSenegal = paysExistants.includes(SENEGAL)
-      ? paysExistants
-      : [SENEGAL, ...paysExistants];
+    const modeDetecte = partiesExistantes.includes(APIX) ? "organisation" : "pays";
+    const partiesSansApixOuSenegal = partiesExistantes.filter(
+      (p: string) => p !== APIX && p !== SENEGAL
+    );
 
     setForm({
       titre:               a.titre               || "",
       reference:           a.reference           || "",
-      pays_signataires:    paysAvecSenegal,
+      pays_signataires:    modeDetecte === "pays"
+        ? (partiesExistantes.includes(SENEGAL) ? partiesExistantes : [SENEGAL, ...partiesExistantes])
+        : partiesExistantes.includes(APIX) ? partiesExistantes : [APIX, ...partiesExistantes],
+      mode_signataire:     modeDetecte,
       date_signature:      a.date_signature       || "",
       date_entree_vigueur: a.date_entree_vigueur  || "",
       date_expiration:     a.date_expiration      || "",
@@ -83,6 +90,7 @@ export default function AdminAccords() {
       statut:              a.statut               || "en_vigueur",
       est_publie:          a.est_publie           ?? true,
     });
+    setSaisieOrg("");
     setEditItem(a); setPdfQueue([]); setFichiers([]);
     setShowForm(true); setError(""); setSaveOk(false);
     // Charger les fichiers existants
@@ -122,9 +130,10 @@ export default function AdminAccords() {
     if (!form.pays_signataires || form.pays_signataires.length === 0) {
       setError("Au moins un pays signataire est obligatoire"); return;
     }
-    // Validation : au moins un autre pays en plus du Sénégal
+    // Validation : au moins une autre partie en plus de Sénégal/APIX
     if ((form.pays_signataires as string[]).length < 2) {
-      setError("Il doit y avoir au moins un autre pays signataire en plus du Sénégal"); return;
+      const partie = form.mode_signataire === "pays" ? "pays signataire" : "organisation/entreprise partenaire";
+      setError(`Il doit y avoir au moins un(e) autre ${partie}`); return;
     }
 
     setSaving(true); setError("");
@@ -281,25 +290,124 @@ export default function AdminAccords() {
                 </select>
               </div>
 
-              {/* Pays signataire(s) */}
+              {/* Parties signataires */}
               <div style={fieldStyle}>
-                <label style={labelStyle}>Pays signataire(s) *</label>
-                <PaysMultiSelect
-                  value={(form.pays_signataires as string[]).join(", ")}
-                  onChange={(val: string) => {
-                    const liste = val ? val.split(", ").map(s => s.trim()).filter(Boolean) : [];
-                    // Sénégal toujours présent — ne peut pas être retiré
-                    const avecSenegal = liste.includes(SENEGAL) ? liste : [SENEGAL, ...liste];
-                    update("pays_signataires", avecSenegal);
-                  }}
-                />
-                <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>
-                  Le Sénégal est toujours signataire. Au moins un autre pays est requis.
-                </span>
-                {(form.pays_signataires as string[]).length < 2 && (
-                  <span style={{ fontSize: 11, color: "#dc2626", marginTop: 2 }}>
-                    Ajoutez au moins un autre pays signataire
-                  </span>
+                <label style={labelStyle}>Parties signataires *</label>
+
+                {/* Toggle Pays / Organisation */}
+                <div style={{ display: "flex", gap: 0, marginBottom: 10, border: "1px solid #C5BFBB", borderRadius: 8, overflow: "hidden", width: "fit-content" }}>
+                  {(["pays", "organisation"] as const).map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => {
+                        update("mode_signataire", mode);
+                        // Réinitialiser les parties selon le mode
+                        update("pays_signataires", mode === "pays" ? [SENEGAL] : [APIX]);
+                        setSaisieOrg("");
+                      }}
+                      style={{
+                        padding: "7px 18px", border: "none", fontSize: 12, fontWeight: 700,
+                        cursor: "pointer", transition: "all 0.15s",
+                        background: form.mode_signataire === mode ? "#004f91" : "#F2F0EF",
+                        color: form.mode_signataire === mode ? "#fff" : "#9aa5b4",
+                      }}
+                    >
+                      {mode === "pays" ? "Pays" : "Organisation / Entreprise"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mode Pays */}
+                {form.mode_signataire === "pays" && (
+                  <>
+                    <PaysMultiSelect
+                      value={(form.pays_signataires as string[]).join(", ")}
+                      onChange={(val: string) => {
+                        const liste = val ? val.split(", ").map(s => s.trim()).filter(Boolean) : [];
+                        const avecSenegal = liste.includes(SENEGAL) ? liste : [SENEGAL, ...liste];
+                        update("pays_signataires", avecSenegal);
+                      }}
+                    />
+                    <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>
+                      Le Sénégal est toujours signataire. Au moins un autre pays est requis.
+                    </span>
+                    {(form.pays_signataires as string[]).length < 2 && (
+                      <span style={{ fontSize: 11, color: "#dc2626", marginTop: 2 }}>
+                        Ajoutez au moins un autre pays signataire
+                      </span>
+                    )}
+                  </>
+                )}
+
+                {/* Mode Organisation / Entreprise */}
+                {form.mode_signataire === "organisation" && (
+                  <>
+                    {/* Tags des parties déjà ajoutées */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                      {(form.pays_signataires as string[]).map((p: string) => (
+                        <span key={p} style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          background: p === APIX ? "rgba(0,79,145,0.1)" : "rgba(202,99,31,0.1)",
+                          color: p === APIX ? "#004f91" : "#ca631f",
+                          border: `1px solid ${p === APIX ? "rgba(0,79,145,0.2)" : "rgba(202,99,31,0.2)"}`,
+                          borderRadius: 999, padding: "3px 10px", fontSize: 12, fontWeight: 600,
+                        }}>
+                          {p}
+                          {p !== APIX && (
+                            <button
+                              onClick={() => update("pays_signataires", (form.pays_signataires as string[]).filter((x: string) => x !== p))}
+                              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+                            >
+                              <X size={10} />
+                            </button>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Champ de saisie */}
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <div style={{ flex: 1 }}>
+                        <input
+                          value={saisieOrg}
+                          onChange={e => setSaisieOrg(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === "Enter" && saisieOrg.trim()) {
+                              e.preventDefault();
+                              const val = saisieOrg.trim();
+                              if (!(form.pays_signataires as string[]).includes(val)) {
+                                update("pays_signataires", [...(form.pays_signataires as string[]), val]);
+                              }
+                              setSaisieOrg("");
+                            }
+                          }}
+                          placeholder="Ex : Organisation Mondiale du Commerce"
+                          style={inputStyle}
+                        />
+                      </div>
+                      <button
+                        onClick={() => {
+                          const val = saisieOrg.trim();
+                          if (!val) return;
+                          if (!(form.pays_signataires as string[]).includes(val)) {
+                            update("pays_signataires", [...(form.pays_signataires as string[]), val]);
+                          }
+                          setSaisieOrg("");
+                        }}
+                        style={{ padding: "9px 16px", background: "#004f91", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                      >
+                        Ajouter
+                      </button>
+                    </div>
+                    <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>
+                      Renseignez le nom exact de l'organisation tel qu'il apparaît dans le contrat. Appuyez sur Entrée ou "Ajouter".
+                    </span>
+                    {(form.pays_signataires as string[]).length < 2 && (
+                      <span style={{ fontSize: 11, color: "#dc2626", marginTop: 2 }}>
+                        Ajoutez au moins une organisation partenaire
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 

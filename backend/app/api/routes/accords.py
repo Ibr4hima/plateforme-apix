@@ -38,6 +38,7 @@ async def liste_accords(
     page:             int           = Query(1, ge=1),
     per_page:         int           = Query(12, ge=1, le=100),
     statut:           Optional[str] = None,
+    reference:        Optional[str] = None,
     secteur:          List[str]     = Query(default=[]),
     branche:          List[str]     = Query(default=[]),
     activite:         List[str]     = Query(default=[]),
@@ -48,6 +49,8 @@ async def liste_accords(
 
     if statut:
         filters.append(Accord.statut == statut)
+    if reference:
+        filters.append(Accord.reference.ilike(f"%{reference}%"))
 
     # Pays — OR intra-champ, ET avec les autres filtres
     if pays_signataires:
@@ -79,6 +82,47 @@ async def liste_accords(
         total=total, page=page, per_page=per_page,
         data=[accord_to_response(a) for a in accords]
     )
+
+
+# ── GET /accords/parties-distinctes ──
+@router.get("/parties-distinctes")
+async def parties_distinctes(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import text as sa_text
+
+    APIX    = "APIX S.A"
+    SENEGAL = "Sénégal"
+
+    # 1. Charger tous les noms de pays de la table ref_pays (+ code_iso2 pour drapeaux)
+    pays_ref_result = await db.execute(
+        sa_text("SELECT nom_fr, code_iso2 FROM ref_pays WHERE actif = TRUE")
+    )
+    pays_ref = {row.nom_fr: row.code_iso2 for row in pays_ref_result}
+    noms_pays_ref = set(pays_ref.keys())
+
+    # 2. Lire toutes les parties signataires des accords publiés
+    result = await db.execute(
+        select(Accord.pays_signataires)
+        .where(Accord.est_publie == True, Accord.pays_signataires != None)
+    )
+    toutes = result.scalars().all()
+
+    pays_set: dict = {}   # nom -> code_iso2
+    org_set:  set  = set()
+
+    for row in toutes:
+        if not row: continue
+        for p in [x.strip() for x in row.split(",") if x.strip()]:
+            if p in (SENEGAL, APIX):
+                continue
+            if p in noms_pays_ref:
+                pays_set[p] = pays_ref[p]
+            else:
+                org_set.add(p)
+
+    return {
+        "pays":          sorted([{"nom": n, "code_iso2": c} for n, c in pays_set.items()], key=lambda x: x["nom"]),
+        "organisations": sorted(list(org_set)),
+    }
 
 
 # ── GET /accords/:id ──

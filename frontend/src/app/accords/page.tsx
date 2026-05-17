@@ -5,7 +5,6 @@ import Navbar from "@/components/layout/Navbar";
 import AccordCard from "@/components/accords/AccordCard";
 import AccordModal from "@/components/accords/AccordModal";
 import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
-import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 import { api } from "@/lib/api";
 import { Loader2, FileText, X, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -17,17 +16,14 @@ const STATUT_BADGES = [
   { value: "expire",     label: "Expirés",     bg: "#f3f4f6", text: "#6b7280" },
 ];
 
-function flag(code: string) {
-  try { return String.fromCodePoint(...code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
-  catch { return "🌍"; }
-}
-
-// ── Dropdown multi-sélection pays avec drapeaux ───────────────────────────────
-function PaysDropdown({ selected, onToggle, color, pays }: {
-  selected: string[];
-  onToggle: (val: string) => void;
-  color:    string;
-  pays:     { nom: string; code_iso2: string }[];
+function PartiesDropdown({ mode, selected, onToggle, paysItems, orgItems, ancre, color }: {
+  mode:      "pays" | "organisation";
+  selected:  string[];
+  onToggle:  (val: string) => void;
+  paysItems: { nom: string; code_iso2: string }[];
+  orgItems:  string[];
+  ancre:     string;
+  color:     string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -38,27 +34,26 @@ function PaysDropdown({ selected, onToggle, color, pays }: {
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
+  function flagEmoji(code: string) {
+    try { return String.fromCodePoint(...code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
+    catch { return ""; }
+  }
+
   const base = {
     background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8,
     padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none",
     fontFamily: "var(--font-google-sans)", width: "100%", boxSizing: "border-box" as const,
   };
 
-  const selectedItems = pays.filter(p => selected.includes(p.nom));
+  // Items selon le mode
+  const items = mode === "pays"
+    ? paysItems.map(p => ({ value: p.nom, label: p.nom, flag: flagEmoji(p.code_iso2) }))
+    : orgItems.map(o => ({ value: o, label: o, flag: "" }));
+
+  const selectedLabels = items.filter(i => selected.includes(i.value));
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, minWidth: 180 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: "50%", background: selected.length > 0 ? color : "#C5BFBB" }} />
-        <span style={{ fontSize: 11, fontWeight: 700, color: selected.length > 0 ? color : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
-          Pays signataire
-        </span>
-        {selected.length > 0 && (
-          <span style={{ fontSize: 10, fontWeight: 700, color, background: color + "15", padding: "1px 6px", borderRadius: 999 }}>
-            {selected.length}
-          </span>
-        )}
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <div ref={ref} style={{ position: "relative" }}>
         <div onClick={() => setOpen(o => !o)} style={{
           ...base, display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -77,42 +72,60 @@ function PaysDropdown({ selected, onToggle, color, pays }: {
             {open ? <ChevronUp size={14} style={{ color, flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: "#9aa5b4", flexShrink: 0 }} />}
           </div>
         </div>
+
         {open && (
           <div style={{
             position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 300,
             background: "#fff", border: `1px solid ${color}40`, borderRadius: 10,
             boxShadow: "0 8px 32px rgba(0,0,0,0.12)", maxHeight: 260, overflowY: "auto",
           }}>
-            {pays.map(p => {
-              const isSel = selected.includes(p.nom);
+            {/* Ancre fixe grisée */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderBottom: "1px solid #F2F0EF", background: "#F8F7F6" }}>
+              <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, background: "#C5BFBB", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <span style={{ fontSize: 13, color: "#9aa5b4", fontWeight: 600 }}>{ancre}</span>
+              <span style={{ fontSize: 10, color: "#C5BFBB", marginLeft: "auto" }}>toujours présent</span>
+            </div>
+
+            {items.length === 0 ? (
+              <div style={{ padding: "12px", fontSize: 12, color: "#9aa5b4", textAlign: "center" }}>
+                Aucun{mode === "pays" ? " autre pays" : "e autre organisation"} en base
+              </div>
+            ) : items.map(item => {
+              const isSel = selected.includes(item.value);
               return (
-                <div key={p.nom} onMouseDown={e => { e.preventDefault(); onToggle(p.nom); }}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", cursor: "pointer",
-                    background: isSel ? color + "0d" : "transparent", borderBottom: "1px solid #F8F7F6", transition: "background 0.1s" }}
+                <div key={item.value} onMouseDown={e => { e.preventDefault(); onToggle(item.value); }}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
+                    cursor: "pointer", background: isSel ? color + "0d" : "transparent",
+                    borderBottom: "1px solid #F8F7F6", transition: "background 0.1s" }}
                   onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "#F8F7F6"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = isSel ? color + "0d" : "transparent"; }}
                 >
                   <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0,
                     border: `2px solid ${isSel ? color : "#C5BFBB"}`, background: isSel ? color : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}>
                     {isSel && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
-                  {p.code_iso2 && <span style={{ fontSize: 16 }}>{flag(p.code_iso2)}</span>}
-                  <span style={{ fontSize: 13, color: isSel ? "#1a1a2e" : "#4a5568", fontWeight: isSel ? 600 : 400 }}>{p.nom}</span>
+                  {item.flag && <span style={{ fontSize: 16 }}>{item.flag}</span>}
+                  <span style={{ fontSize: 13, color: isSel ? "#1a1a2e" : "#4a5568", fontWeight: isSel ? 600 : 400 }}>{item.label}</span>
                 </div>
               );
             })}
           </div>
         )}
       </div>
-      {selectedItems.length > 0 && (
+
+      {/* Tags sélections */}
+      {selectedLabels.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {selectedItems.map(p => (
-            <span key={p.nom} style={{ display: "inline-flex", alignItems: "center", gap: 4,
+          {selectedLabels.map(item => (
+            <span key={item.value} style={{ display: "inline-flex", alignItems: "center", gap: 4,
               background: color + "15", color, border: `1px solid ${color}30`,
               borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>
-              {p.code_iso2 && flag(p.code_iso2)} {p.nom}
-              <button onClick={() => onToggle(p.nom)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+              {item.flag && <span>{item.flag}</span>}
+              {item.label}
+              <button onClick={() => onToggle(item.value)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
                 <X size={10} style={{ color }} />
               </button>
             </span>
@@ -128,62 +141,63 @@ export default function AccordsPage() {
   const [stats,        setStats]        = useState<{ total: number; en_vigueur: number; expire: number }>({ total: 0, en_vigueur: 0, expire: 0 });
   const [loading,      setLoading]      = useState(true);
   const [accordSelec,  setAccordSelec]  = useState<any>(null);
-  const [paysRef,      setPaysRef]      = useState<{ nom: string; code_iso2: string }[]>([]);
   const [nomsSecteursRef, setNomsSecteursRef] = useState<string[]>([]);
 
+  // Parties distinctes en base
+  const [paysDistincts, setPaysDistincts]   = useState<{ nom: string; code_iso2: string }[]>([]);
+  const [orgsDistinctes, setOrgsDistinctes] = useState<string[]>([]);
+
   // Filtres
-  const [statutFiltre,  setStatutFiltre]  = useState("");
-  const [paysFiltres,   setPaysFiltres]   = useState<string[]>([]);
-  const [thematiques,   setThematiques]   = useState("");
+  const [statutFiltre,    setStatutFiltre]    = useState("");
+  const [referenceFiltre, setReferenceFiltre] = useState("");
+  const [modePartie,      setModePartie]      = useState<"pays" | "organisation">("pays");
+  const [partiesFiltres,  setPartiesFiltres]  = useState<string[]>([]);
+  const [thematiques,     setThematiques]     = useState("");
+
+  const SENEGAL = "Sénégal";
+  const APIX    = "APIX S.A";
 
   useEffect(() => {
-    fetch(`${API_BASE}/entreprises/ref/pays`).then(r => r.json())
-      .then((data: any[]) => setPaysRef(data.map(p => ({ nom: p.nom_fr, code_iso2: p.code_iso2 })))).catch(() => {});
     fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json())
       .then((data: any[]) => setNomsSecteursRef(data.map(s => s.nom))).catch(() => {});
+    fetch(`${API_BASE}/accords/parties-distinctes`).then(r => r.json())
+      .then((data: any) => {
+        setPaysDistincts(data.pays || []);
+        setOrgsDistinctes(data.organisations || []);
+      }).catch(() => {});
   }, []);
 
   const charger = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (statutFiltre) params.append("statut", statutFiltre);
-      paysFiltres.forEach(p => params.append("pays_signataires", p));
+      if (statutFiltre)    params.append("statut",    statutFiltre);
+      if (referenceFiltre) params.append("reference", referenceFiltre);
+      partiesFiltres.forEach(p => params.append("pays_signataires", p));
 
-      // Thématiques — séparer par groupe pour OR intra / ET inter
       if (thematiques) {
         const items = thematiques.split(",").map((t: string) => t.trim()).filter(Boolean);
-        items.filter(t => t.startsWith("sec:")).map(t => t.slice(4))
-          .forEach(t => params.append("secteur", t));
-        items.filter(t => t.startsWith("bra:")).map(t => t.slice(4))
-          .forEach(t => params.append("branche", t));
-        items.filter(t => t.startsWith("act:")).map(t => t.slice(4))
-          .forEach(t => params.append("activite", t));
+        items.filter(t => t.startsWith("sec:")).map(t => t.slice(4)).forEach(t => params.append("secteur", t));
+        items.filter(t => t.startsWith("bra:")).map(t => t.slice(4)).forEach(t => params.append("branche", t));
+        items.filter(t => t.startsWith("act:")).map(t => t.slice(4)).forEach(t => params.append("activite", t));
       }
       params.append("per_page", "100");
 
       const res = await api.accords.liste(params.toString());
       setAccords(res.data);
       const data = res.data as any[];
-      setStats({
-        total:      res.total,
-        en_vigueur: data.filter(a => a.statut === "en_vigueur").length,
-        expire:     data.filter(a => a.statut === "expire").length,
-      });
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [statutFiltre, paysFiltres, thematiques]);
+      setStats({ total: res.total, en_vigueur: data.filter(a => a.statut === "en_vigueur").length, expire: data.filter(a => a.statut === "expire").length });
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  }, [statutFiltre, referenceFiltre, partiesFiltres, thematiques]);
 
   useEffect(() => { charger(); }, [charger]);
 
-  const togglePays = (val: string) =>
-    setPaysFiltres(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
+  const togglePartie = (val: string) =>
+    setPartiesFiltres(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
 
-  const hasFilter = statutFiltre || paysFiltres.length > 0 || thematiques;
-  const reinitialiser = () => { setStatutFiltre(""); setPaysFiltres([]); setThematiques(""); };
+  const hasFilter = statutFiltre || referenceFiltre || partiesFiltres.length > 0 || thematiques;
+  const reinitialiser = () => { setStatutFiltre(""); setReferenceFiltre(""); setPartiesFiltres([]); setThematiques(""); };
 
   const inputStyle = {
     background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 10,
@@ -250,16 +264,57 @@ export default function AccordsPage() {
                 </div>
               </div>
 
-              {/* Pays signataire */}
-              <PaysDropdown
-                selected={paysFiltres}
-                onToggle={togglePays}
-                color="#004f91"
-                pays={paysRef}
-              />
+              {/* Référence */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: referenceFiltre ? "#7c3aed" : "#C5BFBB" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: referenceFiltre ? "#7c3aed" : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Référence</span>
+                </div>
+                <input
+                  placeholder="Ex : APIX/2024/ACC-001"
+                  value={referenceFiltre}
+                  onChange={e => setReferenceFiltre(e.target.value)}
+                  style={{ ...inputStyle, width: "100%", boxSizing: "border-box" as const }}
+                />
+              </div>
 
-              {/* Placeholder 3e colonne vide pour aligner avec ThematiquesNaema */}
-              <div />
+              {/* Parties signataires */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: partiesFiltres.length > 0 ? "#004f91" : "#C5BFBB" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: partiesFiltres.length > 0 ? "#004f91" : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
+                    Parties signataires
+                  </span>
+                  {partiesFiltres.length > 0 && (
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.1)", padding: "1px 6px", borderRadius: 999 }}>{partiesFiltres.length}</span>
+                  )}
+                </div>
+
+                {/* Toggle Pays / Organisation */}
+                <div style={{ display: "flex", gap: 0, border: "1px solid #C5BFBB", borderRadius: 8, overflow: "hidden", width: "fit-content" }}>
+                  {(["pays", "organisation"] as const).map(mode => (
+                    <button key={mode} onClick={() => { setModePartie(mode); setPartiesFiltres([]); }} style={{
+                      padding: "5px 14px", border: "none", fontSize: 11, fontWeight: 700,
+                      cursor: "pointer", transition: "all 0.15s",
+                      background: modePartie === mode ? "#004f91" : "#F2F0EF",
+                      color: modePartie === mode ? "#fff" : "#9aa5b4",
+                    }}>
+                      {mode === "pays" ? "Pays" : "Organisation"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Dropdown selon le mode */}
+                <PartiesDropdown
+                  mode={modePartie}
+                  selected={partiesFiltres}
+                  onToggle={togglePartie}
+                  paysItems={paysDistincts}
+                  orgItems={orgsDistinctes}
+                  ancre={modePartie === "pays" ? SENEGAL : APIX}
+                  color="#004f91"
+                />
+              </div>
             </div>
 
             {/* Thématiques */}
