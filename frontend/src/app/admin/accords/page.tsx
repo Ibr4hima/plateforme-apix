@@ -122,9 +122,13 @@ export default function AdminAccords() {
     if (!form.pays_signataires || form.pays_signataires.length === 0) {
       setError("Au moins un pays signataire est obligatoire"); return;
     }
+    // Validation : au moins un autre pays en plus du Sénégal
+    if ((form.pays_signataires as string[]).length < 2) {
+      setError("Il doit y avoir au moins un autre pays signataire en plus du Sénégal"); return;
+    }
+
     setSaving(true); setError("");
     try {
-      // Mapper thematiques → secteur_activite pour la base
       const paysStr = (form.pays_signataires as string[]).join(", ") || null;
 
       if (editItem) {
@@ -154,6 +158,7 @@ export default function AdminAccords() {
           await fetch(`${API_BASE}/accords/${editItem.id}/fichiers`, { method: "POST", body: fd });
         }
       } else {
+        // Créer l'accord SANS fichier dans la table principale
         const fd = new FormData();
         fd.append("titre",               form.titre);
         fd.append("reference",           form.reference);
@@ -165,13 +170,11 @@ export default function AdminAccords() {
         if (form.commentaires)           fd.append("commentaires",        form.commentaires);
         fd.append("statut",              form.statut);
         fd.append("est_publie",          String(form.est_publie));
-        // Premier PDF via le champ principal si présent
-        if (pdfQueue.length > 0) fd.append("fichier", pdfQueue[0].file);
         const res = await fetch(`${API_BASE}/accords`, { method: "POST", body: fd });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
         const newAccord = await res.json();
-        // PDFs supplémentaires via /fichiers
-        for (const p of pdfQueue.slice(1)) {
+        // Tous les PDFs via /fichiers sans exception
+        for (const p of pdfQueue) {
           const fd2 = new FormData();
           fd2.append("titre",   p.titre || p.file.name);
           fd2.append("fichier", p.file);
@@ -285,14 +288,19 @@ export default function AdminAccords() {
                   value={(form.pays_signataires as string[]).join(", ")}
                   onChange={(val: string) => {
                     const liste = val ? val.split(", ").map(s => s.trim()).filter(Boolean) : [];
-                    // Sénégal toujours présent — ne peut pas être décoché
+                    // Sénégal toujours présent — ne peut pas être retiré
                     const avecSenegal = liste.includes(SENEGAL) ? liste : [SENEGAL, ...liste];
                     update("pays_signataires", avecSenegal);
                   }}
                 />
                 <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>
-                  Le Sénégal est toujours signataire et ne peut pas être retiré.
+                  Le Sénégal est toujours signataire. Au moins un autre pays est requis.
                 </span>
+                {(form.pays_signataires as string[]).length < 2 && (
+                  <span style={{ fontSize: 11, color: "#dc2626", marginTop: 2 }}>
+                    Ajoutez au moins un autre pays signataire
+                  </span>
+                )}
               </div>
 
               {/* Dates — 3 colonnes */}
