@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import selectinload
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from app.core.database import get_db
@@ -228,14 +228,14 @@ async def liste_entreprises(
     region:       Optional[str] = None,
     pays:         Optional[str] = None,
     search:       Optional[str] = None,
-    forme_juridique:    Optional[str] = None,
-    region_noms:        Optional[str] = None,
-    departement_noms:   Optional[str] = None,
-    arrondissement_noms:Optional[str] = None,
-    # Filtres multi (noms séparés par virgules)
-    secteur_nom:  Optional[str] = None,
-    branche_nom:  Optional[str] = None,
-    activite_nom: Optional[str] = None,
+    nom_list:     List[str]     = Query(default=[]),
+    forme_juridique_list: List[str] = Query(default=[], alias="forme_juridique"),
+    region_list:          List[str] = Query(default=[], alias="region_noms"),
+    departement_list:     List[str] = Query(default=[], alias="departement_noms"),
+    arrondissement_list:  List[str] = Query(default=[], alias="arrondissement_noms"),
+    secteur_list:         List[str] = Query(default=[], alias="secteur_nom"),
+    branche_list:         List[str] = Query(default=[], alias="branche_nom"),
+    activite_list:        List[str] = Query(default=[], alias="activite_nom"),
     db:           AsyncSession  = Depends(get_db),
 ):
     filters = [
@@ -253,56 +253,35 @@ async def liste_entreprises(
             EntrepriseIntallee.commune.ilike(f"%{search}%"),
             EntrepriseIntallee.adresse.ilike(f"%{search}%"),
         ))
+    # Sélection directe de noms — OR entre plusieurs entreprises
+    if nom_list:
+        filters.append(or_(*[EntrepriseIntallee.nom == n for n in nom_list]))
 
-    if forme_juridique:
-        formes = [f.strip() for f in forme_juridique.split(",") if f.strip()]
-        if formes:
-            filters.append(EntrepriseIntallee.forme_juridique.in_(formes))
+    # Forme juridique — OR intra, ET avec les autres filtres
+    if forme_juridique_list:
+        filters.append(or_(*[EntrepriseIntallee.forme_juridique == f for f in forme_juridique_list]))
 
-    if forme_juridique:
-        formes = [f.strip() for f in forme_juridique.split(",") if f.strip()]
-        if formes:
-            filters.append(EntrepriseIntallee.forme_juridique.in_(formes))
+    # Géographie — OR intra-groupe, ET inter-groupes
+    if region_list:
+        filters.append(or_(*[EntrepriseIntallee.region == r for r in region_list]))
+    if departement_list:
+        filters.append(or_(*[EntrepriseIntallee.departement == d for d in departement_list]))
+    if arrondissement_list:
+        filters.append(or_(*[EntrepriseIntallee.commune == a for a in arrondissement_list]))
 
-    # Filtres géographie multi-valeurs
-    if region_noms:
-        noms = [n.strip() for n in region_noms.split(",") if n.strip()]
-        if noms:
-            filters.append(EntrepriseIntallee.region.in_(noms))
-    if departement_noms:
-        noms = [n.strip() for n in departement_noms.split(",") if n.strip()]
-        if noms:
-            filters.append(EntrepriseIntallee.departement.in_(noms))
-    if arrondissement_noms:
-        noms = [n.strip() for n in arrondissement_noms.split(",") if n.strip()]
-        if noms:
-            filters.append(EntrepriseIntallee.commune.in_(noms))
-
-    # Filtres NAEMA multi-valeurs
-    if secteur_nom:
-        noms = [n.strip() for n in secteur_nom.split(",") if n.strip()]
-        if noms:
-            filters.append(
-                EntrepriseIntallee.secteur_id.in_(
-                    select(RefSecteur.id).where(RefSecteur.nom.in_(noms))
-                )
-            )
-    if branche_nom:
-        noms = [n.strip() for n in branche_nom.split(",") if n.strip()]
-        if noms:
-            filters.append(
-                EntrepriseIntallee.branche_id.in_(
-                    select(RefBranche.id).where(RefBranche.nom.in_(noms))
-                )
-            )
-    if activite_nom:
-        noms = [n.strip() for n in activite_nom.split(",") if n.strip()]
-        if noms:
-            filters.append(
-                EntrepriseIntallee.activite_id.in_(
-                    select(RefActivite.id).where(RefActivite.nom.in_(noms))
-                )
-            )
+    # NAEMA — OR intra-groupe, ET inter-groupes
+    if secteur_list:
+        filters.append(EntrepriseIntallee.secteur_id.in_(
+            select(RefSecteur.id).where(or_(*[RefSecteur.nom == n for n in secteur_list]))
+        ))
+    if branche_list:
+        filters.append(EntrepriseIntallee.branche_id.in_(
+            select(RefBranche.id).where(or_(*[RefBranche.nom == n for n in branche_list]))
+        ))
+    if activite_list:
+        filters.append(EntrepriseIntallee.activite_id.in_(
+            select(RefActivite.id).where(or_(*[RefActivite.nom == n for n in activite_list]))
+        ))
 
     total_q = await db.execute(
         select(func.count()).select_from(EntrepriseIntallee).where(and_(*filters))

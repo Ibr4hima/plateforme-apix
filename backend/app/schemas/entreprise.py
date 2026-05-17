@@ -30,6 +30,7 @@ class RefActiviteResponse(BaseModel):
 class PointFocalBase(BaseModel):
     nom:           str
     prenom:        Optional[str]  = None
+    civilite:      Optional[str]  = "Monsieur"
     poste:         Optional[str]  = None
     telephone:     Optional[str]  = None
     mail:          Optional[str]  = None

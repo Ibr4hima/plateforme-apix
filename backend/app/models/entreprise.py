@@ -44,6 +44,7 @@ class EntreprisePointFocal(Base):
     entreprise_id   = Column(UUID(as_uuid=True), ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
     nom             = Column(String(255), nullable=False)
     prenom          = Column(String(255))
+    civilite        = Column(String(20), default="Monsieur")
     poste           = Column(String(150))
     telephone       = Column(String(50))
     mail            = Column(String(255))

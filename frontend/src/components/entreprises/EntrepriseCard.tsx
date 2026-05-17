@@ -48,15 +48,12 @@ export default function EntrepriseCard({ entreprise, onClick }: { entreprise: an
 
       </div>
 
-      {/* Secteur / Branche */}
-      {(entreprise.secteur || entreprise.branche) && (
-        <div style={{
-          background: "rgba(202,99,31,0.05)", borderRadius: 8,
-          padding: "8px 12px", fontSize: 12, color: "#4a5568",
-        }}>
-          {entreprise.secteur?.nom}
-          {entreprise.branche && <span style={{ color: "#9aa5b4" }}> › {entreprise.branche.nom}</span>}
-          {entreprise.activite && <span style={{ color: "#9aa5b4" }}> › {entreprise.activite.nom}</span>}
+      {/* Secteur uniquement */}
+      {entreprise.secteur && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+          <span style={{ fontSize: 11, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>
+            {entreprise.secteur.nom}
+          </span>
         </div>
       )}
 

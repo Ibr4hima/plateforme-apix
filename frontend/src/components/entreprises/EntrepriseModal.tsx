@@ -69,29 +69,35 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
             </button>
           </div>
 
-          {/* Classification NAEMA */}
+          {/* Thématiques hiérarchiques */}
           {(entreprise.secteur || entreprise.branche || entreprise.activite) && (
-            <div style={{ background: "rgba(202,99,31,0.05)", border: "1px solid rgba(202,99,31,0.15)", borderRadius: 12, padding: "12px 16px", marginBottom: 20 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
-                Classification NAEMA
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 10 }}>
+                Thématiques
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {entreprise.secteur && (
-                  <span style={{ fontSize: 12, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "4px 12px", borderRadius: 999 }}>
-                    {entreprise.secteur.nom}
-                  </span>
-                )}
-                {entreprise.branche && (
-                  <span style={{ fontSize: 12, color: "#4a5568", background: "#E8E5E3", padding: "4px 12px", borderRadius: 999 }}>
-                    {entreprise.branche.nom}
-                  </span>
-                )}
-                {entreprise.activite && (
-                  <span style={{ fontSize: 12, color: "#4a5568", background: "#E8E5E3", padding: "4px 12px", borderRadius: 999 }}>
-                    {entreprise.activite.nom}
-                  </span>
-                )}
-              </div>
+              {entreprise.secteur && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ca631f" }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#ca631f" }}>{entreprise.secteur.nom}</span>
+                  </div>
+                  {entreprise.branche && (
+                    <div style={{ paddingLeft: 18 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+                        <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#004f91" }} />
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#004f91" }}>{entreprise.branche.nom}</span>
+                      </div>
+                      {entreprise.activite && (
+                        <div style={{ paddingLeft: 16 }}>
+                          <span style={{ fontSize: 11, color: "#059669", fontWeight: 600, background: "rgba(5,150,105,0.08)", padding: "2px 8px", borderRadius: 999, border: "1px solid rgba(5,150,105,0.2)" }}>
+                            {entreprise.activite.nom}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -163,7 +169,10 @@ export default function EntrepriseModal({ entreprise, onClose }: { entreprise: a
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e" }}>{pf.prenom} {pf.nom}</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e" }}>
+                          {pf.civilite && <span style={{ fontWeight: 400, color: "#9aa5b4", marginRight: 4 }}>{pf.civilite}</span>}
+                          {pf.prenom} {pf.nom}
+                        </span>
                         {pf.est_principal && (
                           <span style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "2px 8px", borderRadius: 999 }}>Principal</span>
                         )}
