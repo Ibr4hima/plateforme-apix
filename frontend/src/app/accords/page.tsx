@@ -16,14 +16,15 @@ const STATUT_BADGES = [
   { value: "expire",     label: "Expirés",     bg: "#f3f4f6", text: "#6b7280" },
 ];
 
-function PartiesDropdown({ mode, selected, onToggle, paysItems, orgItems, ancre, color }: {
-  mode:      "pays" | "organisation";
-  selected:  string[];
-  onToggle:  (val: string) => void;
-  paysItems: { nom: string; code_iso2: string }[];
-  orgItems:  string[];
-  ancre:     string;
-  color:     string;
+function PartiesDropdown({ mode, selected, onToggle, paysItems, orgItems, ancre, ancreFlag, color }: {
+  mode:       "pays" | "organisation";
+  selected:   string[];
+  onToggle:   (val: string) => void;
+  paysItems:  { nom: string; code_iso2: string }[];
+  orgItems:   string[];
+  ancre:      string;
+  ancreFlag?: string;
+  color:      string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -84,6 +85,7 @@ function PartiesDropdown({ mode, selected, onToggle, paysItems, orgItems, ancre,
               <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, background: "#C5BFBB", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
+              {ancreFlag && <span style={{ fontSize: 16 }}>{ancreFlag}</span>}
               <span style={{ fontSize: 13, color: "#9aa5b4", fontWeight: 600 }}>{ancre}</span>
               <span style={{ fontSize: 10, color: "#C5BFBB", marginLeft: "auto" }}>toujours présent</span>
             </div>
@@ -290,11 +292,11 @@ export default function AccordsPage() {
                   )}
                 </div>
 
-                {/* Toggle Pays / Organisation */}
-                <div style={{ display: "flex", gap: 0, border: "1px solid #C5BFBB", borderRadius: 8, overflow: "hidden", width: "fit-content" }}>
+                {/* Toggle Pays / Organisation — 2 colonnes pleine largeur */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", border: "1px solid #C5BFBB", borderRadius: 8, overflow: "hidden" }}>
                   {(["pays", "organisation"] as const).map(mode => (
                     <button key={mode} onClick={() => { setModePartie(mode); setPartiesFiltres([]); }} style={{
-                      padding: "5px 14px", border: "none", fontSize: 11, fontWeight: 700,
+                      padding: "7px 0", border: "none", fontSize: 12, fontWeight: 700,
                       cursor: "pointer", transition: "all 0.15s",
                       background: modePartie === mode ? "#004f91" : "#F2F0EF",
                       color: modePartie === mode ? "#fff" : "#9aa5b4",
@@ -312,6 +314,7 @@ export default function AccordsPage() {
                   paysItems={paysDistincts}
                   orgItems={orgsDistinctes}
                   ancre={modePartie === "pays" ? SENEGAL : APIX}
+                  ancreFlag={modePartie === "pays" ? "🇸🇳" : undefined}
                   color="#004f91"
                 />
               </div>
