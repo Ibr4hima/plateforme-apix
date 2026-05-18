@@ -1,11 +1,60 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, ChevronRight, ChevronDown, Upload, FileText, Search, Building2 } from "lucide-react";
-import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
-import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
+import { ArrondissementSelect, DepartementSelect, RegionSelect } from "@/components/shared/GeoSelect";
+import { Building2, Check, ChevronDown, ChevronRight, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+// ── Selects NAEMA ─────────────────────────────────────────────────────────────
+function useNaema() {
+  const [secteurs,  setSecteurs]  = useState<any[]>([]);
+  const [branches,  setBranches]  = useState<any[]>([]);
+  const [activites, setActivites] = useState<any[]>([]);
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
+      fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
+      fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
+    ]).then(([s, b, a]) => { setSecteurs(s); setBranches(b); setActivites(a); }).catch(() => {});
+  }, []);
+  return { secteurs, branches, activites };
+}
+
+function SecteurSelect({ value, onChange }: { value: any; onChange: (id: any) => void }) {
+  const { secteurs } = useNaema();
+  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+  return (
+    <select value={value || ""} onChange={e => onChange(e.target.value ? parseInt(e.target.value) : "")} style={IS}>
+      <option value="">Sélectionner</option>
+      {secteurs.map(s => <option key={s.id} value={s.id}>{s.nom}</option>)}
+    </select>
+  );
+}
+
+function BrancheSelect({ secteurId, value, onChange }: { secteurId: any; value: any; onChange: (id: any) => void }) {
+  const { branches } = useNaema();
+  const filtered = branches.filter(b => b.secteur_id === parseInt(secteurId));
+  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+  return (
+    <select value={value || ""} onChange={e => onChange(e.target.value ? parseInt(e.target.value) : "")} disabled={!secteurId} style={{ ...IS, opacity: secteurId ? 1 : 0.5 }}>
+      <option value="">Sélectionner</option>
+      {filtered.map(b => <option key={b.id} value={b.id}>{b.nom}</option>)}
+    </select>
+  );
+}
+
+function ActiviteSelect({ brancheId, value, onChange }: { brancheId: any; value: any; onChange: (id: any) => void }) {
+  const { activites } = useNaema();
+  const filtered = activites.filter(a => a.branche_id === parseInt(brancheId));
+  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+  return (
+    <select value={value || ""} onChange={e => onChange(e.target.value ? parseInt(e.target.value) : "")} disabled={!brancheId} style={{ ...IS, opacity: brancheId ? 1 : 0.5 }}>
+      <option value="">Sélectionner</option>
+      {filtered.map(a => <option key={a.id} value={a.id}>{a.nom}</option>)}
+    </select>
+  );
+}
 
 const TYPE_ZONES = [
   { key: "ZES", label: "Zones Économiques Spéciales",        code: "ZES", color: "#004f91" },
@@ -14,10 +63,13 @@ const TYPE_ZONES = [
 ];
 
 const EMPTY_ZONE_FORM = {
-  denomination: "", description: "", thematiques: "",
+  nom_zone: "", description: "",
   region_id: "" as string | number,
   departement_id: "" as string | number,
   arrondissement_id: "" as string | number,
+  secteur_id: "" as string | number,
+  branche_id: "" as string | number,
+  activite_id: "" as string | number,
 };
 
 // ── Modal ajout/modif zone ────────────────────────────────────────────────────
@@ -39,7 +91,13 @@ function ZoneModal({
   useEffect(() => {
     if (!open) return;
     if (editZone) {
-      setForm({ denomination: editZone.denomination || "", description: editZone.description || "", thematiques: editZone.thematiques || "", region_id: editZone.region_id || "", departement_id: editZone.departement_id || "", arrondissement_id: editZone.arrondissement_id || "" });
+      setForm({
+        nom_zone: editZone.nom_zone || "", description: editZone.description || "",
+        region_id: editZone.region_id || "", departement_id: editZone.departement_id || "",
+        arrondissement_id: editZone.arrondissement_id || "",
+        secteur_id: editZone.secteur_id || "", branche_id: editZone.branche_id || "",
+        activite_id: editZone.activite_id || "",
+      });
       setFichiers(editZone.fichiers || []);
       setRegionId(editZone.region_id || null);
       setDepId(editZone.departement_id || null);
@@ -54,20 +112,22 @@ function ZoneModal({
   const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
-    if (!form.denomination.trim()) { setError("La dénomination est obligatoire"); return; }
+    if (!form.nom_zone.trim()) { setError("La dénomination est obligatoire"); return; }
     setSaving(true); setError("");
     try {
       const fd = new FormData();
-      fd.append("denomination", form.denomination);
+      fd.append("nom_zone", form.nom_zone);
       fd.append("type_zone", typeZone);
       if (form.description)       fd.append("description",       form.description);
-      if (form.thematiques)       fd.append("thematiques",       form.thematiques);
       if (form.region_id)         fd.append("region_id",         String(form.region_id));
       if (form.departement_id)    fd.append("departement_id",    String(form.departement_id));
       if (form.arrondissement_id) fd.append("arrondissement_id", String(form.arrondissement_id));
+      if (form.secteur_id)       fd.append("secteur_id",        String(form.secteur_id));
+      if (form.branche_id)        fd.append("branche_id",         String(form.branche_id));
+      if (form.activite_id)       fd.append("activite_id",        String(form.activite_id));
       fd.append("est_publie", "true");
 
-      const url    = editZone ? `${API_BASE}/zones/${editZone.id}` : `${API_BASE}/zones`;
+      const url    = editZone ? `${API_BASE}/zones-types/${editZone.id}` : `${API_BASE}/zones-types`;
       const method = editZone ? "PATCH" : "POST";
       const res    = await fetch(url, { method, body: fd });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -77,7 +137,7 @@ function ZoneModal({
         const fd2 = new FormData();
         fd2.append("titre", p.titre || p.file.name);
         fd2.append("fichier", p.file);
-        await fetch(`${API_BASE}/zones/${zone.id}/fichiers`, { method: "POST", body: fd2 });
+        await fetch(`${API_BASE}/zones-types/${zone.id}/fichiers`, { method: "POST", body: fd2 });
       }
       setSaveOk(true);
       setTimeout(() => { onClose(); onSaved(); }, 700);
@@ -87,7 +147,7 @@ function ZoneModal({
 
   const supprimerFichier = async (fichId: string) => {
     if (!editZone) return;
-    await fetch(`${API_BASE}/zones/${editZone.id}/fichiers/${fichId}`, { method: "DELETE" });
+    await fetch(`${API_BASE}/zones-types/${editZone.id}/fichiers/${fichId}`, { method: "DELETE" });
     setFichiers(prev => prev.filter((f: any) => f.id !== fichId));
   };
 
@@ -112,7 +172,7 @@ function ZoneModal({
           {/* Dénomination */}
           <div style={{ marginBottom: 14 }}>
             <label style={LS}>Dénomination *</label>
-            <input value={form.denomination} onChange={e => update("denomination", e.target.value)} placeholder={`Ex : ${typeZone} de Diamniadio`} style={IS} />
+            <input value={form.nom_zone} onChange={e => update("nom_zone", e.target.value)} placeholder={`Ex : ${typeZone} de Diamniadio`} style={IS} />
           </div>
 
           {/* Localisation */}
@@ -134,10 +194,23 @@ function ZoneModal({
             </div>
           </div>
 
-          {/* Thématiques */}
+          {/* Classification NAEMA */}
           <div style={{ marginBottom: 14 }}>
-            <label style={LS}>Thématiques / Activités prévues</label>
-            <ThematiquesNaema value={form.thematiques} onChange={val => update("thematiques", val)} />
+            <label style={LS}>Classification NAEMA</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <div>
+                <label style={{ ...LS, fontSize: 11, color: "#ca631f" }}>Secteur</label>
+                <SecteurSelect value={form.secteur_id} onChange={(id) => { update("secteur_id", id || ""); update("branche_id", ""); update("activite_id", ""); }} />
+              </div>
+              <div>
+                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Branche</label>
+                <BrancheSelect secteurId={form.secteur_id} value={form.branche_id} onChange={(id) => { update("branche_id", id || ""); update("activite_id", ""); }} />
+              </div>
+              <div>
+                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Activité</label>
+                <ActiviteSelect brancheId={form.branche_id} value={form.activite_id} onChange={(id) => update("activite_id", id || "")} />
+              </div>
+            </div>
           </div>
 
           {/* Description */}
@@ -235,7 +308,7 @@ function EntreprisesModal({
     setSaving(true);
     try {
       for (const eid of selected) {
-        await fetch(`${API_BASE}/zones/${zoneId}/entreprises?entreprise_id=${eid}`, { method: "POST" });
+        await fetch(`${API_BASE}/zones-types/${zoneId}/entreprises?entreprise_id=${eid}`, { method: "POST" });
       }
       setSaveOk(true);
       setTimeout(() => { onClose(); onSaved(); }, 600);
@@ -346,8 +419,12 @@ export default function GestionZonesPage() {
   const charger = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/zones`);
-      setZones(await res.json());
+      const [zes, zai, zfi] = await Promise.all([
+        fetch(`${API_BASE}/zones-types?type_zone=ZES`).then(r => r.json()),
+        fetch(`${API_BASE}/zones-types?type_zone=ZAI`).then(r => r.json()),
+        fetch(`${API_BASE}/zones-types?type_zone=ZFI`).then(r => r.json()),
+      ]);
+      setZones([...zes, ...zai, ...zfi]);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }, []);
@@ -362,13 +439,13 @@ export default function GestionZonesPage() {
   const handleDeleteZone = async (id: string) => {
     if (!confirm("Supprimer cette zone et toutes ses associations ?")) return;
     setDeleting(id);
-    try { await fetch(`${API_BASE}/zones/${id}`, { method: "DELETE" }); charger(); }
+    try { await fetch(`${API_BASE}/zones-types/${id}`, { method: "DELETE" }); charger(); }
     finally { setDeleting(null); }
   };
 
   const handleRetirerEntreprise = async (zoneId: string, zeId: string) => {
     setDeletingEnt(zeId);
-    try { await fetch(`${API_BASE}/zones/${zoneId}/entreprises/${zeId}`, { method: "DELETE" }); charger(); }
+    try { await fetch(`${API_BASE}/zones-types/${zoneId}/entreprises/${zeId}`, { method: "DELETE" }); charger(); }
     finally { setDeletingEnt(null); }
   };
 
@@ -440,9 +517,9 @@ export default function GestionZonesPage() {
                             <div onClick={() => setExpandedZone(isZoneOpen ? null : z.id)}
                               style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", cursor: "pointer" }}>
                               <span style={{ fontSize: 10, fontWeight: 700, color: t.color, background: `${t.color}12`, padding: "2px 8px", borderRadius: 999, flexShrink: 0 }}>{t.code}</span>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e", flex: 1 }}>{z.denomination}</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e", flex: 1 }}>{z.nom_zone}</span>
                               {(z.region_nom || z.departement_nom) && (
-                                <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 4 }}>📍 {[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
+                                <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 4 }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
                               )}
                               <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 8 }}>
                                 {z.entreprises?.length || 0} entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}
@@ -495,7 +572,7 @@ export default function GestionZonesPage() {
                                 {z.fichiers?.length > 0 && (
                                   <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
                                     {z.fichiers.map((f: any) => (
-                                      <a key={f.id} href={`${API_BASE}/zones/${z.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                                      <a key={f.id} href={`${API_BASE}/zones-types/${z.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                                         style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.12)", borderRadius: 7, padding: "4px 10px", fontSize: 11, color: "#004f91", textDecoration: "none", fontWeight: 500 }}>
                                         <FileText size={11} /> {f.titre || f.fichier_nom}
                                       </a>

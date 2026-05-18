@@ -65,6 +65,7 @@ class EntrepriseBase(BaseModel):
     activite_id:     Optional[int]  = None
     statut:          str            = "actif"
     est_publie:      bool           = True
+    zone_investissement: Optional[str] = None  # ex: ZES-1, ZAI-3
 
 class EntrepriseCreate(EntrepriseBase):
     created_by:    Optional[str]               = None
@@ -88,6 +89,7 @@ class EntrepriseUpdate(BaseModel):
     activite_id:     Optional[int]  = None
     statut:          Optional[str]  = None
     est_publie:      Optional[bool] = None
+    zone_investissement: Optional[str] = None
 
 class EntrepriseResponse(EntrepriseBase):
     id:            UUID
@@ -99,6 +101,7 @@ class EntrepriseResponse(EntrepriseBase):
     region_nom:          Optional[str]           = None
     departement_nom:     Optional[str]           = None
     arrondissement_nom:  Optional[str]           = None
+    zone_investissement: Optional[str]           = None
     created_at:    Optional[datetime]            = None
     updated_at:    Optional[datetime]            = None
     created_by:    Optional[str]                 = None

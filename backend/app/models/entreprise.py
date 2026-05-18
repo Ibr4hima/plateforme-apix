@@ -103,6 +103,8 @@ class EntrepriseIntallee(Base):
     activite_id     = Column(Integer, ForeignKey("ref_activites.id"))
     # ── Publication ──
     est_publie      = Column(Boolean, default=True)
+    # ── Zone d'investissement ──
+    zone_investissement = Column(String(20), nullable=True)  # ex: ZES-1, ZAI-3
     # ── Métadonnées ──
     created_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())
