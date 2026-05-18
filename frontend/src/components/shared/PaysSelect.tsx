@@ -8,13 +8,14 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 interface Pays { id: number; code_iso2: string; nom_fr: string; region_monde: string; }
 
 export default function PaysSelect({
-  value, onChange, onChangeId, placeholder = "Sélectionner un pays", style,
+  value, onChange, onChangeId, placeholder = "Sélectionner un pays", style, excludeNoms = [],
 }: {
-  value:        string;
-  onChange:     (nom: string) => void;
-  onChangeId?:  (id: number | null) => void;
-  placeholder?: string;
-  style?:       any;
+  value:         string;
+  onChange:      (nom: string) => void;
+  onChangeId?:   (id: number | null) => void;
+  placeholder?:  string;
+  style?:        any;
+  excludeNoms?:  string[];   // noms à exclure de la liste
 }) {
   const [pays,   setPays]   = useState<Pays[]>([]);
   const [search, setSearch] = useState("");
@@ -35,8 +36,9 @@ export default function PaysSelect({
   }, []);
 
   const filtered = pays.filter(p =>
-    p.nom_fr.toLowerCase().includes(search.toLowerCase()) ||
-    p.region_monde?.toLowerCase().includes(search.toLowerCase())
+    !excludeNoms.includes(p.nom_fr) &&
+    (p.nom_fr.toLowerCase().includes(search.toLowerCase()) ||
+    p.region_monde?.toLowerCase().includes(search.toLowerCase()))
   );
 
   // Grouper par région

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Building2, User, Trash, ChevronDown, ChevronUp, Clock, MessageSquare, AlertTriangle } from "lucide-react";
-import { NaemaCascade } from "@/components/shared/NaemaSelects";
+import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
 import PaysSelect from "@/components/shared/PaysSelect";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 
@@ -31,19 +31,23 @@ function getEtat(val: string) {
 
 function validatePhone(val: string) {
   if (!val) return true;
-  return /^\+221[37]\d{8}$/.test(val.replace(/\s/g, ""));
+  // Doit commencer par + suivi de chiffres, longueur raisonnable
+  return /^\+\d{7,15}$/.test(val.replace(/\s/g, ""));
 }
 
 const EMPTY_FORM = {
   type_prospect: "",
   entreprise_installee_id: "",
   nom: "", forme_juridique: "", date_creation_ent: "",
-  siege_pays: "", pays: "Sénégal",
-  region: "", departement: "", arrondissement: "", adresse: "",
+  siege_pays: "", siege_pays_id: "" as string | number, siege_pays_nom: "",
+  pays: "Sénégal",
+  region_id: "" as string | number, departement_id: "" as string | number, arrondissement_id: "" as string | number,
+  adresse: "",
   telephone: "", mail: "", siteweb: "",
+  thematiques: "",
   secteur_nom: "", branche_nom: "", activite_nom: "",
   secteur_id: "", branche_id: "", activite_id: "",
-  point_entree: "", est_publie: true, note_interne: "",
+  point_entree: "", est_publie: true,
 };
 
 const EMPTY_FOCAL = { nom: "", prenom: "", poste: "", telephone: "", mail: "", est_principal: false };
@@ -69,6 +73,7 @@ export default function AdminProspects() {
   const [deleting,    setDeleting]    = useState<string|null>(null);
   const [regionId,    setRegionId]    = useState<number|null>(null);
   const [depId,       setDepId]       = useState<number|null>(null);
+  const [siegePaysNom, setSiegePaysNom] = useState("");
   const [entreprisesInstallees, setEntreprisesInstallees] = useState<any[]>([]);
 
   // Contact modal
@@ -118,14 +123,20 @@ export default function AdminProspects() {
       nom:            ent.nom             || "",
       forme_juridique:ent.forme_juridique || "",
       date_creation_ent: ent.date_creation || "",
-      siege_pays:     ent.siege_pays      || "",
-      region:         ent.region          || "",
-      departement:    ent.departement     || "",
-      arrondissement: ent.arrondissement  || ent.commune || "",
+      siege_pays_id:  ent.siege_pays_id   || "",
+      siege_pays_nom: ent.siege_pays_nom  || "",
+      region_id:      ent.region_id       || "",
+      departement_id: ent.departement_id  || "",
+      arrondissement_id: ent.arrondissement_id || "",
       adresse:        ent.adresse         || "",
       telephone:      ent.telephone       || "",
       mail:           ent.mail            || "",
       siteweb:        ent.siteweb         || "",
+      thematiques:    [
+        ent.secteur?.nom  ? `sec:${ent.secteur.nom}`  : "",
+        ent.branche?.nom  ? `bra:${ent.branche.nom}`  : "",
+        ent.activite?.nom ? `act:${ent.activite.nom}` : "",
+      ].filter(Boolean).join(", "),
       secteur_nom:    ent.secteur?.nom    || "",
       branche_nom:    ent.branche?.nom    || "",
       activite_nom:   ent.activite?.nom   || "",
@@ -133,7 +144,8 @@ export default function AdminProspects() {
       branche_id:     ent.branche?.id?.toString()  || "",
       activite_id:    ent.activite?.id?.toString() || "",
     }));
-    // Pré-remplir les points focaux depuis l'entreprise
+    setSiegePaysNom(ent.siege_pays_nom || "");
+    if (ent.region_id) { setRegionId(ent.region_id); if (ent.departement_id) setDepId(ent.departement_id); }
     if (ent.points_focaux?.length > 0) {
       setFocaux(ent.points_focaux.map((pf: any) => ({
         nom: pf.nom || "", prenom: pf.prenom || "", poste: pf.poste || "",
@@ -148,23 +160,29 @@ export default function AdminProspects() {
     if (!form.nom.trim())            e.nom             = "Obligatoire";
     if (!form.forme_juridique)       e.forme_juridique = "Obligatoire";
     if (!form.date_creation_ent)     e.date_creation_ent = "Obligatoire";
-    if (!form.siege_pays)            e.siege_pays      = "Obligatoire";
-    if (!form.region)                e.region          = "Obligatoire";
-    if (!form.departement)           e.departement     = "Obligatoire";
+    // Région obligatoire seulement pour entreprise installée
+    if (form.type_prospect === "entreprise_installee") {
+      if (!form.region_id)           e.region_id       = "Obligatoire";
+      if (!form.departement_id)      e.departement_id  = "Obligatoire";
+    }
+    // Pour hors_senegal : siège social obligatoire
+    if (form.type_prospect === "hors_senegal" && !form.siege_pays_id) {
+      e.siege_pays_id = "Pays du siège obligatoire";
+    }
     if (!form.adresse.trim())        e.adresse         = "Obligatoire";
     if (!form.telephone)             e.telephone       = "Obligatoire";
-    else if (!validatePhone(form.telephone)) e.telephone = "Format invalide (+221...)";
+    else if (!validatePhone(form.telephone)) e.telephone = "Format invalide (doit commencer par + suivi des chiffres)";
     if (!form.mail.trim())           e.mail            = "Obligatoire";
     else if (!/\S+@\S+\.\S+/.test(form.mail)) e.mail  = "Email invalide";
-    if (!form.secteur_id)            e.secteur_id      = "Obligatoire";
-    if (!form.branche_id)            e.branche_id      = "Obligatoire";
-    if (!form.activite_id)           e.activite_id     = "Obligatoire";
+    if (!form.secteur_nom)           e.secteur_id      = "Obligatoire";
+    if (!form.branche_nom)           e.branche_id      = "Obligatoire";
+    if (!form.activite_nom)          e.activite_id     = "Obligatoire";
     if (!form.point_entree.trim())   e.point_entree    = "Obligatoire";
     focaux.forEach((pf, i) => {
       if (!pf.nom.trim())    e[`fn_${i}`] = "Obligatoire";
       if (!pf.prenom.trim()) e[`fp_${i}`] = "Obligatoire";
       if (!pf.telephone)     e[`ft_${i}`] = "Obligatoire";
-      else if (!validatePhone(pf.telephone)) e[`ft_${i}`] = "Format invalide (+221...)";
+      else if (!validatePhone(pf.telephone)) e[`ft_${i}`] = "Format invalide (doit commencer par + suivi des chiffres)";
     });
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -177,23 +195,33 @@ export default function AdminProspects() {
   };
 
   const openEdit = (p: any) => {
+    const thematiquesVal = [
+      p.secteur?.nom  ? `sec:${p.secteur.nom}`  : "",
+      p.branche?.nom  ? `bra:${p.branche.nom}`  : "",
+      p.activite?.nom ? `act:${p.activite.nom}` : "",
+    ].filter(Boolean).join(", ");
+
     setForm({
-      type_prospect: p.type_prospect || "autre",
+      type_prospect: p.type_prospect || "entreprise_installee",
       entreprise_installee_id: p.entreprise_installee_id || "",
       nom: p.nom || "", forme_juridique: p.forme_juridique || "",
       date_creation_ent: p.date_creation_ent || "",
-      siege_pays: p.siege_pays || "", pays: "Sénégal",
-      region: p.region || "", departement: p.departement || "",
-      arrondissement: p.arrondissement || "", adresse: p.adresse || "",
+      siege_pays: p.siege_pays_nom || "", siege_pays_id: p.siege_pays_id || "", siege_pays_nom: p.siege_pays_nom || "",
+      pays: "Sénégal",
+      region_id: p.region_id || "", departement_id: p.departement_id || "", arrondissement_id: p.arrondissement_id || "",
+      adresse: p.adresse || "",
       telephone: p.telephone || "", mail: p.mail || "", siteweb: p.siteweb || "",
+      thematiques: thematiquesVal,
       secteur_nom: p.secteur?.nom || "", branche_nom: p.branche?.nom || "",
       activite_nom: p.activite?.nom || "",
       secteur_id: p.secteur?.id?.toString() || "",
       branche_id: p.branche?.id?.toString() || "",
       activite_id: p.activite?.id?.toString() || "",
       point_entree: p.point_entree || "",
-      est_publie: p.est_publie ?? true, note_interne: p.note_interne || "",
+      est_publie: p.est_publie ?? true,
     });
+    setSiegePaysNom(p.siege_pays_nom || "");
+    if (p.region_id) { setRegionId(p.region_id); if (p.departement_id) setDepId(p.departement_id); }
     setFocaux(p.points_focaux?.length > 0
       ? p.points_focaux.map((pf: any) => ({ nom: pf.nom||"", prenom: pf.prenom||"", poste: pf.poste||"", telephone: pf.telephone||"", mail: pf.mail||"", est_principal: pf.est_principal||false }))
       : [{ ...EMPTY_FOCAL }]
@@ -205,12 +233,30 @@ export default function AdminProspects() {
     if (!validate()) return;
     setSaving(true);
     try {
+      // Résoudre les noms NAEMA en IDs si pas déjà des entiers
+      const [allSecteurs, allBranches, allActivites] = await Promise.all([
+        fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
+        fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
+        fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
+      ]);
+      const secteur  = allSecteurs.find((s: any) => s.nom === form.secteur_nom);
+      const branche  = allBranches.find((b: any) => b.nom === form.branche_nom);
+      const activite = allActivites.find((a: any) => a.nom === form.activite_nom);
+
       const payload: any = { ...form };
-      if (payload.secteur_id) payload.secteur_id = parseInt(payload.secteur_id);
-      if (payload.branche_id) payload.branche_id = parseInt(payload.branche_id);
-      if (payload.activite_id) payload.activite_id = parseInt(payload.activite_id);
+      payload.secteur_id  = secteur?.id  || null;
+      payload.branche_id  = branche?.id  || null;
+      payload.activite_id = activite?.id || null;
+      // IDs géo
+      if (payload.region_id)         payload.region_id         = parseInt(payload.region_id)         || null;
+      if (payload.departement_id)    payload.departement_id    = parseInt(payload.departement_id)    || null;
+      if (payload.arrondissement_id) payload.arrondissement_id = parseInt(payload.arrondissement_id) || null;
+      if (payload.siege_pays_id)     payload.siege_pays_id     = parseInt(payload.siege_pays_id)     || null;
+      // Nettoyer les champs inutiles
+      delete payload.thematiques;
       delete payload.secteur_nom; delete payload.branche_nom; delete payload.activite_nom;
-      Object.keys(payload).forEach(k => { if (payload[k] === "") payload[k] = null; });
+      delete payload.siege_pays; delete payload.siege_pays_nom;
+      Object.keys(payload).forEach(k => { if (payload[k] === "" || payload[k] === 0) payload[k] = null; });
       payload.pays = "Sénégal";
       if (!editItem) payload.points_focaux = focaux.filter(f => f.nom.trim());
 
@@ -349,30 +395,29 @@ export default function AdminProspects() {
                 {errors.type_prospect && <p style={{ fontSize: 11, color: "#dc2626", marginBottom: 8 }}>{errors.type_prospect}</p>}
                 <div style={{ display: "flex", gap: 10 }}>
                   {[
-                    { value: "entreprise_installee", label: "Entreprise Installée", available: true  },
-                    { value: "autre",                label: "Autre",                available: false },
+                    { value: "entreprise_installee", label: "Entreprise installée au Sénégal" },
+                    { value: "hors_senegal",          label: "Entreprise hors Sénégal"         },
                   ].map(opt => (
                     <button
                       key={opt.value}
-                      disabled={!opt.available}
                       onClick={() => {
-                        update("type_prospect", opt.value);
-                        if (opt.value !== "entreprise_installee") {
-                          update("entreprise_installee_id", "");
-                        }
+                        // Vider le form quand on change de type
+                        setForm({ ...EMPTY_FORM, type_prospect: opt.value });
+                        setSiegePaysNom("");
+                        setRegionId(null);
+                        setDepId(null);
+                        setFocaux([{ ...EMPTY_FOCAL }]);
                       }}
                       style={{
                         padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                        cursor: opt.available ? "pointer" : "not-allowed",
+                        cursor: "pointer",
                         border: `2px solid ${form.type_prospect === opt.value ? "#004f91" : "#C5BFBB"}`,
                         background: form.type_prospect === opt.value ? "rgba(0,79,145,0.08)" : "#fff",
-                        color: !opt.available ? "#C5BFBB" : form.type_prospect === opt.value ? "#004f91" : "#4a5568",
-                        opacity: !opt.available ? 0.5 : 1,
+                        color: form.type_prospect === opt.value ? "#004f91" : "#4a5568",
                         transition: "all 0.2s",
                       }}
                     >
                       {opt.label}
-                      {!opt.available && <span style={{ fontSize: 10, marginLeft: 6 }}>(bientôt disponible)</span>}
                     </button>
                   ))}
                 </div>
@@ -443,39 +488,63 @@ export default function AdminProspects() {
                 {ST("Siège social & Localisation", "#004f91")}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
                   <div style={FS}>
-                    <label style={LS("siege_pays")}>Pays du siège social *</label>
+                    <label style={LS("siege_pays_id")}>Pays du siège social {form.type_prospect === "hors_senegal" ? "*" : ""}</label>
                     <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
-                      <PaysSelect value={form.siege_pays} onChange={val => update("siege_pays", val)} placeholder="Pays du siège" />
+                      <PaysSelect
+                        value={siegePaysNom}
+                        onChange={nom => setSiegePaysNom(nom)}
+                        onChangeId={id => update("siege_pays_id", id || "")}
+                        placeholder="Pays du siège"
+                        excludeNoms={["Sénégal"]}
+                      />
                     </div>
-                    {EM("siege_pays")}
+                    {EM("siege_pays_id")}
                   </div>
                   <div style={FS}>
                     <label style={LS()}>Pays d'installation</label>
-                    <input value="Sénégal" disabled style={{ ...ISL(), opacity: 0.6 }} />
+                    <input value={form.type_prospect === "hors_senegal" ? "Hors Sénégal" : "Sénégal"} disabled style={{ ...ISL(), opacity: 0.6 }} />
                   </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
-                  <div style={FS}>
-                    <label style={LS("region")}>Région *</label>
-                    <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
-                      <RegionSelect value={form.region} required onChange={(nom, id) => { update("region", nom); update("departement", ""); update("arrondissement", ""); setRegionId(id); setDepId(null); }} />
+
+                {/* Géo sénégalaise — seulement pour entreprise installée */}
+                {form.type_prospect !== "hors_senegal" && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
+                    <div style={FS}>
+                      <label style={LS("region_id")}>Région *</label>
+                      <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
+                        <RegionSelect
+                          value={form.region_id}
+                          required
+                          onChange={(id, nom) => { update("region_id", id || ""); update("departement_id", ""); update("arrondissement_id", ""); setRegionId(id); setDepId(null); }}
+                        />
+                      </div>
+                      {EM("region_id")}
                     </div>
-                    {EM("region")}
-                  </div>
-                  <div style={FS}>
-                    <label style={LS("departement")}>Département *</label>
-                    <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
-                      <DepartementSelect regionId={regionId} value={form.departement} required onChange={(nom, id) => { update("departement", nom); update("arrondissement", ""); setDepId(id); }} />
+                    <div style={FS}>
+                      <label style={LS("departement_id")}>Département *</label>
+                      <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
+                        <DepartementSelect
+                          regionId={regionId}
+                          value={form.departement_id}
+                          required
+                          onChange={(id, nom) => { update("departement_id", id || ""); update("arrondissement_id", ""); setDepId(id); }}
+                        />
+                      </div>
+                      {EM("departement_id")}
                     </div>
-                    {EM("departement")}
-                  </div>
-                  <div style={FS}>
-                    <label style={LS()}>Arrondissement</label>
-                    <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
-                      <ArrondissementSelect departementId={depId} value={form.arrondissement} onChange={nom => update("arrondissement", nom)} />
+                    <div style={FS}>
+                      <label style={LS()}>Arrondissement</label>
+                      <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
+                        <ArrondissementSelect
+                          departementId={depId}
+                          value={form.arrondissement_id}
+                          onChange={(id, nom) => update("arrondissement_id", id || "")}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+
                 <div style={FS}>
                   <label style={LS("adresse")}>Adresse *</label>
                   <input value={form.adresse} disabled={isLocked} onChange={e => !isLocked && update("adresse", e.target.value)} placeholder="Adresse physique" style={isLocked ? ISL("adresse") : IS("adresse")} />
@@ -488,8 +557,8 @@ export default function AdminProspects() {
                 {ST("Contact", "#004f91")}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                   <div style={FS}>
-                    <label style={LS("telephone")}>Téléphone * <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(+221...)</span></label>
-                    <input value={form.telephone} disabled={isLocked} onChange={e => !isLocked && update("telephone", e.target.value)} placeholder="+221 7X XXX XX XX" style={isLocked ? ISL("telephone") : IS("telephone")} />
+                    <label style={LS("telephone")}>Téléphone * <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(indicatif + chiffres, ex: +22171234567)</span></label>
+                    <input value={form.telephone} disabled={isLocked} onChange={e => !isLocked && update("telephone", e.target.value)} placeholder="+22171234567" style={isLocked ? ISL("telephone") : IS("telephone")} />
                     {EM("telephone")}
                   </div>
                   <div style={FS}>
@@ -504,23 +573,25 @@ export default function AdminProspects() {
                 </div>
               </div>
 
-              {/* ── NAEMA ── */}
+              {/* ── Thématiques ── */}
               <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
-                {ST("Classification NAEMA", "#004f91")}
+                {ST("Thématiques", "#004f91")}
                 {(errors.secteur_id || errors.branche_id || errors.activite_id) && (
                   <p style={{ fontSize: 11, color: "#dc2626", marginBottom: 8 }}>Secteur, branche et activité sont obligatoires</p>
                 )}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, pointerEvents: isLocked ? "none" : "auto", opacity: isLocked ? 0.7 : 1 }}>
-                  <NaemaCascade
-                    hasError={!!(errors.secteur_id || errors.branche_id || errors.activite_id)}
-                    secteurVal={form.secteur_nom} brancheVal={form.branche_nom} activiteVal={form.activite_nom}
-                    onSecteurChange={(val, id) => { update("secteur_nom", val); update("secteur_id", id?.toString()||""); update("branche_nom",""); update("branche_id",""); update("activite_nom",""); update("activite_id",""); }}
-                    onBrancheChange={(val, id) => { update("branche_nom", val); update("branche_id", id?.toString()||""); update("activite_nom",""); update("activite_id",""); }}
-                    onActiviteChange={(val, id) => { update("activite_nom", val); update("activite_id", id?.toString()||""); }}
+                <div style={{ pointerEvents: isLocked ? "none" : "auto", opacity: isLocked ? 0.7 : 1 }}>
+                  <ThematiquesNaema
+                    value={form.thematiques}
+                    onChange={val => {
+                      update("thematiques", val);
+                      const items = val.split(",").map((t: string) => t.trim()).filter(Boolean);
+                      update("secteur_nom", items.find((t: string) => t.startsWith("sec:"))?.slice(4) || "");
+                      update("branche_nom", items.find((t: string) => t.startsWith("bra:"))?.slice(4) || "");
+                      update("activite_nom", items.find((t: string) => t.startsWith("act:"))?.slice(4) || "");
+                    }}
                   />
                 </div>
               </div>
-
               {/* ── Point d'entrée — TOUJOURS éditable ── */}
               <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
                 {ST("Point d'entrée", "#004f91")}
@@ -583,7 +654,7 @@ export default function AdminProspects() {
                         ))}
                         <div style={FS}>
                           <label style={{ fontSize: 11, fontWeight: 600, color: errors[`ft_${i}`] ? "#dc2626" : "#4a5568", marginBottom: 3, display: "block" }}>Téléphone *</label>
-                          <input value={pf.telephone} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, "telephone", e.target.value)} placeholder="+221..."
+                          <input value={pf.telephone} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, "telephone", e.target.value)} placeholder="+22171234567"
                             style={{ ...(isLocked ? ISL() : IS()), fontSize: 12, borderColor: errors[`ft_${i}`] ? "#dc2626" : "#C5BFBB" }} />
                           {errors[`ft_${i}`] && <span style={{ fontSize: 10, color: "#dc2626" }}>{errors[`ft_${i}`]}</span>}
                         </div>
@@ -651,42 +722,70 @@ export default function AdminProspects() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ background: "#F8F7F6" }}>
-                  {["Entreprise", "Secteur", "Localisation",
-                    onglet === "contactees" ? "Dernier contact" : "Point d'entrée",
-                    "Actions"].map(h => (
+                  {["Entreprise", "Forme juridique", "Localisation", "Secteur",
+                    onglet === "contactees" ? "Dernier contact" : "Actions"].map(h => (
                     <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
+                  {onglet === "contactees" && (
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em" }}>Actions</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {prospects.map((p, i) => {
                   const dernierContact = p.contacts?.[p.contacts.length - 1];
                   const etat = dernierContact ? getEtat(dernierContact.etat_avancement) : null;
+                  const estInstalle = p.type_prospect === "entreprise_installee";
+                  const localisation = estInstalle
+                    ? [p.arrondissement_nom, p.departement_nom, p.region_nom].filter(Boolean).join(", ")
+                    : p.siege_pays_nom || "—";
                   return (
                     <tr key={p.id} style={{ borderTop: "1px solid #F2F0EF", background: i % 2 === 0 ? "#fff" : "#FAFAF9" }}>
-                      <td style={{ padding: "14px 16px", maxWidth: 220 }}>
-                        <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3 }}>{p.nom.length > 35 ? p.nom.slice(0, 35) + "…" : p.nom}</div>
-                        {p.mail && <div style={{ fontSize: 11, color: "#9aa5b4" }}>{p.mail}</div>}
-                        {p.type_prospect === "entreprise_installee" && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "#059669", background: "#dcfce7", padding: "1px 6px", borderRadius: 999 }}>Installée</span>
-                        )}
+
+                      {/* Entreprise + badge */}
+                      <td style={{ padding: "14px 16px", maxWidth: 240 }}>
+                        <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 4 }}>
+                          {p.nom.length > 35 ? p.nom.slice(0, 35) + "…" : p.nom}
+                        </div>
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999,
+                          background: estInstalle ? "#dcfce7" : "rgba(0,79,145,0.1)",
+                          color: estInstalle ? "#15803d" : "#004f91",
+                        }}>
+                          {estInstalle ? "Installée au Sénégal" : "Hors Sénégal"}
+                        </span>
                       </td>
+
+                      {/* Forme juridique */}
+                      <td style={{ padding: "14px 16px", color: "#4a5568", whiteSpace: "nowrap" }}>
+                        {p.forme_juridique || "—"}
+                      </td>
+
+                      {/* Localisation */}
+                      <td style={{ padding: "14px 16px", color: "#4a5568", maxWidth: 180 }}>
+                        {localisation || "—"}
+                      </td>
+
+                      {/* Secteur */}
                       <td style={{ padding: "14px 16px" }}>
-                        {p.secteur ? <span style={{ fontSize: 11, color: "#004f91", background: "rgba(0,79,145,0.1)", padding: "2px 8px", borderRadius: 999 }}>{p.secteur.nom}</span> : "—"}
+                        {p.secteur
+                          ? <span style={{ fontSize: 11, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>{p.secteur.nom}</span>
+                          : "—"}
                       </td>
-                      <td style={{ padding: "14px 16px", color: "#4a5568" }}>
-                        {[p.region, p.pays].filter(Boolean).join(", ") || "—"}
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        {onglet === "contactees" && dernierContact ? (
-                          <div>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a2e", marginBottom: 3 }}>{dernierContact.projet_nom}</div>
-                            <span style={{ fontSize: 11, fontWeight: 600, background: etat?.bg, color: etat?.text, padding: "2px 8px", borderRadius: 999 }}>{etat?.label}</span>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: 12, color: "#4a5568" }}>{p.point_entree ? p.point_entree.slice(0, 40) + (p.point_entree.length > 40 ? "…" : "") : "—"}</span>
-                        )}
-                      </td>
+
+                      {/* Colonne dernier contact si onglet contactées */}
+                      {onglet === "contactees" && (
+                        <td style={{ padding: "14px 16px" }}>
+                          {dernierContact ? (
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a2e", marginBottom: 3 }}>{dernierContact.projet_nom}</div>
+                              <span style={{ fontSize: 11, fontWeight: 600, background: etat?.bg, color: etat?.text, padding: "2px 8px", borderRadius: 999 }}>{etat?.label}</span>
+                            </div>
+                          ) : "—"}
+                        </td>
+                      )}
+
+                      {/* Actions */}
                       <td style={{ padding: "14px 16px" }}>
                         <div style={{ display: "flex", gap: 6 }}>
                           <button onClick={() => openDetail(p)} title="Historique" style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 8px" }}>
@@ -703,6 +802,7 @@ export default function AdminProspects() {
                           </button>
                         </div>
                       </td>
+
                     </tr>
                   );
                 })}

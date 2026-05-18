@@ -7,7 +7,7 @@ from uuid import UUID
 from datetime import date as date_type
 
 from app.core.database import get_db
-from app.models.prospect import Prospect, ProspectPointFocal, ProspectContact, ProspectContactHistorique
+from app.models.prospect import Prospect, ProspectPointFocal, ProspectContact, ProspectContactHistorique, EntrepriseHorsSenegal
 from app.schemas.prospect import (
     ProspectCreate, ProspectUpdate, ProspectResponse, ProspectListResponse,
     ContactCreate, ContactUpdate, ContactResponse,
@@ -22,6 +22,10 @@ LOAD_OPTS = [
     selectinload(Prospect.secteur),
     selectinload(Prospect.branche),
     selectinload(Prospect.activite),
+    selectinload(Prospect.siege_pays_obj),
+    selectinload(Prospect.region_obj),
+    selectinload(Prospect.departement_obj),
+    selectinload(Prospect.arrondissement_obj),
     selectinload(Prospect.contacts).selectinload(ProspectContact.historique),
 ]
 
@@ -52,6 +56,7 @@ async def liste_prospects(
     db:           AsyncSession  = Depends(get_db),
 ):
     from app.models.entreprise import RefSecteur, RefBranche, RefActivite
+    from app.models.entreprise import RefRegion
 
     filters = [Prospect.is_deleted == False, Prospect.est_publie == True]
 
@@ -59,9 +64,11 @@ async def liste_prospects(
         filters.append(or_(
             Prospect.nom.ilike(f"%{search}%"),
             Prospect.mail.ilike(f"%{search}%"),
-            Prospect.region.ilike(f"%{search}%"),
         ))
-    if region:     filters.append(Prospect.region.ilike(f"%{region}%"))
+    if region:
+        filters.append(Prospect.region_id.in_(
+            select(RefRegion.id).where(RefRegion.nom.ilike(f"%{region}%"))
+        ))
     if secteur_nom:
         noms = [n.strip() for n in secteur_nom.split(",") if n.strip()]
         if noms:
@@ -115,6 +122,27 @@ async def creer_prospect(payload: ProspectCreate, db: AsyncSession = Depends(get
     data    = payload.model_dump(exclude={"points_focaux"})
     for k, v in data.items():
         if v == "": data[k] = None
+
+    # Si hors_senegal → créer aussi dans entreprises_hors_senegal
+    if data.get("type_prospect") == "hors_senegal":
+        ehs = EntrepriseHorsSenegal(
+            nom             = data.get("nom"),
+            forme_juridique = data.get("forme_juridique"),
+            date_creation   = data.get("date_creation_ent"),
+            siege_pays_id   = data.get("siege_pays_id"),
+            adresse         = data.get("adresse"),
+            telephone       = data.get("telephone"),
+            mail            = data.get("mail"),
+            siteweb         = data.get("siteweb"),
+            secteur_id      = data.get("secteur_id"),
+            branche_id      = data.get("branche_id"),
+            activite_id     = data.get("activite_id"),
+            est_publie      = data.get("est_publie", True),
+        )
+        db.add(ehs)
+        await db.flush()
+        data["entreprise_hors_senegal_id"] = ehs.id
+
     p = Prospect(**data)
     db.add(p)
     await db.flush()
@@ -127,8 +155,33 @@ async def creer_prospect(payload: ProspectCreate, db: AsyncSession = Depends(get
 @router.patch("/{prospect_id}", response_model=ProspectResponse)
 async def modifier_prospect(prospect_id: UUID, payload: ProspectUpdate, db: AsyncSession = Depends(get_db)):
     p = await get_full(prospect_id, db)
-    for k, v in payload.model_dump(exclude_unset=True).items():
+    updates = payload.model_dump(exclude_unset=True)
+    for k, v in updates.items():
         setattr(p, k, v if v != "" else None)
+
+    # Synchro entreprises_hors_senegal si applicable
+    if p.type_prospect == "hors_senegal" and p.entreprise_hors_senegal_id:
+        result = await db.execute(select(EntrepriseHorsSenegal).where(EntrepriseHorsSenegal.id == p.entreprise_hors_senegal_id))
+        ehs = result.scalar_one_or_none()
+        if ehs:
+            SYNC_FIELDS = {"nom", "forme_juridique", "siege_pays_id", "adresse", "telephone", "mail", "siteweb", "secteur_id", "branche_id", "activite_id", "est_publie"}
+            for k, v in updates.items():
+                if k in SYNC_FIELDS:
+                    setattr(ehs, k, v if v != "" else None)
+                elif k == "date_creation_ent":
+                    ehs.date_creation = v
+    elif p.type_prospect == "hors_senegal" and not p.entreprise_hors_senegal_id:
+        # Créer si pas encore créé
+        ehs = EntrepriseHorsSenegal(
+            nom=p.nom, forme_juridique=p.forme_juridique, date_creation=p.date_creation_ent,
+            siege_pays_id=p.siege_pays_id, adresse=p.adresse, telephone=p.telephone,
+            mail=p.mail, siteweb=p.siteweb, secteur_id=p.secteur_id,
+            branche_id=p.branche_id, activite_id=p.activite_id, est_publie=p.est_publie,
+        )
+        db.add(ehs)
+        await db.flush()
+        p.entreprise_hors_senegal_id = ehs.id
+
     await db.flush()
     return ProspectResponse.model_validate(await get_full(prospect_id, db))
 
@@ -136,7 +189,13 @@ async def modifier_prospect(prospect_id: UUID, payload: ProspectUpdate, db: Asyn
 @router.delete("/{prospect_id}", status_code=204)
 async def supprimer_prospect(prospect_id: UUID, db: AsyncSession = Depends(get_db)):
     p = await get_full(prospect_id, db)
-    await db.delete(p)
+    # Soft-delete de l'entreprise hors Sénégal associée
+    if p.entreprise_hors_senegal_id:
+        result = await db.execute(select(EntrepriseHorsSenegal).where(EntrepriseHorsSenegal.id == p.entreprise_hors_senegal_id))
+        ehs = result.scalar_one_or_none()
+        if ehs:
+            ehs.is_deleted = True
+    p.is_deleted = True
     await db.flush()
 
 

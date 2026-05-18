@@ -361,6 +361,7 @@ export default function AdminEntreprises() {
                       onChange={nom => setSiegePaysNom(nom)}
                       onChangeId={id => update("siege_pays_id", id || "")}
                       placeholder="Pays du siège social"
+                      excludeNoms={["Sénégal"]}
                     />
                   </div>
                   <div style={fieldStyle}>

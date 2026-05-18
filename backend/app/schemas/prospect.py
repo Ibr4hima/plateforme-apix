@@ -75,35 +75,13 @@ class RefSimple(BaseModel):
 
 class ProspectCreate(BaseModel):
     nom:               str
-    forme_juridique:   Optional[str] = None
-    date_creation_ent: Optional[date] = None
-    siege_pays:        Optional[str] = None
-    pays:              Optional[str] = "Sénégal"
-    region:            Optional[str] = None
-    departement:       Optional[str] = None
-    arrondissement:    Optional[str] = None
-    adresse:           Optional[str] = None
-    telephone:         Optional[str] = None
-    mail:              Optional[str] = None
-    siteweb:           Optional[str] = None
-    secteur_id:        Optional[int] = None
-    branche_id:        Optional[int] = None
-    activite_id:       Optional[int] = None
-    point_entree:           Optional[str]  = None
-    type_prospect:          Optional[str]  = 'autre'
-    entreprise_installee_id:Optional[UUID]  = None
-    est_publie:             bool = True
-    note_interne:      Optional[str] = None
-    points_focaux:     List[PointFocalProspectCreate] = []
-
-class ProspectUpdate(BaseModel):
-    nom:               Optional[str]  = None
     forme_juridique:   Optional[str]  = None
     date_creation_ent: Optional[date] = None
-    siege_pays:        Optional[str]  = None
-    region:            Optional[str]  = None
-    departement:       Optional[str]  = None
-    arrondissement:    Optional[str]  = None
+    siege_pays_id:     Optional[int]  = None
+    pays:              Optional[str]  = "Sénégal"
+    region_id:         Optional[int]  = None
+    departement_id:    Optional[int]  = None
+    arrondissement_id: Optional[int]  = None
     adresse:           Optional[str]  = None
     telephone:         Optional[str]  = None
     mail:              Optional[str]  = None
@@ -111,11 +89,31 @@ class ProspectUpdate(BaseModel):
     secteur_id:        Optional[int]  = None
     branche_id:        Optional[int]  = None
     activite_id:       Optional[int]  = None
-    point_entree:           Optional[str]  = None
-    type_prospect:          Optional[str]  = None
-    entreprise_installee_id:Optional[UUID]  = None
-    est_publie:             Optional[bool] = None
-    note_interne:      Optional[str]  = None
+    point_entree:            Optional[str]  = None
+    type_prospect:           Optional[str]  = "hors_senegal"
+    entreprise_installee_id: Optional[UUID] = None
+    est_publie:              bool           = True
+    points_focaux:     List[PointFocalProspectCreate] = []
+
+class ProspectUpdate(BaseModel):
+    nom:               Optional[str]  = None
+    forme_juridique:   Optional[str]  = None
+    date_creation_ent: Optional[date] = None
+    siege_pays_id:     Optional[int]  = None
+    region_id:         Optional[int]  = None
+    departement_id:    Optional[int]  = None
+    arrondissement_id: Optional[int]  = None
+    adresse:           Optional[str]  = None
+    telephone:         Optional[str]  = None
+    mail:              Optional[str]  = None
+    siteweb:           Optional[str]  = None
+    secteur_id:        Optional[int]  = None
+    branche_id:        Optional[int]  = None
+    activite_id:       Optional[int]  = None
+    point_entree:            Optional[str]  = None
+    type_prospect:           Optional[str]  = None
+    entreprise_installee_id: Optional[UUID] = None
+    est_publie:              Optional[bool] = None
 
 class ProspectResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -123,11 +121,15 @@ class ProspectResponse(BaseModel):
     nom:               str
     forme_juridique:   Optional[str]
     date_creation_ent: Optional[date]
-    siege_pays:        Optional[str]
+    siege_pays_id:     Optional[int]    = None
+    siege_pays_nom:    Optional[str]    = None
     pays:              Optional[str]
-    region:            Optional[str]
-    departement:       Optional[str]
-    arrondissement:    Optional[str]
+    region_id:         Optional[int]    = None
+    region_nom:        Optional[str]    = None
+    departement_id:    Optional[int]    = None
+    departement_nom:   Optional[str]    = None
+    arrondissement_id: Optional[int]    = None
+    arrondissement_nom:Optional[str]    = None
     adresse:           Optional[str]
     telephone:         Optional[str]
     mail:              Optional[str]
@@ -135,11 +137,11 @@ class ProspectResponse(BaseModel):
     secteur_id:        Optional[int]
     branche_id:        Optional[int]
     activite_id:       Optional[int]
-    point_entree:           Optional[str]
-    type_prospect:          Optional[str]
-    entreprise_installee_id:Optional[UUID]
+    point_entree:            Optional[str]
+    type_prospect:           Optional[str]
+    entreprise_installee_id:   Optional[UUID]
+    entreprise_hors_senegal_id:Optional[UUID] = None
     est_publie:        bool
-    note_interne:      Optional[str]
     created_at:        datetime
     updated_at:        datetime
     points_focaux:     List[PointFocalProspectResponse] = []
@@ -147,6 +149,19 @@ class ProspectResponse(BaseModel):
     secteur:           Optional[RefSimple] = None
     branche:           Optional[RefSimple] = None
     activite:          Optional[RefSimple] = None
+
+    @classmethod
+    def model_validate(cls, obj, *args, **kwargs):
+        instance = super().model_validate(obj, *args, **kwargs)
+        if hasattr(obj, "siege_pays_obj") and obj.siege_pays_obj:
+            instance.siege_pays_nom = obj.siege_pays_obj.nom_fr
+        if hasattr(obj, "region_obj") and obj.region_obj:
+            instance.region_nom = obj.region_obj.nom
+        if hasattr(obj, "departement_obj") and obj.departement_obj:
+            instance.departement_nom = obj.departement_obj.nom
+        if hasattr(obj, "arrondissement_obj") and obj.arrondissement_obj:
+            instance.arrondissement_nom = obj.arrondissement_obj.nom
+        return instance
 
 class ProspectListResponse(BaseModel):
     total:    int
