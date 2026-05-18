@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, Date, Text, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, String, Boolean, Date, Text, ForeignKey, UniqueConstraint, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -12,9 +12,15 @@ class ZoneInvestissement(Base):
 
     id           = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     denomination = Column(String(500), nullable=False)
-    type_zone    = Column(String(10),  nullable=False)   # ZES | ZAI | ZFI
+    type_zone    = Column(String(10),  nullable=False)
     description  = Column(Text)
     thematiques  = Column(Text)
+
+    # Localisation FK — strings uniquement, pas de relationship (évite conflits avec entreprise.py)
+    region_id         = Column(Integer, ForeignKey("ref_regions.id"))
+    departement_id    = Column(Integer, ForeignKey("ref_departements.id"))
+    arrondissement_id = Column(Integer, ForeignKey("ref_arrondissements.id"))
+
     est_publie   = Column(Boolean, default=True)
     created_at   = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at   = Column(TIMESTAMP(timezone=True), server_default=func.now())
@@ -35,18 +41,18 @@ class ZoneEntreprise(Base):
     date_installation = Column(Date)
     created_at     = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
-    zone        = relationship("ZoneInvestissement", back_populates="entreprises")
-    entreprise  = relationship("EntrepriseIntallee", lazy="joined")
+    zone       = relationship("ZoneInvestissement", back_populates="entreprises")
+    entreprise = relationship("EntrepriseIntallee", lazy="joined")
 
 
 class ZoneFichier(Base):
     __tablename__ = "zone_fichiers"
 
-    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    zone_id     = Column(UUID(as_uuid=True), ForeignKey("zones_investissement.id", ondelete="CASCADE"), nullable=False)
-    titre       = Column(String(500))
-    fichier_nom = Column(String(500))
-    fichier_path= Column(Text)
-    created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    id           = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    zone_id      = Column(UUID(as_uuid=True), ForeignKey("zones_investissement.id", ondelete="CASCADE"), nullable=False)
+    titre        = Column(String(500))
+    fichier_nom  = Column(String(500))
+    fichier_path = Column(Text)
+    created_at   = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     zone = relationship("ZoneInvestissement", back_populates="fichiers")

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Upload, FileText, Building2, Check, Settings, ChevronDown, ChevronRight } from "lucide-react";
+import { ArrondissementSelect, DepartementSelect, RegionSelect } from "@/components/shared/GeoSelect";
 import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
+import { Building2, Check, ChevronDown, ChevronRight, FileText, Loader2, Pencil, Plus, Settings, Trash2, Upload, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -13,13 +14,13 @@ const TYPE_ZONES = [
 ];
 
 const ONGLETS = [
-  { key: "ZES",     label: "Écon. Spéciales",     full: "Zones Économiques Spéciales",        zfi: false, gestion: false },
-  { key: "ZAI",     label: "Aménagées",            full: "Zones Aménagées à l'Investissement", zfi: false, gestion: false },
-  { key: "ZFI",     label: "Franches Ind.",        full: "Zones Franches Industrielles",        zfi: true,  gestion: false },
+  { key: "ZES",     label: "Zones Économiques Spéciales",     full: "Zones Économiques Spéciales",        zfi: false, gestion: false },
+  { key: "ZAI",     label: "Zones Aménagées à l'Investissement",            full: "Zones Aménagées à l'Investissement", zfi: false, gestion: false },
+  { key: "ZFI",     label: "Zones Franches Industrielles",        full: "Zones Franches Industrielles",        zfi: true,  gestion: false },
   { key: "gestion", label: "Gestion des Zones",    full: "Gestion des Zones",                  zfi: false, gestion: true  },
 ];
 
-const EMPTY_FORM = { denomination: "", type_zone: "ZES", description: "", thematiques: "" };
+const EMPTY_FORM = { denomination: "", type_zone: "ZES", description: "", thematiques: "", region_id: "" as string|number, departement_id: "" as string|number, arrondissement_id: "" as string|number };
 
 // ── Recherche entreprise ──────────────────────────────────────────────────────
 function EntrepriseSearch({ onSelect }: { onSelect: (e: any) => void }) {
@@ -143,7 +144,7 @@ function OngletType({ typeZone, available }: { typeZone: string; available: bool
                 {z.description && <p style={{ fontSize: 12, color: "#9aa5b4", marginLeft: 23, marginTop: 2 }}>{z.description.length > 100 ? z.description.slice(0, 100) + "…" : z.description}</p>}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                <span style={{ fontSize: 11, color: "#4a5568" }}>🏭 {z.entreprises?.length || 0} entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}</span>
+                <span style={{ fontSize: 11, color: "#4a5568" }}>{z.entreprises?.length || 0} entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}</span>
                 <button onClick={e => { e.stopPropagation(); setZoneSelectee(z); setShowModal(true); }}
                   style={{ display: "flex", alignItems: "center", gap: 5, background: "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                   <Plus size={12} /> Ajouter une entreprise
@@ -226,6 +227,8 @@ function OngletGestion() {
   const [deleting, setDeleting] = useState<string|null>(null);
   const [pdfQueue, setPdfQueue] = useState<{file: File; titre: string}[]>([]);
   const [fichiers, setFichiers] = useState<any[]>([]);
+  const [regionId, setRegionId] = useState<number|null>(null);
+  const [depId,    setDepId]    = useState<number|null>(null);
 
   const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
@@ -246,12 +249,14 @@ function OngletGestion() {
   const openCreate = () => {
     setForm({ ...EMPTY_FORM });
     setEditItem(null); setPdfQueue([]); setFichiers([]);
+    setRegionId(null); setDepId(null);
     setShowForm(true); setError(""); setSaveOk(false);
   };
 
   const openEdit = (z: any) => {
-    setForm({ denomination: z.denomination || "", type_zone: z.type_zone || "ZES", description: z.description || "", thematiques: z.thematiques || "" });
+    setForm({ denomination: z.denomination || "", type_zone: z.type_zone || "ZES", description: z.description || "", thematiques: z.thematiques || "", region_id: z.region_id || "", departement_id: z.departement_id || "", arrondissement_id: z.arrondissement_id || "" });
     setFichiers(z.fichiers || []);
+    setRegionId(z.region_id || null); setDepId(z.departement_id || null);
     setEditItem(z); setPdfQueue([]);
     setShowForm(true); setError(""); setSaveOk(false);
   };
@@ -265,6 +270,9 @@ function OngletGestion() {
       fd.append("type_zone",    form.type_zone);
       if (form.description) fd.append("description", form.description);
       if (form.thematiques) fd.append("thematiques", form.thematiques);
+      if (form.region_id)         fd.append("region_id",         String(form.region_id));
+      if (form.departement_id)    fd.append("departement_id",    String(form.departement_id));
+      if (form.arrondissement_id) fd.append("arrondissement_id", String(form.arrondissement_id));
       fd.append("est_publie", "true");
 
       const url    = editItem ? `${API_BASE}/zones/${editItem.id}` : `${API_BASE}/zones`;
@@ -381,6 +389,36 @@ function OngletGestion() {
               <div style={{ marginBottom: 16 }}>
                 <label style={LS}>Dénomination *</label>
                 <input value={form.denomination} onChange={e => update("denomination", e.target.value)} placeholder="Ex : ZES de Diamniadio" style={IS} />
+              </div>
+
+              {/* Localisation */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={LS}>Localisation</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                  <div>
+                    <label style={{ ...LS, fontSize: 11, color: "#9aa5b4", marginBottom: 3 }}>Région</label>
+                    <RegionSelect
+                      value={form.region_id}
+                      onChange={(id) => { update("region_id", id || ""); update("departement_id", ""); update("arrondissement_id", ""); setRegionId(id); setDepId(null); }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ ...LS, fontSize: 11, color: "#9aa5b4", marginBottom: 3 }}>Département</label>
+                    <DepartementSelect
+                      regionId={regionId}
+                      value={form.departement_id}
+                      onChange={(id) => { update("departement_id", id || ""); update("arrondissement_id", ""); setDepId(id); }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ ...LS, fontSize: 11, color: "#9aa5b4", marginBottom: 3 }}>Arrondissement</label>
+                    <ArrondissementSelect
+                      departementId={depId}
+                      value={form.arrondissement_id}
+                      onChange={(id) => update("arrondissement_id", id || "")}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div style={{ marginBottom: 16 }}>

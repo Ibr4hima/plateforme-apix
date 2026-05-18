@@ -5,21 +5,22 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Calendar, FileText, Building2,
-  MapPin, Lightbulb, TrendingUp, Target, Globe, ChevronRight,
+  MapPin, Lightbulb, TrendingUp, Target, Globe, ChevronRight, Layers,
 } from "lucide-react";
 
 const MODULES = [
-  { label: "Dashboard",     href: "/admin",              icon: LayoutDashboard, color: "#1a1a2e" },
-  { label: "Événements",    href: "/admin/evenements",   icon: Calendar,        color: "#004f91" },
-  { label: "Accords",       href: "/admin/accords",      icon: FileText,        color: "#7c3aed" },
-  { label: "Entreprises",   href: "/admin/entreprises",  icon: Building2,       color: "#ca631f" },
-  { label: "Zones",         href: "/admin/zones",        icon: MapPin,          color: "#059669" },
-  { label: "Opportunités",  href: "/admin/opportunites", icon: Lightbulb,       color: "#d97706" },
-  { label: "IDE",           href: "/admin/ide",          icon: TrendingUp,      color: "#dc2626" },
-  { label: "Intentions",    href: "/admin/intentions",   icon: Target,          color: "#0891b2" },
-  { label: "Prospects",     href: "/admin/prospects",    icon: Globe,           color: "#65a30d" },
-  { label: "Géographie",     href: "/admin/geo",          icon: MapPin,          color: "#0891b2" },
-  { label: "NAEMA",          href: "/admin/naema",          icon: LayoutDashboard, color: "#6b7280" },
+  { label: "Dashboard",                   href: "/admin",              icon: LayoutDashboard, color: "#1a1a2e" },
+  { label: "Événements",                  href: "/admin/evenements",   icon: Calendar,        color: "#004f91" },
+  { label: "Accords",                     href: "/admin/accords",      icon: FileText,        color: "#7c3aed" },
+  { label: "Entreprises",                 href: "/admin/entreprises",  icon: Building2,       color: "#ca631f" },
+  { label: "Zones d'investissement",      href: "/admin/zones",        icon: MapPin,          color: "#059669" },
+  { label: "Gestion des zones et pôles",  href: "/admin/gestion-zones", icon: Layers,          color: "#0e7490" },
+  { label: "Opportunités",                href: "/admin/opportunites", icon: Lightbulb,       color: "#d97706" },
+  { label: "IDE",                         href: "/admin/ide",          icon: TrendingUp,      color: "#dc2626" },
+  { label: "Intentions",                  href: "/admin/intentions",   icon: Target,          color: "#0891b2" },
+  { label: "Prospects",                   href: "/admin/prospects",    icon: Globe,           color: "#65a30d" },
+  { label: "Géographie",                  href: "/admin/geo",          icon: MapPin,          color: "#0891b2" },
+  { label: "NAEMA",                       href: "/admin/naema",        icon: LayoutDashboard, color: "#6b7280" },
 ];
 
 export default function Sidebar() {

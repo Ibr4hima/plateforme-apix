@@ -2,7 +2,6 @@ import os, shutil, uuid as uuid_lib
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
-from sqlalchemy.orm import selectinload
 from typing import Optional, List
 from uuid import UUID
 
@@ -15,19 +14,32 @@ router = APIRouter(prefix="/zones", tags=["Zones"])
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "../../../uploads/zones")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+from sqlalchemy.orm import selectinload
+
 LOAD_OPTS = [
-    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise),
     selectinload(ZoneInvestissement.fichiers),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.secteur),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.branche),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.activite),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.region_obj),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.departement_obj),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.siege_pays_obj),
 ]
 
 
-def zone_to_dict(z: ZoneInvestissement) -> dict:
+def zone_to_dict(z: ZoneInvestissement, geo_noms: dict = {}) -> dict:
     return {
         "id":           str(z.id),
         "denomination": z.denomination,
         "type_zone":    z.type_zone,
         "description":  z.description,
         "thematiques":  z.thematiques,
+        "region_id":          z.region_id,
+        "departement_id":     z.departement_id,
+        "arrondissement_id":  z.arrondissement_id,
+        "region_nom":         geo_noms.get(f"r_{z.region_id}"),
+        "departement_nom":    geo_noms.get(f"d_{z.departement_id}"),
+        "arrondissement_nom": geo_noms.get(f"a_{z.arrondissement_id}"),
         "est_publie":   z.est_publie,
         "created_at":   z.created_at.isoformat() if z.created_at else None,
         "entreprises": [
@@ -42,12 +54,12 @@ def zone_to_dict(z: ZoneInvestissement) -> dict:
                     "telephone":        ze.entreprise.telephone,
                     "mail":             ze.entreprise.mail,
                     "adresse":          ze.entreprise.adresse,
-                    "secteur":          {"id": ze.entreprise.secteur_id, "nom": ze.entreprise.secteur.nom} if ze.entreprise.secteur else None,
-                    "branche":          {"id": ze.entreprise.branche_id, "nom": ze.entreprise.branche.nom} if ze.entreprise.branche else None,
-                    "activite":         {"id": ze.entreprise.activite_id, "nom": ze.entreprise.activite.nom} if ze.entreprise.activite else None,
-                    "region_nom":       ze.entreprise.region_obj.nom if ze.entreprise.region_obj else None,
-                    "departement_nom":  ze.entreprise.departement_obj.nom if ze.entreprise.departement_obj else None,
-                    "siege_pays_nom":   ze.entreprise.siege_pays_obj.nom_fr if ze.entreprise.siege_pays_obj else None,
+                    "secteur":  {"id": ze.entreprise.secteur_id, "nom": ze.entreprise.secteur.nom} if ze.entreprise.secteur else None,
+                    "branche":  {"id": ze.entreprise.branche_id, "nom": ze.entreprise.branche.nom} if ze.entreprise.branche else None,
+                    "activite": {"id": ze.entreprise.activite_id, "nom": ze.entreprise.activite.nom} if ze.entreprise.activite else None,
+                    "region_nom":      ze.entreprise.region_obj.nom if ze.entreprise.region_obj else None,
+                    "departement_nom": ze.entreprise.departement_obj.nom if ze.entreprise.departement_obj else None,
+                    "siege_pays_nom":  ze.entreprise.siege_pays_obj.nom_fr if ze.entreprise.siege_pays_obj else None,
                 } if ze.entreprise else None,
             }
             for ze in (z.entreprises or [])
@@ -57,6 +69,26 @@ def zone_to_dict(z: ZoneInvestissement) -> dict:
             for f in (z.fichiers or [])
         ],
     }
+
+
+async def get_geo_noms(zones: list, db: AsyncSession) -> dict:
+    """Charge les noms région/département/arrondissement pour une liste de zones."""
+    from app.models.entreprise import RefRegion, RefDepartement, RefArrondissement
+    from sqlalchemy import text as sa_text
+    noms = {}
+    r_ids = {z.region_id for z in zones if z.region_id}
+    d_ids = {z.departement_id for z in zones if z.departement_id}
+    a_ids = {z.arrondissement_id for z in zones if z.arrondissement_id}
+    if r_ids:
+        res = await db.execute(select(RefRegion).where(RefRegion.id.in_(r_ids)))
+        for r in res.scalars(): noms[f"r_{r.id}"] = r.nom
+    if d_ids:
+        res = await db.execute(select(RefDepartement).where(RefDepartement.id.in_(d_ids)))
+        for d in res.scalars(): noms[f"d_{d.id}"] = d.nom
+    if a_ids:
+        res = await db.execute(select(RefArrondissement).where(RefArrondissement.id.in_(a_ids)))
+        for a in res.scalars(): noms[f"a_{a.id}"] = a.nom
+    return noms
 
 
 # ── GET /zones ─────────────────────────────────────────────────────────────────
@@ -73,28 +105,37 @@ async def liste_zones(
         .where(and_(*filters))
         .order_by(ZoneInvestissement.denomination)
     )
-    return [zone_to_dict(z) for z in result.scalars().all()]
+    zones = result.scalars().all()
+    geo_noms = await get_geo_noms(zones, db)
+    return [zone_to_dict(z, geo_noms) for z in zones]
 
 
 # ── POST /zones ────────────────────────────────────────────────────────────────
 @router.post("", status_code=201)
 async def creer_zone(
-    denomination: str           = Form(...),
-    type_zone:    str           = Form(...),
-    description:  Optional[str] = Form(None),
-    thematiques:  Optional[str] = Form(None),
-    est_publie:   bool          = Form(True),
-    db:           AsyncSession  = Depends(get_db),
+    denomination:     str           = Form(...),
+    type_zone:        str           = Form(...),
+    description:      Optional[str] = Form(None),
+    thematiques:      Optional[str] = Form(None),
+    region_id:        Optional[int] = Form(None),
+    departement_id:   Optional[int] = Form(None),
+    arrondissement_id:Optional[int] = Form(None),
+    est_publie:       bool          = Form(True),
+    db:               AsyncSession  = Depends(get_db),
 ):
     z = ZoneInvestissement(
         denomination=denomination, type_zone=type_zone,
         description=description, thematiques=thematiques,
+        region_id=region_id, departement_id=departement_id,
+        arrondissement_id=arrondissement_id,
         est_publie=est_publie,
     )
     db.add(z)
     await db.flush()
     result = await db.execute(select(ZoneInvestissement).options(*LOAD_OPTS).where(ZoneInvestissement.id == z.id))
-    return zone_to_dict(result.scalar_one())
+    zone = result.scalar_one()
+    geo_noms = await get_geo_noms([zone], db)
+    return zone_to_dict(zone, geo_noms)
 
 
 # ── PATCH /zones/:id ───────────────────────────────────────────────────────────
@@ -103,31 +144,41 @@ async def modifier_zone(
     zone_id:      UUID,
     denomination: Optional[str] = Form(None),
     type_zone:    Optional[str] = Form(None),
-    description:  Optional[str] = Form(None),
-    thematiques:  Optional[str] = Form(None),
-    est_publie:   Optional[bool]= Form(None),
+    description:      Optional[str] = Form(None),
+    thematiques:      Optional[str] = Form(None),
+    region_id:        Optional[int] = Form(None),
+    departement_id:   Optional[int] = Form(None),
+    arrondissement_id:Optional[int] = Form(None),
+    est_publie:       Optional[bool]= Form(None),
     db:           AsyncSession  = Depends(get_db),
 ):
     result = await db.execute(select(ZoneInvestissement).where(ZoneInvestissement.id == zone_id, ZoneInvestissement.is_deleted == False))
     z = result.scalar_one_or_none()
     if not z: raise HTTPException(404, "Zone introuvable")
-    if denomination is not None: z.denomination = denomination
-    if type_zone    is not None: z.type_zone    = type_zone
-    if description  is not None: z.description  = description
-    if thematiques  is not None: z.thematiques  = thematiques
-    if est_publie   is not None: z.est_publie   = est_publie
+    if denomination       is not None: z.denomination       = denomination
+    if type_zone          is not None: z.type_zone          = type_zone
+    if description        is not None: z.description        = description
+    if thematiques        is not None: z.thematiques        = thematiques
+    if region_id          is not None: z.region_id          = region_id
+    if departement_id     is not None: z.departement_id     = departement_id
+    if arrondissement_id  is not None: z.arrondissement_id  = arrondissement_id
+    if est_publie         is not None: z.est_publie         = est_publie
     await db.flush()
     result = await db.execute(select(ZoneInvestissement).options(*LOAD_OPTS).where(ZoneInvestissement.id == zone_id))
-    return zone_to_dict(result.scalar_one())
+    zone = result.scalar_one()
+    geo_noms = await get_geo_noms([zone], db)
+    return zone_to_dict(zone, geo_noms)
 
 
 # ── DELETE /zones/:id ──────────────────────────────────────────────────────────
 @router.delete("/{zone_id}", status_code=204)
 async def supprimer_zone(zone_id: UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(ZoneInvestissement).where(ZoneInvestissement.id == zone_id))
+    result = await db.execute(
+        select(ZoneInvestissement).options(*LOAD_OPTS).where(ZoneInvestissement.id == zone_id)
+    )
     z = result.scalar_one_or_none()
     if not z: raise HTTPException(404, "Zone introuvable")
-    z.is_deleted = True
+    await db.delete(z)
     await db.flush()
 
 
