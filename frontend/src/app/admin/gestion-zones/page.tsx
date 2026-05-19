@@ -18,6 +18,7 @@ const TYPE_ZONES = [
 const EMPTY_ZONE_FORM = {
   nom_zone: "", description: "", thematiques: "",
   pole_id: "" as string | number,
+  date_creation: "", decret_creation: "", superficie: "",
   region_id: "" as string | number,
   departement_id: "" as string | number,
   arrondissement_id: "" as string | number,
@@ -50,7 +51,10 @@ function ZoneModal({
       setForm({
         nom_zone: editZone.nom_zone || "", description: editZone.description || "",
         thematiques: editZone.thematiques || "",
-        pole_id: editZone.pole_id || "",
+        pole_id: editZone.pole_id ?? "",
+        date_creation: editZone.date_creation || "",
+        decret_creation: editZone.decret_creation || "",
+        superficie: editZone.superficie != null ? String(editZone.superficie) : "",
         region_id: editZone.region_id || "", departement_id: editZone.departement_id || "",
         arrondissement_id: editZone.arrondissement_id || "",
       });
@@ -74,35 +78,62 @@ function ZoneModal({
       const fd = new FormData();
       fd.append("nom_zone", form.nom_zone);
       fd.append("type_zone", typeZone);
-      if (form.pole_id)    fd.append("pole_id",    String(form.pole_id));
-      if (form.description) fd.append("description", form.description);
+      fd.append("pole_id", form.pole_id ? String(form.pole_id) : "0");
+      fd.append("description",     form.description     ?? "");
+      fd.append("date_creation",   form.date_creation   ?? "");
+      fd.append("decret_creation", form.decret_creation ?? "");
+      fd.append("superficie",      form.superficie      ?? "");
       if (form.region_id)         fd.append("region_id",         String(form.region_id));
       if (form.departement_id)    fd.append("departement_id",    String(form.departement_id));
       if (form.arrondissement_id) fd.append("arrondissement_id", String(form.arrondissement_id));
+
+      // Résoudre les noms NAEMA → IDs (toujours, pour POST et PATCH)
+      let secIds: number[] = [], braIds: number[] = [], actIds: number[] = [];
       if (form.thematiques) {
         fd.append("thematiques", form.thematiques);
-        // Résoudre les noms NAEMA → IDs
         const items = form.thematiques.split(",").map((t: string) => t.trim());
-        const secNom = items.find((t: string) => t.startsWith("sec:"))?.slice(4);
-        const braNom = items.find((t: string) => t.startsWith("bra:"))?.slice(4);
-        const actNom = items.find((t: string) => t.startsWith("act:"))?.slice(4);
+        const secNoms = items.filter((t: string) => t.startsWith("sec:")).map((t: string) => t.slice(4));
+        const braNoms = items.filter((t: string) => t.startsWith("bra:")).map((t: string) => t.slice(4));
+        const actNoms = items.filter((t: string) => t.startsWith("act:")).map((t: string) => t.slice(4));
         const [allSec, allBra, allAct] = await Promise.all([
           fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
           fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
           fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
         ]);
-        const sec = allSec.find((s: any) => s.nom === secNom);
-        const bra = allBra.find((b: any) => b.nom === braNom);
-        const act = allAct.find((a: any) => a.nom === actNom);
-        if (sec) fd.append("secteur_id", String(sec.id));
-        if (bra) fd.append("branche_id", String(bra.id));
-        if (act) fd.append("activite_id", String(act.id));
+        secIds = allSec.filter((s: any) => secNoms.includes(s.nom)).map((s: any) => s.id);
+        braIds = allBra.filter((b: any) => braNoms.includes(b.nom)).map((b: any) => b.id);
+        actIds = allAct.filter((a: any) => actNoms.includes(a.nom)).map((a: any) => a.id);
       }
+      fd.append("secteur_ids",  JSON.stringify(secIds));
+      fd.append("branche_ids",  JSON.stringify(braIds));
+      fd.append("activite_ids", JSON.stringify(actIds));
       fd.append("est_publie", "true");
 
       const url    = editZone ? `${API_BASE}/zones-types/${editZone.id}` : `${API_BASE}/zones-types`;
       const method = editZone ? "PATCH" : "POST";
-      const res    = await fetch(url, { method, body: fd });
+
+      let res: Response;
+      if (editZone) {
+        // PATCH — JSON body pour permettre les valeurs null/vides
+        const jsonPayload: any = {
+          nom_zone:          form.nom_zone,
+          pole_id:           form.pole_id ? String(form.pole_id) : "0",
+          description:       form.description   ?? "",
+          date_creation:     form.date_creation  ?? "",
+          decret_creation:   form.decret_creation ?? "",
+          superficie:        form.superficie     ?? "",
+          region_id:         form.region_id      ? String(form.region_id)         : "0",
+          departement_id:    form.departement_id ? String(form.departement_id)    : "0",
+          arrondissement_id: form.arrondissement_id ? String(form.arrondissement_id) : "0",
+          secteur_ids:  JSON.stringify(secIds),
+          branche_ids:  JSON.stringify(braIds),
+          activite_ids: JSON.stringify(actIds),
+        };
+        res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(jsonPayload) });
+      } else {
+        // POST — FormData (fichiers PDF inclus plus bas)
+        res = await fetch(url, { method, body: fd });
+      }
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
       const zone = await res.json();
 
@@ -155,7 +186,7 @@ function ZoneModal({
               <option value="">— Sélectionner un pôle —</option>
               {poles.map((p: any) => (
                 <option key={p.id} value={p.id}>
-                  {p.pole_territoire}
+                  {p.pole_territoire} — {p.localisation}
                 </option>
               ))}
             </select>
@@ -177,6 +208,30 @@ function ZoneModal({
                 <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Arrondissement</label>
                 <ArrondissementSelect departementId={depId} value={form.arrondissement_id} onChange={(id) => update("arrondissement_id", id || "")} />
               </div>
+            </div>
+          </div>
+
+          {/* Infos officielles */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={LS}>Informations officielles</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+              <div>
+                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Date de création</label>
+                <input type="date" value={form.date_creation}
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={e => update("date_creation", e.target.value)} style={IS} />
+              </div>
+              <div>
+                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Superficie (hectares)</label>
+                <input type="number" min="0" step="0.01" value={form.superficie}
+                  onChange={e => update("superficie", e.target.value)}
+                  placeholder="Ex: 1700.50" style={IS} />
+              </div>
+            </div>
+            <div>
+              <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Décret de création</label>
+              <input value={form.decret_creation} onChange={e => update("decret_creation", e.target.value)}
+                placeholder="Ex: Décret n° 2002-1036 du 03/10/2002" style={IS} />
             </div>
           </div>
 
@@ -258,18 +313,25 @@ function EntreprisesModal({
     if (!open) return;
     setSelected(new Set()); setSearch(""); setSaveOk(false);
     setLoading(true);
-    fetch(`${API_BASE}/entreprises?per_page=500&est_publie=true`)
-      .then(r => r.json()).then(d => setAll(d.data || []))
-      .catch(() => {}).finally(() => setLoading(false));
+    Promise.all([
+      fetch(`${API_BASE}/entreprises?per_page=500&est_publie=true`).then(r => r.json()),
+      fetch(`${API_BASE}/zones-types/entreprises-assignees`).then(r => r.json()),
+    ])
+      .then(([data, assignees]) => {
+        // Exclure celles déjà dans la zone courante ET celles dans d'autres zones
+        const toExclude = new Set([...existingIds, ...assignees]);
+        setAll((data.data || []).filter((e: any) => !toExclude.has(e.id)));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [open]);
 
   if (!open) return null;
 
   const filtered = all.filter(e =>
-    !existingIds.includes(e.id) &&
-    (e.nom.toLowerCase().includes(search.toLowerCase()) ||
-     (e.secteur?.nom || "").toLowerCase().includes(search.toLowerCase()) ||
-     (e.region_nom || "").toLowerCase().includes(search.toLowerCase()))
+    e.nom.toLowerCase().includes(search.toLowerCase()) ||
+    (e.secteur?.nom || "").toLowerCase().includes(search.toLowerCase()) ||
+    (e.region_nom || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const toggle = (id: string) => setSelected(prev => {
@@ -499,15 +561,11 @@ export default function GestionZonesPage() {
                                   {z.pole_nom}
                                 </span>
                               )}
-                              {(z.region_nom || z.departement_nom) && (
-                                <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 4 }}>📍 {[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
-                              )}
-                              <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 8 }}>
+                              
+                                <span style={{ fontSize: 11, color: "#0e7490", background: "rgba(14,116,144,0.08)", border: "1px solid rgba(14,116,144,0.2)", padding: "2px 8px", borderRadius: 999, fontWeight: 600, marginRight: 4 }}>
                                 {z.entreprises?.length || 0} entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}
                               </span>
-                              {z.fichiers?.length > 0 && (
-                                <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 8 }}>📄 {z.fichiers.length}</span>
-                              )}
+    
                               <button onClick={e => { e.stopPropagation(); setEntModalZone(z); setEntModal(true); }}
                                 style={{ background: "rgba(0,0,0,0.05)", border: "none", cursor: "pointer", borderRadius: 6, padding: "4px 8px", fontSize: 11, color: "#4a5568", display: "flex", alignItems: "center", gap: 3 }}>
                                 <Plus size={10} /> Entreprise

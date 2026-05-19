@@ -4,7 +4,7 @@ Modèles pour les 3 tables de zones d'investissement :
   - zones_zai  → IDs ZAI-1, ZAI-2, …
   - zones_zfi  → IDs ZFI-1, ZFI-2, …
 """
-from sqlalchemy import Column, String, Integer, Text, Boolean, ForeignKey, ARRAY
+from sqlalchemy import Column, String, Integer, Text, Boolean, ForeignKey, ARRAY, Date, Numeric
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -32,9 +32,17 @@ class ZoneMixin:
     region_id         = Column(Integer, ForeignKey("ref_regions.id"))
     departement_id    = Column(Integer, ForeignKey("ref_departements.id"))
     arrondissement_id = Column(Integer, ForeignKey("ref_arrondissements.id"))
-    secteur_id        = Column(Integer, ForeignKey("ref_secteurs.id"))
-    branche_id        = Column(Integer, ForeignKey("ref_branches.id"))
-    activite_id       = Column(Integer, ForeignKey("ref_activites.id"))
+
+    # NAEMA — tableaux pour multi-sélection
+    secteur_ids       = Column(ARRAY(Integer), default=[])
+    branche_ids       = Column(ARRAY(Integer), default=[])
+    activite_ids      = Column(ARRAY(Integer), default=[])
+
+    # Infos officielles
+    date_creation     = Column(Date)
+    decret_creation   = Column(String(500))
+    superficie        = Column(Numeric(12, 2))
+
     description       = Column(Text)
     created_at        = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at        = Column(TIMESTAMP(timezone=True), server_default=func.now())
