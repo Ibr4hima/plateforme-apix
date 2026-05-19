@@ -11,10 +11,27 @@ from app.models.zone_types import (
     ZoneZES, ZoneZESFichier, ZoneZESEntreprise,
     ZoneZAI, ZoneZAIFichier, ZoneZAIEntreprise,
     ZoneZFI, ZoneZFIFichier, ZoneZFIEntreprise,
+    PoleTerritoire,
 )
 from app.models.entreprise import EntrepriseIntallee, RefSecteur, RefBranche, RefActivite, RefRegion, RefDepartement, RefArrondissement
 
 router = APIRouter(prefix="/zones-types", tags=["Zones ZES/ZAI/ZFI"])
+
+# ── GET /zones-types/poles ────────────────────────────────────────────────────
+@router.get("/poles")
+async def liste_poles(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PoleTerritoire).order_by(PoleTerritoire.id))
+    poles = result.scalars().all()
+    return [
+        {
+            "id":              p.id,
+            "pole_territoire": p.pole_territoire,
+            "localisation":    p.localisation,
+            "region_ids":      p.region_ids or [],
+            "description":     p.description,
+        }
+        for p in poles
+    ]
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "../../../uploads/zones_types")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -87,11 +104,21 @@ async def get_geo_noms(zones: list, db: AsyncSession) -> dict:
     return noms
 
 
-def zone_to_dict(z, geo_noms: dict) -> dict:
+async def get_pole_noms(zones: list, db: AsyncSession) -> dict:
+    pole_ids = {z.pole_id for z in zones if z.pole_id}
+    if not pole_ids:
+        return {}
+    result = await db.execute(select(PoleTerritoire).where(PoleTerritoire.id.in_(pole_ids)))
+    return {p.id: p.pole_territoire for p in result.scalars()}
+
+
+def zone_to_dict(z, geo_noms: dict, pole_noms: dict = {}) -> dict:
     return {
         "id":               z.id,
         "nom_zone":         z.nom_zone,
         "type_zone":        z.id[:3],
+        "pole_id":          z.pole_id,
+        "pole_nom":         pole_noms.get(z.pole_id),
         "description":      z.description,
         "region_id":        z.region_id,
         "departement_id":   z.departement_id,
@@ -130,7 +157,8 @@ async def liste_zones(type_zone: str = Query(...), db: AsyncSession = Depends(ge
     )
     zones = result.scalars().all()
     geo_noms = await get_geo_noms(zones, db)
-    return [zone_to_dict(z, geo_noms) for z in zones]
+    pole_noms = await get_pole_noms(zones, db)
+    return [zone_to_dict(z, geo_noms, pole_noms) for z in zones]
 
 
 # ── POST /zones-types ──────────────────────────────────────────────────────────
@@ -138,6 +166,7 @@ async def liste_zones(type_zone: str = Query(...), db: AsyncSession = Depends(ge
 async def creer_zone(
     type_zone:        str           = Form(...),
     nom_zone:         str           = Form(...),
+    pole_id:          Optional[int] = Form(None),
     description:      Optional[str] = Form(None),
     region_id:        Optional[int] = Form(None),
     departement_id:   Optional[int] = Form(None),
@@ -154,13 +183,13 @@ async def creer_zone(
     from sqlalchemy import text
     await db.execute(text(f"""
         INSERT INTO {cfg['model'].__tablename__}
-            (id, nom_zone, description, region_id, departement_id, arrondissement_id,
+            (id, nom_zone, pole_id, description, region_id, departement_id, arrondissement_id,
              secteur_id, branche_id, activite_id)
         VALUES
-            ('', :nom_zone, :description, :region_id, :departement_id, :arrondissement_id,
+            ('', :nom_zone, :pole_id, :description, :region_id, :departement_id, :arrondissement_id,
              :secteur_id, :branche_id, :activite_id)
     """), {
-        "nom_zone": nom_zone, "description": description,
+        "nom_zone": nom_zone, "pole_id": pole_id, "description": description,
         "region_id": region_id, "departement_id": departement_id,
         "arrondissement_id": arrondissement_id,
         "secteur_id": secteur_id, "branche_id": branche_id, "activite_id": activite_id,
@@ -176,7 +205,8 @@ async def creer_zone(
     result = await db.execute(select(cfg["model"]).options(*get_load_opts(cfg)).where(cfg["model"].id == z.id))
     zone = result.scalar_one()
     geo_noms = await get_geo_noms([zone], db)
-    return zone_to_dict(zone, geo_noms)
+    pole_noms = await get_pole_noms([zone], db)
+    return zone_to_dict(zone, geo_noms, pole_noms)
 
 
 # ── PATCH /zones-types/:id ────────────────────────────────────────────────────
@@ -184,6 +214,7 @@ async def creer_zone(
 async def modifier_zone(
     zone_id:          str,
     nom_zone:         Optional[str] = Form(None),
+    pole_id:          Optional[int] = Form(None),
     description:      Optional[str] = Form(None),
     region_id:        Optional[int] = Form(None),
     departement_id:   Optional[int] = Form(None),
@@ -203,6 +234,7 @@ async def modifier_zone(
     if not z: raise HTTPException(404, "Zone introuvable")
 
     if nom_zone         is not None: z.nom_zone         = nom_zone
+    if pole_id          is not None: z.pole_id          = pole_id
     if description      is not None: z.description      = description
     if region_id        is not None: z.region_id        = region_id
     if departement_id   is not None: z.departement_id   = departement_id
@@ -215,7 +247,8 @@ async def modifier_zone(
     result = await db.execute(select(Model).options(*get_load_opts(cfg)).where(Model.id == zone_id))
     zone = result.scalar_one()
     geo_noms = await get_geo_noms([zone], db)
-    return zone_to_dict(zone, geo_noms)
+    pole_noms = await get_pole_noms([zone], db)
+    return zone_to_dict(zone, geo_noms, pole_noms)
 
 
 # ── DELETE /zones-types/:id (suppression physique) ────────────────────────────

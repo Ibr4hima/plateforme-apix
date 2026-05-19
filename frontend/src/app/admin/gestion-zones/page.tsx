@@ -1,60 +1,13 @@
 "use client";
 
+import EntrepriseModal from "@/components/entreprises/EntrepriseModal";
 import { ArrondissementSelect, DepartementSelect, RegionSelect } from "@/components/shared/GeoSelect";
-import { Building2, Check, ChevronDown, ChevronRight, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
+import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
+import { Building2, Check, ChevronDown, ChevronRight, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-// ── Selects NAEMA ─────────────────────────────────────────────────────────────
-function useNaema() {
-  const [secteurs,  setSecteurs]  = useState<any[]>([]);
-  const [branches,  setBranches]  = useState<any[]>([]);
-  const [activites, setActivites] = useState<any[]>([]);
-  useEffect(() => {
-    Promise.all([
-      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
-      fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
-      fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
-    ]).then(([s, b, a]) => { setSecteurs(s); setBranches(b); setActivites(a); }).catch(() => {});
-  }, []);
-  return { secteurs, branches, activites };
-}
-
-function SecteurSelect({ value, onChange }: { value: any; onChange: (id: any) => void }) {
-  const { secteurs } = useNaema();
-  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-  return (
-    <select value={value || ""} onChange={e => onChange(e.target.value ? parseInt(e.target.value) : "")} style={IS}>
-      <option value="">Sélectionner</option>
-      {secteurs.map(s => <option key={s.id} value={s.id}>{s.nom}</option>)}
-    </select>
-  );
-}
-
-function BrancheSelect({ secteurId, value, onChange }: { secteurId: any; value: any; onChange: (id: any) => void }) {
-  const { branches } = useNaema();
-  const filtered = branches.filter(b => b.secteur_id === parseInt(secteurId));
-  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-  return (
-    <select value={value || ""} onChange={e => onChange(e.target.value ? parseInt(e.target.value) : "")} disabled={!secteurId} style={{ ...IS, opacity: secteurId ? 1 : 0.5 }}>
-      <option value="">Sélectionner</option>
-      {filtered.map(b => <option key={b.id} value={b.id}>{b.nom}</option>)}
-    </select>
-  );
-}
-
-function ActiviteSelect({ brancheId, value, onChange }: { brancheId: any; value: any; onChange: (id: any) => void }) {
-  const { activites } = useNaema();
-  const filtered = activites.filter(a => a.branche_id === parseInt(brancheId));
-  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-  return (
-    <select value={value || ""} onChange={e => onChange(e.target.value ? parseInt(e.target.value) : "")} disabled={!brancheId} style={{ ...IS, opacity: brancheId ? 1 : 0.5 }}>
-      <option value="">Sélectionner</option>
-      {filtered.map(a => <option key={a.id} value={a.id}>{a.nom}</option>)}
-    </select>
-  );
-}
 
 const TYPE_ZONES = [
   { key: "ZES", label: "Zones Économiques Spéciales",        code: "ZES", color: "#004f91" },
@@ -63,13 +16,11 @@ const TYPE_ZONES = [
 ];
 
 const EMPTY_ZONE_FORM = {
-  nom_zone: "", description: "",
+  nom_zone: "", description: "", thematiques: "",
+  pole_id: "" as string | number,
   region_id: "" as string | number,
   departement_id: "" as string | number,
   arrondissement_id: "" as string | number,
-  secteur_id: "" as string | number,
-  branche_id: "" as string | number,
-  activite_id: "" as string | number,
 };
 
 // ── Modal ajout/modif zone ────────────────────────────────────────────────────
@@ -87,16 +38,21 @@ function ZoneModal({
   const [error,    setError]    = useState("");
   const [regionId, setRegionId] = useState<number | null>(null);
   const [depId,    setDepId]    = useState<number | null>(null);
+  const [poles,    setPoles]    = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/zones-types/poles`).then(r => r.json()).then(setPoles).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!open) return;
     if (editZone) {
       setForm({
         nom_zone: editZone.nom_zone || "", description: editZone.description || "",
+        thematiques: editZone.thematiques || "",
+        pole_id: editZone.pole_id || "",
         region_id: editZone.region_id || "", departement_id: editZone.departement_id || "",
         arrondissement_id: editZone.arrondissement_id || "",
-        secteur_id: editZone.secteur_id || "", branche_id: editZone.branche_id || "",
-        activite_id: editZone.activite_id || "",
       });
       setFichiers(editZone.fichiers || []);
       setRegionId(editZone.region_id || null);
@@ -118,13 +74,30 @@ function ZoneModal({
       const fd = new FormData();
       fd.append("nom_zone", form.nom_zone);
       fd.append("type_zone", typeZone);
-      if (form.description)       fd.append("description",       form.description);
+      if (form.pole_id)    fd.append("pole_id",    String(form.pole_id));
+      if (form.description) fd.append("description", form.description);
       if (form.region_id)         fd.append("region_id",         String(form.region_id));
       if (form.departement_id)    fd.append("departement_id",    String(form.departement_id));
       if (form.arrondissement_id) fd.append("arrondissement_id", String(form.arrondissement_id));
-      if (form.secteur_id)       fd.append("secteur_id",        String(form.secteur_id));
-      if (form.branche_id)        fd.append("branche_id",         String(form.branche_id));
-      if (form.activite_id)       fd.append("activite_id",        String(form.activite_id));
+      if (form.thematiques) {
+        fd.append("thematiques", form.thematiques);
+        // Résoudre les noms NAEMA → IDs
+        const items = form.thematiques.split(",").map((t: string) => t.trim());
+        const secNom = items.find((t: string) => t.startsWith("sec:"))?.slice(4);
+        const braNom = items.find((t: string) => t.startsWith("bra:"))?.slice(4);
+        const actNom = items.find((t: string) => t.startsWith("act:"))?.slice(4);
+        const [allSec, allBra, allAct] = await Promise.all([
+          fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
+          fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
+          fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
+        ]);
+        const sec = allSec.find((s: any) => s.nom === secNom);
+        const bra = allBra.find((b: any) => b.nom === braNom);
+        const act = allAct.find((a: any) => a.nom === actNom);
+        if (sec) fd.append("secteur_id", String(sec.id));
+        if (bra) fd.append("branche_id", String(bra.id));
+        if (act) fd.append("activite_id", String(act.id));
+      }
       fd.append("est_publie", "true");
 
       const url    = editZone ? `${API_BASE}/zones-types/${editZone.id}` : `${API_BASE}/zones-types`;
@@ -175,6 +148,19 @@ function ZoneModal({
             <input value={form.nom_zone} onChange={e => update("nom_zone", e.target.value)} placeholder={`Ex : ${typeZone} de Diamniadio`} style={IS} />
           </div>
 
+          {/* Pôle territorial */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={LS}>Pôle territorial</label>
+            <select value={form.pole_id || ""} onChange={e => update("pole_id", e.target.value ? parseInt(e.target.value) : "")} style={IS}>
+              <option value="">— Sélectionner un pôle —</option>
+              {poles.map((p: any) => (
+                <option key={p.id} value={p.id}>
+                  {p.pole_territoire}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Localisation */}
           <div style={{ marginBottom: 14 }}>
             <label style={LS}>Localisation</label>
@@ -196,21 +182,8 @@ function ZoneModal({
 
           {/* Classification NAEMA */}
           <div style={{ marginBottom: 14 }}>
-            <label style={LS}>Classification NAEMA</label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-              <div>
-                <label style={{ ...LS, fontSize: 11, color: "#ca631f" }}>Secteur</label>
-                <SecteurSelect value={form.secteur_id} onChange={(id) => { update("secteur_id", id || ""); update("branche_id", ""); update("activite_id", ""); }} />
-              </div>
-              <div>
-                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Branche</label>
-                <BrancheSelect secteurId={form.secteur_id} value={form.branche_id} onChange={(id) => { update("branche_id", id || ""); update("activite_id", ""); }} />
-              </div>
-              <div>
-                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Activité</label>
-                <ActiviteSelect brancheId={form.branche_id} value={form.activite_id} onChange={(id) => update("activite_id", id || "")} />
-              </div>
-            </div>
+            <label style={LS}>Thématiques / Classification NAEMA</label>
+            <ThematiquesNaema value={form.thematiques} onChange={val => update("thematiques", val)} />
           </div>
 
           {/* Description */}
@@ -265,6 +238,8 @@ function ZoneModal({
     </div>
   );
 }
+
+// ── Modal fiche entreprise ────────────────────────────────────────────────────
 
 // ── Modal ajout entreprises (choix multiple) ──────────────────────────────────
 function EntreprisesModal({
@@ -415,6 +390,7 @@ export default function GestionZonesPage() {
 
   const [deleting, setDeleting]       = useState<string | null>(null);
   const [deletingEnt, setDeletingEnt] = useState<string | null>(null);
+  const [detailEntreprise, setDetailEntreprise] = useState<any>(null);
 
   const charger = useCallback(async () => {
     setLoading(true);
@@ -518,8 +494,13 @@ export default function GestionZonesPage() {
                               style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", cursor: "pointer" }}>
                               <span style={{ fontSize: 10, fontWeight: 700, color: t.color, background: `${t.color}12`, padding: "2px 8px", borderRadius: 999, flexShrink: 0 }}>{t.code}</span>
                               <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e", flex: 1 }}>{z.nom_zone}</span>
+                              {z.pole_nom && (
+                                <span style={{ fontSize: 11, color: "#0e7490", background: "rgba(14,116,144,0.08)", border: "1px solid rgba(14,116,144,0.2)", padding: "2px 8px", borderRadius: 999, fontWeight: 600, marginRight: 4 }}>
+                                  {z.pole_nom}
+                                </span>
+                              )}
                               {(z.region_nom || z.departement_nom) && (
-                                <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 4 }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
+                                <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 4 }}>📍 {[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
                               )}
                               <span style={{ fontSize: 11, color: "#9aa5b4", marginRight: 8 }}>
                                 {z.entreprises?.length || 0} entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}
@@ -556,10 +537,12 @@ export default function GestionZonesPage() {
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                           <div style={{ fontWeight: 600, fontSize: 13, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ze.entreprise?.nom}</div>
-                                          <div style={{ fontSize: 11, color: "#9aa5b4" }}>{[ze.entreprise?.forme_juridique, ze.entreprise?.secteur?.nom, ze.entreprise?.region_nom].filter(Boolean).join(" · ")}</div>
+                                          <div style={{ fontSize: 11, color: "#9aa5b4" }}>{ze.entreprise?.forme_juridique || "—"}</div>
                                         </div>
-                                        {ze.entreprise?.mail && <span style={{ fontSize: 11, color: "#9aa5b4" }}>{ze.entreprise.mail}</span>}
-                                        {ze.entreprise?.telephone && <span style={{ fontSize: 11, color: "#9aa5b4" }}>{ze.entreprise.telephone}</span>}
+                                        <button onClick={() => setDetailEntreprise(ze.entreprise)}
+                                          style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(202,99,31,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 10px", fontSize: 11, color: "#ca631f", fontWeight: 600, flexShrink: 0 }}>
+                                          <Eye size={12} /> Voir fiche
+                                        </button>
                                         <button onClick={() => handleRetirerEntreprise(z.id, ze.id)} disabled={deletingEnt === ze.id}
                                           style={{ background: "none", border: "none", cursor: "pointer", padding: 3, flexShrink: 0 }}>
                                           {deletingEnt === ze.id ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
@@ -605,6 +588,10 @@ export default function GestionZonesPage() {
           existingIds={(entModalZone.entreprises || []).map((ze: any) => ze.entreprise_id)}
         />
       )}
+      <EntrepriseModal
+        entreprise={detailEntreprise}
+        onClose={() => setDetailEntreprise(null)}
+      />
     </div>
   );
 }
