@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Check, Loader2, X, Trash2 } from "lucide-react";
+import { Check, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -225,7 +225,7 @@ export default function PolesPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e", marginBottom: 3 }}>{p.pole_territoire}</div>
                     <div style={{ fontSize: 12, color: "#4a5568", marginBottom: 2 }}>
-                      📍 {nomsRegions(p.region_ids)}
+                      {nomsRegions(p.region_ids)}
                     </div>
                     {p.description && <div style={{ fontSize: 12, color: "#9aa5b4", lineHeight: 1.5 }}>{p.description}</div>}
                   </div>

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import get_settings
-from app.api.routes import evenements, accords, entreprises, prospects, zones, zones_types
+from app.api.routes import evenements, accords, entreprises, prospects, zones, zones_types, projets, code_investissement
 import os
 
 settings = get_settings()
@@ -32,6 +32,8 @@ app.include_router(entreprises.router, prefix=settings.API_PREFIX)
 app.include_router(prospects.router,   prefix=settings.API_PREFIX)
 app.include_router(zones.router,       prefix=settings.API_PREFIX)
 app.include_router(zones_types.router, prefix=settings.API_PREFIX)
+app.include_router(projets.router,             prefix=settings.API_PREFIX)
+app.include_router(code_investissement.router, prefix=settings.API_PREFIX)
 
 @app.get("/")
 async def root():

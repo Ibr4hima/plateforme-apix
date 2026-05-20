@@ -3,7 +3,7 @@
 import {
   Building2, Calendar, ChevronLeft, ChevronRight,
   FileText, Globe, Landmark, Layers, LayoutDashboard,
-  Lightbulb, MapPin, Menu, Target, TrendingUp,
+  Lightbulb, MapPin, Menu, Target, TrendingUp, BookOpen,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,17 +16,19 @@ type NavItem =
 
 const MODULES: NavItem[] = [
   { type: "link", label: "Dashboard",                           href: "/admin",               icon: LayoutDashboard, color: "#1a1a2e" },
-  { type: "link", label: "IDE",                                href: "/admin/ide",           icon: TrendingUp,      color: "#dc2626" },
-  { type: "link", label: "Intentions d'investissement",                         href: "/admin/intentions",    icon: Target,          color: "#0891b2" },
-  { type: "link", label: "Projets",                            href: "/admin/opportunites",  icon: Lightbulb,       color: "#d97706" },
-  { type: "link", label: "Prospects",                          href: "/admin/prospects",     icon: Globe,           color: "#65a30d" },
-  { type: "link", label: "Entreprises formalisées",                        href: "/admin/entreprises",   icon: Building2,       color: "#ca631f" },
-  { type: "link", label: "Gestion des zones d'investissement", href: "/admin/gestion-zones", icon: Layers,          color: "#0e7490" },
-  { type: "link", label: "Gestion des pôles territoires",      href: "/admin/poles",         icon: Landmark,        color: "#7c3aed" },
   { type: "link", label: "Événements",                         href: "/admin/evenements",    icon: Calendar,        color: "#004f91" },
   { type: "link", label: "Accords",                            href: "/admin/accords",       icon: FileText,        color: "#7c3aed" },
+  { type: "link", label: "Entreprises",                        href: "/admin/entreprises",   icon: Building2,       color: "#ca631f" },
+  { type: "link", label: "Gestion des zones d'investissement", href: "/admin/gestion-zones", icon: Layers,          color: "#0e7490" },
+  { type: "link", label: "Gestion des pôles territoires",      href: "/admin/poles",         icon: Landmark,        color: "#7c3aed" },
+  { type: "link", label: "Projets",                            href: "/admin/projets",       icon: Lightbulb,       color: "#d97706" },
+  { type: "link", label: "IDE",                                href: "/admin/ide",           icon: TrendingUp,      color: "#dc2626" },
+  { type: "link", label: "Intentions",                         href: "/admin/intentions",    icon: Target,          color: "#0891b2" },
+  { type: "link", label: "Prospects",                          href: "/admin/prospects",     icon: Globe,           color: "#65a30d" },
+  { type: "separator" },
   { type: "link", label: "Découpage administratif",            href: "/admin/geo",           icon: MapPin,          color: "#0891b2" },
   { type: "link", label: "Classification NAEMA",               href: "/admin/naema",         icon: LayoutDashboard, color: "#6b7280" },
+  { type: "link", label: "Code des investissements",           href: "/admin/code-investissement", icon: BookOpen,  color: "#ca631f" },
 ];
 
 const MIN_W     = 64;
