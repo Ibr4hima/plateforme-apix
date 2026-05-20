@@ -50,7 +50,6 @@ async def liste_evenements_admin(
 async def liste_evenements(
     page:           int           = Query(1, ge=1),
     per_page:       int           = Query(12, ge=1, le=100),
-    type_evenement: List[str]     = Query(default=[]),
     statut_calcule: Optional[str] = None,
     pays_nom:       List[str]     = Query(default=[]),   # noms pour compatibilité frontend
     annee:          Optional[int] = None,
@@ -65,8 +64,6 @@ async def liste_evenements(
         Evenement.is_deleted  == False,   # ← correction bug
     ]
 
-    if type_evenement:
-        filters.append(or_(*[Evenement.type_evenement == t for t in type_evenement]))
 
     # Pays hôte — OR intra
     if pays_nom:
@@ -143,8 +140,13 @@ async def detail_evenement(evenement_id: UUID, db: AsyncSession = Depends(get_db
 # ── POST /evenements ───────────────────────────────────────────────────────────
 @router.post("", response_model=EvenementResponse, status_code=201)
 async def creer_evenement(payload: EvenementCreate, db: AsyncSession = Depends(get_db)):
+    from datetime import date as date_type
     data = payload.model_dump(exclude_none=True)
-    e    = Evenement(**data)
+    # Validation : date_debut >= aujourd'hui
+    if "date_debut" in data and data["date_debut"] < date_type.today():
+        raise HTTPException(422, "La date de début ne peut pas être dans le passé")
+    data.pop("statut", None)  # sécurité
+    e = Evenement(**data)
     db.add(e)
     await db.flush()
     await db.refresh(e)
@@ -157,7 +159,9 @@ async def modifier_evenement(evenement_id: UUID, payload: EvenementUpdate, db: A
     result = await db.execute(select(Evenement).where(Evenement.id == evenement_id, Evenement.is_deleted == False))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")
-    for k, v in payload.model_dump(exclude_unset=True).items():
+    updates = payload.model_dump(exclude_unset=True)
+    updates.pop("statut", None)
+    for k, v in updates.items():
         setattr(e, k, v)
     await db.flush()
     await db.refresh(e)

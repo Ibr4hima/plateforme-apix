@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import date, datetime
 from uuid import UUID
 
@@ -7,7 +7,6 @@ from uuid import UUID
 class EvenementBase(BaseModel):
     nom_event:          str             = Field(..., min_length=2, max_length=500)
     edition:            Optional[int]   = Field(None, gt=0)
-    type_evenement:     str
     organisateur:       Optional[str]   = None
     role_apix:          Optional[str]   = None
     description:        Optional[str]   = None
@@ -17,15 +16,20 @@ class EvenementBase(BaseModel):
 
     pays_hote_id:       Optional[int]   = None
     ville:              Optional[str]   = None
-    est_virtuel:        bool            = False
-    lien_virtuel:       Optional[str]   = None
 
     pays_invites:       Optional[str]   = None
     entreprises_invitees: Optional[str] = None
     thematiques_naema:  Optional[str]   = None
 
-    statut:             str             = "planifie"
     est_publie:         bool            = True
+    secteur_ids:        List[int]       = []
+    branche_ids:        List[int]       = []
+    activite_ids:       List[int]       = []
+    pays_invites_ids:   List[int]       = []
+    est_recurrent:      bool            = False
+    frequence_type:     Optional[str]   = None
+    frequence_valeur:   Optional[int]   = None
+    date_prochaine:     Optional[str]   = None
 
 
 class EvenementCreate(EvenementBase):
@@ -35,7 +39,6 @@ class EvenementCreate(EvenementBase):
 class EvenementUpdate(BaseModel):
     nom_event:          Optional[str]   = None
     edition:            Optional[int]   = Field(None, gt=0)
-    type_evenement:     Optional[str]   = None
     organisateur:       Optional[str]   = None
     role_apix:          Optional[str]   = None
     description:        Optional[str]   = None
@@ -43,13 +46,18 @@ class EvenementUpdate(BaseModel):
     date_fin:           Optional[date]  = None
     pays_hote_id:       Optional[int]   = None
     ville:              Optional[str]   = None
-    est_virtuel:        Optional[bool]  = None
-    lien_virtuel:       Optional[str]   = None
     pays_invites:       Optional[str]   = None
     entreprises_invitees: Optional[str] = None
     thematiques_naema:  Optional[str]   = None
-    statut:             Optional[str]   = None
     est_publie:         Optional[bool]  = None
+    secteur_ids:        Optional[List[int]] = None
+    branche_ids:        Optional[List[int]] = None
+    activite_ids:       Optional[List[int]] = None
+    pays_invites_ids:   Optional[List[int]] = None
+    est_recurrent:      Optional[bool]  = None
+    frequence_type:     Optional[str]   = None
+    frequence_valeur:   Optional[int]   = None
+    date_prochaine:     Optional[str]   = None
 
 
 class EvenementResponse(EvenementBase):
