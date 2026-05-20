@@ -1,7 +1,7 @@
 "use client";
 
+import { BookOpen, Check, ChevronDown, ChevronRight, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Upload, FileText, ChevronRight, ChevronDown, BookOpen } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -29,6 +29,65 @@ function InlineForm({ label, initial, onSave, onCancel, saving, placeholder = "I
   );
 }
 
+// ── Éditeur de texte riche custom ────────────────────────────────────────────
+function RichEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  const insert = (before: string, after: string = "", placeholder: string = "") => {
+    const ta = taRef.current; if (!ta) return;
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    const sel   = ta.value.slice(start, end) || placeholder;
+    const newVal = ta.value.slice(0, start) + before + sel + after + ta.value.slice(end);
+    onChange(newVal);
+    setTimeout(() => {
+      ta.focus();
+      ta.setSelectionRange(start + before.length, start + before.length + sel.length);
+    }, 0);
+  };
+
+  const insertLine = (prefix: string) => {
+    const ta = taRef.current; if (!ta) return;
+    const start = ta.selectionStart;
+    // Trouver le début de la ligne courante
+    const lineStart = ta.value.lastIndexOf("\n", start - 1) + 1;
+    const newVal = ta.value.slice(0, lineStart) + prefix + ta.value.slice(lineStart);
+    onChange(newVal);
+    setTimeout(() => { ta.focus(); ta.setSelectionRange(start + prefix.length, start + prefix.length); }, 0);
+  };
+
+  const tools = [
+    { label: "G", title: "Gras", action: () => insert("**", "**", "texte"), style: { fontWeight: 900 } },
+    { label: "I", title: "Italique", action: () => insert("_", "_", "texte"), style: { fontStyle: "italic" } },
+    { label: "•", title: "Puce •", action: () => insertLine("• "), style: {} },
+    { label: "→", title: "Flèche →", action: () => insertLine("→ "), style: {} },
+    { label: "–", title: "Tiret –", action: () => insertLine("– "), style: {} },
+    { label: "►", title: "Puce pleine ►", action: () => insertLine("► "), style: {} },
+  ];
+
+  return (
+    <div style={{ border: "1px solid #C5BFBB", borderRadius: 8, overflow: "hidden", background: "#F2F0EF" }}>
+      {/* Barre d'outils */}
+      <div style={{ display: "flex", alignItems: "center", gap: 2, padding: "6px 8px", borderBottom: "1px solid #C5BFBB", background: "#fff", flexWrap: "wrap" }}>
+        {tools.map((t, i) => (
+          <button key={i} type="button" title={t.title} onClick={t.action}
+            style={{ ...t.style, minWidth: 28, height: 28, borderRadius: 5, border: "1px solid #E8E5E3", background: "#F8F7F6", cursor: "pointer", fontSize: 13, color: "#1a1a2e", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.1s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.1)"; e.currentTarget.style.borderColor = "#ca631f"; e.currentTarget.style.color = "#ca631f"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#F8F7F6"; e.currentTarget.style.borderColor = "#E8E5E3"; e.currentTarget.style.color = "#1a1a2e"; }}>
+            {t.label}
+          </button>
+        ))}
+        <div style={{ width: 1, height: 20, background: "#E8E5E3", margin: "0 4px" }} />
+        <span style={{ fontSize: 11, color: "#9aa5b4" }}>Sélectionner du texte puis cliquer pour formater</span>
+      </div>
+      {/* Zone de texte */}
+      <textarea ref={taRef} value={value} onChange={e => onChange(e.target.value)} rows={8}
+        placeholder={"Texte de l'article…\n\nUtiliser la barre ci-dessus pour formater :\n• puce, → flèche, – tiret, **gras**, _italique_"}
+        style={{ width: "100%", background: "#F2F0EF", border: "none", outline: "none", padding: "12px", fontSize: 13, color: "#1a1a2e", lineHeight: 1.7, resize: "vertical", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+    </div>
+  );
+}
+
 // ── Éditeur article ───────────────────────────────────────────────────────────
 function ArticleEditor({ art, sections, onSave, onCancel, saving }: any) {
   const [titre,   setTitre]   = useState(art?.titre   || "");
@@ -52,9 +111,7 @@ function ArticleEditor({ art, sections, onSave, onCancel, saving }: any) {
       </div>
       <div style={{ marginBottom:10 }}>
         <label style={LS}>Contenu de l'article</label>
-        <textarea value={contenu} onChange={e=>setContenu(e.target.value)} rows={6}
-          placeholder={"Texte de l'article…\n\n• Utiliser • pour les bullets\n• Chaque ligne commençant par • sera une puce"}
-          style={{...IS, resize:"vertical", lineHeight:1.6}} />
+        <RichEditor value={contenu} onChange={setContenu} />
       </div>
       <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
         <button onClick={onCancel} style={{ padding:"8px 16px", borderRadius:9, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>Annuler</button>
@@ -170,12 +227,32 @@ export default function CodeInvestissementPage() {
     charger();
   };
 
+  const [pdfTitreEdit, setPdfTitreEdit] = useState(false);
+  const [pdfTitreVal,  setPdfTitreVal]  = useState("");
+
   // Upload PDF
   const handlePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
-    const fd = new FormData(); fd.append("fichier", file); fd.append("version", "");
+    const fd = new FormData();
+    fd.append("fichier", file);
+    fd.append("titre", pdfInfo?.titre || "Code des investissements du Sénégal");
+    fd.append("version", pdfInfo?.version || "");
     await fetch(`${API}/code-investissement/pdf`, {method:"POST", body:fd});
     charger(); e.target.value="";
+  };
+
+  const savePdfTitre = async () => {
+    if (!pdfTitreVal.trim() || !pdfInfo) return;
+    setSaving(true);
+    try {
+      await fetch(`${API}/code-investissement/pdf/${pdfInfo.id}`, {
+        method: "PATCH",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({titre: pdfTitreVal}),
+      });
+      setPdfTitreEdit(false);
+      charger();
+    } finally { setSaving(false); }
   };
 
   // Rendu article
@@ -194,10 +271,17 @@ export default function CodeInvestissementPage() {
             </div>
             {a.contenu && (
               <div style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}>
-                {a.contenu.split("\n").map((line:string, i:number) =>
-                  line.startsWith("•") ? <div key={i} style={{ display:"flex", gap:6 }}><span style={{color:"#ca631f",flexShrink:0}}>•</span><span>{line.slice(1).trim()}</span></div>
-                  : <p key={i} style={{margin:"2px 0"}}>{line}</p>
-                )}
+                {a.contenu.split("\n").map((line:string, i:number) => {
+                  if (!line.trim()) return <br key={i}/>;
+                  const ri = (t:string) => t.split(/(\*\*[^*]+\*\*|_[^_]+_)/g).map((p:string,j:number)=>
+                    p.startsWith("**")&&p.endsWith("**")?<strong key={j}>{p.slice(2,-2)}</strong>:
+                    p.startsWith("_")&&p.endsWith("_")?<em key={j}>{p.slice(1,-1)}</em>:p);
+                  for (const [sym] of [["•"],["→"],["►"],["–"]]) {
+                    if (line.startsWith(sym))
+                      return <div key={i} style={{display:"flex",gap:6,marginBottom:2}}><span style={{color:"#ca631f",flexShrink:0}}>{sym}</span><span>{ri(line.replace(new RegExp(`^\\${sym}\\s*`),""))}</span></div>;
+                  }
+                  return <p key={i} style={{margin:"2px 0"}}>{ri(line)}</p>;
+                })}
               </div>
             )}
           </div>
@@ -225,12 +309,30 @@ export default function CodeInvestissementPage() {
           </p>
         </div>
         {/* PDF */}
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:8 }}>
           {pdfInfo && (
-            <a href={`${API}/code-investissement/pdf/download`} target="_blank" rel="noopener noreferrer"
-              style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(202,99,31,0.08)", border:"1px solid rgba(202,99,31,0.2)", borderRadius:9, padding:"8px 14px", fontSize:12, color:"#ca631f", fontWeight:600, textDecoration:"none" }}>
-              <FileText size={13} /> Télécharger le PDF
-            </a>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              {pdfTitreEdit ? (
+                <>
+                  <input value={pdfTitreVal} onChange={e=>setPdfTitreVal(e.target.value)}
+                    style={{...IS, width:260, fontSize:12}} autoFocus
+                    onKeyDown={e=>{ if(e.key==="Enter") savePdfTitre(); if(e.key==="Escape") setPdfTitreEdit(false); }} />
+                  <button onClick={savePdfTitre} disabled={saving} style={{ background:"#ca631f", border:"none", color:"#fff", borderRadius:7, padding:"7px 12px", cursor:"pointer", fontSize:12, fontWeight:700 }}>
+                    {saving ? <Loader2 size={12} style={{animation:"spin 1s linear infinite"}} /> : <Check size={12} />}
+                  </button>
+                  <button onClick={()=>setPdfTitreEdit(false)} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:"7px 9px" }}><X size={12} color="#4a5568" /></button>
+                </>
+              ) : (
+                <button onClick={()=>{ setPdfTitreVal(pdfInfo.titre||""); setPdfTitreEdit(true); }}
+                  style={{ display:"flex", alignItems:"center", gap:5, background:"none", border:"1px dashed #C5BFBB", cursor:"pointer", borderRadius:7, padding:"5px 10px", fontSize:12, color:"#9aa5b4" }}>
+                  <Pencil size={11} /> {pdfInfo.titre || "Code des investissements"}
+                </button>
+              )}
+              <a href={`${API}/code-investissement/pdf/download`} target="_blank" rel="noopener noreferrer"
+                style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(202,99,31,0.08)", border:"1px solid rgba(202,99,31,0.2)", borderRadius:9, padding:"8px 14px", fontSize:12, color:"#ca631f", fontWeight:600, textDecoration:"none" }}>
+                <FileText size={13} /> Télécharger
+              </a>
+            </div>
           )}
           <label style={{ display:"flex", alignItems:"center", gap:6, background:"#ca631f", border:"none", cursor:"pointer", borderRadius:10, padding:"10px 18px", fontSize:13, fontWeight:700, color:"#fff" }}>
             <Upload size={14} /> {pdfInfo ? "Remplacer le PDF" : "Uploader le PDF"}

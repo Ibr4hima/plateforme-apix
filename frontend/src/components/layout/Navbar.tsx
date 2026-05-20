@@ -24,19 +24,44 @@ const numArt = (n: number) => n === 1 ? "premier" : String(n);
 
 // ── Rendu texte article (bullets •) ──────────────────────────────────────────
 function ArticleContenu({ contenu }: { contenu: string }) {
+  // Rendre les marqueurs inline
+  const renderInline = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*|_[^_]+_)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**"))
+        return <strong key={i}>{part.slice(2,-2)}</strong>;
+      if (part.startsWith("_") && part.endsWith("_"))
+        return <em key={i}>{part.slice(1,-1)}</em>;
+      return part;
+    });
+  };
+
   return (
     <div style={{ fontSize: 14, color: "#2d3748", lineHeight: 1.8 }}>
-      {contenu.split("\n").map((line, i) =>
-        line.trim() === "" ? <br key={i} /> :
-        line.startsWith("•") ? (
-          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 4 }}>
-            <span style={{ color: "#ca631f", flexShrink: 0, fontWeight: 700 }}>•</span>
-            <span>{line.slice(1).trim()}</span>
-          </div>
-        ) : (
-          <p key={i} style={{ margin: "4px 0" }}>{line}</p>
-        )
-      )}
+      {contenu.split("\n").map((line, i) => {
+        if (line.trim() === "") return <br key={i} />;
+        if (line.startsWith("• ") || line.startsWith("•"))
+          return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
+            <span style={{ color:"#ca631f", flexShrink:0, fontWeight:700 }}>•</span>
+            <span>{renderInline(line.replace(/^•\s*/,""))}</span>
+          </div>;
+        if (line.startsWith("→ ") || line.startsWith("→"))
+          return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
+            <span style={{ color:"#ca631f", flexShrink:0 }}>→</span>
+            <span>{renderInline(line.replace(/^→\s*/,""))}</span>
+          </div>;
+        if (line.startsWith("► ") || line.startsWith("►"))
+          return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
+            <span style={{ color:"#ca631f", flexShrink:0 }}>►</span>
+            <span>{renderInline(line.replace(/^►\s*/,""))}</span>
+          </div>;
+        if (line.startsWith("– ") || line.startsWith("–"))
+          return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
+            <span style={{ color:"#9aa5b4", flexShrink:0 }}>–</span>
+            <span>{renderInline(line.replace(/^–\s*/,""))}</span>
+          </div>;
+        return <p key={i} style={{ margin:"4px 0" }}>{renderInline(line)}</p>;
+      })}
     </div>
   );
 }

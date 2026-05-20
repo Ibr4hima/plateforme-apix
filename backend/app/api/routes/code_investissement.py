@@ -107,6 +107,17 @@ async def upload_pdf(
     await db.flush()
     return {"id": str(pdf.id), "titre": pdf.titre, "version": pdf.version, "fichier_nom": pdf.fichier_nom}
 
+@router.patch("/pdf/{pdf_id}")
+async def renommer_pdf(pdf_id: UUID, payload: dict, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(CodePdf).where(CodePdf.id == pdf_id))
+    p   = res.scalar_one_or_none()
+    if not p: raise HTTPException(404, "PDF introuvable")
+    if "titre"   in payload: p.titre   = payload["titre"]   or p.titre
+    if "version" in payload: p.version = payload["version"] or None
+    await db.flush()
+    return {"id": str(p.id), "titre": p.titre, "version": p.version, "fichier_nom": p.fichier_nom}
+
+
 @router.get("/pdf/download")
 async def download_pdf(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(CodePdf).order_by(CodePdf.created_at.desc()).limit(1))
