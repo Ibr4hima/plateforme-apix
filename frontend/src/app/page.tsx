@@ -135,7 +135,7 @@ export default function HomePage() {
           {/* Tag institutionnel */}
           <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:28}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
-            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>APIX · Plateforme de Gestion des Investissements et des Investisseurs</span>
+            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           {/* Titre */}
@@ -294,7 +294,7 @@ export default function HomePage() {
             <div style={{width:1,height:36,background:"#C5BFBB"}}/>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:"#1a1a2e"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
-              <div style={{fontSize:12,color:"#9aa5b4",marginTop:2}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
+              <div style={{fontSize:12,color:"#9aa5b4",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
             </div>
           </div>
           <div style={{display:"flex",gap:16,flexWrap:"wrap" as const}}>

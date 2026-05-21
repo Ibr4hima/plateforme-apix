@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
-import { BarChart2, TrendingUp, Building2, Handshake, Calendar, Globe, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowUpRight, BarChart2, Building2, Calendar, Handshake, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -76,23 +76,116 @@ export default function TableauDeBordPage() {
       <Navbar/>
 
       {/* Header */}
-      <section style={{padding:"100px 60px 32px",background:"linear-gradient(160deg,#1a1a2e,#2a2a4e)",position:"relative" as const,overflow:"hidden"}}>
-        <div style={{position:"absolute" as const,inset:0,background:"linear-gradient(160deg,rgba(26,26,46,0.97),rgba(227,83,54,0.15))",pointerEvents:"none"}}/>
-        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          <p style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:8}}>APIX · Plateforme de Promotion des Investissements et des Investisseurs</p>
-          <h1 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.6rem)",color:"#fff",marginBottom:8}}>Tableau de bord</h1>
-          <p style={{color:"rgba(255,255,255,0.45)",fontSize:14,marginBottom:28}}>Vue consolidée de l'activité d'investissement au Sénégal</p>
-          {/* Onglets */}
-          <div style={{display:"flex",gap:2,background:"rgba(255,255,255,0.05)",borderRadius:10,padding:3,width:"fit-content",border:"1px solid rgba(255,255,255,0.08)"}}>
-            {ONGLETS.map(o=>(
-              <button key={o.key} onClick={()=>setOnglet(o.key)}
-                style={{padding:"8px 20px",borderRadius:7,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all 0.15s",background:onglet===o.key?"#E35336":"transparent",color:onglet===o.key?"#fff":"rgba(255,255,255,0.45)"}}>
-                {o.label}
-              </button>
-            ))}
+      <section
+  style={{
+    padding: "100px 40px 40px",
+    background:
+      "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",
+    position: "relative" as const,
+    overflow: "hidden",
+  }}
+>
+  {/* Effet lumineux décoratif */}
+  <div
+    style={{
+      position: "absolute" as const,
+      inset: 0,
+      pointerEvents: "none",
+    }}
+  >
+    <div
+      style={{
+        position: "absolute" as const,
+        bottom: "-20%",
+        left: "-5%",
+        width: 400,
+        height: 400,
+        borderRadius: "50%",
+        background:
+          "radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)",
+      }}
+    />
+  </div>
+
+  <div
+    style={{
+      maxWidth: 1280,
+      margin: "0 auto",
+      position: "relative" as const,
+      zIndex: 1,
+    }}
+  >
+    <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
-        </div>
-      </section>
+
+    <h1
+      style={{
+        fontWeight: 800,
+        fontSize: "clamp(1.8rem,3vw,2.6rem)",
+        color: "#fff",
+        marginBottom: 8,
+      }}
+    >
+      Tableau de bord
+    </h1>
+
+    <p
+      style={{
+        color: "rgba(255,255,255,0.45)",
+        fontSize: 14,
+        marginBottom: 28,
+      }}
+    >
+      Vue consolidée de l'activité d'investissement au Sénégal
+    </p>
+
+    {/* Onglets */}
+    <div
+      style={{
+        display: "flex",
+        gap: 2,
+        background: "rgba(255,255,255,0.05)",
+        borderRadius: 10,
+        padding: 3,
+        width: "fit-content",
+        border: "1px solid rgba(255,255,255,0.08)",
+        backdropFilter: "blur(10px)",
+      }}
+    >
+      {ONGLETS.map((o) => (
+        <button
+          key={o.key}
+          onClick={() => setOnglet(o.key)}
+          style={{
+            padding: "8px 20px",
+            borderRadius: 7,
+            border: "none",
+            cursor: "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            transition: "all 0.15s",
+            background:
+              onglet === o.key
+                ? "linear-gradient(135deg,#ca631f,#D96D3B)"
+                : "transparent",
+            color:
+              onglet === o.key
+                ? "#fff"
+                : "rgba(255,255,255,0.45)",
+            boxShadow:
+              onglet === o.key
+                ? "0 4px 16px rgba(202,99,31,0.35)"
+                : "none",
+          }}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* Contenu */}
       <section style={{padding:"32px 60px 80px",maxWidth:1280,margin:"0 auto"}}>

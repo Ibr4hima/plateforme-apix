@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
-import { Loader2, Building2, Search, X, ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
+import { Building2, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -336,15 +336,94 @@ export default function EntreprisesPage() {
       <Navbar/>
 
       {/* Hero */}
-      <section style={{padding:"100px 40px 48px",background:"linear-gradient(160deg,#1a1a2e 0%,#2a2a4e 60%,#E35336 100%)",position:"relative" as const,overflow:"hidden"}}>
-        <div style={{position:"absolute" as const,inset:0,background:"linear-gradient(160deg,rgba(26,26,46,0.96),rgba(227,83,54,0.25))"}}/>
-        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          <p style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:10}}>APIX · Plateforme investissements</p>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Entreprises installées</h1>
-          <p style={{color:"rgba(255,255,255,0.7)",fontSize:15,maxWidth:540,lineHeight:1.7,marginBottom:24}}>Cartographie des entreprises formalisées et installées au Sénégal.</p>
-          {tous.length>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{tous.length} entreprise{tous.length>1?"s":""}</span>}
-        </div>
-      </section>
+      <section
+  style={{
+    padding: "100px 40px 40px",
+    background:
+      "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",
+    position: "relative" as const,
+    overflow: "hidden",
+  }}
+>
+  {/* Effet lumineux décoratif */}
+  <div
+    style={{
+      position: "absolute" as const,
+      inset: 0,
+      pointerEvents: "none",
+    }}
+  >
+    <div
+      style={{
+        position: "absolute" as const,
+        bottom: "-20%",
+        left: "-5%",
+        width: 400,
+        height: 400,
+        borderRadius: "50%",
+        background:
+          "radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)",
+      }}
+    />
+  </div>
+
+  <div
+    style={{
+      maxWidth: 1280,
+      margin: "0 auto",
+      position: "relative" as const,
+      zIndex: 1,
+    }}
+  >
+    <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
+          </div>
+
+    <h1
+      style={{
+        fontWeight: 800,
+        fontSize: "clamp(2.2rem,4vw,3.2rem)",
+        color: "#fff",
+        lineHeight: 1.1,
+        marginBottom: 16,
+      }}
+    >
+      Entreprises installées
+    </h1>
+
+    <p
+      style={{
+        color: "rgba(255,255,255,0.45)",
+        fontSize: 15,
+        maxWidth: 540,
+        lineHeight: 1.7,
+        marginBottom: 24,
+      }}
+    >
+      Cartographie des entreprises formalisées et installées au Sénégal.
+    </p>
+
+    {tous.length > 0 && (
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "#fff",
+          background: "rgba(255,255,255,0.12)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          padding: "6px 14px",
+          borderRadius: 999,
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        {tous.length} entreprise{tous.length > 1 ? "s" : ""}
+      </span>
+    )}
+  </div>
+</section>
 
       {/* Layout sidebar + contenu */}
       <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>

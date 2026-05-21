@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
-import { CalendarDays, Loader2, X, ChevronDown, ChevronUp, SlidersHorizontal, Search } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -332,19 +332,135 @@ export default function EvenementsPage() {
       <Navbar/>
 
       {/* Hero */}
-      <section style={{padding:"100px 40px 48px",background:"linear-gradient(160deg,#1a1a2e 0%,#2a2a4e 60%,#E35336 100%)",position:"relative" as const,overflow:"hidden"}}>
-        <div style={{position:"absolute" as const,inset:0,background:"linear-gradient(160deg,rgba(26,26,46,0.96),rgba(227,83,54,0.25))"}}/>
-        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          <p style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:10}}>APIX · Plateforme investissements</p>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Événements</h1>
-          <p style={{color:"rgba(255,255,255,0.7)",fontSize:15,maxWidth:540,lineHeight:1.7,marginBottom:24}}>Forums, salons, missions de prospection et rencontres B2B — agenda mondial de la promotion des investissements.</p>
-          <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
-            {(stats.total||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.total} événement{stats.total>1?"s":""}</span>}
-            {(stats.en_cours||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#15803d",background:"#dcfce7",padding:"6px 14px",borderRadius:999}}>{stats.en_cours} en cours</span>}
-            {(stats.a_venir||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#1d4ed8",background:"#dbeafe",padding:"6px 14px",borderRadius:999}}>{stats.a_venir} à venir</span>}
+      <section
+  style={{
+    padding: "100px 40px 40px",
+    background:
+      "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",
+    position: "relative" as const,
+    overflow: "hidden",
+  }}
+>
+  {/* Effet lumineux décoratif */}
+  <div
+    style={{
+      position: "absolute" as const,
+      inset: 0,
+      pointerEvents: "none",
+    }}
+  >
+    <div
+      style={{
+        position: "absolute" as const,
+        bottom: "-20%",
+        left: "-5%",
+        width: 400,
+        height: 400,
+        borderRadius: "50%",
+        background:
+          "radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)",
+      }}
+    />
+  </div>
+
+  <div
+    style={{
+      maxWidth: 1280,
+      margin: "0 auto",
+      position: "relative" as const,
+      zIndex: 1,
+    }}
+  >
+    <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
-        </div>
-      </section>
+
+    <h1
+      style={{
+        fontWeight: 800,
+        fontSize: "clamp(2.2rem,4vw,3.2rem)",
+        color: "#fff",
+        lineHeight: 1.1,
+        marginBottom: 16,
+      }}
+    >
+      Événements
+    </h1>
+
+    <p
+      style={{
+        color: "rgba(255,255,255,0.45)",
+        fontSize: 15,
+        maxWidth: 540,
+        lineHeight: 1.7,
+        marginBottom: 24,
+      }}
+    >
+      Forums, salons, missions de prospection et rencontres B2B —
+      agenda mondial de la promotion des investissements.
+    </p>
+
+    <div
+      style={{
+        display: "flex",
+        gap: 10,
+        flexWrap: "wrap" as const,
+      }}
+    >
+      {(stats.total || 0) > 0 && (
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#fff",
+            background: "rgba(255,255,255,0.12)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            padding: "6px 14px",
+            borderRadius: 999,
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          {stats.total} événement{stats.total > 1 ? "s" : ""}
+        </span>
+      )}
+
+      {(stats.en_cours || 0) > 0 && (
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#fff",
+            background: "rgba(202,99,31,0.18)",
+            border: "1px solid rgba(202,99,31,0.35)",
+            padding: "6px 14px",
+            borderRadius: 999,
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          {stats.en_cours} en cours
+        </span>
+      )}
+
+      {(stats.a_venir || 0) > 0 && (
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#fff",
+            background: "rgba(54,111,227,0.18)",
+            border: "1px solid rgba(54,111,227,0.35)",
+            padding: "6px 14px",
+            borderRadius: 999,
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          {stats.a_venir} à venir
+        </span>
+      )}
+    </div>
+  </div>
+</section>
 
       {/* Layout sidebar + contenu */}
       <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
@@ -435,8 +551,8 @@ export default function EvenementsPage() {
                     const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
                     return (
                       <div key={e.id} onClick={()=>setSelec(e)}
-                        style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:"3px solid #E35336",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)";ev.currentTarget.style.borderTopColor="#FFB0A1";ev.currentTarget.style.borderRightColor="#FFB0A1";ev.currentTarget.style.borderBottomColor="#FFB0A1";}}
+                        style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)";ev.currentTarget.style.borderTopColor="#E35336";ev.currentTarget.style.borderRightColor="#E35336";ev.currentTarget.style.borderBottomColor="#E35336";}}
                         onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
                         <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8}}>{e.nom_event}</div>
                         {e.edition!=null&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{ordinal(e.edition)}</div>}
@@ -444,7 +560,7 @@ export default function EvenementsPage() {
                           {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#E35336",flexShrink:0}}/><span style={{color:"#4a5568"}}>{dateStr}</span></div>}
                           {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/><span style={{color:"#4a5568"}}>{lieu}</span></div>}
                         </div>
-                        <div style={{fontSize:11,color:"#E35336",fontWeight:600,borderTop:"1px solid #F2F0EF",paddingTop:8}}>Voir les détails →</div>
+                        <div style={{fontSize:11,color:"#ca631f",fontWeight:600,borderTop:"1px solid #F2F0EF",paddingTop:8}}>Voir les détails →</div>
                       </div>
                     );
                   })}

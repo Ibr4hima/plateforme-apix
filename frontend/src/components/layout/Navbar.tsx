@@ -129,7 +129,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
         <div style={{ height: 4, background: "linear-gradient(90deg,#B7410E,#e07a3a)", flexShrink: 0 }} />
         <div style={{ padding: "18px 28px", borderBottom: "1px solid #E8E5E3", display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
           <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(183,65,14,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <BookOpen size={18} style={{ color: "#B7410E" }} />
+            <BookOpen size={18} style={{ color: "#ca631f" }} />
           </div>
           <div style={{ flex: 1 }}>
             <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>{pdfInfo?.titre || "Code des investissements"}</h2>
@@ -165,11 +165,11 @@ function CodeModal({ onClose }: { onClose: () => void }) {
               <div key={c.id}>
                 {/* Chapitre */}
                 <button onClick={() => { setActiveChapId(c.id); setActiveSecId(null); setQ(""); }}
-                  style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 16px", background: activeChapId === c.id && !activeSecId ? "rgba(183,65,14,0.08)" : "transparent", border: "none", cursor: "pointer", borderLeft: `3px solid ${activeChapId === c.id && !activeSecId ? "#B7410E" : "transparent"}`, transition: "all 0.15s" }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: "#B7410E", background: "rgba(183,65,14,0.1)", padding: "2px 6px", borderRadius: 5, flexShrink: 0, marginTop: 1 }}>
+                  style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", background: activeChapId === c.id && !activeSecId ? "rgba(183,65,14,0.08)" : "transparent", border: "none", cursor: "pointer", borderLeft: `3px solid ${activeChapId === c.id && !activeSecId ? "#ca631f" : "transparent"}`, transition: "all 0.15s" }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: "#ca631f", background: "rgba(183,65,14,0.1)", padding: "2px 6px", borderRadius: 5, flexShrink: 0, marginTop: 1 }}>
                     {toRomanNum(c.numero)}
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#1a1a2e", lineHeight: 1.4, wordBreak: "break-word" as const }}>{c.titre}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#1a1a2e", lineHeight: 1.6, wordBreak: "break-word" as const }}>{c.titre}</span>
                 </button>
                 {/* Sections */}
                 {c.sections.map((s: any) => (
@@ -200,9 +200,9 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                     if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); }
                   }}
                   style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 10, padding: "14px 18px", marginBottom: 8, cursor: "pointer" }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor="#B7410E"}
+                  onMouseEnter={e => e.currentTarget.style.borderColor="#ca631f"}
                   onMouseLeave={e => e.currentTarget.style.borderColor="#E8E5E3"}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "#B7410E", marginBottom: 4 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#ca631f", marginBottom: 4 }}>
                       Article {numArt(r.numero)}{r.titre ? ` — ${r.titre}` : ""}
                     </div>
                     <div style={{ fontSize: 12, color: "#4a5568", lineHeight: 1.6 }}
@@ -216,7 +216,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                 {activeChap && (
                   <div style={{ marginBottom: 28 }}>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: "#B7410E", background: "rgba(183,65,14,0.1)", padding: "3px 10px", borderRadius: 6, letterSpacing: "0.08em" }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: "#ca631f", background: "rgba(183,65,14,0.1)", padding: "3px 10px", borderRadius: 6, letterSpacing: "0.08em" }}>
                         CHAPITRE {activeChap.num_display.toUpperCase()}
                       </span>
                     </div>
@@ -229,7 +229,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                         </p>
                       ) : null;
                     })()}
-                    <div style={{ width: 48, height: 3, background: "#B7410E", borderRadius: 2, marginTop: 12 }} />
+                    <div style={{ width: 48, height: 3, background: "#ca631f", borderRadius: 2, marginTop: 12 }} />
                   </div>
                 )}
 
@@ -270,9 +270,9 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                       style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, background:"rgba(183,65,14,0.06)", border:"1px solid rgba(183,65,14,0.15)", borderRadius:10, padding:"12px 18px", cursor:"pointer", width:"100%" }}>
                       <div style={{flex:1,textAlign:"left"}}>
                         <div style={{fontSize:11,color:"#9aa5b4",marginBottom:2}}>Chapitre suivant</div>
-                        <div style={{fontSize:13,fontWeight:700,color:"#B7410E"}}>Chapitre {next.num_display} — {next.titre}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:"#ca631f"}}>Chapitre {next.num_display} — {next.titre}</div>
                       </div>
-                      <ChevronRight size={16} style={{color:"#B7410E",flexShrink:0}} />
+                      <ChevronRight size={16} style={{color:"#ca631f",flexShrink:0}} />
                     </button>
                   ) : null;
                 })()}
