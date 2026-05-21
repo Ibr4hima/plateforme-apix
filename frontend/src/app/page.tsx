@@ -91,24 +91,51 @@ export default function HomePage() {
       <Navbar/>
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section style={{minHeight:"100vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 0px",position:"relative" as const,background:"transparent",overflow:"hidden"}}>
+      <section style={{minHeight:"100vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 0px",position:"relative" as const,background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",overflow:"hidden"}}>
 
         {/* Déco fond */}
-        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          {/* Grille subtile */}
-          <div style={{position:"absolute" as const,inset:0,opacity:0.03,backgroundImage:"linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)",backgroundSize:"80px 80px"}}/>
-          {/* Lueur bleue */}
-          <div style={{position:"absolute" as const,bottom:"-15%",left:"-5%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.06) 0%,transparent 60%)"}}/>
-          {/* Ligne accent */}
-          <div style={{position:"absolute" as const,top:0,left:60,right:60,height:1,background:"linear-gradient(90deg,transparent,rgba(202,99,31,0.4),transparent)"}}/>
-        </div>
+<div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
+
+  {/* Halo haut droite */}
+  <div style={{
+    position:"absolute" as const,
+    top:"-20%",
+    right:"-5%",
+    width:500,
+    height:500,
+    borderRadius:"50%",
+    background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"
+  }}/>
+
+  {/* Halo bas gauche */}
+  <div style={{
+    position:"absolute" as const,
+    bottom:"-20%",
+    left:"-5%",
+    width:400,
+    height:400,
+    borderRadius:"50%",
+    background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"
+  }}/>
+
+  {/* Grille subtile */}
+  <div style={{
+    position:"absolute" as const,
+    inset:0,
+    opacity:0.03,
+    backgroundImage:
+      "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)",
+    backgroundSize:"80px 80px"
+  }}/>
+
+</div>
 
         <div style={{maxWidth:1200,margin:"0 auto",width:"100%",position:"relative" as const,zIndex:1}}>
 
           {/* Tag institutionnel */}
           <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:28}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
-            <span style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.15em",textTransform:"uppercase"}}>APIX · Plateforme de Gestion des Investissements et des Investisseurs</span>
+            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>APIX · Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           {/* Titre */}
@@ -210,16 +237,15 @@ export default function HomePage() {
       </section>
 
       {/* ── TABLEAU DE BORD CTA ───────────────────────────────────────────────── */}
-      <section style={{background:"linear-gradient(135deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
+      <section style={{background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,top:"-20%",right:"-5%",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(202,99,31,0.2) 0%,transparent 65%)"}}/>
           <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
         </div>
         <div style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
           <div>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"5px 14px",marginBottom:24}}>
               <BarChart2 size={12} style={{color:"#ca631f"}}/>
-              <span style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
+              <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
             </div>
             <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.8rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>
               KPIs, visualisations<br/>et analyses en temps réel
