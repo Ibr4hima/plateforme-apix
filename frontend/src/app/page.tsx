@@ -1,14 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
+import {
+  Activity,
+  ArrowRight,
+  BarChart2,
+  Building2,
+  Calendar,
+  ChevronRight,
+  Globe,
+  Handshake,
+  Lock,
+  MapPin,
+  Shield,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight, TrendingUp, Building2, Globe, MapPin,
-  Handshake, Calendar, Target, BarChart2, ChevronRight,
-  Shield, Lock, Activity,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -37,13 +47,13 @@ function AnimatedCounter({ target, suffix="", decimals=0 }: { target:number; suf
 }
 
 const MODULES = [
-  { num:"01", icon:TrendingUp, label:"IDE",                href:"/ide",          color:"#E35336", desc:"Flux d'investissements directs entrants et sortants" },
+  { num:"01", icon:TrendingUp, label:"IDE",                href:"/ide",          color:"#ca631f", desc:"Flux d'investissements directs entrants et sortants" },
   { num:"02", icon:Target,     label:"Intentions",         href:"/intentions",   color:"#366FE3", desc:"Projets d'investissement déclarés à court et moyen terme" },
-  { num:"03", icon:Globe,      label:"Prospects",          href:"/prospects",    color:"#E35336", desc:"Portefeuille d'entreprises internationales ciblées" },
+  { num:"03", icon:Globe,      label:"Prospects",          href:"/prospects",    color:"#ca631f", desc:"Portefeuille d'entreprises internationales ciblées" },
   { num:"04", icon:Building2,  label:"Entreprises",        href:"/entreprises",  color:"#366FE3", desc:"Cartographie des entreprises formalisées installées" },
-  { num:"05", icon:MapPin,     label:"Zones",              href:"/zones",        color:"#E35336", desc:"ZES, ZAI, ZFI et pôles territoriaux d'investissement" },
+  { num:"05", icon:MapPin,     label:"Zones",              href:"/zones",        color:"#ca631f", desc:"ZES, ZAI, ZFI et pôles territoriaux d'investissement" },
   { num:"06", icon:ArrowRight, label:"Opportunités",       href:"/opportunites", color:"#366FE3", desc:"Potentialités sectorielles à promouvoir auprès des investisseurs" },
-  { num:"07", icon:Handshake,  label:"Accords & Traités",  href:"/accords",      color:"#E35336", desc:"Traités bilatéraux et accords de coopération économique" },
+  { num:"07", icon:Handshake,  label:"Accords & Traités",  href:"/accords",      color:"#ca631f", desc:"Traités bilatéraux et accords de coopération économique" },
   { num:"08", icon:Calendar,   label:"Événements",         href:"/evenements",   color:"#366FE3", desc:"Forums, salons, missions de prospection et rencontres B2B" },
 ];
 
@@ -66,7 +76,7 @@ export default function HomePage() {
   },[]);
 
   return (
-    <main style={{minHeight:"100vh",background:"#0e0e1a",overflowX:"hidden",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{minHeight:"100vh",background:"linear-gradient(135deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)",overflowX:"hidden",fontFamily:"var(--font-google-sans)"}}>
       <style>{`
         @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:0.8}}
@@ -75,92 +85,69 @@ export default function HomePage() {
         .hero-p{animation:fadeUp 0.7s 0.2s ease both}
         .hero-cta{animation:fadeUp 0.7s 0.3s ease both}
         .hero-stats{animation:fadeUp 0.7s 0.45s ease both}
-        .mod-card:hover .mod-num{color:#E35336!important}
+        .mod-card:hover .mod-num{color:#ca631f!important}
       `}</style>
 
       <Navbar/>
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section style={{minHeight:"100vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 80px",position:"relative" as const,background:"#0e0e1a",overflow:"hidden"}}>
+      <section style={{minHeight:"100vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 0px",position:"relative" as const,background:"transparent",overflow:"hidden"}}>
 
         {/* Déco fond */}
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
           {/* Grille subtile */}
           <div style={{position:"absolute" as const,inset:0,opacity:0.03,backgroundImage:"linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)",backgroundSize:"80px 80px"}}/>
-          {/* Lueur orange */}
-          <div style={{position:"absolute" as const,top:"-10%",right:"-5%",width:700,height:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(227,83,54,0.18) 0%,transparent 60%)"}}/>
           {/* Lueur bleue */}
-          <div style={{position:"absolute" as const,bottom:"-15%",left:"-5%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(54,111,227,0.15) 0%,transparent 60%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-15%",left:"-5%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.06) 0%,transparent 60%)"}}/>
           {/* Ligne accent */}
-          <div style={{position:"absolute" as const,top:0,left:60,right:60,height:1,background:"linear-gradient(90deg,transparent,rgba(227,83,54,0.4),transparent)"}}/>
+          <div style={{position:"absolute" as const,top:0,left:60,right:60,height:1,background:"linear-gradient(90deg,transparent,rgba(202,99,31,0.4),transparent)"}}/>
         </div>
 
         <div style={{maxWidth:1200,margin:"0 auto",width:"100%",position:"relative" as const,zIndex:1}}>
 
           {/* Tag institutionnel */}
-          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(227,83,54,0.1)",border:"1px solid rgba(227,83,54,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:28}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:"#E35336",animation:"pulse 2s infinite"}}/>
-            <span style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.15em",textTransform:"uppercase"}}>APIX · Plateforme de Promotion des Investissements et des Investisseurs</span>
+          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:28}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.15em",textTransform:"uppercase"}}>APIX · Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           {/* Titre */}
           <h1 className="hero-h1" style={{fontWeight:800,fontSize:"clamp(2.8rem,5.5vw,5rem)",lineHeight:1.05,letterSpacing:"-0.025em",color:"#fff",marginBottom:24,maxWidth:800}}>
             Intelligence<br/>
-            <span style={{background:"linear-gradient(135deg,#E35336,#FFB0A1)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
+            <span style={{background:"linear-gradient(135deg,#ca631f,#FFB0A1)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
             <br/>Sénégal
           </h1>
 
           <p className="hero-p" style={{color:"rgba(255,255,255,0.55)",fontSize:"1.1rem",maxWidth:520,lineHeight:1.75,marginBottom:40}}>
-            Plateforme souveraine de suivi, d'analyse et de promotion de l'investissement au Sénégal. Données consolidées, en temps réel, à destination des décideurs.
+            Plateforme de suivi, d'analyse et de gestion des investissements au Sénégal.
           </p>
 
           {/* CTAs */}
           <div className="hero-cta" style={{display:"flex",flexWrap:"wrap" as const,gap:12,marginBottom:72}}>
-            <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#E35336,#c42d1a)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(227,83,54,0.4)",letterSpacing:"0.01em",transition:"all 0.2s"}}
-              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 32px rgba(227,83,54,0.5)";}}
-              onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(227,83,54,0.4)";}}>
+            <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#ca631f)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.4)",letterSpacing:"0.01em",transition:"all 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 32px rgba(202,99,31,0.5)";}}
+              onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(202,99,31,0.4)";}}>
               <BarChart2 size={16}/> Tableau de bord <ArrowRight size={15}/>
             </Link>
-            <Link href="/entreprises" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(12px)",color:"rgba(255,255,255,0.85)",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.12)",transition:"all 0.2s"}}
+            <Link href="/ide" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(12px)",color:"rgba(255,255,255,0.85)",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.12)",transition:"all 0.2s"}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.1)";e.currentTarget.style.borderColor="rgba(255,255,255,0.2)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
-              Explorer les modules <ChevronRight size={15}/>
+              Investissements Directs Étrangers <ChevronRight size={15}/>
             </Link>
           </div>
 
-          {/* Stats live */}
-          <div className="hero-stats" style={{display:"flex",gap:0,borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:32}}>
-            {[
-              {label:"Entreprises installées", val:stats.entreprises, suffix:""},
-              {label:"Accords en vigueur",     val:stats.accords,    suffix:""},
-              {label:"Événements répertoriés", val:stats.evenements,  suffix:""},
-              {label:"Modules de données",     val:8,                suffix:""},
-            ].map((s,i)=>(
-              <div key={i} style={{flex:1,paddingRight:32,borderRight:i<3?"1px solid rgba(255,255,255,0.07)":"none",paddingLeft:i>0?32:0}}>
-                <div style={{fontWeight:800,fontSize:"2rem",color:"#fff",lineHeight:1,marginBottom:6}}>
-                  <AnimatedCounter target={s.val} suffix={s.suffix}/>
-                </div>
-                <div style={{fontSize:12,color:"rgba(255,255,255,0.35)",fontWeight:500}}>{s.label}</div>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Scroll hint */}
-        <div style={{position:"absolute" as const,bottom:40,left:"50%",transform:"translateX(-50%)",display:"flex",flexDirection:"column" as const,alignItems:"center",gap:6,opacity:0.2}}>
-          <div style={{width:1,height:48,background:"linear-gradient(to bottom,#E35336,transparent)"}}/>
-          <span style={{fontSize:9,letterSpacing:"0.2em",textTransform:"uppercase" as const,color:"#fff"}}>Défiler</span>
-        </div>
-      </section>
+        </section>
 
       {/* ── BANDE ACCÈS RAPIDE ────────────────────────────────────────────────── */}
-      <section style={{background:"#E35336",padding:"0"}}>
+      <section style={{background:"linear-gradient(135deg,#ca631f,#ca631f)",padding:"0"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"stretch"}}>
           {[
             {icon:BarChart2, label:"Tableau de bord",     href:"/tableau-de-bord", sub:"KPIs & Analyses"},
             {icon:Building2, label:"Entreprises",          href:"/entreprises",     sub:"Registre complet"},
             {icon:Handshake, label:"Accords & Traités",    href:"/accords",         sub:"Coopération"},
-            {icon:Calendar,  label:"Événements",           href:"/evenements",      sub:"Agenda IDE"},
+            {icon:Calendar,  label:"Événements",           href:"/evenements",      sub:"Agenda complet"},
           ].map((item,i)=>{
             const Icon=item.icon;
             return (
@@ -186,7 +173,7 @@ export default function HomePage() {
         <div style={{maxWidth:1200,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48,flexWrap:"wrap" as const,gap:20}}>
             <div>
-              <p style={{fontSize:11,fontWeight:700,color:"#E35336",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:10}}>Architecture de la plateforme</p>
+              <p style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:10}}>Architecture de la plateforme</p>
               <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.6rem)",color:"#1a1a2e",lineHeight:1.1}}>
                 8 modules de données<br/>interconnectés
               </h2>
@@ -223,15 +210,15 @@ export default function HomePage() {
       </section>
 
       {/* ── TABLEAU DE BORD CTA ───────────────────────────────────────────────── */}
-      <section style={{background:"#1a1a2e",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
+      <section style={{background:"linear-gradient(135deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,top:"-20%",right:"-5%",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(227,83,54,0.12) 0%,transparent 65%)"}}/>
-          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(54,111,227,0.1) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,top:"-20%",right:"-5%",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(202,99,31,0.2) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
         </div>
         <div style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
           <div>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(227,83,54,0.1)",border:"1px solid rgba(227,83,54,0.2)",borderRadius:999,padding:"5px 14px",marginBottom:24}}>
-              <BarChart2 size={12} style={{color:"#E35336"}}/>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"5px 14px",marginBottom:24}}>
+              <BarChart2 size={12} style={{color:"#ca631f"}}/>
               <span style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
             </div>
             <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.8rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>
@@ -241,9 +228,9 @@ export default function HomePage() {
               Vue consolidée de l'activité d'investissement au Sénégal. Indicateurs clés, tendances sectorielles, flux d'IDE, répartition géographique et analyses comparatives.
             </p>
             <div style={{display:"flex",gap:10}}>
-              <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#E35336,#c42d1a)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(227,83,54,0.35)",transition:"all 0.2s"}}
-                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 28px rgba(227,83,54,0.45)";}}
-                onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(227,83,54,0.35)";}}>
+              <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#ca631f)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.35)",transition:"all 0.2s"}}
+                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 28px rgba(202,99,31,0.45)";}}
+                onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(202,99,31,0.35)";}}>
                 Ouvrir le tableau de bord <ArrowRight size={15}/>
               </Link>
             </div>
@@ -251,7 +238,7 @@ export default function HomePage() {
           {/* Aperçu KPIs */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             {[
-              {label:"Entreprises installées",    val:stats.entreprises, color:"#E35336", icon:Building2},
+              {label:"Entreprises installées",    val:stats.entreprises, color:"#ca631f", icon:Building2},
               {label:"Accords actifs",             val:stats.accords,    color:"#366FE3", icon:Handshake},
               {label:"Événements enregistrés",    val:stats.evenements,  color:"#188038", icon:Calendar},
               {label:"Modules de données",         val:8,                color:"#FFB0A1", icon:Activity},
@@ -293,7 +280,7 @@ export default function HomePage() {
               const Icon=item.icon;
               return (
                 <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:"rgba(255,255,255,0.7)",border:"1px solid #C5BFBB",borderRadius:999}}>
-                  <Icon size={13} style={{color:"#E35336"}}/>
+                  <Icon size={13} style={{color:"#ca631f"}}/>
                   <span style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>{item.label}</span>
                 </div>
               );

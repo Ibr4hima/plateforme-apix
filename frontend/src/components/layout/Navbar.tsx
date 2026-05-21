@@ -335,16 +335,16 @@ export default function Navbar() {
             <div style={{ position: "relative" }}
               onMouseEnter={() => setModulesOpen(true)}
               onMouseLeave={() => setModulesOpen(false)}>
-              <button style={{ display: "flex", alignItems: "center", gap: 5, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-body)", transition: "color 0.2s" }}
+              <button style={{ display: "flex", alignItems: "center", gap: 5, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-body)", transition: "color 0.2s", paddingBottom: modulesOpen ? 16 : 0 }}
                 onMouseEnter={e => (e.currentTarget.style.color = textHover)}
                 onMouseLeave={e => (e.currentTarget.style.color = textColor)}>
                 Modules
                 <ChevronDown size={13} style={{ transition: "transform 0.2s", transform: modulesOpen ? "rotate(180deg)" : "rotate(0)" }} />
               </button>
               {modulesOpen && (
-                <div style={{ position: "absolute", top: "calc(100% + 14px)", left: "50%", transform: "translateX(-50%)", width: 520, background: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid #E8E5E3", borderRadius: 16, padding: 12, boxShadow: "0 20px 56px rgba(0,0,0,0.12)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+                <div style={{ position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)", width: 520, background: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid #E8E5E3", borderRadius: 16, padding: "12px 12px 12px", paddingTop: 12, boxShadow: "0 20px 56px rgba(0,0,0,0.12)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
                   <div style={{ gridColumn: "1/-1", padding: "8px 10px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", letterSpacing: "0.12em", textTransform: "uppercase" }}>Modules de données</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>Modules de données</span>
                   </div>
                   {modules.map(m => (
                     <Link key={m.href} href={m.href} style={{ display: "flex", flexDirection: "column" as const, padding: "10px 12px", borderRadius: 10, textDecoration: "none", transition: "background 0.15s" }}
@@ -376,7 +376,7 @@ export default function Navbar() {
 
           {/* Connexion uniquement */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Link href="/login" style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #ca631f, #a84e18)", padding: "9px 18px", borderRadius: 10, textDecoration: "none", boxShadow: "0 3px 12px rgba(202,99,31,0.3)", transition: "all 0.2s", letterSpacing: "0.01em" }}
+            <Link href="/login" style={{ fontSize: 13, fontWeight: 700, color: "#fff", background:"linear-gradient(135deg,#ca631f,#ca631f)", padding: "9px 18px", borderRadius: 10, textDecoration: "none", boxShadow: "0 3px 12px rgba(202,99,31,0.3)", transition: "all 0.2s", letterSpacing: "0.01em" }}
               onMouseEnter={e => { e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 6px 18px rgba(202,99,31,0.4)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform="";    e.currentTarget.style.boxShadow="0 3px 12px rgba(202,99,31,0.3)"; }}>
               Connexion
