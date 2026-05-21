@@ -318,8 +318,8 @@ export default function HomePage() {
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
       <footer style={{borderTop:"1px solid #C5BFBB",padding:"24px 60px",background:"#E8E5E3"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:12}}>
-          <p style={{color:"#9aa5b4",fontSize:12}}>© {new Date().getFullYear()} APIX Sénégal — DIPE. Tous droits réservés.</p>
-          <p style={{color:"#C5BFBB",fontSize:12}}>Plateforme à usage institutionnel</p>
+          <p style={{color:"#9aa5b4",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
+          <p style={{color:"#9aa5b4",fontSize:12}}>Plateforme à usage institutionnel</p>
         </div>
       </footer>
     </main>

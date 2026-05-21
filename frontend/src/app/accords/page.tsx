@@ -352,7 +352,6 @@ export default function AccordsPage() {
     }}
   >
     <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
             <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
@@ -498,8 +497,8 @@ export default function AccordsPage() {
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
                   {accords.map(a=>(
                     <div key={a.id} onClick={()=>setSelec(a)}
-                      style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:"3px solid #366FE3",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-                      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(54,111,227,0.12)";ev.currentTarget.style.borderTopColor="#FFB0A1";ev.currentTarget.style.borderRightColor="#FFB0A1";ev.currentTarget.style.borderBottomColor="#FFB0A1";}}
+                      style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
+                      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(54,111,227,0.12)";ev.currentTarget.style.borderTopColor="#E35336";ev.currentTarget.style.borderRightColor="#E35336";ev.currentTarget.style.borderBottomColor="#E35336";}}
                       onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
                       {/* Titre */}
                       <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?2:8}}>{a.titre}</div>
@@ -519,7 +518,7 @@ export default function AccordsPage() {
                           background:a.statut==="en_vigueur"?"rgba(21,128,61,0.08)":"#f3f4f6"}}>
                           {a.statut==="en_vigueur"?"En vigueur":"Expiré"}
                         </span>
-                        <span style={{fontSize:11,color:"#366FE3",fontWeight:600}}>Voir les détails →</span>
+                        <span style={{fontSize:11,color:"#ca631f",fontWeight:600}}>Voir les détails →</span>
                       </div>
                     </div>
                   ))}
