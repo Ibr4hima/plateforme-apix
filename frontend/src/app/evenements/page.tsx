@@ -1,410 +1,461 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
-import EvenementCard from "@/components/evenements/EvenementCard";
-import EvenementModal from "@/components/evenements/EvenementModal";
-import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
-import { api } from "@/lib/api";
-import { CalendarDays, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
+import { CalendarDays, Loader2, X, ChevronDown, ChevronUp, SlidersHorizontal, Search } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-// ── Drapeau depuis code ISO2 ──────────────────────────────────────────────────
+const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const ROLES_APIX: Record<string,string> = { organisateur:"Organisateur", co_organisateur:"Co-organisateur", participant:"Participant", partenaire:"Partenaire", sponsor:"Sponsor" };
+
 function flag(code: string) {
   try { return String.fromCodePoint(...code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
-  catch { return "🌍"; }
+  catch { return ""; }
 }
+function fmtDate(d: string) {
+  if (!d) return "";
+  const [y,m,j] = d.split("-").map(Number);
+  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
+}
+function ordinal(n: number) { return n === 1 ? "1ère édition" : `${n}ème édition`; }
 
-// ── Dropdown multi-sélection générique ───────────────────────────────────────
-function MultiDropdownFilter({
-  label, placeholder, selected, onToggle, color, items,
-}: {
-  label:       string;
-  placeholder: string;
-  selected:    string[];
-  onToggle:    (val: string) => void;
-  color:       string;
-  items:       { value: string; label: string; flag?: string }[];
+const STATUT_OPTS = [
+  { value:"",         label:"Tous",     bg:"#F2F0EF", text:"#4a5568" },
+  { value:"a_venir",  label:"À venir",  bg:"#dbeafe", text:"#1d4ed8" },
+  { value:"en_cours", label:"En cours", bg:"#dcfce7", text:"#15803d" },
+  { value:"termine",  label:"Terminés", bg:"#f3f4f6", text:"#6b7280" },
+];
+
+// ── Filtre multi-select sidebar ───────────────────────────────────────────────
+function SideFilter({ label, items, selected, onToggle, color }: {
+  label:string; items:{value:string;label:string;flag?:string}[];
+  selected:string[]; onToggle:(v:string)=>void; color:string;
 }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, []);
-
-  const base = {
-    background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8,
-    padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none",
-    fontFamily: "var(--font-google-sans)", width: "100%", boxSizing: "border-box" as const,
-  };
-
-  const selectedLabels = items.filter(i => selected.includes(i.value));
-
+  const [open, setOpen] = useState(true);
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, minWidth: 160 }}>
-      {/* Label */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: "50%", background: selected.length > 0 ? color : "#C5BFBB", flexShrink: 0 }} />
-        <span style={{ fontSize: 11, fontWeight: 700, color: selected.length > 0 ? color : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
-          {label}
-        </span>
-        {selected.length > 0 && (
-          <span style={{ fontSize: 10, fontWeight: 700, color, background: color + "15", padding: "1px 6px", borderRadius: 999 }}>
-            {selected.length}
-          </span>
-        )}
-      </div>
-
-      <div ref={ref} style={{ position: "relative" }}>
-        {/* Trigger */}
-        <div
-          onClick={() => setOpen(o => !o)}
-          style={{
-            ...base, display: "flex", alignItems: "center",
-            justifyContent: "space-between", cursor: "pointer",
-            border: `1px solid ${open ? color : "#C5BFBB"}`,
-            transition: "border-color 0.2s",
-          }}
-        >
-          <span style={{ color: selected.length > 0 ? color : "#9aa5b4", fontWeight: selected.length > 0 ? 600 : 400 }}>
-            {selected.length > 0 ? `${selected.length} sélectionné${selected.length > 1 ? "s" : ""}` : placeholder}
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            {selected.length > 0 && (
-              <button
-                onClick={e => { e.stopPropagation(); selected.slice().forEach(v => onToggle(v)); }}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
-              >
-                <X size={12} style={{ color: "#9aa5b4" }} />
-              </button>
-            )}
-            {open ? <ChevronUp size={14} style={{ color, flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: "#9aa5b4", flexShrink: 0 }} />}
-          </div>
+    <div style={{marginBottom:20}}>
+      <button onClick={()=>setOpen(o=>!o)}
+        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {selected.length>0&&<span style={{width:6,height:6,borderRadius:"50%",background:color,display:"inline-block"}}/>}
+          <span style={{fontSize:11,fontWeight:700,color:selected.length>0?color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
+          {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"18",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
         </div>
-
-        {/* Dropdown */}
-        {open && (
-          <div style={{
-            position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 300,
-            background: "#fff", border: `1px solid ${color}40`, borderRadius: 10,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.12)", maxHeight: 260, overflowY: "auto",
-          }}>
-            {items.map(item => {
-              const isSel = selected.includes(item.value);
-              return (
-                <div
-                  key={item.value}
-                  onMouseDown={e => { e.preventDefault(); onToggle(item.value); }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    padding: "9px 12px", cursor: "pointer",
-                    background: isSel ? color + "0d" : "transparent",
-                    borderBottom: "1px solid #F8F7F6", transition: "background 0.1s",
-                  }}
-                  onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "#F8F7F6"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = isSel ? color + "0d" : "transparent"; }}
-                >
-                  <div style={{
-                    width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                    border: `2px solid ${isSel ? color : "#C5BFBB"}`,
-                    background: isSel ? color : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    transition: "all 0.12s",
-                  }}>
-                    {isSel && (
-                      <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                        <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </div>
-                  {item.flag && <span style={{ fontSize: 16 }}>{item.flag}</span>}
-                  <span style={{ fontSize: 13, color: isSel ? "#1a1a2e" : "#4a5568", fontWeight: isSel ? 600 : 400 }}>
-                    {item.label}
-                  </span>
+        {open?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+      </button>
+      {open&&(
+        <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+          {items.map(item=>{
+            const sel=selected.includes(item.value);
+            return (
+              <button key={item.value} onClick={()=>onToggle(item.value)}
+                style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?color+"12":"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                onMouseLeave={e=>{e.currentTarget.style.background=sel?color+"12":"transparent";}}>
+                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Tags des sélections */}
-      {selectedLabels.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {selectedLabels.map(item => (
-            <span key={item.value} style={{
-              display: "inline-flex", alignItems: "center", gap: 4,
-              background: color + "15", color, border: `1px solid ${color}30`,
-              borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 600,
-            }}>
-              {item.flag && <span>{item.flag}</span>}
-              {item.label}
-              <button
-                onClick={() => onToggle(item.value)}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
-              >
-                <X size={10} style={{ color }} />
+                {item.flag&&<span style={{fontSize:13}}>{item.flag}</span>}
+                <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{item.label}</span>
               </button>
-            </span>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
 
-const STATUT_BADGES = [
-  { value: "",         label: "Tous",      bg: "#E8E5E3", text: "#4a5568"  },
-  { value: "en_cours", label: "En cours",  bg: "#dcfce7", text: "#15803d"  },
-  { value: "a_venir",  label: "À venir",   bg: "#dbeafe", text: "#1d4ed8"  },
-  { value: "termine",  label: "Terminés",  bg: "#f3f4f6", text: "#6b7280"  },
-];
-
-const TYPES = [
-  { value: "",                    label: "Tous les types"       },
-  { value: "salon",               label: "Salon"                },
-  { value: "forum",               label: "Forum"                },
-  { value: "conference",          label: "Conférence"           },
-  { value: "mission_prospection", label: "Mission"              },
-  { value: "roadshow",            label: "Roadshow"             },
-  { value: "b2b",                 label: "B2B"                  },
-  { value: "webinaire",           label: "Webinaire"            },
-  { value: "autre",               label: "Autre"                },
-];
-
-export default function EvenementsPage() {
-  const [evenements,   setEvenements]   = useState<any[]>([]);
-  const [stats,        setStats]        = useState<{ a_venir: number; en_cours: number; total: number }>({ a_venir: 0, en_cours: 0, total: 0 });
-  const [loading,      setLoading]      = useState(true);
-  const [eventSelec,   setEventSelec]   = useState<any>(null);
-  const [paysHotes,    setPaysHotes]    = useState<{ nom: string; code_iso2: string }[]>([]);
-  const [nomsSecteursRef, setNomsSecteursRef] = useState<string[]>([]);
-
-  // Filtres
-  const [statutFiltre, setStatutFiltre] = useState("");
-  const [typeFiltres,  setTypeFiltres]  = useState<string[]>([]);
-  const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
-  const [thematiques,  setThematiques]  = useState("");
-
-  useEffect(() => {
-    // Charger les pays hôtes distincts + la ref pays pour avoir les codes ISO2
-    Promise.all([
-      fetch(`${API_BASE}/evenements/pays-hotes`).then(r => r.json()),
-      fetch(`${API_BASE}/entreprises/ref/pays`).then(r => r.json()),
-    ]).then(([hotes, refPays]: [string[], any[]]) => {
-      const enrichis = hotes.map((nom: string) => {
-        const ref = refPays.find((p: any) => p.nom_fr === nom);
-        return { nom, code_iso2: ref?.code_iso2 || "" };
-      });
-      setPaysHotes(enrichis);
-    }).catch(() => {});
-    fetch(`${API_BASE}/evenements/stats`)
-      .then(r => r.json()).then(setStats).catch(() => {});
-    fetch(`${API_BASE}/entreprises/ref/secteurs`)
-      .then(r => r.json()).then((data: any[]) => setNomsSecteursRef(data.map(s => s.nom))).catch(() => {});
-  }, []);
-
-  const charger = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (statutFiltre) params.append("statut_calcule", statutFiltre);
-      typeFiltres.forEach(t => params.append("type_evenement", t));
-      paysFiltres.forEach(p => params.append("pays_nom", p));
-
-      // Thématiques — séparer par groupe pour OR intra / ET inter
-      if (thematiques) {
-        const items = thematiques.split(",").map((t: string) => t.trim()).filter(Boolean);
-        items.filter(t => t.startsWith("sec:")).map(t => t.slice(4))
-          .forEach(t => params.append("secteur", t));
-        items.filter(t => t.startsWith("bra:")).map(t => t.slice(4))
-          .forEach(t => params.append("branche", t));
-        items.filter(t => t.startsWith("act:")).map(t => t.slice(4))
-          .forEach(t => params.append("activite", t));
-      }
-      params.append("per_page", "100");
-
-      const liste = await api.evenements.liste(params.toString());
-      setEvenements(liste.data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [typeFiltres, statutFiltre, paysFiltres, thematiques]);
-
-  useEffect(() => { charger(); }, [charger]);
-
-  const hasFilter = typeFiltres.length > 0 || statutFiltre || paysFiltres.length > 0 || thematiques;
-
-  const reinitialiser = () => {
-    setTypeFiltres([]); setStatutFiltre(""); setPaysFiltres([]); setThematiques("");
-  };
-
-  const toggleType = (val: string) =>
-    setTypeFiltres(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
-
-  const togglePays = (val: string) =>
-    setPaysFiltres(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
-
-  const inputStyle = {
-    background: "#F2F0EF", border: "1px solid #C5BFBB",
-    borderRadius: 10, padding: "9px 12px", fontSize: 13,
-    color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)",
-  };
+// ── Filtre thématiques en cascade ────────────────────────────────────────────
+function ThematiquesCascadeFilter({ secteurs, secteurSel, branchesSel, activitesSel, onSecteur, onBranche, onActivite }: {
+  secteurs: any[];
+  secteurSel: string; branchesSel: string[]; activitesSel: string[];
+  onSecteur:(v:string)=>void; onBranche:(v:string)=>void; onActivite:(v:string)=>void;
+}) {
+  const [open, setOpen] = useState(true);
+  const secteurObj = secteurs.find(s=>s.nom===secteurSel);
+  const branches = secteurObj?.branches || [];
+  const activites = branches.filter((b:any)=>branchesSel.includes(b.nom)).flatMap((b:any)=>b.activites||[]);
+  const hasFilter = !!secteurSel || branchesSel.length>0 || activitesSel.length>0;
 
   return (
-    <main style={{ minHeight: "100vh", background: "#F2F0EF" }}>
-      <Navbar />
-
-      {/* Hero */}
-      <section style={{
-        padding: "100px 24px 48px",
-        background: "linear-gradient(180deg, #E8E5E3 0%, #F2F0EF 100%)",
-        borderBottom: "1px solid #C5BFBB",
-      }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#ca631f", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 10 }}>
-            Module 8
-          </p>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <h1 style={{
-              fontFamily: "var(--font-google-sans)", fontWeight: 800,
-              fontSize: "clamp(2rem, 4vw, 3rem)", color: "#1a1a2e",
-              lineHeight: 1.1,
-            }}>
-              Événements
-            </h1>
-            {stats.total > 0 && (
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                {stats.en_cours > 0 && (
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#15803d", background: "#dcfce7", padding: "4px 12px", borderRadius: 999, border: "1px solid #bbf7d0" }}>
-                    {stats.en_cours} en cours
-                  </span>
-                )}
-                {stats.a_venir > 0 && (
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#1d4ed8", background: "#dbeafe", padding: "4px 12px", borderRadius: 999, border: "1px solid #bfdbfe" }}>
-                    {stats.a_venir} à venir
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <p style={{ color: "#4a5568", fontSize: 15, maxWidth: 520, lineHeight: 1.7, marginTop: 12 }}>
-            Forums, salons, missions de prospection et rencontres B2B — agenda mondial de la promotion des investissements.
-          </p>
+    <div>
+      <button onClick={()=>setOpen(o=>!o)}
+        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {hasFilter&&<span style={{width:6,height:6,borderRadius:"50%",background:"#E35336",display:"inline-block"}}/>}
+          <span style={{fontSize:11,fontWeight:700,color:hasFilter?"#E35336":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
         </div>
-      </section>
-
-      {/* Contenu */}
-      <section style={{ padding: "40px 24px 80px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-
-          {/* Filtres */}
-          <div style={{
-            background: "rgba(255,255,255,0.8)", backdropFilter: "blur(12px)",
-            border: "1px solid #C5BFBB", borderRadius: 16,
-            padding: "20px", marginBottom: 28,
-          }}>
-            {/* Grille filtres — 3 colonnes alignées */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, alignItems: "start", marginBottom: 16 }}>
-
-              {/* Colonne 1 : Statut */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: statutFiltre ? "#4a5568" : "#C5BFBB" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: statutFiltre ? "#4a5568" : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Statut</span>
-                </div>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {STATUT_BADGES.map(b => (
-                    <button
-                      key={b.value}
-                      onClick={() => setStatutFiltre(b.value)}
-                      style={{
-                        padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700,
-                        border: `1px solid ${statutFiltre === b.value ? b.text : "transparent"}`,
-                        background: statutFiltre === b.value ? b.bg : "rgba(255,255,255,0.5)",
-                        color: statutFiltre === b.value ? b.text : "#9aa5b4",
-                        cursor: "pointer", transition: "all 0.15s",
-                      }}
-                    >
-                      {b.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Colonne 2 : Type */}
-              <MultiDropdownFilter
-                label="Type d'événement"
-                placeholder="Sélectionner"
-                selected={typeFiltres}
-                onToggle={toggleType}
-                color="#004f91"
-                items={TYPES.filter(t => t.value !== "").map(t => ({ value: t.value, label: t.label }))}
-              />
-
-              {/* Colonne 3 : Pays hôte */}
-              <MultiDropdownFilter
-                label="Pays hôte"
-                placeholder="Sélectionner"
-                selected={paysFiltres}
-                onToggle={togglePays}
-                color="#ca631f"
-                items={paysHotes.map(p => ({
-                  value: p.nom,
-                  label: p.nom,
-                  flag: p.code_iso2 ? flag(p.code_iso2) : undefined,
-                }))}
-              />
+        {open?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+      </button>
+      {open&&(
+        <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+          {/* Secteur */}
+          <div>
+            <p style={{fontSize:10,fontWeight:700,color:"#E35336",marginBottom:4}}>Secteur</p>
+            <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+              {secteurs.map((s:any)=>{
+                const sel=secteurSel===s.nom;
+                return (
+                  <button key={s.nom} onClick={()=>onSecteur(sel?"":s.nom)}
+                    style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(227,83,54,0.1)":"transparent",textAlign:"left" as const}}
+                    onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                    onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(227,83,54,0.1)":"transparent";}}>
+                    <div style={{width:7,height:7,borderRadius:"50%",background:sel?"#E35336":"#C5BFBB",flexShrink:0}}/>
+                    <span style={{fontSize:12,color:sel?"#E35336":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
+                  </button>
+                );
+              })}
             </div>
-
-            {/* Bouton effacer */}
-            {hasFilter && (
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-                <button onClick={reinitialiser} style={{ display: "flex", alignItems: "center", gap: 4, background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                  <X size={12} /> Effacer tout
-                </button>
-              </div>
-            )}
-
-            {/* Ligne 5 : Thématiques cascade horizontale */}
-            <ThematiquesNaema
-              value={thematiques}
-              onChange={val => setThematiques(val)}
-            />
           </div>
-
-          {/* Grille */}
-          {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 300, gap: 12, color: "#9aa5b4" }}>
-              <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} />
-              <span style={{ fontSize: 14 }}>Chargement des événements...</span>
-              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-            </div>
-          ) : evenements.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
-              <CalendarDays size={48} style={{ marginBottom: 16, opacity: 0.4 }} />
-              <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun événement trouvé</p>
-              <p style={{ fontSize: 14, marginTop: 6 }}>Modifiez vos filtres pour affiner la recherche.</p>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
-              {evenements.map(e => (
-                <EvenementCard key={e.id} event={e} onClick={() => setEventSelec(e)} nomsSecteursRef={nomsSecteursRef} />
-              ))}
+          {/* Branches */}
+          {secteurSel&&branches.length>0&&(
+            <div style={{paddingLeft:12,borderLeft:"2px solid rgba(227,83,54,0.15)"}}>
+              <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4}}>Branche</p>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+                {branches.map((b:any)=>{
+                  const sel=branchesSel.includes(b.nom);
+                  return (
+                    <button key={b.nom} onClick={()=>onBranche(b.nom)}
+                      style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(54,111,227,0.1)":"transparent",textAlign:"left" as const}}
+                      onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                      onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(54,111,227,0.1)":"transparent";}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:sel?"#366FE3":"#C5BFBB",flexShrink:0}}/>
+                      <span style={{fontSize:12,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
+          {/* Activités */}
+          {branchesSel.length>0&&activites.length>0&&(
+            <div style={{paddingLeft:24,borderLeft:"2px solid rgba(24,128,56,0.15)"}}>
+              <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4}}>Activité</p>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+                {activites.map((a:any)=>{
+                  const sel=activitesSel.includes(a.nom);
+                  return (
+                    <button key={a.nom} onClick={()=>onActivite(a.nom)}
+                      style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(24,128,56,0.08)":"transparent",textAlign:"left" as const}}
+                      onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                      onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(24,128,56,0.08)":"transparent";}}>
+                      <div style={{width:5,height:5,borderRadius:"50%",background:sel?"#188038":"#C5BFBB",flexShrink:0}}/>
+                      <span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {hasFilter&&(
+            <button onClick={()=>{onSecteur("");branchesSel.slice().forEach(onBranche);activitesSel.slice().forEach(onActivite);}}
+              style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0",marginTop:2}}>
+              <X size={10}/> Effacer thématiques
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Modal vue événement ───────────────────────────────────────────────────────
+function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
+  if (!e) return null;
+  const dateStr = e.date_debut
+    ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
+    : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
+  const LBL = ({children}:{children:string}) => (
+    <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
+  );
+  return (
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div onClick={ev=>ev.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.25)",overflow:"hidden"}}>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
+        <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+            <div style={{flex:1,paddingRight:16}}>
+              <h2 style={{fontWeight:800,fontSize:"1.2rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{e.nom_event}</h2>
+              <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
+                {e.edition!=null&&<span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>{ordinal(e.edition)}</span>}
+                {e.role_apix&&<span style={{fontSize:11,fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{ROLES_APIX[e.role_apix]||e.role_apix}</span>}
+              </div>
+            </div>
+            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
+          </div>
+          {e.description&&<div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{e.description}</p></div>}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+            {dateStr&&<div style={{background:"rgba(227,83,54,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{dateStr}</p>{e.duree_jours&&<p style={{fontSize:11,color:"#9aa5b4",marginTop:3}}>{e.duree_jours} jour{e.duree_jours>1?"s":""}</p>}</div>}
+            {(e.ville||e.pays_hote_nom)&&<div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Lieu</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{[e.ville,e.pays_hote_nom].filter(Boolean).join(", ")}</p></div>}
+            {e.organisateur&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Organisateur</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{e.organisateur}</p></div>}
+            {e.est_recurrent&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Récurrence</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>Tous les {e.frequence_valeur} {e.frequence_type==="mois"?"mois":`an${e.frequence_valeur>1?"s":""}`}</p></div>}
+          </div>
+          {e.thematiques_tree&&Object.keys(e.thematiques_tree).length>0&&(
+            <div style={{marginBottom:16}}>
+              <LBL>Thématiques</LBL>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                {Object.entries(e.thematiques_tree).map(([sec,branches]:any)=>(
+                  <div key={sec}>
+                    <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:Object.keys(branches).length?5:0}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
+                      <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec}</span>
+                    </div>
+                    {Object.entries(branches).map(([bra,acts]:any)=>(
+                      <div key={bra} style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)"}}>
+                        <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:acts.length?4:0}}>
+                          <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                          <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra}</span>
+                        </div>
+                        {acts.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>{acts.map((act:string)=>(
+                          <div key={act} style={{display:"flex",alignItems:"center",gap:6}}>
+                            <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                            <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act}</span>
+                          </div>
+                        ))}</div>}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {e.pays_invites_noms&&<div style={{marginBottom:14}}><LBL>Pays invités</LBL><div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>{e.pays_invites_noms.split(",").map((p:string)=>p.trim()).filter(Boolean).map((p:string)=><span key={p} style={{fontSize:11,color:"#366FE3",background:"rgba(54,111,227,0.07)",border:"1px solid rgba(54,111,227,0.15)",padding:"2px 10px",borderRadius:999,fontWeight:500}}>{p}</span>)}</div></div>}
+          {e.entreprises_invitees&&<div style={{marginBottom:14}}><LBL>Entreprises invitées</LBL><div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>{e.entreprises_invitees.split(",").map((ent:string)=>ent.trim()).filter(Boolean).map((ent:string)=><span key={ent} style={{fontSize:11,color:"#E35336",background:"rgba(227,83,54,0.06)",border:"1px solid rgba(227,83,54,0.15)",padding:"2px 10px",borderRadius:999,fontWeight:500}}>{ent}</span>)}</div></div>}
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:20,borderTop:"1px solid #F2F0EF",paddingTop:18}}>
+            <button onClick={onClose} style={{padding:"9px 20px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Page principale ───────────────────────────────────────────────────────────
+export default function EvenementsPage() {
+  const [tous,        setTous]        = useState<any[]>([]); // tous les événements non filtrés
+  const [loading,     setLoading]     = useState(true);
+  const [selec,       setSelec]       = useState<any>(null);
+  const [paysHotes,   setPaysHotes]   = useState<{nom:string;code_iso2:string}[]>([]);
+  const [secteurs,    setSecteurs]    = useState<any[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [stats,       setStats]       = useState<any>({a_venir:0,en_cours:0,total:0});
+
+  // Filtres
+  const [recherche,    setRecherche]    = useState("");
+  const [statutFiltre, setStatutFiltre] = useState("");
+  const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
+  const [secteurSel,   setSecteurSel]   = useState("");
+  const [branchesSel,  setBranchesSel]  = useState<string[]>([]);
+  const [activitesSel, setActivitesSel] = useState<string[]>([]);
+
+  useEffect(()=>{
+    const safe = (p:Promise<any>, fb:any) => p.catch(()=>fb);
+    Promise.all([
+      safe(fetch(`${API_BASE}/evenements/pays-hotes`).then(r=>r.json()), []),
+      safe(fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()),  []),
+      safe(fetch(`${API_BASE}/evenements/stats`).then(r=>r.json()),      {}),
+      safe(fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()), []),
+      safe(fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()), []),
+      safe(fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()), []),
+    ]).then(([hotes,refPays,statsData,secsData,brasData,actsData])=>{
+      const enrichis=(hotes||[]).map((nom:string)=>{
+        const ref=(refPays||[]).find((p:any)=>p.nom_fr===nom);
+        return {nom,code_iso2:ref?.code_iso2||""};
+      });
+      setPaysHotes(enrichis);
+      setStats(statsData||{});
+      // Construire arborescence secteurs → branches → activités
+      const tree = (secsData||[]).map((s:any)=>({
+        ...s,
+        branches: (brasData||[]).filter((b:any)=>b.secteur_id===s.id).map((b:any)=>({
+          ...b,
+          activites: (actsData||[]).filter((a:any)=>a.branche_id===b.id)
+        }))
+      }));
+      setSecteurs(tree);
+    });
+  },[]);
+
+  const charger = useCallback(async()=>{
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ per_page:"100" });
+      const res = await fetch(`${API_BASE}/evenements?${params}`);
+      const data = await res.json();
+      setTous(data.data||[]);
+    } catch(e){ console.error(e); }
+    finally { setLoading(false); }
+  },[]);
+
+  useEffect(()=>{ charger(); },[charger]);
+
+  // Filtrage côté client
+  const evenements = tous.filter(e=>{
+    if (recherche) {
+      const q = recherche.toLowerCase();
+      if (!e.nom_event?.toLowerCase().includes(q) &&
+          !e.organisateur?.toLowerCase().includes(q) &&
+          !e.ville?.toLowerCase().includes(q) &&
+          !e.pays_hote_nom?.toLowerCase().includes(q)) return false;
+    }
+    if (statutFiltre) {
+      const today = new Date(); today.setHours(0,0,0,0);
+      if (e.date_debut) {
+        const debut = new Date(e.date_debut+"T00:00:00");
+        const fin   = e.date_fin ? new Date(e.date_fin+"T00:00:00") : debut;
+        if (statutFiltre==="a_venir"  && debut <= today) return false;
+        if (statutFiltre==="en_cours" && (debut > today || fin < today)) return false;
+        if (statutFiltre==="termine"  && fin >= today) return false;
+      }
+    }
+    if (paysFiltres.length>0 && !paysFiltres.includes(e.pays_hote_nom||"")) return false;
+    if (secteurSel && !(e.secteur_noms||[]).includes(secteurSel)) return false;
+    if (branchesSel.length>0 && !branchesSel.some((b:string)=>(e.branche_noms||[]).includes(b))) return false;
+    if (activitesSel.length>0 && !activitesSel.some((a:string)=>(e.activite_noms||[]).includes(a))) return false;
+    return true;
+  });
+
+  const hasFilter = !!recherche||!!statutFiltre||paysFiltres.length>0||!!secteurSel||branchesSel.length>0||activitesSel.length>0;
+  const reinit = ()=>{ setRecherche(""); setStatutFiltre(""); setPaysFiltres([]); setSecteurSel(""); setBranchesSel([]); setActivitesSel([]); };
+  const nbFiltres = (recherche?1:0)+(statutFiltre?1:0)+paysFiltres.length+(secteurSel?1:0)+branchesSel.length+activitesSel.length;
+
+  const togglePays    = (v:string) => setPaysFiltres(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
+  const toggleBranche = (v:string) => { setBranchesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setActivitesSel([]); };
+  const toggleActivite= (v:string) => setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
+  const setSecteur    = (v:string) => { setSecteurSel(v); setBranchesSel([]); setActivitesSel([]); };
+
+  return (
+    <main style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <Navbar/>
+
+      {/* Hero */}
+      <section style={{padding:"100px 40px 48px",background:"linear-gradient(160deg,#1a1a2e 0%,#2a2a4e 60%,#E35336 100%)",position:"relative" as const,overflow:"hidden"}}>
+        <div style={{position:"absolute" as const,inset:0,background:"linear-gradient(160deg,rgba(26,26,46,0.96),rgba(227,83,54,0.25))"}}/>
+        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
+          <p style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:10}}>APIX · Plateforme investissements</p>
+          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Événements</h1>
+          <p style={{color:"rgba(255,255,255,0.7)",fontSize:15,maxWidth:540,lineHeight:1.7,marginBottom:24}}>Forums, salons, missions de prospection et rencontres B2B — agenda mondial de la promotion des investissements.</p>
+          <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
+            {(stats.total||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.total} événement{stats.total>1?"s":""}</span>}
+            {(stats.en_cours||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#15803d",background:"#dcfce7",padding:"6px 14px",borderRadius:999}}>{stats.en_cours} en cours</span>}
+            {(stats.a_venir||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#1d4ed8",background:"#dbeafe",padding:"6px 14px",borderRadius:999}}>{stats.a_venir} à venir</span>}
+          </div>
         </div>
       </section>
 
-      {eventSelec && (
-        <EvenementModal event={eventSelec} onClose={() => setEventSelec(null)} />
-      )}
+      {/* Layout sidebar + contenu */}
+      <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
+        <div style={{display:"flex",gap:24,alignItems:"flex-start"}}>
+
+          {/* Sidebar filtres */}
+          <div style={{width:sidebarOpen?280:52,flexShrink:0,transition:"width 0.25s"}}>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",padding:sidebarOpen?"20px 16px":"10px 8px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)",position:"sticky" as const,top:24,maxHeight:"calc(100vh - 80px)",overflowY:"auto" as const}}>
+
+              {/* Toggle sidebar */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
+                {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
+                <button onClick={()=>setSidebarOpen(o=>!o)}
+                  style={{background:"rgba(227,83,54,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
+                  <SlidersHorizontal size={14} style={{color:"#E35336"}}/>
+                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
+                </button>
+              </div>
+
+              {sidebarOpen&&(
+                <>
+                  {hasFilter&&(
+                    <button onClick={reinit} style={{display:"flex",alignItems:"center",gap:5,width:"100%",background:"#fee2e2",color:"#dc2626",border:"none",borderRadius:8,padding:"7px 10px",fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:16}}>
+                      <X size={12}/> Effacer tous les filtres
+                    </button>
+                  )}
+
+                  {/* Recherche */}
+                  <div style={{position:"relative" as const,marginBottom:18}}>
+                    <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+                    <input value={recherche} onChange={e=>setRecherche(e.target.value)}
+                      placeholder="Rechercher un événement…"
+                      style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
+                    {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                  </div>
+
+                  {/* Statut */}
+                  <div style={{marginBottom:18}}>
+                    <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"#E35336":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+                      {STATUT_OPTS.map(b=>(
+                        <button key={b.value} onClick={()=>setStatutFiltre(b.value)}
+                          style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",background:statutFiltre===b.value?b.bg:"transparent",cursor:"pointer",textAlign:"left" as const,fontSize:12,fontWeight:statutFiltre===b.value?700:400,color:statutFiltre===b.value?b.text:"#4a5568"}}>
+                          <div style={{width:7,height:7,borderRadius:"50%",background:b.text,opacity:statutFiltre===b.value?1:0.3,flexShrink:0}}/>
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                  <SideFilter label="Pays hôte" color="#366FE3" selected={paysFiltres} onToggle={togglePays}
+                    items={paysHotes.map(p=>({value:p.nom,label:p.nom,flag:p.code_iso2?flag(p.code_iso2):undefined}))}/>
+
+                  <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                  <ThematiquesCascadeFilter
+                    secteurs={secteurs}
+                    secteurSel={secteurSel} branchesSel={branchesSel} activitesSel={activitesSel}
+                    onSecteur={setSecteur} onBranche={toggleBranche} onActivite={toggleActivite}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Grille événements */}
+          <div style={{flex:1,minWidth:0}}>
+            {loading ? (
+              <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}>
+                <Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/>
+                <span style={{fontSize:14}}>Chargement…</span>
+              </div>
+            ) : evenements.length===0 ? (
+              <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+                <CalendarDays size={48} style={{marginBottom:16,opacity:0.3}}/>
+                <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun événement trouvé</p>
+                <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
+                {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#E35336",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
+              </div>
+            ) : (
+              <>
+                <p style={{fontSize:13,color:"#9aa5b4",marginBottom:16}}>{evenements.length} événement{evenements.length>1?"s":""}{hasFilter?" trouvé"+(evenements.length>1?"s":""):""}</p>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
+                  {evenements.map(e=>{
+                    const dateStr = e.date_debut
+                      ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
+                      : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
+                    const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
+                    return (
+                      <div key={e.id} onClick={()=>setSelec(e)}
+                        style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:"3px solid #E35336",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)";ev.currentTarget.style.borderTopColor="#FFB0A1";ev.currentTarget.style.borderRightColor="#FFB0A1";ev.currentTarget.style.borderBottomColor="#FFB0A1";}}
+                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
+                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8}}>{e.nom_event}</div>
+                        {e.edition!=null&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{ordinal(e.edition)}</div>}
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:10}}>
+                          {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#E35336",flexShrink:0}}/><span style={{color:"#4a5568"}}>{dateStr}</span></div>}
+                          {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/><span style={{color:"#4a5568"}}>{lieu}</span></div>}
+                        </div>
+                        <div style={{fontSize:11,color:"#E35336",fontWeight:600,borderTop:"1px solid #F2F0EF",paddingTop:8}}>Voir les détails →</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <EvenementVue ev={selec} onClose={()=>setSelec(null)}/>
     </main>
   );
 }

@@ -104,6 +104,7 @@ def projet_to_dict(p: Projet, noms: dict = {}, zone_noms: dict = {}) -> dict:
         "devise_symbole":   p.devise.symbole  if p.devise else None,
         "porteur_projet":   p.porteur_projet,
         "moa_id":           str(p.moa_id) if p.moa_id else None,
+        "est_publie":       p.est_publie if p.est_publie is not None else True,
         "region_nom":       noms.get(f"r_{p.region_id}"),
         "departement_nom":  noms.get(f"d_{p.departement_id}"),
         "arrondissement_nom":noms.get(f"a_{p.arrondissement_id}"),
@@ -177,9 +178,11 @@ async def liste_projets(
     q:        Optional[str] = Query(None),
     page:     int           = Query(1, ge=1),
     per_page: int           = Query(20, ge=1, le=100),
+    admin:    bool          = Query(False),
     db:       AsyncSession  = Depends(get_db),
 ):
-    base  = select(Projet).where(Projet.is_deleted == False)
+    base = select(Projet).where(Projet.is_deleted == False)
+    if not admin: base = base.where(Projet.est_publie == True)
     if q: base = base.where(Projet.titre_projet.ilike(f"%{q}%"))
     cnt   = await db.execute(base.with_only_columns(Projet.id))
     total = len(cnt.fetchall())

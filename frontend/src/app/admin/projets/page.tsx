@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrondissementSelect, DepartementSelect, RegionSelect } from "@/components/shared/GeoSelect";
-import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
-import { Check, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, Search, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
+import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
+import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -52,7 +52,7 @@ const validTel  = (v: string) => !v || /^\+\d{12}$/.test(v.trim());
 const validMail = (v: string) => !v || /^[^@.][^@]*@[^@]+\.[^@]+[^@.]$/.test(v.trim());
 
 const ERR_TEL  = "Format : +221701234567 (+ suivi de 12 chiffres)";
-const ERR_MAIL = "Email invalide";
+const ERR_MAIL = "Email invalide (doit contenir @ et .)";
 
 function FieldErr({ msg }: { msg: string }) {
   return <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>{msg}</p>;
@@ -94,7 +94,7 @@ function CoordRow({ c, idx, onChange, onRemove }: { c:any; idx:number; onChange:
   return (
     <div style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-        <span style={{ fontSize:12, fontWeight:700, color:"#ca631f" }}>Coordinateur — {idx+1}</span>
+        <span style={{ fontSize:12, fontWeight:700, color:"#ca631f" }}>Coordinateur {idx+1}</span>
         <button onClick={onRemove} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
           <X size={12} style={{ color:"#dc2626" }} />
         </button>
@@ -323,7 +323,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
                 <div><label style={LS}>Devise</label>
                   <select value={form.devise_id||""} onChange={e=>upd("devise_id",e.target.value?parseInt(e.target.value):"")} style={IS}>
                     <option value="">—</option>
-                    {devises.map((d:any)=><option key={d.id} value={d.id}>{d.code === 'XOF' ? 'FCFA' : d.code}</option>)}
+                    {devises.map((d:any)=><option key={d.id} value={d.id}>{devSymbole(d.code, d.symbole)}</option>)}
                   </select>
                 </div>
               </div>
@@ -338,7 +338,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
                 <div><label style={LS}>Devise</label>
                   <select value={form.devise_id||""} onChange={e=>upd("devise_id",e.target.value?parseInt(e.target.value):"")} style={IS}>
                     <option value="">—</option>
-                    {devises.map((d:any)=><option key={d.id} value={d.id}>{d.code === 'XOF' ? 'FCFA' : d.code}</option>)}
+                    {devises.map((d:any)=><option key={d.id} value={d.id}>{devSymbole(d.code, d.symbole)}</option>)}
                   </select>
                 </div>
               </div>
@@ -504,118 +504,138 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
   );
 }
 
-// ── Modal vue projet ──────────────────────────────────────────────────────────
+// Symboles devise
+const DEVISE_SYMBOLE: Record<string,string> = { XOF:"FCFA", USD:"$", EUR:"€", GBP:"£", CNY:"¥", CAD:"CA$", CHF:"CHF", JPY:"¥" };
+const devSymbole = (code?:string, symbole?:string) => symbole || (code ? DEVISE_SYMBOLE[code]||code : "");
+
 function ProjetVueModal({ projet: p, onClose, onEdit }: { projet:any; onClose:()=>void; onEdit:(p:any)=>void }) {
   const fmtInvest = () => {
-    if (!p.investissement_est_intervalle) {
-      return p.investissement ? `${Number(p.investissement).toLocaleString("fr-FR")} ${p.devise_code==="XOF"?"FCFA":p.devise_code||""}` : null;
-    }
+    const sym = devSymbole(p.devise_code, p.devise_symbole);
+    if (!p.investissement_est_intervalle)
+      return p.investissement ? `${Number(p.investissement).toLocaleString("fr-FR")} ${sym}` : null;
     if (!p.investissement_min) return null;
     const min = Number(p.investissement_min).toLocaleString("fr-FR");
     const max = p.investissement_max ? Number(p.investissement_max).toLocaleString("fr-FR") : "…";
-    const dev = p.devise_code==="XOF"?"FCFA":p.devise_code||"";
-    return `${min} — ${max} ${dev}`;
+    return `${min} — ${max} ${sym}`;
   };
   const invest = fmtInvest();
+  const LBL = ({children}:{children:string}) => (
+    <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
+  );
 
   return (
-    <div onClick={e=>{ if (e.target===e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:680, maxHeight:"90vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,#d97706,#f59e0b)", borderRadius:"20px 20px 0 0" }} />
-        <div style={{ padding:"24px 28px 28px" }}>
+    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
+      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
+        <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
 
           {/* Header */}
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-            <div style={{ display:"flex", gap:12, alignItems:"center" }}>
-              <div style={{ width:44, height:44, borderRadius:12, background:"rgba(217,119,6,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <span style={{ fontSize:18, fontWeight:800, color:"#d97706" }}>P</span>
-              </div>
-              <div>
-                <h2 style={{ fontWeight:800, fontSize:"1.15rem", color:"#1a1a2e", lineHeight:1.3 }}>{p.titre_projet}</h2>
-                {p.created_at && <p style={{ fontSize:11, color:"#9aa5b4" }}>Créé le {new Date(p.created_at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+            <div style={{flex:1,paddingRight:16}}>
+              <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{p.titre_projet}</h2>
+              <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
+                {p.region_nom && <span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>}
+                {p.pole_nom   && <span style={{fontSize:11,fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{p.pole_nom}</span>}
+                {(p.zone_nom||p.zone_investissement) && <span style={{fontSize:11,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{p.zone_nom||p.zone_investissement}</span>}
+                <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"#15803d":"#9aa5b4",background:p.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Publié":"Non publié"}</span>
               </div>
             </div>
-            <div style={{ display:"flex", gap:6 }}>
-              <button onClick={()=>onEdit(p)} style={{ display:"flex", alignItems:"center", gap:5, background:"rgba(202,99,31,0.1)", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 12px", fontSize:12, fontWeight:600, color:"#ca631f" }}>
-                <Pencil size={12} /> Modifier
-              </button>
-              <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:8 }}><X size={14} color="#4a5568" /></button>
-            </div>
+            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
 
           {/* Description */}
           {p.description && (
-            <div style={{ background:"#F8F7F6", borderRadius:12, padding:"12px 16px", marginBottom:18 }}>
-              <p style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}>{p.description}</p>
+            <div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
+              <p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{p.description}</p>
             </div>
           )}
 
-          {/* Zone */}
-          {(p.pole_nom || p.zone_nom || p.region_nom) && (
-            <div style={{ marginBottom:18 }}>
-              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Zone d'implantation</p>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-                {p.region_nom && <span style={{ fontSize:12, color:"#4a5568", background:"#F2F0EF", padding:"3px 10px", borderRadius:999 }}>📍 {p.region_nom}{p.departement_nom?` › ${p.departement_nom}`:""}</span>}
-                {p.pole_nom   && <span style={{ fontSize:12, color:"#7c3aed", background:"rgba(124,58,237,0.08)", padding:"3px 10px", borderRadius:999 }}>{p.pole_nom}</span>}
-                {(p.zone_nom||p.zone_investissement) && <span style={{ fontSize:12, color:"#0e7490", background:"rgba(14,116,144,0.08)", padding:"3px 10px", borderRadius:999 }}>{p.zone_nom||p.zone_investissement}</span>}
+          {/* Investissement + Porteur */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+            {invest && (
+              <div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
+                <LBL>Investissement</LBL>
+                <p style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>{invest}</p>
               </div>
-            </div>
-          )}
-
-          {/* Thématiques */}
-          {(p.secteur_noms?.length>0) && (
-            <div style={{ marginBottom:18 }}>
-              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Thématiques</p>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-                {(p.secteur_noms||[]).map((s:string)=><span key={s} style={{ fontSize:12, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"3px 10px", borderRadius:999 }}>{s}</span>)}
-                {(p.branche_noms||[]).map((b:string)=><span key={b} style={{ fontSize:12, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"3px 10px", borderRadius:999 }}>{b}</span>)}
-                {(p.activite_noms||[]).map((a:string)=><span key={a} style={{ fontSize:12, color:"#059669", background:"rgba(5,150,105,0.08)", padding:"3px 10px", borderRadius:999 }}>{a}</span>)}
+            )}
+            {p.porteur_projet && (
+              <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}>
+                <LBL>Porteur du projet</LBL>
+                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{p.porteur_projet}</p>
               </div>
-            </div>
-          )}
+            )}
+            {p.created_at && (
+              <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}>
+                <LBL>Date de création</LBL>
+                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.created_at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
+              </div>
+            )}
+          </div>
 
-          {/* Investissement */}
-          {invest && (
-            <div style={{ marginBottom:18 }}>
-              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Investissement</p>
-              <p style={{ fontSize:15, fontWeight:700, color:"#1a1a2e" }}>💰 {invest}</p>
-            </div>
-          )}
-
-          {/* Porteur */}
-          {p.porteur_projet && (
-            <div style={{ marginBottom:18 }}>
-              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Porteur du projet</p>
-              <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>🏢 {p.porteur_projet}</p>
+          {/* Thématiques NAEMA en arborescence */}
+          {p.secteur_noms?.length>0 && (
+            <div style={{marginBottom:16}}>
+              <LBL>Thématiques NAEMA</LBL>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                {(p.secteur_noms||[]).map((sec:string) => (
+                  <div key={sec}>
+                    <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:p.branche_noms?.length?5:0}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
+                      <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec}</span>
+                    </div>
+                    {(p.branche_noms||[]).length>0 && (
+                      <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:5}}>
+                        {(p.branche_noms||[]).map((bra:string) => (
+                          <div key={bra}>
+                            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:p.activite_noms?.length?4:0}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                              <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra}</span>
+                            </div>
+                            {(p.activite_noms||[]).length>0 && (
+                              <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
+                                {(p.activite_noms||[]).map((act:string) => (
+                                  <div key={act} style={{display:"flex",alignItems:"center",gap:6}}>
+                                    <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                    <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {/* MOA */}
           {p.moa_list?.length>0 && p.moa_list[0].nom && (
-            <div style={{ marginBottom:18 }}>
-              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Maître d'ouvrage</p>
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"10px 14px" }}>
-                <p style={{ fontWeight:600, fontSize:13, color:"#1a1a2e" }}>{p.moa_list[0].nom}</p>
-                {p.moa_list[0].telephone && <p style={{ fontSize:12, color:"#9aa5b4" }}>📞 {p.moa_list[0].telephone}</p>}
-                {p.moa_list[0].mail      && <p style={{ fontSize:12, color:"#9aa5b4" }}>✉️ {p.moa_list[0].mail}</p>}
+            <div style={{marginBottom:16}}>
+              <LBL>Maître d'ouvrage</LBL>
+              <div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
+                <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3}}>{p.moa_list[0].nom}</p>
+                <div style={{fontSize:12,color:"#4a5568"}}>{[p.moa_list[0].telephone,p.moa_list[0].mail].filter(Boolean).join(" · ")}</div>
               </div>
             </div>
           )}
 
           {/* Coordinateurs */}
           {p.coordinateurs?.length>0 && (
-            <div style={{ marginBottom:18 }}>
-              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Coordinateurs</p>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+            <div style={{marginBottom:16}}>
+              <LBL>Coordinateurs</LBL>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {p.coordinateurs.map((c:any)=>(
-                  <div key={c.id} style={{ background:"#F8F7F6", borderRadius:10, padding:"10px 14px", display:"flex", gap:10, alignItems:"center" }}>
-                    <div style={{ width:30, height:30, borderRadius:"50%", background:"rgba(202,99,31,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <User size={13} style={{ color:"#ca631f" }} />
+                  <div key={c.id} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px",display:"flex",gap:10,alignItems:"center"}}>
+                    <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(54,111,227,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <User size={13} style={{color:"#366FE3"}}/>
                     </div>
                     <div>
-                      <p style={{ fontWeight:600, fontSize:13, color:"#1a1a2e" }}>{[c.civilite,c.prenom,c.nom].filter(Boolean).join(" ")}</p>
-                      <p style={{ fontSize:11, color:"#9aa5b4" }}>{[c.telephone,c.mail].filter(Boolean).join(" · ")}</p>
+                      <p style={{fontWeight:600,fontSize:13,color:"#1a1a2e"}}>{[c.civilite,c.prenom,c.nom].filter(Boolean).join(" ")}</p>
+                      <p style={{fontSize:11,color:"#9aa5b4"}}>{[c.telephone,c.mail].filter(Boolean).join(" · ")}</p>
                     </div>
                   </div>
                 ))}
@@ -623,20 +643,27 @@ function ProjetVueModal({ projet: p, onClose, onEdit }: { projet:any; onClose:()
             </div>
           )}
 
-          {/* Fichiers */}
+          {/* Documents */}
           {p.fichiers?.length>0 && (
-            <div>
-              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Documents</p>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+            <div style={{marginBottom:16}}>
+              <LBL>Documents</LBL>
+              <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
                 {p.fichiers.map((f:any)=>(
                   <a key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(202,99,31,0.06)", border:"1px solid rgba(202,99,31,0.18)", borderRadius:7, padding:"4px 10px", fontSize:11, color:"#ca631f", textDecoration:"none", fontWeight:500 }}>
-                    <FileText size={11} /> {f.titre||f.fichier_nom}
+                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(227,83,54,0.06)",border:"1px solid rgba(227,83,54,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#E35336",textDecoration:"none",fontWeight:500}}>
+                    <FileText size={11}/> {f.titre||f.fichier_nom}
                   </a>
                 ))}
               </div>
             </div>
           )}
+
+          <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
+            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#366FE3",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
+              <Pencil size={13}/> Modifier
+            </button>
+            <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
+          </div>
         </div>
       </div>
     </div>
@@ -654,11 +681,20 @@ export default function ProjetsPage() {
   const [edit,     setEdit]     = useState<any>(null);
   const [vue,      setVue]      = useState<any>(null);
   const [deleting, setDeleting] = useState<string|null>(null);
+  const [togglingId, setTogglingId] = useState<string|null>(null);
+
+  const handleTogglePublie = async (p:any) => {
+    setTogglingId(p.id);
+    try {
+      await fetch(`${API}/projets/${p.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({est_publie:!p.est_publie}) });
+      charger();
+    } finally { setTogglingId(null); }
+  };
 
   const charger = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page:String(page), per_page:"20" });
+      const params = new URLSearchParams({ page:String(page), per_page:"20", admin:"true" });
       if (q) params.set("q", q);
       const res  = await fetch(`${API}/projets?${params}`);
       const data = await res.json();
@@ -677,16 +713,20 @@ export default function ProjetsPage() {
 
   return (
     <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .marquee-text{display:inline-block;animation:marquee-scroll 7s linear infinite;}
+        @keyframes marquee-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+      `}</style>
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
         <div>
-          <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:4 }}>Administration</p>
+          <p style={{ fontSize:11, fontWeight:700, color:"#E35336", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:4 }}>Administration</p>
           <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Projets</h1>
           <p style={{ color:"#9aa5b4", fontSize:13, marginTop:4 }}>{total} projet{total>1?"s":""}</p>
         </div>
         <button onClick={()=>{ setEdit(null); setModal(true); }}
-          style={{ display:"flex", alignItems:"center", gap:7, padding:"11px 20px", borderRadius:12, border:"none", background:"#B7410E", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+          style={{ display:"flex", alignItems:"center", gap:7, padding:"11px 20px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#E35336,#c42d1a)", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(227,83,54,0.3)" }}>
           <Plus size={15} /> Nouveau projet
         </button>
       </div>
@@ -706,31 +746,54 @@ export default function ProjetsPage() {
           <p style={{ fontSize:13 }}>Créez votre premier projet</p>
         </div>
       ) : (
-        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
           {projets.map(p=>(
-            <div key={p.id} style={{ background:"#fff", border:"1px solid #C5BFBB", borderLeft:"4px solid #d97706", borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:14 }}>
-              <div style={{ width:38, height:38, borderRadius:10, background:"rgba(217,119,6,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <span style={{ fontSize:13, fontWeight:800, color:"#d97706" }}>P</span>
+            <div key={p.id}
+              onClick={()=>setVue(p)}
+              style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", borderLeft:`3px solid ${p.est_publie?"#E35336":"#C5BFBB"}`, cursor:"pointer", transition:"all 0.15s" }}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)"; ev.currentTarget.style.borderColor="#FFB0A1";}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor=p.est_publie?"#E35336":"#C5BFBB";}}>
+
+              {/* Titre défilant */}
+              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap"}}>
+                <span className="marquee-text">{p.titre_projet}&nbsp;&nbsp;&nbsp;&nbsp;{p.titre_projet}</span>
               </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontWeight:700, fontSize:14, color:"#1a1a2e", marginBottom:3 }}>{p.titre_projet}</div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
-                  {p.pole_nom && <span style={{ fontSize:11, color:"#7c3aed", background:"rgba(124,58,237,0.08)", padding:"2px 8px", borderRadius:999 }}>{p.pole_nom}</span>}
-                  {p.zone_nom
-                    ? <span style={{ fontSize:11, color:"#0e7490", background:"rgba(14,116,144,0.08)", padding:"2px 8px", borderRadius:999 }}>{p.zone_nom}</span>
-                    : p.zone_investissement && <span style={{ fontSize:11, color:"#0e7490", background:"rgba(14,116,144,0.08)", padding:"2px 8px", borderRadius:999 }}>{p.zone_investissement}</span>
-                  }
-                </div>
+
+              {/* Infos */}
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12, marginTop:6 }}>
+                {p.region_nom && (
+                  <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#E35336", flexShrink:0 }}/>
+                    <span style={{ color:"#9aa5b4" }}>Région de {p.region_nom}</span>
+                  </div>
+                )}
+                {p.pole_nom && (
+                  <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#366FE3", flexShrink:0 }}/>
+                    <span style={{ color:"#4a5568" }}>{p.pole_nom}</span>
+                  </div>
+                )}
+                {(p.zone_nom||p.zone_investissement) && (
+                  <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
+                    <span style={{ color:"#4a5568" }}>{p.zone_nom||p.zone_investissement}</span>
+                  </div>
+                )}
               </div>
-              <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-                <button onClick={()=>setVue(p)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 9px" }} title="Voir le projet">
-                  <Eye size={13} style={{ color:"#004f91" }} />
+
+              {/* Actions */}
+              <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={ev=>ev.stopPropagation()}>
+                <button onClick={()=>{ setEdit(p); setModal(true); }}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(54,111,227,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#366FE3", fontWeight:600 }}>
+                  <Pencil size={12}/> Modifier
                 </button>
-                <button onClick={()=>{ setEdit(p); setModal(true); }} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 9px" }}>
-                  <Pencil size={13} style={{ color:"#ca631f" }} />
+                <button onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:p.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:p.est_publie?"#15803d":"#6b7280", fontWeight:600 }}>
+                  {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                 </button>
-                <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 9px" }}>
-                  {deleting===p.id ? <Loader2 size={13} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }} /> : <Trash2 size={13} style={{ color:"#dc2626" }} />}
+                <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
+                  {deleting===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
                 </button>
               </div>
             </div>

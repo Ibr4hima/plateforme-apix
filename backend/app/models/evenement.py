@@ -1,18 +1,16 @@
 from sqlalchemy import Column, String, Boolean, Integer, Date, Text, ForeignKey, CheckConstraint, ARRAY
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.models.shared import RefPays
-import uuid
 
 
 class Evenement(Base):
     __tablename__ = "evenements"
 
     # ── Identité ──
-    id                  = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id                  = Column(Integer, primary_key=True, autoincrement=True)
     nom_event           = Column(String(500), nullable=False)
     edition             = Column(Integer, CheckConstraint("edition > 0", name="chk_evenements_edition_positive"))
     organisateur        = Column(String(255))
@@ -37,7 +35,10 @@ class Evenement(Base):
     est_recurrent       = Column(Boolean, default=False)
     frequence_type      = Column(String(20))   # 'mois' ou 'ans'
     frequence_valeur    = Column(Integer)
-    date_prochaine      = Column(Date)
+    prochain_jour       = Column(Integer)
+    prochain_mois       = Column(Integer)
+    prochain_annee      = Column(Integer)
+    duree_jours         = Column(Integer)
 
     # ── Métadonnées ──
     created_at          = Column(TIMESTAMP(timezone=True), server_default=func.now())

@@ -43,9 +43,10 @@ async def liste_accords(
     branche:          List[str]     = Query(default=[]),
     activite:         List[str]     = Query(default=[]),
     pays_signataires: List[str]     = Query(default=[]),
+    admin:            bool          = Query(False),
     db:               AsyncSession  = Depends(get_db),
 ):
-    filters = [Accord.est_publie == True]
+    filters = [] if admin else [Accord.est_publie == True, Accord.is_deleted == False]
 
     if statut:
         filters.append(Accord.statut == statut)

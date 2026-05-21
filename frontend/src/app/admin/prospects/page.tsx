@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Building2, User, Trash, ChevronDown, ChevronUp, Clock, MessageSquare, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, Building2, User, Trash, ChevronDown, ChevronUp, Clock, MessageSquare, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
 import PaysSelect from "@/components/shared/PaysSelect";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
@@ -19,963 +19,768 @@ const FORMES_JURIDIQUES = [
 ];
 
 const ETATS = [
-  { value: "en_cours",   label: "En cours",   bg: "#dcfce7", text: "#15803d" },
-  { value: "en_attente", label: "En attente", bg: "#fef9c3", text: "#a16207" },
-  { value: "inactif",    label: "Inactif",    bg: "#f3f4f6", text: "#6b7280" },
-  { value: "termine",    label: "Terminé",    bg: "#dbeafe", text: "#1d4ed8" },
+  { value:"en_cours",   label:"En cours",   bg:"#dcfce7", text:"#15803d" },
+  { value:"en_attente", label:"En attente", bg:"#fef9c3", text:"#a16207" },
+  { value:"inactif",    label:"Inactif",    bg:"#f3f4f6", text:"#6b7280" },
+  { value:"termine",    label:"Terminé",    bg:"#dbeafe", text:"#1d4ed8" },
 ];
-
-function getEtat(val: string) {
-  return ETATS.find(e => e.value === val) || ETATS[0];
-}
-
-function validatePhone(val: string) {
-  if (!val) return true;
-  // Doit commencer par + suivi de chiffres, longueur raisonnable
-  return /^\+\d{7,15}$/.test(val.replace(/\s/g, ""));
-}
+const getEtat = (val:string) => ETATS.find(e=>e.value===val)||ETATS[0];
+const validatePhone = (val:string) => !val||/^\+\d{7,15}$/.test(val.replace(/\s/g,""));
+const fmtDate = (d:string) => d ? new Date(d+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}) : "—";
 
 const EMPTY_FORM = {
-  type_prospect: "",
-  entreprise_installee_id: "",
-  nom: "", forme_juridique: "", date_creation_ent: "",
-  siege_pays: "", siege_pays_id: "" as string | number, siege_pays_nom: "",
-  pays: "Sénégal",
-  region_id: "" as string | number, departement_id: "" as string | number, arrondissement_id: "" as string | number,
-  adresse: "",
-  telephone: "", mail: "", siteweb: "",
-  thematiques: "",
-  secteur_nom: "", branche_nom: "", activite_nom: "",
-  secteur_id: "", branche_id: "", activite_id: "",
-  point_entree: "", est_publie: true,
+  type_prospect:"", entreprise_installee_id:"",
+  nom:"", forme_juridique:"", date_creation_ent:"",
+  siege_pays:"", siege_pays_id:"" as string|number, siege_pays_nom:"", pays:"Sénégal",
+  region_id:"" as string|number, departement_id:"" as string|number, arrondissement_id:"" as string|number,
+  adresse:"", telephone:"", mail:"", siteweb:"",
+  thematiques:"", secteur_nom:"", branche_nom:"", activite_nom:"",
+  secteur_id:"", branche_id:"", activite_id:"", point_entree:"", est_publie:true,
 };
+const EMPTY_FOCAL   = { nom:"", prenom:"", poste:"", telephone:"", mail:"", est_principal:false };
+const EMPTY_CONTACT = { projet_nom:"", projet_description:"", date_premier_contact:"", etat_avancement:"en_cours", commentaires:"", contraintes:"" };
 
-const EMPTY_FOCAL = { nom: "", prenom: "", poste: "", telephone: "", mail: "", est_principal: false };
-
-const EMPTY_CONTACT = {
-  projet_nom: "", projet_description: "",
-  date_premier_contact: "", etat_avancement: "en_cours",
-  commentaires: "", contraintes: "",
-};
-
-export default function AdminProspects() {
-  const [onglet,      setOnglet]      = useState<"ciblees"|"contactees">("ciblees");
-  const [prospects,   setProspects]   = useState<any[]>([]);
-  const [total,       setTotal]       = useState(0);
-  const [loading,     setLoading]     = useState(true);
-  const [showForm,    setShowForm]    = useState(false);
-  const [editItem,    setEditItem]    = useState<any>(null);
+// ── Modal formulaire prospect ─────────────────────────────────────────────────
+function ProspectModal({ open, onClose, editItem, onSaved }: {
+  open:boolean; onClose:()=>void; editItem:any; onSaved:()=>void;
+}) {
+  const [form,        setForm]        = useState<any>({...EMPTY_FORM});
+  const [focaux,      setFocaux]      = useState<any[]>([{...EMPTY_FOCAL}]);
   const [saving,      setSaving]      = useState(false);
   const [saveOk,      setSaveOk]      = useState(false);
   const [errors,      setErrors]      = useState<Record<string,string>>({});
-  const [form,        setForm]        = useState<any>({ ...EMPTY_FORM });
-  const [focaux,      setFocaux]      = useState<any[]>([{ ...EMPTY_FOCAL }]);
-  const [deleting,    setDeleting]    = useState<string|null>(null);
   const [regionId,    setRegionId]    = useState<number|null>(null);
   const [depId,       setDepId]       = useState<number|null>(null);
-  const [siegePaysNom, setSiegePaysNom] = useState("");
+  const [siegePaysNom,setSiegePaysNom]= useState("");
   const [entreprisesInstallees, setEntreprisesInstallees] = useState<any[]>([]);
 
-  // Contact modal
-  const [showContact,     setShowContact]     = useState(false);
-  const [contactProspect, setContactProspect] = useState<any>(null);
-  const [contactForm,     setContactForm]     = useState<any>({ ...EMPTY_CONTACT });
-  const [editContact,     setEditContact]     = useState<any>(null);
-  const [savingContact,   setSavingContact]   = useState(false);
-  const [contactOk,       setContactOk]       = useState(false);
+  const update = (k:string,v:any) => setForm((f:any)=>({...f,[k]:v}));
+  const isLocked = form.type_prospect==="entreprise_installee" && !!form.entreprise_installee_id;
 
-  // Détail
-  const [showDetail,       setShowDetail]       = useState(false);
-  const [detailItem,       setDetailItem]       = useState<any>(null);
-  const [expandedContact,  setExpandedContact]  = useState<string|null>(null);
-
-  // Chargement entreprises installées
-  useEffect(() => {
+  useEffect(()=>{
     fetch(`${API_BASE}/entreprises?per_page=500`)
-      .then(r => r.json())
-      .then(d => setEntreprisesInstallees(d.data || []))
-      .catch(() => {});
-  }, []);
+      .then(r=>r.json()).then(d=>setEntreprisesInstallees(d.data||[])).catch(()=>{});
+  },[]);
 
-  const charger = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.append("per_page", "100");
-      if (onglet === "contactees") params.append("est_contacte", "true");
-      else params.append("est_contacte", "false");
-      const res  = await fetch(`${API_BASE}/prospects?${params}`);
-      const data = await res.json();
-      setProspects(data.data || []);
-      setTotal(data.total || 0);
-    } catch {} finally { setLoading(false); }
-  }, [onglet]);
-
-  useEffect(() => { charger(); }, [charger]);
-
-  const update   = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
-  const isLocked = form.type_prospect === "entreprise_installee" && !!form.entreprise_installee_id;
-
-  const prefillFromEntreprise = (ent: any) => {
-    setForm((f: any) => ({
-      ...f,
-      entreprise_installee_id: ent.id,
-      nom:            ent.nom             || "",
-      forme_juridique:ent.forme_juridique || "",
-      date_creation_ent: ent.date_creation || "",
-      siege_pays_id:  ent.siege_pays_id   || "",
-      siege_pays_nom: ent.siege_pays_nom  || "",
-      region_id:      ent.region_id       || "",
-      departement_id: ent.departement_id  || "",
-      arrondissement_id: ent.arrondissement_id || "",
-      adresse:        ent.adresse         || "",
-      telephone:      ent.telephone       || "",
-      mail:           ent.mail            || "",
-      siteweb:        ent.siteweb         || "",
-      thematiques:    [
-        ent.secteur?.nom  ? `sec:${ent.secteur.nom}`  : "",
-        ent.branche?.nom  ? `bra:${ent.branche.nom}`  : "",
-        ent.activite?.nom ? `act:${ent.activite.nom}` : "",
-      ].filter(Boolean).join(", "),
-      secteur_nom:    ent.secteur?.nom    || "",
-      branche_nom:    ent.branche?.nom    || "",
-      activite_nom:   ent.activite?.nom   || "",
-      secteur_id:     ent.secteur?.id?.toString()  || "",
-      branche_id:     ent.branche?.id?.toString()  || "",
-      activite_id:    ent.activite?.id?.toString() || "",
-    }));
-    setSiegePaysNom(ent.siege_pays_nom || "");
-    if (ent.region_id) { setRegionId(ent.region_id); if (ent.departement_id) setDepId(ent.departement_id); }
-    if (ent.points_focaux?.length > 0) {
-      setFocaux(ent.points_focaux.map((pf: any) => ({
-        nom: pf.nom || "", prenom: pf.prenom || "", poste: pf.poste || "",
-        telephone: pf.telephone || "", mail: pf.mail || "", est_principal: pf.est_principal || false,
-      })));
+  useEffect(()=>{
+    if (!open) return;
+    setErrors({}); setSaveOk(false);
+    if (editItem) {
+      const th=[editItem.secteur?.nom?`sec:${editItem.secteur.nom}`:"",editItem.branche?.nom?`bra:${editItem.branche.nom}`:"",editItem.activite?.nom?`act:${editItem.activite.nom}`:""].filter(Boolean).join(", ");
+      setForm({
+        type_prospect:editItem.type_prospect||"entreprise_installee",
+        entreprise_installee_id:editItem.entreprise_installee_id||"",
+        nom:editItem.nom||"", forme_juridique:editItem.forme_juridique||"",
+        date_creation_ent:editItem.date_creation_ent||"",
+        siege_pays:editItem.siege_pays_nom||"", siege_pays_id:editItem.siege_pays_id||"", siege_pays_nom:editItem.siege_pays_nom||"",
+        pays:"Sénégal", region_id:editItem.region_id||"", departement_id:editItem.departement_id||"", arrondissement_id:editItem.arrondissement_id||"",
+        adresse:editItem.adresse||"", telephone:editItem.telephone||"", mail:editItem.mail||"", siteweb:editItem.siteweb||"",
+        thematiques:th, secteur_nom:editItem.secteur?.nom||"", branche_nom:editItem.branche?.nom||"", activite_nom:editItem.activite?.nom||"",
+        secteur_id:editItem.secteur?.id?.toString()||"", branche_id:editItem.branche?.id?.toString()||"", activite_id:editItem.activite?.id?.toString()||"",
+        point_entree:editItem.point_entree||"", est_publie:editItem.est_publie??true,
+      });
+      setSiegePaysNom(editItem.siege_pays_nom||"");
+      if (editItem.region_id){ setRegionId(editItem.region_id); if(editItem.departement_id) setDepId(editItem.departement_id); }
+      setFocaux(editItem.points_focaux?.length>0
+        ? editItem.points_focaux.map((pf:any)=>({nom:pf.nom||"",prenom:pf.prenom||"",poste:pf.poste||"",telephone:pf.telephone||"",mail:pf.mail||"",est_principal:pf.est_principal||false}))
+        : [{...EMPTY_FOCAL}]);
+    } else {
+      setForm({...EMPTY_FORM}); setFocaux([{...EMPTY_FOCAL}]);
+      setRegionId(null); setDepId(null); setSiegePaysNom("");
     }
+  },[open,editItem?.id]);
+
+  const prefill = (ent:any) => {
+    setForm((f:any)=>({...f,
+      entreprise_installee_id:ent.id, nom:ent.nom||"", forme_juridique:ent.forme_juridique||"",
+      date_creation_ent:ent.date_creation||"", siege_pays_id:ent.siege_pays_id||"", siege_pays_nom:ent.siege_pays_nom||"",
+      region_id:ent.region_id||"", departement_id:ent.departement_id||"", arrondissement_id:ent.arrondissement_id||"",
+      adresse:ent.adresse||"", telephone:ent.telephone||"", mail:ent.mail||"", siteweb:ent.siteweb||"",
+      thematiques:[ent.secteur?.nom?`sec:${ent.secteur.nom}`:"",ent.branche?.nom?`bra:${ent.branche.nom}`:"",ent.activite?.nom?`act:${ent.activite.nom}`:""].filter(Boolean).join(", "),
+      secteur_nom:ent.secteur?.nom||"", branche_nom:ent.branche?.nom||"", activite_nom:ent.activite?.nom||"",
+      secteur_id:ent.secteur?.id?.toString()||"", branche_id:ent.branche?.id?.toString()||"", activite_id:ent.activite?.id?.toString()||"",
+    }));
+    setSiegePaysNom(ent.siege_pays_nom||"");
+    if(ent.region_id){setRegionId(ent.region_id);if(ent.departement_id)setDepId(ent.departement_id);}
+    if(ent.points_focaux?.length>0) setFocaux(ent.points_focaux.map((pf:any)=>({nom:pf.nom||"",prenom:pf.prenom||"",poste:pf.poste||"",telephone:pf.telephone||"",mail:pf.mail||"",est_principal:pf.est_principal||false})));
   };
 
   const validate = () => {
-    const e: Record<string,string> = {};
-    if (!form.type_prospect)         e.type_prospect   = "Choisir un type";
-    if (!form.nom.trim())            e.nom             = "Obligatoire";
-    if (!form.forme_juridique)       e.forme_juridique = "Obligatoire";
-    if (!form.date_creation_ent)     e.date_creation_ent = "Obligatoire";
-    // Région obligatoire seulement pour entreprise installée
-    if (form.type_prospect === "entreprise_installee") {
-      if (!form.region_id)           e.region_id       = "Obligatoire";
-      if (!form.departement_id)      e.departement_id  = "Obligatoire";
-    }
-    // Pour hors_senegal : siège social obligatoire
-    if (form.type_prospect === "hors_senegal" && !form.siege_pays_id) {
-      e.siege_pays_id = "Pays du siège obligatoire";
-    }
-    if (!form.adresse.trim())        e.adresse         = "Obligatoire";
-    if (!form.telephone)             e.telephone       = "Obligatoire";
-    else if (!validatePhone(form.telephone)) e.telephone = "Format invalide (doit commencer par + suivi des chiffres)";
-    if (!form.mail.trim())           e.mail            = "Obligatoire";
-    else if (!/\S+@\S+\.\S+/.test(form.mail)) e.mail  = "Email invalide";
-    if (!form.secteur_nom)           e.secteur_id      = "Obligatoire";
-    if (!form.branche_nom)           e.branche_id      = "Obligatoire";
-    if (!form.activite_nom)          e.activite_id     = "Obligatoire";
-    if (!form.point_entree.trim())   e.point_entree    = "Obligatoire";
-    focaux.forEach((pf, i) => {
-      if (!pf.nom.trim())    e[`fn_${i}`] = "Obligatoire";
-      if (!pf.prenom.trim()) e[`fp_${i}`] = "Obligatoire";
-      if (!pf.telephone)     e[`ft_${i}`] = "Obligatoire";
-      else if (!validatePhone(pf.telephone)) e[`ft_${i}`] = "Format invalide (doit commencer par + suivi des chiffres)";
+    const e:Record<string,string>={};
+    if (!form.type_prospect)       e.type_prospect="Choisir un type";
+    if (!form.nom.trim())          e.nom="Obligatoire";
+    if (!form.forme_juridique)     e.forme_juridique="Obligatoire";
+    if (!form.date_creation_ent)   e.date_creation_ent="Obligatoire";
+    if (form.type_prospect==="hors_senegal"&&!form.siege_pays_id) e.siege_pays_id="Obligatoire";
+    if (!form.adresse.trim())      e.adresse="Obligatoire";
+    if (!form.telephone)           e.telephone="Obligatoire";
+    else if (!validatePhone(form.telephone)) e.telephone="Format invalide (+...)";
+    if (!form.mail.trim())         e.mail="Obligatoire";
+    else if (!/\S+@\S+\.\S+/.test(form.mail)) e.mail="Email invalide";
+    if (!form.secteur_nom)         e.secteur_id="Obligatoire";
+    if (!form.branche_nom)         e.branche_id="Obligatoire";
+    if (!form.activite_nom)        e.activite_id="Obligatoire";
+    if (!form.point_entree.trim()) e.point_entree="Obligatoire";
+    focaux.forEach((pf,i)=>{
+      if(!pf.nom.trim())    e[`fn_${i}`]="Obligatoire";
+      if(!pf.prenom.trim()) e[`fp_${i}`]="Obligatoire";
+      if(!pf.telephone)     e[`ft_${i}`]="Obligatoire";
+      else if(!validatePhone(pf.telephone)) e[`ft_${i}`]="Format invalide";
     });
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const openCreate = () => {
-    setForm({ ...EMPTY_FORM }); setFocaux([{ ...EMPTY_FOCAL }]);
-    setRegionId(null); setDepId(null);
-    setEditItem(null); setShowForm(true); setErrors({}); setSaveOk(false);
-  };
-
-  const openEdit = (p: any) => {
-    const thematiquesVal = [
-      p.secteur?.nom  ? `sec:${p.secteur.nom}`  : "",
-      p.branche?.nom  ? `bra:${p.branche.nom}`  : "",
-      p.activite?.nom ? `act:${p.activite.nom}` : "",
-    ].filter(Boolean).join(", ");
-
-    setForm({
-      type_prospect: p.type_prospect || "entreprise_installee",
-      entreprise_installee_id: p.entreprise_installee_id || "",
-      nom: p.nom || "", forme_juridique: p.forme_juridique || "",
-      date_creation_ent: p.date_creation_ent || "",
-      siege_pays: p.siege_pays_nom || "", siege_pays_id: p.siege_pays_id || "", siege_pays_nom: p.siege_pays_nom || "",
-      pays: "Sénégal",
-      region_id: p.region_id || "", departement_id: p.departement_id || "", arrondissement_id: p.arrondissement_id || "",
-      adresse: p.adresse || "",
-      telephone: p.telephone || "", mail: p.mail || "", siteweb: p.siteweb || "",
-      thematiques: thematiquesVal,
-      secteur_nom: p.secteur?.nom || "", branche_nom: p.branche?.nom || "",
-      activite_nom: p.activite?.nom || "",
-      secteur_id: p.secteur?.id?.toString() || "",
-      branche_id: p.branche?.id?.toString() || "",
-      activite_id: p.activite?.id?.toString() || "",
-      point_entree: p.point_entree || "",
-      est_publie: p.est_publie ?? true,
-    });
-    setSiegePaysNom(p.siege_pays_nom || "");
-    if (p.region_id) { setRegionId(p.region_id); if (p.departement_id) setDepId(p.departement_id); }
-    setFocaux(p.points_focaux?.length > 0
-      ? p.points_focaux.map((pf: any) => ({ nom: pf.nom||"", prenom: pf.prenom||"", poste: pf.poste||"", telephone: pf.telephone||"", mail: pf.mail||"", est_principal: pf.est_principal||false }))
-      : [{ ...EMPTY_FOCAL }]
-    );
-    setEditItem(p); setShowForm(true); setErrors({}); setSaveOk(false);
+    setErrors(e); return Object.keys(e).length===0;
   };
 
   const handleSave = async () => {
     if (!validate()) return;
     setSaving(true);
     try {
-      // Résoudre les noms NAEMA en IDs si pas déjà des entiers
-      const [allSecteurs, allBranches, allActivites] = await Promise.all([
-        fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
-        fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
-        fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
+      const [allS,allB,allA] = await Promise.all([
+        fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
+        fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
+        fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
       ]);
-      const secteur  = allSecteurs.find((s: any) => s.nom === form.secteur_nom);
-      const branche  = allBranches.find((b: any) => b.nom === form.branche_nom);
-      const activite = allActivites.find((a: any) => a.nom === form.activite_nom);
-
-      const payload: any = { ...form };
-      payload.secteur_id  = secteur?.id  || null;
-      payload.branche_id  = branche?.id  || null;
-      payload.activite_id = activite?.id || null;
-      // IDs géo
-      if (payload.region_id)         payload.region_id         = parseInt(payload.region_id)         || null;
-      if (payload.departement_id)    payload.departement_id    = parseInt(payload.departement_id)    || null;
-      if (payload.arrondissement_id) payload.arrondissement_id = parseInt(payload.arrondissement_id) || null;
-      if (payload.siege_pays_id)     payload.siege_pays_id     = parseInt(payload.siege_pays_id)     || null;
-      // Nettoyer les champs inutiles
-      delete payload.thematiques;
-      delete payload.secteur_nom; delete payload.branche_nom; delete payload.activite_nom;
+      const sec=allS.find((s:any)=>s.nom===form.secteur_nom), bra=allB.find((b:any)=>b.nom===form.branche_nom), act=allA.find((a:any)=>a.nom===form.activite_nom);
+      const payload:any={...form};
+      payload.secteur_id=sec?.id||null; payload.branche_id=bra?.id||null; payload.activite_id=act?.id||null;
+      if(payload.region_id)         payload.region_id=parseInt(payload.region_id)||null;
+      if(payload.departement_id)    payload.departement_id=parseInt(payload.departement_id)||null;
+      if(payload.arrondissement_id) payload.arrondissement_id=parseInt(payload.arrondissement_id)||null;
+      if(payload.siege_pays_id)     payload.siege_pays_id=parseInt(payload.siege_pays_id)||null;
+      delete payload.thematiques; delete payload.secteur_nom; delete payload.branche_nom; delete payload.activite_nom;
       delete payload.siege_pays; delete payload.siege_pays_nom;
-      Object.keys(payload).forEach(k => { if (payload[k] === "" || payload[k] === 0) payload[k] = null; });
-      payload.pays = "Sénégal";
-      if (!editItem) payload.points_focaux = focaux.filter(f => f.nom.trim());
-
-      const url    = editItem ? `${API_BASE}/prospects/${editItem.id}` : `${API_BASE}/prospects`;
-      const method = editItem ? "PATCH" : "POST";
-      const res    = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (!res.ok) throw new Error(`Erreur ${res.status}`);
-      setSaveOk(true);
-      setTimeout(() => { setShowForm(false); charger(); }, 1000);
-    } catch (e: any) { setErrors({ global: e.message }); }
-    finally { setSaving(false); }
+      Object.keys(payload).forEach(k=>{if(payload[k]===""||payload[k]===0)payload[k]=null;});
+      payload.pays="Sénégal";
+      if(!editItem) payload.points_focaux=focaux.filter(f=>f.nom.trim());
+      const url=editItem?`${API_BASE}/prospects/${editItem.id}`:`${API_BASE}/prospects`;
+      const res=await fetch(url,{method:editItem?"PATCH":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      if(!res.ok) throw new Error(`Erreur ${res.status}`);
+      setSaveOk(true); setTimeout(()=>{onClose();onSaved();},700);
+    } catch(e:any){setErrors({global:e.message});}
+    finally{setSaving(false);}
   };
 
-  const handleDelete = async (id: string) => {
+  const IS=(f?:string):any=>({width:"100%",background:isLocked&&f?"#E8E5E3":"#F2F0EF",border:`1px solid ${f&&errors[f]?"#dc2626":"#C5BFBB"}`,borderRadius:8,padding:"9px 12px",fontSize:13,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const,cursor:isLocked&&f?"not-allowed":undefined});
+  const LS=(f?:string):any=>({fontSize:12,fontWeight:600,color:f&&errors[f]?"#dc2626":"#4a5568",marginBottom:4,display:"block"});
+  const SS:any={fontSize:11,fontWeight:700,color:"#004f91",letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:12,paddingBottom:8,borderBottom:"1px solid #E8E5E3"};
+  const Err=({f}:{f:string})=>errors[f]?<span style={{fontSize:11,color:"#dc2626",marginTop:2,display:"block"}}>{errors[f]}</span>:null;
+
+  if (!open) return null;
+  return (
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
+      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:900,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
+        <div style={{height:4,background:"linear-gradient(90deg,#004f91,#1a6ab0)",borderRadius:"20px 20px 0 0"}}/>
+        <div style={{padding:"24px 32px 32px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e"}}>{editItem?"Modifier le prospect":"Nouveau prospect"}</h2>
+            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7}}><X size={15} color="#4a5568"/></button>
+          </div>
+
+          <div style={{display:"flex",flexDirection:"column",gap:20}}>
+
+            {/* Type */}
+            <div>
+              <p style={SS}>Type de prospect</p>
+              {errors.type_prospect&&<p style={{fontSize:11,color:"#dc2626",marginBottom:8}}>{errors.type_prospect}</p>}
+              <div style={{display:"flex",gap:10}}>
+                {[{value:"entreprise_installee",label:"Entreprise installée au Sénégal"},{value:"hors_senegal",label:"Entreprise hors Sénégal"}].map(opt=>(
+                  <button key={opt.value} onClick={()=>{setForm({...EMPTY_FORM,type_prospect:opt.value});setSiegePaysNom("");setRegionId(null);setDepId(null);setFocaux([{...EMPTY_FOCAL}]);}}
+                    style={{padding:"10px 20px",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",border:`2px solid ${form.type_prospect===opt.value?"#004f91":"#C5BFBB"}`,background:form.type_prospect===opt.value?"rgba(0,79,145,0.08)":"#fff",color:form.type_prospect===opt.value?"#004f91":"#4a5568"}}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {form.type_prospect==="entreprise_installee"&&(
+                <div style={{marginTop:14}}>
+                  <label style={LS()}>Sélectionner l'entreprise *</label>
+                  <select value={form.entreprise_installee_id} onChange={e=>{const ent=entreprisesInstallees.find((x:any)=>x.id===e.target.value);if(ent)prefill(ent);else update("entreprise_installee_id","");}}
+                    style={{width:"100%",background:"#F2F0EF",border:"1px solid #C5BFBB",borderRadius:8,padding:"9px 12px",fontSize:13,color:"#1a1a2e",outline:"none",cursor:"pointer",boxSizing:"border-box" as const}}>
+                    <option value="">— Sélectionner une entreprise —</option>
+                    {entreprisesInstallees.map((ent:any)=><option key={ent.id} value={ent.id}>{ent.nom}{ent.forme_juridique?` · ${ent.forme_juridique.split("(")[0].trim()}`:""}</option>)}
+                  </select>
+                  {form.entreprise_installee_id&&<p style={{fontSize:12,color:"#15803d",marginTop:6}}>Informations pré-remplies depuis la fiche entreprise</p>}
+                </div>
+              )}
+            </div>
+
+            {/* Identification */}
+            <div>
+              <p style={SS}>Identification</p>
+              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:12}}>
+                <div><label style={LS("nom")}>Dénomination sociale *</label><input value={form.nom} onChange={e=>update("nom",e.target.value)} disabled={isLocked} placeholder="Nom de l'entreprise" style={IS("nom")}/><Err f="nom"/></div>
+                <div><label style={LS("forme_juridique")}>Forme juridique *</label>
+                  <select value={form.forme_juridique} onChange={e=>update("forme_juridique",e.target.value)} disabled={isLocked} style={{...IS("forme_juridique"),cursor:isLocked?"not-allowed":"pointer"}}>
+                    <option value="">— Sélectionner —</option>
+                    {FORMES_JURIDIQUES.map(f=><option key={f} value={f}>{f}</option>)}
+                  </select><Err f="forme_juridique"/>
+                </div>
+                <div><label style={LS("date_creation_ent")}>Date de création *</label><input type="date" value={form.date_creation_ent} onChange={e=>update("date_creation_ent",e.target.value)} disabled={isLocked} style={IS("date_creation_ent")}/><Err f="date_creation_ent"/></div>
+              </div>
+            </div>
+
+            {/* Siège social */}
+            {form.type_prospect==="hors_senegal"&&(
+              <div>
+                <p style={SS}>Siège social</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                  <div><label style={LS("siege_pays_id")}>Pays du siège *</label>
+                    <PaysSelect value={siegePaysNom} onChange={nom=>setSiegePaysNom(nom)} onChangeId={id=>update("siege_pays_id",id||"")} placeholder="Pays du siège social" excludeNoms={["Sénégal"]}/>
+                    <Err f="siege_pays_id"/>
+                  </div>
+                  <div><label style={LS()}>Pays d'installation</label><input value="Sénégal" disabled style={{...IS(),opacity:0.6,cursor:"not-allowed",background:"#E8E5E3"}}/></div>
+                </div>
+              </div>
+            )}
+
+            {/* Localisation */}
+            <div>
+              <p style={SS}>Localisation au Sénégal</p>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:12}}>
+                <div><label style={LS()}>Région</label><RegionSelect value={form.region_id} onChange={id=>{update("region_id",id||"");update("departement_id","");update("arrondissement_id","");setRegionId(id);setDepId(null);}}/></div>
+                <div><label style={LS()}>Département</label><DepartementSelect regionId={regionId} value={form.departement_id} onChange={id=>{update("departement_id",id||"");update("arrondissement_id","");setDepId(id);}}/></div>
+                <div><label style={LS()}>Arrondissement</label><ArrondissementSelect departementId={depId} value={form.arrondissement_id} onChange={id=>update("arrondissement_id",id||"")}/></div>
+              </div>
+              <div><label style={LS("adresse")}>Adresse *</label><input value={form.adresse} onChange={e=>update("adresse",e.target.value)} disabled={isLocked} placeholder="Adresse physique" style={IS("adresse")}/><Err f="adresse"/></div>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <p style={SS}>Contact</p>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
+                <div><label style={LS("telephone")}>Téléphone *</label><input value={form.telephone} onChange={e=>update("telephone",e.target.value.replace(/\s/g,"").replace(/[^+\d]/g,""))} disabled={isLocked} placeholder="+221..." style={IS("telephone")}/><Err f="telephone"/></div>
+                <div><label style={LS("mail")}>Email *</label><input type="email" value={form.mail} onChange={e=>update("mail",e.target.value)} disabled={isLocked} placeholder="contact@..." style={IS("mail")}/><Err f="mail"/></div>
+                <div><label style={LS()}>Site web</label><input value={form.siteweb} onChange={e=>update("siteweb",e.target.value)} disabled={isLocked} placeholder="https://..." style={IS()}/></div>
+              </div>
+            </div>
+
+            {/* NAEMA */}
+            <div>
+              <p style={SS}>Classification NAEMA</p>
+              <ThematiquesNaema value={form.thematiques} onChange={(val:string)=>{
+                update("thematiques",val);
+                const items=val.split(",").map((t:string)=>t.trim());
+                update("secteur_nom",items.find((t:string)=>t.startsWith("sec:"))?.slice(4)||"");
+                update("branche_nom",items.find((t:string)=>t.startsWith("bra:"))?.slice(4)||"");
+                update("activite_nom",items.find((t:string)=>t.startsWith("act:"))?.slice(4)||"");
+              }}/>
+              {(errors.secteur_id||errors.branche_id||errors.activite_id)&&<span style={{fontSize:11,color:"#dc2626",marginTop:4,display:"block"}}>Secteur, branche et activité sont obligatoires</span>}
+            </div>
+
+            {/* Point d'entrée */}
+            <div>
+              <p style={SS}>Point d'entrée APIX</p>
+              <input value={form.point_entree} onChange={e=>update("point_entree",e.target.value)} placeholder="Ex : Forum d'investissement Paris 2024, Mission IDE…" style={IS("point_entree")}/>
+              <Err f="point_entree"/>
+            </div>
+
+            {/* Points focaux */}
+            <div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                <p style={{...SS,marginBottom:0,borderBottom:"none",paddingBottom:0}}>Points focaux</p>
+                <button onClick={()=>setFocaux(prev=>[...prev,{...EMPTY_FOCAL}])} style={{display:"flex",alignItems:"center",gap:5,fontSize:12,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.08)",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer"}}>
+                  <Plus size={12}/> Ajouter un contact
+                </button>
+              </div>
+              <div style={{borderTop:"1px solid #E8E5E3",paddingTop:12,display:"flex",flexDirection:"column" as const,gap:12}}>
+                {focaux.map((pf,i)=>(
+                  <div key={i} style={{background:"#F8F7F6",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"#004f91"}}/><span style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>Contact {i+1}</span></div>
+                      <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        <label style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"#4a5568",cursor:"pointer"}}>
+                          <input type="checkbox" checked={pf.est_principal} onChange={e=>setFocaux(prev=>prev.map((f,idx)=>idx===i?{...f,est_principal:e.target.checked}:f))}/> Principal
+                        </label>
+                        {focaux.length>1&&<button onClick={()=>setFocaux(prev=>prev.filter((_,idx)=>idx!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:4}}><Trash size={13} style={{color:"#dc2626"}}/></button>}
+                      </div>
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",gap:10}}>
+                      <div><label style={{fontSize:11,fontWeight:600,color:"#4a5568",marginBottom:3,display:"block"}}>Nom *</label><input value={pf.nom} onChange={e=>setFocaux(prev=>prev.map((f,idx)=>idx===i?{...f,nom:e.target.value}:f))} placeholder="Nom" style={{...IS(),fontSize:12,borderColor:errors[`fn_${i}`]?"#dc2626":"#C5BFBB"}}/>{errors[`fn_${i}`]&&<span style={{fontSize:10,color:"#dc2626"}}>{errors[`fn_${i}`]}</span>}</div>
+                      <div><label style={{fontSize:11,fontWeight:600,color:"#4a5568",marginBottom:3,display:"block"}}>Prénom *</label><input value={pf.prenom} onChange={e=>setFocaux(prev=>prev.map((f,idx)=>idx===i?{...f,prenom:e.target.value}:f))} placeholder="Prénom" style={{...IS(),fontSize:12,borderColor:errors[`fp_${i}`]?"#dc2626":"#C5BFBB"}}/>{errors[`fp_${i}`]&&<span style={{fontSize:10,color:"#dc2626"}}>{errors[`fp_${i}`]}</span>}</div>
+                      <div><label style={{fontSize:11,fontWeight:600,color:"#4a5568",marginBottom:3,display:"block"}}>Poste</label><input value={pf.poste} onChange={e=>setFocaux(prev=>prev.map((f,idx)=>idx===i?{...f,poste:e.target.value}:f))} placeholder="Directeur..." style={{...IS(),fontSize:12}}/></div>
+                      <div><label style={{fontSize:11,fontWeight:600,color:errors[`ft_${i}`]?"#dc2626":"#4a5568",marginBottom:3,display:"block"}}>Téléphone *</label><input value={pf.telephone} onChange={e=>setFocaux(prev=>prev.map((f,idx)=>idx===i?{...f,telephone:e.target.value.replace(/\s/g,"").replace(/[^+\d]/g,"")}:f))} placeholder="+..." style={{...IS(),fontSize:12,borderColor:errors[`ft_${i}`]?"#dc2626":"#C5BFBB"}}/>{errors[`ft_${i}`]&&<span style={{fontSize:10,color:"#dc2626"}}>{errors[`ft_${i}`]}</span>}</div>
+                      <div><label style={{fontSize:11,fontWeight:600,color:"#4a5568",marginBottom:3,display:"block"}}>Email</label><input value={pf.mail} onChange={e=>setFocaux(prev=>prev.map((f,idx)=>idx===i?{...f,mail:e.target.value}:f))} placeholder="email@..." style={{...IS(),fontSize:12}}/></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {errors.global&&<div style={{background:"#fee2e2",color:"#dc2626",padding:"10px 14px",borderRadius:8,fontSize:13}}>{errors.global}</div>}
+            {Object.keys(errors).filter(k=>k!=="global").length>0&&!errors.global&&<div style={{background:"#fef9c3",color:"#a16207",padding:"10px 14px",borderRadius:8,fontSize:13}}>Veuillez corriger les champs obligatoires.</div>}
+
+            <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
+              <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--font-google-sans)"}}>Annuler</button>
+              <button onClick={handleSave} disabled={saving||saveOk} style={{padding:"10px 24px",borderRadius:10,border:"none",background:saveOk?"#dcfce7":"linear-gradient(135deg,#004f91,#003a6e)",color:saveOk?"#15803d":"#fff",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8,fontFamily:"var(--font-google-sans)"}}>
+                <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+                {saveOk?<><Check size={14}/> Enregistré</>:saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/> Sauvegarde...</>:editItem?"Modifier":"Créer le prospect"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal contact ─────────────────────────────────────────────────────────────
+function ContactModal({ open, onClose, prospect, editContact, onSaved }: {
+  open:boolean; onClose:()=>void; prospect:any; editContact:any; onSaved:()=>void;
+}) {
+  const [form,   setForm]   = useState<any>({...EMPTY_CONTACT});
+  const [saving, setSaving] = useState(false);
+  const [ok,     setOk]     = useState(false);
+
+  useEffect(()=>{
+    if (!open) return;
+    setOk(false);
+    setForm(editContact ? {
+      projet_nom:editContact.projet_nom||"", projet_description:editContact.projet_description||"",
+      date_premier_contact:editContact.date_premier_contact||"",
+      etat_avancement:editContact.etat_avancement||"en_cours",
+      commentaires:editContact.commentaires||"", contraintes:editContact.contraintes||"",
+    } : {...EMPTY_CONTACT});
+  },[open, editContact?.id]);
+
+  const upd = (k:string,v:any) => setForm((f:any)=>({...f,[k]:v}));
+
+  const handleSave = async () => {
+    if (!form.projet_nom.trim()||!form.date_premier_contact) return;
+    setSaving(true);
+    try {
+      const payload={...form};
+      Object.keys(payload).forEach(k=>{if((payload as any)[k]==="") (payload as any)[k]=null;});
+      const url = editContact ? `${API_BASE}/prospects/${prospect.id}/contacts/${editContact.id}` : `${API_BASE}/prospects/${prospect.id}/contacts`;
+      const res = await fetch(url,{method:editContact?"PATCH":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      if(!res.ok) throw new Error();
+      setOk(true); setTimeout(()=>{onClose();onSaved();},700);
+    } catch{} finally{setSaving(false);}
+  };
+
+  const IS:any={width:"100%",background:"#F2F0EF",border:"1px solid #C5BFBB",borderRadius:8,padding:"9px 12px",fontSize:13,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const};
+
+  if (!open) return null;
+  return (
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
+      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:560,border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",overflow:"hidden"}}>
+        <div style={{height:4,background:"linear-gradient(90deg,#059669,#047857)"}}/>
+        <div style={{padding:"24px 28px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+            <div>
+              <h2 style={{fontWeight:800,fontSize:"1.05rem",color:"#1a1a2e"}}>{editContact?"Modifier le contact":"Nouveau contact"}</h2>
+              <p style={{fontSize:12,color:"#9aa5b4",marginTop:2}}>{prospect?.nom}</p>
+            </div>
+            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7}}><X size={15} color="#4a5568"/></button>
+          </div>
+          <div style={{display:"flex",flexDirection:"column" as const,gap:14}}>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#4a5568",marginBottom:4,display:"block"}}>Projet concerné *</label><input value={form.projet_nom} onChange={e=>upd("projet_nom",e.target.value)} placeholder="Nom du projet d'investissement" style={IS}/></div>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#4a5568",marginBottom:4,display:"block"}}>Description du projet</label><textarea value={form.projet_description} onChange={e=>upd("projet_description",e.target.value)} rows={2} style={{...IS,resize:"vertical" as const}}/></div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              <div><label style={{fontSize:12,fontWeight:600,color:"#4a5568",marginBottom:4,display:"block"}}>Date premier contact *</label><input type="date" value={form.date_premier_contact} max={new Date().toISOString().split("T")[0]} onChange={e=>upd("date_premier_contact",e.target.value)} style={IS}/></div>
+              <div><label style={{fontSize:12,fontWeight:600,color:"#4a5568",marginBottom:4,display:"block"}}>État d'avancement</label>
+                <select value={form.etat_avancement} onChange={e=>upd("etat_avancement",e.target.value)} style={{...IS,cursor:"pointer"}}>
+                  {ETATS.map(et=><option key={et.value} value={et.value}>{et.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#4a5568",marginBottom:4,display:"block"}}>Commentaires</label><textarea value={form.commentaires} onChange={e=>upd("commentaires",e.target.value)} rows={3} placeholder="Résumé des échanges..." style={{...IS,resize:"vertical" as const}}/></div>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#4a5568",marginBottom:4,display:"block"}}>Contraintes</label><textarea value={form.contraintes} onChange={e=>upd("contraintes",e.target.value)} rows={3} placeholder="Contrainte foncière, fiscale..." style={{...IS,resize:"vertical" as const}}/></div>
+            <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
+              <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontSize:13,fontWeight:600,cursor:"pointer"}}>Annuler</button>
+              <button onClick={handleSave} disabled={saving||ok} style={{padding:"10px 24px",borderRadius:10,border:"none",background:ok?"#dcfce7":"linear-gradient(135deg,#059669,#047857)",color:ok?"#15803d":"#fff",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
+                {ok?<><Check size={14}/> Enregistré</>:saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/> Sauvegarde...</>:editContact?"Modifier":"Enregistrer le contact"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal historique ──────────────────────────────────────────────────────────
+function HistoriqueModal({ open, onClose, item, onEditContact }: {
+  open:boolean; onClose:()=>void; item:any; onEditContact:(c:any)=>void;
+}) {
+  const [expanded, setExpanded] = useState<string|null>(null);
+  if (!open||!item) return null;
+  return (
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
+      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:680,border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",overflow:"hidden"}}>
+        <div style={{height:4,background:"linear-gradient(90deg,#004f91,#1a6ab0)"}}/>
+        <div style={{padding:"24px 28px",overflowY:"auto" as const,maxHeight:"85vh"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+            <div>
+              <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e"}}>{item.nom}</h2>
+              <p style={{fontSize:12,color:"#9aa5b4",marginTop:2}}>{item.forme_juridique||""}</p>
+            </div>
+            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7}}><X size={15} color="#4a5568"/></button>
+          </div>
+          <div style={{background:"#F2F0EF",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,fontSize:13}}>
+            {item.secteur&&<div><span style={{fontSize:10,color:"#9aa5b4",fontWeight:700,textTransform:"uppercase" as const,display:"block",marginBottom:2}}>Secteur</span>{item.secteur.nom}</div>}
+            {item.region&&<div><span style={{fontSize:10,color:"#9aa5b4",fontWeight:700,textTransform:"uppercase" as const,display:"block",marginBottom:2}}>Région</span>{item.region}</div>}
+            {item.mail&&<div><span style={{fontSize:10,color:"#9aa5b4",fontWeight:700,textTransform:"uppercase" as const,display:"block",marginBottom:2}}>Email</span>{item.mail}</div>}
+          </div>
+          <p style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:12}}>Historique des contacts ({item.contacts?.length||0})</p>
+          {(!item.contacts||item.contacts.length===0) ? (
+            <div style={{textAlign:"center",padding:32,color:"#9aa5b4",fontSize:13}}>Aucun contact enregistré.</div>
+          ) : (
+            <div style={{display:"flex",flexDirection:"column" as const,gap:12}}>
+              {item.contacts.map((c:any)=>{
+                const etat=getEtat(c.etat_avancement); const isOpen=expanded===c.id;
+                return (
+                  <div key={c.id} style={{background:"#fff",border:"1px solid #C5BFBB",borderRadius:14,overflow:"hidden"}}>
+                    <div onClick={()=>setExpanded(isOpen?null:c.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontWeight:700,fontSize:14,color:"#1a1a2e",marginBottom:4}}>{c.projet_nom}</div>
+                        <div style={{fontSize:12,color:"#9aa5b4"}}>Premier contact : {fmtDate(c.date_premier_contact)}</div>
+                      </div>
+                      <span style={{fontSize:11,fontWeight:700,background:etat.bg,color:etat.text,padding:"3px 12px",borderRadius:999}}>{etat.label}</span>
+                      <button onClick={e=>{e.stopPropagation();onEditContact(c);}} style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"5px 7px"}}><Pencil size={12} style={{color:"#004f91"}}/></button>
+                      {isOpen?<ChevronUp size={14} style={{color:"#9aa5b4"}}/>:<ChevronDown size={14} style={{color:"#9aa5b4"}}/>}
+                    </div>
+                    {isOpen&&(
+                      <div style={{borderTop:"1px solid #E8E5E3",padding:"14px 16px"}}>
+                        {c.projet_description&&<div style={{marginBottom:12}}><p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Description</p><p style={{fontSize:13,color:"#4a5568"}}>{c.projet_description}</p></div>}
+                        {c.commentaires&&<div style={{marginBottom:12}}><p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Commentaires</p><p style={{fontSize:13,color:"#4a5568",lineHeight:1.6}}>{c.commentaires}</p></div>}
+                        {c.contraintes&&<div style={{marginBottom:12}}>
+                          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:4}}><AlertTriangle size={12} style={{color:"#d97706"}}/><p style={{fontSize:10,fontWeight:700,color:"#d97706",textTransform:"uppercase" as const}}>Contraintes</p></div>
+                          <div style={{background:"#fef9c3",borderRadius:8,padding:"10px 12px",fontSize:13,color:"#4a5568",lineHeight:1.7,whiteSpace:"pre-line" as const}}>{c.contraintes}</div>
+                        </div>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Page principale ───────────────────────────────────────────────────────────
+export default function AdminProspects() {
+  const [onglet,      setOnglet]      = useState<"ciblees"|"contactees">("ciblees");
+  const [prospects,   setProspects]   = useState<any[]>([]);
+  const [total,       setTotal]       = useState(0);
+  const [loading,     setLoading]     = useState(true);
+  const [modal,       setModal]       = useState(false);
+  const [editItem,    setEditItem]    = useState<any>(null);
+  const [deleting,    setDeleting]    = useState<string|null>(null);
+  const [togglingId,  setTogglingId]  = useState<string|null>(null);
+  const [vueItem,     setVueItem]     = useState<any>(null);
+
+  // Modals secondaires
+  const [contactModal,   setContactModal]   = useState(false);
+  const [contactProspect,setContactProspect]= useState<any>(null);
+  const [editContact,    setEditContact]    = useState<any>(null);
+  const [historiqueModal,setHistoriqueModal]= useState(false);
+  const [historiqueItem, setHistoriqueItem] = useState<any>(null);
+
+  const charger = useCallback(async()=>{
+    setLoading(true);
+    try {
+      const params=new URLSearchParams({per_page:"100",admin:"true"});
+      params.append("est_contacte", onglet==="contactees"?"true":"false");
+      const res=await fetch(`${API_BASE}/prospects?${params}`);
+      const data=await res.json();
+      setProspects(data.data||[]); setTotal(data.total||0);
+    } catch{} finally{setLoading(false);}
+  },[onglet]);
+
+  useEffect(()=>{charger();},[charger]);
+
+  const openCreate = () => { setEditItem(null); setModal(true); };
+  const openEdit   = (p:any) => { setEditItem(p); setModal(true); };
+
+  const handleDelete = async (id:string) => {
     if (!confirm("Supprimer ce prospect ?")) return;
     setDeleting(id);
-    try { await fetch(`${API_BASE}/prospects/${id}`, { method: "DELETE" }); charger(); }
+    try { await fetch(`${API_BASE}/prospects/${id}`,{method:"DELETE"}); charger(); }
     finally { setDeleting(null); }
   };
 
-  const openAddContact = (prospect: any) => {
-    setContactProspect(prospect); setContactForm({ ...EMPTY_CONTACT });
-    setEditContact(null); setShowContact(true); setContactOk(false);
-  };
-
-  const openEditContact = (prospect: any, contact: any) => {
-    setContactProspect(prospect);
-    setContactForm({
-      projet_nom: contact.projet_nom || "", projet_description: contact.projet_description || "",
-      date_premier_contact: contact.date_premier_contact || "",
-      etat_avancement: contact.etat_avancement || "en_cours",
-      commentaires: contact.commentaires || "", contraintes: contact.contraintes || "",
-    });
-    setEditContact(contact); setShowContact(true); setContactOk(false);
-  };
-
-  const handleSaveContact = async () => {
-    if (!contactForm.projet_nom.trim() || !contactForm.date_premier_contact) return;
-    setSavingContact(true);
+  const handleTogglePublie = async (p:any) => {
+    setTogglingId(p.id);
     try {
-      const payload = { ...contactForm };
-      Object.keys(payload).forEach(k => { if ((payload as any)[k] === "") (payload as any)[k] = null; });
-      const url    = editContact
-        ? `${API_BASE}/prospects/${contactProspect.id}/contacts/${editContact.id}`
-        : `${API_BASE}/prospects/${contactProspect.id}/contacts`;
-      const res = await fetch(url, { method: editContact ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (!res.ok) throw new Error(`Erreur ${res.status}`);
-      setContactOk(true);
-      setTimeout(() => { setShowContact(false); charger(); }, 1000);
-    } catch {} finally { setSavingContact(false); }
+      await fetch(`${API_BASE}/prospects/${p.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({est_publie:!p.est_publie})});
+      charger();
+    } finally { setTogglingId(null); }
   };
 
-  const openDetail = async (p: any) => {
-    const res  = await fetch(`${API_BASE}/prospects/${p.id}`);
-    const data = await res.json();
-    setDetailItem(data); setShowDetail(true);
+  const openContact = (p:any, c?:any) => {
+    setContactProspect(p); setEditContact(c||null); setContactModal(true);
   };
 
-  const updateFocal = (i: number, k: string, v: any) => setFocaux(prev => prev.map((f, idx) => idx === i ? { ...f, [k]: v } : f));
-  const addFocal    = () => setFocaux(prev => [...prev, { ...EMPTY_FOCAL }]);
-  const removeFocal = (i: number) => setFocaux(prev => prev.filter((_, idx) => idx !== i));
+  const openHistorique = async (p:any) => {
+    const res=await fetch(`${API_BASE}/prospects/${p.id}`);
+    const data=await res.json();
+    setHistoriqueItem(data); setHistoriqueModal(true);
+  };
 
-  const IS = (f?: string) => ({
-    width: "100%", background: "#F2F0EF",
-    border: `1px solid ${f && errors[f] ? "#dc2626" : "#C5BFBB"}`,
-    borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e",
-    outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const,
-  });
-  const ISL = (f?: string) => ({ ...IS(f), background: "#E8E5E3", cursor: "not-allowed" as const });
-  const LS = (f?: string) => ({ fontSize: 12, fontWeight: 600, color: f && errors[f] ? "#dc2626" : "#4a5568", marginBottom: 4, display: "block" });
-  const FS = { display: "flex", flexDirection: "column" as const, gap: 3 };
-  const ST = (title: string, color = "#ca631f") => (
-    <p style={{ fontSize: 11, fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 12 }}>{title}</p>
-  );
-  const EM = (f: string) => errors[f] ? <span style={{ fontSize: 11, color: "#dc2626" }}>{errors[f]}</span> : null;
+  const openVue = async (p:any) => {
+    const res=await fetch(`${API_BASE}/prospects/${p.id}`);
+    const data=await res.json();
+    setVueItem(data);
+  };
 
   return (
-    <div style={{ padding: "36px 40px 80px" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
+      <style>{`
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .marquee-p{display:inline-block;animation:marquee-p 7s linear infinite;}
+        @keyframes marquee-p{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+      `}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
-          <h1 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Prospects</h1>
-          <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 2 }}>{total} prospect{total > 1 ? "s" : ""}</p>
+          <p style={{fontSize:11,fontWeight:700,color:"#E35336",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Administration</p>
+          <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Prospects</h1>
+          <p style={{color:"#9aa5b4",fontSize:13,marginTop:2}}>{total} prospect{total>1?"s":""}</p>
         </div>
-        <button onClick={openCreate} style={{
-          display: "flex", alignItems: "center", gap: 8,
-          background: "linear-gradient(135deg, #004f91, #003a6e)",
-          color: "#fff", fontWeight: 600, fontSize: 14,
-          padding: "11px 20px", borderRadius: 12, border: "none", cursor: "pointer",
-          boxShadow: "0 4px 14px rgba(0,79,145,0.3)",
-        }}>
-          <Plus size={16} /> Ajouter un prospect
+        <button onClick={openCreate} style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#E35336,#c42d1a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(227,83,54,0.3)"}}>
+          <Plus size={15}/> Ajouter un prospect
         </button>
       </div>
 
       {/* Onglets */}
-      <div style={{ display: "flex", gap: 4, background: "#F2F0EF", borderRadius: 12, padding: 4, marginBottom: 24, width: "fit-content" }}>
-        {[
-          { key: "ciblees",    label: "Entreprises ciblées"    },
-          { key: "contactees", label: "Entreprises contactées" },
-        ].map(o => (
-          <button key={o.key} onClick={() => setOnglet(o.key as any)} style={{
-            padding: "8px 20px", borderRadius: 8, border: "none", cursor: "pointer",
-            fontSize: 13, fontWeight: 600, transition: "all 0.2s",
-            background: onglet === o.key ? "#fff" : "transparent",
-            color:      onglet === o.key ? "#1a1a2e" : "#9aa5b4",
-            boxShadow:  onglet === o.key ? "0 2px 8px rgba(0,0,0,0.08)" : "none",
-          }}>
+      <div style={{display:"flex",gap:4,background:"#F2F0EF",borderRadius:12,padding:4,marginBottom:28,width:"fit-content"}}>
+        {[{key:"ciblees",label:"Entreprises ciblées"},{key:"contactees",label:"Entreprises contactées"}].map(o=>(
+          <button key={o.key} onClick={()=>setOnglet(o.key as any)} style={{padding:"8px 20px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all 0.2s",background:onglet===o.key?"#fff":"transparent",color:onglet===o.key?"#1a1a2e":"#9aa5b4",boxShadow:onglet===o.key?"0 2px 8px rgba(0,0,0,0.08)":"none"}}>
             {o.label}
           </button>
         ))}
       </div>
 
-      {/* Formulaire */}
-      {showForm && (
-        <div style={{ background: "#fff", border: "1px solid #C5BFBB", borderRadius: 20, marginBottom: 32, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
-          <div style={{ height: 4, background: "linear-gradient(90deg, #004f91, #1a6ab0)" }} />
-          <div style={{ padding: "24px 28px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-              <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.1rem", color: "#1a1a2e" }}>
-                {editItem ? "Modifier le prospect" : "Nouveau prospect"}
-              </h2>
-              <button onClick={() => setShowForm(false)} style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: 8 }}>
-                <X size={15} color="#4a5568" />
-              </button>
-            </div>
+      {/* Cards */}
+      {loading ? (
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:200,gap:10,color:"#9aa5b4"}}>
+          <Loader2 size={22} style={{animation:"spin 1s linear infinite"}}/>
+        </div>
+      ) : prospects.length===0 ? (
+        <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+          <Building2 size={40} style={{marginBottom:12,opacity:0.25}}/>
+          <p style={{fontSize:14,color:"#4a5568"}}>Aucun prospect — cliquez sur "Ajouter" pour commencer.</p>
+        </div>
+      ) : (
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
+          {prospects.map(p=>{
+            const estInstalle = p.type_prospect==="entreprise_installee";
+            const dernierContact = p.contacts?.[p.contacts.length-1];
+            const etat = dernierContact ? getEtat(dernierContact.etat_avancement) : null;
+            return (
+              <div key={p.id}
+                onClick={()=>openVue(p)}
+                style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${p.est_publie?"#E35336":"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
+                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)";ev.currentTarget.style.borderColor="#FFB0A1";}}
+                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?"#E35336":"#C5BFBB";}}>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {/* Nom défilant */}
+                <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap"}}>
+                  <span className="marquee-p">{p.nom}&nbsp;&nbsp;&nbsp;&nbsp;{p.nom}</span>
+                </div>
 
-              {/* ── Type de prospect ── */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
-                {ST("Type de prospect", "#004f91")}
-                {errors.type_prospect && <p style={{ fontSize: 11, color: "#dc2626", marginBottom: 8 }}>{errors.type_prospect}</p>}
-                <div style={{ display: "flex", gap: 10 }}>
-                  {[
-                    { value: "entreprise_installee", label: "Entreprise installée au Sénégal" },
-                    { value: "hors_senegal",          label: "Entreprise hors Sénégal"         },
-                  ].map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => {
-                        // Vider le form quand on change de type
-                        setForm({ ...EMPTY_FORM, type_prospect: opt.value });
-                        setSiegePaysNom("");
-                        setRegionId(null);
-                        setDepId(null);
-                        setFocaux([{ ...EMPTY_FOCAL }]);
-                      }}
-                      style={{
-                        padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                        cursor: "pointer",
-                        border: `2px solid ${form.type_prospect === opt.value ? "#004f91" : "#C5BFBB"}`,
-                        background: form.type_prospect === opt.value ? "rgba(0,79,145,0.08)" : "#fff",
-                        color: form.type_prospect === opt.value ? "#004f91" : "#4a5568",
-                        transition: "all 0.2s",
-                      }}
-                    >
-                      {opt.label}
+                {/* Forme juridique grisée */}
+                {p.forme_juridique&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{p.forme_juridique}</div>}
+
+                {/* Badge type */}
+                <div style={{marginBottom:12}}>
+                  <span style={{fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:999,background:estInstalle?"rgba(24,128,56,0.08)":"rgba(54,111,227,0.08)",color:estInstalle?"#188038":"#366FE3",border:`1px solid ${estInstalle?"rgba(24,128,56,0.2)":"rgba(54,111,227,0.2)"}`}}>
+                    {estInstalle?"Installée au Sénégal":"Hors Sénégal"}
+                  </span>
+                  {etat&&<span style={{fontSize:10,fontWeight:700,background:etat.bg,color:etat.text,padding:"2px 8px",borderRadius:999,marginLeft:5}}>{etat.label}</span>}
+                </div>
+
+                {/* Boutons */}
+                <div style={{display:"flex",flexDirection:"column" as const,gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
+                  <div style={{display:"flex",gap:5}}>
+                    <button onClick={()=>openHistorique(p)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
+                      <Clock size={12}/> Historique
                     </button>
-                  ))}
-                </div>
-
-                {/* Sélecteur entreprise installée */}
-                {form.type_prospect === "entreprise_installee" && (
-                  <div style={{ marginTop: 14 }}>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 6, display: "block" }}>
-                      Sélectionner l'entreprise *
-                    </label>
-                    <select
-                      value={form.entreprise_installee_id}
-                      onChange={e => {
-                        const ent = entreprisesInstallees.find((x: any) => x.id === e.target.value);
-                        if (ent) prefillFromEntreprise(ent);
-                        else update("entreprise_installee_id", "");
-                      }}
-                      style={{ width: "100%", background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", cursor: "pointer", boxSizing: "border-box" as const }}
-                    >
-                      <option value="">— Sélectionner une entreprise —</option>
-                      {entreprisesInstallees.map((ent: any) => (
-                        <option key={ent.id} value={ent.id}>
-                          {ent.nom}{ent.forme_juridique ? ` · ${ent.forme_juridique.split("(")[0].trim()}` : ""}
-                        </option>
-                      ))}
-                    </select>
-                    {form.entreprise_installee_id && (
-                      <p style={{ fontSize: 12, color: "#15803d", marginTop: 6 }}>
-                        ✓ Informations pré-remplies — non modifiables depuis Prospects
-                      </p>
-                    )}
+                    <button onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
+                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:p.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:p.est_publie?"#15803d":"#6b7280",fontWeight:600}}>
+                      {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
+                    </button>
+                    <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
+                      style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
+                      {deleting===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                    </button>
                   </div>
-                )}
-              </div>
-
-              {/* ── Identification (locked si entreprise installée) ── */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
-                {ST("Identification", "#004f91")}
-                {isLocked && (
-                  <div style={{ background: "#dbeafe", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#1d4ed8", marginBottom: 12 }}>
-                    ℹ️ Ces informations sont récupérées depuis Entreprises Installées et ne peuvent pas être modifiées ici.
-                  </div>
-                )}
-                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 12 }}>
-                  <div style={FS}>
-                    <label style={LS("nom")}>Dénomination sociale *</label>
-                    <input value={form.nom} disabled={isLocked} onChange={e => !isLocked && update("nom", e.target.value)} placeholder="Nom de l'entreprise" style={isLocked ? ISL("nom") : IS("nom")} />
-                    {EM("nom")}
-                  </div>
-                  <div style={FS}>
-                    <label style={LS("forme_juridique")}>Forme juridique *</label>
-                    <select value={form.forme_juridique} disabled={isLocked} onChange={e => !isLocked && update("forme_juridique", e.target.value)} style={isLocked ? { ...ISL("forme_juridique") } : { ...IS("forme_juridique"), cursor: "pointer" }}>
-                      <option value="">— Sélectionner —</option>
-                      {FORMES_JURIDIQUES.map(f => <option key={f} value={f}>{f}</option>)}
-                    </select>
-                    {EM("forme_juridique")}
-                  </div>
-                  <div style={FS}>
-                    <label style={LS("date_creation_ent")}>Date de création *</label>
-                    <input type="date" value={form.date_creation_ent} disabled={isLocked} max={new Date().toISOString().split("T")[0]} onChange={e => !isLocked && update("date_creation_ent", e.target.value)} style={isLocked ? ISL("date_creation_ent") : IS("date_creation_ent")} />
-                    {EM("date_creation_ent")}
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Siège + Localisation ── */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
-                {ST("Siège social & Localisation", "#004f91")}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-                  <div style={FS}>
-                    <label style={LS("siege_pays_id")}>Pays du siège social {form.type_prospect === "hors_senegal" ? "*" : ""}</label>
-                    <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
-                      <PaysSelect
-                        value={siegePaysNom}
-                        onChange={nom => setSiegePaysNom(nom)}
-                        onChangeId={id => update("siege_pays_id", id || "")}
-                        placeholder="Pays du siège"
-                        excludeNoms={["Sénégal"]}
-                      />
-                    </div>
-                    {EM("siege_pays_id")}
-                  </div>
-                  <div style={FS}>
-                    <label style={LS()}>Pays d'installation</label>
-                    <input value={form.type_prospect === "hors_senegal" ? "Hors Sénégal" : "Sénégal"} disabled style={{ ...ISL(), opacity: 0.6 }} />
-                  </div>
-                </div>
-
-                {/* Géo sénégalaise — seulement pour entreprise installée */}
-                {form.type_prospect !== "hors_senegal" && (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
-                    <div style={FS}>
-                      <label style={LS("region_id")}>Région *</label>
-                      <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
-                        <RegionSelect
-                          value={form.region_id}
-                          required
-                          onChange={(id, nom) => { update("region_id", id || ""); update("departement_id", ""); update("arrondissement_id", ""); setRegionId(id); setDepId(null); }}
-                        />
-                      </div>
-                      {EM("region_id")}
-                    </div>
-                    <div style={FS}>
-                      <label style={LS("departement_id")}>Département *</label>
-                      <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
-                        <DepartementSelect
-                          regionId={regionId}
-                          value={form.departement_id}
-                          required
-                          onChange={(id, nom) => { update("departement_id", id || ""); update("arrondissement_id", ""); setDepId(id); }}
-                        />
-                      </div>
-                      {EM("departement_id")}
-                    </div>
-                    <div style={FS}>
-                      <label style={LS()}>Arrondissement</label>
-                      <div style={{ pointerEvents: isLocked ? "none" : "auto" }}>
-                        <ArrondissementSelect
-                          departementId={depId}
-                          value={form.arrondissement_id}
-                          onChange={(id, nom) => update("arrondissement_id", id || "")}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div style={FS}>
-                  <label style={LS("adresse")}>Adresse *</label>
-                  <input value={form.adresse} disabled={isLocked} onChange={e => !isLocked && update("adresse", e.target.value)} placeholder="Adresse physique" style={isLocked ? ISL("adresse") : IS("adresse")} />
-                  {EM("adresse")}
-                </div>
-              </div>
-
-              {/* ── Contact ── */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
-                {ST("Contact", "#004f91")}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                  <div style={FS}>
-                    <label style={LS("telephone")}>Téléphone * <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(indicatif + chiffres, ex: +22171234567)</span></label>
-                    <input value={form.telephone} disabled={isLocked} onChange={e => !isLocked && update("telephone", e.target.value)} placeholder="+22171234567" style={isLocked ? ISL("telephone") : IS("telephone")} />
-                    {EM("telephone")}
-                  </div>
-                  <div style={FS}>
-                    <label style={LS("mail")}>Email *</label>
-                    <input type="email" value={form.mail} disabled={isLocked} onChange={e => !isLocked && update("mail", e.target.value)} placeholder="contact@entreprise.com" style={isLocked ? ISL("mail") : IS("mail")} />
-                    {EM("mail")}
-                  </div>
-                  <div style={FS}>
-                    <label style={LS()}>Site web</label>
-                    <input value={form.siteweb} disabled={isLocked} onChange={e => !isLocked && update("siteweb", e.target.value)} placeholder="https://..." style={isLocked ? ISL() : IS()} />
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Thématiques ── */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
-                {ST("Thématiques", "#004f91")}
-                {(errors.secteur_id || errors.branche_id || errors.activite_id) && (
-                  <p style={{ fontSize: 11, color: "#dc2626", marginBottom: 8 }}>Secteur, branche et activité sont obligatoires</p>
-                )}
-                <div style={{ pointerEvents: isLocked ? "none" : "auto", opacity: isLocked ? 0.7 : 1 }}>
-                  <ThematiquesNaema
-                    value={form.thematiques}
-                    onChange={val => {
-                      update("thematiques", val);
-                      const items = val.split(",").map((t: string) => t.trim()).filter(Boolean);
-                      update("secteur_nom", items.find((t: string) => t.startsWith("sec:"))?.slice(4) || "");
-                      update("branche_nom", items.find((t: string) => t.startsWith("bra:"))?.slice(4) || "");
-                      update("activite_nom", items.find((t: string) => t.startsWith("act:"))?.slice(4) || "");
-                    }}
-                  />
-                </div>
-              </div>
-              {/* ── Point d'entrée — TOUJOURS éditable ── */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
-                {ST("Point d'entrée", "#004f91")}
-                <div style={FS}>
-                  <label style={LS("point_entree")}>Canal / Outil utilisé pour cibler l'entreprise *</label>
-                  <textarea value={form.point_entree} onChange={e => update("point_entree", e.target.value)} rows={2}
-                    placeholder="Ex: FDI Markets, salon, recommandation partenaire..."
-                    style={{ ...IS("point_entree"), resize: "vertical" as const }} />
-                  {EM("point_entree")}
-                </div>
-              </div>
-
-              {/* ── Points focaux ── */}
-              <div style={{ background: "#F8F7F6", borderRadius: 12, padding: 16 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                  {ST("Points focaux", "#004f91")}
-                  {!isLocked && (
-                    <button onClick={addFocal} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.08)", border: "none", borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
-                      <Plus size={12} /> Ajouter
+                  {onglet==="ciblees"&&(
+                    <button onClick={()=>openContact(p)}
+                      style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"rgba(24,128,56,0.07)",border:"1px solid rgba(24,128,56,0.2)",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#188038",fontWeight:700}}>
+                      <MessageSquare size={12}/> Enregistrer un contact
                     </button>
                   )}
                 </div>
-                {isLocked && (
-                  <div style={{ background: "#dbeafe", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#1d4ed8", marginBottom: 12 }}>
-                    ℹ️ Points focaux récupérés depuis Entreprises Installées.
-                  </div>
-                )}
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {focaux.map((pf, i) => (
-                    <div key={i} style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 12, padding: "14px 16px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <User size={13} style={{ color: "#004f91" }} />
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#4a5568" }}>Contact {i + 1}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modal vue prospect */}
+      {vueItem && (
+        <div onClick={()=>setVueItem(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+          <div onClick={ev=>ev.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
+            <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
+            <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
+              {(() => {
+                const p = vueItem;
+                const estInstalle = p.type_prospect==="entreprise_installee";
+                const LBL = ({children}:{children:string}) => <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>;
+                const dernierContact = p.contacts?.[p.contacts.length-1];
+                const etat = dernierContact ? getEtat(dernierContact.etat_avancement) : null;
+                return (
+                  <>
+                    {/* Header */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+                      <div style={{flex:1,paddingRight:16}}>
+                        <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{p.nom}</h2>
+                        <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
+                          {p.forme_juridique&&<span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>{p.forme_juridique}</span>}
+                          <span style={{fontSize:11,fontWeight:700,padding:"2px 9px",borderRadius:999,background:estInstalle?"rgba(24,128,56,0.08)":"rgba(54,111,227,0.08)",color:estInstalle?"#188038":"#366FE3",border:`1px solid ${estInstalle?"rgba(24,128,56,0.2)":"rgba(54,111,227,0.2)"}`}}>
+                            {estInstalle?"Installée au Sénégal":"Hors Sénégal"}
+                          </span>
+                          {etat&&<span style={{fontSize:11,fontWeight:700,background:etat.bg,color:etat.text,padding:"2px 9px",borderRadius:999}}>{etat.label}</span>}
+                          <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"#15803d":"#9aa5b4",background:p.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Publié":"Non publié"}</span>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#4a5568", cursor: "pointer" }}>
-                            <input type="checkbox" checked={pf.est_principal} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, "est_principal", e.target.checked)} />
-                            Principal
-                          </label>
-                          {!isLocked && focaux.length > 1 && (
-                            <button onClick={() => removeFocal(i)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-                              <Trash size={13} style={{ color: "#dc2626" }} />
-                            </button>
+                      </div>
+                      <button onClick={()=>setVueItem(null)} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
+                    </div>
+
+                    {/* Infos principales */}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+                      {p.date_creation_ent&&(
+                        <div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
+                          <LBL>Date de création</LBL>
+                          <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.date_creation_ent+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
+                        </div>
+                      )}
+                      {(p.region_nom||p.siege_pays_nom)&&(
+                        <div style={{background:"rgba(227,83,54,0.05)",borderRadius:10,padding:"12px 14px"}}>
+                          <LBL>{estInstalle?"Localisation":"Pays du siège"}</LBL>
+                          <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>
+                            {estInstalle?[p.arrondissement_nom,p.departement_nom,p.region_nom].filter(Boolean).join(", "):p.siege_pays_nom}
+                          </p>
+                        </div>
+                      )}
+                      {p.adresse&&(
+                        <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}>
+                          <LBL>Adresse</LBL>
+                          <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{p.adresse}</p>
+                        </div>
+                      )}
+                      {p.telephone&&(
+                        <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}>
+                          <LBL>Téléphone</LBL>
+                          <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{p.telephone}</p>
+                        </div>
+                      )}
+                      {p.mail&&(
+                        <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}>
+                          <LBL>Email</LBL>
+                          <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{p.mail}</p>
+                        </div>
+                      )}
+                      {p.point_entree&&(
+                        <div style={{background:"rgba(24,128,56,0.05)",borderRadius:10,padding:"12px 14px"}}>
+                          <LBL>Point d'entrée APIX</LBL>
+                          <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{p.point_entree}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* NAEMA en arborescence */}
+                    {(p.secteur||p.branche||p.activite)&&(
+                      <div style={{marginBottom:16}}>
+                        <LBL>Classification NAEMA</LBL>
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                          {p.secteur&&(
+                            <div>
+                              <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:p.branche?5:0}}>
+                                <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
+                                <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{p.secteur.nom}</span>
+                              </div>
+                              {p.branche&&(
+                                <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)"}}>
+                                  <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:p.activite?4:0}}>
+                                    <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                                    <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{p.branche.nom}</span>
+                                  </div>
+                                  {p.activite&&(
+                                    <div style={{paddingLeft:18}}>
+                                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                        <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{p.activite.nom}</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 10 }}>
-                        {[
-                          { key: "fn", field: "nom",    label: "Nom *",    ph: "Nom"        },
-                          { key: "fp", field: "prenom", label: "Prénom *", ph: "Prénom"     },
-                          { key: "",   field: "poste",  label: "Poste",    ph: "DG, Dir..." },
-                        ].map(f => (
-                          <div key={f.field} style={FS}>
-                            <label style={{ fontSize: 11, fontWeight: 600, color: errors[`${f.key}_${i}`] ? "#dc2626" : "#4a5568", marginBottom: 3, display: "block" }}>{f.label}</label>
-                            <input value={pf[f.field]} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, f.field, e.target.value)} placeholder={f.ph}
-                              style={{ ...(isLocked ? ISL() : IS()), fontSize: 12, borderColor: errors[`${f.key}_${i}`] ? "#dc2626" : "#C5BFBB" }} />
-                            {errors[`${f.key}_${i}`] && <span style={{ fontSize: 10, color: "#dc2626" }}>{errors[`${f.key}_${i}`]}</span>}
-                          </div>
-                        ))}
-                        <div style={FS}>
-                          <label style={{ fontSize: 11, fontWeight: 600, color: errors[`ft_${i}`] ? "#dc2626" : "#4a5568", marginBottom: 3, display: "block" }}>Téléphone *</label>
-                          <input value={pf.telephone} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, "telephone", e.target.value)} placeholder="+22171234567"
-                            style={{ ...(isLocked ? ISL() : IS()), fontSize: 12, borderColor: errors[`ft_${i}`] ? "#dc2626" : "#C5BFBB" }} />
-                          {errors[`ft_${i}`] && <span style={{ fontSize: 10, color: "#dc2626" }}>{errors[`ft_${i}`]}</span>}
-                        </div>
-                        <div style={FS}>
-                          <label style={{ fontSize: 11, fontWeight: 600, color: "#4a5568", marginBottom: 3, display: "block" }}>Email</label>
-                          <input value={pf.mail} disabled={isLocked} onChange={e => !isLocked && updateFocal(i, "mail", e.target.value)} placeholder="email@..."
-                            style={{ ...(isLocked ? ISL() : IS()), fontSize: 12 }} />
+                    )}
+
+                    {/* Points focaux */}
+                    {p.points_focaux?.length>0&&(
+                      <div style={{marginBottom:16}}>
+                        <LBL>Points focaux</LBL>
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                          {p.points_focaux.map((pf:any,i:number)=>(
+                            <div key={i} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px",fontSize:12}}>
+                              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                                <span style={{fontWeight:700,color:"#1a1a2e"}}>{pf.civilite} {pf.prenom} {pf.nom}</span>
+                                {pf.poste&&<span style={{color:"#9aa5b4"}}>— {pf.poste}</span>}
+                                {pf.est_principal&&<span style={{fontSize:10,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",borderRadius:999,padding:"1px 7px"}}>Principal</span>}
+                              </div>
+                              <div style={{color:"#4a5568"}}>{pf.telephone}{pf.mail&&` · ${pf.mail}`}</div>
+                            </div>
+                          ))}
                         </div>
                       </div>
+                    )}
+
+                    {/* Dernier contact */}
+                    {dernierContact&&(
+                      <div style={{marginBottom:16}}>
+                        <LBL>Dernier contact</LBL>
+                        <div style={{background:"rgba(54,111,227,0.05)",border:"1px solid rgba(54,111,227,0.1)",borderRadius:10,padding:"12px 14px"}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                            <span style={{fontWeight:700,fontSize:13,color:"#1a1a2e"}}>{dernierContact.projet_nom}</span>
+                            <span style={{fontSize:11,fontWeight:700,background:etat?.bg,color:etat?.text,padding:"2px 8px",borderRadius:999}}>{etat?.label}</span>
+                          </div>
+                          <p style={{fontSize:11,color:"#9aa5b4"}}>{fmtDate(dernierContact.date_premier_contact)}</p>
+                          {dernierContact.commentaires&&<p style={{fontSize:12,color:"#4a5568",marginTop:6,lineHeight:1.6}}>{dernierContact.commentaires}</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Footer */}
+                    <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
+                      <button onClick={()=>{setVueItem(null);openEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#366FE3",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
+                        <Pencil size={13}/> Modifier
+                      </button>
+                      <button onClick={()=>setVueItem(null)} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Publié */}
-              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: "#4a5568" }}>
-                <input type="checkbox" checked={form.est_publie} onChange={e => update("est_publie", e.target.checked)} style={{ width: 16, height: 16 }} />
-                Publier sur le site public
-              </label>
-
-              {errors.global && <div style={{ background: "#fee2e2", color: "#dc2626", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>{errors.global}</div>}
-
-              {Object.keys(errors).filter(k => k !== "global").length > 0 && !errors.global && (
-                <div style={{ background: "#fef9c3", color: "#a16207", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>
-                  Veuillez corriger les champs obligatoires avant de continuer.
-                </div>
-              )}
-
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                <button onClick={() => setShowForm(false)} style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #C5BFBB", background: "transparent", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
-                <button onClick={handleSave} disabled={saving || saveOk} style={{
-                  padding: "10px 24px", borderRadius: 10, border: "none",
-                  background: saveOk ? "#dcfce7" : "linear-gradient(135deg, #004f91, #003a6e)",
-                  color: saveOk ? "#15803d" : "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer",
-                  display: "flex", alignItems: "center", gap: 8,
-                }}>
-                  {saveOk ? <><Check size={14} /> Enregistré !</> : saving ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Sauvegarde...</> : editItem ? "Modifier" : "Ajouter"}
-                </button>
-              </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
       )}
 
-      {/* Tableau */}
-      <div style={{ background: "#fff", border: "1px solid #C5BFBB", borderRadius: 20, overflow: "hidden" }}>
-        <div style={{ padding: "18px 24px", borderBottom: "1px solid #E8E5E3", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "0.95rem", color: "#1a1a2e" }}>
-            {onglet === "ciblees" ? "Entreprises ciblées" : "Entreprises contactées"}
-          </h2>
-          <span style={{ fontSize: 12, color: "#9aa5b4" }}>{total} résultat{total > 1 ? "s" : ""}</span>
-        </div>
-
-        {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 200, gap: 10, color: "#9aa5b4" }}>
-            <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
-          </div>
-        ) : prospects.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 24px", color: "#9aa5b4" }}>
-            <Building2 size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
-            <p style={{ fontSize: 14, color: "#4a5568" }}>Aucun prospect</p>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: "#F8F7F6" }}>
-                  {["Entreprise", "Forme juridique", "Localisation", "Secteur",
-                    onglet === "contactees" ? "Dernier contact" : "Actions"].map(h => (
-                    <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                  {onglet === "contactees" && (
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em" }}>Actions</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {prospects.map((p, i) => {
-                  const dernierContact = p.contacts?.[p.contacts.length - 1];
-                  const etat = dernierContact ? getEtat(dernierContact.etat_avancement) : null;
-                  const estInstalle = p.type_prospect === "entreprise_installee";
-                  const localisation = estInstalle
-                    ? [p.arrondissement_nom, p.departement_nom, p.region_nom].filter(Boolean).join(", ")
-                    : p.siege_pays_nom || "—";
-                  return (
-                    <tr key={p.id} style={{ borderTop: "1px solid #F2F0EF", background: i % 2 === 0 ? "#fff" : "#FAFAF9" }}>
-
-                      {/* Entreprise + badge */}
-                      <td style={{ padding: "14px 16px", maxWidth: 240 }}>
-                        <div style={{ fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 4 }}>
-                          {p.nom.length > 35 ? p.nom.slice(0, 35) + "…" : p.nom}
-                        </div>
-                        <span style={{
-                          fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999,
-                          background: estInstalle ? "#dcfce7" : "rgba(0,79,145,0.1)",
-                          color: estInstalle ? "#15803d" : "#004f91",
-                        }}>
-                          {estInstalle ? "Installée au Sénégal" : "Hors Sénégal"}
-                        </span>
-                      </td>
-
-                      {/* Forme juridique */}
-                      <td style={{ padding: "14px 16px", color: "#4a5568", whiteSpace: "nowrap" }}>
-                        {p.forme_juridique || "—"}
-                      </td>
-
-                      {/* Localisation */}
-                      <td style={{ padding: "14px 16px", color: "#4a5568", maxWidth: 180 }}>
-                        {localisation || "—"}
-                      </td>
-
-                      {/* Secteur */}
-                      <td style={{ padding: "14px 16px" }}>
-                        {p.secteur
-                          ? <span style={{ fontSize: 11, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>{p.secteur.nom}</span>
-                          : "—"}
-                      </td>
-
-                      {/* Colonne dernier contact si onglet contactées */}
-                      {onglet === "contactees" && (
-                        <td style={{ padding: "14px 16px" }}>
-                          {dernierContact ? (
-                            <div>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: "#1a1a2e", marginBottom: 3 }}>{dernierContact.projet_nom}</div>
-                              <span style={{ fontSize: 11, fontWeight: 600, background: etat?.bg, color: etat?.text, padding: "2px 8px", borderRadius: 999 }}>{etat?.label}</span>
-                            </div>
-                          ) : "—"}
-                        </td>
-                      )}
-
-                      {/* Actions */}
-                      <td style={{ padding: "14px 16px" }}>
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <button onClick={() => openDetail(p)} title="Historique" style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 8px" }}>
-                            <Clock size={13} style={{ color: "#004f91" }} />
-                          </button>
-                          <button onClick={() => openAddContact(p)} title="Ajouter un contact" style={{ background: "rgba(5,150,105,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 8px" }}>
-                            <MessageSquare size={13} style={{ color: "#059669" }} />
-                          </button>
-                          <button onClick={() => openEdit(p)} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 8px" }}>
-                            <Pencil size={13} style={{ color: "#004f91" }} />
-                          </button>
-                          <button onClick={() => handleDelete(p.id)} disabled={deleting === p.id} style={{ background: "rgba(220,38,38,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 8px" }}>
-                            {deleting === p.id ? <Loader2 size={13} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={13} style={{ color: "#dc2626" }} />}
-                          </button>
-                        </div>
-                      </td>
-
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Modal Contact */}
-      {showContact && contactProspect && (
-        <div onClick={e => { if (e.target === e.currentTarget) setShowContact(false); }}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 24 }}>
-          <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 560, border: "1px solid #C5BFBB", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden" }}>
-            <div style={{ height: 4, background: "linear-gradient(90deg, #059669, #047857)" }} />
-            <div style={{ padding: "24px 28px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <div>
-                  <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.1rem", color: "#1a1a2e" }}>
-                    {editContact ? "Modifier le contact" : "Nouveau contact"}
-                  </h2>
-                  <p style={{ fontSize: 12, color: "#9aa5b4", marginTop: 2 }}>{contactProspect.nom}</p>
-                </div>
-                <button onClick={() => setShowContact(false)} style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: 8 }}>
-                  <X size={15} color="#4a5568" />
-                </button>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div style={FS}>
-                  <label style={LS()}>Projet concerné *</label>
-                  <input value={contactForm.projet_nom} onChange={e => setContactForm((f: any) => ({ ...f, projet_nom: e.target.value }))} placeholder="Nom du projet d'investissement" style={IS()} />
-                </div>
-                <div style={FS}>
-                  <label style={LS()}>Description du projet</label>
-                  <textarea value={contactForm.projet_description} onChange={e => setContactForm((f: any) => ({ ...f, projet_description: e.target.value }))} rows={2} style={{ ...IS(), resize: "vertical" as const }} />
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div style={FS}>
-                    <label style={LS()}>Date premier contact * <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(≤ aujourd'hui)</span></label>
-                    <input type="date" value={contactForm.date_premier_contact} max={new Date().toISOString().split("T")[0]} onChange={e => setContactForm((f: any) => ({ ...f, date_premier_contact: e.target.value }))} style={IS()} />
-                  </div>
-                  <div style={FS}>
-                    <label style={LS()}>État d'avancement</label>
-                    <select value={contactForm.etat_avancement} onChange={e => setContactForm((f: any) => ({ ...f, etat_avancement: e.target.value }))} style={{ ...IS(), cursor: "pointer" }}>
-                      {ETATS.map(et => <option key={et.value} value={et.value}>{et.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div style={FS}>
-                  <label style={LS()}>Commentaires</label>
-                  <textarea value={contactForm.commentaires} onChange={e => setContactForm((f: any) => ({ ...f, commentaires: e.target.value }))} rows={3} placeholder="Résumé des échanges..." style={{ ...IS(), resize: "vertical" as const }} />
-                </div>
-                <div style={FS}>
-                  <label style={LS()}>Contraintes <span style={{ fontWeight: 400, color: "#9aa5b4" }}>(préoccupations exprimées)</span></label>
-                  <textarea value={contactForm.contraintes} onChange={e => setContactForm((f: any) => ({ ...f, contraintes: e.target.value }))} rows={3}
-                    placeholder={"- Contrainte foncière\n- Besoin de garanties fiscales\n- ..."}
-                    style={{ ...IS(), resize: "vertical" as const }} />
-                </div>
-                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                  <button onClick={() => setShowContact(false)} style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #C5BFBB", background: "transparent", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
-                  <button onClick={handleSaveContact} disabled={savingContact || contactOk} style={{
-                    padding: "10px 24px", borderRadius: 10, border: "none",
-                    background: contactOk ? "#dcfce7" : "linear-gradient(135deg, #059669, #047857)",
-                    color: contactOk ? "#15803d" : "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer",
-                    display: "flex", alignItems: "center", gap: 8,
-                  }}>
-                    {contactOk ? <><Check size={14} /> Enregistré !</> : savingContact ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Sauvegarde...</> : editContact ? "Modifier" : "Ajouter"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Historique */}
-      {showDetail && detailItem && (
-        <div onClick={e => { if (e.target === e.currentTarget) setShowDetail(false); }}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 24 }}>
-          <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 680, border: "1px solid #C5BFBB", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden" }}>
-            <div style={{ height: 4, background: "linear-gradient(90deg, #004f91, #1a6ab0)" }} />
-            <div style={{ padding: "24px 28px", overflowY: "auto", maxHeight: "85vh" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-                <div>
-                  <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e" }}>{detailItem.nom}</h2>
-                  <p style={{ fontSize: 12, color: "#9aa5b4", marginTop: 2 }}>{detailItem.forme_juridique || ""}</p>
-                </div>
-                <button onClick={() => setShowDetail(false)} style={{ background: "#E8E5E3", border: "none", cursor: "pointer", borderRadius: 10, padding: 8 }}>
-                  <X size={16} color="#4a5568" />
-                </button>
-              </div>
-
-              <div style={{ background: "#F2F0EF", borderRadius: 12, padding: "12px 16px", marginBottom: 20, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, fontSize: 13 }}>
-                {detailItem.secteur && <div><span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, textTransform: "uppercase", display: "block", marginBottom: 2 }}>Secteur</span>{detailItem.secteur.nom}</div>}
-                {detailItem.region  && <div><span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, textTransform: "uppercase", display: "block", marginBottom: 2 }}>Région</span>{detailItem.region}</div>}
-                {detailItem.mail    && <div><span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, textTransform: "uppercase", display: "block", marginBottom: 2 }}>Email</span>{detailItem.mail}</div>}
-              </div>
-
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
-                Historique des contacts ({detailItem.contacts?.length || 0})
-              </p>
-
-              {(!detailItem.contacts || detailItem.contacts.length === 0) ? (
-                <div style={{ textAlign: "center", padding: "32px", color: "#9aa5b4", fontSize: 13 }}>Aucun contact enregistré.</div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {detailItem.contacts.map((c: any) => {
-                    const etat   = getEtat(c.etat_avancement);
-                    const isOpen = expandedContact === c.id;
-                    return (
-                      <div key={c.id} style={{ background: "#fff", border: "1px solid #C5BFBB", borderRadius: 14, overflow: "hidden" }}>
-                        <div onClick={() => setExpandedContact(isOpen ? null : c.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer" }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e", marginBottom: 4 }}>{c.projet_nom}</div>
-                            <div style={{ fontSize: 12, color: "#9aa5b4" }}>
-                              Premier contact : {new Date(c.date_premier_contact).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
-                            </div>
-                          </div>
-                          <span style={{ fontSize: 11, fontWeight: 700, background: etat.bg, color: etat.text, padding: "3px 12px", borderRadius: 999 }}>{etat.label}</span>
-                          <button onClick={e => { e.stopPropagation(); openEditContact(detailItem, c); }} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 7px" }}>
-                            <Pencil size={12} style={{ color: "#004f91" }} />
-                          </button>
-                          {isOpen ? <ChevronUp size={14} style={{ color: "#9aa5b4" }} /> : <ChevronDown size={14} style={{ color: "#9aa5b4" }} />}
-                        </div>
-                        {isOpen && (
-                          <div style={{ borderTop: "1px solid #E8E5E3", padding: "14px 16px" }}>
-                            {c.projet_description && <div style={{ marginBottom: 12 }}><p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 4 }}>Description</p><p style={{ fontSize: 13, color: "#4a5568" }}>{c.projet_description}</p></div>}
-                            {c.commentaires && <div style={{ marginBottom: 12 }}><p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 4 }}>Commentaires</p><p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.6 }}>{c.commentaires}</p></div>}
-                            {c.contraintes && (
-                              <div style={{ marginBottom: 12 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
-                                  <AlertTriangle size={12} style={{ color: "#d97706" }} />
-                                  <p style={{ fontSize: 10, fontWeight: 700, color: "#d97706", textTransform: "uppercase" }}>Contraintes</p>
-                                </div>
-                                <div style={{ background: "#fef9c3", borderRadius: 8, padding: "10px 12px", fontSize: 13, color: "#4a5568", lineHeight: 1.7, whiteSpace: "pre-line" }}>{c.contraintes}</div>
-                              </div>
-                            )}
-                            {c.historique?.length > 0 && (
-                              <div>
-                                <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", marginBottom: 8 }}>Évolution de l'état</p>
-                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                  {c.historique.map((h: any, idx: number) => {
-                                    const he = getEtat(h.etat);
-                                    return (
-                                      <div key={h.id} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: he.text, marginTop: 4 }} />
-                                          {idx < c.historique.length - 1 && <div style={{ width: 1, height: 20, background: "#E8E5E3", marginTop: 2 }} />}
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                            <span style={{ fontSize: 11, fontWeight: 700, color: he.text, background: he.bg, padding: "1px 8px", borderRadius: 999 }}>{he.label}</span>
-                                            <span style={{ fontSize: 11, color: "#9aa5b4" }}>{new Date(h.date_changement).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</span>
-                                          </div>
-                                          {h.commentaire && <p style={{ fontSize: 12, color: "#4a5568", marginTop: 3 }}>{h.commentaire}</p>}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <ProspectModal open={modal} onClose={()=>setModal(false)} editItem={editItem} onSaved={charger}/>
+      <ContactModal open={contactModal} onClose={()=>setContactModal(false)} prospect={contactProspect} editContact={editContact} onSaved={()=>{charger();setHistoriqueItem(null);}}/>
+      <HistoriqueModal open={historiqueModal} onClose={()=>setHistoriqueModal(false)} item={historiqueItem}
+        onEditContact={c=>{ setContactProspect(historiqueItem); setEditContact(c); setHistoriqueModal(false); setContactModal(true); }}/>
     </div>
   );
 }

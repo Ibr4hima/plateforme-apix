@@ -210,11 +210,10 @@ async def liste_entreprises(
     secteur_list:         List[str] = Query(default=[], alias="secteur_nom"),
     branche_list:         List[str] = Query(default=[], alias="branche_nom"),
     activite_list:        List[str] = Query(default=[], alias="activite_nom"),
+    admin:                bool      = Query(False),
     db:           AsyncSession  = Depends(get_db),
 ):
-    filters = [
-        EntrepriseIntallee.est_publie == True,
-    ]
+    filters = [] if admin else [EntrepriseIntallee.est_publie == True]
     if statut:     filters.append(EntrepriseIntallee.statut == statut)
     if secteur_id: filters.append(EntrepriseIntallee.secteur_id == secteur_id)
     if branche_id: filters.append(EntrepriseIntallee.branche_id == branche_id)

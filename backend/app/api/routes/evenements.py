@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, extract
 from typing import Optional, List
-from uuid import UUID
 from datetime import date as date_type
 
 from app.core.database import get_db
@@ -14,6 +13,56 @@ from app.schemas.evenement import (
 )
 
 router = APIRouter(prefix="/evenements", tags=["Événements"])
+
+
+async def enrich_evenement(e: Evenement, db: AsyncSession) -> EvenementResponse:
+    from sqlalchemy import text
+    resp = EvenementResponse.model_validate(e)
+    # Noms plats (compatibilité)
+    if e.secteur_ids:
+        r = await db.execute(text("SELECT nom FROM ref_secteurs WHERE id = ANY(:ids)"), {"ids": e.secteur_ids})
+        resp.secteur_noms = [row[0] for row in r.fetchall()]
+    if e.branche_ids:
+        r = await db.execute(text("SELECT nom FROM ref_branches WHERE id = ANY(:ids)"), {"ids": e.branche_ids})
+        resp.branche_noms = [row[0] for row in r.fetchall()]
+    if e.activite_ids:
+        r = await db.execute(text("SELECT nom FROM ref_activites WHERE id = ANY(:ids)"), {"ids": e.activite_ids})
+        resp.activite_noms = [row[0] for row in r.fetchall()]
+    # Pays invités
+    if e.pays_invites_ids:
+        r = await db.execute(text("SELECT nom_fr FROM ref_pays WHERE id = ANY(:ids)"), {"ids": e.pays_invites_ids})
+        resp.pays_invites_noms = ", ".join(row[0] for row in r.fetchall())
+    # Hiérarchie structurée pour l'affichage en arborescence
+    if e.secteur_ids or e.branche_ids or e.activite_ids:
+        r = await db.execute(text("""
+            SELECT
+                s.id   AS sec_id,   s.nom AS sec_nom,
+                b.id   AS bra_id,   b.nom AS bra_nom,
+                a.id   AS act_id,   a.nom AS act_nom
+            FROM ref_secteurs s
+            LEFT JOIN ref_branches b  ON b.secteur_id = s.id  AND b.id  = ANY(:bra_ids)
+            LEFT JOIN ref_activites a ON a.branche_id = b.id  AND a.id  = ANY(:act_ids)
+            WHERE s.id = ANY(:sec_ids)
+              AND (b.id IS NULL OR b.id = ANY(:bra_ids))
+            ORDER BY s.nom, b.nom, a.nom
+        """), {
+            "sec_ids": e.secteur_ids or [],
+            "bra_ids": e.branche_ids or [],
+            "act_ids": e.activite_ids or [],
+        })
+        rows = r.fetchall()
+        # Construire la hiérarchie {sec_nom: {bra_nom: [act_nom]}}
+        tree: dict = {}
+        for row in rows:
+            sec = row[1]; bra = row[3]; act = row[5]
+            if sec not in tree:
+                tree[sec] = {}
+            if bra and bra not in tree[sec]:
+                tree[sec][bra] = []
+            if bra and act and act not in tree[sec][bra]:
+                tree[sec][bra].append(act)
+        resp.thematiques_tree = tree  # type: ignore
+    return resp
 
 
 def get_statut_calcule(e: Evenement) -> str:
@@ -41,7 +90,7 @@ async def liste_evenements_admin(
     evenements = result.scalars().all()
     return EvenementListResponse(
         total=total, page=page, per_page=per_page,
-        data=[EvenementResponse.model_validate(e) for e in evenements]
+        data=[await enrich_evenement(e, db) for e in evenements]
     )
 
 
@@ -51,18 +100,18 @@ async def liste_evenements(
     page:           int           = Query(1, ge=1),
     per_page:       int           = Query(12, ge=1, le=100),
     statut_calcule: Optional[str] = None,
-    pays_nom:       List[str]     = Query(default=[]),   # noms pour compatibilité frontend
+    pays_nom:       List[str]     = Query(default=[]),
     annee:          Optional[int] = None,
     secteur:        List[str]     = Query(default=[]),
     branche:        List[str]     = Query(default=[]),
     activite:       List[str]     = Query(default=[]),
+    admin:          bool          = Query(False),  # si True → pas de filtre est_publie
     db:             AsyncSession  = Depends(get_db),
 ):
     today = date_type.today()
-    filters = [
-        Evenement.est_publie  == True,
-        Evenement.is_deleted  == False,   # ← correction bug
-    ]
+    filters = [Evenement.is_deleted == False]
+    if not admin:
+        filters.append(Evenement.est_publie == True)
 
 
     # Pays hôte — OR intra
@@ -100,7 +149,7 @@ async def liste_evenements(
     evenements = result.scalars().all()
     return EvenementListResponse(
         total=total, page=page, per_page=per_page,
-        data=[EvenementResponse.model_validate(e) for e in evenements]
+        data=[await enrich_evenement(e, db) for e in evenements]
     )
 
 
@@ -130,11 +179,11 @@ async def pays_hotes(db: AsyncSession = Depends(get_db)):
 
 # ── GET /evenements/:id ────────────────────────────────────────────────────────
 @router.get("/{evenement_id}", response_model=EvenementResponse)
-async def detail_evenement(evenement_id: UUID, db: AsyncSession = Depends(get_db)):
+async def detail_evenement(evenement_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Evenement).where(Evenement.id == evenement_id, Evenement.is_deleted == False))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")
-    return EvenementResponse.model_validate(e)
+    return await enrich_evenement(e, db)
 
 
 # ── POST /evenements ───────────────────────────────────────────────────────────
@@ -150,27 +199,31 @@ async def creer_evenement(payload: EvenementCreate, db: AsyncSession = Depends(g
     db.add(e)
     await db.flush()
     await db.refresh(e)
-    return EvenementResponse.model_validate(e)
+    return await enrich_evenement(e, db)
 
 
 # ── PATCH /evenements/:id ──────────────────────────────────────────────────────
 @router.patch("/{evenement_id}", response_model=EvenementResponse)
-async def modifier_evenement(evenement_id: UUID, payload: EvenementUpdate, db: AsyncSession = Depends(get_db)):
+async def modifier_evenement(evenement_id: int, payload: EvenementUpdate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Evenement).where(Evenement.id == evenement_id, Evenement.is_deleted == False))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")
     updates = payload.model_dump(exclude_unset=True)
     updates.pop("statut", None)
+    # Ne pas écraser les dates existantes avec null si l'événement en avait déjà
+    for f in ["date_debut", "date_fin"]:
+        if f in updates and updates[f] is None and getattr(e, f) is not None:
+            updates.pop(f)
     for k, v in updates.items():
         setattr(e, k, v)
     await db.flush()
     await db.refresh(e)
-    return EvenementResponse.model_validate(e)
+    return await enrich_evenement(e, db)
 
 
 # ── DELETE /evenements/:id ─────────────────────────────────────────────────────
 @router.delete("/{evenement_id}", status_code=204)
-async def supprimer_evenement(evenement_id: UUID, db: AsyncSession = Depends(get_db)):
+async def supprimer_evenement(evenement_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Evenement).where(Evenement.id == evenement_id))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")

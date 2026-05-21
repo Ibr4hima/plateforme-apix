@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date, datetime
-from uuid import UUID
 
 
 class EvenementBase(BaseModel):
@@ -11,8 +10,8 @@ class EvenementBase(BaseModel):
     role_apix:          Optional[str]   = None
     description:        Optional[str]   = None
 
-    date_debut:         date
-    date_fin:           date
+    date_debut:         Optional[date]  = None
+    date_fin:           Optional[date]  = None
 
     pays_hote_id:       Optional[int]   = None
     ville:              Optional[str]   = None
@@ -29,7 +28,10 @@ class EvenementBase(BaseModel):
     est_recurrent:      bool            = False
     frequence_type:     Optional[str]   = None
     frequence_valeur:   Optional[int]   = None
-    date_prochaine:     Optional[str]   = None
+    prochain_jour:      Optional[int]   = None
+    prochain_mois:      Optional[int]   = None
+    prochain_annee:     Optional[int]   = None
+    duree_jours:        Optional[int]   = None
 
 
 class EvenementCreate(EvenementBase):
@@ -57,16 +59,24 @@ class EvenementUpdate(BaseModel):
     est_recurrent:      Optional[bool]  = None
     frequence_type:     Optional[str]   = None
     frequence_valeur:   Optional[int]   = None
-    date_prochaine:     Optional[str]   = None
+    prochain_jour:      Optional[int]   = None
+    prochain_mois:      Optional[int]   = None
+    prochain_annee:     Optional[int]   = None
+    duree_jours:        Optional[int]   = None
 
 
 class EvenementResponse(EvenementBase):
-    id:             UUID
+    id:             int
     pays_hote_nom:  Optional[str]   = None
     pays_hote_iso2: Optional[str]   = None
     created_at:     Optional[datetime] = None
     updated_at:     Optional[datetime] = None
-    created_by:     Optional[str]      = None
+    # Champs enrichis (noms résolus depuis les IDs)
+    secteur_noms:       Optional[List[str]] = []
+    branche_noms:       Optional[List[str]] = []
+    activite_noms:      Optional[List[str]] = []
+    pays_invites_noms:  Optional[str]       = None
+    thematiques_tree:   Optional[dict]      = None
 
     model_config = {"from_attributes": True}
 

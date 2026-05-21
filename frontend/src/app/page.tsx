@@ -3,281 +3,217 @@
 import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Image from "next/image";
-import {
-  ArrowRight, TrendingUp, Building2, Globe,
-  MapPin, Handshake, Calendar, Target, ChevronRight,
-} from "lucide-react";
 import Link from "next/link";
+import {
+  ArrowRight, TrendingUp, Building2, Globe, MapPin,
+  Handshake, Calendar, Target, BarChart2, ChevronRight,
+  Shield, Lock, Activity,
+} from "lucide-react";
 
-function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+// ── Compteur animé ─────────────────────────────────────────────────────────────
+function AnimatedCounter({ target, suffix="", decimals=0 }: { target:number; suffix?:string; decimals?:number }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
+  useEffect(()=>{
+    const observer = new IntersectionObserver(([entry])=>{
       if (!entry.isIntersecting) return;
       let start = 0;
-      const step = (ts: number) => {
-        if (!start) start = ts;
-        const p = Math.min((ts - start) / 2000, 1);
-        const e = 1 - Math.pow(1 - p, 3);
-        setCount(Math.floor(e * target));
-        if (p < 1) requestAnimationFrame(step);
+      const step = (ts:number)=>{
+        if (!start) start=ts;
+        const p = Math.min((ts-start)/1800,1);
+        const e = 1-Math.pow(1-p,3);
+        setCount(parseFloat((e*target).toFixed(decimals)));
+        if (p<1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
       observer.disconnect();
-    });
+    },{threshold:0.3});
     if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [target]);
+    return ()=>observer.disconnect();
+  },[target,decimals]);
   return <span ref={ref}>{count.toLocaleString("fr-FR")}{suffix}</span>;
 }
 
-const stats = [
-  { label: "Milliards USD d'IDE attirés",       value: 3,    suffix: "+ Md$" },
-  { label: "Entreprises étrangères installées",  value: 1240, suffix: "+"    },
-  { label: "Pays investisseurs partenaires",     value: 67,   suffix: ""     },
-  { label: "Projets en cours de réalisation",    value: 184,  suffix: ""     },
-];
-
-const modules = [
-  { icon: TrendingUp, label: "IDE",          desc: "Flux d'investissements directs entrants et sortants", href: "/ide",          accent: "#ca631f" },
-  { icon: Target,     label: "Intentions",   desc: "Projets d'investissement à court et moyen terme",     href: "/intentions",   accent: "#004f91" },
-  { icon: Globe,      label: "Prospects",    desc: "Portefeuille d'entreprises internationales ciblées",  href: "/prospects",    accent: "#ca631f" },
-  { icon: Building2,  label: "Entreprises",  desc: "Cartographie des entreprises formalisées",            href: "/entreprises",  accent: "#004f91" },
-  { icon: MapPin,     label: "Zones",        desc: "ZES, ZAI et pôles territoriaux",                      href: "/zones",        accent: "#ca631f" },
-  { icon: ArrowRight, label: "Opportunités", desc: "Potentialités sectorielles à promouvoir",             href: "/opportunites", accent: "#004f91" },
-  { icon: Handshake,  label: "Accords",      desc: "Traités bilatéraux et accords de coopération",        href: "/accords",      accent: "#ca631f" },
-  { icon: Calendar,   label: "Événements",   desc: "Forums, salons et missions de prospection",           href: "/evenements",   accent: "#004f91" },
+const MODULES = [
+  { num:"01", icon:TrendingUp, label:"IDE",                href:"/ide",          color:"#E35336", desc:"Flux d'investissements directs entrants et sortants" },
+  { num:"02", icon:Target,     label:"Intentions",         href:"/intentions",   color:"#366FE3", desc:"Projets d'investissement déclarés à court et moyen terme" },
+  { num:"03", icon:Globe,      label:"Prospects",          href:"/prospects",    color:"#E35336", desc:"Portefeuille d'entreprises internationales ciblées" },
+  { num:"04", icon:Building2,  label:"Entreprises",        href:"/entreprises",  color:"#366FE3", desc:"Cartographie des entreprises formalisées installées" },
+  { num:"05", icon:MapPin,     label:"Zones",              href:"/zones",        color:"#E35336", desc:"ZES, ZAI, ZFI et pôles territoriaux d'investissement" },
+  { num:"06", icon:ArrowRight, label:"Opportunités",       href:"/opportunites", color:"#366FE3", desc:"Potentialités sectorielles à promouvoir auprès des investisseurs" },
+  { num:"07", icon:Handshake,  label:"Accords & Traités",  href:"/accords",      color:"#E35336", desc:"Traités bilatéraux et accords de coopération économique" },
+  { num:"08", icon:Calendar,   label:"Événements",         href:"/evenements",   color:"#366FE3", desc:"Forums, salons, missions de prospection et rencontres B2B" },
 ];
 
 export default function HomePage() {
-  return (
-    <main style={{ minHeight: "100vh", background: "#F2F0EF", overflowX: "hidden" }}>
-      <Navbar />
+  const [stats, setStats] = useState({ entreprises:0, evenements:0, accords:0 });
 
-      {/* ── HERO ── */}
-      <section style={{
-        minHeight: "100vh", display: "flex", alignItems: "center",
-        justifyContent: "center", padding: "96px 24px 48px",
-        position: "relative", background: "#F2F0EF",
-      }}>
-        {/* Déco fond subtile */}
-        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-          <div style={{
-            position: "absolute", top: "15%", right: "8%",
-            width: 560, height: 560, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(202,99,31,0.07) 0%, transparent 65%)",
-          }} />
-          <div style={{
-            position: "absolute", bottom: "15%", left: "5%",
-            width: 440, height: 440, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(0,79,145,0.06) 0%, transparent 65%)",
-          }} />
-          <div style={{
-            position: "absolute", inset: 0, opacity: 0.025,
-            backgroundImage: "linear-gradient(#C5BFBB 1px, transparent 1px), linear-gradient(90deg, #C5BFBB 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-          }} />
+  useEffect(()=>{
+    const safe=(p:Promise<any>,fb:any)=>p.catch(()=>fb);
+    Promise.all([
+      safe(fetch(`${API_BASE}/evenements/stats`).then(r=>r.json()), {}),
+      safe(fetch(`${API_BASE}/accords?per_page=1`).then(r=>r.json()), {}),
+      safe(fetch(`${API_BASE}/entreprises?per_page=1`).then(r=>r.json()), {}),
+    ]).then(([evStats,accData,entData])=>{
+      setStats({
+        evenements: evStats?.total||0,
+        accords:    accData?.total||0,
+        entreprises:entData?.total||0,
+      });
+    });
+  },[]);
+
+  return (
+    <main style={{minHeight:"100vh",background:"#0e0e1a",overflowX:"hidden",fontFamily:"var(--font-google-sans)"}}>
+      <style>{`
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:0.8}}
+        .hero-tag{animation:fadeUp 0.6s ease both}
+        .hero-h1{animation:fadeUp 0.7s 0.1s ease both}
+        .hero-p{animation:fadeUp 0.7s 0.2s ease both}
+        .hero-cta{animation:fadeUp 0.7s 0.3s ease both}
+        .hero-stats{animation:fadeUp 0.7s 0.45s ease both}
+        .mod-card:hover .mod-num{color:#E35336!important}
+      `}</style>
+
+      <Navbar/>
+
+      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      <section style={{minHeight:"100vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 80px",position:"relative" as const,background:"#0e0e1a",overflow:"hidden"}}>
+
+        {/* Déco fond */}
+        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
+          {/* Grille subtile */}
+          <div style={{position:"absolute" as const,inset:0,opacity:0.03,backgroundImage:"linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)",backgroundSize:"80px 80px"}}/>
+          {/* Lueur orange */}
+          <div style={{position:"absolute" as const,top:"-10%",right:"-5%",width:700,height:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(227,83,54,0.18) 0%,transparent 60%)"}}/>
+          {/* Lueur bleue */}
+          <div style={{position:"absolute" as const,bottom:"-15%",left:"-5%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(54,111,227,0.15) 0%,transparent 60%)"}}/>
+          {/* Ligne accent */}
+          <div style={{position:"absolute" as const,top:0,left:60,right:60,height:1,background:"linear-gradient(90deg,transparent,rgba(227,83,54,0.4),transparent)"}}/>
         </div>
 
-        <div style={{ maxWidth: 860, margin: "0 auto", textAlign: "center", position: "relative" }}>
+        <div style={{maxWidth:1200,margin:"0 auto",width:"100%",position:"relative" as const,zIndex:1}}>
+
+          {/* Tag institutionnel */}
+          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(227,83,54,0.1)",border:"1px solid rgba(227,83,54,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:28}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:"#E35336",animation:"pulse 2s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.15em",textTransform:"uppercase"}}>APIX · Plateforme de Promotion des Investissements et des Investisseurs</span>
+          </div>
 
           {/* Titre */}
-          <h1 style={{
-            fontFamily: "var(--font-google-sans)", fontWeight: 800,
-            fontSize: "clamp(2.6rem, 6vw, 4.75rem)",
-            lineHeight: 1.04, letterSpacing: "-0.03em",
-            color: "#1a1a2e", marginBottom: 24,
-          }}>
-            La Destination{" "}
-            <span style={{
-              background: "linear-gradient(135deg, #ca631f, #e8935a)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}>
-              Sénégal
-            </span>
-            <br />pour les Investisseurs
+          <h1 className="hero-h1" style={{fontWeight:800,fontSize:"clamp(2.8rem,5.5vw,5rem)",lineHeight:1.05,letterSpacing:"-0.025em",color:"#fff",marginBottom:24,maxWidth:800}}>
+            Intelligence<br/>
+            <span style={{background:"linear-gradient(135deg,#E35336,#FFB0A1)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
+            <br/>Sénégal
           </h1>
 
-          <p style={{
-            color: "#4a5568", fontSize: "1.15rem",
-            maxWidth: 560, margin: "0 auto 40px",
-            lineHeight: 1.75,
-          }}>
-            Données en temps réel sur les flux d'investissements, les opportunités
-            sectorielles et le tissu économique du Sénégal.
+          <p className="hero-p" style={{color:"rgba(255,255,255,0.55)",fontSize:"1.1rem",maxWidth:520,lineHeight:1.75,marginBottom:40}}>
+            Plateforme souveraine de suivi, d'analyse et de promotion de l'investissement au Sénégal. Données consolidées, en temps réel, à destination des décideurs.
           </p>
 
           {/* CTAs */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
-            <Link href="/opportunites" style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "linear-gradient(135deg, #ca631f, #a84e18)",
-              color: "#fff", fontWeight: 600, fontSize: 15,
-              padding: "14px 28px", borderRadius: 14, textDecoration: "none",
-              boxShadow: "0 4px 20px rgba(202,99,31,0.32)",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 8px 28px rgba(202,99,31,0.42)";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 20px rgba(202,99,31,0.32)";
-            }}>
-              Explorer les opportunités <ArrowRight size={17} />
+          <div className="hero-cta" style={{display:"flex",flexWrap:"wrap" as const,gap:12,marginBottom:72}}>
+            <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#E35336,#c42d1a)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(227,83,54,0.4)",letterSpacing:"0.01em",transition:"all 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 32px rgba(227,83,54,0.5)";}}
+              onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(227,83,54,0.4)";}}>
+              <BarChart2 size={16}/> Tableau de bord <ArrowRight size={15}/>
             </Link>
-
-            <Link href="/ide" style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "rgba(255,255,255,0.85)",
-              backdropFilter: "blur(12px)",
-              color: "#1a1a2e", fontWeight: 600, fontSize: 15,
-              padding: "14px 28px", borderRadius: 14, textDecoration: "none",
-              border: "1px solid #C5BFBB",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.09)";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.05)";
-            }}>
-              Tableau de bord IDE
-              <ChevronRight size={17} style={{ color: "#9aa5b4" }} />
+            <Link href="/entreprises" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(12px)",color:"rgba(255,255,255,0.85)",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.12)",transition:"all 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.1)";e.currentTarget.style.borderColor="rgba(255,255,255,0.2)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
+              Explorer les modules <ChevronRight size={15}/>
             </Link>
           </div>
 
-          {/* Scroll indicator */}
-          <div style={{
-            marginTop: 72, display: "flex", flexDirection: "column",
-            alignItems: "center", gap: 8, opacity: 0.3,
-          }}>
-            <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#9aa5b4" }}>Défiler</span>
-            <div style={{ width: 1, height: 44, background: "linear-gradient(to bottom, #ca631f, transparent)" }} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── STATS ── */}
-      <section style={{ padding: "56px 24px", background: "#E8E5E3" }}>
-        <div style={{
-          maxWidth: 1100, margin: "0 auto",
-          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 16,
-        }}>
-          {stats.map((s, i) => (
-            <div key={i} style={{
-              background: "rgba(255,255,255,0.75)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid #C5BFBB",
-              borderRadius: 16, padding: "28px 24px", textAlign: "center",
-              transition: "all 0.3s",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = "translateY(-4px)";
-              e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.09)";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "none";
-            }}>
-              <div style={{
-                fontFamily: "var(--font-google-sans)", fontWeight: 800,
-                fontSize: "2.25rem", color: "#ca631f", marginBottom: 8,
-              }}>
-                <AnimatedCounter target={s.value} suffix={s.suffix} />
+          {/* Stats live */}
+          <div className="hero-stats" style={{display:"flex",gap:0,borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:32}}>
+            {[
+              {label:"Entreprises installées", val:stats.entreprises, suffix:""},
+              {label:"Accords en vigueur",     val:stats.accords,    suffix:""},
+              {label:"Événements répertoriés", val:stats.evenements,  suffix:""},
+              {label:"Modules de données",     val:8,                suffix:""},
+            ].map((s,i)=>(
+              <div key={i} style={{flex:1,paddingRight:32,borderRight:i<3?"1px solid rgba(255,255,255,0.07)":"none",paddingLeft:i>0?32:0}}>
+                <div style={{fontWeight:800,fontSize:"2rem",color:"#fff",lineHeight:1,marginBottom:6}}>
+                  <AnimatedCounter target={s.val} suffix={s.suffix}/>
+                </div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.35)",fontWeight:500}}>{s.label}</div>
               </div>
-              <div style={{ color: "#9aa5b4", fontSize: 13, lineHeight: 1.45 }}>{s.label}</div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        {/* Scroll hint */}
+        <div style={{position:"absolute" as const,bottom:40,left:"50%",transform:"translateX(-50%)",display:"flex",flexDirection:"column" as const,alignItems:"center",gap:6,opacity:0.2}}>
+          <div style={{width:1,height:48,background:"linear-gradient(to bottom,#E35336,transparent)"}}/>
+          <span style={{fontSize:9,letterSpacing:"0.2em",textTransform:"uppercase" as const,color:"#fff"}}>Défiler</span>
         </div>
       </section>
 
-      {/* ── MODULES ── */}
-      <section style={{ padding: "80px 24px", background: "#F2F0EF" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      {/* ── BANDE ACCÈS RAPIDE ────────────────────────────────────────────────── */}
+      <section style={{background:"#E35336",padding:"0"}}>
+        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"stretch"}}>
+          {[
+            {icon:BarChart2, label:"Tableau de bord",     href:"/tableau-de-bord", sub:"KPIs & Analyses"},
+            {icon:Building2, label:"Entreprises",          href:"/entreprises",     sub:"Registre complet"},
+            {icon:Handshake, label:"Accords & Traités",    href:"/accords",         sub:"Coopération"},
+            {icon:Calendar,  label:"Événements",           href:"/evenements",      sub:"Agenda IDE"},
+          ].map((item,i)=>{
+            const Icon=item.icon;
+            return (
+              <Link key={i} href={item.href} style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none",transition:"background 0.15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,0,0,0.1)";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
+                <div style={{width:36,height:36,borderRadius:9,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <Icon size={16} style={{color:"#fff"}}/>
+                </div>
+                <div>
+                  <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{item.label}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,0.65)"}}>{item.sub}</div>
+                </div>
+                <ChevronRight size={14} style={{color:"rgba(255,255,255,0.4)",marginLeft:"auto"}}/>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
 
-          {/* Header */}
-          <div style={{
-            display: "flex", flexWrap: "wrap",
-            justifyContent: "space-between", alignItems: "flex-end",
-            gap: 24, marginBottom: 48,
-          }}>
+      {/* ── MODULES ──────────────────────────────────────────────────────────── */}
+      <section style={{background:"#F2F0EF",padding:"80px 60px"}}>
+        <div style={{maxWidth:1200,margin:"0 auto"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48,flexWrap:"wrap" as const,gap:20}}>
             <div>
-              <p style={{
-                color: "#ca631f", fontSize: 11, fontWeight: 700,
-                letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 10,
-              }}>
-                Modules de données
-              </p>
-              <h2 style={{
-                fontFamily: "var(--font-google-sans)", fontWeight: 700,
-                fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
-                color: "#1a1a2e", lineHeight: 1.15,
-              }}>
-                Une vue complète<br />de l'investissement
+              <p style={{fontSize:11,fontWeight:700,color:"#E35336",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:10}}>Architecture de la plateforme</p>
+              <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.6rem)",color:"#1a1a2e",lineHeight:1.1}}>
+                8 modules de données<br/>interconnectés
               </h2>
             </div>
-            <p style={{ color: "#4a5568", maxWidth: 340, lineHeight: 1.65, fontSize: 15 }}>
-              8 modules interconnectés pour couvrir l'intégralité du cycle de vie
-              d'un investissement au Sénégal.
+            <p style={{color:"#9aa5b4",maxWidth:360,lineHeight:1.65,fontSize:14}}>
+              Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
             </p>
           </div>
-
-          {/* Grille */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-            gap: 16,
-          }}>
-            {modules.map((m, i) => {
-              const Icon = m.icon;
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#E8E5E3",border:"1px solid #E8E5E3",borderRadius:16,overflow:"hidden"}}>
+            {MODULES.map((m,i)=>{
+              const Icon=m.icon;
               return (
-                <Link key={i} href={m.href} style={{ textDecoration: "none" }}>
-                  <div style={{
-                    background: "rgba(255,255,255,0.75)",
-                    backdropFilter: "blur(12px)",
-                    border: "1px solid #C5BFBB",
-                    borderRadius: 16, padding: "24px",
-                    display: "flex", flexDirection: "column", gap: 16,
-                    height: "100%", transition: "all 0.25s", cursor: "pointer",
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = "translateY(-4px)";
-                    e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.09)";
-                    e.currentTarget.style.borderColor = m.accent;
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
-                    e.currentTarget.style.borderColor = "#C5BFBB";
-                  }}>
-                    <div style={{
-                      width: 42, height: 42, borderRadius: 12,
-                      background: `${m.accent}14`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <Icon size={19} style={{ color: m.accent }} />
+                <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,transition:"background 0.15s",position:"relative" as const}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="#FAFAF9";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="1";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="#fff";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="0";}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                    <div style={{width:40,height:40,borderRadius:10,background:`${m.color}10`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <Icon size={18} style={{color:m.color}}/>
                     </div>
-                    <div>
-                      <h3 style={{
-                        fontFamily: "var(--font-google-sans)", fontWeight: 700,
-                        fontSize: 16, color: "#1a1a2e", marginBottom: 6,
-                      }}>{m.label}</h3>
-                      <p style={{ color: "#9aa5b4", fontSize: 13, lineHeight: 1.55 }}>{m.desc}</p>
-                    </div>
-                    <div style={{
-                      marginTop: "auto", display: "flex", alignItems: "center",
-                      gap: 4, fontSize: 12, color: m.accent, fontWeight: 600,
-                    }}>
-                      Explorer <ChevronRight size={13} />
-                    </div>
+                    <span className="mod-num" style={{fontSize:11,fontWeight:700,color:"#C5BFBB",letterSpacing:"0.05em",transition:"color 0.15s"}}>{m.num}</span>
+                  </div>
+                  <div>
+                    <h3 style={{fontWeight:700,fontSize:15,color:"#1a1a2e",marginBottom:6}}>{m.label}</h3>
+                    <p style={{fontSize:12,color:"#9aa5b4",lineHeight:1.6}}>{m.desc}</p>
+                  </div>
+                  <div className="mod-arrow" style={{marginTop:"auto",display:"flex",alignItems:"center",gap:4,fontSize:12,color:m.color,fontWeight:600,opacity:0,transition:"opacity 0.15s"}}>
+                    Accéder <ChevronRight size={13}/>
                   </div>
                 </Link>
               );
@@ -286,109 +222,91 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── CTA FINAL ── */}
-      <section style={{ padding: "48px 24px 80px", background: "#E8E5E3" }}>
-        <div style={{ maxWidth: 820, margin: "0 auto" }}>
-          <div style={{
-            background: "rgba(255,255,255,0.8)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid #C5BFBB",
-            borderRadius: 24,
-            padding: "clamp(40px, 6vw, 64px)",
-            textAlign: "center",
-            position: "relative", overflow: "hidden",
-            boxShadow: "0 8px 40px rgba(0,0,0,0.06)",
-          }}>
-            <div style={{
-              position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)",
-              width: 400, height: 200,
-              background: "radial-gradient(ellipse, rgba(202,99,31,0.08) 0%, transparent 70%)",
-              pointerEvents: "none",
-            }} />
-            <p style={{
-              color: "#ca631f", fontSize: 11, fontWeight: 700,
-              letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 14,
-            }}>
-              Espace Investisseur
-            </p>
-            <h2 style={{
-              fontFamily: "var(--font-google-sans)", fontWeight: 700,
-              fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
-              color: "#1a1a2e", marginBottom: 14, lineHeight: 1.2,
-            }}>
-              Vous avez un projet<br />d'investissement ?
+      {/* ── TABLEAU DE BORD CTA ───────────────────────────────────────────────── */}
+      <section style={{background:"#1a1a2e",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
+        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
+          <div style={{position:"absolute" as const,top:"-20%",right:"-5%",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(227,83,54,0.12) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(54,111,227,0.1) 0%,transparent 65%)"}}/>
+        </div>
+        <div style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
+          <div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(227,83,54,0.1)",border:"1px solid rgba(227,83,54,0.2)",borderRadius:999,padding:"5px 14px",marginBottom:24}}>
+              <BarChart2 size={12} style={{color:"#E35336"}}/>
+              <span style={{fontSize:11,fontWeight:700,color:"#FFB0A1",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
+            </div>
+            <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.8rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>
+              KPIs, visualisations<br/>et analyses en temps réel
             </h2>
-            <p style={{
-              color: "#4a5568", maxWidth: 460,
-              margin: "0 auto 32px", lineHeight: 1.65,
-            }}>
-              Créez votre espace personnalisé, déposez vos intentions d'investissement
-              et suivez l'avancement de vos projets avec les équipes APIX.
+            <p style={{color:"rgba(255,255,255,0.45)",fontSize:14,lineHeight:1.75,marginBottom:32,maxWidth:460}}>
+              Vue consolidée de l'activité d'investissement au Sénégal. Indicateurs clés, tendances sectorielles, flux d'IDE, répartition géographique et analyses comparatives.
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
-              <Link href="/register" style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "linear-gradient(135deg, #ca631f, #a84e18)",
-                color: "#fff", fontWeight: 600, fontSize: 15,
-                padding: "14px 28px", borderRadius: 14, textDecoration: "none",
-                boxShadow: "0 4px 20px rgba(202,99,31,0.28)",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 8px 28px rgba(202,99,31,0.4)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 20px rgba(202,99,31,0.28)";
-              }}>
-                Créer mon espace <ArrowRight size={17} />
-              </Link>
-              <Link href="/contact" style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(255,255,255,0.9)",
-                color: "#1a1a2e", fontWeight: 600, fontSize: 15,
-                padding: "14px 28px", borderRadius: 14, textDecoration: "none",
-                border: "1px solid #C5BFBB",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.08)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}>
-                Contacter l'APIX
+            <div style={{display:"flex",gap:10}}>
+              <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#E35336,#c42d1a)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(227,83,54,0.35)",transition:"all 0.2s"}}
+                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 28px rgba(227,83,54,0.45)";}}
+                onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(227,83,54,0.35)";}}>
+                Ouvrir le tableau de bord <ArrowRight size={15}/>
               </Link>
             </div>
+          </div>
+          {/* Aperçu KPIs */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            {[
+              {label:"Entreprises installées",    val:stats.entreprises, color:"#E35336", icon:Building2},
+              {label:"Accords actifs",             val:stats.accords,    color:"#366FE3", icon:Handshake},
+              {label:"Événements enregistrés",    val:stats.evenements,  color:"#188038", icon:Calendar},
+              {label:"Modules de données",         val:8,                color:"#FFB0A1", icon:Activity},
+            ].map((k,i)=>{
+              const Icon=k.icon;
+              return (
+                <div key={i} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:"20px",backdropFilter:"blur(12px)"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+                    <Icon size={16} style={{color:k.color,opacity:0.8}}/>
+                  </div>
+                  <div style={{fontWeight:800,fontSize:"1.8rem",color:"#fff",lineHeight:1,marginBottom:6}}>
+                    <AnimatedCounter target={k.val}/>
+                  </div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,0.3)"}}>{k.label}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer style={{
-        borderTop: "1px solid #C5BFBB",
-        padding: "32px 24px",
-        background: "#E8E5E3",
-      }}>
-        <div style={{
-          maxWidth: 1100, margin: "0 auto",
-          display: "flex", flexWrap: "wrap",
-          alignItems: "center", justifyContent: "space-between", gap: 16,
-        }}>
-          <Image
-            src="/logo_apix.png"
-            alt="APIX Sénégal"
-            width={100}
-            height={36}
-            style={{ height: 36, width: "auto", objectFit: "contain" }}
-          />
-          <p style={{ color: "#9aa5b4", fontSize: 12, textAlign: "center" }}>
-            Agence Nationale chargée de la Promotion de l'Investissement et des Grands Travaux
-          </p>
-          <p style={{ color: "#9aa5b4", fontSize: 12 }}>© {new Date().getFullYear()} — DIPE</p>
+      {/* ── IDENTITÉ INSTITUTIONNELLE ─────────────────────────────────────────── */}
+      <section style={{background:"#E8E5E3",padding:"64px 60px"}}>
+        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap" as const,gap:40}}>
+          <div style={{display:"flex",alignItems:"center",gap:20}}>
+            <Image src="/logo_apix.png" alt="APIX Sénégal" width={80} height={40} style={{height:40,width:"auto",objectFit:"contain"}}/>
+            <div style={{width:1,height:36,background:"#C5BFBB"}}/>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:"#1a1a2e"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
+              <div style={{fontSize:12,color:"#9aa5b4",marginTop:2}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:16,flexWrap:"wrap" as const}}>
+            {[
+              {icon:Shield, label:"Plateforme souveraine"},
+              {icon:Lock,   label:"Données sécurisées"},
+              {icon:Activity, label:"Mise à jour continue"},
+            ].map((item,i)=>{
+              const Icon=item.icon;
+              return (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:"rgba(255,255,255,0.7)",border:"1px solid #C5BFBB",borderRadius:999}}>
+                  <Icon size={13} style={{color:"#E35336"}}/>
+                  <span style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>{item.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
+      <footer style={{borderTop:"1px solid #C5BFBB",padding:"24px 60px",background:"#E8E5E3"}}>
+        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:12}}>
+          <p style={{color:"#9aa5b4",fontSize:12}}>© {new Date().getFullYear()} APIX Sénégal — DIPE. Tous droits réservés.</p>
+          <p style={{color:"#C5BFBB",fontSize:12}}>Plateforme à usage institutionnel</p>
         </div>
       </footer>
     </main>

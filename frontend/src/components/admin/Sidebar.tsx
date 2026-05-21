@@ -1,9 +1,10 @@
 "use client";
 
 import {
+  BookOpen,
   Building2, Calendar, ChevronLeft, ChevronRight,
   FileText, Globe, Landmark, Layers, LayoutDashboard,
-  Lightbulb, MapPin, Menu, Target, TrendingUp, BookOpen,
+  Lightbulb, MapPin, Menu, Target, TrendingUp,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -84,7 +85,7 @@ export default function Sidebar() {
       `}</style>
 
       <aside className="apix-sidebar" style={{
-        width: W, flexShrink: 0, background: "#004f91",
+        width: W, flexShrink: 0, background: "#003a6e",
         height: "100vh", position: "fixed", top: 0, left: 0,
         display: "flex", flexDirection: "column",
         zIndex: 40, overflowY: "auto", overflowX: "hidden",

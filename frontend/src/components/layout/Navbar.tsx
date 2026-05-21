@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { BookOpen, ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-react";
 import Image from "next/image";
-import { Menu, X, ChevronDown, Search, BookOpen, Download, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -19,8 +19,13 @@ const modules = [
 ];
 
 // ── Numérotation ──────────────────────────────────────────────────────────────
-const ROMANS = ["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX"];
-const numArt = (n: number) => n === 1 ? "premier" : String(n);
+function toRomanNum(n: number): string {
+  const vals: [number, string][] = [[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];
+  let r = ""; let num = n;
+  for (const [v, s] of vals) { while (num >= v) { r += s; num -= v; } }
+  return r;
+}
+const numArt = (n: number) => String(n);
 
 // ── Rendu texte article (bullets •) ──────────────────────────────────────────
 function ArticleContenu({ contenu }: { contenu: string }) {
@@ -42,17 +47,17 @@ function ArticleContenu({ contenu }: { contenu: string }) {
         if (line.trim() === "") return <br key={i} />;
         if (line.startsWith("• ") || line.startsWith("•"))
           return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
-            <span style={{ color:"#ca631f", flexShrink:0, fontWeight:700 }}>•</span>
+            <span style={{ color:"#1a1a2e", flexShrink:0 }}>•</span>
             <span>{renderInline(line.replace(/^•\s*/,""))}</span>
           </div>;
         if (line.startsWith("→ ") || line.startsWith("→"))
           return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
-            <span style={{ color:"#ca631f", flexShrink:0 }}>→</span>
+            <span style={{ color:"#1a1a2e", flexShrink:0 }}>→</span>
             <span>{renderInline(line.replace(/^→\s*/,""))}</span>
           </div>;
         if (line.startsWith("► ") || line.startsWith("►"))
           return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
-            <span style={{ color:"#ca631f", flexShrink:0 }}>►</span>
+            <span style={{ color:"#1a1a2e", flexShrink:0 }}>►</span>
             <span>{renderInline(line.replace(/^►\s*/,""))}</span>
           </div>;
         if (line.startsWith("– ") || line.startsWith("–"))
@@ -121,13 +126,13 @@ function CodeModal({ onClose }: { onClose: () => void }) {
       <div style={{ background: "#FAFAF9", borderRadius: 24, width: "100%", maxWidth: 1100, height: "90vh", display: "flex", flexDirection: "column", border: "1px solid #C5BFBB", boxShadow: "0 32px 80px rgba(0,0,0,0.22)", overflow: "hidden" }}>
 
         {/* Header */}
-        <div style={{ height: 4, background: "linear-gradient(90deg,#ca631f,#e07a3a)", flexShrink: 0 }} />
+        <div style={{ height: 4, background: "linear-gradient(90deg,#B7410E,#e07a3a)", flexShrink: 0 }} />
         <div style={{ padding: "18px 28px", borderBottom: "1px solid #E8E5E3", display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(202,99,31,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <BookOpen size={18} style={{ color: "#ca631f" }} />
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(183,65,14,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <BookOpen size={18} style={{ color: "#B7410E" }} />
           </div>
           <div style={{ flex: 1 }}>
-            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>Code des investissements</h2>
+            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>{pdfInfo?.titre || "Code des investissements"}</h2>
             <p style={{ fontSize: 12, color: "#9aa5b4", margin: 0 }}>République du Sénégal</p>
           </div>
           {/* Barre de recherche */}
@@ -160,9 +165,9 @@ function CodeModal({ onClose }: { onClose: () => void }) {
               <div key={c.id}>
                 {/* Chapitre */}
                 <button onClick={() => { setActiveChapId(c.id); setActiveSecId(null); setQ(""); }}
-                  style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 16px", background: activeChapId === c.id && !activeSecId ? "rgba(202,99,31,0.08)" : "transparent", border: "none", cursor: "pointer", borderLeft: `3px solid ${activeChapId === c.id && !activeSecId ? "#ca631f" : "transparent"}`, transition: "all 0.15s" }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "2px 6px", borderRadius: 5, flexShrink: 0, marginTop: 1 }}>
-                    {c.num_display.toUpperCase()}
+                  style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 16px", background: activeChapId === c.id && !activeSecId ? "rgba(183,65,14,0.08)" : "transparent", border: "none", cursor: "pointer", borderLeft: `3px solid ${activeChapId === c.id && !activeSecId ? "#B7410E" : "transparent"}`, transition: "all 0.15s" }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: "#B7410E", background: "rgba(183,65,14,0.1)", padding: "2px 6px", borderRadius: 5, flexShrink: 0, marginTop: 1 }}>
+                    {toRomanNum(c.numero)}
                   </span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "#1a1a2e", lineHeight: 1.4, wordBreak: "break-word" as const }}>{c.titre}</span>
                 </button>
@@ -195,9 +200,9 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                     if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); }
                   }}
                   style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 10, padding: "14px 18px", marginBottom: 8, cursor: "pointer" }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor="#ca631f"}
+                  onMouseEnter={e => e.currentTarget.style.borderColor="#B7410E"}
                   onMouseLeave={e => e.currentTarget.style.borderColor="#E8E5E3"}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "#ca631f", marginBottom: 4 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#B7410E", marginBottom: 4 }}>
                       Article {numArt(r.numero)}{r.titre ? ` — ${r.titre}` : ""}
                     </div>
                     <div style={{ fontSize: 12, color: "#4a5568", lineHeight: 1.6 }}
@@ -211,7 +216,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                 {activeChap && (
                   <div style={{ marginBottom: 28 }}>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: "#ca631f", background: "rgba(202,99,31,0.1)", padding: "3px 10px", borderRadius: 6, letterSpacing: "0.08em" }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: "#B7410E", background: "rgba(183,65,14,0.1)", padding: "3px 10px", borderRadius: 6, letterSpacing: "0.08em" }}>
                         CHAPITRE {activeChap.num_display.toUpperCase()}
                       </span>
                     </div>
@@ -224,7 +229,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                         </p>
                       ) : null;
                     })()}
-                    <div style={{ width: 48, height: 3, background: "#ca631f", borderRadius: 2, marginTop: 12 }} />
+                    <div style={{ width: 48, height: 3, background: "#B7410E", borderRadius: 2, marginTop: 12 }} />
                   </div>
                 )}
 
@@ -262,12 +267,12 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                   const next = chapitres[idx+1];
                   return next ? (
                     <button onClick={()=>{setActiveChapId(next.id);setActiveSecId(null);}}
-                      style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, background:"rgba(202,99,31,0.06)", border:"1px solid rgba(202,99,31,0.15)", borderRadius:10, padding:"12px 18px", cursor:"pointer", width:"100%" }}>
+                      style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, background:"rgba(183,65,14,0.06)", border:"1px solid rgba(183,65,14,0.15)", borderRadius:10, padding:"12px 18px", cursor:"pointer", width:"100%" }}>
                       <div style={{flex:1,textAlign:"left"}}>
                         <div style={{fontSize:11,color:"#9aa5b4",marginBottom:2}}>Chapitre suivant</div>
-                        <div style={{fontSize:13,fontWeight:700,color:"#ca631f"}}>Chapitre {next.num_display} — {next.titre}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:"#B7410E"}}>Chapitre {next.num_display} — {next.titre}</div>
                       </div>
-                      <ChevronRight size={16} style={{color:"#ca631f",flexShrink:0}} />
+                      <ChevronRight size={16} style={{color:"#B7410E",flexShrink:0}} />
                     </button>
                   ) : null;
                 })()}
@@ -286,50 +291,64 @@ export default function Navbar() {
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [modulesOpen, setModulesOpen] = useState(false);
   const [codeOpen,    setCodeOpen]    = useState(false);
+  const [isDark,      setIsDark]      = useState(false);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn);
+    // Détecter si on est sur une page à fond sombre
+    const bg = document.body.style.background || "";
+    setIsDark(document.querySelector("main")?.style.background?.includes("0e0e1a") || false);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  const textColor = scrolled ? "#4a5568" : (isDark ? "rgba(255,255,255,0.7)" : "#4a5568");
+  const textHover = scrolled ? "#1a1a2e" : (isDark ? "#fff" : "#1a1a2e");
+  const bg = scrolled
+    ? "rgba(255,255,255,0.96)"
+    : isDark ? "rgba(14,14,26,0.7)" : "rgba(242,240,239,0.7)";
+  const border = scrolled ? "1px solid #C5BFBB" : isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent";
 
   return (
     <>
       <header style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-        transition: "all 0.4s ease",
-        padding: scrolled ? "10px 0" : "18px 0",
-        background: scrolled ? "rgba(242,240,239,0.94)" : "rgba(242,240,239,0.7)",
+        transition: "all 0.35s ease",
+        padding: scrolled ? "10px 0" : "16px 0",
+        background: bg,
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-        borderBottom: scrolled ? "1px solid #C5BFBB" : "1px solid transparent",
+        borderBottom: border,
         boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.06)" : "none",
       }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 
           {/* Logo */}
           <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={44}
-              style={{ height: 44, width: "auto", objectFit: "contain" }} priority />
+              style={{ height: 40, width: "auto", objectFit: "contain" }} priority />
           </Link>
 
           {/* Nav desktop */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <nav style={{ display: "flex", alignItems: "center", gap: 28 }}>
 
             {/* Dropdown Modules */}
             <div style={{ position: "relative" }}
               onMouseEnter={() => setModulesOpen(true)}
               onMouseLeave={() => setModulesOpen(false)}>
-              <button style={{ display: "flex", alignItems: "center", gap: 6, color: "#4a5568", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-body)", transition: "color 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#1a1a2e")}
-                onMouseLeave={e => (e.currentTarget.style.color = "#4a5568")}>
+              <button style={{ display: "flex", alignItems: "center", gap: 5, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-body)", transition: "color 0.2s" }}
+                onMouseEnter={e => (e.currentTarget.style.color = textHover)}
+                onMouseLeave={e => (e.currentTarget.style.color = textColor)}>
                 Modules
-                <ChevronDown size={14} style={{ transition: "transform 0.2s", transform: modulesOpen ? "rotate(180deg)" : "rotate(0)" }} />
+                <ChevronDown size={13} style={{ transition: "transform 0.2s", transform: modulesOpen ? "rotate(180deg)" : "rotate(0)" }} />
               </button>
               {modulesOpen && (
-                <div style={{ position: "absolute", top: "calc(100% + 14px)", left: "50%", transform: "translateX(-50%)", width: 480, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)", border: "1px solid #C5BFBB", borderRadius: 16, padding: 16, boxShadow: "0 16px 48px rgba(0,0,0,0.1)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+                <div style={{ position: "absolute", top: "calc(100% + 14px)", left: "50%", transform: "translateX(-50%)", width: 520, background: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid #E8E5E3", borderRadius: 16, padding: 12, boxShadow: "0 20px 56px rgba(0,0,0,0.12)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+                  <div style={{ gridColumn: "1/-1", padding: "8px 10px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", letterSpacing: "0.12em", textTransform: "uppercase" }}>Modules de données</span>
+                  </div>
                   {modules.map(m => (
-                    <Link key={m.href} href={m.href} style={{ display: "flex", flexDirection: "column", padding: "10px 14px", borderRadius: 10, textDecoration: "none", transition: "background 0.15s" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "#DEDAD7")}
+                    <Link key={m.href} href={m.href} style={{ display: "flex", flexDirection: "column" as const, padding: "10px 12px", borderRadius: 10, textDecoration: "none", transition: "background 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "#F8F7F6")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                       <span style={{ color: "#1a1a2e", fontSize: 13, fontWeight: 600 }}>{m.label}</span>
                       <span style={{ color: "#9aa5b4", fontSize: 11, marginTop: 2 }}>{m.desc}</span>
@@ -339,37 +358,28 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Code des investissements — ouvre le modal */}
-            <button onClick={() => setCodeOpen(true)}
-              style={{ color: "#4a5568", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-body)", transition: "color 0.2s", padding: 0 }}
+            {/* IDE — lien direct */}
+            <Link href="/ide" style={{ color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = "#ca631f")}
-              onMouseLeave={e => (e.currentTarget.style.color = "#4a5568")}>
+              onMouseLeave={e => (e.currentTarget.style.color = textColor)}>
+              Investissements Directs Étrangers
+            </Link>
+
+            {/* Code des investissements */}
+            <button onClick={() => setCodeOpen(true)}
+              style={{ color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-body)", transition: "color 0.2s", padding: 0 }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#ca631f")}
+              onMouseLeave={e => (e.currentTarget.style.color = textColor)}>
               Code des investissements
             </button>
-
-            {[
-              { label: "Opportunités", href: "/opportunites" },
-              { label: "À propos",     href: "/about"        },
-            ].map(l => (
-              <Link key={l.href} href={l.href} style={{ color: "#4a5568", textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#1a1a2e")}
-                onMouseLeave={e => (e.currentTarget.style.color = "#4a5568")}>
-                {l.label}
-              </Link>
-            ))}
           </nav>
 
-          {/* Actions */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Link href="/login" style={{ fontSize: 14, color: "#4a5568", textDecoration: "none", padding: "8px 16px", borderRadius: 10, transition: "color 0.2s" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "#1a1a2e")}
-              onMouseLeave={e => (e.currentTarget.style.color = "#4a5568")}>
+          {/* Connexion uniquement */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Link href="/login" style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #ca631f, #a84e18)", padding: "9px 18px", borderRadius: 10, textDecoration: "none", boxShadow: "0 3px 12px rgba(202,99,31,0.3)", transition: "all 0.2s", letterSpacing: "0.01em" }}
+              onMouseEnter={e => { e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 6px 18px rgba(202,99,31,0.4)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform="";    e.currentTarget.style.boxShadow="0 3px 12px rgba(202,99,31,0.3)"; }}>
               Connexion
-            </Link>
-            <Link href="/register" style={{ fontSize: 14, fontWeight: 600, color: "#fff", background: "linear-gradient(135deg, #ca631f, #a84e18)", padding: "10px 20px", borderRadius: 12, textDecoration: "none", boxShadow: "0 4px 14px rgba(202,99,31,0.28)", transition: "all 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.transform="scale(1.04)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(202,99,31,0.4)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform="scale(1)";    e.currentTarget.style.boxShadow="0 4px 14px rgba(202,99,31,0.28)"; }}>
-              Espace Investisseur
             </Link>
           </div>
 
@@ -388,14 +398,17 @@ export default function Navbar() {
                 {m.label}
               </Link>
             ))}
+            <Link href="/ide" onClick={() => setMenuOpen(false)}
+              style={{ display: "block", padding: "10px 14px", color: "#ca631f", textDecoration: "none", fontSize: 14, fontWeight: 600, borderRadius: 10 }}>
+              IDE
+            </Link>
             <button onClick={() => { setMenuOpen(false); setCodeOpen(true); }}
-              style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 14px", color: "#ca631f", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
+              style={{ display: "block", width: "100%", textAlign: "left" as const, padding: "10px 14px", color: "#ca631f", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
               Code des investissements
             </button>
-            <div style={{ borderTop: "1px solid #C5BFBB", marginTop: 12, paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-              <Link href="/login" style={{ textAlign: "center", color: "#4a5568", textDecoration: "none", fontSize: 14, padding: "8px 0" }}>Connexion</Link>
-              <Link href="/register" style={{ textAlign: "center", fontSize: 14, fontWeight: 600, color: "#fff", background: "linear-gradient(135deg, #ca631f, #a84e18)", padding: "12px", borderRadius: 12, textDecoration: "none" }}>
-                Espace Investisseur
+            <div style={{ borderTop: "1px solid #C5BFBB", marginTop: 12, paddingTop: 12 }}>
+              <Link href="/login" style={{ display: "block", textAlign: "center" as const, fontSize: 14, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#ca631f,#a84e18)", padding: "12px", borderRadius: 12, textDecoration: "none" }}>
+                Connexion
               </Link>
             </div>
           </div>

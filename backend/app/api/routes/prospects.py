@@ -53,12 +53,14 @@ async def liste_prospects(
     activite_nom: Optional[str] = None,
     region:       Optional[str] = None,
     est_contacte: Optional[bool]= None,
+    admin:        bool          = Query(False),
     db:           AsyncSession  = Depends(get_db),
 ):
     from app.models.entreprise import RefSecteur, RefBranche, RefActivite
     from app.models.entreprise import RefRegion
 
-    filters = [Prospect.is_deleted == False, Prospect.est_publie == True]
+    filters = [Prospect.is_deleted == False]
+    if not admin: filters.append(Prospect.est_publie == True)
 
     if search:
         filters.append(or_(
