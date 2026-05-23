@@ -42,7 +42,7 @@ def zone_to_dict(z: ZoneInvestissement, geo_noms: dict = {}) -> dict:
         "entreprises": [
             {
                 "id":           str(ze.id),
-                "entreprise_id":str(ze.entreprise_id),
+        "entreprise_id": ze.entreprise_id,
                 "date_installation": ze.date_installation.isoformat() if ze.date_installation else None,
                 "entreprise": {
                     "id":               str(ze.entreprise.id),
@@ -183,7 +183,7 @@ async def supprimer_zone(zone_id: UUID, db: AsyncSession = Depends(get_db)):
 @router.post("/{zone_id}/entreprises", status_code=201)
 async def ajouter_entreprise(
     zone_id:      UUID,
-    entreprise_id:UUID,
+    entreprise_id:int,
     date_installation: Optional[str] = None,
     db:           AsyncSession = Depends(get_db),
 ):

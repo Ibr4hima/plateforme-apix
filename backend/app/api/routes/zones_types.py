@@ -126,22 +126,21 @@ def get_load_opts(cfg: dict):
 
 def ent_to_dict(e: EntrepriseIntallee) -> dict:
     return {
-        "id":               str(e.id),
+        "id":               e.id,
         "nom":              e.nom,
         "forme_juridique":  e.forme_juridique,
         "date_creation":    e.date_creation.isoformat() if e.date_creation else None,
-        "statut":           e.statut,
         "pays":             e.pays,
         "adresse":          e.adresse,
         "telephone":        e.telephone,
         "mail":             e.mail,
         "siteweb":          e.siteweb,
-        "secteur":          {"id": e.secteur.id, "nom": e.secteur.nom} if e.secteur else None,
-        "branche":          {"id": e.branche.id, "nom": e.branche.nom} if e.branche else None,
-        "activite":         {"id": e.activite.id, "nom": e.activite.nom} if e.activite else None,
-        "region_nom":       e.region_obj.nom if e.region_obj else None,
-        "departement_nom":  e.departement_obj.nom if e.departement_obj else None,
-        "siege_pays_nom":   e.siege_pays_obj.nom_fr if e.siege_pays_obj else None,
+        "secteur_ids":      e.secteur_ids or [],
+        "branche_ids":      e.branche_ids or [],
+        "activite_ids":     e.activite_ids or [],
+        "region_nom":       e.region.nom if e.region else None,
+        "departement_nom":  e.departement.nom if e.departement else None,
+        "pole_territoire_nom": e.pole_territoire.pole_territoire if e.pole_territoire else None,
         "points_focaux": [
             {"nom": pf.nom, "prenom": pf.prenom, "poste": pf.poste, "telephone": pf.telephone, "mail": pf.mail, "est_principal": pf.est_principal}
             for pf in (e.points_focaux or [])
@@ -257,7 +256,7 @@ async def entreprises_assignees(db: AsyncSession = Depends(get_db)):
     ids = set()
     for cls in [ZoneZESEntreprise, ZoneZAIEntreprise, ZoneZFIEntreprise]:
         result = await db.execute(select(cls.entreprise_id))
-        ids.update(str(r[0]) for r in result.fetchall())
+        ids.update(r[0] for r in result.fetchall())
     return list(ids)
 
 
@@ -463,21 +462,41 @@ async def supprimer_zone(zone_id: str, db: AsyncSession = Depends(get_db)):
 @router.post("/{zone_id}/entreprises", status_code=201)
 async def ajouter_entreprise(
     zone_id:      str,
-    entreprise_id:UUID,
+    entreprise_id:int,
     db:           AsyncSession = Depends(get_db),
 ):
+    from sqlalchemy import text as sa_text
+    import uuid as uuid_lib
     type_zone = zone_id[:3]
-    cfg = TYPE_CONFIG.get(type_zone)
-    if not cfg: raise HTTPException(400, f"Type inconnu: {type_zone}")
-    ze = cfg["ent"](zone_id=zone_id, entreprise_id=entreprise_id)
-    db.add(ze)
+    table_map = {"ZES": "zone_zes_entreprises", "ZAI": "zone_zai_entreprises", "ZFI": "zone_zfi_entreprises"}
+    table = table_map.get(type_zone)
+    if not table: raise HTTPException(400, f"Type inconnu: {type_zone}")
+
+    # Vérifier si déjà assignée dans n'importe quelle zone
+    check = await db.execute(sa_text("""
+        SELECT zone_id FROM zone_zes_entreprises WHERE entreprise_id = :eid
+        UNION ALL
+        SELECT zone_id FROM zone_zai_entreprises WHERE entreprise_id = :eid
+        UNION ALL
+        SELECT zone_id FROM zone_zfi_entreprises WHERE entreprise_id = :eid
+        LIMIT 1
+    """), {"eid": entreprise_id})
+    existing = check.fetchone()
+    if existing:
+        raise HTTPException(400, f"Entreprise déjà assignée à la zone {existing[0]}")
+
+    new_id = str(uuid_lib.uuid4())
+    await db.execute(
+        sa_text(f"INSERT INTO {table} (zone_id, entreprise_id) VALUES (:zone_id, :entreprise_id)"),
+        {"zone_id": zone_id, "entreprise_id": entreprise_id}
+    )
     await db.flush()
-    return {"id": str(ze.id)}
+    return {"ok": True}
 
 
 # ── DELETE /zones-types/:id/entreprises/:ze_id ────────────────────────────────
 @router.delete("/{zone_id}/entreprises/{ze_id}", status_code=204)
-async def retirer_entreprise(zone_id: str, ze_id: UUID, db: AsyncSession = Depends(get_db)):
+async def retirer_entreprise(zone_id: str, ze_id: int, db: AsyncSession = Depends(get_db)):
     type_zone = zone_id[:3]
     cfg = TYPE_CONFIG.get(type_zone)
     if not cfg: raise HTTPException(400, f"Type inconnu: {type_zone}")

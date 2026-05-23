@@ -73,12 +73,12 @@ class ZoneZESFichier(Base):
 class ZoneZESEntreprise(Base):
     __tablename__ = "zone_zes_entreprises"
     __table_args__ = {"extend_existing": True}
-    id            = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id            = Column(Integer, primary_key=True, autoincrement=True)
     zone_id       = Column(String(20), ForeignKey("zones_zes.id", ondelete="CASCADE"), nullable=False)
-    entreprise_id = Column(UUID(as_uuid=True), ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
+    entreprise_id = Column(Integer, ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
     created_at    = Column(TIMESTAMP(timezone=True), server_default=func.now())
     zone          = relationship("ZoneZES", back_populates="entreprises")
-    entreprise    = relationship("EntrepriseIntallee", lazy="joined")
+    entreprise    = relationship("EntrepriseIntallee", lazy="select")
 
 
 # ── ZAI ───────────────────────────────────────────────────────────────────────
@@ -104,12 +104,12 @@ class ZoneZAIFichier(Base):
 
 class ZoneZAIEntreprise(Base):
     __tablename__ = "zone_zai_entreprises"
-    id            = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id            = Column(Integer, primary_key=True, autoincrement=True)
     zone_id       = Column(String(20), ForeignKey("zones_zai.id", ondelete="CASCADE"), nullable=False)
-    entreprise_id = Column(UUID(as_uuid=True), ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
+    entreprise_id = Column(Integer, ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
     created_at    = Column(TIMESTAMP(timezone=True), server_default=func.now())
     zone          = relationship("ZoneZAI", back_populates="entreprises")
-    entreprise    = relationship("EntrepriseIntallee", lazy="joined")
+    entreprise    = relationship("EntrepriseIntallee", lazy="select")
 
 
 # ── ZFI ───────────────────────────────────────────────────────────────────────
@@ -135,9 +135,9 @@ class ZoneZFIFichier(Base):
 
 class ZoneZFIEntreprise(Base):
     __tablename__ = "zone_zfi_entreprises"
-    id            = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id            = Column(Integer, primary_key=True, autoincrement=True)
     zone_id       = Column(String(20), ForeignKey("zones_zfi.id", ondelete="CASCADE"), nullable=False)
-    entreprise_id = Column(UUID(as_uuid=True), ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
+    entreprise_id = Column(Integer, ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
     created_at    = Column(TIMESTAMP(timezone=True), server_default=func.now())
     zone          = relationship("ZoneZFI", back_populates="entreprises")
-    entreprise    = relationship("EntrepriseIntallee", lazy="joined")
+    entreprise    = relationship("EntrepriseIntallee", lazy="select")
