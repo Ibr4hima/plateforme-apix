@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import selectinload
 from typing import Optional, List
-from uuid import UUID
 
 from app.core.database import get_db
 from app.models.entreprise import (
@@ -18,6 +17,31 @@ from app.schemas.entreprise import (
 )
 
 router = APIRouter(prefix="/entreprises", tags=["Entreprises installées"])
+
+# Cache en mémoire des refs NAEMA et geo (chargé une fois par requête via db)
+def enrich_entreprise(e: EntrepriseIntallee) -> dict:
+    """Convertit un objet EntrepriseIntallee en dict pour la réponse."""
+    return {
+        "id": e.id, "nom": e.nom, "forme_juridique": e.forme_juridique,
+        "date_creation": e.date_creation, "pays": e.pays,
+        "siege_pays_id": e.siege_pays_id,
+        "region_id": e.region_id, "departement_id": e.departement_id, "arrondissement_id": e.arrondissement_id,
+        "adresse": e.adresse, "telephone": e.telephone, "mail": e.mail, "siteweb": e.siteweb,
+        "secteur_ids": e.secteur_ids or [], "branche_ids": e.branche_ids or [], "activite_ids": e.activite_ids or [],
+        "est_publie": e.est_publie, "pole_territoire_id": e.pole_territoire_id,
+        "pole_territoire_nom": e.pole_territoire.pole_territoire if hasattr(e, "pole_territoire") and e.pole_territoire else None,
+        "created_at": e.created_at, "updated_at": e.updated_at, "created_by": e.created_by,
+        "is_deleted": e.is_deleted,
+        "points_focaux": [
+            {"id": pf.id, "nom": pf.nom, "prenom": pf.prenom, "civilite": pf.civilite,
+             "poste": pf.poste, "telephone": pf.telephone, "mail": pf.mail, "est_principal": pf.est_principal}
+            for pf in (e.points_focaux or [])
+        ],
+        # Champs enrichis résolus via joins (disponibles si selectinload)
+        "region_nom": e.region.nom if hasattr(e, "region") and e.region else None,
+        "departement_nom": e.departement.nom if hasattr(e, "departement") and e.departement else None,
+        "arrondissement_nom": e.arrondissement.nom if hasattr(e, "arrondissement") and e.arrondissement else None,
+    }
 
 
 # ── Référentiels NAEMA ────────────────────────────────────────────────────────
@@ -176,6 +200,14 @@ async def liste_arrondissements(
     result = await db.execute(q.order_by(RefArrondissement.nom))
     return [{"id": a.id, "code": a.code, "nom": a.nom, "departement_id": a.departement_id} for a in result.scalars().all()]
 
+
+
+@router.get("/ref/poles")
+async def liste_poles(db: AsyncSession = Depends(get_db)):
+    from app.models.zone_types import PoleTerritoire
+    result = await db.execute(select(PoleTerritoire).order_by(PoleTerritoire.pole_territoire))
+    return [{"id": p.id, "nom": p.pole_territoire} for p in result.scalars().all()]
+
 @router.post("/ref/branches", response_model=RefBrancheResponse, status_code=201)
 async def creer_branche(payload: dict, db: AsyncSession = Depends(get_db)):
     branche = RefBranche(**payload)
@@ -196,9 +228,6 @@ async def creer_activite(payload: dict, db: AsyncSession = Depends(get_db)):
 async def liste_entreprises(
     page:         int           = Query(1, ge=1),
     per_page:     int           = Query(12, ge=1, le=500),
-    statut:       Optional[str] = None,
-    secteur_id:   Optional[int] = None,
-    branche_id:   Optional[int] = None,
     region:       Optional[str] = None,
     pays:         Optional[str] = None,
     search:       Optional[str] = None,
@@ -213,81 +242,38 @@ async def liste_entreprises(
     admin:                bool      = Query(False),
     db:           AsyncSession  = Depends(get_db),
 ):
-    filters = [] if admin else [EntrepriseIntallee.est_publie == True]
-    if statut:     filters.append(EntrepriseIntallee.statut == statut)
-    if secteur_id: filters.append(EntrepriseIntallee.secteur_id == secteur_id)
-    if branche_id: filters.append(EntrepriseIntallee.branche_id == branche_id)
-    if region:     filters.append(
-        EntrepriseIntallee.region_id.in_(
-            select(RefRegion.id).where(RefRegion.nom.ilike(f"%{region}%"))
-        ))
-    if pays:       filters.append(EntrepriseIntallee.pays.ilike(f"%{pays}%"))
+    from sqlalchemy import any_ as sa_any
+    filters = [] if admin else [EntrepriseIntallee.est_publie == True, EntrepriseIntallee.is_deleted == False]
+    if region:  filters.append(EntrepriseIntallee.region_id.in_(select(RefRegion.id).where(RefRegion.nom.ilike(f"%{region}%"))))
+    if pays:    filters.append(EntrepriseIntallee.pays.ilike(f"%{pays}%"))
     if search:
-        filters.append(or_(
-            EntrepriseIntallee.nom.ilike(f"%{search}%"),
-            EntrepriseIntallee.mail.ilike(f"%{search}%"),
-            EntrepriseIntallee.adresse.ilike(f"%{search}%"),
-        ))
-    # Sélection directe de noms — OR entre plusieurs entreprises
-    if nom_list:
-        filters.append(or_(*[EntrepriseIntallee.nom == n for n in nom_list]))
-
-    # Forme juridique — OR intra, ET avec les autres filtres
-    if forme_juridique_list:
-        filters.append(or_(*[EntrepriseIntallee.forme_juridique == f for f in forme_juridique_list]))
-
-    # Géographie — OR intra-groupe, ET inter-groupes (via FK IDs)
-    if region_list:
-        filters.append(EntrepriseIntallee.region_id.in_(
-            select(RefRegion.id).where(or_(*[RefRegion.nom == r for r in region_list]))
-        ))
-    if departement_list:
-        filters.append(EntrepriseIntallee.departement_id.in_(
-            select(RefDepartement.id).where(or_(*[RefDepartement.nom == d for d in departement_list]))
-        ))
-    if arrondissement_list:
-        filters.append(EntrepriseIntallee.arrondissement_id.in_(
-            select(RefArrondissement.id).where(or_(*[RefArrondissement.nom == a for a in arrondissement_list]))
-        ))
-
-    # NAEMA — OR intra-groupe, ET inter-groupes
+        filters.append(or_(EntrepriseIntallee.nom.ilike(f"%{search}%"), EntrepriseIntallee.mail.ilike(f"%{search}%"), EntrepriseIntallee.adresse.ilike(f"%{search}%")))
+    if nom_list:              filters.append(or_(*[EntrepriseIntallee.nom == n for n in nom_list]))
+    if forme_juridique_list:  filters.append(or_(*[EntrepriseIntallee.forme_juridique == f for f in forme_juridique_list]))
+    if region_list:           filters.append(EntrepriseIntallee.region_id.in_(select(RefRegion.id).where(or_(*[RefRegion.nom == r for r in region_list]))))
+    if departement_list:      filters.append(EntrepriseIntallee.departement_id.in_(select(RefDepartement.id).where(or_(*[RefDepartement.nom == d for d in departement_list]))))
+    if arrondissement_list:   filters.append(EntrepriseIntallee.arrondissement_id.in_(select(RefArrondissement.id).where(or_(*[RefArrondissement.nom == a for a in arrondissement_list]))))
+    # NAEMA via ARRAY — on cherche si l'ID est dans le tableau
     if secteur_list:
-        filters.append(EntrepriseIntallee.secteur_id.in_(
-            select(RefSecteur.id).where(or_(*[RefSecteur.nom == n for n in secteur_list]))
-        ))
+        ids = (await db.execute(select(RefSecteur.id).where(or_(*[RefSecteur.nom == n for n in secteur_list])))).scalars().all()
+        if ids: filters.append(or_(*[EntrepriseIntallee.secteur_ids.any(id) for id in ids]))
     if branche_list:
-        filters.append(EntrepriseIntallee.branche_id.in_(
-            select(RefBranche.id).where(or_(*[RefBranche.nom == n for n in branche_list]))
-        ))
+        ids = (await db.execute(select(RefBranche.id).where(or_(*[RefBranche.nom == n for n in branche_list])))).scalars().all()
+        if ids: filters.append(or_(*[EntrepriseIntallee.branche_ids.any(id) for id in ids]))
     if activite_list:
-        filters.append(EntrepriseIntallee.activite_id.in_(
-            select(RefActivite.id).where(or_(*[RefActivite.nom == n for n in activite_list]))
-        ))
+        ids = (await db.execute(select(RefActivite.id).where(or_(*[RefActivite.nom == n for n in activite_list])))).scalars().all()
+        if ids: filters.append(or_(*[EntrepriseIntallee.activite_ids.any(id) for id in ids]))
 
-    total_q = await db.execute(
-        select(func.count()).select_from(EntrepriseIntallee).where(and_(*filters))
-    )
-    total = total_q.scalar()
-
+    total = (await db.execute(select(func.count()).select_from(EntrepriseIntallee).where(and_(*filters)))).scalar()
     result = await db.execute(
         select(EntrepriseIntallee)
-        .options(
-            selectinload(EntrepriseIntallee.points_focaux),
-            selectinload(EntrepriseIntallee.secteur),
-            selectinload(EntrepriseIntallee.branche),
-            selectinload(EntrepriseIntallee.activite),
-        )
+        .options(selectinload(EntrepriseIntallee.points_focaux))
         .where(and_(*filters))
         .order_by(EntrepriseIntallee.nom.asc())
-        .offset((page - 1) * per_page)
-        .limit(per_page)
+        .offset((page - 1) * per_page).limit(per_page)
     )
     entreprises = result.scalars().all()
-
-    return EntrepriseListResponse(
-        total=total, page=page, per_page=per_page,
-        data=[EntrepriseResponse.model_validate(e) for e in entreprises]
-    )
+    return EntrepriseListResponse(total=total, page=page, per_page=per_page, data=[enrich_entreprise(e) for e in entreprises])
 
 @router.post("", response_model=EntrepriseResponse, status_code=201)
 async def creer_entreprise(
@@ -307,19 +293,15 @@ async def creer_entreprise(
     await db.flush()
     result = await db.execute(
         select(EntrepriseIntallee)
-        .options(
-            selectinload(EntrepriseIntallee.points_focaux),
-            selectinload(EntrepriseIntallee.secteur),
-            selectinload(EntrepriseIntallee.branche),
-            selectinload(EntrepriseIntallee.activite),
-        )
+        .options(selectinload(EntrepriseIntallee.points_focaux))
         .where(EntrepriseIntallee.id == entreprise.id)
     )
-    return EntrepriseResponse.model_validate(result.scalar_one())
+    e2 = (await db.execute(select(EntrepriseIntallee).options(selectinload(EntrepriseIntallee.points_focaux)).where(EntrepriseIntallee.id == entreprise.id))).scalar_one()
+    return enrich_entreprise(e2)
 
 @router.post("/{entreprise_id}/points-focaux", response_model=PointFocalResponse, status_code=201)
 async def ajouter_point_focal(
-    entreprise_id: UUID,
+    entreprise_id: int,
     payload:       PointFocalCreate,
     db:            AsyncSession = Depends(get_db),
 ):
@@ -338,8 +320,8 @@ async def ajouter_point_focal(
 
 @router.delete("/{entreprise_id}/points-focaux/{focal_id}", status_code=204)
 async def supprimer_point_focal(
-    entreprise_id: UUID,
-    focal_id:      UUID,
+    entreprise_id: int,
+    focal_id:      int,
     db:            AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -359,27 +341,22 @@ async def supprimer_point_focal(
 
 @router.get("/{entreprise_id}", response_model=EntrepriseResponse)
 async def detail_entreprise(
-    entreprise_id: UUID,
+    entreprise_id: int,
     db:            AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
         select(EntrepriseIntallee)
-        .options(
-            selectinload(EntrepriseIntallee.points_focaux),
-            selectinload(EntrepriseIntallee.secteur),
-            selectinload(EntrepriseIntallee.branche),
-            selectinload(EntrepriseIntallee.activite),
-        )
+        .options(selectinload(EntrepriseIntallee.points_focaux))
         .where(EntrepriseIntallee.id == entreprise_id)
     )
     e = result.scalar_one_or_none()
     if not e:
         raise HTTPException(status_code=404, detail="Entreprise introuvable")
-    return EntrepriseResponse.model_validate(e)
+    return enrich_entreprise(e)
 
 @router.patch("/{entreprise_id}", response_model=EntrepriseResponse)
 async def modifier_entreprise(
-    entreprise_id: UUID,
+    entreprise_id: int,
     payload:       EntrepriseUpdate,
     db:            AsyncSession = Depends(get_db),
 ):
@@ -398,20 +375,15 @@ async def modifier_entreprise(
     # Recharger avec toutes les relations
     result = await db.execute(
         select(EntrepriseIntallee)
-        .options(
-            selectinload(EntrepriseIntallee.points_focaux),
-            selectinload(EntrepriseIntallee.secteur),
-            selectinload(EntrepriseIntallee.branche),
-            selectinload(EntrepriseIntallee.activite),
-        )
+        .options(selectinload(EntrepriseIntallee.points_focaux))
         .where(EntrepriseIntallee.id == entreprise_id)
     )
     e = result.scalar_one()
-    return EntrepriseResponse.model_validate(e)
+    return enrich_entreprise(e)
 
 @router.delete("/{entreprise_id}", status_code=204)
 async def supprimer_entreprise(
-    entreprise_id: UUID,
+    entreprise_id: int,
     db:            AsyncSession = Depends(get_db),
 ):
     result = await db.execute(

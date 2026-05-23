@@ -1,7 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import date, datetime
-from uuid import UUID
 
 
 # ── Référentiels ──
@@ -40,8 +39,8 @@ class PointFocalCreate(PointFocalBase):
     pass
 
 class PointFocalResponse(PointFocalBase):
-    id:            UUID
-    entreprise_id: UUID
+    id:            int
+    entreprise_id: Optional[int] = None
     created_at:    Optional[datetime] = None
     model_config = {"from_attributes": True}
 
@@ -60,12 +59,11 @@ class EntrepriseBase(BaseModel):
     telephone:       Optional[str]  = None
     mail:            Optional[str]  = None
     siteweb:         Optional[str]  = None
-    secteur_id:      Optional[int]  = None
-    branche_id:      Optional[int]  = None
-    activite_id:     Optional[int]  = None
-    statut:          str            = "actif"
+    secteur_ids:     Optional[List[int]] = []
+    branche_ids:     Optional[List[int]] = []
+    activite_ids:    Optional[List[int]] = []
+    pole_territoire_id: Optional[int] = None
     est_publie:      bool           = True
-    zone_investissement: Optional[str] = None  # ex: ZES-1, ZAI-3
 
 class EntrepriseCreate(EntrepriseBase):
     created_by:    Optional[str]               = None
@@ -84,24 +82,23 @@ class EntrepriseUpdate(BaseModel):
     telephone:       Optional[str]  = None
     mail:            Optional[str]  = None
     siteweb:         Optional[str]  = None
-    secteur_id:      Optional[int]  = None
-    branche_id:      Optional[int]  = None
-    activite_id:     Optional[int]  = None
-    statut:          Optional[str]  = None
+    secteur_ids:     Optional[List[int]] = None
+    branche_ids:     Optional[List[int]] = None
+    activite_ids:    Optional[List[int]] = None
+    pole_territoire_id: Optional[int] = None
     est_publie:      Optional[bool] = None
-    zone_investissement: Optional[str] = None
 
 class EntrepriseResponse(EntrepriseBase):
-    id:            UUID
+    id:            int
     points_focaux: List[PointFocalResponse]    = []
     secteur:       Optional[RefSecteurResponse]  = None
     branche:       Optional[RefBrancheResponse]  = None
     activite:      Optional[RefActiviteResponse] = None
     siege_pays_nom:      Optional[str]           = None
+    pole_territoire_nom: Optional[str]   = None
     region_nom:          Optional[str]           = None
     departement_nom:     Optional[str]           = None
     arrondissement_nom:  Optional[str]           = None
-    zone_investissement: Optional[str]           = None
     created_at:    Optional[datetime]            = None
     updated_at:    Optional[datetime]            = None
     created_by:    Optional[str]                 = None
@@ -118,6 +115,8 @@ class EntrepriseResponse(EntrepriseBase):
             instance.departement_nom = obj.departement_obj.nom
         if hasattr(obj, "arrondissement_obj") and obj.arrondissement_obj:
             instance.arrondissement_nom = obj.arrondissement_obj.nom
+        if hasattr(obj, "pole_territoire") and obj.pole_territoire:
+            instance.pole_territoire_nom = obj.pole_territoire.pole_territoire
         return instance
 
 class EntrepriseListResponse(BaseModel):

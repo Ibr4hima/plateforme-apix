@@ -1,11 +1,9 @@
-from sqlalchemy import Column, String, Boolean, Integer, Date, Text, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Boolean, Integer, Date, Text, ForeignKey, TIMESTAMP
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
-from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import relationship
 from app.core.database import Base
-from app.models.shared import RefPays
-import uuid
+from app.models.zone_types import PoleTerritoire  # noqa: F401 — requis pour la relationship
 
 
 class RefSecteur(Base):
@@ -15,7 +13,6 @@ class RefSecteur(Base):
     nom         = Column(String(150), nullable=False)
     description = Column(Text)
     actif       = Column(Boolean, default=True)
-    branches    = relationship("RefBranche", back_populates="secteur")
 
 
 class RefBranche(Base):
@@ -25,8 +22,6 @@ class RefBranche(Base):
     code        = Column(String(20), unique=True, nullable=False)
     nom         = Column(String(150), nullable=False)
     actif       = Column(Boolean, default=True)
-    secteur     = relationship("RefSecteur", back_populates="branches")
-    activites   = relationship("RefActivite", back_populates="branche")
 
 
 class RefActivite(Base):
@@ -36,13 +31,12 @@ class RefActivite(Base):
     code        = Column(String(20), unique=True, nullable=False)
     nom         = Column(String(255), nullable=False)
     actif       = Column(Boolean, default=True)
-    branche     = relationship("RefBranche", back_populates="activites")
 
 
 class EntreprisePointFocal(Base):
     __tablename__ = "entreprises_points_focaux"
-    id              = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    entreprise_id   = Column(UUID(as_uuid=True), ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    entreprise_id   = Column(Integer, ForeignKey("entreprises_installees.id", ondelete="CASCADE"), nullable=False)
     nom             = Column(String(255), nullable=False)
     prenom          = Column(String(255))
     civilite        = Column(String(20), default="Monsieur")
@@ -51,7 +45,6 @@ class EntreprisePointFocal(Base):
     mail            = Column(String(255))
     est_principal   = Column(Boolean, default=False)
     created_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    entreprise      = relationship("EntrepriseIntallee", back_populates="points_focaux")
 
 
 class RefRegion(Base):
@@ -61,6 +54,7 @@ class RefRegion(Base):
     nom   = Column(String(100))
     actif = Column(Boolean, default=True)
 
+
 class RefDepartement(Base):
     __tablename__ = "ref_departements"
     id        = Column(Integer, primary_key=True)
@@ -69,53 +63,53 @@ class RefDepartement(Base):
     nom       = Column(String(100))
     actif     = Column(Boolean, default=True)
 
+
 class RefArrondissement(Base):
     __tablename__ = "ref_arrondissements"
-    id             = Column(Integer, primary_key=True)
-    departement_id = Column(Integer, ForeignKey("ref_departements.id"))
-    code           = Column(String(10))
-    nom            = Column(String(100))
-    actif          = Column(Boolean, default=True)
+    id               = Column(Integer, primary_key=True)
+    departement_id   = Column(Integer, ForeignKey("ref_departements.id"))
+    code             = Column(String(10))
+    nom              = Column(String(100))
+    actif            = Column(Boolean, default=True)
+
 
 class EntrepriseIntallee(Base):
     __tablename__ = "entreprises_installees"
-    # ── Identité ──
-    id              = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    id              = Column(Integer, primary_key=True, autoincrement=True)
     nom             = Column(String(255), nullable=False)
     forme_juridique = Column(String(100))
     date_creation   = Column(Date)
-    statut          = Column(String(20), default="actif")
-    # ── Siège social ──
+
     siege_pays_id   = Column(Integer, ForeignKey("ref_pays.id"))
-    pays            = Column(String(100), default="Sénégal")  # pays d'implantation (fixe)
-    # ── Localisation Sénégal ──
+    pays            = Column(String(100), default="Sénégal")
+
     region_id           = Column(Integer, ForeignKey("ref_regions.id"))
     departement_id      = Column(Integer, ForeignKey("ref_departements.id"))
     arrondissement_id   = Column(Integer, ForeignKey("ref_arrondissements.id"))
     adresse             = Column(Text)
-    # ── Contact ──
+
     telephone       = Column(String(50))
     mail            = Column(String(255))
     siteweb         = Column(Text)
-    # ── Classification ──
-    secteur_id      = Column(Integer, ForeignKey("ref_secteurs.id"))
-    branche_id      = Column(Integer, ForeignKey("ref_branches.id"))
-    activite_id     = Column(Integer, ForeignKey("ref_activites.id"))
-    # ── Publication ──
-    est_publie      = Column(Boolean, default=True)
-    # ── Zone d'investissement ──
-    zone_investissement = Column(String(20), nullable=True)  # ex: ZES-1, ZAI-3
-    # ── Métadonnées ──
+
+    secteur_ids     = Column(ARRAY(Integer), default=[])
+    branche_ids     = Column(ARRAY(Integer), default=[])
+    activite_ids    = Column(ARRAY(Integer), default=[])
+
+    pole_territoire_id  = Column(Integer, ForeignKey("poles_territoires.id"), nullable=True)
+    est_publie          = Column(Boolean, default=True)
+
+    pole_territoire = relationship("PoleTerritoire", foreign_keys=[pole_territoire_id], lazy="joined")
+
     created_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())
     created_by      = Column(String(100))
     is_deleted      = Column(Boolean, default=False)
-    # ── Relations ──
-    siege_pays_obj      = relationship("RefPays",          foreign_keys=[siege_pays_id],      lazy="joined")
-    region_obj          = relationship("RefRegion",        foreign_keys=[region_id],          lazy="joined")
-    departement_obj     = relationship("RefDepartement",   foreign_keys=[departement_id],     lazy="joined")
-    arrondissement_obj  = relationship("RefArrondissement",foreign_keys=[arrondissement_id],  lazy="joined")
-    points_focaux   = relationship("EntreprisePointFocal", back_populates="entreprise", cascade="all, delete-orphan")
-    secteur         = relationship("RefSecteur")
-    branche         = relationship("RefBranche")
-    activite        = relationship("RefActivite")
+
+    points_focaux = relationship("EntreprisePointFocal", backref="entreprise", lazy="selectin",
+                                  foreign_keys=[EntreprisePointFocal.entreprise_id],
+                                  cascade="all, delete-orphan")
+    region       = relationship("RefRegion",        foreign_keys=[region_id],        lazy="joined")
+    departement  = relationship("RefDepartement",   foreign_keys=[departement_id],   lazy="joined")
+    arrondissement = relationship("RefArrondissement", foreign_keys=[arrondissement_id], lazy="joined")

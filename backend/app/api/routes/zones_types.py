@@ -109,12 +109,9 @@ TYPE_CONFIG = {
 }
 
 ENT_LOAD_OPTS = [
-    selectinload(EntrepriseIntallee.secteur),
-    selectinload(EntrepriseIntallee.branche),
-    selectinload(EntrepriseIntallee.activite),
-    selectinload(EntrepriseIntallee.region_obj),
-    selectinload(EntrepriseIntallee.departement_obj),
-    selectinload(EntrepriseIntallee.siege_pays_obj),
+    selectinload(EntrepriseIntallee.region),
+    selectinload(EntrepriseIntallee.departement),
+    selectinload(EntrepriseIntallee.arrondissement),
     selectinload(EntrepriseIntallee.points_focaux),
 ]
 

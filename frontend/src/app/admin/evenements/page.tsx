@@ -1,11 +1,11 @@
 "use client";
 
-import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
-import PaysSelect from "@/components/shared/PaysSelect";
-import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
+import { useEffect, useState, useCallback } from "react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, Calendar } from "lucide-react";
 import { api } from "@/lib/api";
-import { Calendar, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import NaemaSelect from "@/components/shared/NaemaSelect";
+import PaysSelect from "@/components/shared/PaysSelect";
+import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -34,7 +34,6 @@ const EMPTY_FORM = {
   date_unique: true, date_debut: "", date_fin: "",
   pays_hote_id: "" as string | number, pays_hote_nom: "", ville: "",
   secteur_ids: [] as number[], branche_ids: [] as number[], activite_ids: [] as number[],
-  thematiques_naema: "",  // format "sec:X, bra:Y" pour ThematiquesNaema
   pays_invites_ids: [] as number[], pays_invites_noms: "", entreprises_invitees: "",
   est_publie: true,
   est_recurrent: false, frequence_type: "ans", frequence_valeur: "" as string,
@@ -56,24 +55,10 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
     if (!open) return;
     if (editItem) {
       const reconstruct = async () => {
-        let thematiques_naema = "";
         let pays_invites_noms = "";
-        const needNaema = editItem.secteur_ids?.length || editItem.branche_ids?.length || editItem.activite_ids?.length;
-        const needPays  = editItem.pays_invites_ids?.length;
-        const [allSec, allBra, allAct, allPays] = await Promise.all([
-          needNaema ? fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()) : Promise.resolve([]),
-          needNaema ? fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()) : Promise.resolve([]),
-          needNaema ? fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()) : Promise.resolve([]),
-          needPays  ? fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json())     : Promise.resolve([]),
-        ]);
-        if (needNaema) {
-          const parts: string[] = [];
-          (editItem.secteur_ids||[]).forEach((id:number)=>{ const n=allSec.find((s:any)=>s.id===id)?.nom; if(n) parts.push(`sec:${n}`); });
-          (editItem.branche_ids||[]).forEach((id:number)=>{ const n=allBra.find((b:any)=>b.id===id)?.nom; if(n) parts.push(`bra:${n}`); });
-          (editItem.activite_ids||[]).forEach((id:number)=>{ const n=allAct.find((a:any)=>a.id===id)?.nom; if(n) parts.push(`act:${n}`); });
-          thematiques_naema = parts.join(", ");
-        }
+        const needPays = editItem.pays_invites_ids?.length;
         if (needPays) {
+          const allPays = await fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()).catch(()=>[]);
           pays_invites_noms = (editItem.pays_invites_ids||[])
             .map((id:number) => allPays.find((p:any)=>p.id===id)?.nom_fr)
             .filter(Boolean).join(", ");
@@ -93,7 +78,6 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
           secteur_ids:          editItem.secteur_ids      || [],
           branche_ids:          editItem.branche_ids      || [],
           activite_ids:         editItem.activite_ids     || [],
-          thematiques_naema,
           pays_invites_ids:     editItem.pays_invites_ids  || [],
           pays_invites_noms,
           entreprises_invitees: editItem.entreprises_invitees || "",
@@ -159,25 +143,13 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
     }
     setSaving(true); setError("");
     try {
-      // Résoudre thématiques → IDs
-      let secteur_ids: number[] = [], branche_ids: number[] = [], activite_ids: number[] = [];
-      if (form.thematiques_naema) {
-        const items = form.thematiques_naema.split(",").map((t: string) => t.trim());
-        const secNoms = items.filter((t: string) => t.startsWith("sec:")).map((t: string) => t.slice(4));
-        const braNoms = items.filter((t: string) => t.startsWith("bra:")).map((t: string) => t.slice(4));
-        const actNoms = items.filter((t: string) => t.startsWith("act:")).map((t: string) => t.slice(4));
-        const [allSec, allBra, allAct] = await Promise.all([
-          fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
-          fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
-          fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
-        ]);
-        secteur_ids  = allSec.filter((s: any) => secNoms.includes(s.nom)).map((s: any) => s.id);
-        branche_ids  = allBra.filter((b: any) => braNoms.includes(b.nom)).map((b: any) => b.id);
-        activite_ids = allAct.filter((a: any) => actNoms.includes(a.nom)).map((a: any) => a.id);
-      }
+      // Les IDs sont déjà dans form.secteur_ids / branche_ids / activite_ids
+      const secteur_ids  = form.secteur_ids  || [];
+      const branche_ids  = form.branche_ids  || [];
+      const activite_ids = form.activite_ids || [];
       // Résoudre pays_invites noms → IDs
-      let pays_invites_ids: number[] = [];
-      if (form.pays_invites_noms) {
+      let pays_invites_ids: number[] = form.pays_invites_ids || [];
+      if (form.pays_invites_noms && !pays_invites_ids.length) {
         const noms = form.pays_invites_noms.split(",").map((s: string) => s.trim()).filter(Boolean);
         const allPays = await fetch(`${API_BASE}/entreprises/ref/pays`).then(r => r.json());
         pays_invites_ids = allPays.filter((p: any) => noms.includes(p.nom_fr)).map((p: any) => p.id);
@@ -457,7 +429,14 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
             {/* Thématiques */}
             <div>
               <p style={SS}>Thématiques</p>
-              <ThematiquesNaema value={form.thematiques_naema} onChange={val=>update("thematiques_naema",val)} />
+              <NaemaSelect
+                secteurIds={form.secteur_ids||[]}
+                brancheIds={form.branche_ids||[]}
+                activiteIds={form.activite_ids||[]}
+                onChangeSecteurs={ids=>update("secteur_ids",ids)}
+                onChangeBranches={ids=>update("branche_ids",ids)}
+                onChangeActivites={ids=>update("activite_ids",ids)}
+              />
             </div>
 
             {/* Participants */}
@@ -742,16 +721,16 @@ export default function EvenementsPage() {
                                   <span style={{ fontSize:11, fontWeight:600, color:"#366FE3" }}>{bra}</span>
                                 </div>
                                 {/* Activités */}
-{acts.length > 0 && (
-  <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3, marginTop:3 }}>
-    {acts.map((act:string) => (
-      <div key={act} style={{ display:"flex", alignItems:"center", gap:6 }}>
-        <div style={{ width:5, height:5, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
-        <span style={{ fontSize:11, color:"#188038", fontWeight:500 }}>{act}</span>
-      </div>
-    ))}
-  </div>
-)}
+                                {acts.length > 0 && (
+                                  <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3, marginTop:3 }}>
+                                    {acts.map((act:string) => (
+                                      <div key={act} style={{ display:"flex", alignItems:"center", gap:6 }}>
+                                        <div style={{ width:5, height:5, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
+                                        <span style={{ fontSize:11, color:"#188038", fontWeight:500 }}>{act}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>

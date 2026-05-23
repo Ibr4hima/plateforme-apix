@@ -2,17 +2,12 @@
 
 import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
-import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
+import NaemaSelect from "@/components/shared/NaemaSelect";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const STATUTS = ["en_vigueur","expire"];
 const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré" };
-const STATUT_COLORS: Record<string,{bg:string;text:string}> = {
-  en_vigueur: {bg:"#dcfce7", text:"#15803d"},
-  expire:     {bg:"#f3f4f6", text:"#6b7280"},
-};
 const SENEGAL = "Sénégal";
 const APIX    = "APIX S.A";
 
@@ -22,82 +17,101 @@ const fmtDate = (d: string) => {
   return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
 };
 
-const EMPTY_FORM = {
-  titre:"", reference:"", pays_signataires:[SENEGAL] as string[],
-  mode_signataire:"pays" as "pays"|"organisation",
-  date_signature:"", date_entree_vigueur:"", date_expiration:"",
-  thematiques:"", commentaires:"", statut:"en_vigueur",
-};
-
-// ── Modal accord ──────────────────────────────────────────────────────────────
+// ── Modal formulaire accord ───────────────────────────────────────────────────
 function AccordModal({ open, onClose, editItem, onSaved }: {
   open:boolean; onClose:()=>void; editItem:any; onSaved:()=>void;
 }) {
-  const [form,      setForm]      = useState<any>({...EMPTY_FORM});
+  const [form,      setForm]      = useState<any>({
+    titre:"", reference:"",
+    mode_signataire:"pays" as "pays"|"organisation",
+    pays_ids:[] as number[], orgs:[] as string[],
+    date_signature:"", date_entree_vigueur:"", date_expiration:"",
+    secteur_ids:[] as number[], branche_ids:[] as number[], activite_ids:[] as number[],
+    commentaires:"", statut:"en_vigueur",
+  });
   const [saisieOrg, setSaisieOrg] = useState("");
   const [fichiers,  setFichiers]  = useState<any[]>([]);
   const [pdfQueue,  setPdfQueue]  = useState<{file:File;titre:string}[]>([]);
   const [saving,    setSaving]    = useState(false);
   const [saveOk,    setSaveOk]    = useState(false);
   const [error,     setError]     = useState("");
+  const [allPays,   setAllPays]   = useState<any[]>([]);
 
   const update = (k:string, v:any) => setForm((f:any)=>({...f,[k]:v}));
 
   useEffect(()=>{
+    fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()).then(setAllPays).catch(()=>{});
+  },[]);
+
+  useEffect(()=>{
     if (!open) return;
-    setPdfQueue([]); setError(""); setSaveOk("" as any);
+    setPdfQueue([]); setError(""); setSaveOk(false);
     if (editItem) {
-      const parties: string[] = editItem.pays_signataires
-        ? editItem.pays_signataires.split(", ").filter(Boolean) : [];
-      const mode = parties.includes(APIX) ? "organisation" : "pays";
+      const mode = editItem.parties_pays_ids?.length > 0 ? "pays" : "organisation";
+      const pays_ids = editItem.parties_pays_ids || [];
+      const orgs = mode==="organisation"
+        ? (editItem.parties_signataires||"").split(", ").map((s:string)=>s.trim()).filter((s:string)=>s&&s!==APIX)
+        : [];
       setForm({
         titre:               editItem.titre               || "",
         reference:           editItem.reference           || "",
-        pays_signataires:    mode==="pays"
-          ? (parties.includes(SENEGAL)?parties:[SENEGAL,...parties])
-          : (parties.includes(APIX)?parties:[APIX,...parties]),
         mode_signataire:     mode,
+        pays_ids,
+        orgs,
         date_signature:      editItem.date_signature      || "",
         date_entree_vigueur: editItem.date_entree_vigueur || "",
         date_expiration:     editItem.date_expiration     || "",
-        thematiques:         editItem.secteur_activite    || "",
+        secteur_ids:         editItem.secteur_ids         || [],
+        branche_ids:         editItem.branche_ids         || [],
+        activite_ids:        editItem.activite_ids        || [],
         commentaires:        editItem.commentaires        || "",
         statut:              editItem.statut              || "en_vigueur",
       });
       setSaisieOrg("");
-      setFichiers([]);
       fetch(`${API_BASE}/accords/${editItem.id}/fichiers`)
         .then(r=>r.json()).then(setFichiers).catch(()=>{});
     } else {
-      setForm({...EMPTY_FORM}); setFichiers([]); setSaisieOrg("");
+      const senId = allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id;
+      setForm((f:any)=>({...f, titre:"", reference:"", mode_signataire:"pays", pays_ids:senId?[senId]:[], orgs:[], date_signature:"", date_entree_vigueur:"", date_expiration:"", secteur_ids:[], branche_ids:[], activite_ids:[], commentaires:"", statut:"en_vigueur"}));
+      setFichiers([]); setSaisieOrg("");
     }
-  },[open, editItem?.id]);
+  },[open, editItem?.id, allPays]);
+
+  const buildPartiesStr = () => {
+    if (form.mode_signataire==="pays") {
+      return (form.pays_ids as number[]).map((id:number)=>allPays.find((p:any)=>p.id===id)?.nom_fr).filter(Boolean).join(", ");
+    }
+    return [APIX, ...(form.orgs as string[])].join(", ");
+  };
 
   const handleSave = async () => {
-    if (!form.titre.trim())           { setError("Le titre est obligatoire"); return; }
-    if (!form.reference.trim())       { setError("La référence est obligatoire"); return; }
-    if (!form.date_signature)         { setError("La date de signature est obligatoire"); return; }
-    if (!form.date_entree_vigueur)    { setError("La date d'entrée en vigueur est obligatoire"); return; }
-    if (!form.date_expiration)        { setError("La date d'expiration est obligatoire"); return; }
+    if (!form.titre.trim())        { setError("Le titre est obligatoire"); return; }
+    if (!form.reference.trim())    { setError("La référence est obligatoire"); return; }
+    if (!form.date_signature)      { setError("La date de signature est obligatoire"); return; }
+    if (!form.date_entree_vigueur) { setError("La date d'entrée en vigueur est obligatoire"); return; }
+    if (!form.date_expiration)     { setError("La date d'expiration est obligatoire"); return; }
     const today = new Date().toISOString().split("T")[0];
-    if (form.date_signature > today)             { setError("La date de signature doit être aujourd'hui ou dans le passé"); return; }
-    if (form.date_entree_vigueur < form.date_signature) { setError("L'entrée en vigueur doit être égale ou postérieure à la date de signature"); return; }
-    if (form.date_expiration <= form.date_signature)    { setError("La date d'expiration doit être strictement après la date de signature"); return; }
-    if (form.date_expiration <= form.date_entree_vigueur) { setError("La date d'expiration doit être strictement après la date d'entrée en vigueur"); return; }
-    if (form.date_expiration <= today)           { setError("La date d'expiration doit être dans le futur"); return; }
-    if ((form.pays_signataires as string[]).length < 2) {
-      setError(`Ajoutez au moins un${form.mode_signataire==="pays"?" autre pays signataire":"e organisation/entreprise partenaire"}`); return;
-    }
+    if (form.date_signature > today) { setError("La date de signature doit être dans le passé"); return; }
+    if (form.date_entree_vigueur < form.date_signature) { setError("L'entrée en vigueur doit être après la signature"); return; }
+    if (form.date_expiration <= form.date_entree_vigueur) { setError("L'expiration doit être après l'entrée en vigueur"); return; }
+    if (form.mode_signataire==="pays" && (form.pays_ids as number[]).length < 2) { setError("Ajoutez au moins deux pays signataires"); return; }
+    if (form.mode_signataire==="organisation" && (form.orgs as string[]).length === 0) { setError("Ajoutez au moins une organisation partenaire"); return; }
     setSaving(true); setError("");
     try {
-      const paysStr = (form.pays_signataires as string[]).join(", ") || null;
+      const partiesStr = buildPartiesStr();
       if (editItem) {
         const res = await fetch(`${API_BASE}/accords/${editItem.id}`,{
           method:"PATCH", headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({ titre:form.titre, reference:form.reference||null, pays_signataires:paysStr,
-            date_signature:form.date_signature||null, date_entree_vigueur:form.date_entree_vigueur||null,
-            date_expiration:form.date_expiration||null, secteur_activite:form.thematiques||null,
-            commentaires:form.commentaires||null, statut:form.statut }),
+          body:JSON.stringify({
+            titre:form.titre, reference:form.reference||null,
+            parties_signataires: form.mode_signataire==="organisation" ? [APIX,...(form.orgs as string[])].join(", ") : null,
+            parties_pays_ids:    form.mode_signataire==="pays" ? form.pays_ids : [],
+            date_signature:form.date_signature||null,
+            date_entree_vigueur:form.date_entree_vigueur||null,
+            date_expiration:form.date_expiration||null,
+            secteur_ids:form.secteur_ids, branche_ids:form.branche_ids, activite_ids:form.activite_ids,
+            commentaires:form.commentaires||null, statut:form.statut,
+          }),
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
         for (const p of pdfQueue) {
@@ -106,12 +120,20 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         }
       } else {
         const fd = new FormData();
-        fd.append("titre",form.titre); fd.append("reference",form.reference);
-        fd.append("pays_signataires",paysStr||"");
+        fd.append("titre",form.titre);
+        fd.append("reference",form.reference);
+        if (form.mode_signataire==="organisation") {
+          fd.append("parties_signataires",[APIX,...(form.orgs as string[])].join(", "));
+          fd.append("parties_pays_ids","[]");
+        } else {
+          fd.append("parties_pays_ids",JSON.stringify(form.pays_ids));
+        }
+        fd.append("secteur_ids",JSON.stringify(form.secteur_ids));
+        fd.append("branche_ids",JSON.stringify(form.branche_ids));
+        fd.append("activite_ids",JSON.stringify(form.activite_ids));
         if (form.date_signature)      fd.append("date_signature",     form.date_signature);
         if (form.date_entree_vigueur) fd.append("date_entree_vigueur",form.date_entree_vigueur);
         if (form.date_expiration)     fd.append("date_expiration",    form.date_expiration);
-        if (form.thematiques)         fd.append("secteur_activite",   form.thematiques);
         if (form.commentaires)        fd.append("commentaires",       form.commentaires);
         fd.append("statut",form.statut); fd.append("est_publie","true");
         const res = await fetch(`${API_BASE}/accords`,{method:"POST",body:fd});
@@ -122,7 +144,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
           await fetch(`${API_BASE}/accords/${na.id}/fichiers`,{method:"POST",body:fd2});
         }
       }
-      setSaveOk(true as any);
+      setSaveOk(true);
       setTimeout(()=>{ onClose(); onSaved(); },700);
     } catch(e:any){ setError(e.message||"Erreur lors de la sauvegarde"); }
     finally { setSaving(false); }
@@ -130,22 +152,19 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
 
   const IS:any = { width:"100%", background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const };
   const LS:any = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:4, display:"block" };
-  const SS:any = { fontSize:11, fontWeight:700, color:"#7c3aed", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
+  const SS:any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
 
   if (!open) return null;
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:780,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
-        <div style={{height:4,background:"linear-gradient(90deg,#7c3aed,#6d28d9)",borderRadius:"20px 20px 0 0"}}/>
+      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:820,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
+        <div style={{height:4,background:"linear-gradient(90deg,#ca631f,#004f91)",borderRadius:"20px 20px 0 0"}}/>
         <div style={{padding:"24px 32px 32px"}}>
-
-          {/* Header */}
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
             <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e"}}>{editItem?"Modifier l'accord":"Nouvel accord / traité"}</h2>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7}}><X size={15} color="#4a5568"/></button>
           </div>
-
           <div style={{display:"flex",flexDirection:"column",gap:20}}>
 
             {/* Identification */}
@@ -163,47 +182,81 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
               </div>
             </div>
 
-            {/* Parties */}
+            {/* Parties signataires */}
             <div>
               <p style={SS}>Parties signataires</p>
-              <div style={{display:"flex",gap:0,marginBottom:12,border:"1px solid #C5BFBB",borderRadius:8,overflow:"hidden",width:"fit-content"}}>
+              <div style={{display:"flex",gap:0,marginBottom:14,border:"1px solid #C5BFBB",borderRadius:8,overflow:"hidden",width:"fit-content"}}>
                 {(["pays","organisation"] as const).map(mode=>(
-                  <button key={mode} onClick={()=>{ update("mode_signataire",mode); update("pays_signataires",mode==="pays"?[SENEGAL]:[APIX]); setSaisieOrg(""); }}
-                    style={{padding:"7px 18px",border:"none",fontSize:12,fontWeight:700,cursor:"pointer",
-                      background:form.mode_signataire===mode?"#7c3aed":"#F2F0EF",
-                      color:form.mode_signataire===mode?"#fff":"#9aa5b4"}}>
-                    {mode==="pays"?"Pays":"Organisation / Entreprise"}
+                  <button key={mode} onClick={()=>{
+                    update("mode_signataire",mode);
+                    if (mode==="pays") { const senId=allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id; update("pays_ids",senId?[senId]:[]); update("orgs",[]); }
+                    else { update("pays_ids",[]); update("orgs",[]); }
+                    setSaisieOrg("");
+                  }} style={{padding:"7px 18px",border:"none",fontSize:12,fontWeight:700,cursor:"pointer",background:form.mode_signataire===mode?"#004f91":"#F2F0EF",color:form.mode_signataire===mode?"#fff":"#9aa5b4"}}>
+                    {mode==="pays"?"Pays signataires":"Organisation / Entreprise"}
                   </button>
                 ))}
               </div>
               {form.mode_signataire==="pays" ? (
                 <>
-                  <PaysMultiSelect value={(form.pays_signataires as string[]).join(", ")} onChange={(val:string)=>{
-                    const liste = val?val.split(", ").map((s:string)=>s.trim()).filter(Boolean):[];
-                    update("pays_signataires",liste.includes(SENEGAL)?liste:[SENEGAL,...liste]);
-                  }}/>
-                  <span style={{fontSize:11,color:"#9aa5b4",marginTop:4,display:"block"}}>Le Sénégal est toujours signataire. Au moins un autre pays est requis.</span>
+                  {/* Tags des pays sélectionnés */}
+                  <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
+                    {(form.pays_ids as number[]).map((id:number)=>{
+                      const p=allPays.find((r:any)=>r.id===id);
+                      const isSen=p?.nom_fr===SENEGAL;
+                      const fl=p?.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
+                      return p?<span key={id} style={{display:"inline-flex",alignItems:"center",gap:5,background:isSen?"rgba(0,79,145,0.1)":"rgba(202,99,31,0.1)",color:isSen?"#004f91":"#ca631f",border:`1px solid ${isSen?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
+                        {fl&&<span style={{fontSize:14}}>{fl}</span>}{p.nom_fr}
+                        {!isSen&&<button onClick={()=>update("pays_ids",(form.pays_ids as number[]).filter((x:number)=>x!==id))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>}
+                      </span>:null;
+                    })}
+                  </div>
+                  {/* Liste groupée par continent */}
+                  <div style={{border:"1px solid #E8E5E3",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff"}}>
+                    {Object.entries(
+                      allPays
+                        .filter((p:any)=>!(form.pays_ids as number[]).includes(p.id))
+                        .reduce((acc:any,p:any)=>{
+                          const cont=p.region_monde||"Autre";
+                          if(!acc[cont]) acc[cont]=[];
+                          acc[cont].push(p);
+                          return acc;
+                        },{})
+                    ).sort(([a],[b])=>a.localeCompare(b)).map(([continent,pays]:any)=>(
+                      <div key={continent}>
+                        <div style={{fontSize:10,fontWeight:700,color:"#9aa5b4",background:"#F8F7F6",padding:"5px 12px",letterSpacing:"0.1em",textTransform:"uppercase" as const,position:"sticky" as const,top:0}}>{continent}</div>
+                        {pays.map((p:any)=>{
+                          const fl=p.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
+                          return (
+                            <button key={p.id} onClick={()=>update("pays_ids",[...(form.pays_ids as number[]),p.id])}
+                              style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 14px",background:"transparent",border:"none",cursor:"pointer",textAlign:"left" as const,borderBottom:"1px solid #F2F0EF",transition:"background 0.1s"}}
+                              onMouseEnter={e=>e.currentTarget.style.background="rgba(202,99,31,0.06)"}
+                              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                              {fl&&<span style={{fontSize:16,flexShrink:0}}>{fl}</span>}
+                              <span style={{fontSize:12,color:"#1a1a2e",fontWeight:500}}>{p.nom_fr}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                  <span style={{fontSize:11,color:"#9aa5b4",marginTop:4,display:"block"}}>Le Sénégal est toujours inclus. Cliquez sur un pays pour l'ajouter.</span>
                 </>
               ) : (
                 <>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
-                    {(form.pays_signataires as string[]).map((p:string)=>(
-                      <span key={p} style={{display:"inline-flex",alignItems:"center",gap:5,
-                        background:p===APIX?"rgba(0,79,145,0.1)":"rgba(202,99,31,0.1)",
-                        color:p===APIX?"#004f91":"#ca631f",
-                        border:`1px solid ${p===APIX?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,
-                        borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
-                        {p}
-                        {p!==APIX&&<button onClick={()=>update("pays_signataires",(form.pays_signataires as string[]).filter((x:string)=>x!==p))}
-                          style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>}
+                  <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:8}}>
+                    <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(0,79,145,0.1)",color:"#004f91",border:"1px solid rgba(0,79,145,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>APIX S.A</span>
+                    {(form.orgs as string[]).map((org:string)=>(
+                      <span key={org} style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.1)",color:"#ca631f",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
+                        {org}<button onClick={()=>update("orgs",(form.orgs as string[]).filter((x:string)=>x!==org))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>
                       </span>
                     ))}
                   </div>
                   <div style={{display:"flex",gap:8}}>
                     <input value={saisieOrg} onChange={e=>setSaisieOrg(e.target.value)} placeholder="Ex : Organisation Mondiale du Commerce" style={{...IS,flex:1}}
-                      onKeyDown={e=>{ if(e.key==="Enter"&&saisieOrg.trim()){ e.preventDefault(); const v=saisieOrg.trim(); if(!(form.pays_signataires as string[]).includes(v)) update("pays_signataires",[...(form.pays_signataires as string[]),v]); setSaisieOrg(""); }}}/>
-                    <button onClick={()=>{ const v=saisieOrg.trim(); if(!v) return; if(!(form.pays_signataires as string[]).includes(v)) update("pays_signataires",[...(form.pays_signataires as string[]),v]); setSaisieOrg(""); }}
-                      style={{padding:"9px 16px",background:"#7c3aed",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer"}}>Ajouter</button>
+                      onKeyDown={e=>{ if(e.key==="Enter"&&saisieOrg.trim()){ e.preventDefault(); const v=saisieOrg.trim(); if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}}/>
+                    <button onClick={()=>{ const v=saisieOrg.trim(); if(!v) return; if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}
+                      style={{padding:"9px 16px",background:"#004f91",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer"}}>Ajouter</button>
                   </div>
                 </>
               )}
@@ -213,31 +266,23 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             <div>
               <p style={SS}>Dates</p>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
-                <div>
-                  <label style={LS}>Date de signature *</label>
-                  <input type="date" value={form.date_signature} max={new Date().toISOString().split("T")[0]} onChange={e=>update("date_signature",e.target.value)}
-                    style={{...IS,borderColor:form.date_signature&&form.date_signature>new Date().toISOString().split("T")[0]?"#dc2626":"#C5BFBB"}}/>
-                  <span style={{fontSize:11,color:"#9aa5b4",marginTop:3,display:"block"}}>Inférieure ou égale à aujourd'hui</span>
-                </div>
-                <div>
-                  <label style={LS}>Entrée en vigueur *</label>
-                  <input type="date" value={form.date_entree_vigueur} min={form.date_signature||undefined} onChange={e=>update("date_entree_vigueur",e.target.value)}
-                    style={{...IS,borderColor:form.date_entree_vigueur&&form.date_signature&&form.date_entree_vigueur<form.date_signature?"#dc2626":"#C5BFBB"}}/>
-                  <span style={{fontSize:11,color:"#9aa5b4",marginTop:3,display:"block"}}>Supérieure ou égale à la signature</span>
-                </div>
-                <div>
-                  <label style={LS}>Date d'expiration *</label>
-                  <input type="date" value={form.date_expiration} onChange={e=>update("date_expiration",e.target.value)}
-                    style={{...IS,borderColor:form.date_expiration&&form.date_expiration<=new Date().toISOString().split("T")[0]?"#dc2626":"#C5BFBB"}}/>
-                  <span style={{fontSize:11,color:"#9aa5b4",marginTop:3,display:"block"}}>Dans le futur, après l'entrée en vigueur</span>
-                </div>
+                <div><label style={LS}>Date de signature *</label><input type="date" value={form.date_signature} max={new Date().toISOString().split("T")[0]} onChange={e=>update("date_signature",e.target.value)} style={IS}/></div>
+                <div><label style={LS}>Entrée en vigueur *</label><input type="date" value={form.date_entree_vigueur} min={form.date_signature||undefined} onChange={e=>update("date_entree_vigueur",e.target.value)} style={IS}/></div>
+                <div><label style={LS}>Date d'expiration *</label><input type="date" value={form.date_expiration} onChange={e=>update("date_expiration",e.target.value)} style={IS}/></div>
               </div>
             </div>
 
-            {/* Thématiques */}
+            {/* Thématiques NAEMA */}
             <div>
-              <p style={SS}>Thématiques</p>
-              <ThematiquesNaema value={form.thematiques} onChange={val=>update("thematiques",val)}/>
+              <p style={SS}>Thématiques NAEMA</p>
+              <NaemaSelect
+                secteurIds={form.secteur_ids||[]}
+                brancheIds={form.branche_ids||[]}
+                activiteIds={form.activite_ids||[]}
+                onChangeSecteurs={ids=>update("secteur_ids",ids)}
+                onChangeBranches={ids=>update("branche_ids",ids)}
+                onChangeActivites={ids=>update("activite_ids",ids)}
+              />
             </div>
 
             {/* Commentaires */}
@@ -252,11 +297,11 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             <div>
               <p style={SS}>Fichiers PDF</p>
               {fichiers.length>0&&(
-                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+                <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:10}}>
                   {fichiers.map((f:any)=>(
                     <div key={f.id} style={{display:"inline-flex",alignItems:"center",gap:5}}>
                       <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                        style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#7c3aed",textDecoration:"none",fontWeight:500}}>
+                        style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(0,79,145,0.06)",border:"1px solid rgba(0,79,145,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#004f91",textDecoration:"none",fontWeight:500}}>
                         <FileText size={11}/> {f.titre||f.fichier_nom}
                       </a>
                       <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE"}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
@@ -268,20 +313,20 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                 </div>
               )}
               {pdfQueue.length>0&&(
-                <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:8}}>
+                <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
                   {pdfQueue.map((p,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(124,58,237,0.05)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:8,padding:"7px 12px"}}>
-                      <FileText size={13} style={{color:"#7c3aed",flexShrink:0}}/>
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.2)",borderRadius:8,padding:"7px 12px"}}>
+                      <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
                       <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                         placeholder="Titre du document"
-                        style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(124,58,237,0.3)",outline:"none",fontSize:12,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
+                        style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(0,79,145,0.3)",outline:"none",fontSize:12,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
                       <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
                     </div>
                   ))}
                 </div>
               )}
               <label style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:8,cursor:"pointer",border:"2px dashed #C5BFBB",background:"#F2F0EF"}}
-                onMouseEnter={e=>e.currentTarget.style.borderColor="#7c3aed"}
+                onMouseEnter={e=>e.currentTarget.style.borderColor="#ca631f"}
                 onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
                 <Upload size={14} color="#9aa5b4"/>
                 <span style={{fontSize:13,color:"#9aa5b4"}}>Ajouter un ou plusieurs PDF</span>
@@ -296,9 +341,9 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             {error&&<div style={{background:"#fee2e2",color:"#dc2626",padding:"10px 14px",borderRadius:8,fontSize:13}}>{error}</div>}
 
             <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
-              <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--font-google-sans)"}}>Annuler</button>
-              <button onClick={handleSave} disabled={saving||!!saveOk}
-                style={{padding:"10px 24px",borderRadius:10,border:"none",background:saveOk?"#dcfce7":"linear-gradient(135deg,#7c3aed,#6d28d9)",color:saveOk?"#15803d":"#fff",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8,fontFamily:"var(--font-google-sans)"}}>
+              <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontSize:13,fontWeight:600,cursor:"pointer"}}>Annuler</button>
+              <button onClick={handleSave} disabled={saving||saveOk}
+                style={{padding:"10px 24px",borderRadius:10,border:"none",background:saveOk?"#dcfce7":"linear-gradient(135deg,#ca631f,#a84e18)",color:saveOk?"#15803d":"#fff",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
                 <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
                 {saveOk?<><Check size={14}/> Enregistré</>:saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/> Sauvegarde...</>:editItem?"Modifier":"Créer l'accord"}
               </button>
@@ -313,41 +358,42 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
 // ── Modal vue accord ──────────────────────────────────────────────────────────
 function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>void; onEdit:(a:any)=>void }) {
   const [fichiers, setFichiers] = useState<any[]>([]);
+  const [secteurs, setSecteurs] = useState<any[]>([]);
+  const [branches, setBranches] = useState<any[]>([]);
+  const [activites,setActivites]= useState<any[]>([]);
+  const [allPays,  setAllPays]  = useState<any[]>([]);
+
   useEffect(()=>{
     fetch(`${API_BASE}/accords/${a.id}/fichiers`).then(r=>r.json()).then(setFichiers).catch(()=>{});
+    fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()).then(setAllPays).catch(()=>{});
+    Promise.all([
+      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
+      fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
+      fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
+    ]).then(([s,b,ac])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(ac||[]); }).catch(()=>{});
   },[a.id]);
-
-  // Parser la hiérarchie thématique depuis "sec:X, bra:Y, act:Z"
-  const parseThematiques = (raw:string) => {
-    if (!raw) return null;
-    const items = raw.split(",").map((s:string)=>s.trim()).filter(Boolean);
-    const secs = items.filter(s=>s.startsWith("sec:")).map(s=>s.slice(4));
-    const bras = items.filter(s=>s.startsWith("bra:")).map(s=>s.slice(4));
-    const acts = items.filter(s=>s.startsWith("act:")).map(s=>s.slice(4));
-    if (!secs.length && !bras.length && !acts.length) return null;
-    // Structure plate — on affiche secteur(s) → branche(s) → activité(s)
-    return { secs, bras, acts };
-  };
-  const th = parseThematiques(a.secteur_activite);
 
   const LBL = ({children}:{children:string}) => (
     <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
   );
 
+  // Construire arborescence depuis les IDs
+  const secIds:number[]  = a.secteur_ids  || [];
+  const braIds:number[]  = a.branche_ids  || [];
+  const actIds:number[]  = a.activite_ids || [];
+  const hasNaema = secIds.length>0||braIds.length>0||actIds.length>0;
+
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
-        {/* Bande tricolore */}
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#ca631f,#FFB0A1,#004f91)"}}/>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
-
-          {/* Header */}
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
             <div style={{flex:1,paddingRight:16}}>
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{a.titre}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
-                {a.reference&&<span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>{a.reference}</span>}
-                <span style={{fontSize:11,fontWeight:700,color:a.statut==="en_vigueur"?"#188038":"#9aa5b4",background:a.statut==="en_vigueur"?"rgba(24,128,56,0.08)":"#F2F0EF",border:`1px solid ${a.statut==="en_vigueur"?"rgba(24,128,56,0.2)":"#E8E5E3"}`,padding:"2px 9px",borderRadius:999}}>
+                {a.reference&&<span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{a.reference}</span>}
+                <span style={{fontSize:11,fontWeight:700,padding:"2px 9px",borderRadius:999,color:a.statut==="en_vigueur"?"#188038":"#6b7280",background:a.statut==="en_vigueur"?"rgba(24,128,56,0.08)":"#f3f4f6",border:`1px solid ${a.statut==="en_vigueur"?"rgba(24,128,56,0.2)":"#e5e7eb"}`}}>
                   {STATUT_LABELS[a.statut]||a.statut}
                 </span>
                 <span style={{fontSize:11,fontWeight:700,color:a.est_publie?"#15803d":"#9aa5b4",background:a.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{a.est_publie?"Publié":"Non publié"}</span>
@@ -355,124 +401,78 @@ function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>voi
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
-
-          {/* Résumé */}
-          {a.commentaires&&(
-            <div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
-              <LBL>Résumé</LBL>
-              <p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{a.commentaires}</p>
-            </div>
-          )}
-
-          {/* Grille infos */}
+          {a.commentaires&&<div style={{background:"rgba(202,99,31,0.04)",border:"1px solid rgba(202,99,31,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><LBL>Résumé</LBL><p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{a.commentaires}</p></div>}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-            {a.date_signature&&(
-              <div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
-                <LBL>Date de signature</LBL>
-                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_signature)}</p>
-              </div>
-            )}
-            {a.date_entree_vigueur&&(
-              <div style={{background:"rgba(24,128,56,0.05)",borderRadius:10,padding:"12px 14px"}}>
-                <LBL>Entrée en vigueur</LBL>
-                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p>
-              </div>
-            )}
-            {a.date_expiration&&(
-              <div style={{background:"rgba(227,83,54,0.05)",borderRadius:10,padding:"12px 14px"}}>
-                <LBL>Expiration</LBL>
-                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_expiration)}</p>
-              </div>
-            )}
+            {a.date_signature&&<div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date de signature</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_signature)}</p></div>}
+            {a.date_entree_vigueur&&<div style={{background:"rgba(24,128,56,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Entrée en vigueur</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p></div>}
+            {a.date_expiration&&<div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Expiration</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_expiration)}</p></div>}
           </div>
-
-          {/* Parties signataires */}
-          {a.pays_signataires&&(
-            <div style={{marginBottom:16}}>
-              <LBL>Parties signataires</LBL>
-              <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
-                {a.pays_signataires.split(", ").filter(Boolean).map((p:string)=>(
-                  <span key={p} style={{fontSize:12,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.07)",border:"1px solid rgba(54,111,227,0.18)",padding:"3px 11px",borderRadius:999}}>{p}</span>
-                ))}
-              </div>
+          {(a.parties_pays_ids?.length>0||a.parties_signataires)&&<div style={{marginBottom:16}}>
+            <LBL>Parties signataires</LBL>
+            <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+              {(a.parties_pays_ids||[]).map((id:number)=>{
+                const p=allPays.find((r:any)=>r.id===id);
+                return <span key={id} style={{fontSize:12,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.18)",padding:"3px 11px",borderRadius:999}}>
+                  {p?.nom_fr||`Pays #${id}`}
+                </span>;
+              })}
+              {a.parties_signataires&&a.parties_signataires.split(", ").filter(Boolean).map((p:string)=>(
+                <span key={p} style={{fontSize:12,fontWeight:600,color:"#ca631f",background:"rgba(202,99,31,0.07)",border:"1px solid rgba(202,99,31,0.18)",padding:"3px 11px",borderRadius:999}}>{p}</span>
+              ))}
             </div>
-          )}
-
-          {/* Thématiques en arborescence */}
-          {th&&(
-            <div style={{marginBottom:16}}>
-              <LBL>Thématiques</LBL>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
-                {th.secs.map((sec:string)=>(
-                  <div key={sec}>
-                    <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:th.bras.length?5:0}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
-                      <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec}</span>
+          </div>}
+          {hasNaema&&<div style={{marginBottom:16}}>
+            <LBL>Thématiques</LBL>
+            <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+              {secIds.map((secId:number)=>{
+                const secNom = secteurs.find(s=>s.id===secId)?.nom;
+                if (!secNom) return null;
+                const brasDuSec = branches.filter(b=>b.secteur_id===secId&&braIds.includes(b.id));
+                return (
+                  <div key={secId}>
+                    <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+                      <span style={{fontSize:12,fontWeight:700,color:"#ca631f"}}>{secNom}</span>
                     </div>
-                    {th.bras.length>0&&(
-                      <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:6}}>
-                        {th.bras.map((bra:string)=>(
-                          <div key={bra}>
-                            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:th.acts.length?4:0}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
-                              <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra}</span>
+                    {brasDuSec.length>0&&<div style={{paddingLeft:20,borderLeft:"2px solid rgba(202,99,31,0.15)",display:"flex",flexDirection:"column" as const,gap:5}}>
+                      {brasDuSec.map((bra:any)=>{
+                        const actsDeBra = activites.filter(ac=>ac.branche_id===bra.id&&actIds.includes(ac.id));
+                        return (
+                          <div key={bra.id}>
+                            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?4:0}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                              <span style={{fontSize:11,fontWeight:600,color:"#004f91"}}>{bra.nom}</span>
                             </div>
-                            {th.acts.length>0&&(
-                              <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
-                                {th.acts.map((act:string)=>(
-                                  <div key={act} style={{display:"flex",alignItems:"center",gap:6}}>
-                                    <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                    <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                            {actsDeBra.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
+                              {actsDeBra.map((act:any)=>(
+                                <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
+                                  <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                  <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                </div>
+                              ))}
+                            </div>}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    {/* Activités sans branche */}
-                    {!th.bras.length&&th.acts.length>0&&(
-                      <div style={{paddingLeft:20,display:"flex",flexDirection:"column" as const,gap:3}}>
-                        {th.acts.map((act:string)=>(
-                          <div key={act} style={{display:"flex",alignItems:"center",gap:6}}>
-                            <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                            <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                        );
+                      })}
+                    </div>}
                   </div>
-                ))}
-                {/* Branches sans secteur */}
-                {!th.secs.length&&th.bras.map((bra:string)=>(
-                  <div key={bra} style={{display:"flex",alignItems:"center",gap:6}}>
-                    <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
-                    <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra}</span>
-                  </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          )}
-
-          {/* Documents PDF */}
-          {fichiers.length>0&&(
-            <div style={{marginBottom:16}}>
-              <LBL>Documents</LBL>
-              <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
-                {fichiers.map((f:any)=>(
-                  <a key={f.id} href={`${API_BASE}/accords/${a.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(227,83,54,0.06)",border:"1px solid rgba(227,83,54,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#E35336",textDecoration:"none",fontWeight:500}}>
-                    <FileText size={11}/> {f.titre||f.fichier_nom}
-                  </a>
-                ))}
-              </div>
+          </div>}
+          {fichiers.length>0&&<div style={{marginBottom:16}}>
+            <LBL>Documents</LBL>
+            <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+              {fichiers.map((f:any)=>(
+                <a key={f.id} href={`${API_BASE}/accords/${a.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.06)",border:"1px solid rgba(202,99,31,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#ca631f",textDecoration:"none",fontWeight:500}}>
+                  <FileText size={11}/> {f.titre||f.fichier_nom}
+                </a>
+              ))}
             </div>
-          )}
-
-          {/* Footer */}
+          </div>}
           <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(a);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#366FE3",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
+            <button onClick={()=>{onClose();onEdit(a);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
               <Pencil size={13}/> Modifier
             </button>
             <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
@@ -491,8 +491,22 @@ export default function AdminAccords() {
   const [modal,      setModal]      = useState(false);
   const [editItem,   setEditItem]   = useState<any>(null);
   const [vue,        setVue]        = useState<any>(null);
-  const [deleting,   setDeleting]   = useState<string|null>(null);
-  const [togglingId, setTogglingId] = useState<string|null>(null);
+  const [deleting,   setDeleting]   = useState<number|null>(null);
+  const [togglingId, setTogglingId] = useState<number|null>(null);
+  const [allPays,    setAllPays]    = useState<any[]>([]);
+
+  useEffect(()=>{
+    fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()).then(setAllPays).catch(()=>{});
+  },[]);
+
+  const getPaysNoms = (a:any) => {
+    if (a.parties_pays_ids?.length>0) {
+      return (a.parties_pays_ids as number[])
+        .map((id:number)=>{ const p=allPays.find((r:any)=>r.id===id); return p?.nom_fr||null; })
+        .filter(Boolean).join(", ");
+    }
+    return a.parties_signataires||"";
+  };
 
   const charger = useCallback(async()=>{
     setLoading(true);
@@ -508,7 +522,7 @@ export default function AdminAccords() {
   const openCreate = () => { setEditItem(null); setModal(true); };
   const openEdit   = (a:any) => { setEditItem(a); setModal(true); };
 
-  const handleDelete = async (id:string) => {
+  const handleDelete = async (id:number) => {
     if (!confirm("Supprimer cet accord ?")) return;
     setDeleting(id);
     try { await fetch(`${API_BASE}/accords/${id}`,{method:"DELETE"}); charger(); }
@@ -526,20 +540,17 @@ export default function AdminAccords() {
   return (
     <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-
-      {/* Header */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
         <div>
-          <p style={{fontSize:11,fontWeight:700,color:"#7c3aed",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Administration</p>
+          <p style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Administration</p>
           <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Accords &amp; Traités</h1>
           <p style={{color:"#9aa5b4",fontSize:13,marginTop:2}}>{total} accord{total>1?"s":""} au total</p>
         </div>
-        <button onClick={openCreate} style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#7c3aed,#6d28d9)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(124,58,237,0.3)"}}>
+        <button onClick={openCreate} style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a84e18)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
           <Plus size={15}/> Ajouter un accord
         </button>
       </div>
 
-      {/* Cards */}
       {loading ? (
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:200,gap:10,color:"#9aa5b4"}}>
           <Loader2 size={22} style={{animation:"spin 1s linear infinite"}}/>
@@ -552,32 +563,24 @@ export default function AdminAccords() {
       ) : (
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
           {accords.map(a=>(
-            <div key={a.id}
-              onClick={()=>setVue(a)}
-              style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${a.est_publie?"#E35336":"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)"; ev.currentTarget.style.borderColor="#FFB0A1";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor=a.est_publie?"#E35336":"#C5BFBB";}}>
-
-              {/* Titre */}
-              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?3:8}}>
-                {a.titre.length>65?a.titre.slice(0,65)+"…":a.titre}
-              </div>
+            <div key={a.id} onClick={()=>setVue(a)}
+              style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:`3px solid ${a.est_publie?"#ca631f":"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderTopColor="#FFB0A1";ev.currentTarget.style.borderRightColor="#FFB0A1";ev.currentTarget.style.borderBottomColor="#FFB0A1";}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
+              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?3:8}}>{a.titre.length>65?a.titre.slice(0,65)+"…":a.titre}</div>
               {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
-
-              {/* Expire le */}
               <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                {a.date_expiration&&(
-                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                    <div style={{width:6,height:6,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
-                    <span style={{color:"#4a5568"}}>Expire le {fmtDate(a.date_expiration)}</span>
-                  </div>
-                )}
+                {a.date_expiration&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+                  <span style={{color:"#4a5568"}}>Expire le {fmtDate(a.date_expiration)}</span>
+                </div>}
+                {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                  <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{getPaysNoms(a)}</span>
+                </div>}
               </div>
-
-              {/* Actions */}
               <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
-                <button onClick={()=>openEdit(a)}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
+                <button onClick={()=>openEdit(a)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#004f91",fontWeight:600}}>
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(a)} disabled={togglingId===a.id}
@@ -593,8 +596,7 @@ export default function AdminAccords() {
           ))}
         </div>
       )}
-
-      {vue && <AccordVue accord={vue} onClose={()=>setVue(null)} onEdit={a=>{ setVue(null); openEdit(a); }}/>}
+      {vue&&<AccordVue accord={vue} onClose={()=>setVue(null)} onEdit={a=>{ setVue(null); openEdit(a); }}/>}
       <AccordModal open={modal} onClose={()=>setModal(false)} editItem={editItem} onSaved={charger}/>
     </div>
   );

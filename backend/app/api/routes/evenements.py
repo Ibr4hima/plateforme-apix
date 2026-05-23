@@ -109,7 +109,7 @@ async def liste_evenements(
     db:             AsyncSession  = Depends(get_db),
 ):
     today = date_type.today()
-    filters = [Evenement.is_deleted == False]
+    filters = []
     if not admin:
         filters.append(Evenement.est_publie == True)
 
@@ -157,7 +157,7 @@ async def liste_evenements(
 @router.get("/stats")
 async def stats_evenements(db: AsyncSession = Depends(get_db)):
     today = date_type.today()
-    base  = and_(Evenement.is_deleted == False, Evenement.est_publie == True)
+    base  = and_(Evenement.est_publie == True)
     total    = (await db.execute(select(func.count()).select_from(Evenement).where(base))).scalar()
     a_venir  = (await db.execute(select(func.count()).select_from(Evenement).where(and_(base, Evenement.date_debut > today)))).scalar()
     en_cours = (await db.execute(select(func.count()).select_from(Evenement).where(and_(base, Evenement.date_debut <= today, Evenement.date_fin >= today)))).scalar()
@@ -170,7 +170,7 @@ async def pays_hotes(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(RefPaysEvenement.nom_fr, RefPaysEvenement.code_iso2)
         .join(Evenement, Evenement.pays_hote_id == RefPaysEvenement.id)
-        .where(Evenement.is_deleted == False, Evenement.est_publie == True)
+        .where(Evenement.est_publie == True)
         .distinct()
         .order_by(RefPaysEvenement.nom_fr)
     )
@@ -180,7 +180,7 @@ async def pays_hotes(db: AsyncSession = Depends(get_db)):
 # ── GET /evenements/:id ────────────────────────────────────────────────────────
 @router.get("/{evenement_id}", response_model=EvenementResponse)
 async def detail_evenement(evenement_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Evenement).where(Evenement.id == evenement_id, Evenement.is_deleted == False))
+    result = await db.execute(select(Evenement).where(Evenement.id == evenement_id))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")
     return await enrich_evenement(e, db)
@@ -205,7 +205,7 @@ async def creer_evenement(payload: EvenementCreate, db: AsyncSession = Depends(g
 # ── PATCH /evenements/:id ──────────────────────────────────────────────────────
 @router.patch("/{evenement_id}", response_model=EvenementResponse)
 async def modifier_evenement(evenement_id: int, payload: EvenementUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Evenement).where(Evenement.id == evenement_id, Evenement.is_deleted == False))
+    result = await db.execute(select(Evenement).where(Evenement.id == evenement_id))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")
     updates = payload.model_dump(exclude_unset=True)
@@ -227,5 +227,5 @@ async def supprimer_evenement(evenement_id: int, db: AsyncSession = Depends(get_
     result = await db.execute(select(Evenement).where(Evenement.id == evenement_id))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")
-    e.is_deleted = True
+    await db.delete(e)
     await db.flush()

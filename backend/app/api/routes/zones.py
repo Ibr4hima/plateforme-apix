@@ -18,12 +18,9 @@ from sqlalchemy.orm import selectinload
 
 LOAD_OPTS = [
     selectinload(ZoneInvestissement.fichiers),
-    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.secteur),
-    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.branche),
-    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.activite),
-    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.region_obj),
-    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.departement_obj),
-    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.siege_pays_obj),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.region),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.departement),
+    selectinload(ZoneInvestissement.entreprises).selectinload(ZoneEntreprise.entreprise).selectinload(EntrepriseIntallee.points_focaux),
 ]
 
 

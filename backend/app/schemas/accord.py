@@ -1,23 +1,22 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import date, datetime
-from uuid import UUID
 
 
 class AccordBase(BaseModel):
     titre:                  str
-    reference:              Optional[str]   = None
-    pays_signataires:       Optional[str]   = None
-    date_signature:         Optional[date]  = None
-    date_entree_vigueur:    Optional[date]  = None
-    date_expiration:        Optional[date]  = None
-    secteur_activite:       Optional[str]   = None
-    branche_activite:       Optional[str]   = None
-    commentaires:           Optional[str]   = None
-    domaines_couverts:      Optional[str]   = None
-    avantages_principaux:   Optional[str]   = None
-    statut:                 str             = "en_vigueur"
-    est_publie:             bool            = True
+    reference:              Optional[str]        = None
+    parties_signataires:    Optional[str]        = None   # organisations libres
+    parties_pays_ids:       Optional[List[int]]  = []     # FK vers ref_pays
+    date_signature:         Optional[date]       = None
+    date_entree_vigueur:    Optional[date]       = None
+    date_expiration:        Optional[date]       = None
+    commentaires:           Optional[str]        = None
+    statut:                 str                  = "en_vigueur"
+    est_publie:             bool                 = True
+    secteur_ids:            Optional[List[int]]  = []
+    branche_ids:            Optional[List[int]]  = []
+    activite_ids:           Optional[List[int]]  = []
 
 
 class AccordCreate(AccordBase):
@@ -25,23 +24,23 @@ class AccordCreate(AccordBase):
 
 
 class AccordUpdate(BaseModel):
-    titre:                  Optional[str]   = None
-    reference:              Optional[str]   = None
-    pays_signataires:       Optional[str]   = None
-    date_signature:         Optional[date]  = None
-    date_entree_vigueur:    Optional[date]  = None
-    date_expiration:        Optional[date]  = None
-    secteur_activite:       Optional[str]   = None
-    branche_activite:       Optional[str]   = None
-    commentaires:           Optional[str]   = None
-    domaines_couverts:      Optional[str]   = None
-    avantages_principaux:   Optional[str]   = None
-    statut:                 Optional[str]   = None
-    est_publie:             Optional[bool]  = None
+    titre:                  Optional[str]        = None
+    reference:              Optional[str]        = None
+    parties_signataires:    Optional[str]        = None   # organisations libres
+    parties_pays_ids:       Optional[List[int]]  = []     # FK vers ref_pays
+    date_signature:         Optional[date]       = None
+    date_entree_vigueur:    Optional[date]       = None
+    date_expiration:        Optional[date]       = None
+    commentaires:           Optional[str]        = None
+    statut:                 Optional[str]        = None
+    est_publie:             Optional[bool]       = None
+    secteur_ids:            Optional[List[int]]  = None
+    branche_ids:            Optional[List[int]]  = None
+    activite_ids:           Optional[List[int]]  = None
 
 
 class AccordResponse(AccordBase):
-    id:           UUID
+    id:           int
     fichier_nom:  Optional[str]      = None
     fichier_path: Optional[str]      = None
     created_at:   Optional[datetime] = None
