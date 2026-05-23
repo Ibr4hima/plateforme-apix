@@ -61,15 +61,14 @@ function SideFilter({ label, items, selected, onToggle, color }: {
   );
 }
 
-function ThematiquesCascadeFilter({ secteurs, secteurSel, branchesSel, activitesSel, onSecteur, onBranche, onActivite }: {
-  secteurs:any[]; secteurSel:string; branchesSel:string[]; activitesSel:string[];
+function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activitesSel, onSecteur, onBranche, onActivite }: {
+  secteurs:any[]; secteursSel:string[]; branchesSel:string[]; activitesSel:string[];
   onSecteur:(v:string)=>void; onBranche:(v:string)=>void; onActivite:(v:string)=>void;
 }) {
   const [open, setOpen] = useState(true);
-  const secteurObj = secteurs.find(s=>s.nom===secteurSel);
-  const branches = secteurObj?.branches||[];
+  const branches = secteurs.filter(s=>secteursSel.includes(s.nom)).flatMap((s:any)=>s.branches||[]);
   const activites = branches.filter((b:any)=>branchesSel.includes(b.nom)).flatMap((b:any)=>b.activites||[]);
-  const hasFilter = !!secteurSel||branchesSel.length>0||activitesSel.length>0;
+  const hasFilter = secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   return (
     <div>
       <button onClick={()=>setOpen(o=>!o)}
@@ -84,15 +83,18 @@ function ThematiquesCascadeFilter({ secteurs, secteurSel, branchesSel, activites
         <div>
           <p style={{fontSize:10,fontWeight:700,color:"#ca631f",marginBottom:4}}>Secteur</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-            {secteurs.map((s:any)=>{const sel=secteurSel===s.nom; return (
-              <button key={s.nom} onClick={()=>onSecteur(sel?"":s.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(202,99,31,0.1)":"transparent",textAlign:"left" as const}}
+            {secteurs.map((s:any)=>{const sel=secteursSel.includes(s.nom); return (
+              <button key={s.nom} onClick={()=>onSecteur(s.nom)}
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(202,99,31,0.1)":"transparent",textAlign:"left" as const}}
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(202,99,31,0.1)":"transparent";}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:sel?"#ca631f":"#C5BFBB",flexShrink:0}}/><span style={{fontSize:12,color:sel?"#ca631f":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
+                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+                <span style={{fontSize:12,color:sel?"#ca631f":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
               </button>);})}
           </div>
         </div>
-        {secteurSel&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
+        {secteursSel.length>0&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
           <p style={{fontSize:10,fontWeight:700,color:"#004f91",marginBottom:4}}>Branche</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
@@ -180,9 +182,8 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
             <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
               {(a.parties_pays_ids||[]).map((id:number)=>{
                 const p=allPays.find((r:any)=>r.id===id);
-                const fl=p?.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
                 return <span key={id} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:12,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.18)",padding:"3px 11px",borderRadius:999}}>
-                  {fl&&<span style={{fontSize:14}}>{fl}</span>}{p?.nom_fr||`#${id}`}
+                  {p?.nom_fr||`#${id}`}
                 </span>;
               })}
               {a.parties_signataires&&a.parties_signataires.split(", ").filter(Boolean).map((p:string)=>(
@@ -263,7 +264,7 @@ export default function AccordsPage() {
   const [recherche,    setRecherche]    = useState("");
   const [statutFiltre, setStatutFiltre] = useState("");
   const [paysIdsFiltres, setPaysIdsFiltres] = useState<number[]>([]);
-  const [secteurSel,   setSecteurSel]   = useState("");
+  const [secteursSel,  setSecteursSel]  = useState<string[]>([]);
   const [branchesSel,  setBranchesSel]  = useState<string[]>([]);
   const [activitesSel, setActivitesSel] = useState<string[]>([]);
 
@@ -301,13 +302,19 @@ export default function AccordsPage() {
   useEffect(()=>{charger();},[charger]);
 
   // Résoudre les noms de pays depuis IDs pour un accord
-  const getPaysNoms = (a:any): string => {
+  const getPaysNoms = (a:any, max=2): string => {
+    let noms: string[] = [];
     if (a.parties_pays_ids?.length>0) {
-      return (a.parties_pays_ids as number[])
+      noms = (a.parties_pays_ids as number[])
         .map((id:number)=>allPays.find((r:any)=>r.id===id)?.nom_fr)
-        .filter(Boolean).join(", ");
+        .filter(Boolean) as string[];
+    } else if (a.parties_signataires) {
+      noms = a.parties_signataires.split(", ").filter(Boolean);
     }
-    return a.parties_signataires||"";
+    if (max && noms.length > max) {
+      return noms.slice(0, max).join(", ") + `, +${noms.length - max}`;
+    }
+    return noms.join(", ");
   };
 
   // Filtrage côté client
@@ -324,9 +331,9 @@ export default function AccordsPage() {
       if (!hasMatch) return false;
     }
     // Filtre thématiques par IDs (secteur_ids, branche_ids, activite_ids)
-    if (secteurSel) {
-      const secId=secteurs.find(s=>s.nom===secteurSel)?.id;
-      if (!secId||(a.secteur_ids||[]).indexOf(secId)===-1) return false;
+    if (secteursSel.length>0) {
+      const secIds=secteursSel.map((nom:string)=>secteurs.find((s:any)=>s.nom===nom)?.id).filter(Boolean);
+      if (!secIds.some((id:number)=>(a.secteur_ids||[]).includes(id))) return false;
     }
     if (branchesSel.length>0) {
       const braIds=branchesSel.map((nom:string)=>secteurs.flatMap((s:any)=>s.branches||[]).find((b:any)=>b.nom===nom)?.id).filter(Boolean);
@@ -340,9 +347,9 @@ export default function AccordsPage() {
   });
 
   const stats = { total:tous.length, en_vigueur:tous.filter(a=>a.statut==="en_vigueur").length };
-  const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||!!secteurSel||branchesSel.length>0||activitesSel.length>0;
-  const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setSecteurSel("");setBranchesSel([]);setActivitesSel([]);};
-  const nbFiltres=(recherche?1:0)+(statutFiltre?1:0)+paysIdsFiltres.length+(secteurSel?1:0)+branchesSel.length+activitesSel.length;
+  const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
+  const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
+  const nbFiltres=(recherche?1:0)+(statutFiltre?1:0)+paysIdsFiltres.length+secteursSel.length+branchesSel.length+activitesSel.length;
 
   const togglePays    =(v:string)=>{
     const id=paysDistincts.find(p=>p.nom===v)?.id;
@@ -351,7 +358,7 @@ export default function AccordsPage() {
   };
   const toggleBranche =(v:string)=>{setBranchesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setActivitesSel([]);};
   const toggleActivite=(v:string)=>setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
-  const setSecteur    =(v:string)=>{setSecteurSel(v);setBranchesSel([]);setActivitesSel([]);};
+  const toggleSecteur =(v:string)=>{setSecteursSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setBranchesSel([]);setActivitesSel([]);};
 
   // Pour SideFilter on passe les noms (affichage) mais on filtre par IDs en interne
   const paysSelNoms = paysIdsFiltres.map(id=>paysDistincts.find(p=>p.id===id)?.nom||"").filter(Boolean);
@@ -389,9 +396,9 @@ export default function AccordsPage() {
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
                 {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
                 <button onClick={()=>setSidebarOpen(o=>!o)}
-                  style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
-                  <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
-                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
+                  style={{background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
+                  <SlidersHorizontal size={14} style={{color:"#ca631f"}}/>
+                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
                 </button>
               </div>
               {sidebarOpen&&<>
@@ -417,11 +424,11 @@ export default function AccordsPage() {
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <SideFilter label="Parties signataires" color="#004f91" selected={paysSelNoms} onToggle={togglePays}
-                  items={paysDistincts.map((p:any)=>({value:p.nom,label:p.nom,flag:p.code_iso2?flag(p.code_iso2):undefined}))}/>
+                  items={paysDistincts.map((p:any)=>({value:p.nom,label:p.nom}))}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs}
-                  secteurSel={secteurSel} branchesSel={branchesSel} activitesSel={activitesSel}
-                  onSecteur={setSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
+                  secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
+                  onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
               </>}
             </div>
           </div>
@@ -452,10 +459,10 @@ export default function AccordsPage() {
                       {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
                       <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:10}}>
                         {a.date_expiration&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                          <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/><span style={{color:"#4a5568"}}>Expire le {fmtDate(a.date_expiration)}</span>
+                          <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/><span style={{color:"#4a5568"}}>Expire le {fmtDate(a.date_expiration)}</span>
                         </div>}
-                        {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                          <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{getPaysNoms(a)}</span>
+                        {getPaysNoms(a,2)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                          <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{getPaysNoms(a,2)}</span>
                         </div>}
                       </div>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",borderTop:"1px solid #F2F0EF",paddingTop:8}}>

@@ -58,15 +58,14 @@ function SideFilter({ label, items, selected, onToggle, color, searchable=false 
   );
 }
 
-function ThematiquesCascadeFilter({ secteurs, secteurSel, branchesSel, activitesSel, onSecteur, onBranche, onActivite }: {
-  secteurs:any[]; secteurSel:string; branchesSel:string[]; activitesSel:string[];
+function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activitesSel, onSecteur, onBranche, onActivite }: {
+  secteurs:any[]; secteursSel:string[]; branchesSel:string[]; activitesSel:string[];
   onSecteur:(v:string)=>void; onBranche:(v:string)=>void; onActivite:(v:string)=>void;
 }) {
   const [open, setOpen] = useState(true);
-  const secteurObj = secteurs.find(s=>s.nom===secteurSel);
-  const branches   = secteurObj?.branches||[];
+  const branches   = secteurs.filter(s=>secteursSel.includes(s.nom)).flatMap((s:any)=>s.branches||[]);
   const activites  = branches.filter((b:any)=>branchesSel.includes(b.nom)).flatMap((b:any)=>b.activites||[]);
-  const hasFilter  = !!secteurSel||branchesSel.length>0||activitesSel.length>0;
+  const hasFilter  = secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   return (
     <div style={{marginBottom:18}}>
       <button onClick={()=>setOpen(o=>!o)}
@@ -81,22 +80,28 @@ function ThematiquesCascadeFilter({ secteurs, secteurSel, branchesSel, activites
         <div>
           <p style={{fontSize:10,fontWeight:700,color:"#E35336",marginBottom:4}}>Secteur</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-            {secteurs.map((s:any)=>{const sel=secteurSel===s.nom; return (
-              <button key={s.nom} onClick={()=>onSecteur(sel?"":s.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(227,83,54,0.1)":"transparent",textAlign:"left" as const}}
+            {secteurs.map((s:any)=>{const sel=secteursSel.includes(s.nom); return (
+              <button key={s.nom} onClick={()=>onSecteur(s.nom)}
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(227,83,54,0.1)":"transparent",textAlign:"left" as const}}
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(227,83,54,0.1)":"transparent";}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:sel?"#E35336":"#C5BFBB",flexShrink:0}}/><span style={{fontSize:11,color:sel?"#E35336":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
+                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#E35336":"#C5BFBB"}`,background:sel?"#E35336":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+                <span style={{fontSize:11,color:sel?"#E35336":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
               </button>);})}
           </div>
         </div>
-        {secteurSel&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(227,83,54,0.15)"}}>
+        {secteursSel.length>0&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(227,83,54,0.15)"}}>
           <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4}}>Branche</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
               <button key={b.nom} onClick={()=>onBranche(b.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(54,111,227,0.1)":"transparent",textAlign:"left" as const}}
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(54,111,227,0.1)":"transparent",textAlign:"left" as const}}
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(54,111,227,0.1)":"transparent";}}>
-                <div style={{width:6,height:6,borderRadius:"50%",background:sel?"#366FE3":"#C5BFBB",flexShrink:0}}/><span style={{fontSize:11,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
+                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#366FE3":"#C5BFBB"}`,background:sel?"#366FE3":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+                <span style={{fontSize:11,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
               </button>);})}
           </div>
         </div>}
@@ -105,13 +110,16 @@ function ThematiquesCascadeFilter({ secteurs, secteurSel, branchesSel, activites
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {activites.map((a:any)=>{const sel=activitesSel.includes(a.nom); return (
               <button key={a.nom} onClick={()=>onActivite(a.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(24,128,56,0.08)":"transparent",textAlign:"left" as const}}
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(24,128,56,0.08)":"transparent",textAlign:"left" as const}}
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(24,128,56,0.08)":"transparent";}}>
-                <div style={{width:5,height:5,borderRadius:"50%",background:sel?"#188038":"#C5BFBB",flexShrink:0}}/><span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+                <span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
               </button>);})}
           </div>
         </div>}
-        {hasFilter&&<button onClick={()=>{onSecteur("");branchesSel.slice().forEach(onBranche);activitesSel.slice().forEach(onActivite);}}
+        {hasFilter&&<button onClick={()=>{secteursSel.slice().forEach(onSecteur);branchesSel.slice().forEach(onBranche);activitesSel.slice().forEach(onActivite);}}
           style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0"}}>
           <X size={10}/> Effacer thématiques
         </button>}
@@ -205,6 +213,7 @@ function EntrepriseVue({ ent:e, secteurs, branches, activites, onClose }: {
             {e.telephone&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Téléphone</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{e.telephone}</p></div>}
             {e.mail&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Email</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{e.mail}</p></div>}
             {(e.region_nom||e.departement_nom)&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Localisation</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{[e.arrondissement_nom,e.departement_nom,e.region_nom].filter(Boolean).join(", ")}</p></div>}
+            {e.pole_territoire_nom&&<div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Pôle territoire</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{e.pole_territoire_nom}</p></div>}
             {e.siteweb&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Site web</LBL><a href={e.siteweb} target="_blank" rel="noopener noreferrer" style={{fontSize:13,fontWeight:600,color:"#366FE3",textDecoration:"none"}}>{e.siteweb}</a></div>}
           </div>
           {/* NAEMA depuis IDs */}
@@ -282,11 +291,13 @@ export default function EntreprisesPage() {
 
   const [recherche,    setRecherche]    = useState("");
   const [formesSel,    setFormesSel]    = useState<string[]>([]);
-  const [secteurSel,   setSecteurSel]   = useState("");
+  const [secteursSel,  setSecteursSel]  = useState<string[]>([]);
   const [branchesSel,  setBranchesSel]  = useState<string[]>([]);
   const [activitesSel, setActivitesSel] = useState<string[]>([]);
   const [regionsSel,   setRegionsSel]   = useState<string[]>([]);
   const [deptsSel,     setDeptsSel]     = useState<string[]>([]);
+  const [polesSel,     setPolesSel]     = useState<string[]>([]);
+  const [poles,        setPoles]        = useState<string[]>([]);
 
   useEffect(()=>{
     const safe=(p:Promise<any>,fb:any)=>p.catch(()=>fb);
@@ -297,16 +308,17 @@ export default function EntreprisesPage() {
       safe(fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),         []),
       safe(fetch(`${API_BASE}/entreprises/ref/regions`).then(r=>r.json()),           []),
       safe(fetch(`${API_BASE}/entreprises/ref/departements`).then(r=>r.json()),      []),
-    ]).then(([formes,secsData,brasData,actsData,regsData,deptsData])=>{
+      safe(fetch(`${API_BASE}/entreprises/ref/poles`).then(r=>r.json()),             []),
+    ]).then(([formes,secsData,brasData,actsData,regsData,deptsData,polesData])=>{
       setFormeOpts(Array.isArray(formes)?formes:[]);
       setSecteurs(secsData||[]);
       setBranches(brasData||[]);
       setActivites(actsData||[]);
-      // Arbre pour filtres sidebar
       const tree=(secsData||[]).map((s:any)=>({...s,branches:(brasData||[]).filter((b:any)=>b.secteur_id===s.id).map((b:any)=>({...b,activites:(actsData||[]).filter((a:any)=>a.branche_id===b.id)}))}));
       setSecteurs(tree);
       const regTree=(regsData||[]).map((r:any)=>({...r,departements:(deptsData||[]).filter((d:any)=>d.region_id===r.id)}));
       setRegions(regTree);
+      setPoles((polesData||[]).map((p:any)=>p.nom));
     });
   },[]);
 
@@ -329,35 +341,35 @@ export default function EntreprisesPage() {
       if (!e.nom?.toLowerCase().includes(q)&&!e.forme_juridique?.toLowerCase().includes(q)&&!e.adresse?.toLowerCase().includes(q)) return false;
     }
     if (formesSel.length>0&&!formesSel.includes(e.forme_juridique||"")) return false;
-    // NAEMA par IDs
-    if (secteurSel) {
-      const secId=secteurs.find((s:any)=>s.nom===secteurSel)?.id;
-      if (!secId||(e.secteur_ids||[]).indexOf(secId)===-1) return false;
+    if (secteursSel.length>0) {
+      const secIds=secteursSel.map((nom:string)=>secteurs.find((s:any)=>s.nom===nom)?.id).filter(Boolean);
+      if (!secIds.some((id:number)=>(e.secteur_ids||[]).includes(id))) return false;
     }
     if (branchesSel.length>0) {
-      const braIds=branchesSel.map((nom:string)=>branches.find((b:any)=>b.nom===nom)?.id).filter(Boolean);
+      const braIds=branchesSel.map((nom:string)=>secteurs.flatMap((s:any)=>s.branches||[]).find((b:any)=>b.nom===nom)?.id).filter(Boolean);
       if (!braIds.some((id:number)=>(e.branche_ids||[]).includes(id))) return false;
     }
     if (activitesSel.length>0) {
-      const actIds=activitesSel.map((nom:string)=>activites.find((a:any)=>a.nom===nom)?.id).filter(Boolean);
+      const actIds=activitesSel.map((nom:string)=>secteurs.flatMap((s:any)=>s.branches||[]).flatMap((b:any)=>b.activites||[]).find((a:any)=>a.nom===nom)?.id).filter(Boolean);
       if (!actIds.some((id:number)=>(e.activite_ids||[]).includes(id))) return false;
     }
-    // Localisation par nom (déjà enrichi par le backend)
     if (regionsSel.length>0&&!regionsSel.includes(e.region_nom||"")) return false;
     if (deptsSel.length>0&&!deptsSel.includes(e.departement_nom||"")) return false;
+    if (polesSel.length>0&&!polesSel.includes(e.pole_territoire_nom||"")) return false;
     return true;
   });
 
-  const hasFilter=!!recherche||formesSel.length>0||!!secteurSel||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0;
-  const reinit=()=>{setRecherche("");setFormesSel([]);setSecteurSel("");setBranchesSel([]);setActivitesSel([]);setRegionsSel([]);setDeptsSel([]);};
-  const nbFiltres=(recherche?1:0)+formesSel.length+(secteurSel?1:0)+branchesSel.length+activitesSel.length+regionsSel.length+deptsSel.length;
+  const hasFilter=!!recherche||formesSel.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0||polesSel.length>0;
+  const reinit=()=>{setRecherche("");setFormesSel([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);setRegionsSel([]);setDeptsSel([]);setPolesSel([]);};
+  const nbFiltres=(recherche?1:0)+formesSel.length+secteursSel.length+branchesSel.length+activitesSel.length+regionsSel.length+deptsSel.length+polesSel.length;
 
   const toggleForme   =(v:string)=>setFormesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
+  const toggleSecteur =(v:string)=>{setSecteursSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setBranchesSel([]);setActivitesSel([]);};
   const toggleBranche =(v:string)=>{setBranchesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setActivitesSel([]);};
   const toggleActivite=(v:string)=>setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
-  const setSecteur    =(v:string)=>{setSecteurSel(v);setBranchesSel([]);setActivitesSel([]);};
   const toggleRegion  =(v:string)=>{setRegionsSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setDeptsSel([]);};
   const toggleDept    =(v:string)=>setDeptsSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
+  const togglePole    =(v:string)=>setPolesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
 
   // Refs plates pour la modale vue
   const secteursPlats = secteurs.map((s:any)=>({id:s.id,nom:s.nom,secteur_id:undefined}));
@@ -394,9 +406,9 @@ export default function EntreprisesPage() {
             <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",padding:sidebarOpen?"20px 16px":"10px 8px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)",position:"sticky" as const,top:24,maxHeight:"calc(100vh - 80px)",overflowY:"auto" as const}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
                 {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
-                <button onClick={()=>setSidebarOpen(o=>!o)} style={{background:"rgba(227,83,54,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
-                  <SlidersHorizontal size={14} style={{color:"#E35336"}}/>
-                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
+                <button onClick={()=>setSidebarOpen(o=>!o)} style={{background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
+                  <SlidersHorizontal size={14} style={{color:"#ca631f"}}/>
+                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
                 </button>
               </div>
               {sidebarOpen&&<>
@@ -405,16 +417,18 @@ export default function EntreprisesPage() {
                 </button>}
                 <div style={{position:"relative" as const,marginBottom:18}}>
                   <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Nom, adresse…"
+                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Forme juridique" color="#188038" items={formeOpts} selected={formesSel} onToggle={toggleForme} searchable/>
+                <SideFilter label="Forme juridique" color="#188038" items={formeOpts} selected={formesSel} onToggle={toggleForme}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <ThematiquesCascadeFilter secteurs={secteurs} secteurSel={secteurSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={setSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
+                <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <LocalisationFilter regions={regions} regionsSel={regionsSel} departementsSel={deptsSel} onRegion={toggleRegion} onDepartement={toggleDept}/>
+                {poles.length>0&&<><div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                <SideFilter label="Pôle territoire" color="#ca631f" items={poles} selected={polesSel} onToggle={togglePole}/></>}
               </>}
             </div>
           </div>
@@ -442,11 +456,16 @@ export default function EntreprisesPage() {
                       onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)";ev.currentTarget.style.borderTopColor="#E35336";ev.currentTarget.style.borderRightColor="#E35336";ev.currentTarget.style.borderBottomColor="#E35336";}}
                       onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
                       <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.forme_juridique?2:8,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
-                      {e.forme_juridique&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{e.forme_juridique}</div>}
+                      {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{e.forme_juridique}</div>}
                       <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:10}}>
-                        {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#E35336",flexShrink:0}}/><span style={{color:"#4a5568"}}>{fmtDate(e.date_creation)}</span></div>}
-                        {e.adresse&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.adresse}</span></div>}
-                        {e.region_nom&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/><span style={{color:"#4a5568"}}>{e.region_nom}</span></div>}
+                        {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                          <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/>
+                          <span style={{color:"#4a5568"}}>Créée le {fmtDate(e.date_creation)}</span>
+                        </div>}
+                        {(e.departement_nom||e.region_nom)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                          <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/>
+                          <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[e.arrondissement_nom,e.departement_nom,e.region_nom].filter(Boolean).join(", ")}</span>
+                        </div>}
                       </div>
                       <div style={{fontSize:11,color:"#ca631f",fontWeight:600,borderTop:"1px solid #F2F0EF",paddingTop:8}}>Voir la fiche →</div>
                     </div>

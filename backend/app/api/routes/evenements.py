@@ -161,7 +161,8 @@ async def stats_evenements(db: AsyncSession = Depends(get_db)):
     total    = (await db.execute(select(func.count()).select_from(Evenement).where(base))).scalar()
     a_venir  = (await db.execute(select(func.count()).select_from(Evenement).where(and_(base, Evenement.date_debut > today)))).scalar()
     en_cours = (await db.execute(select(func.count()).select_from(Evenement).where(and_(base, Evenement.date_debut <= today, Evenement.date_fin >= today)))).scalar()
-    return {"total": total, "a_venir": a_venir, "en_cours": en_cours}
+    termine  = (await db.execute(select(func.count()).select_from(Evenement).where(and_(base, Evenement.date_fin < today)))).scalar()
+    return {"total": total, "a_venir": a_venir, "en_cours": en_cours, "termine": termine}
 
 
 # ── GET /evenements/pays-hotes ─────────────────────────────────────────────────
