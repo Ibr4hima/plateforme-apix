@@ -1,21 +1,22 @@
 "use client";
 
-import { BookOpen, ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-react";
-import Image from "next/image";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { Menu, X, ChevronDown, Search, BookOpen, Download, ChevronRight } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const modules = [
   { label: "IDE",          href: "/ide",          desc: "Investissements Directs Étrangers" },
-  { label: "Intentions",   href: "/intentions",   desc: "Intentions d'investissement" },
-  { label: "Prospects",    href: "/prospects",    desc: "Prospects internationaux" },
-  { label: "Entreprises",  href: "/entreprises",  desc: "Entreprises installées" },
-  { label: "Zones",        href: "/zones",        desc: "Zones d'investissement" },
-  { label: "Opportunités", href: "/opportunites", desc: "Opportunités sectorielles" },
-  { label: "Accords",      href: "/accords",      desc: "Accords et traités" },
-  { label: "Événements",   href: "/evenements",   desc: "Événements de promotion" },
+  { label: "Intentions",    href: "/intentions",     desc: "Intentions d'investissement" },
+  { label: "Prospects",     href: "/prospects",      desc: "Prospects internationaux" },
+  { label: "Entreprises",   href: "/entreprises",    desc: "Entreprises installées" },
+  { label: "Zones",         href: "/zones",          desc: "Zones d'investissement" },
+  { label: "Opportunités",  href: "/opportunites",   desc: "Opportunités sectorielles" },
+  { label: "Accords",       href: "/accords",        desc: "Accords et traités" },
+  { label: "Événements",    href: "/evenements",     desc: "Événements de promotion" },
+  { label: "Suivi projets", href: "/suivi-projets",  desc: "Suivi des projets d'investissement" },
 ];
 
 // ── Numérotation ──────────────────────────────────────────────────────────────
@@ -122,24 +123,26 @@ function CodeModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ background: "#FAFAF9", borderRadius: 24, width: "100%", maxWidth: 1100, height: "90vh", display: "flex", flexDirection: "column", border: "1px solid #C5BFBB", boxShadow: "0 32px 80px rgba(0,0,0,0.22)", overflow: "hidden" }}>
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(10px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 1100, height: "90vh", display: "flex", flexDirection: "column", border: "1px solid #E8E5E3", boxShadow: "0 32px 80px rgba(0,0,0,0.25)", overflow: "hidden" }}>
+
+        {/* Bande couleur */}
+        <div style={{ height: 4, background: "linear-gradient(90deg,#ca631f,#004f91)", flexShrink: 0 }} />
 
         {/* Header */}
-        <div style={{ height: 4, background: "linear-gradient(90deg,#B7410E,#e07a3a)", flexShrink: 0 }} />
-        <div style={{ padding: "18px 28px", borderBottom: "1px solid #E8E5E3", display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(183,65,14,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <BookOpen size={18} style={{ color: "#ca631f" }} />
+        <div style={{ padding: "16px 24px", borderBottom: "1px solid #E8E5E3", display: "flex", alignItems: "center", gap: 14, flexShrink: 0, background: "#fff" }}>
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(0,79,145,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <BookOpen size={17} style={{ color: "#004f91" }} />
           </div>
           <div style={{ flex: 1 }}>
-            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>{pdfInfo?.titre || "Code des investissements"}</h2>
-            <p style={{ fontSize: 12, color: "#9aa5b4", margin: 0 }}>République du Sénégal</p>
+            <h2 style={{ fontWeight: 800, fontSize: "1rem", color: "#1a1a2e", margin: 0 }}>{pdfInfo?.titre || "Code des investissements"}</h2>
+            <p style={{ fontSize: 11, color: "#9aa5b4", margin: 0 }}>République du Sénégal</p>
           </div>
           {/* Barre de recherche */}
           <div style={{ position: "relative", width: 280 }}>
             <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher dans le code…"
-              style={{ width: "100%", background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 10, padding: "8px 12px 8px 32px", fontSize: 12, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", background: "#F2F0EF", border: "1px solid #E8E5E3", borderRadius: 9, padding: "8px 12px 8px 32px", fontSize: 12, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
           </div>
           {pdfInfo && (
             <a href={`${API}/code-investissement/pdf/download`} target="_blank" rel="noopener noreferrer"
@@ -148,7 +151,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
             </a>
           )}
           <button onClick={onClose} style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 9, padding: 8, flexShrink: 0 }}>
-            <X size={16} color="#4a5568" />
+            <X size={15} color="#4a5568" />
           </button>
         </div>
 
@@ -156,7 +159,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
           {/* Sidebar navigation */}
-          <div style={{ width: 280, borderRight: "1px solid #E8E5E3", overflowY: "auto", flexShrink: 0, padding: "12px 0" }}>
+          <div style={{ width: 272, borderRight: "1px solid #E8E5E3", overflowY: "auto", flexShrink: 0, padding: "10px 0", background: "#FAFAF9" }}>
             {loading ? (
               <div style={{ padding: 20, color: "#9aa5b4", fontSize: 13 }}>Chargement…</div>
             ) : chapitres.length === 0 ? (
@@ -165,18 +168,22 @@ function CodeModal({ onClose }: { onClose: () => void }) {
               <div key={c.id}>
                 {/* Chapitre */}
                 <button onClick={() => { setActiveChapId(c.id); setActiveSecId(null); setQ(""); }}
-                  style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", background: activeChapId === c.id && !activeSecId ? "rgba(183,65,14,0.08)" : "transparent", border: "none", cursor: "pointer", borderLeft: `3px solid ${activeChapId === c.id && !activeSecId ? "#ca631f" : "transparent"}`, transition: "all 0.15s" }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: "#ca631f", background: "rgba(183,65,14,0.1)", padding: "2px 6px", borderRadius: 5, flexShrink: 0, marginTop: 1 }}>
-                    {toRomanNum(c.numero)}
+                  style={{ width: "100%", textAlign: "left" as const, display: "flex", alignItems: "center", gap: 9, padding: "9px 14px 9px 12px", background: activeChapId === c.id && !activeSecId ? "rgba(0,79,145,0.07)" : "transparent", border: "none", cursor: "pointer", borderLeft: `3px solid ${activeChapId === c.id && !activeSecId ? "#004f91" : "transparent"}`, transition: "all 0.15s" }}
+                  onMouseEnter={e => { if (!(activeChapId === c.id && !activeSecId)) e.currentTarget.style.background = "#F2F0EF"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = activeChapId === c.id && !activeSecId ? "rgba(0,79,145,0.07)" : "transparent"; }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: activeChapId === c.id && !activeSecId ? "#004f91" : "#ca631f", background: activeChapId === c.id && !activeSecId ? "rgba(0,79,145,0.1)" : "rgba(202,99,31,0.1)", padding: "2px 7px", borderRadius: 5, flexShrink: 0, lineHeight: 1.6, display: "inline-block" }}>
+                    {c.numero === 1 ? "PREM." : toRomanNum(c.numero)}
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#1a1a2e", lineHeight: 1.6, wordBreak: "break-word" as const }}>{c.titre}</span>
+                  <span style={{ fontSize: 12, fontWeight: activeChapId === c.id && !activeSecId ? 700 : 500, color: activeChapId === c.id && !activeSecId ? "#004f91" : "#4a5568", lineHeight: 1.4, wordBreak: "break-word" as const }}>{c.titre}</span>
                 </button>
                 {/* Sections */}
                 {c.sections.map((s: any) => (
                   <button key={s.id} onClick={() => { setActiveChapId(c.id); setActiveSecId(s.id); setQ(""); }}
-                    style={{ width: "100%", textAlign: "left", padding: "7px 16px 7px 36px", background: activeSecId === s.id ? "rgba(0,79,145,0.06)" : "transparent", border: "none", cursor: "pointer", borderLeft: `3px solid ${activeSecId === s.id ? "#004f91" : "transparent"}`, transition: "all 0.15s" }}>
-                    <span style={{ fontSize: 11, color: activeSecId === s.id ? "#004f91" : "#6b7280", lineHeight: 1.4, display: "block", wordBreak: "break-word" as const }}>
-                      Section {s.num_display} — {s.titre}
+                    style={{ width: "100%", textAlign: "left" as const, padding: "6px 14px 6px 34px", background: activeSecId === s.id ? "rgba(202,99,31,0.07)" : "transparent", border: "none", cursor: "pointer", borderLeft: `3px solid ${activeSecId === s.id ? "#ca631f" : "transparent"}`, transition: "all 0.15s" }}
+                    onMouseEnter={e => { if (activeSecId !== s.id) e.currentTarget.style.background = "#F2F0EF"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = activeSecId === s.id ? "rgba(202,99,31,0.07)" : "transparent"; }}>
+                    <span style={{ fontSize: 11, color: activeSecId === s.id ? "#ca631f" : "#9aa5b4", fontWeight: activeSecId === s.id ? 600 : 400, lineHeight: 1.4, display: "block", wordBreak: "break-word" as const }}>
+                      {s.num_display} — {s.titre}
                     </span>
                   </button>
                 ))}
@@ -185,24 +192,23 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Contenu principal */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "24px 32px" }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: "28px 36px" }}>
 
             {/* Résultats de recherche */}
             {q.length >= 2 ? (
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 16 }}>
-                  {searching ? "Recherche…" : `${results?.length || 0} résultat${(results?.length||0)>1?"s":""} pour "${q}"`}
+                  {searching ? "Recherche…" : `${results?.length || 0} résultat${(results?.length||0)>1?"s":""} pour « ${q} »`}
                 </p>
                 {results?.map(r => (
                   <div key={r.id} onClick={() => {
-                    // Naviguer vers l'article trouvé
                     const chap = chapitres.find(c => c.id === r.chapitre_id);
                     if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); }
                   }}
-                  style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 10, padding: "14px 18px", marginBottom: 8, cursor: "pointer" }}
+                  style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 10, padding: "14px 18px", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s" }}
                   onMouseEnter={e => e.currentTarget.style.borderColor="#ca631f"}
                   onMouseLeave={e => e.currentTarget.style.borderColor="#E8E5E3"}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "#ca631f", marginBottom: 4 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#004f91", marginBottom: 4 }}>
                       Article {numArt(r.numero)}{r.titre ? ` — ${r.titre}` : ""}
                     </div>
                     <div style={{ fontSize: 12, color: "#4a5568", lineHeight: 1.6 }}
@@ -216,20 +222,30 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                 {activeChap && (
                   <div style={{ marginBottom: 28 }}>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: "#ca631f", background: "rgba(183,65,14,0.1)", padding: "3px 10px", borderRadius: 6, letterSpacing: "0.08em" }}>
-                        CHAPITRE {activeChap.num_display.toUpperCase()}
+                      <span style={{ fontSize: 10, fontWeight: 800, color: "#ca631f", background: "rgba(202,99,31,0.08)", border: "1px solid rgba(202,99,31,0.2)", padding: "3px 10px", borderRadius: 6, letterSpacing: "0.1em", textTransform: "uppercase" as const }}>
+                        Chapitre {activeChap.numero === 1 ? "Premier" : activeChap.num_display}
                       </span>
                     </div>
-                    <h3 style={{ fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e", margin: 0, lineHeight: 1.3 }}>{activeChap.titre}</h3>
+                    <h3 style={{ fontWeight: 800, fontSize: "1.2rem", color: "#1a1a2e", margin: 0, lineHeight: 1.3 }}>{activeChap.titre}</h3>
+                    {/* Texte introductif du chapitre */}
+                    {activeChap.contenu && !activeSecId && (
+                      <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 10 }}>{activeChap.contenu}</p>
+                    )}
                     {activeSecId && (() => {
                       const sec = activeChap.sections.find((s:any)=>s.id===activeSecId);
                       return sec ? (
-                        <p style={{ fontSize: 14, fontWeight: 600, color: "#004f91", marginTop: 8 }}>
-                          Section {sec.num_display} — {sec.titre}
-                        </p>
+                        <>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: "#004f91", marginTop: 8 }}>
+                            Section {sec.num_display} — {sec.titre}
+                          </p>
+                          {/* Texte introductif de la section */}
+                          {sec.contenu && (
+                            <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 6, paddingLeft: 12, borderLeft: "3px solid rgba(0,79,145,0.2)" }}>{sec.contenu}</p>
+                          )}
+                        </>
                       ) : null;
                     })()}
-                    <div style={{ width: 48, height: 3, background: "#ca631f", borderRadius: 2, marginTop: 12 }} />
+                    <div style={{ width: 40, height: 3, background: "linear-gradient(90deg,#ca631f,#004f91)", borderRadius: 2, marginTop: 12 }} />
                   </div>
                 )}
 
@@ -244,8 +260,13 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                       const prevArt = articlesFiltres[articlesFiltres.indexOf(a)-1];
                       const isFirstOfSec = !prevArt || prevArt.section_id !== a.section_id;
                       return isFirstOfSec && sec ? (
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#004f91", marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" }}>
-                          Section {sec.num_display} — {sec.titre}
+                        <div style={{ marginBottom: 12 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#004f91", paddingBottom: 8, borderBottom: "1px solid #E8E5E3" }}>
+                            Section {sec.num_display} — {sec.titre}
+                          </div>
+                          {sec.contenu && (
+                            <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 8, paddingLeft: 12, borderLeft: "3px solid rgba(0,79,145,0.2)" }}>{sec.contenu}</p>
+                          )}
                         </div>
                       ) : null;
                     })()}
@@ -267,12 +288,16 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                   const next = chapitres[idx+1];
                   return next ? (
                     <button onClick={()=>{setActiveChapId(next.id);setActiveSecId(null);}}
-                      style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, background:"rgba(183,65,14,0.06)", border:"1px solid rgba(183,65,14,0.15)", borderRadius:10, padding:"12px 18px", cursor:"pointer", width:"100%" }}>
-                      <div style={{flex:1,textAlign:"left"}}>
+                      style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"12px 18px", cursor:"pointer", width:"100%", transition:"all 0.15s" }}
+                      onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.1)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,79,145,0.05)";}}>
+                      <div style={{flex:1,textAlign:"left" as const}}>
                         <div style={{fontSize:11,color:"#9aa5b4",marginBottom:2}}>Chapitre suivant</div>
-                        <div style={{fontSize:13,fontWeight:700,color:"#ca631f"}}>Chapitre {next.num_display} — {next.titre}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:"#004f91"}}>
+                          {next.numero === 1 ? "Chapitre Premier" : `Chapitre ${next.num_display}`} — {next.titre}
+                        </div>
                       </div>
-                      <ChevronRight size={16} style={{color:"#ca631f",flexShrink:0}} />
+                      <ChevronRight size={16} style={{color:"#004f91",flexShrink:0}} />
                     </button>
                   ) : null;
                 })()}
@@ -362,7 +387,7 @@ export default function Navbar() {
             <Link href="/ide" style={{ color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = "#ca631f")}
               onMouseLeave={e => (e.currentTarget.style.color = textColor)}>
-              Investissements Directs Étrangers
+              IDE
             </Link>
 
             {/* Code des investissements */}
@@ -376,7 +401,7 @@ export default function Navbar() {
 
           {/* Connexion uniquement */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Link href="/login" style={{ fontSize: 13, fontWeight: 700, color: "#fff", background:"linear-gradient(135deg,#ca631f,#ca631f)", padding: "9px 18px", borderRadius: 10, textDecoration: "none", boxShadow: "0 3px 12px rgba(202,99,31,0.3)", transition: "all 0.2s", letterSpacing: "0.01em" }}
+            <Link href="/login" style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #ca631f, #a84e18)", padding: "9px 18px", borderRadius: 10, textDecoration: "none", boxShadow: "0 3px 12px rgba(202,99,31,0.3)", transition: "all 0.2s", letterSpacing: "0.01em" }}
               onMouseEnter={e => { e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 6px 18px rgba(202,99,31,0.4)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform="";    e.currentTarget.style.boxShadow="0 3px 12px rgba(202,99,31,0.3)"; }}>
               Connexion

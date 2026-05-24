@@ -21,11 +21,12 @@ function ordinalEdition(n: number): string {
 }
 
 const ROLES_APIX = [
-  { value: "organisateur",    label: "Organisateur"    },
-  { value: "co_organisateur", label: "Co-organisateur" },
-  { value: "participant",     label: "Participant"      },
-  { value: "sponsor",         label: "Sponsor"         },
-  { value: "invite",          label: "Invité"          },
+  { value: "Organisateur",    label: "Organisateur"    },
+  { value: "Co-organisateur", label: "Co-organisateur" },
+  { value: "Participant",     label: "Participant"      },
+  { value: "Partenaire",      label: "Partenaire"       },
+  { value: "Sponsor",         label: "Sponsor"          },
+  { value: "Invité",          label: "Invité"           },
 ];
 
 const EMPTY_FORM = {

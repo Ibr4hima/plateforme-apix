@@ -1,6 +1,4 @@
-import uuid
-from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, ARRAY, Text, Numeric
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, ARRAY, Text, Numeric, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
@@ -19,8 +17,8 @@ class RefDevise(Base):
 
 class ProjetMoa(Base):
     __tablename__ = "projet_moa"
-    id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    projet_id  = Column(UUID(as_uuid=True), ForeignKey("projets.id", ondelete="CASCADE"), nullable=False)
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    projet_id  = Column(Integer, ForeignKey("projets.id", ondelete="CASCADE"), nullable=False)
     nom        = Column(String(500))
     telephone  = Column(String(50))
     mail       = Column(String(255))
@@ -31,8 +29,8 @@ class ProjetMoa(Base):
 
 class ProjetCoordinateur(Base):
     __tablename__ = "projet_coordinateurs"
-    id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    projet_id  = Column(UUID(as_uuid=True), ForeignKey("projets.id", ondelete="CASCADE"), nullable=False)
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    projet_id  = Column(Integer, ForeignKey("projets.id", ondelete="CASCADE"), nullable=False)
     civilite   = Column(String(20))
     nom        = Column(String(200))
     prenom     = Column(String(200))
@@ -46,7 +44,7 @@ class ProjetCoordinateur(Base):
 class Projet(Base):
     __tablename__ = "projets"
 
-    id                  = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id                  = Column(Integer, primary_key=True, autoincrement=True)
     titre_projet        = Column(String(500), nullable=False)
     description         = Column(Text)
     region_id           = Column(Integer, ForeignKey("ref_regions.id"))
@@ -63,7 +61,9 @@ class Projet(Base):
     investissement_est_intervalle = Column(Boolean, default=False)
     devise_id                   = Column(Integer, ForeignKey("ref_devises.id"))
     porteur_projet      = Column(String(500))
-    moa_id              = Column(UUID(as_uuid=True), nullable=True)  # FK vers projet_moa.id (gérée manuellement)
+    moa_id              = Column(Integer, nullable=True)
+    date_attribution    = Column(Date, nullable=True)
+    date_fin_prevue     = Column(Date, nullable=True)
     created_at          = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at          = Column(TIMESTAMP(timezone=True), server_default=func.now())
     is_deleted          = Column(Boolean, default=False)
@@ -80,8 +80,8 @@ class Projet(Base):
 
 class ProjetFichier(Base):
     __tablename__ = "projet_fichiers"
-    id           = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    projet_id    = Column(UUID(as_uuid=True), ForeignKey("projets.id", ondelete="CASCADE"), nullable=False)
+    id           = Column(Integer, primary_key=True, autoincrement=True)
+    projet_id    = Column(Integer, ForeignKey("projets.id", ondelete="CASCADE"), nullable=False)
     titre        = Column(String(500))
     fichier_nom  = Column(String(500))
     fichier_path = Column(Text)

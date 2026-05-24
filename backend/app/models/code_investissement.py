@@ -23,6 +23,7 @@ class CodeChapitre(Base):
     id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     numero     = Column(Integer, nullable=False)
     titre      = Column(String(500), nullable=False)
+    contenu    = Column(Text, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
@@ -38,6 +39,7 @@ class CodeSection(Base):
     chapitre_id  = Column(UUID(as_uuid=True), ForeignKey("code_chapitres.id", ondelete="CASCADE"), nullable=False)
     numero       = Column(Integer, nullable=False)
     titre        = Column(String(500), nullable=False)
+    contenu      = Column(Text, nullable=True)
     created_at   = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at   = Column(TIMESTAMP(timezone=True), server_default=func.now())
 

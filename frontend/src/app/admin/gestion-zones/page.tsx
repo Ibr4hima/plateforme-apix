@@ -11,7 +11,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 
 const TYPE_ZONES = [
   { key: "ZES", label: "Zones Économiques Spéciales",        code: "ZES", color: "#E35336" },
-  { key: "ZAI", label: "Zones Aménagées à l'Investissement", code: "ZAI", color: "#366FE3" },
+  { key: "ZAI", label: "Zones Aménagées pour l'Investissement", code: "ZAI", color: "#366FE3" },
   { key: "ZFI", label: "Zones Franches Industrielles",       code: "ZFI", color: "#188038" },
 ];
 

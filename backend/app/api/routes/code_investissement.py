@@ -59,18 +59,19 @@ def section_to_dict(s: CodeSection, articles: list) -> dict:
         "numero":      s.numero,
         "num_display": num_section(s.numero),
         "titre":       s.titre,
+        "contenu":     s.contenu or "",
         "chapitre_id": str(s.chapitre_id),
         "articles":    [article_to_dict(a) for a in articles if a.section_id == s.id],
     }
 
 def chapitre_to_dict(c: CodeChapitre) -> dict:
-    # Articles directement sous le chapitre (sans section)
     direct = [a for a in c.articles if not a.section_id]
     return {
         "id":          str(c.id),
         "numero":      c.numero,
         "num_display": num_chapitre(c.numero),
         "titre":       c.titre,
+        "contenu":     c.contenu or "",
         "sections":    [section_to_dict(s, c.articles) for s in c.sections],
         "articles":    [article_to_dict(a) for a in direct],
     }
@@ -169,6 +170,7 @@ async def modifier_chapitre(chap_id: UUID, payload: dict, db: AsyncSession = Dep
     if not c: raise HTTPException(404)
     if "numero" in payload: c.numero = payload["numero"]
     if "titre"  in payload: c.titre  = payload["titre"]
+    if "contenu" in payload: c.contenu = payload["contenu"] or None
     await db.flush()
     res = await db.execute(select(CodeChapitre).options(*LOAD_OPTS).where(CodeChapitre.id == chap_id))
     return chapitre_to_dict(res.scalar_one())
@@ -195,8 +197,9 @@ async def modifier_section(sec_id: UUID, payload: dict, db: AsyncSession = Depen
     if not s: raise HTTPException(404)
     if "numero" in payload: s.numero = payload["numero"]
     if "titre"  in payload: s.titre  = payload["titre"]
+    if "contenu" in payload: s.contenu = payload["contenu"] or None
     await db.flush()
-    return {"id": str(s.id), "numero": s.numero, "num_display": num_section(s.numero), "titre": s.titre}
+    return {"id": str(s.id), "numero": s.numero, "num_display": num_section(s.numero), "titre": s.titre, "contenu": s.contenu or ""}
 
 @router.delete("/sections/{sec_id}", status_code=204)
 async def supprimer_section(sec_id: UUID, db: AsyncSession = Depends(get_db)):

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Search, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
-import ThematiquesNaema from "@/components/shared/ThematiquesNaema";
+import NaemaSelect from "@/components/shared/NaemaSelect";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -15,7 +15,7 @@ function ZoneInvSelect({ value, onChange }: { value:string; onChange:(v:string)=
   const [type,    setType]    = useState(value ? value.slice(0,3) : "");
   const [zones,   setZones]   = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const LABELS: Record<string,string> = { ZES:"Zones Économiques Spéciales", ZAI:"Zones Aménagées à l'Investissement", ZFI:"Zones Franches Industrielles" };
+  const LABELS: Record<string,string> = { ZES:"Zones Économiques Spéciales", ZAI:"Zones Aménagées pour l'Investissement", ZFI:"Zones Franches Industrielles" };
 
   useEffect(() => { if (value && !type) setType(value.slice(0,3)); }, [value]);
   useEffect(() => {
@@ -141,10 +141,11 @@ function AddBtn({ label, onClick }: { label:string; onClick:()=>void }) {
 const EMPTY: any = {
   titre_projet:"", description:"",
   region_id:"", departement_id:"", arrondissement_id:"", zone_investissement:"", pole_id:"",
-  thematiques:"",
+  secteur_ids:[] as number[], branche_ids:[] as number[], activite_ids:[] as number[],
   est_intervalle: false,
   investissement:"", investissement_min:"", investissement_max:"", devise_id:"",
   porteur_projet:"",
+  date_attribution:"", date_fin_prevue:"",
   moa_nom:"", moa_telephone:"", moa_mail:"", show_moa:false,
   coordinateurs:[],
 };
@@ -176,10 +177,6 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
   useEffect(() => {
     if (!open) return;
     if (edit) {
-      const parts: string[] = [];
-      (edit.secteur_noms||[]).forEach((n:string)=>parts.push(`sec:${n}`));
-      (edit.branche_noms||[]).forEach((n:string)=>parts.push(`bra:${n}`));
-      (edit.activite_noms||[]).forEach((n:string)=>parts.push(`act:${n}`));
       const moa = (edit.moa_list||[])[0] || {};
       const isIntervalle = !!edit.investissement_est_intervalle;
       setForm({
@@ -188,13 +185,17 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         arrondissement_id: edit.arrondissement_id||"",
         zone_investissement: edit.zone_investissement||"",
         pole_id: edit.pole_id||"",
-        thematiques: parts.join(", "),
+        secteur_ids: edit.secteur_ids||[],
+        branche_ids: edit.branche_ids||[],
+        activite_ids: edit.activite_ids||[],
         est_intervalle: isIntervalle,
         investissement:     !isIntervalle ? (edit.investissement!=null ? String(edit.investissement) : "") : "",
         investissement_min: isIntervalle  ? (edit.investissement_min!=null ? String(edit.investissement_min) : "") : "",
         investissement_max: isIntervalle  ? (edit.investissement_max!=null ? String(edit.investissement_max) : "") : "",
         devise_id: edit.devise_id||"",
         porteur_projet: edit.porteur_projet||"",
+        date_attribution: edit.date_attribution||"",
+        date_fin_prevue:  edit.date_fin_prevue||"",
         moa_nom:       moa.nom||"",
         moa_telephone: moa.telephone||"",
         moa_mail:      moa.mail||"",
@@ -222,17 +223,13 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
       if (c.telephone && !validTel(c.telephone))  { setError(`Coordinateur ${i+1} — ${ERR_TEL}`);  return; }
       if (c.mail      && !validMail(c.mail))       { setError(`Coordinateur ${i+1} — ${ERR_MAIL}`); return; }
     }
+    if (form.date_attribution && form.date_fin_prevue) {
+      if (form.date_fin_prevue <= form.date_attribution) {
+        setError("La date de fin prévue doit être strictement supérieure à la date d'attribution"); return;
+      }
+    }
     setSaving(true); setError("");
     try {
-      const items = (form.thematiques||"").split(",").map((t:string)=>t.trim());
-      const secNoms = items.filter((t:string)=>t.startsWith("sec:")).map((t:string)=>t.slice(4));
-      const braNoms = items.filter((t:string)=>t.startsWith("bra:")).map((t:string)=>t.slice(4));
-      const actNoms = items.filter((t:string)=>t.startsWith("act:")).map((t:string)=>t.slice(4));
-      const [allSec,allBra,allAct] = await Promise.all([
-        fetch(`${API}/entreprises/ref/secteurs`).then(r=>r.json()),
-        fetch(`${API}/entreprises/ref/branches`).then(r=>r.json()),
-        fetch(`${API}/entreprises/ref/activites`).then(r=>r.json()),
-      ]);
       const payload = {
         titre_projet: form.titre_projet,
         description:  form.description||null,
@@ -241,15 +238,17 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         arrondissement_id: form.arrondissement_id||null,
         zone_investissement: form.zone_investissement||null,
         pole_id:      form.pole_id||null,
-        secteur_ids:  allSec.filter((s:any)=>secNoms.includes(s.nom)).map((s:any)=>s.id),
-        branche_ids:  allBra.filter((b:any)=>braNoms.includes(b.nom)).map((b:any)=>b.id),
-        activite_ids: allAct.filter((a:any)=>actNoms.includes(a.nom)).map((a:any)=>a.id),
+        secteur_ids:  form.secteur_ids||[],
+        branche_ids:  form.branche_ids||[],
+        activite_ids: form.activite_ids||[],
         investissement_est_intervalle: form.est_intervalle,
         investissement:     !form.est_intervalle && form.investissement ? form.investissement : null,
         investissement_min: form.est_intervalle  && form.investissement_min ? form.investissement_min : null,
         investissement_max: form.est_intervalle  && form.investissement_max ? form.investissement_max : null,
         devise_id:    form.devise_id||null,
         porteur_projet: form.porteur_projet||null,
+        date_attribution: form.date_attribution||null,
+        date_fin_prevue:  form.date_fin_prevue||null,
         // MOA singulier — stocké comme liste à 1 élément max
         moa_list: (form.moa_nom||form.moa_telephone||form.moa_mail)
           ? [{ nom: form.moa_nom||null, telephone: form.moa_telephone||null, mail: form.moa_mail||null }]
@@ -373,7 +372,34 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
           {/* Thématiques */}
           <div style={{ marginBottom:22 }}>
             <p style={SEC}>Thématiques</p>
-            <ThematiquesNaema value={form.thematiques} onChange={v=>upd("thematiques",v)} />
+            <NaemaSelect
+              secteurIds={form.secteur_ids||[]}
+              brancheIds={form.branche_ids||[]}
+              activiteIds={form.activite_ids||[]}
+              onChangeSecteurs={ids=>upd("secteur_ids",ids)}
+              onChangeBranches={ids=>upd("branche_ids",ids)}
+              onChangeActivites={ids=>upd("activite_ids",ids)}
+            />
+          </div>
+
+          {/* Suivi */}
+          <div style={{ marginBottom:22 }}>
+            <p style={SEC}>Suivi du projet</p>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              <div>
+                <label style={LS}>Date d'attribution</label>
+                <input type="date" value={form.date_attribution} onChange={e=>upd("date_attribution",e.target.value)} style={IS} />
+                <p style={{ fontSize:11, color:"#9aa5b4", marginTop:4 }}>Date à laquelle le projet est officiellement attribué</p>
+              </div>
+              <div>
+                <label style={LS}>Date de fin prévue</label>
+                <input type="date" value={form.date_fin_prevue} onChange={e=>upd("date_fin_prevue",e.target.value)}
+                  min={form.date_attribution || undefined} style={{...IS, borderColor: form.date_fin_prevue && form.date_attribution && form.date_fin_prevue <= form.date_attribution ? "#dc2626" : "#C5BFBB"}} />
+                {form.date_fin_prevue && form.date_attribution && form.date_fin_prevue <= form.date_attribution && (
+                  <p style={{ fontSize:11, color:"#dc2626", marginTop:4 }}>Doit être strictement après la date d'attribution</p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Porteur du projet */}
@@ -508,7 +534,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
 const DEVISE_SYMBOLE: Record<string,string> = { XOF:"FCFA", USD:"$", EUR:"€", GBP:"£", CNY:"¥", CAD:"CA$", CHF:"CHF", JPY:"¥" };
 const devSymbole = (code?:string, symbole?:string) => symbole || (code ? DEVISE_SYMBOLE[code]||code : "");
 
-function ProjetVueModal({ projet: p, onClose, onEdit }: { projet:any; onClose:()=>void; onEdit:(p:any)=>void }) {
+function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onEdit }: { projet:any; secteurs:any[]; branches:any[]; activites:any[]; onClose:()=>void; onEdit:(p:any)=>void }) {
   const fmtInvest = () => {
     const sym = devSymbole(p.devise_code, p.devise_symbole);
     if (!p.investissement_est_intervalle)
@@ -573,41 +599,49 @@ function ProjetVueModal({ projet: p, onClose, onEdit }: { projet:any; onClose:()
             )}
           </div>
 
-          {/* Thématiques NAEMA en arborescence */}
-          {p.secteur_noms?.length>0 && (
+          {/* Thématiques NAEMA en arborescence depuis IDs */}
+          {(p.secteur_ids?.length > 0 || p.branche_ids?.length > 0) && (
             <div style={{marginBottom:16}}>
               <LBL>Thématiques NAEMA</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-                {(p.secteur_noms||[]).map((sec:string) => (
-                  <div key={sec}>
-                    <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:p.branche_noms?.length?5:0}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
-                      <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec}</span>
-                    </div>
-                    {(p.branche_noms||[]).length>0 && (
-                      <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:5}}>
-                        {(p.branche_noms||[]).map((bra:string) => (
-                          <div key={bra}>
-                            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:p.activite_noms?.length?4:0}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
-                              <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra}</span>
-                            </div>
-                            {(p.activite_noms||[]).length>0 && (
-                              <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
-                                {(p.activite_noms||[]).map((act:string) => (
-                                  <div key={act} style={{display:"flex",alignItems:"center",gap:6}}>
-                                    <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                    <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                {(p.secteur_ids||[]).map((secId:number) => {
+                  const sec = secteurs.find((s:any) => s.id === secId);
+                  if (!sec) return null;
+                  const brasDuSec = branches.filter((b:any) => b.secteur_id === secId && (p.branche_ids||[]).includes(b.id));
+                  return (
+                    <div key={secId}>
+                      <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
+                        <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec.nom}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {brasDuSec.length > 0 && (
+                        <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
+                          {brasDuSec.map((bra:any) => {
+                            const actsDeBra = activites.filter((a:any) => a.branche_id === bra.id && (p.activite_ids||[]).includes(a.id));
+                            return (
+                              <div key={bra.id}>
+                                <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
+                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                                  <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span>
+                                </div>
+                                {actsDeBra.length > 0 && (
+                                  <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
+                                    {actsDeBra.map((act:any) => (
+                                      <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
+                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                        <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -682,6 +716,18 @@ export default function ProjetsPage() {
   const [vue,      setVue]      = useState<any>(null);
   const [deleting, setDeleting] = useState<string|null>(null);
   const [togglingId, setTogglingId] = useState<string|null>(null);
+  const [secteurs,   setSecteurs]   = useState<any[]>([]);
+  const [branches,   setBranches]   = useState<any[]>([]);
+  const [activites,  setActivites]  = useState<any[]>([]);
+
+  useEffect(() => {
+    const safe = (p: Promise<any>) => p.catch(() => []);
+    Promise.all([
+      safe(fetch(`${API}/entreprises/ref/secteurs`).then(r=>r.json())),
+      safe(fetch(`${API}/entreprises/ref/branches`).then(r=>r.json())),
+      safe(fetch(`${API}/entreprises/ref/activites`).then(r=>r.json())),
+    ]).then(([s,b,a]) => { setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); });
+  }, []);
 
   const handleTogglePublie = async (p:any) => {
     setTogglingId(p.id);
@@ -715,8 +761,6 @@ export default function ProjetsPage() {
     <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
       <style>{`
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-        .marquee-text{display:inline-block;animation:marquee-scroll 7s linear infinite;}
-        @keyframes marquee-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
       `}</style>
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
@@ -754,9 +798,9 @@ export default function ProjetsPage() {
               onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)"; ev.currentTarget.style.borderColor="#FFB0A1";}}
               onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor=p.est_publie?"#E35336":"#C5BFBB";}}>
 
-              {/* Titre défilant */}
-              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap"}}>
-                <span className="marquee-text">{p.titre_projet}&nbsp;&nbsp;&nbsp;&nbsp;{p.titre_projet}</span>
+              {/* Titre fixe */}
+              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
+                {p.titre_projet}
               </div>
 
               {/* Infos */}
@@ -788,8 +832,9 @@ export default function ProjetsPage() {
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:p.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:p.est_publie?"#15803d":"#6b7280", fontWeight:600 }}>
-                  {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:p.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:p.est_publie?"#15803d":"#6b7280", fontWeight:600 }}
+                  title={p.est_publie ? "Visible dans la page Suivi des projets — cliquer pour masquer" : "Masqué de la page Suivi — cliquer pour publier"}>
+                  {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Publié</>:<><Eye size={12}/> Publier</>}
                 </button>
                 <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
                   style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
@@ -802,7 +847,7 @@ export default function ProjetsPage() {
       )}
 
       <ProjetModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger} />
-      {vue && <ProjetVueModal projet={vue} onClose={()=>setVue(null)} onEdit={p=>{ setVue(null); setEdit(p); setModal(true); }} />}
+      {vue && <ProjetVueModal projet={vue} secteurs={secteurs} branches={branches} activites={activites} onClose={()=>setVue(null)} onEdit={p=>{ setVue(null); setEdit(p); setModal(true); }} />}
     </div>
   );
 }
