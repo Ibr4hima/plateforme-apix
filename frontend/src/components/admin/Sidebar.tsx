@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Building2, Calendar, ChevronLeft, ChevronRight,
+  ArrowLeftRight, Building2, Calendar, ChevronLeft, ChevronRight,
   FileText, Globe, Landmark, Layers, LayoutDashboard,
   Lightbulb, MapPin, Menu, Target, TrendingUp, BookOpen,
 } from "lucide-react";
@@ -27,6 +27,7 @@ const MODULES: NavItem[] = [
   { type: "separator" },
   { type: "link", label: "Découpage administratif",            href: "/admin/geo",           icon: MapPin,          color: "#0891b2" },
   { type: "link", label: "Classification NAEMA",               href: "/admin/naema",         icon: LayoutDashboard, color: "#6b7280" },
+  { type: "link", label: "Correspondances NAEMA ↔ CITI",       href: "/admin/classifications", icon: ArrowLeftRight,  color: "#0891b2" },
   { type: "link", label: "Code des investissements",           href: "/admin/code-investissement", icon: BookOpen,  color: "#ca631f" },
 ];
 
