@@ -16,7 +16,6 @@ const modules = [
   { label: "Opportunités",  href: "/opportunites",   desc: "Opportunités sectorielles" },
   { label: "Accords",       href: "/accords",        desc: "Accords et traités" },
   { label: "Événements",    href: "/evenements",     desc: "Événements de promotion" },
-  { label: "Suivi projets", href: "/suivi-projets",  desc: "Suivi des projets d'investissement" },
 ];
 
 // ── Numérotation ──────────────────────────────────────────────────────────────
@@ -383,11 +382,11 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* IDE — lien direct */}
-            <Link href="/ide" style={{ color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
+            {/* Suivi des projets — lien direct */}
+            <Link href="/suivi-projets" style={{ color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = "#ca631f")}
               onMouseLeave={e => (e.currentTarget.style.color = textColor)}>
-              IDE
+              Suivi des projets
             </Link>
 
             {/* Code des investissements */}
@@ -423,9 +422,9 @@ export default function Navbar() {
                 {m.label}
               </Link>
             ))}
-            <Link href="/ide" onClick={() => setMenuOpen(false)}
+            <Link href="/suivi-projets" onClick={() => setMenuOpen(false)}
               style={{ display: "block", padding: "10px 14px", color: "#ca631f", textDecoration: "none", fontSize: 14, fontWeight: 600, borderRadius: 10 }}>
-              IDE
+              Suivi des projets
             </Link>
             <button onClick={() => { setMenuOpen(false); setCodeOpen(true); }}
               style={{ display: "block", width: "100%", textAlign: "left" as const, padding: "10px 14px", color: "#ca631f", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>

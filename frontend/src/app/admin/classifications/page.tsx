@@ -26,12 +26,12 @@ function CitiBadge({ item, onRemove }: { item:any; onRemove?:()=>void }) {
   );
 }
 
-// ── Sélecteur CITI (groupes niveau 3 uniquement) ──────────────────────────────
+// ── Sélecteur CITI (classes niveau 4 uniquement) ──────────────────────────────
 function CitiSelector({ citiItems, onSelect, onCancel }: { citiItems:any[]; onSelect:(item:any)=>void; onCancel:()=>void }) {
   const [search, setSearch] = useState("");
 
-  const groupes = citiItems.filter(c => {
-    if (c.niveau !== 3) return false;
+  const classes = citiItems.filter(c => {
+    if (c.niveau !== 4) return false;
     if (search && !(c.libelle_fr.toLowerCase().includes(search.toLowerCase()) || c.code.toLowerCase().includes(search.toLowerCase()))) return false;
     return true;
   });
@@ -41,23 +41,23 @@ function CitiSelector({ citiItems, onSelect, onCancel }: { citiItems:any[]; onSe
       <div style={{ display:"flex", gap:8, marginBottom:8 }}>
         <div style={{ position:"relative" as const, flex:1 }}>
           <Search size={12} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }} />
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un groupe CITI (ex: 011, agriculture…)"
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher une classe CITI (ex: 0111, élevage de volailles…)"
             style={{...IS, paddingLeft:28, fontSize:12}} autoFocus />
         </div>
         <button onClick={onCancel} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:"0 10px" }}><X size={13} color="#4a5568" /></button>
       </div>
       <div style={{ maxHeight:180, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:2 }}>
-        {groupes.slice(0, 30).map(c => (
+        {classes.slice(0, 40).map(c => (
           <button key={c.id} onClick={()=>onSelect(c)}
             style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:7, border:"none", background:"transparent", cursor:"pointer", textAlign:"left" as const, width:"100%" }}
             onMouseEnter={e=>e.currentTarget.style.background="#F8F7F6"}
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-            <span style={{ fontSize:11, fontWeight:700, color:"#188038", minWidth:36 }}>{c.code}</span>
+            <span style={{ fontSize:11, fontWeight:700, color:"#188038", minWidth:40 }}>{c.code}</span>
             <span style={{ fontSize:12, color:"#1a1a2e" }}>{c.libelle_fr}</span>
           </button>
         ))}
-        {groupes.length === 0 && <p style={{ fontSize:12, color:"#9aa5b4", padding:"8px 0", textAlign:"center" as const }}>Aucun groupe trouvé</p>}
-        {groupes.length > 30 && <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const, padding:"4px 0" }}>Affinez la recherche…</p>}
+        {classes.length === 0 && <p style={{ fontSize:12, color:"#9aa5b4", padding:"8px 0", textAlign:"center" as const }}>Aucune classe trouvée</p>}
+        {classes.length > 40 && <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const, padding:"4px 0" }}>Affinez la recherche…</p>}
       </div>
     </div>
   );
@@ -236,7 +236,7 @@ export default function ClassificationsPage() {
         <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.15em", textTransform:"uppercase" as const, marginBottom:4 }}>Administration</p>
         <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Correspondances NAEMA ↔ CITI</h1>
         <div style={{ display:"flex", gap:16, marginTop:6, flexWrap:"wrap" as const }}>
-          <span style={{ fontSize:13, color:"#9aa5b4" }}>{nbTotal} activités NAEMA</span>
+          <span style={{ fontSize:13, color:"#9aa5b4" }}>{nbTotal} activités NAEMA · {citiItems.filter(c=>c.niveau===4).length} classes CITI disponibles</span>
           <span style={{ fontSize:13, color:"#188038", fontWeight:600 }}>✓ {nbRelies} reliées à CITI</span>
           {nbSans>0 && <span style={{ fontSize:13, color:"#dc2626", fontWeight:600 }}>⚠ {nbSans} sans correspondance</span>}
           <span style={{ fontSize:13, color:"#9aa5b4" }}>{corresp.filter(c=>c.naema_type==="activite").length} liaisons au total</span>
@@ -259,7 +259,7 @@ export default function ClassificationsPage() {
         </div>
         <div style={{ width:1, background:"#E8E5E3" }} />
         <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#188038" }}>
-          <span style={{ fontWeight:700 }}>011</span> Groupe CITI (niveau 3)
+          <span style={{ fontWeight:700 }}>0111</span> Classe CITI (niveau 4 — le plus précis)
         </div>
       </div>
 
