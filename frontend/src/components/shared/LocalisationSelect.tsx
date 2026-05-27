@@ -42,7 +42,7 @@ function GeoSelect({ label, options, value, onChange, disabled, color }: {
       <label style={{ fontSize:12, fontWeight:600, color:value?color:"#4a5568", marginBottom:4, display:"block" }}>{label}</label>
       <div style={{ position:"relative" as const }}>
         <select value={value??""} disabled={disabled} onChange={e=>onChange(e.target.value?Number(e.target.value):null)} style={IS}>
-          <option value="">{disabled?`Choisir ${label.split(" ")[0].toLowerCase()} d'abord`:`— ${label} —`}</option>
+          <option value="">{disabled ? (label==="Département" ? "Choisir la région d'abord" : label==="Arrondissement" ? "Choisir le département d'abord" : `— ${label} —`) : `— ${label} —`}</option>
           {options.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}
         </select>
         <ChevronDown size={13} style={{ position:"absolute" as const, right:10, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4", pointerEvents:"none" }}/>
