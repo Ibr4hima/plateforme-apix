@@ -93,21 +93,66 @@ def calc_kpis(rows: list) -> dict:
 async def get_cnuced(
     direction:  Optional[str] = Query(None),
     indicateur: Optional[str] = Query(None),
-    pays:       Optional[str] = Query("Sénégal"),
+    pays:       Optional[str] = Query(None),       # un seul pays
+    pays_list:  Optional[str] = Query(None),       # plusieurs pays séparés par virgule
     annee_min:  Optional[int] = Query(None),
     annee_max:  Optional[int] = Query(None),
+    annees:     Optional[str] = Query(None),       # années spécifiques : "2003,2008,2020"
     db: AsyncSession = Depends(get_db),
 ):
-    q = select(IdeCnuced).where(IdeCnuced.pays == pays)
+    from sqlalchemy import and_, or_
+    q = select(IdeCnuced)
+
+    # Filtre pays : liste ou pays unique
+    if pays_list:
+        noms = [p.strip() for p in pays_list.split(",") if p.strip()]
+        q = q.where(IdeCnuced.pays.in_(noms))
+    elif pays:
+        q = q.where(IdeCnuced.pays == pays)
+    else:
+        q = q.where(IdeCnuced.pays == "Sénégal")
+
     if direction:  q = q.where(IdeCnuced.direction  == direction)
     if indicateur: q = q.where(IdeCnuced.indicateur == indicateur)
-    if annee_min:  q = q.where(IdeCnuced.annee >= annee_min)
-    if annee_max:  q = q.where(IdeCnuced.annee <= annee_max)
-    q = q.order_by(IdeCnuced.annee)
+
+    # Filtre années : spécifiques ou plage
+    if annees:
+        liste_annees = [int(a.strip()) for a in annees.split(",") if a.strip().isdigit()]
+        if liste_annees: q = q.where(IdeCnuced.annee.in_(liste_annees))
+    else:
+        if annee_min: q = q.where(IdeCnuced.annee >= annee_min)
+        if annee_max: q = q.where(IdeCnuced.annee <= annee_max)
+
+    q = q.order_by(IdeCnuced.pays, IdeCnuced.annee)
     res = await db.execute(q)
-    return [{"annee":r.annee,"valeur":float(r.valeur) if r.valeur is not None else None,
-             "direction":r.direction,"indicateur":r.indicateur,"pays":r.pays}
+    return [{"annee":r.annee, "valeur":float(r.valeur) if r.valeur is not None else None,
+             "direction":r.direction, "indicateur":r.indicateur, "pays":r.pays}
             for r in res.scalars().all()]
+
+
+# ── GET /ide/cnuced/pays-disponibles ─────────────────────────────────────────
+@router.get("/cnuced/pays-disponibles")
+async def get_pays_disponibles(db: AsyncSession = Depends(get_db)):
+    """Retourne les pays qui ont des données IDE, avec leur code ISO"""
+    from sqlalchemy import distinct
+    from app.models.shared import RefPays
+    res = await db.execute(select(distinct(IdeCnuced.pays)).order_by(IdeCnuced.pays))
+    noms = [r[0] for r in res.fetchall()]
+    # Enrichir avec les infos de ref_pays (code_iso2 pour le drapeau)
+    result = []
+    for nom in noms:
+        rp = await db.execute(
+            select(RefPays).where(
+                (RefPays.nom_fr == nom) | (RefPays.nom_cnuced == nom)
+            ).limit(1)
+        )
+        pays_obj = rp.scalar_one_or_none()
+        result.append({
+            "nom": nom,
+            "code_iso2": pays_obj.code_iso2 if pays_obj else None,
+            "code_iso3": pays_obj.code_iso3 if pays_obj else None,
+        })
+    return result
 
 
 # ── GET /ide/cnuced/kpis-calcules ─────────────────────────────────────────────

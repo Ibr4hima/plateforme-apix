@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
@@ -163,7 +164,7 @@ async def liste_pays(db: AsyncSession = Depends(get_db)):
         select(RefPays).where(RefPays.actif == True).order_by(RefPays.nom_fr)
     )
     pays = result.scalars().all()
-    return [{"id": p.id, "code_iso2": p.code_iso2, "nom_fr": p.nom_fr, "region_monde": p.region_monde} for p in pays]
+    return [{"id": p.id, "code_iso2": p.code_iso2, "nom_fr": p.nom_fr, "continent": p.continent} for p in pays]
 
 
 # ── Référentiel géographie Sénégal ────────────────────────────────────────────
@@ -301,7 +302,7 @@ async def creer_entreprise(
 
 @router.post("/{entreprise_id}/points-focaux", response_model=PointFocalResponse, status_code=201)
 async def ajouter_point_focal(
-    entreprise_id: int,
+    entreprise_id: UUID,
     payload:       PointFocalCreate,
     db:            AsyncSession = Depends(get_db),
 ):
