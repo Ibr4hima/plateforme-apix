@@ -97,10 +97,8 @@ class EntrepriseIntallee(Base):
     branche_ids     = Column(ARRAY(Integer), default=[])
     activite_ids    = Column(ARRAY(Integer), default=[])
 
-    pole_territoire_id  = Column(Integer, ForeignKey("poles_territoires.id"), nullable=True)
     est_publie          = Column(Boolean, default=True)
 
-    pole_territoire = relationship("PoleTerritoire", foreign_keys=[pole_territoire_id], lazy="joined")
 
     created_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())

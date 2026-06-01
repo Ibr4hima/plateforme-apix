@@ -20,6 +20,7 @@ class PoleTerritoire(Base):
     id              = Column(Integer, primary_key=True, autoincrement=True)
     pole_territoire = Column(String(200), nullable=False, unique=True)
     region_ids      = Column(ARRAY(Integer), default=[])
+    entreprise_ids = Column(ARRAY(Integer), default=[])
     localisation    = Column(String(500))
     description     = Column(Text)
     created_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())

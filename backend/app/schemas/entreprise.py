@@ -62,7 +62,6 @@ class EntrepriseBase(BaseModel):
     secteur_ids:     Optional[List[int]] = []
     branche_ids:     Optional[List[int]] = []
     activite_ids:    Optional[List[int]] = []
-    pole_territoire_id: Optional[int] = None
     est_publie:      bool           = True
 
 class EntrepriseCreate(EntrepriseBase):
@@ -85,7 +84,6 @@ class EntrepriseUpdate(BaseModel):
     secteur_ids:     Optional[List[int]] = None
     branche_ids:     Optional[List[int]] = None
     activite_ids:    Optional[List[int]] = None
-    pole_territoire_id: Optional[int] = None
     est_publie:      Optional[bool] = None
 
 class EntrepriseResponse(EntrepriseBase):

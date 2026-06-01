@@ -29,8 +29,7 @@ def enrich_entreprise(e: EntrepriseIntallee) -> dict:
         "region_id": e.region_id, "departement_id": e.departement_id, "arrondissement_id": e.arrondissement_id,
         "adresse": e.adresse, "telephone": e.telephone, "mail": e.mail, "siteweb": e.siteweb,
         "secteur_ids": e.secteur_ids or [], "branche_ids": e.branche_ids or [], "activite_ids": e.activite_ids or [],
-        "est_publie": e.est_publie, "pole_territoire_id": e.pole_territoire_id,
-        "pole_territoire_nom": e.pole_territoire.pole_territoire if hasattr(e, "pole_territoire") and e.pole_territoire else None,
+        "est_publie": e.est_publie,
         "created_at": e.created_at, "updated_at": e.updated_at, "created_by": e.created_by,
         "is_deleted": e.is_deleted,
         "points_focaux": [
@@ -485,3 +484,16 @@ async def supprimer_arrondissement(arr_id: int, db: AsyncSession = Depends(get_d
     if not a: raise HTTPException(status_code=404, detail="Arrondissement introuvable")
     await db.delete(a)
     await db.flush()
+
+
+@router.get("/{entreprise_id}", response_model=EntrepriseResponse)
+async def get_entreprise(entreprise_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(EntrepriseIntallee)
+        .options(selectinload(EntrepriseIntallee.points_focaux))
+        .where(EntrepriseIntallee.id == entreprise_id, EntrepriseIntallee.is_deleted == False)
+    )
+    e = result.scalar_one_or_none()
+    if not e:
+        raise HTTPException(status_code=404, detail="Entreprise introuvable")
+    return enrich_entreprise(e)
