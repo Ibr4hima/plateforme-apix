@@ -27,6 +27,7 @@ LOAD_OPTS = [
 
 
 # ── GET /projets/devises ──────────────────────────────────────────────────────
+
 @router.get("/devises")
 async def liste_devises(db: AsyncSession = Depends(get_db)):
     res = await db.execute(text("""
@@ -143,12 +144,12 @@ def projet_to_dict(p: Projet, noms: dict = {}, zone_noms: dict = {}, b_details: 
         "thematiques_tree": _build_tree(p.secteur_ids or [], p.branche_ids or [], p.activite_ids or [], noms, b_details, a_details),
         "created_at":       p.created_at.isoformat() if p.created_at else None,
         "moa_list": [
-            {"id": m.id, "nom": m.nom, "telephone": m.telephone, "mail": m.mail}
+            {"id": m.id, "nom": m.nom, "telephones": m.telephones or [], "mails": m.mails or []}
             for m in (p.moa_list or [])
         ],
         "coordinateurs": [
             {"id": c.id, "civilite": c.civilite, "nom": c.nom, "prenom": c.prenom,
-             "telephone": c.telephone, "mail": c.mail, "ordre": c.ordre}
+             "telephones": c.telephones or [], "mails": c.mails or [], "ordre": c.ordre}
             for c in (p.coordinateurs or [])
         ],
         "fichiers": [
@@ -165,16 +166,16 @@ async def apply_relations(p: Projet, payload: dict, db: AsyncSession):
         await db.execute(text("DELETE FROM projet_moa WHERE projet_id = :pid"), {"pid": p.id})
         await db.flush()
         new_moa = payload["moa_list"]
-        if new_moa and any(new_moa[0].get(k) for k in ["nom", "telephone", "mail"]):
+        if new_moa and any(new_moa[0].get(k) for k in ["nom", "telephones", "mails"]):
             m_data = new_moa[0]
             res = await db.execute(text("""
-                INSERT INTO projet_moa (projet_id, nom, telephone, mail, ordre)
-                VALUES (:pid, :nom, :tel, :mail, 0) RETURNING id
+                INSERT INTO projet_moa (projet_id, nom, telephones, mails, ordre)
+                VALUES (:pid, :nom, :tels, :mails, 0) RETURNING id
             """), {
-                "pid":  p.id,
-                "nom":  m_data.get("nom") or None,
-                "tel":  m_data.get("telephone") or None,
-                "mail": m_data.get("mail") or None,
+                "pid":   p.id,
+                "nom":   m_data.get("nom") or None,
+                "tels":  m_data.get("telephones") or [],
+                "mails": m_data.get("mails") or [],
             })
             new_id = res.fetchone()[0]
             await db.execute(text("UPDATE projets SET moa_id = :mid WHERE id = :pid"), {"mid": new_id, "pid": p.id})
@@ -185,13 +186,13 @@ async def apply_relations(p: Projet, payload: dict, db: AsyncSession):
         await db.flush()
         for c in payload["coordinateurs"]:
             await db.execute(text("""
-                INSERT INTO projet_coordinateurs (projet_id, civilite, nom, prenom, telephone, mail, ordre)
-                VALUES (:pid, :civ, :nom, :pre, :tel, :mail, :ord)
+                INSERT INTO projet_coordinateurs (projet_id, civilite, nom, prenom, telephones, mails, ordre)
+                VALUES (:pid, :civ, :nom, :pre, :tels, :mails, :ord)
             """), {
-                "pid": p.id, "civ": c.get("civilite") or None,
-                "nom": c.get("nom") or None, "pre": c.get("prenom") or None,
-                "tel": c.get("telephone") or None, "mail": c.get("mail") or None,
-                "ord": c.get("ordre", 0),
+                "pid":   p.id, "civ": c.get("civilite") or None,
+                "nom":   c.get("nom") or None, "pre": c.get("prenom") or None,
+                "tels":  c.get("telephones") or [], "mails": c.get("mails") or [],
+                "ord":   c.get("ordre", 0),
             })
         await db.flush()
 
@@ -208,14 +209,14 @@ async def liste_projets(
     q: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    publies: Optional[bool] = Query(None),
+    admin: Optional[bool] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     base = select(Projet).options(*LOAD_OPTS).where(Projet.is_deleted == False)
+    if not admin:
+        base = base.where(Projet.est_publie == True)
     if q:
         base = base.where(Projet.titre_projet.ilike(f"%{q}%"))
-    if publies is True:
-        base = base.where(Projet.est_publie == True)
     base = base.order_by(Projet.created_at.desc())
     count_res = await db.execute(select(Projet.id).where(Projet.is_deleted == False))
     total = len(count_res.fetchall())
@@ -292,6 +293,17 @@ async def modifier_projet(projet_id: int, payload: dict, db: AsyncSession = Depe
     await db.refresh(p)
     res = await db.execute(select(Projet).options(*LOAD_OPTS).where(Projet.id == projet_id))
     return (await enrich([res.scalar_one()], db))[0]
+
+
+@router.patch("/{projet_id}/toggle")
+async def toggle_projet_publie(projet_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(Projet).where(Projet.id == projet_id, Projet.is_deleted == False))
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Projet introuvable")
+    p.est_publie = payload.get("est_publie", not p.est_publie)
+    await db.commit()
+    return {"id": p.id, "est_publie": p.est_publie}
 
 
 # ── DELETE /projets/:id ───────────────────────────────────────────────────────
