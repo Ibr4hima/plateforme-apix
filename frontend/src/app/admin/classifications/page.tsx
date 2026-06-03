@@ -1,288 +1,349 @@
 "use client";
 
+import { Check, Link2, Loader2, Search, Unlink, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const IS: any = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"8px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 
-const NIVEAU_COLOR: Record<number,string> = { 1:"#ca631f", 2:"#004f91", 3:"#188038" };
-const NIVEAU_LABEL: Record<number,string> = { 1:"Section", 2:"Division", 3:"Groupe" };
-
-// ── Badge CITI ────────────────────────────────────────────────────────────────
-function CitiBadge({ item, onRemove }: { item:any; onRemove?:()=>void }) {
-  const color = NIVEAU_COLOR[item.niveau] || "#004f91";
-  return (
-    <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:`${color}0D`, border:`1px solid ${color}30`, borderRadius:8, padding:"4px 10px", flexShrink:0 }}>
-      <span style={{ fontSize:11, fontWeight:800, color }}>{item.code}</span>
-      <span style={{ fontSize:10, color:"#9aa5b4" }}>{NIVEAU_LABEL[item.niveau]}</span>
-      <span style={{ fontSize:12, color:"#1a1a2e", maxWidth:260, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{item.libelle_fr}</span>
-      {onRemove && (
-        <button onClick={onRemove} style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center", marginLeft:2 }}>
-          <X size={11} style={{ color:"#dc2626" }} />
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ── Sélecteur CITI (classes niveau 4 uniquement) ──────────────────────────────
-function CitiSelector({ citiItems, onSelect, onCancel }: { citiItems:any[]; onSelect:(item:any)=>void; onCancel:()=>void }) {
-  const [search, setSearch] = useState("");
-
-  const classes = citiItems.filter(c => {
-    if (c.niveau !== 4) return false;
-    if (search && !(c.libelle_fr.toLowerCase().includes(search.toLowerCase()) || c.code.toLowerCase().includes(search.toLowerCase()))) return false;
-    return true;
-  });
-
-  return (
-    <div style={{ background:"#fff", border:"1px solid #C5BFBB", borderRadius:12, padding:"12px 14px", marginTop:6, boxShadow:"0 4px 20px rgba(0,0,0,0.1)", zIndex:10, position:"relative" as const }}>
-      <div style={{ display:"flex", gap:8, marginBottom:8 }}>
-        <div style={{ position:"relative" as const, flex:1 }}>
-          <Search size={12} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }} />
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher une classe CITI (ex: 0111, élevage de volailles…)"
-            style={{...IS, paddingLeft:28, fontSize:12}} autoFocus />
-        </div>
-        <button onClick={onCancel} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:"0 10px" }}><X size={13} color="#4a5568" /></button>
-      </div>
-      <div style={{ maxHeight:180, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:2 }}>
-        {classes.slice(0, 40).map(c => (
-          <button key={c.id} onClick={()=>onSelect(c)}
-            style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:7, border:"none", background:"transparent", cursor:"pointer", textAlign:"left" as const, width:"100%" }}
-            onMouseEnter={e=>e.currentTarget.style.background="#F8F7F6"}
-            onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-            <span style={{ fontSize:11, fontWeight:700, color:"#188038", minWidth:40 }}>{c.code}</span>
-            <span style={{ fontSize:12, color:"#1a1a2e" }}>{c.libelle_fr}</span>
-          </button>
-        ))}
-        {classes.length === 0 && <p style={{ fontSize:12, color:"#9aa5b4", padding:"8px 0", textAlign:"center" as const }}>Aucune classe trouvée</p>}
-        {classes.length > 40 && <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const, padding:"4px 0" }}>Affinez la recherche…</p>}
-      </div>
-    </div>
-  );
-}
-
-// ── Ligne activité ─────────────────────────────────────────────────────────────
-function ActiviteRow({ activite, citiItems, correspondances, onAdd, onRemove }: any) {
-  const [showSelector, setShowSelector] = useState(false);
-  const myCorresp = correspondances.filter((c:any) => c.naema_type==="activite" && c.naema_id===activite.id);
-  const myCiti = myCorresp.map((c:any) => {
-    const item = citiItems.find((i:any) => i.id===c.classification_item_id);
-    return item ? { ...item, corresp_id:c.id } : null;
-  }).filter(Boolean);
-
-  return (
-    <div style={{ marginBottom:4 }}>
-      <div style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"9px 12px", borderRadius:10, background:myCiti.length>0?"#FAFAF9":"rgba(220,38,38,0.02)", border:`1px solid ${myCiti.length>0?"#E8E5E3":"rgba(220,38,38,0.1)"}` }}>
-        {/* Indicateur */}
-        <div style={{ width:7, height:7, borderRadius:"50%", background:myCiti.length>0?"#188038":"#E8E5E3", flexShrink:0, marginTop:5 }} />
-
-        {/* Nom activité */}
-        <div style={{ flex:"0 0 220px", minWidth:0 }}>
-          <p style={{ fontSize:12, fontWeight:600, color:"#1a1a2e", lineHeight:1.4, margin:0 }}>{activite.nom}</p>
-          {myCiti.length===0 && <p style={{ fontSize:10, color:"#dc2626", marginTop:2 }}>Sans correspondance</p>}
-        </div>
-
-        <ChevronRight size={12} style={{ color:"#C5BFBB", flexShrink:0, marginTop:4 }} />
-
-        {/* Correspondances CITI */}
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginBottom:showSelector?6:0 }}>
-            {myCiti.map((c:any) => (
-              <CitiBadge key={c.corresp_id} item={c} onRemove={()=>onRemove(c.corresp_id)} />
-            ))}
-            {!showSelector && (
-              <button onClick={()=>setShowSelector(true)}
-                style={{ display:"inline-flex", alignItems:"center", gap:4, background:"transparent", border:"1.5px dashed #C5BFBB", borderRadius:7, padding:"3px 9px", cursor:"pointer", fontSize:11, color:"#9aa5b4", fontFamily:"var(--font-google-sans)" }}
-                onMouseEnter={e=>{ e.currentTarget.style.borderColor="#188038"; e.currentTarget.style.color="#188038"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.borderColor="#C5BFBB"; e.currentTarget.style.color="#9aa5b4"; }}>
-                <Plus size={10} /> {myCiti.length>0?"Ajouter":"Lier"}
-              </button>
-            )}
-          </div>
-          {showSelector && (
-            <CitiSelector citiItems={citiItems}
-              onSelect={async(item)=>{ await onAdd(activite.id, item.id); setShowSelector(false); }}
-              onCancel={()=>setShowSelector(false)} />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Bloc branche ──────────────────────────────────────────────────────────────
-function BrancheBloc({ branche, activites, citiItems, correspondances, onAdd, onRemove }: any) {
-  const [open, setOpen] = useState(true);
-  const mesActivites = activites.filter((a:any) => a.branche_id===branche.id);
-  const nbSans = mesActivites.filter((a:any) =>
-    !correspondances.some((c:any) => c.naema_type==="activite" && c.naema_id===a.id)
-  ).length;
-
-  return (
-    <div style={{ marginBottom:8, borderRadius:12, border:"1px solid #E8E5E3", overflow:"hidden" }}>
-      <div onClick={()=>setOpen(o=>!o)}
-        style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", background:"#fff", cursor:"pointer", borderBottom:open?"1px solid #F2F0EF":"none" }}>
-        <div style={{ width:7, height:7, borderRadius:"50%", background:"#004f91", flexShrink:0 }} />
-        <span style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", flex:1 }}>{branche.nom}</span>
-        {nbSans>0 && <span style={{ fontSize:10, fontWeight:700, color:"#dc2626", background:"rgba(220,38,38,0.07)", padding:"1px 7px", borderRadius:999 }}>{nbSans} sans correspondance</span>}
-        <span style={{ fontSize:11, color:"#9aa5b4" }}>{mesActivites.length} activité{mesActivites.length>1?"s":""}</span>
-        {open ? <ChevronDown size={13} style={{color:"#9aa5b4"}} /> : <ChevronRight size={13} style={{color:"#9aa5b4"}} />}
-      </div>
-      {open && (
-        <div style={{ padding:"10px 14px", background:"#FAFAF9" }}>
-          {mesActivites.map((a:any) => (
-            <ActiviteRow key={a.id} activite={a} citiItems={citiItems} correspondances={correspondances} onAdd={onAdd} onRemove={onRemove} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Bloc secteur ──────────────────────────────────────────────────────────────
-function SecteurBloc({ secteur, branches, activites, citiItems, correspondances, onAdd, onRemove }: any) {
-  const [open, setOpen] = useState(true);
-  const mesBranches   = branches.filter((b:any) => b.secteur_id===secteur.id);
-  const mesActiviteIds = activites.filter((a:any) => mesBranches.some((b:any)=>b.id===a.branche_id)).map((a:any)=>a.id);
-  const nbSans = mesActiviteIds.filter((id:number) =>
-    !correspondances.some((c:any) => c.naema_type==="activite" && c.naema_id===id)
-  ).length;
-
-  return (
-    <div style={{ marginBottom:16, border:"1.5px solid #E8E5E3", borderRadius:14, overflow:"hidden" }}>
-      <div onClick={()=>setOpen(o=>!o)}
-        style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 20px", background:"#fff", cursor:"pointer", borderBottom:open?"1px solid #F2F0EF":"none" }}>
-        <div style={{ width:10, height:10, borderRadius:"50%", background:"#ca631f", flexShrink:0 }} />
-        <span style={{ fontWeight:800, fontSize:14, color:"#1a1a2e", flex:1 }}>{secteur.nom}</span>
-        {nbSans>0 && <span style={{ fontSize:10, fontWeight:700, color:"#dc2626", background:"rgba(220,38,38,0.07)", padding:"2px 9px", borderRadius:999 }}>{nbSans} activité{nbSans>1?"s":""} sans correspondance</span>}
-        <span style={{ fontSize:11, color:"#9aa5b4" }}>{mesBranches.length} branche{mesBranches.length>1?"s":""}</span>
-        {open ? <ChevronDown size={14} style={{color:"#9aa5b4"}} /> : <ChevronRight size={14} style={{color:"#9aa5b4"}} />}
-      </div>
-      {open && (
-        <div style={{ padding:"12px 16px", background:"rgba(202,99,31,0.02)" }}>
-          {mesBranches.map((b:any) => (
-            <BrancheBloc key={b.id} branche={b} activites={activites} citiItems={citiItems} correspondances={correspondances} onAdd={onAdd} onRemove={onRemove} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Page principale ────────────────────────────────────────────────────────────
-export default function ClassificationsPage() {
-  const [secteurs,  setSecteurs]  = useState<any[]>([]);
-  const [branches,  setBranches]  = useState<any[]>([]);
+// ─── Hook : charger activités NAEMA enrichies (code S1-B1-A1) ────────────────
+function useActivitesNAEMA() {
   const [activites, setActivites] = useState<any[]>([]);
-  const [citiItems, setCitiItems] = useState<any[]>([]);
-  const [corresp,   setCorresp]   = useState<any[]>([]);
-  const [loading,   setLoading]   = useState(true);
-  const [search,    setSearch]    = useState("");
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API}/entreprises/ref/secteurs`).then(r => r.json()),
+      fetch(`${API}/entreprises/ref/branches`).then(r => r.json()),
+      fetch(`${API}/entreprises/ref/activites`).then(r => r.json()),
+    ]).then(([secs, bras, acts]) => {
+      const s = Array.isArray(secs) ? secs : [];
+      const b = Array.isArray(bras) ? bras : [];
+      const a = Array.isArray(acts) ? acts : [];
+      setActivites(a.map((act: any) => {
+        const bra  = b.find((x: any) => x.id === act.branche_id);
+        const sec  = s.find((x: any) => x.id === bra?.secteur_id);
+        const si   = s.findIndex((x: any) => x.id === sec?.id) + 1;
+        const bi   = b.filter((x: any) => x.secteur_id === sec?.id).findIndex((x: any) => x.id === bra?.id) + 1;
+        const acti = a.filter((x: any) => x.branche_id === bra?.id).findIndex((x: any) => x.id === act.id) + 1;
+        return { ...act, naema_code: `S${si}-B${bi}-A${acti}` };
+      }));
+    }).catch(() => setActivites([]));
+  }, []);
+  return activites;
+}
 
-  const charger = async () => {
-    setLoading(true);
+// ─── Modal Lier ───────────────────────────────────────────────────────────────
+function LierModal({ classe, systeme, onClose, onSaved }: {
+  classe: any; systeme: "citi" | "nace"; onClose: () => void; onSaved: () => void;
+}) {
+  const activites       = useActivitesNAEMA();
+  const [selected,  setSelected]  = useState<number[]>([]);
+  const [searchQ,   setSearchQ]   = useState("");
+  const [saving,    setSaving]    = useState(false);
+  const [ok,        setOk]        = useState(false);
+
+  useEffect(() => {
+    fetch(`${API}/classifications/${systeme}/classes/${classe.id}/correspondances`)
+      .then(r => r.json())
+      .then(d => setSelected(Array.isArray(d) ? d.map((c: any) => c.activite.id) : []))
+      .catch(() => {});
+  }, [classe.id, systeme]);
+
+  const toggle = (id: number) =>
+    setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+
+  const save = async () => {
+    setSaving(true);
     try {
-      const [s, b, a, ci, co] = await Promise.all([
-        fetch(`${API}/entreprises/ref/secteurs`).then(r=>r.json()),
-        fetch(`${API}/entreprises/ref/branches`).then(r=>r.json()),
-        fetch(`${API}/entreprises/ref/activites`).then(r=>r.json()),
-        fetch(`${API}/classifications/CITI/items`).then(r=>r.json()),
-        fetch(`${API}/classifications/correspondances`).then(r=>r.json()),
-      ]);
-      setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]);
-      setCitiItems(ci||[]); setCorresp(co||[]);
-    } catch(e){ console.error(e); }
-    finally { setLoading(false); }
+      await fetch(`${API}/classifications/${systeme}/classes/${classe.id}/correspondances`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ naema_activite_ids: selected }),
+      });
+      setOk(true);
+      setTimeout(() => { onClose(); onSaved(); }, 600);
+    } catch { } finally { setSaving(false); }
   };
 
-  useEffect(() => { charger(); }, []);
-
-  const handleAdd = async (activite_id:number, citi_item_id:number) => {
-    await fetch(`${API}/classifications/correspondances`, {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ naema_type:"activite", naema_id:activite_id, classification_item_id:citi_item_id })
-    });
-    charger();
-  };
-
-  const handleRemove = async (correspId:number) => {
-    if (!confirm("Supprimer cette correspondance ?")) return;
-    await fetch(`${API}/classifications/correspondances/${correspId}`, { method:"DELETE" });
-    charger();
-  };
-
-  // Stats
-  const nbTotal  = activites.length;
-  const nbRelies = [...new Set(corresp.filter(c=>c.naema_type==="activite").map(c=>c.naema_id))].length;
-  const nbSans   = nbTotal - nbRelies;
-
-  const secteursFiltres = secteurs.filter(s => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    const mesBranches = branches.filter(b=>b.secteur_id===s.id);
-    const mesActivites = activites.filter(a=>mesBranches.some(b=>b.id===a.branche_id));
-    return s.nom.toLowerCase().includes(q) ||
-      mesBranches.some((b:any)=>b.nom.toLowerCase().includes(q)) ||
-      mesActivites.some((a:any)=>a.nom.toLowerCase().includes(q));
-  });
+  const q = searchQ.toLowerCase();
+  const filtered = activites.filter(a => !q || a.nom.toLowerCase().includes(q) || a.naema_code.toLowerCase().includes(q));
+  const color = systeme === "citi" ? "#004f91" : "#7c3aed";
 
   return (
-    <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
+    <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 600, maxHeight: "88vh", border: "1px solid #E8E5E3", boxShadow: "0 32px 80px rgba(0,0,0,0.2)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div style={{ height: 4, background: `linear-gradient(90deg,${color},#ca631f)` }} />
+        <div style={{ padding: "18px 22px 0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 3 }}>
+                Lier à NAEMA · {systeme.toUpperCase()}
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <code style={{ fontSize: 13, fontWeight: 800, color, background: `${color}14`, padding: "2px 8px", borderRadius: 6 }}>{classe.full_code}</code>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e" }}>{classe.libelle}</span>
+              </div>
+              <p style={{ fontSize: 12, color: "#9aa5b4", marginTop: 4 }}>{selected.length} activité{selected.length > 1 ? "s" : ""} sélectionnée{selected.length > 1 ? "s" : ""}</p>
+            </div>
+            <button onClick={onClose} style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}><X size={14} color="#4a5568" /></button>
+          </div>
+          <div style={{ position: "relative", marginBottom: 10 }}>
+            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+            <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Rechercher une activité NAEMA…"
+              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 13, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+          </div>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "4px 22px 4px" }}>
+          {filtered.length === 0 ? (
+            <p style={{ textAlign: "center", color: "#9aa5b4", padding: "24px 0", fontSize: 13 }}>
+              {activites.length === 0 ? "Chargement…" : "Aucun résultat"}
+            </p>
+          ) : filtered.map((act: any) => {
+            const sel = selected.includes(act.id);
+            return (
+              <button key={act.id} onClick={() => toggle(act.id)}
+                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 10px", borderRadius: 8, border: "none", cursor: "pointer", background: sel ? `${color}0d` : "transparent", textAlign: "left", marginBottom: 2 }}
+                onMouseEnter={e => { if (!sel) e.currentTarget.style.background = "#F8F7F6"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = sel ? `${color}0d` : "transparent"; }}>
+                <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${sel ? color : "#C5BFBB"}`, background: sel ? color : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}>
+                  {sel && <svg width="10" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                </div>
+                <code style={{ fontSize: 10, fontWeight: 700, color: sel ? color : "#9aa5b4", background: sel ? `${color}14` : "#F2F0EF", padding: "1px 6px", borderRadius: 4, flexShrink: 0 }}>{act.naema_code}</code>
+                <span style={{ fontSize: 13, color: sel ? "#1a1a2e" : "#4a5568", fontWeight: sel ? 600 : 400 }}>{act.nom}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ padding: "12px 22px 18px", borderTop: "1px solid #F2F0EF", display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid #C5BFBB", background: "transparent", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+          <button onClick={save} disabled={saving || ok}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: ok ? "#059669" : color, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            {ok ? <><Check size={13} /> Enregistré</> : saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Link2 size={13} /> Enregistrer</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Onglet générique CITI ou NACE ───────────────────────────────────────────
+function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
+  const activites       = useActivitesNAEMA();
+  const [stats,         setStats]         = useState<any>(null);
+  const [classes,       setClasses]       = useState<any[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [searchQ,       setSearchQ]       = useState("");
+  const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [corrs,         setCorrs]         = useState<any[]>([]);
+  const [corrsLoad,     setCorrsLoad]     = useState(false);
+  const [deleting,      setDeleting]      = useState<number | null>(null);
+  const [lierModal,     setLierModal]     = useState(false);
+
+  const color = systeme === "citi" ? "#004f91" : "#7c3aed";
+  const label = systeme === "citi" ? "CITI" : "NACE";
+
+  const chargerStats = () =>
+    fetch(`${API}/classifications/${systeme}/stats`).then(r => r.json()).then(setStats).catch(() => {});
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      fetch(`${API}/classifications/${systeme}/toutes-classes`).then(r => r.json()),
+    ]).then(([cls]) => {
+      setClasses(Array.isArray(cls) ? cls : []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+    chargerStats();
+  }, [systeme]);
+
+  const chargerCorrs = async (cls: any) => {
+    setCorrsLoad(true);
+    try {
+      const r = await fetch(`${API}/classifications/${systeme}/classes/${cls.id}/correspondances`);
+      const data = await r.json();
+      const enriched = (Array.isArray(data) ? data : []).map((c: any) => {
+        const act = activites.find(a => a.id === c.activite.id);
+        return { ...c, naema_code: act?.naema_code || "—" };
+      });
+      setCorrs(enriched);
+    } finally { setCorrsLoad(false); }
+  };
+
+  const selectClass = (cls: any) => {
+    setSelectedClass(cls);
+    chargerCorrs(cls);
+  };
+
+  const delCorr = async (corrId: number) => {
+    if (!selectedClass) return;
+    setDeleting(corrId);
+    await fetch(`${API}/classifications/${systeme}/classes/${selectedClass.id}/correspondances/${corrId}`, { method: "DELETE" });
+    setDeleting(null);
+    chargerCorrs(selectedClass);
+    chargerStats();
+    setClasses(prev => prev.map(c => c.id === selectedClass.id ? { ...c, nb_correspondances: Math.max(0, (c.nb_correspondances || 1) - 1) } : c));
+  };
+
+  const q = searchQ.toLowerCase();
+  const classesFiltrees = classes.filter(c =>
+    !q || c.libelle?.toLowerCase().includes(q) || `${c.section_code}${c.code}`.toLowerCase().includes(q)
+  );
+
+  const fullCode = (cls: any) => `${cls.section_code || ""}${cls.code}`;
+
+  return (
+    <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+      {/* Liste classes */}
+      <div style={{ width: 420, flexShrink: 0, borderRight: "1px solid #E8E5E3", background: "#fff", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "12px 14px", borderBottom: "1px solid #F2F0EF" }}>
+          {stats && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontSize: 13, color: "#4a5568" }}>
+                <span style={{ fontWeight: 700, color }}>{stats.classes_liees}</span>
+                <span style={{ color: "#9aa5b4" }}>/{stats.classes} classes liées</span>
+              </span>
+              <div style={{ width: 100, height: 5, background: "#F2F0EF", borderRadius: 999, overflow: "hidden" }}>
+                <div style={{ width: `${(stats.classes_liees / stats.classes) * 100}%`, height: "100%", background: color, borderRadius: 999, transition: "width 0.5s" }} />
+              </div>
+            </div>
+          )}
+          <div style={{ position: "relative" }}>
+            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+            <input value={searchQ} onChange={e => setSearchQ(e.target.value)}
+              placeholder={`Rechercher parmi ${classes.length} classes ${label}…`}
+              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+          </div>
+          {searchQ && <p style={{ fontSize: 11, color: "#9aa5b4", marginTop: 5 }}>{classesFiltrees.length} résultat{classesFiltrees.length > 1 ? "s" : ""}</p>}
+        </div>
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          {loading ? (
+            <div style={{ display: "flex", justifyContent: "center", padding: 48 }}>
+              <Loader2 size={24} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} />
+            </div>
+          ) : classesFiltrees.map(cls => {
+            const isSelected = selectedClass?.id === cls.id;
+            const code = fullCode(cls);
+            return (
+              <button key={cls.id} onClick={() => selectClass(cls)}
+                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: isSelected ? `${color}0f` : "transparent", cursor: "pointer", textAlign: "left", borderLeft: `3px solid ${isSelected ? color : "transparent"}`, borderBottom: "1px solid #F8F7F6" }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "#F8F7F6"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = isSelected ? `${color}0f` : "transparent"; }}>
+                <code style={{ fontSize: 10, fontWeight: 700, color: isSelected ? color : "#9aa5b4", background: isSelected ? `${color}14` : "#F2F0EF", padding: "2px 7px", borderRadius: 5, flexShrink: 0, minWidth: 52, textAlign: "center" as const }}>{code}</code>
+                <span style={{ fontSize: 12, color: isSelected ? "#1a1a2e" : "#4a5568", fontWeight: isSelected ? 600 : 400, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cls.libelle}</span>
+                {cls.nb_correspondances > 0 && (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#059669", background: "rgba(5,150,105,0.12)", padding: "2px 7px", borderRadius: 999, flexShrink: 0 }}>{cls.nb_correspondances}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Panneau détail */}
+      <div style={{ flex: 1, background: "#FAFAF9", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        {selectedClass ? (
+          <>
+            <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid #F2F0EF", background: "#fff" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <code style={{ fontSize: 14, fontWeight: 800, color, background: `${color}12`, padding: "3px 10px", borderRadius: 6 }}>{fullCode(selectedClass)}</code>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e", marginTop: 6, lineHeight: 1.4, maxWidth: 480 }}>{selectedClass.libelle}</p>
+                  <p style={{ fontSize: 11, color: "#9aa5b4", marginTop: 4 }}>{corrs.length} activité{corrs.length > 1 ? "s" : ""} NAEMA liée{corrs.length > 1 ? "s" : ""}</p>
+                </div>
+                <button onClick={() => setLierModal(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 9, border: "none", background: color, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                  <Link2 size={13} /> Lier à NAEMA
+                </button>
+              </div>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px 22px" }}>
+              {corrsLoad ? (
+                <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+                  <Loader2 size={22} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} />
+                </div>
+              ) : corrs.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 16px", color: "#9aa5b4" }}>
+                  <Link2 size={36} style={{ marginBottom: 14, opacity: 0.2 }} />
+                  <p style={{ fontSize: 15, fontWeight: 600, color: "#4a5568", marginBottom: 6 }}>Aucune correspondance</p>
+                  <p style={{ fontSize: 13 }}>Cliquez "Lier à NAEMA" pour associer des activités.</p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {corrs.map(c => (
+                    <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderRadius: 10, background: "#fff", border: "1px solid #E8E5E3" }}>
+                      <code style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", background: "#F2F0EF", padding: "2px 7px", borderRadius: 5, flexShrink: 0 }}>{c.naema_code}</code>
+                      <span style={{ fontSize: 13, color: "#1a1a2e", flex: 1 }}>{c.activite.nom}</span>
+                      <button onClick={() => delCorr(c.id)} disabled={deleting === c.id}
+                        style={{ width: 28, height: 28, borderRadius: 7, border: "none", cursor: "pointer", background: "rgba(220,38,38,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        {deleting === c.id ? <Loader2 size={11} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Unlink size={11} style={{ color: "#dc2626" }} />}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", color: "#9aa5b4" }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#F2F0EF", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <Link2 size={28} style={{ opacity: 0.3 }} />
+            </div>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568", marginBottom: 6 }}>Sélectionnez une classe {label}</p>
+            <p style={{ fontSize: 13, textAlign: "center", maxWidth: 300 }}>Cliquez sur une classe pour gérer ses correspondances NAEMA.</p>
+          </div>
+        )}
+      </div>
+
+      {lierModal && selectedClass && (
+        <LierModal
+          classe={{ ...selectedClass, full_code: fullCode(selectedClass) }}
+          systeme={systeme}
+          onClose={() => setLierModal(false)}
+          onSaved={() => {
+            setLierModal(false);
+            chargerCorrs(selectedClass);
+            chargerStats();
+            setClasses(prev => prev.map(c =>
+              c.id === selectedClass.id ? { ...c, nb_correspondances: corrs.length } : c
+            ));
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Page principale ──────────────────────────────────────────────────────────
+export default function AdminClassifications() {
+  const [onglet, setOnglet] = useState<"citi" | "nace">("citi");
+
+  return (
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", fontFamily: "var(--font-google-sans)", background: "#F2F0EF" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-      <div style={{ marginBottom:28 }}>
-        <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.15em", textTransform:"uppercase" as const, marginBottom:4 }}>Administration</p>
-        <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Correspondances NAEMA ↔ CITI</h1>
-        <div style={{ display:"flex", gap:16, marginTop:6, flexWrap:"wrap" as const }}>
-          <span style={{ fontSize:13, color:"#9aa5b4" }}>{nbTotal} activités NAEMA · {citiItems.filter(c=>c.niveau===4).length} classes CITI disponibles</span>
-          <span style={{ fontSize:13, color:"#188038", fontWeight:600 }}>✓ {nbRelies} reliées à CITI</span>
-          {nbSans>0 && <span style={{ fontSize:13, color:"#dc2626", fontWeight:600 }}>⚠ {nbSans} sans correspondance</span>}
-          <span style={{ fontSize:13, color:"#9aa5b4" }}>{corresp.filter(c=>c.naema_type==="activite").length} liaisons au total</span>
+      {/* Header */}
+      <div style={{ padding: "20px 32px 0", background: "#fff", borderBottom: "1px solid #E8E5E3" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "#ca631f", letterSpacing: "0.15em", textTransform: "uppercase" as const, marginBottom: 4 }}>Administration · Classifications</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <h1 style={{ fontWeight: 800, fontSize: "1.4rem", color: "#1a1a2e" }}>Correspondances ↔ NAEMA</h1>
         </div>
-      </div>
-
-      {/* Légende */}
-      <div style={{ display:"flex", gap:20, marginBottom:16, padding:"10px 16px", background:"#fff", borderRadius:10, border:"1px solid #E8E5E3", width:"fit-content" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#4a5568" }}>
-          <div style={{ width:8, height:8, borderRadius:"50%", background:"#ca631f" }} /> Secteur NAEMA
-        </div>
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#4a5568" }}>
-          <div style={{ width:7, height:7, borderRadius:"50%", background:"#004f91" }} /> Branche NAEMA
-        </div>
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#4a5568" }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#188038" }} /> Activité reliée
-        </div>
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#4a5568" }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#E8E5E3" }} /> Activité sans correspondance
-        </div>
-        <div style={{ width:1, background:"#E8E5E3" }} />
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#188038" }}>
-          <span style={{ fontWeight:700 }}>0111</span> Classe CITI (niveau 4 — le plus précis)
-        </div>
-      </div>
-
-      {/* Recherche */}
-      <div style={{ position:"relative" as const, maxWidth:420, marginBottom:24 }}>
-        <Search size={14} style={{ position:"absolute" as const, left:12, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }} />
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Filtrer par secteur, branche ou activité…"
-          style={{...IS, paddingLeft:36}} />
-        {search && <button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer" }}><X size={13} color="#9aa5b4" /></button>}
-      </div>
-
-      {loading ? (
-        <div style={{ display:"flex", justifyContent:"center", padding:60 }}>
-          <Loader2 size={28} style={{ color:"#9aa5b4", animation:"spin 1s linear infinite" }} />
-        </div>
-      ) : (
-        <div style={{ maxWidth:1000 }}>
-          {secteursFiltres.map(s => (
-            <SecteurBloc key={s.id} secteur={s} branches={branches} activites={activites}
-              citiItems={citiItems} correspondances={corresp} onAdd={handleAdd} onRemove={handleRemove} />
+        {/* Onglets */}
+        <div style={{ display: "flex", marginTop: 16 }}>
+          {([
+            { key: "citi", label: "CITI Rév.4 ↔ NAEMA", color: "#004f91" },
+            { key: "nace", label: "NACE Rév.2.1 ↔ NAEMA", color: "#7c3aed" },
+          ] as const).map(t => (
+            <button key={t.key} onClick={() => setOnglet(t.key)}
+              style={{ padding: "12px 22px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", fontSize: 13, fontWeight: 700, color: onglet === t.key ? t.color : "#9aa5b4", borderBottom: `3px solid ${onglet === t.key ? t.color : "transparent"}`, transition: "all 0.15s", marginBottom: -1 }}>
+              {t.label}
+            </button>
           ))}
         </div>
-      )}
+      </div>
+
+      {/* Contenu de l'onglet sélectionné */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {onglet === "citi" && <OngletClassification systeme="citi" />}
+        {onglet === "nace" && <OngletClassification systeme="nace" />}
+      </div>
     </div>
   );
 }
