@@ -10,8 +10,10 @@ import os, shutil, uuid
 
 router = APIRouter(prefix="/opportunites", tags=["opportunites"])
 
-UPLOAD_DIR = "/tmp/avantages_fichiers"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+UPLOAD_DIR_AVG = "/tmp/avantages_fichiers"
+UPLOAD_DIR_POT = "/tmp/potentialites_fichiers"
+os.makedirs(UPLOAD_DIR_AVG, exist_ok=True)
+os.makedirs(UPLOAD_DIR_POT, exist_ok=True)
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -33,17 +35,29 @@ class PotentialiteIn(BaseModel):
     autres: Optional[str] = None
     est_publie: bool = True
 
+class SelectionIn(BaseModel):
+    type_id: int
+    commentaire: Optional[str] = None
+
 class AvantageIn(BaseModel):
     secteur_id: Optional[int] = None
     branche_id: Optional[int] = None
     activite_id: int
-    avantages: str
+    commentaire_global: Optional[str] = None
+    selections: List[SelectionIn] = []
     est_publie: bool = True
 
 class ToggleIn(BaseModel):
     est_publie: bool
 
 # ─── Helper potentialité ──────────────────────────────────────────────────────
+
+async def enrichir_potentialite_fichiers(potentialite_id: int, d: dict, db: AsyncSession) -> dict:
+    res = await db.execute(text(
+        "SELECT id, fichier_nom, titre FROM potentialites_fichiers WHERE potentialite_id=:id ORDER BY id"
+    ), {"id": potentialite_id})
+    d["fichiers"] = [{"id": r[0], "fichier_nom": r[1], "titre": r[2]} for r in res.fetchall()]
+    return d
 
 async def enrichir_potentialite(p: Potentialite, db: AsyncSession) -> dict:
     d = {c.name: getattr(p, c.name) for c in p.__table__.columns}
@@ -95,6 +109,16 @@ async def enrichir_avantage(id: int, db: AsyncSession) -> dict:
         "SELECT id, fichier_nom, titre FROM avantages_incitations_fichiers WHERE avantage_id=:id ORDER BY id"
     ), {"id": id})
     d["fichiers"] = [{"id": r[0], "fichier_nom": r[1], "titre": r[2]} for r in f_res.fetchall()]
+    # Sélections
+    s_res = await db.execute(text("""
+        SELECT s.id, s.type_id, s.commentaire, t.libelle
+        FROM avantages_incitations_selections s
+        JOIN ref_avantages_types t ON t.id = s.type_id
+        WHERE s.avantage_id = :id
+        ORDER BY t.ordre
+    """), {"id": id})
+    d["selections"] = [{"id":r[0],"type_id":r[1],"commentaire":r[2],"type_libelle":r[3]}
+                       for r in s_res.fetchall()]
     return d
 
 # ─── Routes Potentialités ─────────────────────────────────────────────────────
@@ -152,7 +176,8 @@ async def get_potentialite(id: int, db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(Potentialite).where(Potentialite.id == id, Potentialite.is_deleted == False))
     p = res.scalar_one_or_none()
     if not p: raise HTTPException(404)
-    return await enrichir_potentialite(p, db)
+    d = await enrichir_potentialite(p, db)
+    return await enrichir_potentialite_fichiers(id, d, db)
 
 @router.post("/potentialites")
 async def create_potentialite(body: PotentialiteIn, db: AsyncSession = Depends(get_db)):
@@ -184,6 +209,50 @@ async def delete_potentialite(id: int, db: AsyncSession = Depends(get_db)):
     p = res.scalar_one_or_none()
     if not p: raise HTTPException(404)
     p.is_deleted = True
+    await db.commit()
+    return {"ok": True}
+
+
+# ─── Fichiers potentialités ──────────────────────────────────────────────────
+
+@router.post("/potentialites/{id}/fichiers")
+async def upload_fichier_pot(id: int, fichier: UploadFile = File(...), titre: str = Form(""), db: AsyncSession = Depends(get_db)):
+    ext = os.path.splitext(fichier.filename or "")[1]
+    nom = f"{uuid.uuid4()}{ext}"
+    path = os.path.join(UPLOAD_DIR_POT, nom)
+    with open(path, "wb") as f: shutil.copyfileobj(fichier.file, f)
+    await db.execute(text("""
+        INSERT INTO potentialites_fichiers (potentialite_id, fichier_nom, titre)
+        VALUES (:pid, :nom, :titre)
+    """), {"pid": id, "nom": nom, "titre": titre or fichier.filename})
+    await db.commit()
+    res = await db.execute(select(Potentialite).where(Potentialite.id == id))
+    p = res.scalar_one_or_none()
+    if not p: raise HTTPException(404)
+    d = await enrichir_potentialite(p, db)
+    return await enrichir_potentialite_fichiers(id, d, db)
+
+@router.get("/potentialites/{id}/fichiers/{fid}/download")
+async def download_fichier_pot(id: int, fid: int, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(text(
+        "SELECT fichier_nom, titre FROM potentialites_fichiers WHERE id=:fid AND potentialite_id=:id"
+    ), {"fid": fid, "id": id})
+    row = res.fetchone()
+    if not row: raise HTTPException(404)
+    path = os.path.join(UPLOAD_DIR_POT, row[0])
+    if not os.path.exists(path): raise HTTPException(404)
+    return FileResponse(path, filename=row[1] or row[0])
+
+@router.delete("/potentialites/{id}/fichiers/{fid}")
+async def delete_fichier_pot(id: int, fid: int, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(text(
+        "SELECT fichier_nom FROM potentialites_fichiers WHERE id=:fid AND potentialite_id=:id"
+    ), {"fid": fid, "id": id})
+    row = res.fetchone()
+    if row:
+        path = os.path.join(UPLOAD_DIR_POT, row[0])
+        if os.path.exists(path): os.remove(path)
+    await db.execute(text("DELETE FROM potentialites_fichiers WHERE id=:fid"), {"fid": fid})
     await db.commit()
     return {"ok": True}
 
@@ -226,11 +295,16 @@ async def get_avantage(id: int, db: AsyncSession = Depends(get_db)):
 async def create_avantage(body: AvantageIn, db: AsyncSession = Depends(get_db)):
     res = await db.execute(text("""
         INSERT INTO avantages_incitations (secteur_id, branche_id, activite_id, avantages, est_publie)
-        VALUES (:secteur_id, :branche_id, :activite_id, :avantages, :est_publie)
+        VALUES (:secteur_id, :branche_id, :activite_id, :commentaire_global, :est_publie)
         RETURNING id
-    """), body.dict())
-    await db.commit()
+    """), {"secteur_id":body.secteur_id,"branche_id":body.branche_id,"activite_id":body.activite_id,
+           "commentaire_global":body.commentaire_global,"est_publie":body.est_publie})
     new_id = res.fetchone()[0]
+    for s in body.selections:
+        await db.execute(text(
+            "INSERT INTO avantages_incitations_selections (avantage_id,type_id,commentaire) VALUES (:a,:i,:c)"
+        ), {"a":new_id,"i":s.type_id,"c":s.commentaire})
+    await db.commit()
     return await enrichir_avantage(new_id, db)
 
 @router.patch("/avantages/{id}")
@@ -238,9 +312,16 @@ async def update_avantage(id: int, body: AvantageIn, db: AsyncSession = Depends(
     await db.execute(text("""
         UPDATE avantages_incitations
         SET secteur_id=:secteur_id, branche_id=:branche_id, activite_id=:activite_id,
-            avantages=:avantages, est_publie=:est_publie, updated_at=NOW()
+            avantages=:commentaire_global, est_publie=:est_publie, updated_at=NOW()
         WHERE id=:id AND is_deleted=FALSE
-    """), {**body.dict(), "id": id})
+    """), {"secteur_id":body.secteur_id,"branche_id":body.branche_id,"activite_id":body.activite_id,
+           "commentaire_global":body.commentaire_global,"est_publie":body.est_publie,"id":id})
+    # Remplacer les sélections
+    await db.execute(text("DELETE FROM avantages_incitations_selections WHERE avantage_id=:id"),{"id":id})
+    for s in body.selections:
+        await db.execute(text(
+            "INSERT INTO avantages_incitations_selections (avantage_id,type_id,commentaire) VALUES (:a,:i,:c)"
+        ), {"a":id,"i":s.type_id,"c":s.commentaire})
     await db.commit()
     return await enrichir_avantage(id, db)
 
@@ -266,7 +347,7 @@ async def delete_avantage(id: int, db: AsyncSession = Depends(get_db)):
 async def upload_fichier(id: int, fichier: UploadFile = File(...), titre: str = Form(""), db: AsyncSession = Depends(get_db)):
     ext = os.path.splitext(fichier.filename or "")[1]
     nom = f"{uuid.uuid4()}{ext}"
-    path = os.path.join(UPLOAD_DIR, nom)
+    path = os.path.join(UPLOAD_DIR_AVG, nom)
     with open(path, "wb") as f: shutil.copyfileobj(fichier.file, f)
     await db.execute(text("""
         INSERT INTO avantages_incitations_fichiers (avantage_id, fichier_nom, titre)
@@ -282,7 +363,7 @@ async def download_fichier(id: int, fid: int, db: AsyncSession = Depends(get_db)
     ), {"fid": fid, "id": id})
     row = res.fetchone()
     if not row: raise HTTPException(404)
-    path = os.path.join(UPLOAD_DIR, row[0])
+    path = os.path.join(UPLOAD_DIR_AVG, row[0])
     if not os.path.exists(path): raise HTTPException(404)
     return FileResponse(path, filename=row[1] or row[0])
 
@@ -293,7 +374,7 @@ async def delete_fichier(id: int, fid: int, db: AsyncSession = Depends(get_db)):
     ), {"fid": fid, "id": id})
     row = res.fetchone()
     if row:
-        path = os.path.join(UPLOAD_DIR, row[0])
+        path = os.path.join(UPLOAD_DIR_AVG, row[0])
         if os.path.exists(path): os.remove(path)
     await db.execute(text("DELETE FROM avantages_incitations_fichiers WHERE id=:fid"), {"fid": fid})
     await db.commit()
