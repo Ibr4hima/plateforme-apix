@@ -12,16 +12,24 @@ const SELECT_STYLE = {
 };
 
 // value = ID (number | "") — onChange retourne (id, nom)
-export function RegionSelect({ value, onChange, required }: {
+// value = ID (number | "") — onChange retourne (id, nom)
+// filterIds : si fourni, affiche seulement les régions dans cette liste
+export function RegionSelect({ value, onChange, required, filterIds }: {
   value: number | string;
   onChange: (id: number | null, nom: string) => void;
   required?: boolean;
+  filterIds?: number[];
 }) {
   const [regions, setRegions] = useState<any[]>([]);
   useEffect(() => {
     fetch(`${API_BASE}/entreprises/ref/regions`)
       .then(r => r.json()).then(setRegions).catch(() => {});
   }, []);
+
+  const displayed = filterIds && filterIds.length > 0
+    ? regions.filter(r => filterIds.includes(r.id))
+    : regions;
+
   return (
     <select
       value={value || ""}
@@ -32,8 +40,8 @@ export function RegionSelect({ value, onChange, required }: {
       }}
       style={{ ...SELECT_STYLE, borderColor: required && !value ? "#dc2626" : "#C5BFBB" }}
     >
-      <option value="">— Sélectionner —</option>
-      {regions.map(r => <option key={r.id} value={r.id}>{r.nom}</option>)}
+      <option value="">{filterIds && filterIds.length > 0 ? `— ${filterIds.length} région${filterIds.length>1?"s":""} disponible${filterIds.length>1?"s":""} —` : "— Sélectionner —"}</option>
+      {displayed.map(r => <option key={r.id} value={r.id}>{r.nom}</option>)}
     </select>
   );
 }

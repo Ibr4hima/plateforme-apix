@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { BookOpen, ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-react";
 import Image from "next/image";
-import { Menu, X, ChevronDown, Search, BookOpen, Download, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 

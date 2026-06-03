@@ -1,362 +1,534 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
+import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
+import { Building2, ChevronDown, ChevronRight, FileText, MapPin } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const TYPE_LABELS: Record<string, string> = {
-  ZES: "Zones Économiques Spéciales",
-  ZAI: "Zones Aménagées pour l'Investissement",
-  ZFI: "Zones Franches Industrielles",
+const TYPE_META: Record<string,{label:string;color:string;bg:string;border:string}> = {
+  ZES: { label:"Zones Économiques Spéciales",           color:"#E35336", bg:"rgba(227,83,54,0.06)",  border:"rgba(227,83,54,0.2)" },
+  ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#366FE3", bg:"rgba(54,111,227,0.06)", border:"rgba(54,111,227,0.2)" },
+  ZFI: { label:"Zones Franches Industrielles",           color:"#188038", bg:"rgba(24,128,56,0.06)",  border:"rgba(24,128,56,0.2)" },
 };
 
-const TYPE_COLORS: Record<string, string> = {
-  ZES: "#efd0bc",
-  ZAI: "#b2cade",
-  ZFI: "#b9d9c3",
-};
+const POLE_COLORS = ["#efd0bc","#b2cade","#b9d9c3","#f5e6c8","#d4c5e8","#fadadd","#c8e6e8","#e8d5c4"];
 
-
-const POLE_COLORS: string[] = [
-  "#efd0bc", // 1 - orange clair (ZES)
-  "#b2cade", // 2 - bleu clair (ZAI)
-  "#b9d9c3", // 3 - vert clair (ZFI)
-  "#f5e6c8", // 4 - jaune doux
-  "#d4c5e8", // 5 - lavande
-  "#fadadd", // 6 - rose poudré
-  "#c8e6e8", // 7 - turquoise clair
-  "#e8d5c4", // 8 - sable chaud
-];
-
-interface ZoneData {
-  id: string; nom_zone: string; type_zone: string;
-  entreprises: { entreprise?: { id: number; nom: string; forme_juridique?: string } }[];
-}
-
-interface HNode {
-  name: string; value?: number; type?: string; data?: any; children?: HNode[];
-}
-
-function buildTree(zones: ZoneData[]): HNode {
-  const byType: Record<string, ZoneData[]> = {};
-  zones.forEach(z => {
-    if (!byType[z.type_zone]) byType[z.type_zone] = [];
-    byType[z.type_zone].push(z);
-  });
-  const totalZones = zones.length;
-  return {
-    name: "Zones d'Investissement",
-    value: totalZones,
-    children: Object.entries(byType).map(([type, zs]) => ({
-      name: TYPE_LABELS[type] || type,
-      type,
-      value: zs.length,
-      children: zs.map(z => ({
-        name: z.nom_zone,
-        type,
-        value: 1,
-        data: z,
-        children: z.entreprises.length > 0
-          ? z.entreprises.map(ze => ({
-              name: ze.entreprise?.nom || "—",
-              type,
-              value: 1,
-              data: ze.entreprise,
-            }))
-          : undefined,
-      })),
-    })),
-  };
-}
-
-
-interface PoleTreeData {
-  id: number; name: string; zones: ZoneData[];
-}
-
-function buildPolesTree(zones: ZoneData[]): any {
-  const byPole: Record<string, ZoneData[]> = {};
-  const poleNames: Record<string, string> = {};
-  zones.forEach((z: any) => {
-    const pid = String(z.pole_id || "sans-pole");
-    const pnom = z.pole_nom || "Sans pôle";
-    if (!byPole[pid]) { byPole[pid] = []; poleNames[pid] = pnom; }
-    byPole[pid].push(z);
-  });
-  const poleEntries = Object.entries(byPole).filter(([k]) => k !== "sans-pole");
-  return {
-    name: "Pôles Territoire",
-    children: poleEntries.map(([pid, zs], pi) => ({
-      name: poleNames[pid],
-      poleIndex: pi,
-      children: zs.map((z: any) => ({
-        name: z.nom_zone,
-        poleIndex: pi,
-        type: z.type_zone,
-        value: 1,
-        data: z,
-        children: z.entreprises?.length > 0
-          ? z.entreprises.map((ze: any) => ({
-              name: ze.entreprise?.nom || "—",
-              poleIndex: pi,
-              value: 1,
-              data: ze.entreprise,
-            }))
-          : undefined,
-      })),
-    })),
-  };
-}
-
-export default function ZonesPage() {
+// ── Sunburst par type ─────────────────────────────────────────────────────────
+function SunburstZones({ zones }: { zones:any[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [zones, setZones] = useState<ZoneData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ total: 0, zes: 0, zai: 0, zfi: 0, entreprises: 0 });
-  const [onglet, setOnglet] = useState("zones");
-  const svgPolesRef = useRef<SVGSVGElement>(null);
-  const containerPolesRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const safe = (p: Promise<any>) => p.catch(() => []);
-    Promise.all([
-      safe(fetch(`${API_BASE}/zones-types?type_zone=ZES`).then(r => r.json())),
-      safe(fetch(`${API_BASE}/zones-types?type_zone=ZAI`).then(r => r.json())),
-      safe(fetch(`${API_BASE}/zones-types?type_zone=ZFI`).then(r => r.json())),
-    ]).then(([zes, zai, zfi]) => {
-      const all = [...(zes||[]), ...(zai||[]), ...(zfi||[])];
-      setZones(all);
-      const totalEnt = all.reduce((s: number, z: any) => s + z.entreprises.length, 0);
-      setStats({ total: all.length, zes: (zes||[]).length, zai: (zai||[]).length, zfi: (zfi||[]).length, entreprises: totalEnt });
-      setLoading(false);
-    });
-  }, []);
+    if (!zones.length || !svgRef.current || !wrapRef.current) return;
+    const W = wrapRef.current.clientWidth || 900;
+    const H = 500;
 
-  useEffect(() => {
-    if (!zones.length || onglet !== "zones") return;
-    const timer = setTimeout(() => {
-    if (!svgRef.current || !containerRef.current) return;
+    const byType: Record<string,any[]> = {};
+    zones.forEach(z => { if (!byType[z.type_zone]) byType[z.type_zone] = []; byType[z.type_zone].push(z); });
+
+    const tree = {
+      name: "Zones d'Investissement",
+      children: Object.entries(byType).map(([type,zs]) => ({
+        name: TYPE_META[type]?.label || type,
+        type,
+        children: zs.map(z => ({
+          name: z.nom_zone, type,
+          value: 1, data: z,
+          children: z.entreprises?.filter((ze:any)=>ze.statut==="installee").length > 0
+            ? z.entreprises.filter((ze:any)=>ze.statut==="installee").map((ze:any)=>({ name: ze.entreprise?.nom||"—", type, value:1, data:ze.entreprise }))
+            : undefined,
+        })),
+      })),
+    };
+
     const el = svgRef.current;
-    const W = containerRef.current.clientWidth || 960;
-    const H = 560;
     d3.select(el).selectAll("*").remove();
 
-    const hierarchy = d3.hierarchy(buildTree(zones))
-      .sum((d: any) => d.children ? 0 : 1)
-      .sort((a, b) => (b.height - a.height) || ((b.value||0) - (a.value||0)));
-    const root = d3.partition<HNode>()
-      .size([H, (hierarchy.height + 1) * W / 3])(hierarchy as any);
+    const hierarchy = d3.hierarchy(tree).sum((d:any)=>d.children?0:1)
+      .sort((a,b)=>(b.height-a.height)||((b.value||0)-(a.value||0)));
+    const root = d3.partition<any>().size([H,(hierarchy.height+1)*W/3])(hierarchy as any);
 
-    const svg = d3.select(el)
-      .attr("viewBox", `0 0 ${W} ${H}`)
-      .attr("width", W).attr("height", H)
-      .attr("style", "max-width:100%;height:auto;");
+    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("width",W).attr("height",H).attr("style","max-width:100%;height:auto;");
 
-    const getTypeKey = (d: any): string => { let n = d; while (n.depth > 1) n = n.parent; return n.data.type || ""; };
-    const getColor = (d: any): string => {
-      if (d.depth === 0) return "#F2F2F2";
-      const c = TYPE_COLORS[getTypeKey(d)] || "#9aa5b4";
-      const alpha = 0.15 + d.depth * 0.18;
-      return c + Math.round(Math.min(alpha, 0.9) * 255).toString(16).padStart(2, "0");
+    const getColor = (d:any):string => {
+      if (d.depth===0) return "#F2F2F2";
+      let n=d; while(n.depth>1) n=n.parent;
+      const c = TYPE_META[n.data.type]?.color || "#9aa5b4";
+      const a = 0.12 + d.depth*0.15;
+      return c + Math.round(Math.min(a,0.85)*255).toString(16).padStart(2,"0");
     };
-    const rectH = (d: any) => Math.max(0, d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2));
-    const labelVisible = (d: any) => d.y1 <= W && d.y0 >= 0 && d.x1 - d.x0 > 16;
+    const rectH = (d:any)=>Math.max(0,d.x1-d.x0-Math.min(1,(d.x1-d.x0)/2));
+    const labelOk = (d:any)=>d.y1<=W&&d.y0>=0&&d.x1-d.x0>16;
 
-    const cell = svg.selectAll<SVGGElement, any>("g")
-      .data(root.descendants()).join("g")
-      .attr("transform", (d: any) => `translate(${d.y0},${d.x0})`);
+    const cell = svg.selectAll<SVGGElement,any>("g").data(root.descendants()).join("g")
+      .attr("transform",(d:any)=>`translate(${d.y0},${d.x0})`);
 
-    const rect = cell.append("rect")
-      .attr("width", (d: any) => Math.max(0, d.y1 - d.y0 - 1))
-      .attr("height", (d: any) => rectH(d))
-      .attr("fill", getColor)
-      .attr("stroke", "#F2F0EF")
-      .attr("stroke-width", 0.05)
-      .style("cursor", "pointer");
+    cell.append("rect")
+      .attr("width",(d:any)=>Math.max(0,d.y1-d.y0-1))
+      .attr("height",(d:any)=>rectH(d))
+      .attr("fill",getColor).attr("stroke","#F2F0EF").attr("stroke-width",0.05)
+      .style("cursor","pointer");
 
-    const text = cell.append("text")
-      .style("user-select", "none")
-      .attr("pointer-events", "none")
-      .attr("x", 6).attr("y", 14)
-      .attr("font-size", (d: any) => d.depth === 0 ? 15 : d.depth === 1 ? 14 : 12)
-      .attr("font-weight", (d: any) => d.depth <= 1 ? 700 : 500)
-      .attr("font-family", "var(--font-google-sans),sans-serif")
-      .attr("fill", "#4a5568")
-      .attr("fill-opacity", (d: any) => +labelVisible(d));
+    const text = cell.append("text").style("user-select","none").attr("pointer-events","none")
+      .attr("x",6).attr("y",14)
+      .attr("font-size",(d:any)=>d.depth===0?13:d.depth===1?12:11)
+      .attr("font-weight",(d:any)=>d.depth<=1?700:400)
+      .attr("font-family","var(--font-google-sans),sans-serif")
+      .attr("fill","#1a1a2e").attr("fill-opacity",(d:any)=>+labelOk(d));
 
-    text.append("tspan").text((d: any) => {
-      const w = (d.y1 - d.y0) - 12;
-      const name = d.data.name || "";
-      const chars = Math.floor(w / 7);
-      return name.length > chars ? name.slice(0, Math.max(3, chars - 1)) + "…" : name;
+    text.append("tspan").text((d:any)=>{
+      const w=(d.y1-d.y0)-12; const n=d.data.name||""; const c=Math.floor(w/6.5);
+      return n.length>c?n.slice(0,Math.max(3,c-1))+"…":n;
     });
 
-    let focus = root;
-    rect.on("click", function(_event: any, p: any) {
-      focus = focus === p ? (p = p.parent) : p;
-      if (!p) return;
-      root.each((d: any) => {
-        d.target = {
-          x0: (d.x0 - p.x0) / (p.x1 - p.x0) * H,
-          x1: (d.x1 - p.x0) / (p.x1 - p.x0) * H,
-          y0: d.y0 - p.y0, y1: d.y1 - p.y0,
-        };
-      });
-      const t = cell.transition().duration(750).ease(d3.easeCubicInOut)
-        .attr("transform", (d: any) => `translate(${d.target.y0},${d.target.x0})`);
-      rect.transition(t).attr("height", (d: any) => rectH(d.target));
-      text.transition(t).attr("fill-opacity", (d: any) => +labelVisible(d.target));
-    });
-
-    cell.append("title").text((d: any) =>
-      d.ancestors().map((n: any) => n.data.name).reverse().join(" › ")
-    );
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [zones, onglet]);
-
-
-  useEffect(() => {
-    if (onglet !== "poles" || !zones.length) return;
-    const timerPoles = setTimeout(() => {
-    if (!svgPolesRef.current || !containerPolesRef.current) return;
-    const el = svgPolesRef.current;
-    const W = containerPolesRef.current.clientWidth || 960;
-    const H = 560;
-    d3.select(el).selectAll("*").remove();
-
-    const hierarchy = d3.hierarchy(buildPolesTree(zones))
-      .sum((d: any) => d.children ? 0 : 1)
-      .sort((a, b) => (b.height - a.height) || ((b.value||0) - (a.value||0)));
-    const root = d3.partition<any>()
-      .size([H, (hierarchy.height + 1) * W / 3])(hierarchy as any);
-
-    const svg = d3.select(el)
-      .attr("viewBox", `0 0 ${W} ${H}`)
-      .attr("width", W).attr("height", H)
-      .attr("style", "max-width:100%;height:auto;");
-
-    const getColor = (d: any): string => {
-      if (d.depth === 0) return "#F2F2F2";
-      const pi = d.data.poleIndex ?? 0;
-      const c = POLE_COLORS[pi % POLE_COLORS.length];
-      const alpha = 0.15 + d.depth * 0.18;
-      return c + Math.round(Math.min(alpha, 0.9) * 255).toString(16).padStart(2, "0");
+    // ── Badges via foreignObject (centrage CSS parfait) ───────────────────────
+    const getBadgeText = (d:any):string => {
+      if (d.depth===1) { const n=d.children?.length||0; return n?`${n} zone${n>1?"s":""}`:"";}
+      if (d.depth===2) { const e=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length; return e?`${e} entreprise${e>1?"s":""}`:"";}
+      return "";
     };
-    const rectH = (d: any) => Math.max(0, d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2));
-    const labelVisible = (d: any) => d.y1 <= W && d.y0 >= 0 && d.x1 - d.x0 > 16;
+    const getTypeColor = (d:any):string => { let n=d; while(n.depth>1) n=n.parent; return TYPE_META[n.data.type]?.color||"#9aa5b4"; };
 
-    const cell = svg.selectAll<SVGGElement, any>("g")
-      .data(root.descendants()).join("g")
-      .attr("transform", (d: any) => `translate(${d.y0},${d.x0})`);
-
-    const rect = cell.append("rect")
-      .attr("width", (d: any) => Math.max(0, d.y1 - d.y0 - 1))
-      .attr("height", (d: any) => rectH(d))
-      .attr("fill", getColor)
-      .attr("stroke", "#F2F0EF")
-      .attr("stroke-width", 0.05)
-      .style("cursor", "pointer");
-
-    const text = cell.append("text")
-      .style("user-select", "none")
-      .attr("pointer-events", "none")
-      .attr("x", 6).attr("y", 14)
-      .attr("font-size", (d: any) => d.depth === 0 ? 15 : d.depth === 1 ? 14 : 12)
-      .attr("font-weight", (d: any) => d.depth <= 1 ? 700 : 500)
-      .attr("font-family", "var(--font-google-sans),sans-serif")
-      .attr("fill", "#4a5568")
-      .attr("fill-opacity", (d: any) => +labelVisible(d));
-
-    text.append("tspan").text((d: any) => {
-      const w = (d.y1 - d.y0) - 12;
-      const name = d.data.name || "";
-      const chars = Math.floor(w / 7);
-      return name.length > chars ? name.slice(0, Math.max(3, chars - 1)) + "…" : name;
-    });
-
-    let focus = root;
-    rect.on("click", function(_event: any, p: any) {
-      focus = focus === p ? (p = p.parent) : p;
-      if (!p) return;
-      root.each((d: any) => {
-        d.target = {
-          x0: (d.x0 - p.x0) / (p.x1 - p.x0) * H,
-          x1: (d.x1 - p.x0) / (p.x1 - p.x0) * H,
-          y0: d.y0 - p.y0, y1: d.y1 - p.y0,
-        };
+    cell.filter((d:any)=>d.depth>0&&d.depth<3&&d.children&&labelOk(d)&&(d.x1-d.x0)>32)
+      .each(function(d:any) {
+        const txt=getBadgeText(d); if(!txt) return;
+        const col=getTypeColor(d);
+        const w=Math.max(0,d.y1-d.y0-12);
+        d3.select(this as SVGGElement).append("foreignObject")
+          .attr("x",6).attr("y",18).attr("width",w).attr("height",26)
+          .attr("pointer-events","none")
+          .append("xhtml:div")
+          .style("display","inline-flex").style("align-items","center").style("justify-content","center")
+          .style("height","18px").style("padding","0 7px")
+          .style("background",col+"22").style("border",`1px solid ${col}55`)
+          .style("border-radius","8px").style("font-size","9px").style("font-weight","700")
+          .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
+          .style("white-space","nowrap").style("line-height","18px")
+          .text(txt);
       });
-      const t = cell.transition().duration(750).ease(d3.easeCubicInOut)
-        .attr("transform", (d: any) => `translate(${d.target.y0},${d.target.x0})`);
-      rect.transition(t).attr("height", (d: any) => rectH(d.target));
-      text.transition(t).attr("fill-opacity", (d: any) => +labelVisible(d.target));
-    });
 
-    cell.append("title").text((d: any) =>
-      d.ancestors().map((n: any) => n.data.name).reverse().join(" › ")
-    );
-    }, 0);
-    return () => clearTimeout(timerPoles);
-  }, [zones, onglet]);
+    let focus=root;
+    cell.select("rect").on("click",function(_:any,p:any){
+      focus=focus===p?(p=p.parent):p;
+      if(!p) return;
+      root.each((d:any)=>{ d.target={
+        x0:(d.x0-p.x0)/(p.x1-p.x0)*H, x1:(d.x1-p.x0)/(p.x1-p.x0)*H,
+        y0:d.y0-p.y0, y1:d.y1-p.y0,
+      };});
+      const t=cell.transition().duration(750).ease(d3.easeCubicInOut)
+        .attr("transform",(d:any)=>`translate(${d.target.y0},${d.target.x0})`);
+      cell.select("rect").transition(t).attr("height",(d:any)=>rectH(d.target));
+      text.transition(t).attr("fill-opacity",(d:any)=>+labelOk(d.target));
+    });
+    cell.append("title").text((d:any)=>d.ancestors().map((n:any)=>n.data.name).reverse().join(" › "));
+  },[zones]);
 
   return (
-    <main style={{ minHeight: "100vh", background: "#F2F0EF", fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-      <Navbar />
+    <div ref={wrapRef}>
+      <svg ref={svgRef} style={{ width:"100%",height:500,display:"block" }}/>
+    </div>
+  );
+}
 
-      {/* Hero */}
-      <section style={{ padding: "100px 40px 32px", background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", position: "relative" as const, overflow: "hidden" }}>
-        <div style={{ position: "absolute" as const, inset: 0, pointerEvents: "none" }}>
-          <div style={{ position: "absolute" as const, bottom: "-20%", left: "-5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)" }} />
+// ── Sunburst par pôle ─────────────────────────────────────────────────────────
+function SunburstPoles({ zones }: { zones:any[] }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!zones.length || !svgRef.current || !wrapRef.current) return;
+    const W = wrapRef.current.clientWidth || 900;
+    const H = 500;
+
+    const byPole: Record<string,any[]> = {};
+    const poleNoms: Record<string,string> = {};
+    zones.forEach((z:any)=>{
+      const pid=String(z.pole_id||"sans-pole");
+      if (!byPole[pid]) { byPole[pid]=[]; poleNoms[pid]=z.pole_nom||"Sans pôle"; }
+      byPole[pid].push(z);
+    });
+
+    const tree = {
+      name: "Pôles Territoire",
+      children: Object.entries(byPole).map(([pid,zs],pi)=>({
+        name: poleNoms[pid], poleIndex:pi,
+        children: zs.map((z:any)=>({
+          name:z.nom_zone, poleIndex:pi, type:z.type_zone, value:1, data:z,
+          children: z.entreprises?.filter((ze:any)=>ze.statut==="installee").length>0
+            ? z.entreprises.filter((ze:any)=>ze.statut==="installee").map((ze:any)=>({ name:ze.entreprise?.nom||"—", poleIndex:pi, value:1 }))
+            : undefined,
+        })),
+      })),
+    };
+
+    const el = svgRef.current;
+    d3.select(el).selectAll("*").remove();
+    const hierarchy = d3.hierarchy(tree).sum((d:any)=>d.children?0:1)
+      .sort((a,b)=>(b.height-a.height)||((b.value||0)-(a.value||0)));
+    const root = d3.partition<any>().size([H,(hierarchy.height+1)*W/3])(hierarchy as any);
+    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("width",W).attr("height",H).attr("style","max-width:100%;height:auto;");
+
+    const getColor=(d:any):string=>{
+      if(d.depth===0) return "#F2F2F2";
+      const pi=d.data.poleIndex??0;
+      const c=POLE_COLORS[pi%POLE_COLORS.length];
+      const a=0.12+d.depth*0.15;
+      return c+Math.round(Math.min(a,0.85)*255).toString(16).padStart(2,"0");
+    };
+    const rectH=(d:any)=>Math.max(0,d.x1-d.x0-Math.min(1,(d.x1-d.x0)/2));
+    const labelOk=(d:any)=>d.y1<=W&&d.y0>=0&&d.x1-d.x0>16;
+
+    const cell=svg.selectAll<SVGGElement,any>("g").data(root.descendants()).join("g")
+      .attr("transform",(d:any)=>`translate(${d.y0},${d.x0})`);
+    cell.append("rect")
+      .attr("width",(d:any)=>Math.max(0,d.y1-d.y0-1)).attr("height",(d:any)=>rectH(d))
+      .attr("fill",getColor).attr("stroke","#F2F0EF").attr("stroke-width",0.05).style("cursor","pointer");
+    const text=cell.append("text").style("user-select","none").attr("pointer-events","none")
+      .attr("x",6).attr("y",14)
+      .attr("font-size",(d:any)=>d.depth===0?13:d.depth===1?12:11)
+      .attr("font-weight",(d:any)=>d.depth<=1?700:400)
+      .attr("font-family","var(--font-google-sans),sans-serif")
+      .attr("fill","#1a1a2e").attr("fill-opacity",(d:any)=>+labelOk(d));
+    text.append("tspan").text((d:any)=>{
+      const w=(d.y1-d.y0)-12; const n=d.data.name||""; const c=Math.floor(w/6.5);
+      return n.length>c?n.slice(0,Math.max(3,c-1))+"…":n;
+    });
+
+    // ── Badges dans SunburstPoles via foreignObject ───────────────────────────
+    const TYPE_COLORS_MAP: Record<string,string> = { ZES:"#E35336", ZAI:"#366FE3", ZFI:"#188038" };
+
+    // Badges par type pour les pôles (depth=1)
+    cell.filter((d:any)=>d.depth===1&&d.children&&labelOk(d)&&(d.x1-d.x0)>40)
+      .each(function(d:any) {
+        const children = d.children || [];
+        const byType: Record<string,number> = {};
+        children.forEach((c:any)=>{ const t=c.data.type; if(t) byType[t]=(byType[t]||0)+1; });
+        const parts = (Object.entries(byType) as [string,number][]).filter(([,n])=>n>0);
+        if (!parts.length) return;
+        const w = Math.max(0, d.y1-d.y0-12);
+        const fo = d3.select(this as SVGGElement).append("foreignObject")
+          .attr("x",6).attr("y",18).attr("width",w).attr("height",26)
+          .attr("pointer-events","none");
+        const div = fo.append("xhtml:div")
+          .style("display","flex").style("gap","4px").style("align-items","center");
+        parts.forEach(([type,n])=>{
+          const col = TYPE_COLORS_MAP[type]||"#9aa5b4";
+          div.append("xhtml:span")
+            .style("display","inline-flex").style("align-items","center").style("height","18px")
+            .style("padding","0 7px").style("background",col+"22").style("border",`1px solid ${col}55`)
+            .style("border-radius","8px").style("font-size","9px").style("font-weight","700")
+            .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
+            .style("white-space","nowrap")
+            .text(`${n} ${type}`);
+        });
+      });
+
+    // Badge entreprises pour les zones (depth=2)
+    cell.filter((d:any)=>d.depth===2&&labelOk(d)&&(d.x1-d.x0)>32)
+      .each(function(d:any) {
+        const ents=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+        if (!ents) return;
+        const txt=`${ents} entreprise${ents>1?"s":""}`;
+        const col="#059669";
+        const w=Math.max(0,d.y1-d.y0-12);
+        d3.select(this as SVGGElement).append("foreignObject")
+          .attr("x",6).attr("y",18).attr("width",w).attr("height",26)
+          .attr("pointer-events","none")
+          .append("xhtml:div")
+          .style("display","inline-flex").style("align-items","center").style("height","18px")
+          .style("padding","0 7px").style("background",col+"20").style("border",`1px solid ${col}50`)
+          .style("border-radius","8px").style("font-size","9px").style("font-weight","700")
+          .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
+          .style("white-space","nowrap")
+          .text(txt);
+      });
+
+    let focus=root;
+    cell.select("rect").on("click",function(_:any,p:any){
+      focus=focus===p?(p=p.parent):p; if(!p) return;
+      root.each((d:any)=>{ d.target={
+        x0:(d.x0-p.x0)/(p.x1-p.x0)*H, x1:(d.x1-p.x0)/(p.x1-p.x0)*H,
+        y0:d.y0-p.y0, y1:d.y1-p.y0,
+      };});
+      const t=cell.transition().duration(750).ease(d3.easeCubicInOut)
+        .attr("transform",(d:any)=>`translate(${d.target.y0},${d.target.x0})`);
+      cell.select("rect").transition(t).attr("height",(d:any)=>rectH(d.target));
+      text.transition(t).attr("fill-opacity",(d:any)=>+labelOk(d.target));
+    });
+    cell.append("title").text((d:any)=>d.ancestors().map((n:any)=>n.data.name).reverse().join(" › "));
+  },[zones]);
+
+  return (
+    <div ref={wrapRef}>
+      <svg ref={svgRef} style={{ width:"100%",height:500,display:"block" }}/>
+    </div>
+  );
+}
+
+// ── Card zone ─────────────────────────────────────────────────────────────────
+function ZoneCard({ zone }: { zone:any }) {
+  const [open,        setOpen]        = useState(false);
+  const [ficheEnt, setFicheEnt] = useState<any>(null);
+  const [loadingFiche, setLoadingFiche] = useState(false);
+
+  const ouvrirFiche = async (entrepriseId: number) => {
+    setLoadingFiche(true);
+    try {
+      const res = await fetch(`${API_BASE}/entreprises/${entrepriseId}`);
+      setFicheEnt(await res.json());
+    } catch(e) { console.error(e); }
+    finally { setLoadingFiche(false); }
+  };
+  const meta     = TYPE_META[zone.type_zone] || TYPE_META.ZES;
+  const installes = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee");
+  const eligibles = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="eligible");
+
+  const EntRow = ({ ze, statut }: { ze:any; statut:"installee"|"eligible" }) => {
+    const isI = statut==="installee";
+    const col = isI?"#059669":"#b45309";
+    const bg  = isI?"rgba(24,128,56,0.08)":"rgba(180,83,9,0.08)";
+    return (
+      <div style={{ display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"#fff",borderRadius:10,border:"1px solid #E8E5E3" }}>
+        <div style={{ width:32,height:32,borderRadius:8,background:bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+          <Building2 size={14} style={{ color:col }}/>
         </div>
-        <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative" as const, zIndex: 1 }}>
-<div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
-            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
+        <div style={{ flex:1,minWidth:0 }}>
+          <div style={{ fontWeight:600,fontSize:13,color:"#1a1a2e",marginBottom:1 }}>{ze.entreprise?.nom}</div>
+          {ze.entreprise?.forme_juridique && <div style={{ fontSize:11,color:"#9aa5b4" }}>{ze.entreprise.forme_juridique}</div>}
+        </div>
+        <span style={{ fontSize:10,fontWeight:700,color:col,background:isI?"#dcfce7":"#fef9c3",border:`1px solid ${isI?"#86efac":"#fde68a"}`,padding:"2px 8px",borderRadius:999,flexShrink:0 }}>
+          {isI?"Installée":"Éligible"}
+        </span>
+        <button onClick={()=>ouvrirFiche(ze.entreprise?.id)}
+          style={{ display:"flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:11,fontWeight:600,color:"#4a5568",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap" as const }}>
+          <Building2 size={11}/> Fiche
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <div style={{ background:"#fff",borderRadius:14,borderTop:`1px solid ${open?meta.color:"#E8E5E3"}`,borderRight:`1px solid ${open?meta.color:"#E8E5E3"}`,borderBottom:`1px solid ${open?meta.color:"#E8E5E3"}`,borderLeft:`4px solid ${meta.color}`,overflow:"hidden",transition:"all 0.15s",boxShadow:open?"0 4px 20px rgba(0,0,0,0.08)":"0 1px 4px rgba(0,0,0,0.04)" }}>
+
+        {/* Header card */}
+        <div onClick={()=>setOpen(o=>!o)} style={{ display:"flex",alignItems:"center",gap:14,padding:"16px 20px",cursor:"pointer" }}>
+          {/* Badge type */}
+          <div style={{ width:40,height:40,borderRadius:10,background:meta.bg,border:`1px solid ${meta.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+            <span style={{ fontSize:10,fontWeight:800,color:meta.color }}>{zone.type_zone}</span>
           </div>
-                    <h1 style={{ fontWeight: 800, fontSize: "clamp(2.2rem,4vw,3.2rem)", color: "#fff", lineHeight: 1.1, marginBottom: 8 }}>Zones d'Investissement</h1>
-          <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, marginBottom: 28 }}>Cartographie interactive des zones économiques spéciales, zones aménagées et zones franches industrielles du Sénégal.</p>
-          {/* Onglets */}
-          <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: 3, width: "fit-content", border: "1px solid rgba(255,255,255,0.08)" }}>
-            {[{ key: "zones", label: "Zones d'investissement" }, { key: "poles", label: "Pôles territoire" }].map(o => (
-              <button key={o.key} onClick={() => setOnglet(o.key)}
-                style={{ padding: "8px 20px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s", background: onglet === o.key ? "#ca631f" : "transparent", color: onglet === o.key ? "#fff" : "rgba(255,255,255,0.45)" }}>
-                {o.label}
+          <div style={{ flex:1,minWidth:0 }}>
+            <div style={{ fontWeight:700,fontSize:15,color:"#1a1a2e",marginBottom:5 }}>{zone.nom_zone}</div>
+            {/* Infos alignées */}
+            <div style={{ display:"flex",alignItems:"center",gap:8,flexWrap:"wrap" as const }}>
+              {zone.pole_nom && (
+                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:12,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 8px",borderRadius:999 }}>
+                  {zone.pole_nom}
+                </span>
+              )}
+              {(zone.departement_nom||zone.region_nom) && (
+                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:12,color:"#9aa5b4" }}>
+                  <MapPin size={11} style={{ color:"#C5BFBB" }}/>
+                  {[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}
+                </span>
+              )}
+              {zone.superficie && (
+                <span style={{ fontSize:12,color:"#9aa5b4" }}>
+                  {Number(zone.superficie).toLocaleString("fr-FR")} ha
+                </span>
+              )}
+              {installes.length>0 && (
+                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"#059669",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 8px",borderRadius:999 }}>
+                  {installes.length} installée{installes.length>1?"s":""}
+                </span>
+              )}
+              {eligibles.length>0 && (
+                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"#b45309",background:"rgba(180,83,9,0.08)",border:"1px solid rgba(180,83,9,0.2)",padding:"2px 8px",borderRadius:999 }}>
+                  {eligibles.length} éligible{eligibles.length>1?"s":""}
+                </span>
+              )}
+            </div>
+          </div>
+          {open?<ChevronDown size={16} style={{ color:"#9aa5b4",flexShrink:0 }}/>:<ChevronRight size={16} style={{ color:"#9aa5b4",flexShrink:0 }}/>}
+        </div>
+
+        {/* Contenu déplié */}
+        {open && (
+          <div style={{ borderTop:`1px solid ${meta.color}25`,padding:"16px 20px",background:meta.bg }}>
+            {zone.description && <p style={{ fontSize:13,color:"#4a5568",lineHeight:1.75,marginBottom:16,padding:"12px 16px",background:"#fff",borderRadius:10,border:`1px solid ${meta.border}` }}>{zone.description}</p>}
+
+            {(zone.date_creation||zone.decret_creation||zone.superficie) && (
+              <div style={{ display:"flex",gap:10,marginBottom:16,flexWrap:"wrap" as const }}>
+                {zone.date_creation && (
+                  <div style={{ background:"#fff",borderRadius:9,padding:"8px 14px",border:`1px solid ${meta.border}` }}>
+                    <p style={{ fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",marginBottom:3 }}>Créée le</p>
+                    <p style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{new Date(zone.date_creation+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
+                  </div>
+                )}
+                {zone.decret_creation && (
+                  <div style={{ background:"#fff",borderRadius:9,padding:"8px 14px",border:`1px solid ${meta.border}` }}>
+                    <p style={{ fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",marginBottom:3 }}>Décret</p>
+                    <p style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{zone.decret_creation}</p>
+                  </div>
+                )}
+                {zone.superficie && (
+                  <div style={{ background:"#fff",borderRadius:9,padding:"8px 14px",border:`1px solid ${meta.border}` }}>
+                    <p style={{ fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",marginBottom:3 }}>Superficie</p>
+                    <p style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {installes.length>0 && (
+              <div style={{ marginBottom:12 }}>
+                <p style={{ fontSize:11,fontWeight:700,color:"#059669",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8 }}>Entreprises installées</p>
+                <div style={{ display:"flex",flexDirection:"column" as const,gap:6 }}>
+                  {installes.map((ze:any)=><EntRow key={ze.id||ze.entreprise?.id} ze={ze} statut="installee"/>)}
+                </div>
+              </div>
+            )}
+
+            {eligibles.length>0 && (
+              <div style={{ marginBottom:12 }}>
+                <p style={{ fontSize:11,fontWeight:700,color:"#b45309",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8 }}>Entreprises éligibles</p>
+                <div style={{ display:"flex",flexDirection:"column" as const,gap:6 }}>
+                  {eligibles.map((ze:any)=><EntRow key={ze.id||ze.entreprise?.id} ze={ze} statut="eligible"/>)}
+                </div>
+              </div>
+            )}
+
+            {zone.fichiers?.length>0 && (
+              <div style={{ display:"flex",flexWrap:"wrap" as const,gap:6,marginTop:8 }}>
+                {zone.fichiers.map((f:any)=>(
+                  <a key={f.id} href={`${API_BASE}/zones-types/${zone.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                    style={{ display:"inline-flex",alignItems:"center",gap:5,background:"#fff",border:`1px solid ${meta.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,color:meta.color,textDecoration:"none",fontWeight:600 }}>
+                    <FileText size={11}/>{f.titre||f.nom}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>
+    </>
+  );
+}
+
+// ── Page principale ───────────────────────────────────────────────────────────
+export default function ZonesPage() {
+  const [zones,   setZones]   = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [onglet,  setOnglet]  = useState<"zones"|"poles"|"liste"|"territoire">("zones");
+
+  useEffect(()=>{
+    fetch(`${API_BASE}/zones-types`)
+      .then(r=>r.json()).then(d=>{ setZones(d||[]); setLoading(false); })
+      .catch(()=>setLoading(false));
+  },[]);
+
+  const stats = {
+    total:      zones.length,
+    zes:        zones.filter(z=>z.type_zone==="ZES").length,
+    zai:        zones.filter(z=>z.type_zone==="ZAI").length,
+    zfi:        zones.filter(z=>z.type_zone==="ZFI").length,
+    installes:  zones.reduce((s,z)=>s+(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length,0),
+    eligibles:  zones.reduce((s,z)=>s+(z.entreprises||[]).filter((ze:any)=>ze.statut==="eligible").length,0),
+  };
+
+  const zonesByType = (type:string) => zones.filter(z=>z.type_zone===type);
+
+  return (
+    <main style={{ minHeight:"100vh", background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <Navbar/>
+
+      {/* ── Hero ── */}
+      <section style={{ padding:"100px 40px 0", background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", position:"relative" as const, overflow:"hidden" }}>
+        <div style={{ maxWidth:1280, margin:"0 auto", position:"relative" as const, zIndex:1 }}>
+          <div style={{ display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:16 }}>
+            <span style={{ fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase" as const }}>Investir au Sénégal</span>
+          </div>
+          <h1 style={{ fontWeight:800, fontSize:"clamp(2rem,4vw,3rem)", color:"#fff", lineHeight:1.1, marginBottom:10 }}>Zones d'Investissement</h1>
+          <p style={{ color:"rgba(255,255,255,0.5)", fontSize:14, maxWidth:540, lineHeight:1.7, marginBottom:28 }}>
+            Cartographie des zones économiques spéciales, zones aménagées et zones franches industrielles du Sénégal — avec les entreprises installées et éligibles.
+          </p>
+
+          {/* Onglets dans le hero */}
+          <div style={{ display:"flex", gap:2, background:"rgba(255,255,255,0.05)", borderRadius:10, padding:3, width:"fit-content", border:"1px solid rgba(255,255,255,0.08)" }}>
+            {[{k:"zones",l:"Zones d'investissement"},{k:"poles",l:"Pôles territoires"},{k:"territoire",l:"Vue territoriale"},{k:"liste",l:"Vue détaillée"}].map(o=>(
+              <button key={o.k} onClick={()=>setOnglet(o.k as any)}
+                style={{ padding:"8px 20px",borderRadius:7,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all 0.15s", background:onglet===o.k?"#ca631f":"transparent", color:onglet===o.k?"#fff":"rgba(255,255,255,0.5)" }}>
+                {o.l}
               </button>
             ))}
           </div>
         </div>
+        {/* Fond arrondi de transition */}
+        <div style={{ height:32, background:"#F2F0EF", borderRadius:"20px 20px 0 0", marginTop:28 }}/>
       </section>
 
-      {/* Contenu */}
-      <section style={{ padding: "36px 40px 80px", maxWidth: 1280, margin: "0 auto" }}>
-        {onglet === "zones" && (
-          <div ref={containerRef} style={{ background: "transparent", overflow: "hidden" }}>
-            {loading ? (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 560, gap: 12, color: "#9aa5b4" }}>
-                <div style={{ width: 20, height: 20, border: "2px solid rgba(202,99,31,0.2)", borderTopColor: "#ca631f", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-                <span style={{ fontSize: 14 }}>Chargement…</span>
-              </div>
-            ) : (
-              <svg ref={svgRef} style={{ width: "100%", height: 560, display: "block" }} />
-            )}
-          </div>
+      {/* ── Contenu ── */}
+      <section style={{ padding:"0 40px 80px", maxWidth:1280, margin:"0 auto" }}>
+
+        {/* Vue sunburst par type */}
+        {onglet==="zones" && (
+          loading
+            ? <Loader/>
+            : <SunburstZones zones={zones}/>
         )}
-        {onglet === "poles" && (
-          <div ref={containerPolesRef} style={{ background: "transparent", overflow: "hidden" }}>
-            {loading ? (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 560, gap: 12, color: "#9aa5b4" }}>
-                <div style={{ width: 20, height: 20, border: "2px solid rgba(202,99,31,0.2)", borderTopColor: "#ca631f", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-                <span style={{ fontSize: 14 }}>Chargement…</span>
-              </div>
-            ) : (
-              <svg ref={svgPolesRef} style={{ width: "100%", height: 560, display: "block" }} />
-            )}
-          </div>
+
+        {/* Vue sunburst par pôle */}
+        {onglet==="poles" && (
+          loading
+            ? <Loader/>
+            : <SunburstPoles zones={zones}/>
+        )}
+
+        {/* Liste détaillée */}
+        {onglet==="territoire" && (
+          loading
+            ? <Loader/>
+            : <VueTerritorialeSenegal zones={zones}/>
+        )}
+
+        {onglet==="liste" && (
+          loading
+            ? <Loader/>
+            : <>
+                {Object.entries(TYPE_META).map(([type,meta])=>{
+                  const zs=zonesByType(type);
+                  if (!zs.length) return null;
+                  return (
+                    <div key={type} style={{ marginBottom:32 }}>
+                      <div style={{ display:"flex",alignItems:"center",gap:10,marginBottom:14 }}>
+                        <div style={{ width:4,height:24,borderRadius:2,background:meta.color }}/>
+                        <h2 style={{ fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e" }}>{meta.label}</h2>
+                        <span style={{ fontSize:12,color:"#9aa5b4" }}>{zs.length} zone{zs.length>1?"s":""}</span>
+                      </div>
+                      <div style={{ display:"flex",flexDirection:"column" as const,gap:8 }}>
+                        {zs.map(z=><ZoneCard key={z.id} zone={z}/>)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
         )}
       </section>
     </main>
+  );
+}
+
+function Loader() {
+  return (
+    <div style={{ display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:10,color:"#9aa5b4" }}>
+      <div style={{ width:20,height:20,border:"2px solid rgba(202,99,31,0.2)",borderTopColor:"#ca631f",borderRadius:"50%",animation:"spin 1s linear infinite" }}/>
+      <span style={{ fontSize:14 }}>Chargement…</span>
+    </div>
   );
 }
