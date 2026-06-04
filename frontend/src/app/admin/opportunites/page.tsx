@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -19,87 +20,7 @@ const NIVEAUX = [
 ];
 
 
-const TYPES_AVANTAGE = [
-  { value:"fiscal",        label:"Fiscal",        color:"#0891b2" },
-  { value:"douanier",      label:"Douanier",       color:"#7c3aed" },
-  { value:"foncier",       label:"Foncier",        color:"#ca631f" },
-  { value:"financier",     label:"Financier",      color:"#059669" },
-  { value:"administratif", label:"Administratif",  color:"#d97706" },
-  { value:"autre",         label:"Autre",          color:"#6b7280" },
-];
-const typeColor = (t:string) => TYPES_AVANTAGE.find(x=>x.value===t)?.color||"#6b7280";
-const typeLabel = (t:string) => TYPES_AVANTAGE.find(x=>x.value===t)?.label||t;
 
-// ── Éditeur de texte enrichi ──────────────────────────────────────────────────
-function RichToolBtn({ label, title, cmd, onExec, italic }: {
-  label:string; title:string; cmd:string; onExec:(c:string)=>void; italic?:boolean;
-}) {
-  return (
-    <button
-      type="button"
-      title={title}
-      onMouseDown={e=>{ e.preventDefault(); onExec(cmd); }}
-      style={{ width:30, height:28, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:5, border:"1px solid transparent", background:"transparent", cursor:"pointer", fontSize:13, fontWeight:italic?"normal":700, fontStyle:italic?"italic":"normal", color:"#4a5568", fontFamily:"var(--font-google-sans)" }}
-      onMouseEnter={e=>{ e.currentTarget.style.background="#F2F0EF"; e.currentTarget.style.borderColor="#C5BFBB"; }}
-      onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="transparent"; }}>
-      {label}
-    </button>
-  );
-}
-
-function RichTextEditor({ value, onChange }: { value:string; onChange:(v:string)=>void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const skipSync = useRef(false);
-
-  useEffect(()=>{
-    if (ref.current && !skipSync.current) ref.current.innerHTML = value || "";
-    skipSync.current = false;
-  }, [value]);
-
-  const exec = (cmd:string) => {
-    document.execCommand(cmd, false);
-    skipSync.current = true;
-    onChange(ref.current?.innerHTML || "");
-    ref.current?.focus();
-  };
-
-  return (
-    <div style={{ border:"1px solid #C5BFBB", borderRadius:8, overflow:"hidden" }}>
-      <style>{`
-        [data-rte] ul{padding-left:20px;list-style-type:disc}
-        [data-rte] ol{padding-left:20px;list-style-type:decimal}
-        [data-rte] li{margin-bottom:2px}
-        [data-rte][contenteditable] *{font-family:var(--font-google-sans)!important;font-size:13px!important;background:transparent!important}
-      `}</style>
-      <div style={{ display:"flex", gap:2, padding:"5px 8px", background:"#fff", borderBottom:"1px solid #E8E5E3" }}>
-        <RichToolBtn label="G" title="Gras (Ctrl+B)" cmd="bold" onExec={exec}/>
-        <RichToolBtn label="I" title="Italique (Ctrl+I)" cmd="italic" onExec={exec} italic/>
-        <div style={{ width:1, background:"#E8E5E3", margin:"0 3px", alignSelf:"stretch" as const }}/>
-        <RichToolBtn label="•" title="Liste à puces" cmd="insertUnorderedList" onExec={exec}/>
-        <RichToolBtn label="1." title="Liste numérotée" cmd="insertOrderedList" onExec={exec}/>
-      </div>
-      <div
-        ref={ref}
-        data-rte
-        contentEditable
-        suppressContentEditableWarning
-        onKeyDown={e=>{
-          if ((e.ctrlKey||e.metaKey) && e.key==="b") { e.preventDefault(); exec("bold"); }
-          if ((e.ctrlKey||e.metaKey) && e.key==="i") { e.preventDefault(); exec("italic"); }
-        }}
-        onPaste={e=>{
-          e.preventDefault();
-          const text = e.clipboardData.getData("text/plain");
-          document.execCommand("insertText", false, text);
-          skipSync.current = true;
-          onChange(ref.current?.innerHTML || "");
-        }}
-        onInput={()=>{ skipSync.current=true; onChange(ref.current?.innerHTML||""); }}
-        style={{ minHeight:120, padding:"10px 12px", outline:"none", fontSize:13, color:"#1a1a2e", lineHeight:1.7, background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}
-      />
-    </div>
-  );
-}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // Modal Potentialité
@@ -410,41 +331,34 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
 // ══════════════════════════════════════════════════════════════════════════════
 const EMPTY_AVG: any = {
   secteur_id: null, branche_id: null, activite_id: null,
-  commentaire_global: "", est_publie: true, selections: [],
+  description: "", est_publie: true,
 };
 
 function AvantageModal({ open, onClose, edit, onSaved }:
   { open:boolean; onClose:()=>void; edit:any; onSaved:()=>void }) {
-  const [form,        setForm]        = useState<any>({...EMPTY_AVG});
-  const [secteurs,    setSecteurs]    = useState<any[]>([]);
-  const [branches,    setBranches]    = useState<any[]>([]);
-  const [activites,   setActivites]   = useState<any[]>([]);
-  const [refCats,     setRefCats]     = useState<any[]>([]); // types d'avantages (Foncier, Fiscal...)
-  const [usedActivites,setUsedActivites]=useState<number[]>([]);
-  const [fichiers,    setFichiers]    = useState<any[]>([]);
-  const [pdfQueue,    setPdfQueue]    = useState<{file:File;titre:string}[]>([]);
-  const [saving,      setSaving]      = useState(false);
-  const [error,       setError]       = useState("");
-  const [ok,          setOk]          = useState(false);
+  const [form,           setForm]          = useState<any>({...EMPTY_AVG});
+  const [secteurs,       setSecteurs]      = useState<any[]>([]);
+  const [branches,       setBranches]      = useState<any[]>([]);
+  const [activites,      setActivites]     = useState<any[]>([]);
+  const [usedActivites,  setUsedActivites] = useState<number[]>([]);
+  const [fichiers,       setFichiers]      = useState<any[]>([]);
+  const [pdfQueue,       setPdfQueue]      = useState<{file:File;titre:string}[]>([]);
+  const [saving,         setSaving]        = useState(false);
+  const [error,          setError]         = useState("");
+  const [ok,             setOk]            = useState(false);
+  const [openSec,        setOpenSec]       = useState(true);
+  const [openBra,        setOpenBra]       = useState(false);
+  const [openAct,        setOpenAct]       = useState(false);
 
   const upd = (k:string,v:any)=>setForm((f:any)=>({...f,[k]:v}));
 
   useEffect(()=>{
-    fetch(`${API}/entreprises/ref/secteurs`).then(r=>r.json()).then(setSecteurs).catch(()=>{});
-    fetch(`${API}/ref-avantages`).then(r=>r.json()).then(setRefCats).catch(()=>{});
+    Promise.all([
+      fetch(`${API}/entreprises/ref/secteurs`).then(r=>r.json()),
+      fetch(`${API}/entreprises/ref/branches`).then(r=>r.json()),
+      fetch(`${API}/entreprises/ref/activites`).then(r=>r.json()),
+    ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); }).catch(()=>{});
   },[]);
-
-  useEffect(()=>{
-    if (!form.secteur_id){setBranches([]);setActivites([]);upd("branche_id",null);upd("activite_id",null);return;}
-    fetch(`${API}/entreprises/ref/branches?secteur_id=${form.secteur_id}`).then(r=>r.json()).then(setBranches).catch(()=>{});
-    upd("branche_id",null);upd("activite_id",null);setActivites([]);
-  },[form.secteur_id]);
-
-  useEffect(()=>{
-    if (!form.branche_id){setActivites([]);upd("activite_id",null);return;}
-    fetch(`${API}/entreprises/ref/activites?branche_id=${form.branche_id}`).then(r=>r.json()).then(setActivites).catch(()=>{});
-    upd("activite_id",null);
-  },[form.branche_id]);
 
   useEffect(()=>{
     if (!open) return;
@@ -455,29 +369,14 @@ function AvantageModal({ open, onClose, edit, onSaved }:
       setForm({
         secteur_id: edit.secteur_id||null, branche_id: edit.branche_id||null,
         activite_id: edit.activite_id||null,
-        commentaire_global: edit.avantages||"",
-        selections: (edit.selections||[]).map((s:any)=>({item_id:s.type_id,commentaire:s.commentaire||""})),
+        description: edit.avantages||"",
         est_publie: edit.est_publie??true,
       });
       fetch(`${API}/opportunites/avantages/${edit.id}`)
         .then(r=>r.json()).then(d=>setFichiers(d.fichiers||[])).catch(()=>{});
-    } else { setForm({...EMPTY_AVG}); setFichiers([]); }
+    } else { setForm({...EMPTY_AVG}); setFichiers([]); setOpenSec(true); setOpenBra(false); setOpenAct(false); }
     setPdfQueue([]); setError(""); setOk(false);
   },[open, edit]);
-
-  // Toggle sélection item
-  const toggleItem = (itemId:number) => {
-    setForm((f:any)=>{
-      const exists = f.selections.find((s:any)=>s.item_id===itemId);
-      if (exists) return {...f, selections: f.selections.filter((s:any)=>s.item_id!==itemId)};
-      return {...f, selections: [...f.selections, {item_id:itemId, commentaire:""}]};
-    });
-  };
-  const setCommentaire = (itemId:number, val:string) => {
-    setForm((f:any)=>({...f, selections: f.selections.map((s:any)=>s.item_id===itemId?{...s,commentaire:val}:s)}));
-  };
-  const isSelected = (itemId:number) => form.selections.some((s:any)=>s.item_id===itemId);
-  const getCommentaire = (itemId:number) => form.selections.find((s:any)=>s.item_id===itemId)?.commentaire||"";
 
   const handleSave = async () => {
     if (!form.activite_id && !edit){setError("Veuillez sélectionner une activité");return;}
@@ -487,11 +386,11 @@ function AvantageModal({ open, onClose, edit, onSaved }:
       const url=edit?`${API}/opportunites/avantages/${edit.id}`:`${API}/opportunites/avantages`;
       const method=edit?"PATCH":"POST";
       const payload = {
-        ...form,
         activite_id: form.activite_id || edit?.activite_id,
         secteur_id: form.secteur_id || edit?.secteur_id,
         branche_id: form.branche_id || edit?.branche_id,
-        selections: form.selections.map((s:any)=>({type_id: s.item_id, commentaire: s.commentaire||null}))
+        description: form.description,
+        est_publie: form.est_publie,
       };
       const res=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
       if (!res.ok){const d=await res.json();throw new Error(Array.isArray(d.detail)?d.detail.map((e:any)=>e.msg).join(", "):(d.detail||"Erreur"));}
@@ -506,16 +405,26 @@ function AvantageModal({ open, onClose, edit, onSaved }:
     finally{setSaving(false);}
   };
 
-  const IS:any={background:"#F2F0EF",border:"1px solid #C5BFBB",borderRadius:8,padding:"9px 12px",fontSize:13,color:"#1a1a2e",outline:"none",width:"100%",boxSizing:"border-box" as const,fontFamily:"var(--font-google-sans)"};
-  const LS:any={fontSize:12,fontWeight:600,color:"#4a5568",marginBottom:5,display:"block"};
-  const SEC:any={fontSize:11,fontWeight:700,color:"#7c3aed",letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:12,paddingBottom:8,borderBottom:"1px solid #E8E5E3"};
+  const ASEC:any={fontSize:11,fontWeight:700,color:"#7c3aed",letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:12,paddingBottom:8,borderBottom:"1px solid #E8E5E3"};
 
+  // Cascade filtering
+  const brasDispo = form.secteur_id ? branches.filter((b:any)=>b.secteur_id===form.secteur_id) : branches;
+  const actsDispo = form.branche_id ? activites.filter((a:any)=>a.branche_id===form.branche_id) : activites;
+
+  // ColSection header button style
+  const colHdr = (color:string, count:number) => ({
+    display:"flex" as const, alignItems:"center" as const, justifyContent:"space-between" as const,
+    width:"100%", padding:"8px 10px",
+    background: count>0 ? color+"08" : "#F8F7F6",
+    border: `1px solid ${count>0 ? color+"30" : "#E8E5E3"}`,
+    borderRadius:9, cursor:"pointer", marginBottom:4, transition:"all 0.15s",
+  });
 
   if (!open) return null;
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:700,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
+      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:740,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
         <div style={{height:4,background:"linear-gradient(90deg,#7c3aed,#a78bfa)",borderRadius:"20px 20px 0 0"}}/>
         <div style={{padding:"24px 32px 32px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
@@ -523,10 +432,10 @@ function AvantageModal({ open, onClose, edit, onSaved }:
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7}}><X size={15} color="#4a5568"/></button>
           </div>
 
-          {/* Activité NAEMA */}
+          {/* Choisissez une activité */}
           {edit ? (
             <div style={{marginBottom:22,padding:"14px 18px",background:"rgba(124,58,237,0.05)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:12}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#7c3aed",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité NAEMA</div>
+              <div style={{fontSize:10,fontWeight:700,color:"#7c3aed",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
               <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap" as const}}>
                 {edit.secteur_nom&&<span style={{fontSize:11,fontWeight:600,color:"#9aa5b4",background:"#F2F0EF",padding:"3px 10px",borderRadius:99}}>{edit.secteur_nom}</span>}
                 {edit.branche_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:11,fontWeight:600,color:"#9aa5b4",background:"#F2F0EF",padding:"3px 10px",borderRadius:99}}>{edit.branche_nom}</span></>}
@@ -535,66 +444,131 @@ function AvantageModal({ open, onClose, edit, onSaved }:
             </div>
           ) : (
             <div style={{marginBottom:22}}>
-              <p style={SEC}>Activité NAEMA</p>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
-                <div><label style={LS}>Secteur</label>
-                  <select value={form.secteur_id||""} onChange={e=>upd("secteur_id",e.target.value?parseInt(e.target.value):null)} style={IS}>
-                    <option value="">— Sélectionner —</option>
-                    {secteurs.map((s:any)=><option key={s.id} value={s.id}>{s.nom}</option>)}
-                  </select>
+              <p style={ASEC}>Choisissez une activité</p>
+              {/* Summary tags */}
+              {(form.secteur_id||form.branche_id||form.activite_id) && (
+                <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
+                  {form.secteur_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"#ca631f10",color:"#ca631f",border:"1px solid #ca631f25",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
+                    {secteurs.find((s:any)=>s.id===form.secteur_id)?.nom||""}
+                    <button onClick={()=>{upd("secteur_id",null);upd("branche_id",null);upd("activite_id",null);}} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"#ca631f"}}/></button>
+                  </span>}
+                  {form.branche_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"#004f9110",color:"#004f91",border:"1px solid #004f9125",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
+                    {branches.find((b:any)=>b.id===form.branche_id)?.nom||""}
+                    <button onClick={()=>{upd("branche_id",null);upd("activite_id",null);}} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"#004f91"}}/></button>
+                  </span>}
+                  {form.activite_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"#18803810",color:"#188038",border:"1px solid #18803825",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
+                    {activites.find((a:any)=>a.id===form.activite_id)?.nom||""}
+                    <button onClick={()=>upd("activite_id",null)} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"#188038"}}/></button>
+                  </span>}
                 </div>
-                {branches.length>0&&<div><label style={LS}>Branche</label>
-                  <select value={form.branche_id||""} onChange={e=>upd("branche_id",e.target.value?parseInt(e.target.value):null)} style={IS}>
-                    <option value="">— Sélectionner —</option>
-                    {branches.map((b:any)=><option key={b.id} value={b.id}>{b.nom}</option>)}
-                  </select>
-                </div>}
-                {activites.length>0&&<div><label style={LS}>Activité *</label>
-                  <select value={form.activite_id||""} onChange={e=>upd("activite_id",e.target.value?parseInt(e.target.value):null)} style={{...IS,borderColor:!form.activite_id?"#C5BFBB":"#7c3aed"}}>
-                    <option value="">— Sélectionner —</option>
-                    {activites.filter((a:any)=>!usedActivites.includes(a.id)).map((a:any)=><option key={a.id} value={a.id}>{a.nom}</option>)}
-                  </select>
-                  {activites.filter((a:any)=>usedActivites.includes(a.id)).length>0&&<p style={{fontSize:11,color:"#9aa5b4",marginTop:4}}>{activites.filter((a:any)=>usedActivites.includes(a.id)).length} activité(s) déjà définie(s)</p>}
-                </div>}
+              )}
+              {/* 3 columns cascade */}
+              <div style={{display:"flex",gap:8}}>
+                {/* Secteur */}
+                <div style={{flex:1,minWidth:0}}>
+                  <button onClick={()=>setOpenSec(o=>!o)} style={colHdr("#ca631f", form.secteur_id?1:0)}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:11,fontWeight:700,color:form.secteur_id?"#ca631f":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</span>
+                      {form.secteur_id&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"#ca631f15",padding:"1px 6px",borderRadius:999}}>1</span>}
+                    </div>
+                    {openSec?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+                  </button>
+                  {openSec&&(
+                    <div style={{border:"1px solid #ca631f20",borderRadius:9,overflow:"hidden",maxHeight:200,overflowY:"auto" as const}}>
+                      {secteurs.map((s:any)=>{
+                        const sel = form.secteur_id===s.id;
+                        return (
+                          <button key={s.id} onClick={()=>{ upd("secteur_id",sel?null:s.id); if(!sel){upd("branche_id",null);upd("activite_id",null);setOpenBra(true);} }}
+                            style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",borderRadius:0,border:"none",cursor:"pointer",background:sel?"#ca631f12":"transparent",width:"100%",textAlign:"left" as const,transition:"background 0.12s"}}
+                            onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                            onMouseLeave={e=>{e.currentTarget.style.background=sel?"#ca631f12":"transparent";}}>
+                            <div style={{width:15,height:15,borderRadius:3,border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.12s"}}>
+                              {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                            </div>
+                            <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{s.nom}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                {/* Branche */}
+                <div style={{flex:1,minWidth:0}}>
+                  <button onClick={()=>setOpenBra(o=>!o)} style={colHdr("#004f91", form.branche_id?1:0)}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:11,fontWeight:700,color:form.branche_id?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</span>
+                      {form.branche_id&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"#004f9115",padding:"1px 6px",borderRadius:999}}>1</span>}
+                    </div>
+                    {openBra?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+                  </button>
+                  {openBra&&(
+                    <div style={{border:"1px solid #004f9120",borderRadius:9,overflow:"hidden",maxHeight:200,overflowY:"auto" as const}}>
+                      {brasDispo.length===0
+                        ? <p style={{fontSize:11,color:"#9aa5b4",padding:"10px 12px"}}>Choisir un secteur d'abord</p>
+                        : brasDispo.map((b:any)=>{
+                            const sel = form.branche_id===b.id;
+                            return (
+                              <button key={b.id} onClick={()=>{ upd("branche_id",sel?null:b.id); if(!sel){upd("activite_id",null);setOpenAct(true);} }}
+                                style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",borderRadius:0,border:"none",cursor:"pointer",background:sel?"#004f9112":"transparent",width:"100%",textAlign:"left" as const,transition:"background 0.12s"}}
+                                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                                onMouseLeave={e=>{e.currentTarget.style.background=sel?"#004f9112":"transparent";}}>
+                                <div style={{width:15,height:15,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.12s"}}>
+                                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                </div>
+                                <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
+                              </button>
+                            );
+                          })
+                      }
+                    </div>
+                  )}
+                </div>
+                {/* Activité */}
+                <div style={{flex:1,minWidth:0}}>
+                  <button onClick={()=>setOpenAct(o=>!o)} style={colHdr("#188038", form.activite_id?1:0)}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:11,fontWeight:700,color:form.activite_id?"#188038":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</span>
+                      {form.activite_id&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"#18803815",padding:"1px 6px",borderRadius:999}}>1</span>}
+                    </div>
+                    {openAct?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+                  </button>
+                  {openAct&&(
+                    <div style={{border:"1px solid #18803820",borderRadius:9,overflow:"hidden",maxHeight:200,overflowY:"auto" as const}}>
+                      {actsDispo.length===0
+                        ? <p style={{fontSize:11,color:"#9aa5b4",padding:"10px 12px"}}>Choisir une branche d'abord</p>
+                        : actsDispo.map((a:any)=>{
+                            const sel = form.activite_id===a.id;
+                            const used = usedActivites.includes(a.id);
+                            return (
+                              <button key={a.id} onClick={()=>{ if(!used) upd("activite_id",sel?null:a.id); }}
+                                disabled={used&&!sel}
+                                style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",borderRadius:0,border:"none",cursor:used&&!sel?"not-allowed":"pointer",background:sel?"#18803812":"transparent",width:"100%",textAlign:"left" as const,transition:"background 0.12s",opacity:used&&!sel?0.45:1}}
+                                onMouseEnter={e=>{if(!sel&&!used)e.currentTarget.style.background="#F8F7F6";}}
+                                onMouseLeave={e=>{e.currentTarget.style.background=sel?"#18803812":"transparent";}}>
+                                <div style={{width:15,height:15,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.12s"}}>
+                                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                </div>
+                                <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{a.nom}{used&&!sel?" (déjà défini)":""}</span>
+                              </button>
+                            );
+                          })
+                      }
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Types d'avantages — liste plate */}
+          {/* Description (texte enrichi) */}
           <div style={{marginBottom:22}}>
-            <p style={SEC}>Avantages & incitations</p>
-            {refCats.filter((t:any)=>t.actif).length===0 ? (
-              <p style={{fontSize:13,color:"#9aa5b4",fontStyle:"italic"}}>Aucun type d'avantage — ajoutez-en dans la page Référentiels.</p>
-            ) : (
-              <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
-                {refCats.filter((t:any)=>t.actif).map((type:any)=>{
-                  const sel = isSelected(type.id);
-                  return (
-                    <div key={type.id} style={{background:sel?"rgba(124,58,237,0.04)":"#fff",border:`1px solid ${sel?"rgba(124,58,237,0.2)":"#E8E5E3"}`,borderRadius:10,padding:"10px 14px",transition:"all 0.15s"}}>
-                      <button onClick={()=>toggleItem(type.id)}
-                        style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"transparent",border:"none",cursor:"pointer",textAlign:"left" as const,padding:0}}>
-                        <div style={{width:18,height:18,borderRadius:5,border:`2px solid ${sel?"#7c3aed":"#C5BFBB"}`,background:sel?"#7c3aed":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.15s"}}>
-                          {sel&&<svg width="10" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                        </div>
-                        <span style={{fontSize:13,fontWeight:sel?700:500,color:sel?"#7c3aed":"#4a5568"}}>{type.libelle}</span>
-                      </button>
-                      {sel&&(
-                        <div style={{marginTop:10,marginLeft:28}}>
-                          <textarea value={getCommentaire(type.id)} onChange={e=>setCommentaire(type.id,e.target.value)}
-                            rows={2} placeholder={`Précisions sur l'avantage ${type.libelle.toLowerCase()}…`}
-                            style={{...IS,fontSize:12,resize:"vertical" as const,lineHeight:"1.6",color:"#4a5568"}}/>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <p style={ASEC}>Description</p>
+            <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
           </div>
 
           {/* Documents PDF */}
           <div style={{marginBottom:22}}>
-            <p style={SEC}>Documents PDF</p>
+            <p style={ASEC}>Documents PDF</p>
             {fichiers.length>0&&(
               <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:8}}>
                 {fichiers.map((f:any)=>(
@@ -638,14 +612,6 @@ function AvantageModal({ open, onClose, edit, onSaved }:
                 e.target.value="";
               }}/>
             </label>
-          </div>
-
-          {/* Commentaire global */}
-          <div style={{marginBottom:22}}>
-            <p style={SEC}>Commentaire global <span style={{fontSize:10,fontWeight:400,color:"#9aa5b4",textTransform:"none",letterSpacing:0}}>(optionnel)</span></p>
-            <textarea value={form.commentaire_global} onChange={e=>upd("commentaire_global",e.target.value)} rows={4}
-              placeholder="Contexte général, précisions complémentaires, conditions particulières…"
-              style={{...IS,resize:"vertical" as const,lineHeight:"1.6"}}/>
           </div>
 
           {error&&<p style={{fontSize:12,color:"#dc2626",marginBottom:12}}>{error}</p>}
@@ -917,11 +883,12 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
             </div>
           )}
 
-          {/* Commentaire global */}
+          {/* Description */}
           {data.avantages&&(
             <div style={{background:"#F8F7F6",border:"1px solid #E8E5E3",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
-              <LBL>Commentaire général</LBL>
-              <p style={{fontSize:13,color:"#4a5568",lineHeight:1.7,whiteSpace:"pre-wrap" as const}}>{data.avantages}</p>
+              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
+              <LBL>Description</LBL>
+              <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
             </div>
           )}
 

@@ -29,16 +29,11 @@ class PotentialiteIn(BaseModel):
     description: Optional[str] = None
     est_publie: bool = True
 
-class SelectionIn(BaseModel):
-    type_id: int
-    commentaire: Optional[str] = None
-
 class AvantageIn(BaseModel):
     secteur_id: Optional[int] = None
     branche_id: Optional[int] = None
     activite_id: int
-    commentaire_global: Optional[str] = None
-    selections: List[SelectionIn] = []
+    description: Optional[str] = None
     est_publie: bool = True
 
 class ToggleIn(BaseModel):
@@ -288,15 +283,11 @@ async def get_avantage(id: int, db: AsyncSession = Depends(get_db)):
 async def create_avantage(body: AvantageIn, db: AsyncSession = Depends(get_db)):
     res = await db.execute(text("""
         INSERT INTO avantages_incitations (secteur_id, branche_id, activite_id, avantages, est_publie)
-        VALUES (:secteur_id, :branche_id, :activite_id, :commentaire_global, :est_publie)
+        VALUES (:secteur_id, :branche_id, :activite_id, :description, :est_publie)
         RETURNING id
     """), {"secteur_id":body.secteur_id,"branche_id":body.branche_id,"activite_id":body.activite_id,
-           "commentaire_global":body.commentaire_global,"est_publie":body.est_publie})
+           "description":body.description,"est_publie":body.est_publie})
     new_id = res.fetchone()[0]
-    for s in body.selections:
-        await db.execute(text(
-            "INSERT INTO avantages_incitations_selections (avantage_id,type_id,commentaire) VALUES (:a,:i,:c)"
-        ), {"a":new_id,"i":s.type_id,"c":s.commentaire})
     await db.commit()
     return await enrichir_avantage(new_id, db)
 
@@ -305,16 +296,10 @@ async def update_avantage(id: int, body: AvantageIn, db: AsyncSession = Depends(
     await db.execute(text("""
         UPDATE avantages_incitations
         SET secteur_id=:secteur_id, branche_id=:branche_id, activite_id=:activite_id,
-            avantages=:commentaire_global, est_publie=:est_publie, updated_at=NOW()
+            avantages=:description, est_publie=:est_publie, updated_at=NOW()
         WHERE id=:id AND is_deleted=FALSE
     """), {"secteur_id":body.secteur_id,"branche_id":body.branche_id,"activite_id":body.activite_id,
-           "commentaire_global":body.commentaire_global,"est_publie":body.est_publie,"id":id})
-    # Remplacer les sélections
-    await db.execute(text("DELETE FROM avantages_incitations_selections WHERE avantage_id=:id"),{"id":id})
-    for s in body.selections:
-        await db.execute(text(
-            "INSERT INTO avantages_incitations_selections (avantage_id,type_id,commentaire) VALUES (:a,:i,:c)"
-        ), {"a":id,"i":s.type_id,"c":s.commentaire})
+           "description":body.description,"est_publie":body.est_publie,"id":id})
     await db.commit()
     return await enrichir_avantage(id, db)
 
