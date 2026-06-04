@@ -23,6 +23,7 @@ class Potentialite(Base):
     atouts_economiques    = Column(Text, nullable=True)
     contraintes           = Column(Text, nullable=True)
     autres                = Column(Text, nullable=True)
+    description           = Column(Text, nullable=True)
     est_publie  = Column(Boolean, default=True)
     is_deleted  = Column(Boolean, default=False)
     created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())

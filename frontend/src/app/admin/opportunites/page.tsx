@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
@@ -18,14 +18,6 @@ const NIVEAUX = [
   { value:"arrondissement", label:"Arrondissement" },
 ];
 
-const CATEGORIES_META: { key:string; label:string; color:string; emoji:string }[] = [
-  { key:"ressources_naturelles",    label:"Ressources naturelles",       color:"#059669", emoji:"" },
-  { key:"infrastructure",           label:"Infrastructure",              color:"#0891b2", emoji:"" },
-  { key:"demographie",              label:"Démographie & main d'œuvre",  color:"#7c3aed", emoji:"" },
-  { key:"atouts_economiques",       label:"Atouts économiques",          color:"#ca631f", emoji:"" },
-  { key:"environnement_affaires",   label:"Environnement des affaires",  color:"#d97706", emoji:"" },
-  { key:"localisation_strategique", label:"Localisation stratégique",    color:"#E35336", emoji:"" },
-];
 
 const TYPES_AVANTAGE = [
   { value:"fiscal",        label:"Fiscal",        color:"#0891b2" },
@@ -38,49 +30,61 @@ const TYPES_AVANTAGE = [
 const typeColor = (t:string) => TYPES_AVANTAGE.find(x=>x.value===t)?.color||"#6b7280";
 const typeLabel = (t:string) => TYPES_AVANTAGE.find(x=>x.value===t)?.label||t;
 
-const CAT_COLORS = ["#059669","#0891b2","#7c3aed","#ca631f","#d97706","#E35336","#004f91","#188038"];
+// ── Éditeur de texte enrichi ──────────────────────────────────────────────────
+function RichToolBtn({ label, title, cmd, onExec, italic }: {
+  label:string; title:string; cmd:string; onExec:(c:string)=>void; italic?:boolean;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onMouseDown={e=>{ e.preventDefault(); onExec(cmd); }}
+      style={{ width:30, height:28, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:5, border:"1px solid transparent", background:"transparent", cursor:"pointer", fontSize:13, fontWeight:italic?"normal":700, fontStyle:italic?"italic":"normal", color:"#4a5568", fontFamily:"var(--font-google-sans)" }}
+      onMouseEnter={e=>{ e.currentTarget.style.background="#F2F0EF"; e.currentTarget.style.borderColor="#C5BFBB"; }}
+      onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="transparent"; }}>
+      {label}
+    </button>
+  );
+}
 
-// ── Checkboxes par catégorie ───────────────────────────────────────────────────
-function CategorieCheckboxes({ catId, catLabel, catColor, avantages, selected, onChange }:
-  { catId:number; catLabel:string; catColor:string; avantages:any[]; selected:number[]; onChange:(ids:number[])=>void }) {
-  const [open, setOpen] = useState(false);
-  const items = avantages.filter((a:any)=>a.categorie_id===catId && a.actif);
-  const selCount = items.filter(i=>selected.includes(i.id)).length;
+function RichTextEditor({ value, onChange }: { value:string; onChange:(v:string)=>void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const skipSync = useRef(false);
 
-  const toggle = (id:number) => {
-    if (selected.includes(id)) onChange(selected.filter(x=>x!==id));
-    else onChange([...selected, id]);
+  useEffect(()=>{
+    if (ref.current && !skipSync.current) ref.current.innerHTML = value || "";
+    skipSync.current = false;
+  }, [value]);
+
+  const exec = (cmd:string) => {
+    document.execCommand(cmd, false);
+    skipSync.current = true;
+    onChange(ref.current?.innerHTML || "");
+    ref.current?.focus();
   };
 
   return (
-    <div style={{ border:"1px solid #E8E5E3", borderRadius:10, overflow:"hidden", marginBottom:8 }}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"11px 14px", background:"#F8F7F6", border:"none", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-        <span style={{ flex:1, fontSize:13, fontWeight:600, color:"#1a1a2e", textAlign:"left" as const }}>{catLabel}</span>
-        {selCount > 0 && (
-          <span style={{ fontSize:11, fontWeight:700, color:catColor, background:`${catColor}15`, padding:"2px 8px", borderRadius:99 }}>
-            {selCount} sélectionné{selCount>1?"s":""}
-          </span>
-        )}
-        {open ? <ChevronUp size={14} style={{color:"#9aa5b4"}}/> : <ChevronDown size={14} style={{color:"#9aa5b4"}}/>}
-      </button>
-
-      {open && (
-        <div style={{ padding:"10px 14px 12px", display:"flex", flexWrap:"wrap" as const, gap:6 }}>
-          {items.length === 0 ? (
-            <p style={{ fontSize:12, color:"#9aa5b4" }}>Aucun avantage dans cette catégorie</p>
-          ) : items.map((item:any) => {
-            const sel = selected.includes(item.id);
-            return (
-              <button key={item.id} onClick={()=>toggle(item.id)}
-                style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, border:`1.5px solid ${sel?catColor:"#E8E5E3"}`, background:sel?`${catColor}12`:"#fff", cursor:"pointer", fontSize:12, color:sel?catColor:"#4a5568", fontWeight:sel?600:400, fontFamily:"var(--font-google-sans)", transition:"all 0.12s" }}>
-                {sel && <Check size={10} strokeWidth={3}/>}
-                {item.libelle}
-              </button>
-            );
-          })}
-        </div>
-      )}
+    <div style={{ border:"1px solid #C5BFBB", borderRadius:8, overflow:"hidden" }}>
+      <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc} [data-rte] ol{padding-left:20px;list-style-type:decimal} [data-rte] li{margin-bottom:2px}`}</style>
+      <div style={{ display:"flex", gap:2, padding:"5px 8px", background:"#fff", borderBottom:"1px solid #E8E5E3" }}>
+        <RichToolBtn label="G" title="Gras (Ctrl+B)" cmd="bold" onExec={exec}/>
+        <RichToolBtn label="I" title="Italique (Ctrl+I)" cmd="italic" onExec={exec} italic/>
+        <div style={{ width:1, background:"#E8E5E3", margin:"0 3px", alignSelf:"stretch" as const }}/>
+        <RichToolBtn label="•" title="Liste à puces" cmd="insertUnorderedList" onExec={exec}/>
+        <RichToolBtn label="1." title="Liste numérotée" cmd="insertOrderedList" onExec={exec}/>
+      </div>
+      <div
+        ref={ref}
+        data-rte
+        contentEditable
+        suppressContentEditableWarning
+        onKeyDown={e=>{
+          if ((e.ctrlKey||e.metaKey) && e.key==="b") { e.preventDefault(); exec("bold"); }
+          if ((e.ctrlKey||e.metaKey) && e.key==="i") { e.preventDefault(); exec("italic"); }
+        }}
+        onInput={()=>{ skipSync.current=true; onChange(ref.current?.innerHTML||""); }}
+        style={{ minHeight:120, padding:"10px 12px", outline:"none", fontSize:13, color:"#1a1a2e", lineHeight:1.7, background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}
+      />
     </div>
   );
 }
@@ -92,13 +96,12 @@ const EMPTY_POT: any = {
   niveau:"pole",
   pole_id:"", region_id:"", departement_id:"", arrondissement_id:"",
   secteur_ids:[], branche_ids:[], activite_ids:[],
-  avantage_ids:[],
-  autres:"",
+  description: "",
   est_publie: true,
 };
 
-function PotentialiteModal({ open, onClose, edit, poles, avantages, categories, onSaved }:
-  { open:boolean; onClose:()=>void; edit:any; poles:any[]; avantages:any[]; categories:any[]; onSaved:()=>void }) {
+function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
+  { open:boolean; onClose:()=>void; edit:any; poles:any[]; onSaved:()=>void }) {
   const [form,     setForm]     = useState<any>({...EMPTY_POT});
   const [fichiers, setFichiers] = useState<any[]>([]);
   const [pdfQueue, setPdfQueue] = useState<{file:File; titre:string}[]>([]);
@@ -121,8 +124,7 @@ function PotentialiteModal({ open, onClose, edit, poles, avantages, categories, 
         pole_id: edit.pole_id||"", region_id: edit.region_id||"",
         departement_id: edit.departement_id||"", arrondissement_id: edit.arrondissement_id||"",
         secteur_ids: edit.secteur_ids||[], branche_ids: edit.branche_ids||[], activite_ids: edit.activite_ids||[],
-        avantage_ids: edit.avantage_ids||[],
-        autres: edit.autres||"",
+        description: edit.description||"",
         est_publie: edit.est_publie ?? true,
       });
       // Fetcher la fiche complète pour avoir les fichiers à jour
@@ -204,11 +206,7 @@ function PotentialiteModal({ open, onClose, edit, poles, avantages, categories, 
         titre: titreAuto(),
         est_publie: form.est_publie,
         secteur_ids: form.secteur_ids, branche_ids: form.branche_ids, activite_ids: form.activite_ids,
-        avantage_ids: form.avantage_ids,
-        autres: form.autres||null,
-        // Champs de texte legacy — on ne les utilise plus mais on les reset
-        ressources_naturelles: null, infrastructure: null,
-        demographie: null, atouts_economiques: null, contraintes: null,
+        description: form.description||null,
         pole_id: null, region_id: null, departement_id: null, arrondissement_id: null,
       };
       if (form.niveau==="pole")           payload.pole_id           = form.pole_id||null;
@@ -325,25 +323,10 @@ function PotentialiteModal({ open, onClose, edit, poles, avantages, categories, 
             />
           </div>
 
-          {/* Détails — checkboxes par catégorie */}
+          {/* Description */}
           <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Détails</p>
-            {categories.filter((c:any)=>c.actif).map((cat:any, idx:number)=>(
-              <CategorieCheckboxes
-                key={cat.id}
-                catId={cat.id} catLabel={cat.libelle} catColor={CAT_COLORS[idx % CAT_COLORS.length]}
-                avantages={avantages}
-                selected={form.avantage_ids}
-                onChange={ids=>upd("avantage_ids",ids)}
-              />
-            ))}
-            {/* Champ libre complémentaire */}
-            <div style={{ marginTop:10 }}>
-              <label style={LS}>Informations complémentaires (optionnel)</label>
-              <textarea value={form.autres} onChange={e=>upd("autres",e.target.value)} rows={2}
-                placeholder="Tout autre élément pertinent pour un investisseur…"
-                style={{...IS, resize:"vertical" as const}} />
-            </div>
+            <p style={SEC}>Description</p>
+            <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
           </div>
 
           {/* Documents PDF */}
@@ -751,8 +734,8 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
 // ══════════════════════════════════════════════════════════════════════════════
 // Modal vue Potentialité (admin)
 // ══════════════════════════════════════════════════════════════════════════════
-function PotentialiteVueModal({ pot: p, refAvantages, onClose, onEdit }: {
-  pot:any; refAvantages:any[]; onClose:()=>void; onEdit:(p:any)=>void;
+function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
+  pot:any; onClose:()=>void; onEdit:(p:any)=>void;
 }) {
   const [fichiers,  setFichiers]  = useState<any[]>(p.fichiers||[]);
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
@@ -771,18 +754,6 @@ function PotentialiteVueModal({ pot: p, refAvantages, onClose, onEdit }: {
       safe(`${API}/entreprises/ref/activites`),
     ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); });
   }, [p.id]);
-  const CAT_COLORS: Record<string,string> = {
-    "Ressources naturelles":"#059669","Infrastructure":"#0891b2",
-    "Démographie":"#7c3aed","Atouts économiques":"#ca631f",
-    "Environnement des affaires":"#d97706","Localisation stratégique":"#E35336",
-  };
-  const avantagesSelected = refAvantages.filter(a=>(p.avantage_ids||[]).includes(a.id));
-  const catMap: Record<string,string[]> = {};
-  avantagesSelected.forEach((a:any) => {
-    const cat = a.categorie_libelle || "Autres";
-    if (!catMap[cat]) catMap[cat] = [];
-    catMap[cat].push(a.libelle);
-  });
   const LBL = ({children}:{children:string}) => (
     <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
   );
@@ -799,27 +770,6 @@ function PotentialiteVueModal({ pot: p, refAvantages, onClose, onEdit }: {
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
-
-          {Object.keys(catMap).length>0&&(
-            <div style={{marginBottom:18}}>
-              <LBL>Atouts et potentialités</LBL>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
-                {Object.entries(catMap).map(([cat,items])=>{
-                  const color=CAT_COLORS[cat]||"#9aa5b4";
-                  return (
-                    <div key={cat} style={{background:`${color}06`,border:`1px solid ${color}20`,borderRadius:10,padding:"12px 14px"}}>
-                      <div style={{fontSize:11,fontWeight:700,color,marginBottom:8,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{cat}</div>
-                      <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
-                        {items.map((item,i)=>(
-                          <span key={i} style={{fontSize:12,color:"#1a1a2e",background:"#fff",border:"1px solid #E8E5E3",padding:"4px 10px",borderRadius:999}}>{item}</span>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {(p.secteur_ids?.length > 0 || p.branche_ids?.length > 0) && (
             <div style={{marginBottom:16}}>
@@ -867,10 +817,10 @@ function PotentialiteVueModal({ pot: p, refAvantages, onClose, onEdit }: {
             </div>
           )}
 
-          {p.autres&&(
+          {p.description&&(
             <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
-              <LBL>Informations complémentaires</LBL>
-              <p style={{fontSize:13,color:"#4a5568",lineHeight:1.7,whiteSpace:"pre-wrap" as const}}>{p.autres}</p>
+              <LBL>Description</LBL>
+              <div style={{fontSize:13,color:"#4a5568",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
             </div>
           )}
 
@@ -996,8 +946,6 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
 export default function OpportunitesAdminPage() {
   const [onglet, setOnglet] = useState<"projets"|"potentialites"|"avantages">("projets");
   const [poles,       setPoles]       = useState<any[]>([]);
-  const [avantages,   setAvantages]   = useState<any[]>([]);
-  const [categories,  setCategories]  = useState<any[]>([]);
   // Noms géo pour le titre auto
   const [regionNom,   setRegionNom]   = useState("");
   const [deptNom,     setDeptNom]     = useState("");
@@ -1025,8 +973,6 @@ export default function OpportunitesAdminPage() {
 
   useEffect(()=>{
     fetch(`${API}/zones-types/poles`).then(r=>r.json()).then(setPoles).catch(()=>{});
-    fetch(`${API}/ref-potentialites/flat`).then(r=>r.json()).then(setAvantages).catch(()=>{});
-    fetch(`${API}/ref-potentialites`).then(r=>r.json()).then(setCategories).catch(()=>{});
   },[]);
 
   const chargerPots = useCallback(async()=>{
@@ -1155,14 +1101,12 @@ export default function OpportunitesAdminPage() {
                     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
                       {items.map((p:any)=>{
                         const badge=niveauBadge(p);
-                        const selCount=(p.avantage_ids||[]).length;
                         return(
                           <div key={p.id} onClick={()=>setPotVue(p)}
                             style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${p.est_publie?groupe.color:"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
                             onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${groupe.color}20`;ev.currentTarget.style.borderColor=`${groupe.color}50`;}}
                             onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?groupe.color:"#C5BFBB";}}>
                             <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:6,lineHeight:1.4}}>{p.titre}</div>
-                            {selCount>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{selCount} atout{selCount>1?"s":""} défini{selCount>1?"s":""}</div>}
                             <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
                               <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
                                 style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
@@ -1186,8 +1130,8 @@ export default function OpportunitesAdminPage() {
               })}
             </div>
           )}
-          <PotentialiteModal open={potModal} onClose={()=>setPotModal(false)} edit={potEdit} poles={poles} avantages={avantages} categories={categories} onSaved={chargerPots}/>
-          {potVue && <PotentialiteVueModal pot={potVue} refAvantages={avantages} onClose={()=>setPotVue(null)} onEdit={p=>{ setPotVue(null); setPotEdit(p); setPotModal(true); }}/>}
+          <PotentialiteModal open={potModal} onClose={()=>setPotModal(false)} edit={potEdit} poles={poles} onSaved={chargerPots}/>
+          {potVue && <PotentialiteVueModal pot={potVue} onClose={()=>setPotVue(null)} onEdit={p=>{ setPotVue(null); setPotEdit(p); setPotModal(true); }}/>}
         </div>
       )}
 

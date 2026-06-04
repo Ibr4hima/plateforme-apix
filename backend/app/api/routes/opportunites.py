@@ -26,13 +26,7 @@ class PotentialiteIn(BaseModel):
     secteur_ids: List[int] = []
     branche_ids: List[int] = []
     activite_ids: List[int] = []
-    avantage_ids: List[int] = []
-    ressources_naturelles: Optional[str] = None
-    infrastructure: Optional[str] = None
-    demographie: Optional[str] = None
-    atouts_economiques: Optional[str] = None
-    contraintes: Optional[str] = None
-    autres: Optional[str] = None
+    description: Optional[str] = None
     est_publie: bool = True
 
 class SelectionIn(BaseModel):
@@ -203,14 +197,13 @@ async def toggle_potentialite(id: int, body: ToggleIn, db: AsyncSession = Depend
     await db.commit(); await db.refresh(p)
     return await enrichir_potentialite(p, db)
 
-@router.delete("/potentialites/{id}")
+@router.delete("/potentialites/{id}", status_code=204)
 async def delete_potentialite(id: int, db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(Potentialite).where(Potentialite.id == id))
     p = res.scalar_one_or_none()
     if not p: raise HTTPException(404)
-    p.is_deleted = True
+    await db.delete(p)
     await db.commit()
-    return {"ok": True}
 
 
 # ─── Fichiers potentialités ──────────────────────────────────────────────────
@@ -333,13 +326,12 @@ async def toggle_avantage(id: int, body: ToggleIn, db: AsyncSession = Depends(ge
     await db.commit()
     return await enrichir_avantage(id, db)
 
-@router.delete("/avantages/{id}")
+@router.delete("/avantages/{id}", status_code=204)
 async def delete_avantage(id: int, db: AsyncSession = Depends(get_db)):
-    await db.execute(text(
-        "UPDATE avantages_incitations SET is_deleted=TRUE WHERE id=:id"
-    ), {"id": id})
+    await db.execute(text("DELETE FROM avantages_incitations_selections WHERE avantage_id=:id"), {"id": id})
+    await db.execute(text("DELETE FROM avantages_incitations_fichiers WHERE avantage_id=:id"), {"id": id})
+    await db.execute(text("DELETE FROM avantages_incitations WHERE id=:id"), {"id": id})
     await db.commit()
-    return {"ok": True}
 
 # ─── Fichiers avantages ───────────────────────────────────────────────────────
 
