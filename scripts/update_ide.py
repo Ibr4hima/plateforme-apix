@@ -84,6 +84,14 @@ if not rows:
 print(f"📂 {fichier.name} — {len(rows)} lignes lues (Economy_Label: '{economy_label}')")
 
 # ── Résolution ref_pays ───────────────────────────────────────────────────────
+import unicodedata
+
+def normalize_name(s: str) -> str:
+    s = s.replace("'", "'").replace("'", "'").replace("`", "'")
+    s = unicodedata.normalize("NFD", s)
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    return s.lower().strip()
+
 conn = psycopg2.connect(**DB_CONFIG)
 cur  = conn.cursor()
 
@@ -91,11 +99,22 @@ ref_pays_id = None
 nom_fr      = economy_label  # fallback si pas trouvé dans ref_pays
 
 if economy_label:
+    # 1. Exact
     cur.execute(
         "SELECT id, nom_fr FROM ref_pays WHERE nom_cnuced = %s OR nom_fr = %s LIMIT 1",
         (economy_label, economy_label)
     )
     result = cur.fetchone()
+
+    # 2. Normalisé si pas trouvé
+    if not result:
+        label_norm = normalize_name(economy_label)
+        cur.execute("SELECT id, nom_fr, nom_cnuced FROM ref_pays")
+        for row in cur.fetchall():
+            if normalize_name(row[1] or "") == label_norm or normalize_name(row[2] or "") == label_norm:
+                result = (row[0], row[1])
+                break
+
     if result:
         ref_pays_id, nom_fr = result
         print(f"🌍 Pays résolu : {nom_fr} (ref_pays_id={ref_pays_id})")

@@ -88,8 +88,17 @@ def lire_csv(fichier: Path) -> tuple[str | None, list[tuple[int, float | None]]]
     return economy_label, rows
 
 
+def normalize_name(s: str) -> str:
+    import unicodedata
+    s = s.replace("’", "'").replace("‘", "'").replace("`", "'")
+    s = unicodedata.normalize("NFD", s)
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    return s.lower().strip()
+
+
 def resoudre_ref_pays(cur, label: str) -> tuple[int | None, str]:
-    """Retourne (ref_pays_id, nom_fr) depuis ref_pays."""
+    """Retourne (ref_pays_id, nom_fr) depuis ref_pays — matching exact puis normalisé."""
+    # 1. Exact
     cur.execute(
         "SELECT id, nom_fr FROM ref_pays WHERE nom_cnuced = %s OR nom_fr = %s LIMIT 1",
         (label, label)
@@ -97,6 +106,15 @@ def resoudre_ref_pays(cur, label: str) -> tuple[int | None, str]:
     result = cur.fetchone()
     if result:
         return result[0], result[1]
+
+    # 2. Normalisé (sans accents, casse ignorée)
+    label_norm = normalize_name(label)
+    cur.execute("SELECT id, nom_fr, nom_cnuced FROM ref_pays")
+    for row in cur.fetchall():
+        rpid, nom_fr, nom_cnuced = row
+        if normalize_name(nom_fr or "") == label_norm or normalize_name(nom_cnuced or "") == label_norm:
+            return rpid, nom_fr
+
     return None, label
 
 

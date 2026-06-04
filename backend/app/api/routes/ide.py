@@ -341,14 +341,36 @@ def _economy_label_from_file(contenu: bytes, nom_fichier: str) -> str | None:
     return None
 
 
+def _normalize_name(s: str) -> str:
+    """Normalise un nom de pays : supprime accents, minuscules, apostrophes uniformisées."""
+    import unicodedata
+    s = s.replace("’", "'").replace("‘", "'").replace("`", "'")
+    s = unicodedata.normalize("NFD", s)
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    return s.lower().strip()
+
+
 async def _resolve_ref_pays(db, label: str):
-    """Résout un nom CNUCED → RefPays (via nom_cnuced ou nom_fr)."""
+    """Résout un nom UNCTAD → RefPays. Essaie d'abord exact, puis normalisé (sans accents)."""
     from app.models.shared import RefPays
     from sqlalchemy import or_
+
+    # 1. Correspondance exacte
     res = await db.execute(
         select(RefPays).where(or_(RefPays.nom_cnuced == label, RefPays.nom_fr == label)).limit(1)
     )
-    return res.scalar_one_or_none()
+    obj = res.scalar_one_or_none()
+    if obj:
+        return obj
+
+    # 2. Correspondance normalisée (gère accents, apostrophes, casse)
+    label_norm = _normalize_name(label)
+    all_res = await db.execute(select(RefPays))
+    for p in all_res.scalars().all():
+        if _normalize_name(p.nom_fr or "") == label_norm or _normalize_name(p.nom_cnuced or "") == label_norm:
+            return p
+
+    return None
 
 
 async def _upsert_serie(db, ref_pays_id: int, nom_pays: str, direction: str, indicateur: str,
