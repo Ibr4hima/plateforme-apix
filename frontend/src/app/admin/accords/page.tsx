@@ -3,6 +3,7 @@
 import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -288,9 +289,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             {/* Commentaires */}
             <div>
               <p style={SS}>Résumé / Commentaires</p>
-              <textarea value={form.commentaires} onChange={e=>update("commentaires",e.target.value)} rows={3}
-                placeholder="Description et résumé des termes de l'accord..."
-                style={{...IS,resize:"vertical" as const}}/>
+              <RichTextEditor value={form.commentaires} onChange={v=>update("commentaires",v)}/>
             </div>
 
             {/* PDFs */}
@@ -401,7 +400,7 @@ function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>voi
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
-          {a.commentaires&&<div style={{background:"rgba(202,99,31,0.04)",border:"1px solid rgba(202,99,31,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><LBL>Résumé</LBL><p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{a.commentaires}</p></div>}
+          {a.commentaires&&<div style={{background:"rgba(202,99,31,0.04)",border:"1px solid rgba(202,99,31,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style><LBL>Résumé</LBL><div data-rte dangerouslySetInnerHTML={{__html:a.commentaires}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/></div>}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {a.date_signature&&<div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date de signature</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_signature)}</p></div>}
             {a.date_entree_vigueur&&<div style={{background:"rgba(24,128,56,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Entrée en vigueur</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p></div>}

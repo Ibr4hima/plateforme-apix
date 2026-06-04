@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, Calendar } from "lucide-react";
 import { api } from "@/lib/api";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 import PaysSelect from "@/components/shared/PaysSelect";
 import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 
@@ -462,8 +463,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
             {/* Description */}
             <div>
               <p style={SS}>Description</p>
-              <textarea value={form.description} onChange={e=>update("description",e.target.value)} rows={3}
-                placeholder="Description de l'événement..." style={{ ...IS, resize:"vertical" as const }} />
+              <RichTextEditor value={form.description} onChange={v=>update("description",v)}/>
             </div>
 
             {error && <div style={{ background:"#fee2e2", color:"#dc2626", padding:"10px 14px", borderRadius:8, fontSize:13 }}>{error}</div>}
@@ -656,7 +656,8 @@ export default function EvenementsPage() {
               {/* Description */}
               {vue.description && (
                 <div style={{ background:"rgba(227,83,54,0.04)", border:"1px solid rgba(227,83,54,0.1)", borderRadius:10, padding:"12px 14px", marginBottom:18 }}>
-                  <p style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}>{vue.description}</p>
+                  <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
+                  <div data-rte dangerouslySetInnerHTML={{__html:vue.description}} style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}/>
                 </div>
               )}
 

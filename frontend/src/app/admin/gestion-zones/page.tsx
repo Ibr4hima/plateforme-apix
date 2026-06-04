@@ -3,6 +3,7 @@
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { ArrondissementSelect, DepartementSelect, RegionSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 import { Building2, Check, ChevronDown, ChevronRight, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -294,7 +295,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
           {/* Description */}
           <div style={{ marginBottom: 14 }}>
             <label style={LS}>Description</label>
-            <textarea value={form.description} onChange={e => update("description", e.target.value)} rows={3} placeholder="Présentation générale…" style={{ ...IS, resize: "vertical" }} />
+            <RichTextEditor value={form.description} onChange={v => update("description", v)}/>
           </div>
 
           {/* PDFs */}
@@ -594,7 +595,7 @@ function OngletPoles() {
               </div>
               {(f.region_ids || []).length > 0 && <p style={{ fontSize: 11, color: "#9aa5b4", marginTop: 6 }}>Localisation : {regions.filter(r => f.region_ids.includes(r.id)).map((r: any) => r.nom).join(", ")}</p>}
             </div>
-            <div><label style={LS}>Description</label><textarea value={f.description || ""} onChange={e => updateForm(id, "description", e.target.value)} rows={2} placeholder="Description du pôle..." style={{ ...IS, resize: "vertical" }} /></div>
+            <div><label style={LS}>Description</label><RichTextEditor value={f.description || ""} onChange={v => updateForm(id, "description", v)}/></div>
             {error && <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>}
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
               <button onClick={() => setExpanded(null)} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
@@ -769,7 +770,7 @@ export default function GestionZonesPage() {
 
                           {isOpen && (
                             <div style={{ borderTop: `1px solid ${t.color}20`, padding: "14px 18px" }}>
-                              {z.description && <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.6, marginBottom: 14, padding: "10px 14px", background: `${t.color}04`, borderRadius: 8 }}>{z.description}</p>}
+                              {z.description && <><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style><div data-rte dangerouslySetInnerHTML={{__html:z.description}} style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.6, marginBottom: 14, padding: "10px 14px", background: `${t.color}04`, borderRadius: 8 }}/></>}
                               {(z.date_creation || z.decret_creation) && (
                                 <div style={{ display: "flex", gap: 16, marginBottom: 14, fontSize: 12, color: "#9aa5b4" }}>
                                   {z.date_creation && <span>Créée le <strong style={{ color: "#4a5568" }}>{new Date(z.date_creation+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})}</strong></span>}
