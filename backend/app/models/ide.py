@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, SmallInteger, Numeric, Boolean, Text
+from sqlalchemy import Column, String, Integer, SmallInteger, Numeric, Boolean, Text, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
 from app.core.database import Base
@@ -13,6 +13,7 @@ class IdeCnuced(Base):
     indicateur  = Column(String(10), nullable=False)
     valeur      = Column(Numeric(14,2))
     source      = Column(String(50), default="CNUCED")
+    ref_pays_id = Column(Integer, ForeignKey("ref_pays.id"), nullable=True, index=True)
     created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 

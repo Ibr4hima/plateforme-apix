@@ -262,3 +262,273 @@ async def supprimer_analyse(analyse_id: int, db: AsyncSession = Depends(get_db))
     a   = res.scalar_one_or_none()
     if not a: raise HTTPException(404, "Analyse introuvable")
     await db.delete(a); await db.flush()
+
+
+# ── GET /ide/pays-ref ─────────────────────────────────────────────────────────
+@router.get("/pays-ref")
+async def get_pays_ref(db: AsyncSession = Depends(get_db)):
+    from app.models.shared import RefPays
+    res = await db.execute(
+        select(RefPays).where(RefPays.actif == True).order_by(RefPays.nom_fr)
+    )
+    return [
+        {
+            "id": p.id,
+            "nom_fr": p.nom_fr,
+            "nom_cnuced": p.nom_cnuced,
+            "code_iso2": p.code_iso2,
+            "continent": p.continent,
+            "region_geo": p.region_geo,
+            "niveau_revenu": p.niveau_revenu,
+        }
+        for p in res.scalars().all()
+    ]
+
+
+# ── POST /ide/upload ──────────────────────────────────────────────────────────
+@router.post("/upload")
+async def upload_ide(
+    ref_pays_id: int = None,
+    db: AsyncSession = Depends(get_db),
+):
+    from fastapi import HTTPException
+    raise HTTPException(400, "Utiliser le formulaire multipart")
+
+
+@router.post("/upload/fichiers", status_code=200)
+async def upload_ide_fichiers(
+    ref_pays_id:    int                         = None,
+    flux_entrant:   Optional[bytes]             = None,
+    flux_sortant:   Optional[bytes]             = None,
+    stock_entrant:  Optional[bytes]             = None,
+    stock_sortant:  Optional[bytes]             = None,
+    db: AsyncSession = Depends(get_db),
+):
+    from fastapi import HTTPException, UploadFile, Form, File
+    raise HTTPException(400, "Utiliser la route multipart correcte")
+
+
+@router.post("/upload/multipart", status_code=200)
+async def upload_ide_multipart(
+    db: AsyncSession = Depends(get_db),
+    **kwargs
+):
+    from fastapi import HTTPException
+    raise HTTPException(400, "Utiliser /ide/upload-pays")
+
+
+@router.post("/upload-pays", status_code=200)
+async def upload_pays_ide(
+    ref_pays_id:   int                                                     = None,
+    db: AsyncSession = Depends(get_db),
+):
+    from fastapi import HTTPException, UploadFile, Form, File
+    raise HTTPException(400, "Envoyer les fichiers via multipart")
+
+
+# Route upload réelle avec fichiers
+from fastapi import UploadFile, File, Form
+import io
+
+@router.post("/importer", status_code=200)
+async def importer_ide(
+    ref_pays_id:  int         = Form(...),
+    flux_entrant:  UploadFile = File(None),
+    flux_sortant:  UploadFile = File(None),
+    stock_entrant: UploadFile = File(None),
+    stock_sortant: UploadFile = File(None),
+    db: AsyncSession = Depends(get_db),
+):
+    from fastapi import HTTPException
+    from app.models.shared import RefPays
+    import openpyxl
+
+    # Vérifier que le pays existe
+    res = await db.execute(select(RefPays).where(RefPays.id == ref_pays_id))
+    pays_obj = res.scalar_one_or_none()
+    if not pays_obj:
+        raise HTTPException(404, "Pays introuvable dans ref_pays")
+
+    nom_pays = pays_obj.nom_fr
+
+    fichiers = {
+        ("entrant", "flux"):  flux_entrant,
+        ("sortant", "flux"):  flux_sortant,
+        ("entrant", "stock"): stock_entrant,
+        ("sortant", "stock"): stock_sortant,
+    }
+
+    total_insere = 0
+    total_mis_a_jour = 0
+
+    for (direction, indicateur), fichier in fichiers.items():
+        if fichier is None:
+            continue
+        contenu = await fichier.read()
+        if not contenu:
+            continue
+
+        try:
+            wb = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True)
+            ws = wb.active
+        except Exception as e:
+            raise HTTPException(400, f"Erreur lecture fichier {direction}/{indicateur}: {e}")
+
+        # Parser le fichier CNUCED — format attendu :
+        # Ligne d'en-tête avec des années en colonnes (ex: 1990, 1991, ..., 2023)
+        # Ligne(s) de données avec les valeurs
+        annees_cols: list[tuple[int, int]] = []  # (annee, col_index)
+        for row in ws.iter_rows():
+            # Chercher la ligne d'en-tête contenant des années
+            for cell in row:
+                try:
+                    val = int(str(cell.value).strip()) if cell.value is not None else None
+                    if val and 1970 <= val <= 2050:
+                        annees_cols.append((val, cell.column))
+                except:
+                    pass
+            if annees_cols:
+                break
+
+        if not annees_cols:
+            continue
+
+        # Lire les valeurs — prendre la première ligne après l'en-tête qui a des données numériques
+        data_row = None
+        header_row = None
+        for i, row in enumerate(ws.iter_rows(values_only=True)):
+            cols_as_years = sum(1 for c in row if c is not None and str(c).strip().isdigit() and 1970 <= int(str(c).strip()) <= 2050)
+            if cols_as_years >= 5:
+                header_row = i
+                data_row_idx = i + 1
+                break
+
+        if header_row is None:
+            continue
+
+        # Trouver la ligne de données
+        rows = list(ws.iter_rows(values_only=True))
+        if data_row_idx >= len(rows):
+            continue
+        data_row = rows[data_row_idx]
+
+        header = rows[header_row]
+
+        for col_idx, h_val in enumerate(header):
+            try:
+                annee = int(str(h_val).strip()) if h_val is not None else None
+                if not annee or not (1970 <= annee <= 2050):
+                    continue
+                cell_val = data_row[col_idx] if col_idx < len(data_row) else None
+                if cell_val is None or str(cell_val).strip() in ("", "...", "—", "-"):
+                    valeur = None
+                else:
+                    valeur = float(str(cell_val).replace(",", ".").replace(" ", ""))
+            except:
+                continue
+
+            # Upsert
+            existing = await db.execute(
+                select(IdeCnuced).where(
+                    IdeCnuced.ref_pays_id == ref_pays_id,
+                    IdeCnuced.annee == annee,
+                    IdeCnuced.direction == direction,
+                    IdeCnuced.indicateur == indicateur,
+                )
+            )
+            row_obj = existing.scalar_one_or_none()
+            if row_obj:
+                row_obj.valeur = valeur
+                row_obj.pays = nom_pays
+                total_mis_a_jour += 1
+            else:
+                db.add(IdeCnuced(
+                    pays=nom_pays,
+                    annee=annee,
+                    direction=direction,
+                    indicateur=indicateur,
+                    valeur=valeur,
+                    source="CNUCED",
+                    ref_pays_id=ref_pays_id,
+                ))
+                total_insere += 1
+
+    await db.flush()
+    return {
+        "success": True,
+        "pays": nom_pays,
+        "insere": total_insere,
+        "mis_a_jour": total_mis_a_jour,
+    }
+
+
+# ── GET /ide/cnuced/stats ─────────────────────────────────────────────────────
+@router.get("/cnuced/stats")
+async def get_cnuced_stats(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import func as sqlfunc, text
+    from app.models.shared import RefPays
+
+    res = await db.execute(
+        select(
+            IdeCnuced.ref_pays_id,
+            IdeCnuced.pays,
+            IdeCnuced.direction,
+            IdeCnuced.indicateur,
+            sqlfunc.min(IdeCnuced.annee).label("annee_min"),
+            sqlfunc.max(IdeCnuced.annee).label("annee_max"),
+            sqlfunc.count(IdeCnuced.id).label("nb"),
+        )
+        .where(IdeCnuced.ref_pays_id != None)
+        .group_by(IdeCnuced.ref_pays_id, IdeCnuced.pays, IdeCnuced.direction, IdeCnuced.indicateur)
+        .order_by(IdeCnuced.pays)
+    )
+    rows = res.fetchall()
+
+    # Regrouper par pays
+    pays_dict: dict = {}
+    for row in rows:
+        rpid = row.ref_pays_id
+        if rpid not in pays_dict:
+            pays_dict[rpid] = {
+                "ref_pays_id": rpid,
+                "pays": row.pays,
+                "series": {},
+            }
+        key = f"{row.direction}_{row.indicateur}"
+        pays_dict[rpid]["series"][key] = {
+            "annee_min": row.annee_min,
+            "annee_max": row.annee_max,
+            "nb": row.nb,
+        }
+
+    # Enrichir avec code_iso2
+    result = []
+    for rpid, data in pays_dict.items():
+        rp = await db.execute(select(RefPays).where(RefPays.id == rpid))
+        pays_obj = rp.scalar_one_or_none()
+        result.append({
+            "ref_pays_id": rpid,
+            "pays": data["pays"],
+            "code_iso2": pays_obj.code_iso2 if pays_obj else None,
+            "series": data["series"],
+        })
+
+    result.sort(key=lambda x: x["pays"])
+    return result
+
+
+# ── DELETE /ide/cnuced/pays/:ref_pays_id ─────────────────────────────────────
+@router.delete("/cnuced/pays/{ref_pays_id}", status_code=200)
+async def supprimer_pays_ide(ref_pays_id: int, db: AsyncSession = Depends(get_db)):
+    from fastapi import HTTPException
+    from sqlalchemy import delete as sqldel
+    res = await db.execute(
+        select(IdeCnuced).where(IdeCnuced.ref_pays_id == ref_pays_id).limit(1)
+    )
+    if not res.scalar_one_or_none():
+        raise HTTPException(404, "Aucune donnée IDE pour ce pays")
+    result = await db.execute(
+        sqldel(IdeCnuced).where(IdeCnuced.ref_pays_id == ref_pays_id)
+    )
+    await db.flush()
+    return {"success": True, "supprime": result.rowcount}
