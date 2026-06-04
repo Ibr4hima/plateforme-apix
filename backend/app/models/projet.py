@@ -15,8 +15,8 @@ class RefDevise(Base):
     code     = Column(String(10))
 
 
-class ProjetMoa(Base):
-    __tablename__ = "projet_moa"
+class PorteurProjet(Base):
+    __tablename__ = "porteurs_projets"
     id         = Column(Integer, primary_key=True, autoincrement=True)
     projet_id  = Column(Integer, ForeignKey("projets.id", ondelete="CASCADE"), nullable=False)
     nom        = Column(String(500))
@@ -24,11 +24,11 @@ class ProjetMoa(Base):
     mails      = Column(ARRAY(String), default=[])
     ordre      = Column(Integer, default=0)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    projet     = relationship("Projet", back_populates="moa_list")
+    projet     = relationship("Projet", back_populates="porteurs")
 
 
-class ProjetCoordinateur(Base):
-    __tablename__ = "projet_coordinateurs"
+class ProjetPointFocal(Base):
+    __tablename__ = "projets_points_focaux"
     id         = Column(Integer, primary_key=True, autoincrement=True)
     projet_id  = Column(Integer, ForeignKey("projets.id", ondelete="CASCADE"), nullable=False)
     civilite   = Column(String(20))
@@ -38,42 +38,42 @@ class ProjetCoordinateur(Base):
     mails      = Column(ARRAY(String), default=[])
     ordre      = Column(Integer, default=0)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    projet     = relationship("Projet", back_populates="coordinateurs")
+    updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    projet     = relationship("Projet", back_populates="points_focaux")
 
 
 class Projet(Base):
     __tablename__ = "projets"
 
-    id                  = Column(Integer, primary_key=True, autoincrement=True)
-    titre_projet        = Column(String(500), nullable=False)
-    description         = Column(Text)
-    region_id           = Column(Integer, ForeignKey("ref_regions.id"))
-    departement_id      = Column(Integer, ForeignKey("ref_departements.id"))
-    arrondissement_id   = Column(Integer, ForeignKey("ref_arrondissements.id"))
-    zone_investissement = Column(String(20))
-    pole_id             = Column(Integer, ForeignKey("poles_territoires.id"))
-    secteur_ids         = Column(ARRAY(Integer), default=[])
-    branche_ids         = Column(ARRAY(Integer), default=[])
-    activite_ids        = Column(ARRAY(Integer), default=[])
-    investissement              = Column(Numeric(20, 2))
-    investissement_min          = Column(Numeric(20, 2))
-    investissement_max          = Column(Numeric(20, 2))
+    id                            = Column(Integer, primary_key=True, autoincrement=True)
+    titre_projet                  = Column(String(500), nullable=False)
+    description                   = Column(Text)
+    region_id                     = Column(Integer, ForeignKey("ref_regions.id"))
+    departement_id                = Column(Integer, ForeignKey("ref_departements.id"))
+    arrondissement_id             = Column(Integer, ForeignKey("ref_arrondissements.id"))
+    zone_investissement           = Column(String(20))
+    pole_id                       = Column(Integer, ForeignKey("poles_territoires.id"))
+    secteur_ids                   = Column(ARRAY(Integer), default=[])
+    branche_ids                   = Column(ARRAY(Integer), default=[])
+    activite_ids                  = Column(ARRAY(Integer), default=[])
+    investissement                = Column(Numeric(20, 2))
+    investissement_min            = Column(Numeric(20, 2))
+    investissement_max            = Column(Numeric(20, 2))
     investissement_est_intervalle = Column(Boolean, default=False)
-    devise_id                   = Column(Integer, ForeignKey("ref_devises.id"))
-    porteur_projet      = Column(String(500))
-    moa_id              = Column(Integer, nullable=True)
-    date_attribution    = Column(Date, nullable=True)
-    date_fin_prevue     = Column(Date, nullable=True)
-    created_at          = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    updated_at          = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    is_deleted          = Column(Boolean, default=False)
-    est_publie          = Column(Boolean, default=True)
+    devise_id                     = Column(Integer, ForeignKey("ref_devises.id"))
+    porteur_projet_id             = Column(Integer, nullable=True)
+    points_focaux_ids             = Column(ARRAY(Integer), default=[])
+    date_debut                    = Column(Date, nullable=True)
+    created_at                    = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at                    = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    is_deleted                    = Column(Boolean, default=False)
+    est_publie                    = Column(Boolean, default=True)
 
-    moa_list      = relationship("ProjetMoa",          back_populates="projet",
-                                 order_by="ProjetMoa.ordre", cascade="all, delete-orphan")
-    coordinateurs = relationship("ProjetCoordinateur", back_populates="projet",
-                                 order_by="ProjetCoordinateur.ordre", cascade="all, delete-orphan")
-    fichiers      = relationship("ProjetFichier",      back_populates="projet",
+    porteurs      = relationship("PorteurProjet",    back_populates="projet",
+                                 order_by="PorteurProjet.ordre", cascade="all, delete-orphan")
+    points_focaux = relationship("ProjetPointFocal", back_populates="projet",
+                                 order_by="ProjetPointFocal.ordre", cascade="all, delete-orphan")
+    fichiers      = relationship("ProjetFichier",    back_populates="projet",
                                  order_by="ProjetFichier.created_at", cascade="all, delete-orphan")
     devise        = relationship("RefDevise", foreign_keys=[devise_id], lazy="joined")
 

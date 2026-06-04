@@ -9,7 +9,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
-from app.models.projet import Projet, ProjetCoordinateur, ProjetMoa, ProjetFichier, RefDevise
+from app.models.projet import Projet, PorteurProjet, ProjetPointFocal, ProjetFichier, RefDevise
 from app.models.entreprise import RefRegion, RefDepartement, RefArrondissement, RefSecteur, RefBranche, RefActivite
 from app.models.zone_types import PoleTerritoire
 
@@ -19,15 +19,14 @@ UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "../../../uploads/projets")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 LOAD_OPTS = [
-    selectinload(Projet.coordinateurs),
-    selectinload(Projet.moa_list),
+    selectinload(Projet.porteurs),
+    selectinload(Projet.points_focaux),
     selectinload(Projet.devise),
     selectinload(Projet.fichiers),
 ]
 
 
 # ── GET /projets/devises ──────────────────────────────────────────────────────
-
 @router.get("/devises")
 async def liste_devises(db: AsyncSession = Depends(get_db)):
     res = await db.execute(text("""
@@ -63,30 +62,31 @@ async def enrich(projets: list, db: AsyncSession) -> list:
     if s_ids:
         res = await db.execute(select(RefSecteur).where(RefSecteur.id.in_(s_ids)))
         for s in res.scalars(): noms[f"s_{s.id}"] = s.nom
-    if b_ids:
-        res = await db.execute(select(RefBranche).where(RefBranche.id.in_(b_ids)))
-        for b in res.scalars(): noms[f"b_{b.id}"] = b.nom
-    if ac_ids:
-        res = await db.execute(select(RefActivite).where(RefActivite.id.in_(ac_ids)))
-        for a in res.scalars(): noms[f"ac_{a.id}"] = a.nom
-    # Charger aussi secteur_id des branches et branche_id des activités pour l'arbre
     b_details: dict = {}
     a_details: dict = {}
     if b_ids:
         res = await db.execute(select(RefBranche).where(RefBranche.id.in_(b_ids)))
-        for b in res.scalars(): b_details[b.id] = {"nom": b.nom, "secteur_id": b.secteur_id}
+        for b in res.scalars():
+            noms[f"b_{b.id}"] = b.nom
+            b_details[b.id] = {"nom": b.nom, "secteur_id": b.secteur_id}
     if ac_ids:
         res = await db.execute(select(RefActivite).where(RefActivite.id.in_(ac_ids)))
-        for a in res.scalars(): a_details[a.id] = {"nom": a.nom, "branche_id": a.branche_id}
-    zone_ids = [p.zone_investissement for p in projets if p.zone_investissement]
+        for a in res.scalars():
+            noms[f"ac_{a.id}"] = a.nom
+            a_details[a.id] = {"nom": a.nom, "branche_id": a.branche_id}
     zone_noms: dict = {}
-    for zid in zone_ids:
-        prefix = zid[:3]
-        tbl = {"ZES":"zones_zes","ZAI":"zones_zai","ZFI":"zones_zfi"}.get(prefix)
-        if tbl:
-            r = await db.execute(text(f"SELECT nom_zone FROM {tbl} WHERE id=:id"), {"id": zid})
+    for p in projets:
+        zid = p.zone_investissement
+        if not zid or zid in zone_noms: continue
+        try:
+            r = await db.execute(
+                text("SELECT nom_zone FROM zones WHERE id=:id AND is_deleted=FALSE"),
+                {"id": zid}
+            )
             row = r.fetchone()
             if row: zone_noms[zid] = row[0]
+        except Exception:
+            pass
     return [projet_to_dict(p, noms, zone_noms, b_details, a_details) for p in projets]
 
 
@@ -110,47 +110,44 @@ def _build_tree(sec_ids, bra_ids, act_ids, noms, b_details, a_details):
 
 def projet_to_dict(p: Projet, noms: dict = {}, zone_noms: dict = {}, b_details: dict = {}, a_details: dict = {}) -> dict:
     return {
-        "id":               p.id,
-        "titre_projet":     p.titre_projet,
-        "description":      p.description,
-        "region_id":        p.region_id,
-        "departement_id":   p.departement_id,
-        "arrondissement_id":p.arrondissement_id,
+        "id":                p.id,
+        "titre_projet":      p.titre_projet,
+        "description":       p.description,
+        "date_debut":        p.date_debut.isoformat() if p.date_debut else None,
+        "region_id":         p.region_id,
+        "departement_id":    p.departement_id,
+        "arrondissement_id": p.arrondissement_id,
         "zone_investissement": p.zone_investissement,
-        "zone_nom":         zone_noms.get(p.zone_investissement) if p.zone_investissement else None,
-        "pole_id":          p.pole_id,
-        "secteur_ids":      p.secteur_ids or [],
-        "branche_ids":      p.branche_ids or [],
-        "activite_ids":     p.activite_ids or [],
-        "investissement":             str(p.investissement) if p.investissement else None,
-        "investissement_min":         str(p.investissement_min) if p.investissement_min else None,
-        "investissement_max":         str(p.investissement_max) if p.investissement_max else None,
+        "zone_nom":          zone_noms.get(p.zone_investissement) if p.zone_investissement else None,
+        "pole_id":           p.pole_id,
+        "secteur_ids":       p.secteur_ids or [],
+        "branche_ids":       p.branche_ids or [],
+        "activite_ids":      p.activite_ids or [],
+        "investissement":               str(p.investissement) if p.investissement else None,
+        "investissement_min":           str(p.investissement_min) if p.investissement_min else None,
+        "investissement_max":           str(p.investissement_max) if p.investissement_max else None,
         "investissement_est_intervalle": p.investissement_est_intervalle or False,
-        "devise_id":        p.devise_id,
-        "devise_code":      p.devise.code_iso if p.devise else None,
-        "devise_symbole":   p.devise.symbole  if p.devise else None,
-        "porteur_projet":   p.porteur_projet,
-        "moa_id":           p.moa_id,
-        "date_attribution": p.date_attribution.isoformat() if p.date_attribution else None,
-        "date_fin_prevue":  p.date_fin_prevue.isoformat()  if p.date_fin_prevue  else None,
-        "est_publie":       p.est_publie if p.est_publie is not None else True,
-        "region_nom":       noms.get(f"r_{p.region_id}"),
-        "departement_nom":  noms.get(f"d_{p.departement_id}"),
+        "devise_id":         p.devise_id,
+        "devise_code":       p.devise.code_iso if p.devise else None,
+        "devise_symbole":    p.devise.symbole  if p.devise else None,
+        "est_publie":        p.est_publie if p.est_publie is not None else True,
+        "region_nom":        noms.get(f"r_{p.region_id}"),
+        "departement_nom":   noms.get(f"d_{p.departement_id}"),
         "arrondissement_nom":noms.get(f"a_{p.arrondissement_id}"),
-        "pole_nom":         noms.get(f"p_{p.pole_id}"),
-        "secteur_noms":     [noms[f"s_{sid}"] for sid in (p.secteur_ids or []) if f"s_{sid}" in noms],
-        "branche_noms":     [noms[f"b_{bid}"] for bid in (p.branche_ids or []) if f"b_{bid}" in noms],
-        "activite_noms":    [noms[f"ac_{aid}"] for aid in (p.activite_ids or []) if f"ac_{aid}" in noms],
-        "thematiques_tree": _build_tree(p.secteur_ids or [], p.branche_ids or [], p.activite_ids or [], noms, b_details, a_details),
-        "created_at":       p.created_at.isoformat() if p.created_at else None,
-        "moa_list": [
-            {"id": m.id, "nom": m.nom, "telephones": m.telephones or [], "mails": m.mails or []}
-            for m in (p.moa_list or [])
+        "pole_nom":          noms.get(f"p_{p.pole_id}"),
+        "secteur_noms":      [noms[f"s_{s}"] for s in (p.secteur_ids or []) if f"s_{s}" in noms],
+        "branche_noms":      [noms[f"b_{b}"] for b in (p.branche_ids or []) if f"b_{b}" in noms],
+        "activite_noms":     [noms[f"ac_{a}"] for a in (p.activite_ids or []) if f"ac_{a}" in noms],
+        "thematiques_tree":  _build_tree(p.secteur_ids or [], p.branche_ids or [], p.activite_ids or [], noms, b_details, a_details),
+        "created_at":        p.created_at.isoformat() if p.created_at else None,
+        "porteurs": [
+            {"id": pt.id, "nom": pt.nom, "telephones": pt.telephones or [], "mails": pt.mails or [], "ordre": pt.ordre}
+            for pt in (p.porteurs or [])
         ],
-        "coordinateurs": [
-            {"id": c.id, "civilite": c.civilite, "nom": c.nom, "prenom": c.prenom,
-             "telephones": c.telephones or [], "mails": c.mails or [], "ordre": c.ordre}
-            for c in (p.coordinateurs or [])
+        "points_focaux": [
+            {"id": pf.id, "civilite": pf.civilite, "nom": pf.nom, "prenom": pf.prenom,
+             "telephones": pf.telephones or [], "mails": pf.mails or [], "ordre": pf.ordre}
+            for pf in (p.points_focaux or [])
         ],
         "fichiers": [
             {"id": f.id, "titre": f.titre, "fichier_nom": f.fichier_nom}
@@ -160,39 +157,40 @@ def projet_to_dict(p: Projet, noms: dict = {}, zone_noms: dict = {}, b_details: 
 
 
 async def apply_relations(p: Projet, payload: dict, db: AsyncSession):
-    if "moa_list" in payload:
-        await db.execute(text("UPDATE projets SET moa_id = NULL WHERE id = :pid"), {"pid": p.id})
+    # Porteurs
+    if "porteurs" in payload:
+        await db.execute(text("DELETE FROM porteurs_projets WHERE projet_id = :pid"), {"pid": p.id})
         await db.flush()
-        await db.execute(text("DELETE FROM projet_moa WHERE projet_id = :pid"), {"pid": p.id})
-        await db.flush()
-        new_moa = payload["moa_list"]
-        if new_moa and any(new_moa[0].get(k) for k in ["nom", "telephones", "mails"]):
-            m_data = new_moa[0]
-            res = await db.execute(text("""
-                INSERT INTO projet_moa (projet_id, nom, telephones, mails, ordre)
-                VALUES (:pid, :nom, :tels, :mails, 0) RETURNING id
+        for porteur in payload["porteurs"]:
+            await db.execute(text("""
+                INSERT INTO porteurs_projets (projet_id, nom, telephones, mails, ordre)
+                VALUES (:pid, :nom, :tels, :mails, :ord)
             """), {
-                "pid":   p.id,
-                "nom":   m_data.get("nom") or None,
-                "tels":  m_data.get("telephones") or [],
-                "mails": m_data.get("mails") or [],
+                "pid":  p.id,
+                "nom":  porteur.get("nom") or None,
+                "tels": porteur.get("telephones") or [],
+                "mails":porteur.get("mails") or [],
+                "ord":  porteur.get("ordre", 0),
             })
-            new_id = res.fetchone()[0]
-            await db.execute(text("UPDATE projets SET moa_id = :mid WHERE id = :pid"), {"mid": new_id, "pid": p.id})
         await db.flush()
 
-    if "coordinateurs" in payload:
-        await db.execute(text("DELETE FROM projet_coordinateurs WHERE projet_id = :pid"), {"pid": p.id})
+    # Points focaux
+    if "points_focaux" in payload:
+        await db.execute(text("DELETE FROM projets_points_focaux WHERE projet_id = :pid"), {"pid": p.id})
         await db.flush()
-        for c in payload["coordinateurs"]:
+        for pf in payload["points_focaux"]:
             await db.execute(text("""
-                INSERT INTO projet_coordinateurs (projet_id, civilite, nom, prenom, telephones, mails, ordre)
+                INSERT INTO projets_points_focaux
+                    (projet_id, civilite, nom, prenom, telephones, mails, ordre)
                 VALUES (:pid, :civ, :nom, :pre, :tels, :mails, :ord)
             """), {
-                "pid":   p.id, "civ": c.get("civilite") or None,
-                "nom":   c.get("nom") or None, "pre": c.get("prenom") or None,
-                "tels":  c.get("telephones") or [], "mails": c.get("mails") or [],
-                "ord":   c.get("ordre", 0),
+                "pid":   p.id,
+                "civ":   pf.get("civilite") or None,
+                "nom":   pf.get("nom") or None,
+                "pre":   pf.get("prenom") or None,
+                "tels":  pf.get("telephones") or [],
+                "mails": pf.get("mails") or [],
+                "ord":   pf.get("ordre", 0),
             })
         await db.flush()
 
@@ -206,11 +204,11 @@ def to_decimal(v):
 # ── GET /projets ──────────────────────────────────────────────────────────────
 @router.get("")
 async def liste_projets(
-    q: Optional[str] = Query(None),
-    page: int = Query(1, ge=1),
+    q:        Optional[str] = Query(None),
+    page:     int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    admin: Optional[bool] = Query(None),
-    db: AsyncSession = Depends(get_db),
+    admin:    Optional[bool] = Query(None),
+    db:       AsyncSession = Depends(get_db),
 ):
     base = select(Projet).options(*LOAD_OPTS).where(Projet.is_deleted == False)
     if not admin:
@@ -218,7 +216,10 @@ async def liste_projets(
     if q:
         base = base.where(Projet.titre_projet.ilike(f"%{q}%"))
     base = base.order_by(Projet.created_at.desc())
-    count_res = await db.execute(select(Projet.id).where(Projet.is_deleted == False))
+    count_q = select(Projet.id).where(Projet.is_deleted == False)
+    if not admin:
+        count_q = count_q.where(Projet.est_publie == True)
+    count_res = await db.execute(count_q)
     total = len(count_res.fetchall())
     res = await db.execute(base.offset((page-1)*per_page).limit(per_page))
     projets = res.scalars().all()
@@ -233,10 +234,18 @@ async def creer_projet(payload: dict, db: AsyncSession = Depends(get_db)):
     inv_min = payload.get("investissement_min") or None
     inv_max = payload.get("investissement_max") or None
     if inv_min and inv_max and float(inv_max) <= float(inv_min):
-        raise HTTPException(422, "Le montant maximum doit être strictement supérieur au montant minimum")
+        raise HTTPException(422, "Le montant maximum doit être supérieur au montant minimum")
+
+    from datetime import date as date_type
+    date_debut = None
+    if payload.get("date_debut"):
+        try: date_debut = date_type.fromisoformat(payload["date_debut"])
+        except: pass
+
     p = Projet(
         titre_projet        = payload["titre_projet"].strip(),
         description         = payload.get("description") or None,
+        date_debut          = date_debut,
         region_id           = payload.get("region_id") or None,
         departement_id      = payload.get("departement_id") or None,
         arrondissement_id   = payload.get("arrondissement_id") or None,
@@ -250,12 +259,11 @@ async def creer_projet(payload: dict, db: AsyncSession = Depends(get_db)):
         investissement_max  = to_decimal(inv_max),
         investissement_est_intervalle = payload.get("investissement_est_intervalle") or False,
         devise_id           = payload.get("devise_id") or None,
-        porteur_projet      = payload.get("porteur_projet") or None,
     )
     db.add(p)
     await db.flush()
     await apply_relations(p, payload, db)
-    await db.refresh(p)
+    await db.flush()
     res = await db.execute(select(Projet).options(*LOAD_OPTS).where(Projet.id == p.id))
     return (await enrich([res.scalar_one()], db))[0]
 
@@ -266,20 +274,21 @@ async def modifier_projet(projet_id: int, payload: dict, db: AsyncSession = Depe
     res = await db.execute(select(Projet).options(*LOAD_OPTS).where(Projet.id == projet_id, Projet.is_deleted == False))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Projet introuvable")
+
     inv_min = payload.get("investissement_min") or p.investissement_min
     inv_max = payload.get("investissement_max") or p.investissement_max
     if inv_min and inv_max and float(inv_max) <= float(inv_min):
-        raise HTTPException(422, "Le montant maximum doit être strictement supérieur au montant minimum")
-    for f in ["titre_projet","description","zone_investissement","porteur_projet"]:
+        raise HTTPException(422, "Le montant maximum doit être supérieur au montant minimum")
+
+    for f in ["titre_projet", "description", "zone_investissement"]:
         if f in payload: setattr(p, f, payload[f] or None)
-    for f in ["region_id","departement_id","arrondissement_id","pole_id","devise_id"]:
+    for f in ["region_id", "departement_id", "arrondissement_id", "pole_id", "devise_id"]:
         if f in payload: setattr(p, f, payload[f] or None)
-    for f in ["date_attribution","date_fin_prevue"]:
-        if f in payload:
-            from datetime import date as date_type
-            setattr(p, f, date_type.fromisoformat(payload[f]) if payload[f] else None)
-    for f in ["secteur_ids","branche_ids","activite_ids"]:
+    for f in ["secteur_ids", "branche_ids", "activite_ids"]:
         if f in payload: setattr(p, f, payload[f] or [])
+    if "date_debut" in payload:
+        from datetime import date as date_type
+        p.date_debut = date_type.fromisoformat(payload["date_debut"]) if payload["date_debut"] else None
     if "investissement" in payload:
         p.investissement = to_decimal(payload["investissement"])
     if "investissement_min" in payload:
@@ -288,22 +297,13 @@ async def modifier_projet(projet_id: int, payload: dict, db: AsyncSession = Depe
         p.investissement_max = to_decimal(payload["investissement_max"])
     if "investissement_est_intervalle" in payload:
         p.investissement_est_intervalle = payload["investissement_est_intervalle"] or False
+    if "est_publie" in payload:
+        p.est_publie = payload["est_publie"]
+
     await apply_relations(p, payload, db)
     await db.flush()
-    await db.refresh(p)
     res = await db.execute(select(Projet).options(*LOAD_OPTS).where(Projet.id == projet_id))
     return (await enrich([res.scalar_one()], db))[0]
-
-
-@router.patch("/{projet_id}/toggle")
-async def toggle_projet_publie(projet_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(Projet).where(Projet.id == projet_id, Projet.is_deleted == False))
-    p = res.scalar_one_or_none()
-    if not p:
-        raise HTTPException(404, "Projet introuvable")
-    p.est_publie = payload.get("est_publie", not p.est_publie)
-    await db.commit()
-    return {"id": p.id, "est_publie": p.est_publie}
 
 
 # ── DELETE /projets/:id ───────────────────────────────────────────────────────
