@@ -292,8 +292,16 @@ from fastapi import UploadFile, File, Form
 from typing import List
 import csv, io
 
-def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> list[tuple[int, float | None]]:
-    """Retourne [(annee, valeur), ...] depuis un CSV ou Excel CNUCED long-format."""
+# ── Helpers import / parse ────────────────────────────────────────────────────
+# Format CSV CNUCED : Economy_Label | Year | <serie>_Value  (1 ligne par année)
+# Supporte les fichiers mono-pays ET multi-pays dans le même fichier.
+
+from fastapi import UploadFile, File, Form
+from typing import List
+import csv, io
+
+def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> dict[str, list[tuple[int, float | None]]]:
+    """Retourne {economy_label: [(annee, valeur), ...]} — supporte fichiers multi-pays."""
     ext = (nom_fichier or "").lower().rsplit(".", 1)[-1]
 
     if ext in ("xlsx", "xls"):
@@ -303,13 +311,18 @@ def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> list[tuple[int, floa
         data = list(ws.iter_rows(values_only=True))
     else:
         texte = contenu.decode("utf-8-sig", errors="replace")
-        sample = texte[:2048]
-        sep = "," if sample.count(",") >= sample.count(";") else ";"
+        sep = "," if texte[:2048].count(",") >= texte[:2048].count(";") else ";"
         data = list(csv.reader(io.StringIO(texte), delimiter=sep))
 
-    rows: list[tuple[int, float | None]] = []
-    for row in data[1:]:  # sauter l'en-tête
+    header_labels = {c.strip().lower() for c in (data[0] if data else []) if c}
+    SKIP = {"economy_label", "economy", "économie", "pays"}
+
+    result: dict[str, list[tuple[int, float | None]]] = {}
+    for row in data[1:]:
         try:
+            label = str(row[0]).strip() if row[0] else ""
+            if not label or label.lower() in SKIP:
+                continue
             annee = int(str(row[1]).strip())
             if not (1970 <= annee <= 2050):
                 continue
@@ -317,28 +330,10 @@ def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> list[tuple[int, floa
             valeur = None if raw in ("", "...", "—", "-", "n.d.", "N/A") else float(
                 raw.replace(",", ".").replace(" ", "").replace("\xa0", "")
             )
-            rows.append((annee, valeur))
+            result.setdefault(label, []).append((annee, valeur))
         except (ValueError, IndexError):
             continue
-    return rows
-
-
-def _economy_label_from_file(contenu: bytes, nom_fichier: str) -> str | None:
-    """Lit la colonne A (Economy_Label) depuis la 1ère ligne de données."""
-    ext = (nom_fichier or "").lower().rsplit(".", 1)[-1]
-    if ext in ("xlsx", "xls"):
-        import openpyxl
-        ws = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True).active
-        for row in ws.iter_rows(min_row=2, values_only=True):
-            if row and row[0]:
-                return str(row[0]).strip()
-    else:
-        texte = contenu.decode("utf-8-sig", errors="replace")
-        sep = "," if texte[:2048].count(",") >= texte[:2048].count(";") else ";"
-        for row in csv.reader(io.StringIO(texte), delimiter=sep):
-            if row and row[0] and row[0].strip().lower() not in ("economy_label", "economy"):
-                return row[0].strip()
-    return None
+    return result
 
 
 def _normalize_name(s: str) -> str:
@@ -430,29 +425,29 @@ async def importer_ide(
             if not contenu:
                 continue
 
-            label = _economy_label_from_file(contenu, fichier.filename or "")
-            if not label:
-                erreurs.append(f"{fichier.filename}: impossible de lire Economy_Label")
-                continue
-
-            pays_obj = await _resolve_ref_pays(db, label)
-            if not pays_obj:
-                erreurs.append(f"{fichier.filename}: pays '{label}' introuvable dans ref_pays")
-                continue
-
             try:
-                lignes = _parse_cnuced_file(contenu, fichier.filename or "")
+                lignes_par_pays = _parse_cnuced_file(contenu, fichier.filename or "")
             except Exception as e:
                 erreurs.append(f"{fichier.filename}: erreur de lecture — {e}")
                 continue
 
-            ins, maj = await _upsert_serie(db, pays_obj.id, pays_obj.nom_fr, direction, indicateur, lignes)
+            if not lignes_par_pays:
+                erreurs.append(f"{fichier.filename}: aucune ligne valide trouvée")
+                continue
 
-            nom = pays_obj.nom_fr
-            if nom not in resultats:
-                resultats[nom] = {"ref_pays_id": pays_obj.id, "insere": 0, "mis_a_jour": 0}
-            resultats[nom]["insere"] += ins
-            resultats[nom]["mis_a_jour"] += maj
+            for label, lignes in lignes_par_pays.items():
+                pays_obj = await _resolve_ref_pays(db, label)
+                if not pays_obj:
+                    erreurs.append(f"{fichier.filename}: pays '{label}' introuvable dans ref_pays")
+                    continue
+
+                ins, maj = await _upsert_serie(db, pays_obj.id, pays_obj.nom_fr, direction, indicateur, lignes)
+
+                nom = pays_obj.nom_fr
+                if nom not in resultats:
+                    resultats[nom] = {"ref_pays_id": pays_obj.id, "insere": 0, "mis_a_jour": 0}
+                resultats[nom]["insere"] += ins
+                resultats[nom]["mis_a_jour"] += maj
 
     await db.flush()
     return {
@@ -554,8 +549,10 @@ async def _do_rafraichir(db_factory) -> dict:
 
             for flow_type, direction, indicateur in UNCTAD_SERIES:
                 try:
-                    contenu = await _fetch_unctad_series(token, iso3, flow_type)
-                    lignes  = _parse_cnuced_file(contenu, f"{iso3}_{flow_type}.csv")
+                    contenu     = await _fetch_unctad_series(token, iso3, flow_type)
+                    lignes_dict = _parse_cnuced_file(contenu, f"{iso3}_{flow_type}.csv")
+                    # Aplatir — on connaît déjà le pays pour le refresh
+                    lignes = [item for items in lignes_dict.values() for item in items]
                     ins, maj = await _upsert_serie(db, rpid, nom_fr, direction, indicateur, lignes)
                     p_ins += ins
                     p_maj += maj

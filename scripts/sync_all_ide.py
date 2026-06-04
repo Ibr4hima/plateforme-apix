@@ -52,22 +52,25 @@ if not dossier.is_dir():
     sys.exit(1)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-def lire_csv(fichier: Path) -> tuple[str | None, list[tuple[int, float | None]]]:
-    """Retourne (economy_label, [(annee, valeur), ...])."""
-    economy_label = None
-    rows = []
+def lire_csv(fichier: Path) -> dict[str, list[tuple[int, float | None]]]:
+    """Retourne {economy_label: [(annee, valeur), ...]} — supporte fichiers multi-pays."""
+    SKIP = {"economy_label", "economy", "économie", "pays"}
+    result: dict[str, list] = {}
+
     with open(fichier, encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
+        annee_col = val_col = label_col = None
         for row in reader:
-            label_col = next((k for k in row if "economy" in k.lower()), None)
-            annee_col = next((k for k in row if "year"    in k.lower() or "année" in k.lower()), None)
-            val_col   = next((k for k in row if "value"   in k.lower() or "valeur" in k.lower()), None)
-
+            if annee_col is None:
+                label_col = next((k for k in row if "economy" in k.lower()), None)
+                annee_col = next((k for k in row if "year" in k.lower() or "année" in k.lower()), None)
+                val_col   = next((k for k in row if "value" in k.lower() or "valeur" in k.lower()), None)
             if not annee_col:
                 continue
 
-            if economy_label is None and label_col:
-                economy_label = row[label_col].strip()
+            label = row[label_col].strip() if label_col else ""
+            if not label or label.lower() in SKIP:
+                continue
 
             try:
                 annee = int(row[annee_col].strip())
@@ -83,9 +86,9 @@ def lire_csv(fichier: Path) -> tuple[str | None, list[tuple[int, float | None]]]
                     pass
 
             if 1970 <= annee <= 2050:
-                rows.append((annee, valeur))
+                result.setdefault(label, []).append((annee, valeur))
 
-    return economy_label, rows
+    return result
 
 
 def normalize_name(s: str) -> str:
@@ -178,26 +181,33 @@ for sous_dossier, (direction, indicateur) in SERIES_MAP.items():
 
     for fichier in fichiers_csv:
         try:
-            economy_label, rows = lire_csv(fichier)
+            lignes_par_pays = lire_csv(fichier)
         except Exception as e:
             erreurs.append(f"{fichier.name}: erreur de lecture — {e}")
             continue
 
-        if not rows:
+        if not lignes_par_pays:
             erreurs.append(f"{fichier.name}: aucune ligne valide")
             continue
 
-        ref_pays_id, nom_fr = resoudre_ref_pays(cur, economy_label) if cur else (None, economy_label or fichier.stem)
-        if not ref_pays_id and not args.dry_run:
-            print(f"    ⚠  {fichier.name}: '{economy_label}' non trouvé dans ref_pays")
-
-        ins, maj = importer_serie(cur, ref_pays_id, nom_fr, direction, indicateur, rows, args.dry_run)
-        total_inseres  += ins
-        total_ignores  += maj
         total_fichiers += 1
+        nb_pays = len(lignes_par_pays)
+        if nb_pays > 1:
+            print(f"    📄 {fichier.name} — {nb_pays} pays détectés")
 
-        flag = "🔵" if args.dry_run else ("✅" if ins > 0 else "⏭ ")
-        print(f"    {flag} {nom_fr:<30} {ins:>4} insérées  {maj:>4} mises à jour")
+        for economy_label, rows in lignes_par_pays.items():
+            ref_pays_id, nom_fr = resoudre_ref_pays(cur, economy_label) if cur else (None, economy_label)
+            if not ref_pays_id and not args.dry_run:
+                erreurs.append(f"{fichier.name}: pays '{economy_label}' introuvable dans ref_pays")
+                print(f"    ⚠  '{economy_label}' non trouvé dans ref_pays — ignoré")
+                continue
+
+            ins, maj = importer_serie(cur, ref_pays_id, nom_fr or economy_label, direction, indicateur, rows, args.dry_run)
+            total_inseres += ins
+            total_ignores += maj
+
+            flag = "🔵" if args.dry_run else ("✅" if ins > 0 else "⏭ ")
+            print(f"    {flag} {(nom_fr or economy_label):<30} {ins:>4} insérées  {maj:>4} mises à jour")
 
     print()
 
