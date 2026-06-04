@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Search, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 import PhoneInput from "@/components/shared/PhoneInput";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -342,7 +343,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
             </div>
             <div style={{ marginBottom:10 }}>
               <label style={LS}>Description</label>
-              <textarea value={form.description} onChange={e=>upd("description",e.target.value)} rows={3} placeholder="Description du projet…" style={{...IS,resize:"vertical" as const}}/>
+              <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
             </div>
             <div style={{ maxWidth:220 }}>
               <label style={LS}>Date de début</label>
@@ -539,7 +540,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
 
-          {p.description&&<div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{p.description}</p></div>}
+          {p.description&&<div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style><div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/></div>}
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {invest&&<div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Investissement</LBL><p style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>{invest}</p></div>}
