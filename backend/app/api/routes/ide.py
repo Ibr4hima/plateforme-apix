@@ -337,11 +337,10 @@ def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> dict[str, list[tuple
 
 
 def _normalize_name(s: str) -> str:
-    """Normalise un nom de pays : supprime accents, minuscules, apostrophes uniformisées,
-    suffixes temporels UNCTAD comme ‘(...2011)’ ou ‘(...1991)’."""
+    """Normalise un nom de pays : supprime accents, minuscules, apostrophes,
+    et suffixes temporels UNCTAD comme ‘(...2011)’, ‘(..1991)’, ‘(...)’."""
     import unicodedata, re
-    # Supprimer les suffixes temporels UNCTAD : "Ethiopie (...1991)" → "Ethiopie"
-    s = re.sub(r"\s*\(\.{2,3}\d{0,4}\)", "", s)
+    s = re.sub(r"\s*\(\.+\d*\)", "", s)   # "Ethiopie (...1991)" → "Ethiopie"
     s = s.replace("’", "’").replace("’", "’").replace("`", "’")
     s = unicodedata.normalize("NFD", s)
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
@@ -418,9 +417,9 @@ async def importer_ide(
         ("sortant", "stock"): stock_sortant,
     }
 
-    # { nom_pays: { "ref_pays_id": int, "insere": int, "mis_a_jour": int } }
-    resultats: dict[str, dict] = {}
-    erreurs: list[str] = []
+    resultats:   dict[str, dict] = {}   # nom_pays → stats
+    erreurs:     list[str]       = []   # erreurs techniques (lecture fichier)
+    non_resolus: dict[str, int]  = {}   # label UNCTAD → nb_lignes non importées
 
     for (direction, indicateur), fichiers in zones.items():
         for fichier in (fichiers or []):
@@ -441,11 +440,10 @@ async def importer_ide(
             for label, lignes in lignes_par_pays.items():
                 pays_obj = await _resolve_ref_pays(db, label)
                 if not pays_obj:
-                    erreurs.append(f"{fichier.filename}: pays '{label}' introuvable dans ref_pays")
+                    non_resolus[label] = non_resolus.get(label, 0) + len(lignes)
                     continue
 
                 ins, maj = await _upsert_serie(db, pays_obj.id, pays_obj.nom_fr, direction, indicateur, lignes)
-
                 nom = pays_obj.nom_fr
                 if nom not in resultats:
                     resultats[nom] = {"ref_pays_id": pays_obj.id, "insere": 0, "mis_a_jour": 0}
@@ -459,7 +457,36 @@ async def importer_ide(
             for nom, d in sorted(resultats.items())
         ],
         "erreurs": erreurs,
+        "non_resolus": [
+            {"label": label, "nb_lignes": nb}
+            for label, nb in sorted(non_resolus.items())
+        ],
     }
+
+
+# ── POST /ide/associer-pays ──────────────────────────────────────────────────
+# Enregistre un alias UNCTAD → ref_pays en mettant à jour nom_cnuced.
+# Permet de résoudre manuellement les pays non reconnus lors d'un import.
+
+@router.post("/associer-pays", status_code=200)
+async def associer_pays(payload: dict, db: AsyncSession = Depends(get_db)):
+    from fastapi import HTTPException
+    from app.models.shared import RefPays
+
+    label   = (payload.get("label_cnuced") or "").strip()
+    ref_id  = payload.get("ref_pays_id")
+
+    if not label or not ref_id:
+        raise HTTPException(400, "label_cnuced et ref_pays_id sont requis")
+
+    res = await db.execute(select(RefPays).where(RefPays.id == int(ref_id)))
+    p   = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Pays introuvable dans ref_pays")
+
+    p.nom_cnuced = label
+    await db.flush()
+    return {"success": True, "nom_fr": p.nom_fr, "nom_cnuced": p.nom_cnuced}
 
 
 # ── POST /ide/rafraichir ──────────────────────────────────────────────────────
