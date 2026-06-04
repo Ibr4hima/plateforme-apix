@@ -596,6 +596,7 @@ function PotentialiteModal({ pot: p, refAvantages, onClose }: { pot:any; refAvan
           {/* Description */}
           {p.description&&(
             <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
+              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
               <LBL>Description</LBL>
               <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
             </div>
@@ -677,6 +678,7 @@ function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
           {/* Description */}
           {data.avantages&&(
             <div style={{background:"#F8F7F6",border:"1px solid #E8E5E3",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
+              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
               <LBL>Description</LBL>
               <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
             </div>
