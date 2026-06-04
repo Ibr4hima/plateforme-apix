@@ -16,7 +16,7 @@ settings = get_settings()
 
 async def _scheduled_ide_refresh():
     """Tâche hebdomadaire : récupère les nouvelles données UNCTAD si credentials configurés."""
-    if not os.getenv("UNCTAD_CLIENT_ID"):
+    if not settings.UNCTAD_CLIENT_ID:
         return
     from app.api.routes.ide import _do_rafraichir
     from app.core.database import AsyncSessionLocal

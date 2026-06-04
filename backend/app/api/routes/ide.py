@@ -492,12 +492,12 @@ async def _fetch_unctad_series(token: str, iso3: str, flow_type: str) -> bytes:
 
 async def _do_rafraichir(db_factory) -> dict:
     """Logique de refresh UNCTAD — appelée depuis la route ET le scheduler."""
-    import os
     from app.core.database import AsyncSessionLocal
     from app.models.shared import RefPays
-
-    client_id     = os.getenv("UNCTAD_CLIENT_ID")
-    client_secret = os.getenv("UNCTAD_CLIENT_SECRET")
+    from app.core.config import get_settings
+    s = get_settings()
+    client_id     = s.UNCTAD_CLIENT_ID
+    client_secret = s.UNCTAD_CLIENT_SECRET
     if not client_id or not client_secret:
         return {"success": False, "erreur": "Variables UNCTAD_CLIENT_ID / UNCTAD_CLIENT_SECRET non configurées"}
 
@@ -555,8 +555,9 @@ async def rafraichir_ide(db: AsyncSession = Depends(get_db)):
 @router.get("/rafraichir/config")
 async def rafraichir_config():
     """Indique si les credentials UNCTAD sont configurés."""
-    import os
-    ok = bool(os.getenv("UNCTAD_CLIENT_ID") and os.getenv("UNCTAD_CLIENT_SECRET"))
+    from app.core.config import get_settings
+    s = get_settings()
+    ok = bool(s.UNCTAD_CLIENT_ID and s.UNCTAD_CLIENT_SECRET)
     return {"configured": ok}
 
 

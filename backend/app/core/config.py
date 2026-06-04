@@ -30,6 +30,10 @@ class Settings(BaseSettings):
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
+    # UNCTAD API (optionnel — pour l'auto-refresh IDE)
+    UNCTAD_CLIENT_ID: str = ""
+    UNCTAD_CLIENT_SECRET: str = ""
+
     # Sécurité JWT
     SECRET_KEY: str = "changeme_in_production"
     ALGORITHM: str = "HS256"
