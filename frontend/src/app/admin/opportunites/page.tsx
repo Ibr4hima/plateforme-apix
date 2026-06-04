@@ -65,7 +65,12 @@ function RichTextEditor({ value, onChange }: { value:string; onChange:(v:string)
 
   return (
     <div style={{ border:"1px solid #C5BFBB", borderRadius:8, overflow:"hidden" }}>
-      <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc} [data-rte] ol{padding-left:20px;list-style-type:decimal} [data-rte] li{margin-bottom:2px}`}</style>
+      <style>{`
+        [data-rte] ul{padding-left:20px;list-style-type:disc}
+        [data-rte] ol{padding-left:20px;list-style-type:decimal}
+        [data-rte] li{margin-bottom:2px}
+        [data-rte][contenteditable] *{font-family:var(--font-google-sans)!important;font-size:13px!important;background:transparent!important}
+      `}</style>
       <div style={{ display:"flex", gap:2, padding:"5px 8px", background:"#fff", borderBottom:"1px solid #E8E5E3" }}>
         <RichToolBtn label="G" title="Gras (Ctrl+B)" cmd="bold" onExec={exec}/>
         <RichToolBtn label="I" title="Italique (Ctrl+I)" cmd="italic" onExec={exec} italic/>
@@ -81,6 +86,13 @@ function RichTextEditor({ value, onChange }: { value:string; onChange:(v:string)
         onKeyDown={e=>{
           if ((e.ctrlKey||e.metaKey) && e.key==="b") { e.preventDefault(); exec("bold"); }
           if ((e.ctrlKey||e.metaKey) && e.key==="i") { e.preventDefault(); exec("italic"); }
+        }}
+        onPaste={e=>{
+          e.preventDefault();
+          const text = e.clipboardData.getData("text/plain");
+          document.execCommand("insertText", false, text);
+          skipSync.current = true;
+          onChange(ref.current?.innerHTML || "");
         }}
         onInput={()=>{ skipSync.current=true; onChange(ref.current?.innerHTML||""); }}
         style={{ minHeight:120, padding:"10px 12px", outline:"none", fontSize:13, color:"#1a1a2e", lineHeight:1.7, background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}
@@ -819,8 +831,9 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
 
           {p.description&&(
             <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
+              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc} [data-rte] ol{padding-left:20px;list-style-type:decimal} [data-rte] li{margin-bottom:2px}`}</style>
               <LBL>Description</LBL>
-              <div style={{fontSize:13,color:"#4a5568",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
+              <div data-rte style={{fontSize:13,color:"#4a5568",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
             </div>
           )}
 
