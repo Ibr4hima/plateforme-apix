@@ -42,7 +42,7 @@ function FileZone({ label, file, onChange }: { label: string; file: File | null;
         position: "relative",
       }}
     >
-      <input ref={inputRef} type="file" accept=".xlsx,.xls" style={{ display: "none" }} onChange={e => onChange(e.target.files?.[0] || null)} />
+      <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }} onChange={e => onChange(e.target.files?.[0] || null)} />
       {file ? (
         <>
           <CheckCircle size={20} color="#004f91" style={{ marginBottom: 4 }} />
@@ -59,7 +59,7 @@ function FileZone({ label, file, onChange }: { label: string; file: File | null;
         <>
           <UploadCloud size={20} color="#AAA" style={{ marginBottom: 4 }} />
           <div style={{ fontSize: 12, color: "#888" }}>{label}</div>
-          <div style={{ fontSize: 11, color: "#AAA", marginTop: 2 }}>Fichier Excel CNUCED</div>
+          <div style={{ fontSize: 11, color: "#AAA", marginTop: 2 }}>CSV ou Excel CNUCED</div>
         </>
       )}
     </div>

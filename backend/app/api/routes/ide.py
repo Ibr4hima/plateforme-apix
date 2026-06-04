@@ -285,54 +285,56 @@ async def get_pays_ref(db: AsyncSession = Depends(get_db)):
     ]
 
 
-# ── POST /ide/upload ──────────────────────────────────────────────────────────
-@router.post("/upload")
-async def upload_ide(
-    ref_pays_id: int = None,
-    db: AsyncSession = Depends(get_db),
-):
-    from fastapi import HTTPException
-    raise HTTPException(400, "Utiliser le formulaire multipart")
+# ── POST /ide/importer ────────────────────────────────────────────────────────
+# Format CSV CNUCED attendu :
+#   Economy_Label  | Year | <indicateur_colonne>_Value
+#   Sénégal        | 1990 | 123.45
+#   ...
+# Colonne B = année, Colonne C = valeur (la ligne 1 est l'en-tête, ignorée)
 
-
-@router.post("/upload/fichiers", status_code=200)
-async def upload_ide_fichiers(
-    ref_pays_id:    int                         = None,
-    flux_entrant:   Optional[bytes]             = None,
-    flux_sortant:   Optional[bytes]             = None,
-    stock_entrant:  Optional[bytes]             = None,
-    stock_sortant:  Optional[bytes]             = None,
-    db: AsyncSession = Depends(get_db),
-):
-    from fastapi import HTTPException, UploadFile, Form, File
-    raise HTTPException(400, "Utiliser la route multipart correcte")
-
-
-@router.post("/upload/multipart", status_code=200)
-async def upload_ide_multipart(
-    db: AsyncSession = Depends(get_db),
-    **kwargs
-):
-    from fastapi import HTTPException
-    raise HTTPException(400, "Utiliser /ide/upload-pays")
-
-
-@router.post("/upload-pays", status_code=200)
-async def upload_pays_ide(
-    ref_pays_id:   int                                                     = None,
-    db: AsyncSession = Depends(get_db),
-):
-    from fastapi import HTTPException, UploadFile, Form, File
-    raise HTTPException(400, "Envoyer les fichiers via multipart")
-
-
-# Route upload réelle avec fichiers
 from fastapi import UploadFile, File, Form
-import io
+import csv, io
+
+def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> list[tuple[int, float | None]]:
+    """Retourne [(annee, valeur), ...] depuis un CSV ou Excel CNUCED long-format."""
+    ext = (nom_fichier or "").lower().rsplit(".", 1)[-1]
+    rows: list[tuple[int, float | None]] = []
+
+    if ext in ("xlsx", "xls"):
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True)
+        ws = wb.active
+        data = list(ws.iter_rows(values_only=True))
+    else:
+        # CSV — détecter le séparateur
+        texte = contenu.decode("utf-8-sig", errors="replace")
+        sample = texte[:2048]
+        sep = "," if sample.count(",") >= sample.count(";") else ";"
+        reader = csv.reader(io.StringIO(texte), delimiter=sep)
+        data = list(reader)
+
+    # Ignorer ligne d'en-tête (ligne 0)
+    for row in data[1:]:
+        try:
+            # Colonne B (index 1) = Year, Colonne C (index 2) = Valeur
+            annee = int(str(row[1]).strip())
+            if not (1970 <= annee <= 2050):
+                continue
+            raw = str(row[2]).strip() if len(row) > 2 else ""
+            if raw in ("", "...", "—", "-", "n.d.", "N/A"):
+                valeur = None
+            else:
+                valeur = float(raw.replace(",", ".").replace(" ", "").replace("\xa0", ""))
+            rows.append((annee, valeur))
+        except (ValueError, IndexError):
+            continue
+
+    return rows
+
 
 @router.post("/importer", status_code=200)
 async def importer_ide(
-    ref_pays_id:  int         = Form(...),
+    ref_pays_id:   int        = Form(...),
     flux_entrant:  UploadFile = File(None),
     flux_sortant:  UploadFile = File(None),
     stock_entrant: UploadFile = File(None),
@@ -341,9 +343,7 @@ async def importer_ide(
 ):
     from fastapi import HTTPException
     from app.models.shared import RefPays
-    import openpyxl
 
-    # Vérifier que le pays existe
     res = await db.execute(select(RefPays).where(RefPays.id == ref_pays_id))
     pays_obj = res.scalar_one_or_none()
     if not pays_obj:
@@ -369,65 +369,11 @@ async def importer_ide(
             continue
 
         try:
-            wb = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True)
-            ws = wb.active
+            lignes = _parse_cnuced_file(contenu, fichier.filename or "")
         except Exception as e:
             raise HTTPException(400, f"Erreur lecture fichier {direction}/{indicateur}: {e}")
 
-        # Parser le fichier CNUCED — format attendu :
-        # Ligne d'en-tête avec des années en colonnes (ex: 1990, 1991, ..., 2023)
-        # Ligne(s) de données avec les valeurs
-        annees_cols: list[tuple[int, int]] = []  # (annee, col_index)
-        for row in ws.iter_rows():
-            # Chercher la ligne d'en-tête contenant des années
-            for cell in row:
-                try:
-                    val = int(str(cell.value).strip()) if cell.value is not None else None
-                    if val and 1970 <= val <= 2050:
-                        annees_cols.append((val, cell.column))
-                except:
-                    pass
-            if annees_cols:
-                break
-
-        if not annees_cols:
-            continue
-
-        # Lire les valeurs — prendre la première ligne après l'en-tête qui a des données numériques
-        data_row = None
-        header_row = None
-        for i, row in enumerate(ws.iter_rows(values_only=True)):
-            cols_as_years = sum(1 for c in row if c is not None and str(c).strip().isdigit() and 1970 <= int(str(c).strip()) <= 2050)
-            if cols_as_years >= 5:
-                header_row = i
-                data_row_idx = i + 1
-                break
-
-        if header_row is None:
-            continue
-
-        # Trouver la ligne de données
-        rows = list(ws.iter_rows(values_only=True))
-        if data_row_idx >= len(rows):
-            continue
-        data_row = rows[data_row_idx]
-
-        header = rows[header_row]
-
-        for col_idx, h_val in enumerate(header):
-            try:
-                annee = int(str(h_val).strip()) if h_val is not None else None
-                if not annee or not (1970 <= annee <= 2050):
-                    continue
-                cell_val = data_row[col_idx] if col_idx < len(data_row) else None
-                if cell_val is None or str(cell_val).strip() in ("", "...", "—", "-"):
-                    valeur = None
-                else:
-                    valeur = float(str(cell_val).replace(",", ".").replace(" ", ""))
-            except:
-                continue
-
-            # Upsert
+        for annee, valeur in lignes:
             existing = await db.execute(
                 select(IdeCnuced).where(
                     IdeCnuced.ref_pays_id == ref_pays_id,
