@@ -337,9 +337,12 @@ def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> dict[str, list[tuple
 
 
 def _normalize_name(s: str) -> str:
-    """Normalise un nom de pays : supprime accents, minuscules, apostrophes uniformisées."""
-    import unicodedata
-    s = s.replace("’", "'").replace("‘", "'").replace("`", "'")
+    """Normalise un nom de pays : supprime accents, minuscules, apostrophes uniformisées,
+    suffixes temporels UNCTAD comme ‘(...2011)’ ou ‘(...1991)’."""
+    import unicodedata, re
+    # Supprimer les suffixes temporels UNCTAD : "Ethiopie (...1991)" → "Ethiopie"
+    s = re.sub(r"\s*\(\.{2,3}\d{0,4}\)", "", s)
+    s = s.replace("’", "’").replace("’", "’").replace("`", "’")
     s = unicodedata.normalize("NFD", s)
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
     return s.lower().strip()

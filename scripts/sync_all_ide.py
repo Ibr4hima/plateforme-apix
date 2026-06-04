@@ -92,8 +92,9 @@ def lire_csv(fichier: Path) -> dict[str, list[tuple[int, float | None]]]:
 
 
 def normalize_name(s: str) -> str:
-    import unicodedata
-    s = s.replace("’", "'").replace("‘", "'").replace("`", "'")
+    import unicodedata, re
+    s = re.sub(r"\s*\(\.{2,3}\d{0,4}\)", "", s)  # "Ethiopie (...1991)" → "Ethiopie"
+    s = s.replace("’", "’").replace("’", "’").replace("`", "’")
     s = unicodedata.normalize("NFD", s)
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
     return s.lower().strip()
