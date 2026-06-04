@@ -186,7 +186,7 @@ function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
-          {e.description&&<div style={{background:"rgba(202,99,31,0.04)",border:"1px solid rgba(202,99,31,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{e.description}</p></div>}
+          {e.description&&<div style={{background:"rgba(202,99,31,0.04)",border:"1px solid rgba(202,99,31,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style><div data-rte dangerouslySetInnerHTML={{__html:e.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/></div>}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {dateStr&&<div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{dateStr}</p>{e.duree_jours&&<p style={{fontSize:11,color:"#9aa5b4",marginTop:3}}>{e.duree_jours} jour{e.duree_jours>1?"s":""}</p>}</div>}
             {(e.ville||e.pays_hote_nom)&&<div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Lieu</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{[e.ville,e.pays_hote_nom].filter(Boolean).join(", ")}</p></div>}

@@ -359,7 +359,7 @@ function ZoneCard({ zone }: { zone:any }) {
         {/* Contenu déplié */}
         {open && (
           <div style={{ borderTop:`1px solid ${meta.color}25`,padding:"16px 20px",background:meta.bg }}>
-            {zone.description && <p style={{ fontSize:13,color:"#4a5568",lineHeight:1.75,marginBottom:16,padding:"12px 16px",background:"#fff",borderRadius:10,border:`1px solid ${meta.border}` }}>{zone.description}</p>}
+            {zone.description && <><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style><div data-rte dangerouslySetInnerHTML={{__html:zone.description}} style={{ fontSize:13,color:"#4a5568",lineHeight:1.75,marginBottom:16,padding:"12px 16px",background:"#fff",borderRadius:10,border:`1px solid ${meta.border}` }}/></>}
 
             {(zone.date_creation||zone.decret_creation||zone.superficie) && (
               <div style={{ display:"flex",gap:10,marginBottom:16,flexWrap:"wrap" as const }}>

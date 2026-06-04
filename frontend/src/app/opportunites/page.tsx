@@ -304,7 +304,8 @@ function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
 
           {p.description && (
             <div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
-              <p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{p.description}</p>
+              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
+              <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
             </div>
           )}
 
@@ -592,11 +593,11 @@ function PotentialiteModal({ pot: p, refAvantages, onClose }: { pot:any; refAvan
             </div>
           )}
 
-          {/* Informations complémentaires */}
-          {p.autres&&(
+          {/* Description */}
+          {p.description&&(
             <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
-              <LBL>Informations complémentaires</LBL>
-              <p style={{fontSize:13,color:"#4a5568",lineHeight:1.7,whiteSpace:"pre-wrap" as const}}>{p.autres}</p>
+              <LBL>Description</LBL>
+              <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
             </div>
           )}
 
@@ -673,11 +674,11 @@ function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
             </div>
           )}
 
-          {/* Commentaire global */}
+          {/* Description */}
           {data.avantages&&(
             <div style={{background:"#F8F7F6",border:"1px solid #E8E5E3",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
-              <LBL>Commentaire général</LBL>
-              <p style={{fontSize:13,color:"#4a5568",lineHeight:1.7,whiteSpace:"pre-wrap" as const}}>{data.avantages}</p>
+              <LBL>Description</LBL>
+              <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
             </div>
           )}
 
