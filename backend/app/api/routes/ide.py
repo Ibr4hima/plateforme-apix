@@ -285,20 +285,16 @@ async def get_pays_ref(db: AsyncSession = Depends(get_db)):
     ]
 
 
-# ── POST /ide/importer ────────────────────────────────────────────────────────
-# Format CSV CNUCED attendu :
-#   Economy_Label  | Year | <indicateur_colonne>_Value
-#   Sénégal        | 1990 | 123.45
-#   ...
-# Colonne B = année, Colonne C = valeur (la ligne 1 est l'en-tête, ignorée)
+# ── Helpers import / parse ────────────────────────────────────────────────────
+# Format CSV CNUCED : Economy_Label | Year | <serie>_Value  (1 ligne par année)
 
 from fastapi import UploadFile, File, Form
+from typing import List
 import csv, io
 
 def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> list[tuple[int, float | None]]:
     """Retourne [(annee, valeur), ...] depuis un CSV ou Excel CNUCED long-format."""
     ext = (nom_fichier or "").lower().rsplit(".", 1)[-1]
-    rows: list[tuple[int, float | None]] = []
 
     if ext in ("xlsx", "xls"):
         import openpyxl
@@ -306,106 +302,262 @@ def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> list[tuple[int, floa
         ws = wb.active
         data = list(ws.iter_rows(values_only=True))
     else:
-        # CSV — détecter le séparateur
         texte = contenu.decode("utf-8-sig", errors="replace")
         sample = texte[:2048]
         sep = "," if sample.count(",") >= sample.count(";") else ";"
-        reader = csv.reader(io.StringIO(texte), delimiter=sep)
-        data = list(reader)
+        data = list(csv.reader(io.StringIO(texte), delimiter=sep))
 
-    # Ignorer ligne d'en-tête (ligne 0)
-    for row in data[1:]:
+    rows: list[tuple[int, float | None]] = []
+    for row in data[1:]:  # sauter l'en-tête
         try:
-            # Colonne B (index 1) = Year, Colonne C (index 2) = Valeur
             annee = int(str(row[1]).strip())
             if not (1970 <= annee <= 2050):
                 continue
             raw = str(row[2]).strip() if len(row) > 2 else ""
-            if raw in ("", "...", "—", "-", "n.d.", "N/A"):
-                valeur = None
-            else:
-                valeur = float(raw.replace(",", ".").replace(" ", "").replace("\xa0", ""))
+            valeur = None if raw in ("", "...", "—", "-", "n.d.", "N/A") else float(
+                raw.replace(",", ".").replace(" ", "").replace("\xa0", "")
+            )
             rows.append((annee, valeur))
         except (ValueError, IndexError):
             continue
-
     return rows
 
 
+def _economy_label_from_file(contenu: bytes, nom_fichier: str) -> str | None:
+    """Lit la colonne A (Economy_Label) depuis la 1ère ligne de données."""
+    ext = (nom_fichier or "").lower().rsplit(".", 1)[-1]
+    if ext in ("xlsx", "xls"):
+        import openpyxl
+        ws = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True).active
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if row and row[0]:
+                return str(row[0]).strip()
+    else:
+        texte = contenu.decode("utf-8-sig", errors="replace")
+        sep = "," if texte[:2048].count(",") >= texte[:2048].count(";") else ";"
+        for row in csv.reader(io.StringIO(texte), delimiter=sep):
+            if row and row[0] and row[0].strip().lower() not in ("economy_label", "economy"):
+                return row[0].strip()
+    return None
+
+
+async def _resolve_ref_pays(db, label: str):
+    """Résout un nom CNUCED → RefPays (via nom_cnuced ou nom_fr)."""
+    from app.models.shared import RefPays
+    from sqlalchemy import or_
+    res = await db.execute(
+        select(RefPays).where(or_(RefPays.nom_cnuced == label, RefPays.nom_fr == label)).limit(1)
+    )
+    return res.scalar_one_or_none()
+
+
+async def _upsert_serie(db, ref_pays_id: int, nom_pays: str, direction: str, indicateur: str,
+                        lignes: list[tuple[int, float | None]]) -> tuple[int, int]:
+    insere = mis_a_jour = 0
+    for annee, valeur in lignes:
+        res = await db.execute(
+            select(IdeCnuced).where(
+                IdeCnuced.ref_pays_id == ref_pays_id,
+                IdeCnuced.annee == annee,
+                IdeCnuced.direction == direction,
+                IdeCnuced.indicateur == indicateur,
+            )
+        )
+        row = res.scalar_one_or_none()
+        if row:
+            row.valeur = valeur
+            row.pays = nom_pays
+            mis_a_jour += 1
+        else:
+            db.add(IdeCnuced(
+                pays=nom_pays, annee=annee, direction=direction, indicateur=indicateur,
+                valeur=valeur, source="CNUCED", ref_pays_id=ref_pays_id,
+            ))
+            insere += 1
+    return insere, mis_a_jour
+
+
+# ── POST /ide/importer ────────────────────────────────────────────────────────
+# Chaque zone accepte N fichiers (un par pays). Le pays est auto-détecté
+# depuis la colonne A (Economy_Label) et mappé vers ref_pays.
+
 @router.post("/importer", status_code=200)
 async def importer_ide(
-    ref_pays_id:   int        = Form(...),
-    flux_entrant:  UploadFile = File(None),
-    flux_sortant:  UploadFile = File(None),
-    stock_entrant: UploadFile = File(None),
-    stock_sortant: UploadFile = File(None),
+    flux_entrant:  List[UploadFile] = File(default=[]),
+    flux_sortant:  List[UploadFile] = File(default=[]),
+    stock_entrant: List[UploadFile] = File(default=[]),
+    stock_sortant: List[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
 ):
     from fastapi import HTTPException
-    from app.models.shared import RefPays
 
-    res = await db.execute(select(RefPays).where(RefPays.id == ref_pays_id))
-    pays_obj = res.scalar_one_or_none()
-    if not pays_obj:
-        raise HTTPException(404, "Pays introuvable dans ref_pays")
-
-    nom_pays = pays_obj.nom_fr
-
-    fichiers = {
+    zones = {
         ("entrant", "flux"):  flux_entrant,
         ("sortant", "flux"):  flux_sortant,
         ("entrant", "stock"): stock_entrant,
         ("sortant", "stock"): stock_sortant,
     }
 
-    total_insere = 0
-    total_mis_a_jour = 0
+    # { nom_pays: { "ref_pays_id": int, "insere": int, "mis_a_jour": int } }
+    resultats: dict[str, dict] = {}
+    erreurs: list[str] = []
 
-    for (direction, indicateur), fichier in fichiers.items():
-        if fichier is None:
-            continue
-        contenu = await fichier.read()
-        if not contenu:
-            continue
+    for (direction, indicateur), fichiers in zones.items():
+        for fichier in (fichiers or []):
+            contenu = await fichier.read()
+            if not contenu:
+                continue
 
-        try:
-            lignes = _parse_cnuced_file(contenu, fichier.filename or "")
-        except Exception as e:
-            raise HTTPException(400, f"Erreur lecture fichier {direction}/{indicateur}: {e}")
+            label = _economy_label_from_file(contenu, fichier.filename or "")
+            if not label:
+                erreurs.append(f"{fichier.filename}: impossible de lire Economy_Label")
+                continue
 
-        for annee, valeur in lignes:
-            existing = await db.execute(
-                select(IdeCnuced).where(
-                    IdeCnuced.ref_pays_id == ref_pays_id,
-                    IdeCnuced.annee == annee,
-                    IdeCnuced.direction == direction,
-                    IdeCnuced.indicateur == indicateur,
-                )
-            )
-            row_obj = existing.scalar_one_or_none()
-            if row_obj:
-                row_obj.valeur = valeur
-                row_obj.pays = nom_pays
-                total_mis_a_jour += 1
-            else:
-                db.add(IdeCnuced(
-                    pays=nom_pays,
-                    annee=annee,
-                    direction=direction,
-                    indicateur=indicateur,
-                    valeur=valeur,
-                    source="CNUCED",
-                    ref_pays_id=ref_pays_id,
-                ))
-                total_insere += 1
+            pays_obj = await _resolve_ref_pays(db, label)
+            if not pays_obj:
+                erreurs.append(f"{fichier.filename}: pays '{label}' introuvable dans ref_pays")
+                continue
+
+            try:
+                lignes = _parse_cnuced_file(contenu, fichier.filename or "")
+            except Exception as e:
+                erreurs.append(f"{fichier.filename}: erreur de lecture — {e}")
+                continue
+
+            ins, maj = await _upsert_serie(db, pays_obj.id, pays_obj.nom_fr, direction, indicateur, lignes)
+
+            nom = pays_obj.nom_fr
+            if nom not in resultats:
+                resultats[nom] = {"ref_pays_id": pays_obj.id, "insere": 0, "mis_a_jour": 0}
+            resultats[nom]["insere"] += ins
+            resultats[nom]["mis_a_jour"] += maj
 
     await db.flush()
     return {
-        "success": True,
-        "pays": nom_pays,
-        "insere": total_insere,
-        "mis_a_jour": total_mis_a_jour,
+        "pays": [
+            {"pays": nom, "ref_pays_id": d["ref_pays_id"], "insere": d["insere"], "mis_a_jour": d["mis_a_jour"]}
+            for nom, d in sorted(resultats.items())
+        ],
+        "erreurs": erreurs,
     }
+
+
+# ── POST /ide/rafraichir ──────────────────────────────────────────────────────
+# Fetch UNCTAD API pour tous les pays déjà importés. Nécessite les vars d'env
+# UNCTAD_CLIENT_ID et UNCTAD_CLIENT_SECRET.
+#
+# API UNCTAD (OAuth2 client_credentials) :
+#   POST https://unctadstat-user-api.unctad.org/token
+#   GET  https://unctadstat-user-api.unctad.org/US.FdiFlowsStock/cur/Facts
+#        ?$format=csv&culture=fr&$filter=Economy eq '{iso3}' and FlowType eq '{code}'
+
+UNCTAD_TOKEN_URL = "https://unctadstat-user-api.unctad.org/token"
+UNCTAD_DATA_URL  = "https://unctadstat-user-api.unctad.org/US.FdiFlowsStock/cur/Facts"
+
+# Mapping code UNCTAD FlowType → (direction, indicateur)
+UNCTAD_SERIES = [
+    ("FDI_F_In",  "entrant", "flux"),
+    ("FDI_F_Out", "sortant", "flux"),
+    ("FDI_S_In",  "entrant", "stock"),
+    ("FDI_S_Out", "sortant", "stock"),
+]
+
+
+async def _get_unctad_token(client_id: str, client_secret: str) -> str:
+    import httpx
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.post(
+            UNCTAD_TOKEN_URL,
+            data={"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret},
+        )
+        r.raise_for_status()
+        return r.json()["access_token"]
+
+
+async def _fetch_unctad_series(token: str, iso3: str, flow_type: str) -> bytes:
+    import httpx
+    async with httpx.AsyncClient(timeout=60) as client:
+        r = await client.get(
+            UNCTAD_DATA_URL,
+            params={
+                "$format": "csv",
+                "culture":  "fr",
+                "$filter":  f"Economy eq '{iso3}' and FlowType eq '{flow_type}'",
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        r.raise_for_status()
+        return r.content
+
+
+async def _do_rafraichir(db_factory) -> dict:
+    """Logique de refresh UNCTAD — appelée depuis la route ET le scheduler."""
+    import os
+    from app.core.database import AsyncSessionLocal
+    from app.models.shared import RefPays
+
+    client_id     = os.getenv("UNCTAD_CLIENT_ID")
+    client_secret = os.getenv("UNCTAD_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        return {"success": False, "erreur": "Variables UNCTAD_CLIENT_ID / UNCTAD_CLIENT_SECRET non configurées"}
+
+    async with db_factory() as db:
+        # Récupérer tous les pays déjà importés
+        from sqlalchemy import distinct
+        res = await db.execute(
+            select(distinct(IdeCnuced.ref_pays_id)).where(IdeCnuced.ref_pays_id != None)
+        )
+        ref_pays_ids = [r[0] for r in res.fetchall()]
+
+        if not ref_pays_ids:
+            return {"success": True, "message": "Aucun pays importé", "pays": []}
+
+        try:
+            token = await _get_unctad_token(client_id, client_secret)
+        except Exception as e:
+            return {"success": False, "erreur": f"Authentification UNCTAD échouée : {e}"}
+
+        resultats = []
+        erreurs   = []
+
+        for rpid in ref_pays_ids:
+            rp = await db.execute(select(RefPays).where(RefPays.id == rpid))
+            pays_obj = rp.scalar_one_or_none()
+            if not pays_obj or not pays_obj.code_iso3:
+                continue
+
+            iso3    = pays_obj.code_iso3
+            nom_fr  = pays_obj.nom_fr
+            p_ins   = p_maj = 0
+
+            for flow_type, direction, indicateur in UNCTAD_SERIES:
+                try:
+                    contenu = await _fetch_unctad_series(token, iso3, flow_type)
+                    lignes  = _parse_cnuced_file(contenu, f"{iso3}_{flow_type}.csv")
+                    ins, maj = await _upsert_serie(db, rpid, nom_fr, direction, indicateur, lignes)
+                    p_ins += ins
+                    p_maj += maj
+                except Exception as e:
+                    erreurs.append(f"{nom_fr}/{flow_type}: {e}")
+
+            resultats.append({"pays": nom_fr, "insere": p_ins, "mis_a_jour": p_maj})
+
+        await db.commit()
+        return {"success": True, "pays": resultats, "erreurs": erreurs}
+
+
+@router.post("/rafraichir", status_code=200)
+async def rafraichir_ide(db: AsyncSession = Depends(get_db)):
+    from app.core.database import AsyncSessionLocal
+    return await _do_rafraichir(AsyncSessionLocal)
+
+
+@router.get("/rafraichir/config")
+async def rafraichir_config():
+    """Indique si les credentials UNCTAD sont configurés."""
+    import os
+    ok = bool(os.getenv("UNCTAD_CLIENT_ID") and os.getenv("UNCTAD_CLIENT_SECRET"))
+    return {"configured": ok}
 
 
 # ── GET /ide/cnuced/stats ─────────────────────────────────────────────────────

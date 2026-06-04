@@ -8,11 +8,44 @@ from app.api.routes import (
     ide, ref_pays, opportunites, ref_potentialites, ref_avantages,
     citi, dashboard, dashboard_tables
 )
+from contextlib import asynccontextmanager
 import os
 
 settings = get_settings()
 
+
+async def _scheduled_ide_refresh():
+    """Tâche hebdomadaire : récupère les nouvelles données UNCTAD si credentials configurés."""
+    if not os.getenv("UNCTAD_CLIENT_ID"):
+        return
+    from app.api.routes.ide import _do_rafraichir
+    from app.core.database import AsyncSessionLocal
+    await _do_rafraichir(AsyncSessionLocal)
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    try:
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+        from apscheduler.triggers.cron import CronTrigger
+        scheduler = AsyncIOScheduler()
+        scheduler.add_job(
+            _scheduled_ide_refresh,
+            CronTrigger(day_of_week="sun", hour=2, minute=0),
+            id="ide_weekly_refresh",
+            replace_existing=True,
+        )
+        scheduler.start()
+        application.state.scheduler = scheduler
+    except ImportError:
+        pass  # apscheduler non installé
+    yield
+    if hasattr(application.state, "scheduler"):
+        application.state.scheduler.shutdown(wait=False)
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     docs_url=f"{settings.API_PREFIX}/docs",
