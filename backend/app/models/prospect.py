@@ -9,25 +9,30 @@ from app.core.database import Base
 class Prospect(Base):
     __tablename__ = "prospects"
 
-    id           = Column(Integer, primary_key=True, autoincrement=True)
-    nom          = Column(String(255), nullable=False)
-    siege_id     = Column(Integer, ForeignKey("ref_pays.id"), nullable=True)
-    adresse      = Column(Text)
-    telephone    = Column(String(50))
-    mail         = Column(String(255))
-    siteweb      = Column(Text)
-    secteur_ids  = Column(ARRAY(Integer), default=[])
-    branche_ids  = Column(ARRAY(Integer), default=[])
-    activite_ids = Column(ARRAY(Integer), default=[])
-    point_entree = Column(Text)
-    est_publie   = Column(Boolean, default=True)
-    is_deleted   = Column(Boolean, default=False)
-    created_at   = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    updated_at   = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    id               = Column(Integer, primary_key=True, autoincrement=True)
+    type             = Column(String(10), default="physique")      # physique | morale
+    nom              = Column(String(255), nullable=False)
+    prenom           = Column(String(150), nullable=True)
+    pays_origine_id  = Column(Integer, ForeignKey("ref_pays.id"), nullable=True)
+    siege_id         = Column(Integer, ForeignKey("ref_pays.id"), nullable=True)
+    adresse          = Column(Text)
+    telephone        = Column(String(500))
+    mail             = Column(String(500))
+    siteweb          = Column(Text)
+    secteur_ids      = Column(ARRAY(Integer), default=[])
+    branche_ids      = Column(ARRAY(Integer), default=[])
+    activite_ids     = Column(ARRAY(Integer), default=[])
+    point_entree     = Column(Text)
+    details          = Column(Text)
+    est_publie       = Column(Boolean, default=True)
+    is_deleted       = Column(Boolean, default=False)
+    created_at       = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at       = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
-    siege        = relationship("RefPays", foreign_keys=[siege_id], lazy="joined")
-    contacts     = relationship("ProspectContact", back_populates="prospect",
-                                cascade="all, delete-orphan", order_by="ProspectContact.created_at")
+    pays_origine     = relationship("RefPays", foreign_keys=[pays_origine_id], lazy="joined")
+    siege            = relationship("RefPays", foreign_keys=[siege_id], lazy="joined")
+    contacts         = relationship("ProspectContact", back_populates="prospect",
+                                   cascade="all, delete-orphan", order_by="ProspectContact.created_at")
 
 
 class ProspectContact(Base):

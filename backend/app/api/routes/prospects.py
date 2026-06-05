@@ -6,54 +6,31 @@ from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.models.prospect import Prospect, ProspectContact, ProspectContactHistorique
-from app.models.entreprise import RefSecteur, RefBranche, RefActivite
-from app.models.shared import RefPays
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
 
 LOAD_OPTS = [
+    selectinload(Prospect.pays_origine),
     selectinload(Prospect.siege),
     selectinload(Prospect.contacts).selectinload(ProspectContact.historique),
 ]
 
 
-# ── Enrichissement ────────────────────────────────────────────────────────────
-async def enrich(prospects: list, db: AsyncSession) -> list:
-    s_ids  = {sid for p in prospects for sid in (p.secteur_ids or [])}
-    b_ids  = {bid for p in prospects for bid in (p.branche_ids or [])}
-    a_ids  = {aid for p in prospects for aid in (p.activite_ids or [])}
-    noms: dict = {}
-    if s_ids:
-        res = await db.execute(select(RefSecteur).where(RefSecteur.id.in_(s_ids)))
-        for s in res.scalars(): noms[f"s_{s.id}"] = s.nom
-    if b_ids:
-        res = await db.execute(select(RefBranche).where(RefBranche.id.in_(b_ids)))
-        for b in res.scalars(): noms[f"b_{b.id}"] = b.nom
-    if a_ids:
-        res = await db.execute(select(RefActivite).where(RefActivite.id.in_(a_ids)))
-        for a in res.scalars(): noms[f"a_{a.id}"] = a.nom
-    return [prospect_to_dict(p, noms) for p in prospects]
-
-
-def prospect_to_dict(p: Prospect, noms: dict = {}) -> dict:
+def prospect_to_dict(p: Prospect) -> dict:
     return {
-        "id":           p.id,
-        "nom":          p.nom,
-        "siege_id":     p.siege_id,
-        "siege_nom":    p.siege.nom_fr if p.siege else None,
-        "adresse":      p.adresse,
-        "telephone":    p.telephone,
-        "mail":         p.mail,
-        "siteweb":      p.siteweb,
-        "secteur_ids":  p.secteur_ids or [],
-        "branche_ids":  p.branche_ids or [],
-        "activite_ids": p.activite_ids or [],
-        "secteur_noms": [noms[f"s_{i}"] for i in (p.secteur_ids or []) if f"s_{i}" in noms],
-        "branche_noms": [noms[f"b_{i}"] for i in (p.branche_ids or []) if f"b_{i}" in noms],
-        "activite_noms":[noms[f"a_{i}"] for i in (p.activite_ids or []) if f"a_{i}" in noms],
-        "point_entree": p.point_entree,
-        "est_publie":   p.est_publie,
-        "created_at":   p.created_at.isoformat() if p.created_at else None,
+        "id":              p.id,
+        "type":            p.type or "physique",
+        "nom":             p.nom,
+        "prenom":          p.prenom,
+        "pays_origine_id": p.pays_origine_id,
+        "pays_origine_nom":p.pays_origine.nom_fr if p.pays_origine else None,
+        "telephone":       p.telephone,
+        "mail":            p.mail,
+        "siteweb":         p.siteweb,
+        "adresse":         p.adresse,
+        "details":         p.details,
+        "est_publie":      p.est_publie,
+        "created_at":      p.created_at.isoformat() if p.created_at else None,
         "contacts": [
             {
                 "id":                   c.id,
@@ -78,9 +55,13 @@ async def liste_prospects(
     contactes: Optional[bool] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
+    from sqlalchemy import or_
     base = select(Prospect).options(*LOAD_OPTS).where(Prospect.is_deleted == False)
     if q:
-        base = base.where(Prospect.nom.ilike(f"%{q}%"))
+        base = base.where(or_(
+            Prospect.nom.ilike(f"%{q}%"),
+            Prospect.prenom.ilike(f"%{q}%"),
+        ))
     if contactes is True:
         from sqlalchemy import exists
         base = base.where(exists().where(
@@ -97,31 +78,29 @@ async def liste_prospects(
     count_res = await db.execute(select(Prospect.id).where(Prospect.is_deleted == False))
     total = len(count_res.fetchall())
     res = await db.execute(base.offset((page-1)*per_page).limit(per_page))
-    return {"data": await enrich(list(res.scalars().all()), db), "total": total, "page": page, "per_page": per_page}
+    return {"data": [prospect_to_dict(p) for p in res.scalars().all()], "total": total, "page": page, "per_page": per_page}
 
 
 # ── POST /prospects ───────────────────────────────────────────────────────────
 @router.post("", status_code=201)
 async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
     if not payload.get("nom", "").strip():
-        raise HTTPException(422, "La dénomination sociale est obligatoire")
+        raise HTTPException(422, "Le nom est obligatoire")
     p = Prospect(
-        nom          = payload["nom"].strip(),
-        siege_id     = payload.get("siege_id") or None,
-        adresse      = payload.get("adresse") or None,
-        telephone    = payload.get("telephone") or None,
-        mail         = payload.get("mail") or None,
-        siteweb      = payload.get("siteweb") or None,
-        secteur_ids  = payload.get("secteur_ids") or [],
-        branche_ids  = payload.get("branche_ids") or [],
-        activite_ids = payload.get("activite_ids") or [],
-        point_entree = payload.get("point_entree") or None,
+        type            = payload.get("type") or "physique",
+        nom             = payload["nom"].strip(),
+        prenom          = payload.get("prenom") or None,
+        pays_origine_id = payload.get("pays_origine_id") or None,
+        telephone       = payload.get("telephone") or None,
+        mail            = payload.get("mail") or None,
+        siteweb         = payload.get("siteweb") or None,
+        adresse         = payload.get("adresse") or None,
+        details         = payload.get("details") or None,
     )
     db.add(p)
     await db.flush()
-    await db.refresh(p)
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == p.id))
-    return (await enrich([res.scalar_one()], db))[0]
+    return prospect_to_dict(res.scalar_one())
 
 
 # ── PATCH /prospects/:id ──────────────────────────────────────────────────────
@@ -130,16 +109,13 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Prospect introuvable")
-    for f in ["nom","adresse","telephone","mail","siteweb","point_entree"]:
+    for f in ["type","nom","prenom","telephone","mail","siteweb","adresse","details"]:
         if f in payload: setattr(p, f, payload[f] or None)
-    for f in ["siege_id"]:
-        if f in payload: setattr(p, f, payload[f] or None)
-    for f in ["secteur_ids","branche_ids","activite_ids"]:
-        if f in payload: setattr(p, f, payload[f] or [])
+    if "pays_origine_id" in payload: p.pays_origine_id = payload["pays_origine_id"] or None
     if "est_publie" in payload: p.est_publie = payload["est_publie"]
     await db.flush()
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id))
-    return (await enrich([res.scalar_one()], db))[0]
+    return prospect_to_dict(res.scalar_one())
 
 
 # ── DELETE /prospects/:id ─────────────────────────────────────────────────────
