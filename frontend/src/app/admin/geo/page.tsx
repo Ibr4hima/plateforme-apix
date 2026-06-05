@@ -131,32 +131,59 @@ export default function AdminGeo() {
   };
 
   // Parse le collé Excel (colonnes séparées par Tab, lignes par \n)
-  // Format attendu dans le fichier : Région | Département | Arrondissement
-  // On accepte aussi 2 colonnes : Département | Arrondissement
+  // Formats acceptés (avec ou sans cellules fusionnées) :
+  //   4 col : Région | Département | Arrondissement | Commune  → on prend col 1 et 2
+  //   3 col : Région | Département | Arrondissement
+  //   2 col : Département | Arrondissement
+  // Les cellules fusionnées génèrent des lignes avec les premières colonnes vides :
+  // on "descend" la dernière valeur non-vide (carry-forward).
+  const normalise = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+
   const parseExcel = (text: string) => {
     setImportResult(null); setImportError("");
-    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    // Regrouper par département : Map<depNom, Set<arrNom>>
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
     const byDep = new Map<string, Set<string>>();
+    let lastDep = "";
+    let lastArr = "";
+
     for (const line of lines) {
-      const cols = line.split("\t").map(c => c.trim()).filter(Boolean);
-      if (cols.length < 2) continue;
-      // Si 3 colonnes : col[1]=dép, col[2]=arr  |  Si 2 colonnes : col[0]=dép, col[1]=arr
-      const depNom = cols.length >= 3 ? cols[1] : cols[0];
-      const arrNom = cols.length >= 3 ? cols[2] : cols[1];
-      if (!depNom || !arrNom) continue;
-      if (!byDep.has(depNom)) byDep.set(depNom, new Set());
-      byDep.get(depNom)!.add(arrNom);
+      // NE PAS filtrer les colonnes vides — elles indiquent des cellules fusionnées
+      const cols = line.split("\t").map(c => c.trim());
+      const ncols = cols.length;
+
+      let depNom: string;
+      let arrNom: string;
+
+      if (ncols >= 4) {
+        // Format : Région | Département | Arrondissement | Commune
+        depNom = cols[1] || lastDep;
+        arrNom = cols[2] || lastArr;
+      } else if (ncols === 3) {
+        // Format : Région | Département | Arrondissement
+        depNom = cols[1] || lastDep;
+        arrNom = cols[2] || lastArr;
+      } else {
+        // Format : Département | Arrondissement
+        depNom = cols[0] || lastDep;
+        arrNom = cols[1] || lastArr;
+      }
+
+      // Carry-forward
+      if (depNom) lastDep = depNom;
+      if (arrNom) lastArr = arrNom;
+      if (!lastDep || !lastArr) continue;
+
+      if (!byDep.has(lastDep)) byDep.set(lastDep, new Set());
+      byDep.get(lastDep)!.add(lastArr);
     }
+
     // Construire preview et payload
     const preview: {dep:string; arrs:string[]}[] = [];
     const payload: {departement_id:number; noms:string[]}[] = [];
     const notFound: string[] = [];
     for (const [depNom, arrsSet] of byDep) {
-      const dep = departements.find(d =>
-        d.nom.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"") ===
-        depNom.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
-      );
+      const dep = departements.find(d => normalise(d.nom) === normalise(depNom));
       if (!dep) { notFound.push(depNom); continue; }
       const arrs = Array.from(arrsSet);
       preview.push({ dep: dep.nom, arrs });
@@ -433,9 +460,9 @@ export default function AdminGeo() {
                   <div style={{ background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 12, padding: "14px 16px", marginBottom: 18 }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#004f91", marginBottom: 6 }}>Mode rapide — tout en une seule fois</p>
                     <ol style={{ fontSize: 12, color: "#4a5568", lineHeight: 2, paddingLeft: 18, margin: 0 }}>
-                      <li>Dans votre fichier Excel, sélectionnez les colonnes <strong>Région · Département · Arrondissement</strong> (ou juste Département · Arrondissement)</li>
-                      <li>Copiez (<strong>Ctrl+C</strong>)</li>
-                      <li>Collez ci-dessous (<strong>Ctrl+V</strong>), puis cliquez sur Analyser</li>
+                      <li>Sélectionnez vos colonnes dans Excel — <strong>Région · Département · Arrondissement · Commune</strong> ou moins</li>
+                      <li>Copiez (<strong>Ctrl+C</strong>) — les cellules fusionnées sont gérées automatiquement</li>
+                      <li>Collez ci-dessous (<strong>Ctrl+V</strong>), puis cliquez <strong>Analyser</strong> pour voir l'aperçu avant import</li>
                     </ol>
                   </div>
                   <div style={{ marginBottom: 14 }}>
@@ -443,7 +470,7 @@ export default function AdminGeo() {
                     <textarea
                       value={excelPaste}
                       onChange={e => { setExcelPaste(e.target.value); setExcelPreview([]); setExcelPayload([]); setImportResult(null); setImportError(""); }}
-                      placeholder={"Dakar\tDakar\tGrand Dakar\nDakar\tDakar\tMédina\nDakar\tPikine\tDiamaguène…"}
+                      placeholder={"Dakar\tDakar\tAlmadies\tMermoz-Sacré Cœur\n\t\t\tOuakam\n\t\t\tNgor\n\t\tDakar-Plateau\tDakar-Plateau\n…"}
                       rows={8}
                       style={{ ...IS, resize: "vertical" as const, lineHeight: 1.8, fontSize: 12, fontFamily: "monospace" }}
                     />
