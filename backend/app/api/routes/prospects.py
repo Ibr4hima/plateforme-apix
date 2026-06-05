@@ -6,7 +6,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
-from app.models.prospect import Prospect, ProspectPointFocal, ProspectEchange
+from app.models.prospect import Prospect, ProspectPointFocal, ProspectEchange, ProspectContrainte
 from app.models.projet import Projet
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
@@ -16,6 +16,7 @@ LOAD_OPTS = [
     selectinload(Prospect.siege),
     selectinload(Prospect.points_focaux),
     selectinload(Prospect.echanges),
+    selectinload(Prospect.contraintes),
 ]
 
 
@@ -24,6 +25,18 @@ async def get_projet_titre(db: AsyncSession, projet_id: int | None) -> str | Non
         return None
     res = await db.execute(select(Projet.titre_projet).where(Projet.id == projet_id))
     return res.scalar_one_or_none()
+
+
+def contrainte_to_dict(c: ProspectContrainte) -> dict:
+    return {
+        "id":                  c.id,
+        "prospect_id":         c.prospect_id,
+        "description":         c.description,
+        "solution_preconisee": c.solution_preconisee,
+        "statut":              c.statut,
+        "created_at":          c.created_at.isoformat() if c.created_at else None,
+        "updated_at":          c.updated_at.isoformat() if c.updated_at else None,
+    }
 
 
 def echange_to_dict(e: ProspectEchange) -> dict:
@@ -93,6 +106,7 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
         "date_dernier_echange": echanges_sorted[-1].date_echange.isoformat() if echanges_sorted else None,
         "dernier_contact_par":  echanges_sorted[-1].contact_par if echanges_sorted else None,
         "echanges": [echange_to_dict(e) for e in echanges_sorted],
+        "contraintes": [contrainte_to_dict(c) for c in (p.contraintes or [])],
     }
 
 
@@ -249,9 +263,7 @@ async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = De
         raise HTTPException(404, "Prospect introuvable")
 
     # Valider les champs requis
-    contact_par = (payload.get("contact_par") or "").strip()
-    if not contact_par:
-        raise HTTPException(422, "Le nom du marketer est obligatoire")
+    contact_par = (payload.get("contact_par") or "").strip() or None
     if not payload.get("date_echange"):
         raise HTTPException(422, "La date de l'échange est obligatoire")
 
@@ -310,4 +322,65 @@ async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db))
     if not e:
         raise HTTPException(404, "Échange introuvable")
     await db.delete(e)
+    await db.flush()
+
+
+# ── POST /prospects/:id/contraintes ──────────────────────────────────────────
+@router.post("/{prospect_id}/contraintes", status_code=201)
+async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    p_res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
+    if not p_res.scalar_one_or_none():
+        raise HTTPException(404, "Prospect introuvable")
+    description = (payload.get("description") or "").strip()
+    if not description:
+        raise HTTPException(422, "La description est obligatoire")
+    statut = payload.get("statut") or "en_cours"
+    if statut not in ("en_cours", "resolue", "obsolete"):
+        raise HTTPException(422, "Statut invalide")
+    c = ProspectContrainte(
+        prospect_id         = prospect_id,
+        description         = description,
+        solution_preconisee = payload.get("solution_preconisee") or None,
+        statut              = statut,
+    )
+    db.add(c)
+    await db.flush()
+    await db.refresh(c)
+    return contrainte_to_dict(c)
+
+
+# ── PATCH /prospects/contraintes/:id ─────────────────────────────────────────
+@router.patch("/contraintes/{contrainte_id}")
+async def modifier_contrainte(contrainte_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import update as sqlupdate
+    from datetime import datetime, timezone
+    res = await db.execute(select(ProspectContrainte).where(ProspectContrainte.id == contrainte_id))
+    c = res.scalar_one_or_none()
+    if not c:
+        raise HTTPException(404, "Contrainte introuvable")
+    if "description" in payload:
+        desc = (payload["description"] or "").strip()
+        if not desc:
+            raise HTTPException(422, "La description est obligatoire")
+        c.description = desc
+    if "solution_preconisee" in payload:
+        c.solution_preconisee = payload["solution_preconisee"] or None
+    if "statut" in payload:
+        if payload["statut"] not in ("en_cours", "resolue", "obsolete"):
+            raise HTTPException(422, "Statut invalide")
+        c.statut = payload["statut"]
+    c.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    await db.refresh(c)
+    return contrainte_to_dict(c)
+
+
+# ── DELETE /prospects/contraintes/:id ────────────────────────────────────────
+@router.delete("/contraintes/{contrainte_id}", status_code=204)
+async def supprimer_contrainte(contrainte_id: int, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(ProspectContrainte).where(ProspectContrainte.id == contrainte_id))
+    c = res.scalar_one_or_none()
+    if not c:
+        raise HTTPException(404, "Contrainte introuvable")
+    await db.delete(c)
     await db.flush()

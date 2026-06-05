@@ -50,6 +50,8 @@ class Prospect(Base):
                                  cascade="all, delete-orphan", order_by="ProspectPointFocal.id")
     echanges      = relationship("ProspectEchange", back_populates="prospect",
                                  cascade="all, delete-orphan", order_by="ProspectEchange.date_echange")
+    contraintes   = relationship("ProspectContrainte", back_populates="prospect",
+                                 cascade="all, delete-orphan", order_by="ProspectContrainte.created_at")
 
 
 class ProspectPointFocal(Base):
@@ -73,8 +75,21 @@ class ProspectEchange(Base):
     prospect_id   = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
     date_echange  = Column(Date, nullable=False)
     commentaire   = Column(Text)
-    contact_par   = Column(String(255), nullable=False)
+    contact_par   = Column(String(255), nullable=True)
     enregistre_le = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    # Immuable : pas de updated_at, pas de is_deleted
 
     prospect = relationship("Prospect", back_populates="echanges")
+
+
+class ProspectContrainte(Base):
+    __tablename__ = "prospect_contraintes"
+
+    id                  = Column(Integer, primary_key=True, autoincrement=True)
+    prospect_id         = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
+    description         = Column(Text, nullable=False)
+    solution_preconisee = Column(Text)
+    statut              = Column(String(20), default="en_cours")
+    created_at          = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at          = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    prospect = relationship("Prospect", back_populates="contraintes")

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Building2, Check, ChevronDown, ChevronUp, Clock, Loader2, MessageSquare, Pencil, Plus, Trash2, User, X } from "lucide-react";
+import { AlertTriangle, Building2, Check, CheckCircle2, ChevronDown, ChevronUp, Clock, Loader2, MessageSquare, Pencil, Plus, Trash2, User, X, XCircle } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -533,24 +533,24 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
 // ── Modal Échange ─────────────────────────────────────────────────────────────
 function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onClose:()=>void; prospect:any; onSaved:(updated:any)=>void }) {
   const today = new Date().toISOString().slice(0,10);
-  const [form, setForm]     = useState({ date_echange: today, contact_par:"", commentaire:"" });
+  const [form, setForm]     = useState({ date_echange: today, commentaire:"" });
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
   const [ok,     setOk]     = useState(false);
   const upd = (k:string, v:string) => setForm(f=>({ ...f,[k]:v }));
 
-  // Date minimum = lendemain du dernier échange (ou pas de min si premier)
   const dernierEchange = prospect?.echanges?.length
     ? [...prospect.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1)
     : null;
+  const estPremier = !dernierEchange;
   const dateMin = dernierEchange
     ? (() => { const d=new Date(dernierEchange.date_echange); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); })()
     : undefined;
 
   useEffect(()=>{
     if (!open) return;
-    const defaut = dateMin && dateMin > today ? dateMin : today;
-    setForm({ date_echange: defaut > today ? today : defaut, contact_par:"", commentaire:"" });
+    const defaut = dateMin && dateMin <= today ? dateMin : today;
+    setForm({ date_echange: defaut, commentaire:"" });
     setError(""); setOk(false);
   }, [open, prospect?.id]);
 
@@ -559,18 +559,15 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
     : `${prospect?.prenom||""} ${prospect?.nom||""}`.trim();
 
   const handleSave = async () => {
-    if (!form.contact_par.trim()) { setError("Votre nom est obligatoire"); return; }
-    if (!form.date_echange)       { setError("La date est obligatoire"); return; }
+    if (!form.date_echange) { setError("La date est obligatoire"); return; }
     setSaving(true); setError("");
     try {
       const res = await fetch(`${API}/prospects/${prospect.id}/echanges`, {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ date_echange:form.date_echange, contact_par:form.contact_par.trim(), commentaire:form.commentaire||null })
+        body:JSON.stringify({ date_echange:form.date_echange, commentaire:form.commentaire||null })
       });
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
-      const nouvelEchange = await res.json();
       setOk(true);
-      // Recharger le prospect mis à jour
       const pr = await fetch(`${API}/prospects?page=1&per_page=200`);
       const pdata = await pr.json();
       const updated = (pdata.data||[]).find((p:any)=>p.id===prospect.id);
@@ -593,7 +590,7 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
               <p style={{ fontSize:12, color:"#9aa5b4", marginTop:3 }}>{displayName}</p>
               {dernierEchange && (
                 <p style={{ fontSize:11, color:"#ca631f", marginTop:4, fontWeight:600 }}>
-                  Dernier échange : {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")} · {dernierEchange.contact_par}
+                  Dernier échange : {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}
                 </p>
               )}
             </div>
@@ -602,17 +599,11 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
 
           <div style={{ display:"flex", flexDirection:"column" as const, gap:14 }}>
 
-            {/* Qui */}
-            <div>
-              <label style={LS}>Votre nom / identifiant *</label>
-              <input value={form.contact_par} onChange={e=>upd("contact_par",e.target.value)}
-                placeholder="Ex : Aïssatou Diallo" style={IS}/>
-            </div>
-
             {/* Date */}
             <div>
-              <label style={LS}>Date de l'échange *</label>
-              {dateMin && <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:5 }}>Doit être postérieure au {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}</p>}
+              <label style={LS}>{estPremier ? "Date du premier contact *" : "Date de l'échange *"}</label>
+              {estPremier && <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:5 }}>Date à laquelle le premier contact a eu lieu (≤ aujourd'hui)</p>}
+              {!estPremier && dateMin && <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:5 }}>Doit être postérieure au {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}</p>}
               <input type="date" value={form.date_echange}
                 max={today} min={dateMin}
                 onChange={e=>upd("date_echange",e.target.value)} style={IS}/>
@@ -655,11 +646,126 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
   );
 }
 
+// ── Statut badge contrainte ───────────────────────────────────────────────────
+const STATUTS_CONTRAINTE = [
+  { value:"en_cours", label:"En cours",   color:"#ca631f", bg:"rgba(202,99,31,0.08)",   icon: AlertTriangle },
+  { value:"resolue",  label:"Résolue",    color:"#059669", bg:"rgba(5,150,105,0.08)",   icon: CheckCircle2 },
+  { value:"obsolete", label:"Obsolète",   color:"#9aa5b4", bg:"rgba(154,165,180,0.08)", icon: XCircle },
+] as const;
+
+function StatutBadge({ statut }: { statut:string }) {
+  const s = STATUTS_CONTRAINTE.find(x=>x.value===statut) ?? STATUTS_CONTRAINTE[0];
+  const Icon = s.icon;
+  return (
+    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, fontWeight:700, color:s.color, background:s.bg, border:`1px solid ${s.color}33`, padding:"2px 8px", borderRadius:999 }}>
+      <Icon size={9}/>{s.label}
+    </span>
+  );
+}
+
+// ── Modal / formulaire contrainte ─────────────────────────────────────────────
+function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
+  open:boolean; onClose:()=>void; prospectId:number; contrainte:any|null; onSaved:(c:any)=>void;
+}) {
+  const [form, setForm]     = useState({ description:"", solution_preconisee:"", statut:"en_cours" });
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState("");
+  const upd = (k:string, v:string) => setForm(f=>({...f,[k]:v}));
+
+  useEffect(()=>{
+    if (!open) return;
+    setForm({
+      description:         contrainte?.description         || "",
+      solution_preconisee: contrainte?.solution_preconisee || "",
+      statut:              contrainte?.statut               || "en_cours",
+    });
+    setError("");
+  }, [open, contrainte?.id]);
+
+  const handleSave = async () => {
+    if (!form.description.trim()) { setError("La description est obligatoire"); return; }
+    setSaving(true); setError("");
+    try {
+      const url    = contrainte ? `${API}/prospects/contraintes/${contrainte.id}` : `${API}/prospects/${prospectId}/contraintes`;
+      const method = contrainte ? "PATCH" : "POST";
+      const res    = await fetch(url, { method, headers:{"Content-Type":"application/json"}, body:JSON.stringify({
+        description:         form.description.trim(),
+        solution_preconisee: form.solution_preconisee.trim()||null,
+        statut:              form.statut,
+      })});
+      if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
+      const saved = await res.json();
+      onSaved(saved);
+      onClose();
+    } catch(e:any) { setError(e.message); }
+    finally { setSaving(false); }
+  };
+
+  if (!open) return null;
+  return (
+    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(6px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:560, border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.2)" }}>
+        <div style={{ height:4, background:"linear-gradient(90deg,#ca631f,#e07a3a)", borderRadius:"20px 20px 0 0" }}/>
+        <div style={{ padding:"22px 26px 26px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
+            <h3 style={{ fontWeight:800, fontSize:"1rem", color:"#1a1a2e" }}>{contrainte?"Modifier la contrainte":"Nouvelle contrainte"}</h3>
+            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={14} color="#4a5568"/></button>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:14 }}>
+            <div>
+              <label style={LS}>Description de la contrainte *</label>
+              <textarea value={form.description} onChange={e=>upd("description",e.target.value)}
+                placeholder="Ex : Délais administratifs trop longs pour l'obtention de licences…"
+                rows={3} style={{ ...IS, resize:"vertical" as const, lineHeight:1.6 }}/>
+            </div>
+            <div>
+              <label style={LS}>Solution préconisée</label>
+              <textarea value={form.solution_preconisee} onChange={e=>upd("solution_preconisee",e.target.value)}
+                placeholder="Ex : Orientation vers le guichet unique — procédure accélérée possible"
+                rows={2} style={{ ...IS, resize:"vertical" as const, lineHeight:1.6 }}/>
+            </div>
+            <div>
+              <label style={LS}>Statut</label>
+              <div style={{ display:"flex", gap:8 }}>
+                {STATUTS_CONTRAINTE.map(s=>(
+                  <button key={s.value} type="button" onClick={()=>upd("statut",s.value)}
+                    style={{ flex:1, padding:"8px 0", borderRadius:9, border:`1px solid ${form.statut===s.value?s.color:"#E8E5E3"}`,
+                      background:form.statut===s.value?s.bg:"#fff", color:form.statut===s.value?s.color:"#9aa5b4",
+                      fontWeight:700, fontSize:12, cursor:"pointer", transition:"all 0.15s" }}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          {error && <p style={{ fontSize:12, color:"#dc2626", marginTop:12 }}>{error}</p>}
+          <div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:18 }}>
+            <button onClick={onClose} style={{ padding:"9px 16px", borderRadius:9, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>Annuler</button>
+            <button onClick={handleSave} disabled={saving}
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 18px", borderRadius:9, border:"none",
+                background:saving?"#ccc":"#ca631f", color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13 }}>
+              {saving?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
+              {saving?"Enregistrement…":contrainte?"Modifier":"Ajouter"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
 function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
   const LBL = ({t}:{t:string}) => <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>{t}</p>;
-  const [showEchanges, setShowEchanges] = useState(true);
+  const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
+  const [contrainteModal, setContrainteModal] = useState(false);
+  const [editContrainte,  setEditContrainte]  = useState<any>(null);
+  const [contraintes,     setContraintes]     = useState<any[]>(p.contraintes || []);
+  const [deletingContrainte, setDeletingContrainte] = useState<number|null>(null);
+
+  useEffect(()=>{ setContraintes(p.contraintes||[]); }, [p.id, p.contraintes]);
 
   const handleDeleteEchange = async (id:number) => {
     if (!confirm("Supprimer cet échange ?")) return;
@@ -667,6 +773,22 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
     await fetch(`${API}/prospects/echanges/${id}`, { method:"DELETE" });
     setDeletingEchange(null);
     onRefresh();
+  };
+
+  const handleDeleteContrainte = async (id:number) => {
+    if (!confirm("Supprimer cette contrainte ?")) return;
+    setDeletingContrainte(id);
+    await fetch(`${API}/prospects/contraintes/${id}`, { method:"DELETE" });
+    setDeletingContrainte(null);
+    setContraintes(prev=>prev.filter(c=>c.id!==id));
+  };
+
+  const handleContrainteSaved = (saved:any) => {
+    setContraintes(prev=>{
+      const idx = prev.findIndex(c=>c.id===saved.id);
+      if (idx >= 0) { const arr=[...prev]; arr[idx]=saved; return arr; }
+      return [...prev, saved];
+    });
   };
   const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
 
@@ -803,7 +925,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
                                 <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>
                                   {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                                 </span>
-                                <span style={{ fontSize:11, color:"#9aa5b4" }}>· {e.contact_par}</span>
+                                {e.contact_par && <span style={{ fontSize:11, color:"#9aa5b4" }}>· {e.contact_par}</span>}
                               </div>
                               {retardLabel && (
                                 <span style={{ fontSize:10, fontWeight:700, color:retardColor, background:retardColor+"15", border:`1px solid ${retardColor}33`, padding:"2px 7px", borderRadius:999 }}>
@@ -837,6 +959,53 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
             </div>
           )}
 
+          {/* Contraintes investisseur */}
+          <div style={{ marginBottom:16 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:contraintes.length?10:0 }}>
+              <LBL t={`Contraintes exprimées (${contraintes.length})`}/>
+              <button onClick={()=>{ setEditContrainte(null); setContrainteModal(true); }}
+                style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", marginBottom:5 }}>
+                <Plus size={10}/> Ajouter
+              </button>
+            </div>
+            {contraintes.length === 0 ? (
+              <p style={{ fontSize:12, color:"#C5BFBB", fontStyle:"italic" }}>Aucune contrainte enregistrée</p>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                {contraintes.map((c:any)=>(
+                  <div key={c.id} style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px" }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, gap:8 }}>
+                      <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.6, flex:1 }}>{c.description}</p>
+                      <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
+                        <StatutBadge statut={c.statut}/>
+                        <button onClick={()=>{ setEditContrainte(c); setContrainteModal(true); }}
+                          style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
+                          <Pencil size={10} style={{ color:"#9aa5b4" }}/>
+                        </button>
+                        <button onClick={()=>handleDeleteContrainte(c.id)} disabled={deletingContrainte===c.id}
+                          style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px", opacity:0.5 }}>
+                          {deletingContrainte===c.id
+                            ? <Loader2 size={10} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
+                            : <Trash2 size={10} style={{ color:"#dc2626" }}/>}
+                        </button>
+                      </div>
+                    </div>
+                    {c.solution_preconisee && (
+                      <div style={{ background:"rgba(5,150,105,0.06)", border:"1px solid rgba(5,150,105,0.15)", borderRadius:7, padding:"7px 10px", marginTop:6 }}>
+                        <p style={{ fontSize:10, fontWeight:700, color:"#059669", marginBottom:3 }}>Solution préconisée</p>
+                        <p style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}>{c.solution_preconisee}</p>
+                      </div>
+                    )}
+                    <p style={{ fontSize:10, color:"#C5BFBB", marginTop:6 }}>
+                      Ajouté le {new Date(c.created_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
+                      {c.updated_at !== c.created_at && ` · modifié le ${new Date(c.updated_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div style={{ display:"flex", gap:8, marginTop:20, justifyContent:"space-between", borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
             <button onClick={onContacter}
               style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
@@ -852,6 +1021,13 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
           </div>
         </div>
       </div>
+      <ContrainteModal
+        open={contrainteModal}
+        onClose={()=>{ setContrainteModal(false); setEditContrainte(null); }}
+        prospectId={p.id}
+        contrainte={editContrainte}
+        onSaved={handleContrainteSaved}
+      />
     </div>
   );
 }
