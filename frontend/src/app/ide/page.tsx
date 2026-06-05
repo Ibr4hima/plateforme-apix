@@ -702,6 +702,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   const tousKpis    = calculerKpis(donnees);
   const kpisSidebar = kpisOrdre.map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
   const kpisCards   = kpisEpingles.map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
+
   const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
   const groupedPays  = groupByContinent(filteredPays);
   const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
@@ -758,186 +759,225 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   };
 
   return (
-    <div style={{ maxWidth:1400, margin:"0 auto", padding:"28px 40px 80px", display:"flex", gap:24, alignItems:"flex-start" }}>
+    <div style={{ display:"flex", height:"100%", overflow:"hidden" as const }}>
 
-      {/* ── Sidebar ────────────────────────────────────────────────────────── */}
-      <div style={{ width:280, flexShrink:0, position:"sticky" as const, top:24 }}>
-        <div style={{ background:"#FAFAF9", borderRadius:16, border:"1px solid #E8E5E3", overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
+      {/* ── Sidebar indépendante ───────────────────────────────────────────── */}
+      <div style={{ width:292, flexShrink:0, overflowY:"auto" as const, height:"100%", borderRight:"1px solid #E8E5E3", background:"#fff" }}>
 
-          {/* Header */}
-          <div style={{ padding:"14px 20px", borderBottom:"1px solid #E8E5E3", background:"#fff", display:"flex", alignItems:"center", gap:8 }}>
+        {/* Header sticky */}
+        <div style={{ padding:"14px 20px", borderBottom:"1px solid #E8E5E3", background:"#FAFAF9", position:"sticky" as const, top:0, zIndex:2 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
             <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e" }}>Filtres</span>
           </div>
+        </div>
 
-          {/* Section Pays */}
-          <div style={{ padding:"16px 20px", borderBottom:"1px solid #E8E5E3", background:"#fff" }}>
-            <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:10 }}>Pays</p>
-            <div style={{ display:"flex", flexDirection:"column" as const, gap:4 }}>
-              {[...paysDispo].sort((a,b)=>{ if(a.nom==="Sénégal") return -1; if(b.nom==="Sénégal") return 1; return a.nom.localeCompare(b.nom,"fr"); }).map(p=>{
-                const sel=paysSelec===p.nom, col=getPaysColor(p.nom, paysDispo.indexOf(p));
-                return (
-                  <button key={p.nom} onClick={()=>setPaysSelec(p.nom)}
-                    style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 12px", borderRadius:9, border:`1.5px solid ${sel?col+"40":"#E8E5E3"}`, background:sel?`${col}09`:"transparent", cursor:"pointer", textAlign:"left" as const, transition:"all 0.12s", width:"100%" }}>
-                    <div style={{ width:8, height:8, borderRadius:"50%", background:sel?col:"#C5BFBB", flexShrink:0 }} />
-                    <span style={{ fontSize:13, fontWeight:sel?700:400, color:sel?col:"#4a5568" }}>{p.nom}</span>
-                  </button>
-                );
-              })}
-            </div>
+        {/* ── Section Pays ── */}
+        <div style={{ padding:"16px 20px", borderBottom:"1px solid #E8E5E3" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+            <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const }}>Pays</p>
+            <span style={{ fontSize:10, color:"#9aa5b4" }}>{paysDispo.length} disponibles</span>
           </div>
 
-          {/* Section Période */}
-          <div style={{ padding:"16px 20px", borderBottom:"1px solid #E8E5E3", background:"#fff" }}>
-            <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12 }}>Période</p>
-            <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:14 }}>
-              {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
-                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
-                  {m.l}
-                </button>
-              ))}
-            </div>
-            {modeAnnees==="plage" ? (
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e" }}>{anneeMin}</span>
-                  <span style={{ fontSize:11, color:"#C5BFBB" }}>→</span>
-                  <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e" }}>{anneeMax}</span>
+          {/* Search */}
+          <div style={{ position:"relative" as const, marginBottom:10 }}>
+            <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays..."
+              style={{ width:"100%", padding:"7px 28px 7px 28px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, outline:"none", boxSizing:"border-box" as const }} />
+            <svg style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)" }} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            {searchPays && <button onClick={()=>setSearchPays("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:"#9aa5b4", padding:0, fontSize:16, lineHeight:1 }}>×</button>}
+          </div>
+
+          {/* Grouped by continent → zone */}
+          <div style={{ maxHeight:256, overflowY:"auto" as const }}>
+            {sortContinents(Object.keys(groupedPays)).map(continent => {
+              const isOpen = openConts.has(continent);
+              const zones  = groupedPays[continent];
+              return (
+                <div key={continent} style={{ marginBottom:6 }}>
+                  <button onClick={()=>toggleCont(continent)}
+                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(202,99,31,0.06)", border:"none", cursor:"pointer", marginBottom:3 }}>
+                    <span style={{ fontSize:10, fontWeight:700, color:"#ca631f", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
+                    <ChevronDown size={11} style={{ color:"#ca631f", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }} />
+                  </button>
+                  {isOpen && Object.entries(zones).sort(([a],[b])=>a.localeCompare(b,"fr")).map(([zone,paysInZone]) => (
+                    <div key={zone} style={{ marginLeft:6, marginBottom:4 }}>
+                      <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:2 }}>{zone}</p>
+                      {(paysInZone as any[]).map((p:any) => {
+                        const sel = paysSelec === p.nom;
+                        const col = getPaysColor(p.nom, paysDispo.indexOf(p));
+                        return (
+                          <button key={p.nom} onClick={()=>setPaysSelec(p.nom)}
+                            style={{ display:"flex", alignItems:"center", gap:7, padding:"6px 10px", borderRadius:8, border:`1.5px solid ${sel?col+"40":"transparent"}`, background:sel?`${col}09`:"transparent", cursor:"pointer", textAlign:"left" as const, transition:"all 0.12s", width:"100%" }}
+                            onMouseEnter={e=>{ if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6"; }}
+                            onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background=sel?`${col}09`:"transparent"; }}>
+                            <span style={{ fontSize:15, lineHeight:1, flexShrink:0 }}>{p.code_iso2?flag(p.code_iso2):"🌍"}</span>
+                            <span style={{ fontSize:12, fontWeight:sel?700:400, color:sel?col:"#4a5568" }}>{p.nom}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
-                <input type="range" min={1990} max={2024} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))} style={{ width:"100%", accentColor:"#1a1a2e" }} />
-                <input type="range" min={1990} max={2024} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))} style={{ width:"100%", accentColor:"#1a1a2e" }} />
-                <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
-              </div>
-            ) : (
-              <div>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
-                  {Array.from({length:35},(_,i)=>1990+i).map(a=>{
-                    const sel=anneesSpec.includes(a);
-                    return (
-                      <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"transparent":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#1a1a2e":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
-                        {a}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div style={{ display:"flex", justifyContent:"space-between" }}>
-                  <span style={{ fontSize:11, color:"#4a5568" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
-                  {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"#9aa5b4", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
-                </div>
-              </div>
+              );
+            })}
+            {Object.keys(groupedPays).length === 0 && (
+              <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"16px 0" }}>Aucun pays trouvé</p>
             )}
           </div>
+        </div>
 
-          {/* Section KPIs */}
-          <div style={{ padding:"16px 20px", borderBottom:"1px solid #E8E5E3", background:"#fff" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-              <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const }}>KPIs</p>
-              <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#ca631f":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
+        {/* ── Section Période ── */}
+        <div style={{ padding:"16px 20px", borderBottom:"1px solid #E8E5E3" }}>
+          <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12 }}>Période</p>
+          <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:14 }}>
+            {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
+              <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
+                style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
+                {m.l}
+              </button>
+            ))}
+          </div>
+          {modeAnnees==="plage" ? (
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#F8F7F6", borderRadius:8, padding:"8px 14px" }}>
+                <span style={{ fontSize:17, fontWeight:800, color:"#1a1a2e" }}>{anneeMin}</span>
+                <span style={{ fontSize:11, color:"#C5BFBB" }}>→</span>
+                <span style={{ fontSize:17, fontWeight:800, color:"#1a1a2e" }}>{anneeMax}</span>
+              </div>
+              <div>
+                <label style={{ fontSize:10, color:"#9aa5b4", display:"block", marginBottom:3 }}>Début</label>
+                <input type="range" min={1990} max={2024} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))} style={{ width:"100%", accentColor:"#188038" }} />
+              </div>
+              <div>
+                <label style={{ fontSize:10, color:"#9aa5b4", display:"block", marginBottom:3 }}>Fin</label>
+                <input type="range" min={1990} max={2024} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))} style={{ width:"100%", accentColor:"#188038" }} />
+              </div>
+              <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
             </div>
-            <div style={{ display:"flex", flexDirection:"column" as const, gap:1, maxHeight:280, overflowY:"auto" as const }}>
-              {kpisSidebar.map((k,i)=>{
-                const epingle = kpisEpingles.includes(k.id);
-                const disabled = !epingle && kpisEpingles.length >= 5;
-                const isDragging = dragIdx===i;
-                const isOver = dragOver===i;
-                return (
-                  <div key={k.id}
-                    draggable
-                    onDragStart={()=>handleDragStart(i)}
-                    onDragOver={e=>handleDragOver(e,i)}
-                    onDrop={()=>handleDrop(i)}
-                    onDragEnd={handleDragEnd}
-                    title={k.description}
-                    style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 10px", borderRadius:8, background:isOver?"rgba(202,99,31,0.05)":epingle?"rgba(202,99,31,0.04)":"transparent", cursor:"grab", opacity:isDragging?0.3:disabled?0.3:1, transition:"background 0.1s", userSelect:"none" as const }}
-                    onMouseEnter={ev=>{ if(!isDragging) ev.currentTarget.style.background = epingle?"rgba(202,99,31,0.07)":"#F8F7F6"; }}
-                    onMouseLeave={ev=>{ ev.currentTarget.style.background = epingle?"rgba(202,99,31,0.04)":"transparent"; }}>
-                    <span style={{ fontSize:12, color:epingle?"#1a1a2e":"#6b7280", flex:1, lineHeight:1.35, fontWeight:epingle?500:400 }}>{k.label}</span>
-                    <button
-                      onClick={ev=>{ ev.stopPropagation(); !disabled && toggleEpingle(k.id); }}
-                      style={{ flexShrink:0, width:17, height:17, borderRadius:4, border:`1.5px solid ${epingle?"#ca631f":"#D1D5DB"}`, background:epingle?"#ca631f":"transparent", cursor:disabled?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
-                      {epingle && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          ) : (
+            <div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
+                {Array.from({length:35},(_,i)=>1990+i).map(a=>{
+                  const sel=anneesSpec.includes(a);
+                  return (
+                    <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
+                      style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"transparent":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#1a1a2e":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                      {a}
                     </button>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between" }}>
+                <span style={{ fontSize:11, color:"#4a5568" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+                {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"#9aa5b4", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
+              </div>
             </div>
-            <p style={{ fontSize:10, color:"#C5BFBB", marginTop:8, lineHeight:1.5 }}>Cochez jusqu'à 5 · glissez pour réorganiser</p>
-          </div>
+          )}
+        </div>
 
-          {/* Appliquer */}
-          <div style={{ padding:"14px 20px", background:"#FAFAF9" }}>
-            <button onClick={charger}
-              style={{ width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"linear-gradient(135deg,#1a1a2e,#2d2d4e)", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
-              Appliquer
-            </button>
+        {/* ── Section Key Performance Indicators ── */}
+        <div style={{ padding:"16px 20px", borderBottom:"1px solid #E8E5E3" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+            <p style={{ fontSize:10, fontWeight:700, color:"#ca631f", letterSpacing:"0.07em", textTransform:"uppercase" as const }}>Key Performance Indicators</p>
+            <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#ca631f":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
           </div>
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:1, maxHeight:240, overflowY:"auto" as const }}>
+            {kpisSidebar.map((k,i)=>{
+              const epingle = kpisEpingles.includes(k.id);
+              const disabled = !epingle && kpisEpingles.length >= 5;
+              const isDragging = dragIdx===i; const isOver = dragOver===i;
+              return (
+                <div key={k.id} draggable
+                  onDragStart={()=>handleDragStart(i)} onDragOver={e=>handleDragOver(e,i)}
+                  onDrop={()=>handleDrop(i)} onDragEnd={handleDragEnd}
+                  title={k.description}
+                  style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 10px", borderRadius:8, background:isOver?"rgba(202,99,31,0.05)":epingle?"rgba(202,99,31,0.04)":"transparent", cursor:"grab", opacity:isDragging?0.3:disabled?0.3:1, transition:"background 0.1s", userSelect:"none" as const }}
+                  onMouseEnter={ev=>{ if(!isDragging) ev.currentTarget.style.background=epingle?"rgba(202,99,31,0.07)":"#F8F7F6"; }}
+                  onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(202,99,31,0.04)":"transparent"; }}>
+                  <span style={{ fontSize:12, color:epingle?"#1a1a2e":"#6b7280", flex:1, lineHeight:1.35, fontWeight:epingle?500:400 }}>{k.label}</span>
+                  <button onClick={ev=>{ ev.stopPropagation(); !disabled && toggleEpingle(k.id); }}
+                    style={{ flexShrink:0, width:17, height:17, borderRadius:4, border:`1.5px solid ${epingle?"#ca631f":"#D1D5DB"}`, background:epingle?"#ca631f":"transparent", cursor:disabled?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
+                    {epingle && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ fontSize:10, color:"#C5BFBB", marginTop:8, lineHeight:1.5 }}>Cochez jusqu'à 5 · glissez pour réorganiser</p>
+        </div>
+
+        {/* Appliquer */}
+        <div style={{ padding:"16px 20px" }}>
+          <button onClick={charger}
+            style={{ width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"linear-gradient(135deg,#1a1a2e,#2d2d4e)", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
+            Appliquer
+          </button>
         </div>
       </div>
 
-      {/* ── Zone principale ─────────────────────────────────────────────────── */}
-      <div style={{ flex:1, minWidth:0, minHeight:"80vh" }}>
+      {/* ── Zone principale indépendante ────────────────────────────────────── */}
+      <div style={{ flex:1, minWidth:0, overflowY:"auto" as const, height:"100%", background:"#F2F0EF" }}>
+        <div style={{ padding:"24px 32px 48px" }}>
 
-        {/* Header */}
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{ width:10, height:10, borderRadius:"50%", background:couleur }} />
-            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
-            <span style={{ fontSize:12, color:"#9aa5b4" }}>
-              · {modeAnnees==="specifiques"&&anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}` : `${anneeMin}–${anneeMax}`}
-            </span>
-          </div>
-          <button onClick={()=>setShowTable(true)}
-            style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:999, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, transition:"all 0.15s" }}
-            onMouseEnter={e=>{ e.currentTarget.style.borderColor="#1a1a2e"; e.currentTarget.style.color="#1a1a2e"; }}
-            onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
-            <Table size={12}/> Prévisualiser les données
-          </button>
-        </div>
-
-        {/* KPI cards — 5 max */}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
-          {kpisCards.map(k=>{
-            const indicatif = getIndicatif(k);
-            const isPos = k.valeur!==null&&["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe","fn_last","sn_last","dist_max_fe"].includes(k.id)&&k.valeur>0;
-            const isNeg = k.valeur!==null&&["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe","fn_last","sn_last","dist_max_fe"].includes(k.id)&&k.valeur<0;
-            const cardColor = isPos?"#188038":isNeg?"#dc2626":couleur;
-            return (
-              <div key={k.id} onClick={()=>setKpiActif(k)}
-                style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderTop:`3px solid ${cardColor}`, cursor:"pointer", transition:"all 0.15s" }}
-                onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)"; e.currentTarget.style.transform="translateY(-1px)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; }}>
-                <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{k.label}</p>
-                <p style={{ fontSize:"1.1rem", fontWeight:800, color:cardColor, lineHeight:1 }}>{fmtKpi(k)}</p>
-                {indicatif && <p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>{indicatif}</p>}
-              </div>
-            );
-          })}
-          {Array.from({length:Math.max(0,5-kpisCards.length)}).map((_,i)=>(
-            <div key={`empty-${i}`}
-              style={{ background:"#FAFAF9", borderRadius:12, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
-              <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
-              <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
+          {/* Header */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <span style={{ fontSize:22, lineHeight:1 }}>{paysDispo.find(p=>p.nom===paysSelec)?.code_iso2 ? flag(paysDispo.find(p=>p.nom===paysSelec)!.code_iso2) : "🌍"}</span>
+              <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
+              <span style={{ fontSize:12, color:"#9aa5b4" }}>
+                · {modeAnnees==="specifiques"&&anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}` : `${anneeMin}–${anneeMax}`}
+              </span>
             </div>
-          ))}
-        </div>
-
-        {/* Graphes */}
-        {loading ? (
-          <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
-            <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+            <button onClick={()=>setShowTable(true)}
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:999, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, transition:"all 0.15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#1a1a2e"; e.currentTarget.style.color="#1a1a2e"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
+              <Table size={12}/> Données brutes
+            </button>
           </div>
-        ) : (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-            {GRAPHES_PAYS.map(g=>(
-              <GrapheCard key={g.id} titre={g.titre} sous_titre={`M$ USD · CNUCED · ${anneeMin}–${anneeMax}`} series={g.series} grapheId={g.id}
-                fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id}/>}>
-                <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id}/>
-              </GrapheCard>
+
+          {/* KPI cards */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+            {kpisCards.map(k=>{
+              const indicatif = getIndicatif(k);
+              const isPos = k.valeur!==null&&["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe","fn_last","sn_last","dist_max_fe"].includes(k.id)&&k.valeur>0;
+              const isNeg = k.valeur!==null&&["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe","fn_last","sn_last","dist_max_fe"].includes(k.id)&&k.valeur<0;
+              const cardColor = isPos?"#188038":isNeg?"#dc2626":couleur;
+              return (
+                <div key={k.id} onClick={()=>setKpiActif(k)}
+                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderTop:`3px solid ${cardColor}`, cursor:"pointer", transition:"all 0.15s" }}
+                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)"; e.currentTarget.style.transform="translateY(-1px)"; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; }}>
+                  <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{k.label}</p>
+                  <p style={{ fontSize:"1.1rem", fontWeight:800, color:cardColor, lineHeight:1 }}>{fmtKpi(k)}</p>
+                  {indicatif && <p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>{indicatif}</p>}
+                </div>
+              );
+            })}
+            {Array.from({length:Math.max(0,5-kpisCards.length)}).map((_,i)=>(
+              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
+                <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
+                <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
+              </div>
             ))}
           </div>
-        )}
+
+          {/* Graphes */}
+          {loading ? (
+            <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
+              <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+            </div>
+          ) : (
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+              {GRAPHES_PAYS.map(g=>(
+                <GrapheCard key={g.id} titre={g.titre} sous_titre={`M$ USD · CNUCED · ${anneeMin}–${anneeMax}`} series={g.series} grapheId={g.id}
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id}/>
+                </GrapheCard>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={[{nom:paysSelec,couleur}]} />
@@ -958,6 +998,9 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
   const [typeG,       setTypeG]       = useState<"line"|"bar">("line");
   const [showTable,   setShowTable]   = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchPays,  setSearchPays]  = useState("");
+  const [openConts,   setOpenConts]   = useState<Set<string>>(new Set(["Afrique"]));
+
   const charger = useCallback(async () => {
     if (!paysSelec.length) return;
     setLoading(true);
@@ -990,137 +1033,170 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
     ]},
   ];
 
+  const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
+  const groupedPays  = groupByContinent(filteredPays);
+  const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
+
   return (
-    <div style={{ maxWidth:1400, margin:"0 auto", padding:"28px 40px 80px", display:"flex", gap:24, alignItems:"flex-start" }}>
+    <div style={{ display:"flex", height:"100%", overflow:"hidden" as const }}>
 
       {/* Sidebar */}
-      <div style={{ width:sidebarOpen?270:48, flexShrink:0, transition:"width 0.2s", position:"sticky" as const, top:24 }}>
-        <div style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", overflow:"hidden" }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", borderBottom:"1px solid #F2F0EF", background:"#FAFAF9" }}>
-            {sidebarOpen && <span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", display:"flex", alignItems:"center", gap:6 }}><Filter size={13} style={{color:"#188038"}}/>Filtres</span>}
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"none", border:"none", cursor:"pointer", padding:4, marginLeft:"auto" }}>
-              <BarChart2 size={16} style={{ color:"#9aa5b4" }} />
-            </button>
-          </div>
-          {sidebarOpen && (
-            <div style={{ padding:"16px", display:"flex", flexDirection:"column" as const, gap:18 }}>
-
-              {/* Pays — multi-select */}
-              <div>
-                <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Pays</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:4 }}>
-                  {[...paysDispo].sort((a,b)=>{ if(a.nom==="Sénégal") return -1; if(b.nom==="Sénégal") return 1; return a.nom.localeCompare(b.nom,"fr"); }).map(p => {
-                    const sel = paysSelec.includes(p.nom);
-                    const col = getPaysColor(p.nom, paysDispo.indexOf(p));
-                    return (
-                      <label key={p.nom} style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"7px 10px", borderRadius:9, background:sel?`${col}0d`:"transparent", border:`1px solid ${sel?`${col}30`:"transparent"}`, transition:"all 0.12s" }}>
-                        <input type="checkbox" checked={sel}
-                          onChange={e=>{ if(!e.target.checked&&paysSelec.length<=1) return; if(e.target.checked) setPaysSelec(prev=>[...prev,p.nom]); else setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); }}
-                          style={{ accentColor:col, width:14, height:14, flexShrink:0 }} />
-                        {sel && <div style={{ width:8, height:8, borderRadius:"50%", background:col, flexShrink:0 }} />}
-                        <span style={{ fontSize:13, fontWeight:sel?600:400, color:sel?col:"#4a5568" }}>{p.nom}</span>
-                      </label>
-                    );
-                  })}
-                </div>
+      <div style={{ width:sidebarOpen?292:52, flexShrink:0, transition:"width 0.2s", overflow:"hidden" as const, height:"100%", borderRight:"1px solid #E8E5E3", background:"#fff", display:"flex", flexDirection:"column" as const }}>
+        {/* Header */}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", borderBottom:"1px solid #F2F0EF", background:"#FAFAF9", flexShrink:0 }}>
+          {sidebarOpen && <span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", display:"flex", alignItems:"center", gap:6 }}><Filter size={13} style={{color:"#188038"}}/>Filtres</span>}
+          <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"none", border:"none", cursor:"pointer", padding:4, marginLeft:"auto" }}>
+            <BarChart2 size={16} style={{ color:"#9aa5b4" }} />
+          </button>
+        </div>
+        {sidebarOpen && (
+          <div style={{ overflowY:"auto" as const, flex:1 }}>
+            {/* Pays — multi-select grouped */}
+            <div style={{ padding:"16px 16px", borderBottom:"1px solid #E8E5E3" }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Pays</p>
+                <span style={{ fontSize:10, color:"#9aa5b4" }}>{paysSelec.length} sélectionné{paysSelec.length>1?"s":""}</span>
               </div>
 
-              {/* Type graphe */}
-              <div>
-                <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Type de graphe</p>
-                <div style={{ display:"flex", gap:4, background:"#F2F0EF", borderRadius:10, padding:3 }}>
-                  {[{v:"line",l:"Courbes"},{v:"bar",l:"Barres"}].map(t=>(
-                    <button key={t.v} onClick={()=>setTypeG(t.v as "line"|"bar")}
-                      style={{ flex:1, padding:"7px 0", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:typeG===t.v?"#fff":"transparent", color:typeG===t.v?"#1a1a2e":"#9aa5b4", boxShadow:typeG===t.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
-                      {t.l}
-                    </button>
-                  ))}
-                </div>
+              <div style={{ position:"relative" as const, marginBottom:10 }}>
+                <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher..."
+                  style={{ width:"100%", padding:"7px 28px 7px 28px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, outline:"none", boxSizing:"border-box" as const }} />
+                <svg style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)" }} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                {searchPays && <button onClick={()=>setSearchPays("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:"#9aa5b4", padding:0, fontSize:16, lineHeight:1 }}>×</button>}
               </div>
 
-              {/* Période */}
-              <div>
-                <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Période</p>
-                <div style={{ display:"flex", gap:4, background:"#F2F0EF", borderRadius:10, padding:3, marginBottom:12 }}>
-                  {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
-                    <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                      style={{ flex:1, padding:"7px 0", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
-                      {m.l}
-                    </button>
-                  ))}
-                </div>
-                {modeAnnees==="plage" ? (
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr", alignItems:"center", gap:6 }}>
-                    <div>
-                      <label style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", display:"block", marginBottom:4, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>De</label>
-                      <input type="number" min={1990} max={anneeMax-1} value={anneeMin} onChange={e=>setAnneeMin(Math.max(1990,Math.min(+e.target.value,anneeMax-1)))}
-                        style={{ width:"100%", background:"#F2F0EF", border:"1px solid #E8E5E3", borderRadius:8, padding:"8px 10px", fontSize:13, fontWeight:600, color:"#1a1a2e", outline:"none", textAlign:"center" as const, boxSizing:"border-box" as const }} />
+              <div style={{ maxHeight:256, overflowY:"auto" as const }}>
+                {sortContinents(Object.keys(groupedPays)).map(continent => {
+                  const isOpen = openConts.has(continent);
+                  const zones  = groupedPays[continent];
+                  return (
+                    <div key={continent} style={{ marginBottom:6 }}>
+                      <button onClick={()=>toggleCont(continent)}
+                        style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(24,128,56,0.06)", border:"none", cursor:"pointer", marginBottom:3 }}>
+                        <span style={{ fontSize:10, fontWeight:700, color:"#188038", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
+                        <ChevronDown size={11} style={{ color:"#188038", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }} />
+                      </button>
+                      {isOpen && Object.entries(zones).sort(([a],[b])=>a.localeCompare(b,"fr")).map(([zone,paysInZone]) => (
+                        <div key={zone} style={{ marginLeft:6, marginBottom:4 }}>
+                          <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:2 }}>{zone}</p>
+                          {(paysInZone as any[]).map((p:any) => {
+                            const sel = paysSelec.includes(p.nom);
+                            const col = getPaysColor(p.nom, paysDispo.indexOf(p));
+                            return (
+                              <label key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", padding:"6px 10px", borderRadius:9, background:sel?`${col}0d`:"transparent", border:`1px solid ${sel?`${col}30`:"transparent"}`, transition:"all 0.12s", marginBottom:2 }}>
+                                <input type="checkbox" checked={sel}
+                                  onChange={e=>{ if(!e.target.checked&&paysSelec.length<=1) return; if(e.target.checked) setPaysSelec(prev=>[...prev,p.nom]); else setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); }}
+                                  style={{ accentColor:col, width:13, height:13, flexShrink:0 }} />
+                                <span style={{ fontSize:15, lineHeight:1, flexShrink:0 }}>{p.code_iso2?flag(p.code_iso2):"🌍"}</span>
+                                <span style={{ fontSize:12, fontWeight:sel?600:400, color:sel?col:"#4a5568" }}>{p.nom}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      ))}
                     </div>
-                    <span style={{ fontSize:14, color:"#C5BFBB", paddingTop:18 }}>→</span>
-                    <div>
-                      <label style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", display:"block", marginBottom:4, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>À</label>
-                      <input type="number" min={anneeMin+1} max={2024} value={anneeMax} onChange={e=>setAnneeMax(Math.min(2024,Math.max(+e.target.value,anneeMin+1)))}
-                        style={{ width:"100%", background:"#F2F0EF", border:"1px solid #E8E5E3", borderRadius:8, padding:"8px 10px", fontSize:13, fontWeight:600, color:"#1a1a2e", outline:"none", textAlign:"center" as const, boxSizing:"border-box" as const }} />
-                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Type graphe */}
+            <div style={{ padding:"16px", borderBottom:"1px solid #E8E5E3" }}>
+              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Type de graphe</p>
+              <div style={{ display:"flex", gap:4, background:"#F2F0EF", borderRadius:10, padding:3 }}>
+                {[{v:"line",l:"Courbes"},{v:"bar",l:"Barres"}].map(t=>(
+                  <button key={t.v} onClick={()=>setTypeG(t.v as "line"|"bar")}
+                    style={{ flex:1, padding:"7px 0", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:typeG===t.v?"#fff":"transparent", color:typeG===t.v?"#1a1a2e":"#9aa5b4", boxShadow:typeG===t.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
+                    {t.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Période */}
+            <div style={{ padding:"16px" }}>
+              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Période</p>
+              <div style={{ display:"flex", gap:4, background:"#F2F0EF", borderRadius:10, padding:3, marginBottom:12 }}>
+                {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
+                  <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
+                    style={{ flex:1, padding:"7px 0", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
+                    {m.l}
+                  </button>
+                ))}
+              </div>
+              {modeAnnees==="plage" ? (
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#F8F7F6", borderRadius:8, padding:"8px 14px" }}>
+                    <span style={{ fontSize:17, fontWeight:800, color:"#1a1a2e" }}>{anneeMin}</span>
+                    <span style={{ fontSize:11, color:"#C5BFBB" }}>→</span>
+                    <span style={{ fontSize:17, fontWeight:800, color:"#1a1a2e" }}>{anneeMax}</span>
                   </div>
-                ) : (
                   <div>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:4, marginBottom:8 }}>
-                      {Array.from({length:35},(_,i)=>1990+i).map(a=>{
-                        const sel=anneesSpec.includes(a);
-                        return (
-                          <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                            style={{ padding:"5px 0", borderRadius:6, border:`1px solid ${sel?"transparent":"#E8E5E3"}`, cursor:"pointer", fontSize:11, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#1a1a2e":"#fff", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
-                            {a}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between" }}>
-                      <span style={{ fontSize:11, color:anneesSpec.length>0?"#4a5568":"#9aa5b4" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
-                      {anneesSpec.length>0 && <button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"#9aa5b4", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
-                    </div>
+                    <label style={{ fontSize:10, color:"#9aa5b4", display:"block", marginBottom:3 }}>Début</label>
+                    <input type="range" min={1990} max={2024} value={anneeMin} onChange={e=>setAnneeMin(Math.max(1990,Math.min(+e.target.value,anneeMax-1)))} style={{ width:"100%", accentColor:"#1a1a2e" }} />
                   </div>
-                )}
-              </div>
-
+                  <div>
+                    <label style={{ fontSize:10, color:"#9aa5b4", display:"block", marginBottom:3 }}>Fin</label>
+                    <input type="range" min={1990} max={2024} value={anneeMax} onChange={e=>setAnneeMax(Math.min(2024,Math.max(+e.target.value,anneeMin+1)))} style={{ width:"100%", accentColor:"#1a1a2e" }} />
+                  </div>
+                  <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:4, marginBottom:8 }}>
+                    {Array.from({length:35},(_,i)=>1990+i).map(a=>{
+                      const sel=anneesSpec.includes(a);
+                      return (
+                        <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
+                          style={{ padding:"5px 0", borderRadius:6, border:`1px solid ${sel?"transparent":"#E8E5E3"}`, cursor:"pointer", fontSize:11, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#1a1a2e":"#fff", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                          {a}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between" }}>
+                    <span style={{ fontSize:11, color:anneesSpec.length>0?"#4a5568":"#9aa5b4" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+                    {anneesSpec.length>0 && <button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"#9aa5b4", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
+                  </div>
+                </div>
+              )}
               <button onClick={charger}
-                style={{ padding:"10px 0", borderRadius:10, border:"none", background:"#1a1a2e", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
+                style={{ marginTop:16, width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"#1a1a2e", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
                 Appliquer
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Zone graphes */}
-      <div style={{ flex:1, minWidth:0, minHeight:"80vh" }}>
-        {/* Badges pays + bouton données */}
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:16, flexWrap:"wrap" as const }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
-            <span style={{ fontSize:12, color:"#9aa5b4" }}>Comparaison :</span>
-            {paysAvecCouleur.map(p=>(
-              <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:6, background:`${p.couleur}12`, border:`1.5px solid ${p.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
-                <div style={{ width:7, height:7, borderRadius:"50%", background:p.couleur }} />
-                <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
-              </div>
-            ))}
-            <span style={{ fontSize:12, color:"#9aa5b4" }}>· {modeAnnees==="plage"?`${anneeMin}–${anneeMax}`:anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+      <div style={{ flex:1, minWidth:0, overflowY:"auto" as const, height:"100%", background:"#F2F0EF" }}>
+        <div style={{ padding:"24px 32px 48px" }}>
+          {/* Badges pays + bouton données */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:16, flexWrap:"wrap" as const }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
+              <span style={{ fontSize:12, color:"#9aa5b4" }}>Comparaison :</span>
+              {paysAvecCouleur.map(p=>(
+                <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:6, background:`${p.couleur}12`, border:`1.5px solid ${p.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
+                  <div style={{ width:7, height:7, borderRadius:"50%", background:p.couleur }} />
+                  <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
+                </div>
+              ))}
+              <span style={{ fontSize:12, color:"#9aa5b4" }}>· {modeAnnees==="plage"?`${anneeMin}–${anneeMax}`:anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+            </div>
+            <button onClick={()=>setShowTable(true)}
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:999, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, flexShrink:0 }}
+              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#1a1a2e"; e.currentTarget.style.color="#1a1a2e"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
+              <Table size={12}/> Données brutes
+            </button>
           </div>
-          <button onClick={()=>setShowTable(true)}
-            style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:999, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, flexShrink:0 }}
-            onMouseEnter={e=>{ e.currentTarget.style.borderColor="#1a1a2e"; e.currentTarget.style.color="#1a1a2e"; }}
-            onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
-            <Table size={12}/> Prévisualiser les données
-          </button>
-        </div>
 
-        {loading ? (
-          <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
-            <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-          </div>
-        ) : (
-          <>
+          {loading ? (
+            <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
+              <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+            </div>
+          ) : (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
                 <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Source CNUCED" series={g.series} grapheId={g.id}
@@ -1129,8 +1205,8 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                 </GrapheCard>
               ))}
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} />
     </div>
@@ -1168,13 +1244,13 @@ export default function IdePage() {
   }, []);
 
   return (
-    <main style={{ minHeight:"100vh", background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}>
+    <main style={{ height:"100vh", display:"flex", flexDirection:"column" as const, background:"#F2F0EF", fontFamily:"var(--font-google-sans)", overflow:"hidden" as const }}>
       <div id="d3-tooltip" style={{ position:"fixed", pointerEvents:"none", background:"rgba(26,26,46,0.92)", color:"#fff", borderRadius:8, padding:"8px 12px", fontSize:12, lineHeight:1.5, opacity:0, zIndex:9999, backdropFilter:"blur(4px)" }} />
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <Navbar />
 
       {/* ── Header avec onglets sources ─────────────────────────────────────── */}
-      <section style={{ paddingTop:80, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" }}>
+      <section style={{ paddingTop:80, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}>
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"32px 40px 0" }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(24,128,56,0.15)", border:"1px solid rgba(24,128,56,0.3)", borderRadius:999, padding:"5px 14px", marginBottom:14 }}>
             <span style={{ fontSize:11, fontWeight:700, color:"#4ade80", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Données officielles</span>
@@ -1201,7 +1277,7 @@ export default function IdePage() {
 
       {/* ── Sous-onglets (si CNUCED) ─────────────────────────────────────────── */}
       {source === "cnuced" && (
-        <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3" }}>
+        <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", flexShrink:0 }}>
           <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px", display:"flex" }}>
             {[{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}].map(o=>(
               <button key={o.v} onClick={()=>setSousOnglet(o.v)}
@@ -1215,26 +1291,28 @@ export default function IdePage() {
       )}
 
       {/* ── Contenu ────────────────────────────────────────────────────────── */}
-      {source === "cnuced" ? (
-        <>
-          {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} />}
-          {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} />}
-          {sousOnglet === "monde"       && <OngletMonde />}
-        </>
-      ) : (
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
-          <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
-            <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <span style={{ fontSize:32 }}>📈</span>
-            </div>
-            <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>FDI Markets</h2>
-            <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
-            <div style={{ background:"rgba(0,79,145,0.07)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:10, padding:"10px 20px" }}>
-              <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Disponible prochainement</span>
+      <div style={{ flex:1, overflow:"hidden" as const }}>
+        {source === "cnuced" ? (
+          <>
+            {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} />}
+            {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} />}
+            {sousOnglet === "monde"       && <OngletMonde />}
+          </>
+        ) : (
+          <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
+            <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
+              <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <span style={{ fontSize:32 }}>📈</span>
+              </div>
+              <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>FDI Markets</h2>
+              <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
+              <div style={{ background:"rgba(0,79,145,0.07)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:10, padding:"10px 20px" }}>
+                <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Disponible prochainement</span>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }
