@@ -640,6 +640,31 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pa
   );
 }
 
+// ── Helpers pays groupés ──────────────────────────────────────────────────────
+const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
+function sortContinents(conts: string[]) {
+  return [...conts].sort((a, b) => {
+    const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);
+    if (ia === -1 && ib === -1) return a.localeCompare(b, "fr");
+    if (ia === -1) return 1; if (ib === -1) return -1;
+    return ia - ib;
+  });
+}
+function groupByContinent(pays: any[]): Record<string, Record<string, any[]>> {
+  const g: Record<string, Record<string, any[]>> = {};
+  for (const p of pays) {
+    const cont = p.continent || "Autre";
+    const zone = p.region_geo || "Autre";
+    if (!g[cont]) g[cont] = {};
+    if (!g[cont][zone]) g[cont][zone] = [];
+    g[cont][zone].push(p);
+  }
+  for (const cont of Object.keys(g))
+    for (const zone of Object.keys(g[cont]))
+      g[cont][zone].sort((a, b) => { if (a.nom === "Sénégal") return -1; if (b.nom === "Sénégal") return 1; return a.nom.localeCompare(b.nom, "fr"); });
+  return g;
+}
+
 // ── Onglet Pays — analyse individuelle ────────────────────────────────────────
 function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
@@ -651,10 +676,12 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
   const [showTable,   setShowTable]   = useState(false);
   const [kpisOrdre,   setKpisOrdre]   = useState<string[]>(KPI_25_IDS);
-  const [kpisEpingles,setKpisEpingles]= useState<string[]>(KPI_DEFAUT); // max 5
-  const [kpiActif,    setKpiActif]    = useState<KpiResult|null>(null);
-  const [dragIdx,     setDragIdx]     = useState<number|null>(null);
-  const [dragOver,    setDragOver]    = useState<number|null>(null);
+  const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
+  const [kpiActif,     setKpiActif]     = useState<KpiResult|null>(null);
+  const [dragIdx,      setDragIdx]      = useState<number|null>(null);
+  const [dragOver,     setDragOver]     = useState<number|null>(null);
+  const [searchPays,   setSearchPays]   = useState("");
+  const [openConts,    setOpenConts]    = useState<Set<string>>(new Set(["Afrique"]));
 
   const couleur = getPaysColor(paysSelec, 0);
 
@@ -673,10 +700,11 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   useEffect(() => { charger(); }, [charger]);
 
   const tousKpis    = calculerKpis(donnees);
-  // Sidebar : liste complète dans l'ordre choisi
   const kpisSidebar = kpisOrdre.map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
-  // Cards : seulement les épinglés (max 5)
   const kpisCards   = kpisEpingles.map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
+  const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
+  const groupedPays  = groupByContinent(filteredPays);
+  const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
 
   const toggleEpingle = (id: string) => {
     setKpisEpingles(prev => {

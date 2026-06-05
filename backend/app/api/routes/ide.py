@@ -149,8 +149,10 @@ async def get_pays_disponibles(db: AsyncSession = Depends(get_db)):
         pays_obj = rp.scalar_one_or_none()
         result.append({
             "nom": nom,
-            "code_iso2": pays_obj.code_iso2 if pays_obj else None,
-            "code_iso3": pays_obj.code_iso3 if pays_obj else None,
+            "code_iso2":   pays_obj.code_iso2   if pays_obj else None,
+            "code_iso3":   pays_obj.code_iso3   if pays_obj else None,
+            "continent":   pays_obj.continent   if pays_obj else None,
+            "region_geo":  pays_obj.region_geo  if pays_obj else None,
         })
     return result
 
