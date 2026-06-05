@@ -33,6 +33,22 @@ class Prospect(Base):
     siege            = relationship("RefPays", foreign_keys=[siege_id], lazy="joined")
     contacts         = relationship("ProspectContact", back_populates="prospect",
                                    cascade="all, delete-orphan", order_by="ProspectContact.created_at")
+    points_focaux    = relationship("ProspectPointFocal", back_populates="prospect",
+                                   cascade="all, delete-orphan", order_by="ProspectPointFocal.id")
+
+
+class ProspectPointFocal(Base):
+    __tablename__ = "prospect_points_focaux"
+
+    id          = Column(Integer, primary_key=True, autoincrement=True)
+    prospect_id = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
+    prenom      = Column(String(150))
+    nom         = Column(String(150), nullable=False)
+    telephones  = Column(ARRAY(String), default=[])
+    mails       = Column(ARRAY(String), default=[])
+    created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    prospect    = relationship("Prospect", back_populates="points_focaux")
 
 
 class ProspectContact(Base):
