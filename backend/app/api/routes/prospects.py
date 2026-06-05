@@ -24,8 +24,8 @@ def prospect_to_dict(p: Prospect) -> dict:
         "prenom":          p.prenom,
         "pays_origine_id": p.pays_origine_id,
         "pays_origine_nom":p.pays_origine.nom_fr if p.pays_origine else None,
-        "telephone":       p.telephone,
-        "mail":            p.mail,
+        "telephones":      p.telephones or [],
+        "mails":           p.mails or [],
         "siteweb":         p.siteweb,
         "adresse":         p.adresse,
         "details":         p.details,
@@ -91,8 +91,8 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
         nom             = payload["nom"].strip(),
         prenom          = payload.get("prenom") or None,
         pays_origine_id = payload.get("pays_origine_id") or None,
-        telephone       = payload.get("telephone") or None,
-        mail            = payload.get("mail") or None,
+        telephones      = payload.get("telephones") or [],
+        mails           = payload.get("mails") or [],
         siteweb         = payload.get("siteweb") or None,
         adresse         = payload.get("adresse") or None,
         details         = payload.get("details") or None,
@@ -109,8 +109,10 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Prospect introuvable")
-    for f in ["type","nom","prenom","telephone","mail","siteweb","adresse","details"]:
+    for f in ["type","nom","prenom","siteweb","adresse","details"]:
         if f in payload: setattr(p, f, payload[f] or None)
+    if "telephones" in payload: p.telephones = payload["telephones"] or []
+    if "mails"      in payload: p.mails      = payload["mails"] or []
     if "pays_origine_id" in payload: p.pays_origine_id = payload["pays_origine_id"] or None
     if "est_publie" in payload: p.est_publie = payload["est_publie"]
     await db.flush()

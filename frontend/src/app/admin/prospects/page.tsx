@@ -22,7 +22,7 @@ const ETATS = [
 function TypeSelector({ value, onChange }: { value: "physique"|"morale"; onChange:(v:"physique"|"morale")=>void }) {
   return (
     <div style={{ display:"flex", gap:0, borderRadius:12, overflow:"hidden", border:"1px solid #C5BFBB", marginBottom:24 }}>
-      {([["physique","👤 Personne physique"],["morale","🏢 Personne morale"]] as const).map(([key,label]) => (
+      {([["physique","Personne physique"],["morale","Personne morale"]] as const).map(([key,label]) => (
         <button key={key} onClick={()=>onChange(key)} type="button"
           style={{ flex:1, padding:"14px 0", border:"none", cursor:"pointer", fontSize:13, fontWeight:700, transition:"all .15s",
             background: value===key ? (key==="physique"?"#ca631f":"#004f91") : "#F8F7F6",
@@ -126,8 +126,8 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         nom:              edit.nom||"",
         pays_origine_id:  edit.pays_origine_id||null,
         pays_origine_nom: edit.pays_origine_nom||"",
-        telephones:       edit.telephones?.length ? edit.telephones : (edit.telephone ? edit.telephone.split(",").map((t:string)=>t.trim()) : [""]),
-        mails:            edit.mails?.length ? edit.mails : (edit.mail ? edit.mail.split(",").map((m:string)=>m.trim()) : [""]),
+        telephones:       edit.telephones?.length ? edit.telephones : [""],
+        mails:            edit.mails?.length ? edit.mails : [""],
         details:          edit.details||"",
       });
     } else {
@@ -141,15 +141,13 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
     if (form.type==="physique" && !form.prenom.trim()) { setError("Le prénom est obligatoire"); return; }
     setSaving(true); setError("");
     try {
-      const tels = form.telephones.filter(Boolean);
-      const mails = form.mails.filter(Boolean);
       const payload = {
         type:            form.type,
         nom:             form.nom.trim(),
         prenom:          form.prenom.trim()||null,
         pays_origine_id: form.pays_origine_id||null,
-        telephone:       tels.join(", ")||null,
-        mail:            mails.join(", ")||null,
+        telephones:      form.telephones.filter(Boolean),
+        mails:           form.mails.filter(Boolean),
         details:         form.details||null,
       };
       const url    = edit ? `${API}/prospects/${edit.id}` : `${API}/prospects`;
@@ -223,7 +221,12 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
               {/* Détails */}
               <div>
                 <p style={SEC}>Détails sur l'investisseur</p>
-                <RichTextEditor value={form.details} onChange={v=>upd("details",v)}/>
+                <p style={{ fontSize:12, color:"#888", marginBottom:10, marginTop:-6 }}>
+                  Profil, contexte, secteurs d'intérêt, historique de relation…
+                </p>
+                <div style={{ minHeight:160 }}>
+                  <RichTextEditor value={form.details} onChange={v=>upd("details",v)}/>
+                </div>
               </div>
 
             </div>
@@ -363,11 +366,11 @@ function ProspectVue({ p, onClose, onEdit, onAddContact }: any) {
           {/* Infos */}
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
             {p.pays_origine_nom && <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Pays d'origine"/><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{p.pays_origine_nom}</p></div>}
-            {p.telephone && <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Téléphone(s)"/>
-              {p.telephone.split(",").map((t:string,i:number)=><p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{t.trim()}</p>)}
+            {p.telephones?.length > 0 && <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Téléphone(s)"/>
+              {p.telephones.map((t:string,i:number)=><p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{t}</p>)}
             </div>}
-            {p.mail && <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Email(s)"/>
-              {p.mail.split(",").map((m:string,i:number)=><p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{m.trim()}</p>)}
+            {p.mails?.length > 0 && <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Email(s)"/>
+              {p.mails.map((m:string,i:number)=><p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{m}</p>)}
             </div>}
           </div>
 
