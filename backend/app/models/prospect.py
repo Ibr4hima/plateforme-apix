@@ -10,7 +10,7 @@ class Prospect(Base):
     __tablename__ = "prospects"
 
     id               = Column(Integer, primary_key=True, autoincrement=True)
-    type             = Column(String(10), default="physique")      # physique | morale
+    type             = Column(String(10), default="physique")
     nom              = Column(String(255), nullable=False)
     prenom           = Column(String(150), nullable=True)
     pays_origine_id  = Column(Integer, ForeignKey("ref_pays.id"), nullable=True)
@@ -44,12 +44,12 @@ class Prospect(Base):
     objet_adequation_details  = Column(Text)
     objet_commentaires        = Column(Text)
 
-    pays_origine     = relationship("RefPays", foreign_keys=[pays_origine_id], lazy="joined")
-    siege            = relationship("RefPays", foreign_keys=[siege_id], lazy="joined")
-    contacts         = relationship("ProspectContact", back_populates="prospect",
-                                   cascade="all, delete-orphan", order_by="ProspectContact.created_at")
-    points_focaux    = relationship("ProspectPointFocal", back_populates="prospect",
-                                   cascade="all, delete-orphan", order_by="ProspectPointFocal.id")
+    pays_origine  = relationship("RefPays", foreign_keys=[pays_origine_id], lazy="joined")
+    siege         = relationship("RefPays", foreign_keys=[siege_id], lazy="joined")
+    points_focaux = relationship("ProspectPointFocal", back_populates="prospect",
+                                 cascade="all, delete-orphan", order_by="ProspectPointFocal.id")
+    echanges      = relationship("ProspectEchange", back_populates="prospect",
+                                 cascade="all, delete-orphan", order_by="ProspectEchange.date_echange")
 
 
 class ProspectPointFocal(Base):
@@ -63,36 +63,18 @@ class ProspectPointFocal(Base):
     mails       = Column(ARRAY(String), default=[])
     created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
-    prospect    = relationship("Prospect", back_populates="points_focaux")
+    prospect = relationship("Prospect", back_populates="points_focaux")
 
 
-class ProspectContact(Base):
-    __tablename__ = "prospect_contacts"
+class ProspectEchange(Base):
+    __tablename__ = "prospect_echanges"
 
-    id                   = Column(Integer, primary_key=True, autoincrement=True)
-    prospect_id          = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
-    projet_nom           = Column(String(255), nullable=False)
-    projet_description   = Column(Text)
-    date_premier_contact = Column(Date, nullable=False)
-    etat_avancement      = Column(String(50), default="en_cours")
-    commentaires         = Column(Text)
-    contraintes          = Column(Text)
-    is_deleted           = Column(Boolean, default=False)
-    created_at           = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    updated_at           = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    id            = Column(Integer, primary_key=True, autoincrement=True)
+    prospect_id   = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
+    date_echange  = Column(Date, nullable=False)
+    commentaire   = Column(Text)
+    contact_par   = Column(String(255), nullable=False)
+    enregistre_le = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    # Immuable : pas de updated_at, pas de is_deleted
 
-    prospect    = relationship("Prospect", back_populates="contacts")
-    historique  = relationship("ProspectContactHistorique", back_populates="contact",
-                               cascade="all, delete-orphan", order_by="ProspectContactHistorique.date_changement")
-
-
-class ProspectContactHistorique(Base):
-    __tablename__ = "prospect_contacts_historique"
-
-    id              = Column(Integer, primary_key=True, autoincrement=True)
-    contact_id      = Column(Integer, ForeignKey("prospect_contacts.id", ondelete="CASCADE"), nullable=False)
-    etat            = Column(String(50), nullable=False)
-    commentaire     = Column(Text)
-    date_changement = Column(TIMESTAMP(timezone=True), server_default=func.now())
-
-    contact = relationship("ProspectContact", back_populates="historique")
+    prospect = relationship("Prospect", back_populates="echanges")

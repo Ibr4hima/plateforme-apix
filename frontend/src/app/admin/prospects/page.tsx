@@ -530,28 +530,51 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
   );
 }
 
-// ── Modal Contact ─────────────────────────────────────────────────────────────
-function ContactModal({ open, onClose, prospect, onSaved }: { open:boolean; onClose:()=>void; prospect:any; onSaved:()=>void }) {
-  const [form, setForm]     = useState({ projet_nom:"", projet_description:"", date_premier_contact:"", etat_avancement:"en_cours", commentaires:"", contraintes:"" });
+// ── Modal Échange ─────────────────────────────────────────────────────────────
+function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onClose:()=>void; prospect:any; onSaved:(updated:any)=>void }) {
+  const today = new Date().toISOString().slice(0,10);
+  const [form, setForm]     = useState({ date_echange: today, contact_par:"", commentaire:"" });
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
   const [ok,     setOk]     = useState(false);
-  const upd = (k:string,v:string) => setForm(f=>({ ...f,[k]:v }));
+  const upd = (k:string, v:string) => setForm(f=>({ ...f,[k]:v }));
+
+  // Date minimum = lendemain du dernier échange (ou pas de min si premier)
+  const dernierEchange = prospect?.echanges?.length
+    ? [...prospect.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1)
+    : null;
+  const dateMin = dernierEchange
+    ? (() => { const d=new Date(dernierEchange.date_echange); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); })()
+    : undefined;
 
   useEffect(()=>{
     if (!open) return;
-    setForm({ projet_nom:"", projet_description:"", date_premier_contact:new Date().toISOString().slice(0,10), etat_avancement:"en_cours", commentaires:"", contraintes:"" });
+    const defaut = dateMin && dateMin > today ? dateMin : today;
+    setForm({ date_echange: defaut > today ? today : defaut, contact_par:"", commentaire:"" });
     setError(""); setOk(false);
-  }, [open]);
+  }, [open, prospect?.id]);
+
+  const displayName = prospect?.type==="morale"
+    ? prospect?.nom
+    : `${prospect?.prenom||""} ${prospect?.nom||""}`.trim();
 
   const handleSave = async () => {
-    if (!form.projet_nom.trim()) { setError("Le nom du projet est obligatoire"); return; }
+    if (!form.contact_par.trim()) { setError("Votre nom est obligatoire"); return; }
+    if (!form.date_echange)       { setError("La date est obligatoire"); return; }
     setSaving(true); setError("");
     try {
-      const res = await fetch(`${API}/prospects/${prospect.id}/contacts`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(form) });
+      const res = await fetch(`${API}/prospects/${prospect.id}/echanges`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ date_echange:form.date_echange, contact_par:form.contact_par.trim(), commentaire:form.commentaire||null })
+      });
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
+      const nouvelEchange = await res.json();
       setOk(true);
-      setTimeout(()=>{ setOk(false); onClose(); onSaved(); }, 700);
+      // Recharger le prospect mis à jour
+      const pr = await fetch(`${API}/prospects?page=1&per_page=200`);
+      const pdata = await pr.json();
+      const updated = (pdata.data||[]).find((p:any)=>p.id===prospect.id);
+      setTimeout(()=>{ setOk(false); onClose(); onSaved(updated||prospect); }, 700);
     } catch(e:any) { setError(e.message); }
     finally { setSaving(false); }
   };
@@ -559,40 +582,71 @@ function ContactModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
   if (!open) return null;
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:600, maxHeight:"90vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,#004f91,#1a6ab0)" }}/>
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(6px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:620, maxHeight:"90vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.2)" }}>
+        <div style={{ height:4, background:"linear-gradient(90deg,#004f91,#1a6ab0)", borderRadius:"20px 20px 0 0" }}/>
         <div style={{ padding:"24px 28px 28px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
             <div>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>Enregistrer un contact</h2>
-              <p style={{ fontSize:12, color:"#9aa5b4", marginTop:3 }}>
-                {prospect?.type==="morale" ? prospect?.nom : `${prospect?.prenom||""} ${prospect?.nom||""}`.trim()}
-              </p>
+              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>Enregistrer un échange</h2>
+              <p style={{ fontSize:12, color:"#9aa5b4", marginTop:3 }}>{displayName}</p>
+              {dernierEchange && (
+                <p style={{ fontSize:11, color:"#ca631f", marginTop:4, fontWeight:600 }}>
+                  Dernier échange : {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")} · {dernierEchange.contact_par}
+                </p>
+              )}
             </div>
             <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={14} color="#4a5568"/></button>
           </div>
-          <div style={{ display:"flex", flexDirection:"column" as const, gap:12 }}>
-            <div><label style={LS}>Projet / Objet du contact *</label><input value={form.projet_nom} onChange={e=>upd("projet_nom",e.target.value)} placeholder="Ex : Investissement secteur agro" style={IS}/></div>
-            <div><label style={LS}>Description</label><textarea value={form.projet_description} onChange={e=>upd("projet_description",e.target.value)} rows={2} style={{ ...IS,resize:"vertical" as const }}/></div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-              <div><label style={LS}>Date du premier contact</label><input type="date" value={form.date_premier_contact} onChange={e=>upd("date_premier_contact",e.target.value)} style={IS}/></div>
-              <div><label style={LS}>État d'avancement</label>
-                <select value={form.etat_avancement} onChange={e=>upd("etat_avancement",e.target.value)} style={IS}>
-                  {ETATS.map(et=><option key={et.value} value={et.value}>{et.label}</option>)}
-                </select>
+
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:14 }}>
+
+            {/* Qui */}
+            <div>
+              <label style={LS}>Votre nom / identifiant *</label>
+              <input value={form.contact_par} onChange={e=>upd("contact_par",e.target.value)}
+                placeholder="Ex : Aïssatou Diallo" style={IS}/>
+            </div>
+
+            {/* Date */}
+            <div>
+              <label style={LS}>Date de l'échange *</label>
+              {dateMin && <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:5 }}>Doit être postérieure au {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}</p>}
+              <input type="date" value={form.date_echange}
+                max={today} min={dateMin}
+                onChange={e=>upd("date_echange",e.target.value)} style={IS}/>
+            </div>
+
+            {/* Commentaire */}
+            <div>
+              <label style={LS}>Compte-rendu de l'échange</label>
+              <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:8 }}>Résumé de la discussion, décisions, prochaines étapes…</p>
+              <div style={{ minHeight:160 }}>
+                <RichTextEditor value={form.commentaire} onChange={v=>upd("commentaire",v)}/>
               </div>
             </div>
-            <div><label style={LS}>Commentaires</label><textarea value={form.commentaires} onChange={e=>upd("commentaires",e.target.value)} rows={2} style={{ ...IS,resize:"vertical" as const }}/></div>
-            <div><label style={LS}>Contraintes</label><textarea value={form.contraintes} onChange={e=>upd("contraintes",e.target.value)} rows={2} style={{ ...IS,resize:"vertical" as const }}/></div>
+
+            {/* Note anti-fraude */}
+            <div style={{ background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.12)", borderRadius:10, padding:"10px 14px", display:"flex", gap:8, alignItems:"flex-start" }}>
+              <span style={{ fontSize:16, flexShrink:0 }}>🔒</span>
+              <p style={{ fontSize:11, color:"#4a5568", lineHeight:1.6 }}>
+                Cet enregistrement est <strong>immuable</strong> — il ne pourra pas être modifié ni supprimé. La date de saisie réelle est tracée automatiquement par le système.
+              </p>
+            </div>
+
           </div>
-          {error && <p style={{ fontSize:12, color:"#dc2626", marginTop:12 }}>{error}</p>}
+
+          {error && <p style={{ fontSize:12, color:"#dc2626", marginTop:14 }}>{error}</p>}
+
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end", marginTop:20 }}>
             <button onClick={onClose} style={{ padding:"9px 18px", borderRadius:9, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>Annuler</button>
             <button onClick={handleSave} disabled={saving||ok}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 18px", borderRadius:9, border:"none", background:ok?"#059669":"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
-              {saving?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:ok?<Check size={13}/>:<Check size={13}/>}
-              {ok?"Enregistré !":saving?"Enregistrement…":"Enregistrer"}
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 20px", borderRadius:9, border:"none",
+                background:ok?"#059669":saving?"#ccc":"#004f91",
+                color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13 }}>
+              {saving?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
+              {ok?"Enregistré !":saving?"Enregistrement…":"Enregistrer l'échange"}
             </button>
           </div>
         </div>
@@ -602,9 +656,9 @@ function ContactModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
 }
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
-function ProspectVue({ p, onClose, onEdit, onAddContact }: any) {
+function ProspectVue({ p, onClose, onEdit, onContacter }: any) {
   const LBL = ({t}:{t:string}) => <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>{t}</p>;
-  const [showContacts, setShowContacts] = useState(true);
+  const [showEchanges, setShowEchanges] = useState(true);
   const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
 
   return (
@@ -713,38 +767,62 @@ function ProspectVue({ p, onClose, onEdit, onAddContact }: any) {
             </div>
           )}
 
-          {/* Contacts (historique) */}
-          {p.contacts?.length > 0 && (
+          {/* Fil des échanges */}
+          {p.echanges?.length > 0 && (
             <div style={{ marginBottom:16 }}>
-              <button onClick={()=>setShowContacts(o=>!o)}
-                style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", padding:0, marginBottom:showContacts?10:0 }}>
-                <LBL t={`Contacts (${p.contacts.length})`}/>
-                {showContacts?<ChevronUp size={12} style={{ color:"#9aa5b4",marginBottom:5 }}/>:<ChevronDown size={12} style={{ color:"#9aa5b4",marginBottom:5 }}/>}
+              <button onClick={()=>setShowEchanges(o=>!o)}
+                style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", padding:0, marginBottom:showEchanges?10:0 }}>
+                <LBL t={`Historique des échanges (${p.echanges.length})`}/>
+                {showEchanges?<ChevronUp size={12} style={{ color:"#9aa5b4",marginBottom:5 }}/>:<ChevronDown size={12} style={{ color:"#9aa5b4",marginBottom:5 }}/>}
               </button>
-              {showContacts && (
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                  {p.contacts.map((c:any)=>{
-                    const etat = ETATS.find(e=>e.value===c.etat_avancement);
-                    return (
-                      <div key={c.id} style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px" }}>
-                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
-                          <p style={{ fontWeight:700, fontSize:13, color:"#1a1a2e" }}>{c.projet_nom}</p>
-                          {etat && <span style={{ fontSize:10, fontWeight:700, color:etat.color, background:etat.color+"14", border:`1px solid ${etat.color}33`, padding:"2px 8px", borderRadius:999 }}>{etat.label}</span>}
+              {showEchanges && (
+                <div style={{ position:"relative" as const }}>
+                  {/* Ligne verticale du fil */}
+                  <div style={{ position:"absolute" as const, left:15, top:8, bottom:8, width:2, background:"#E8E5E3", borderRadius:2 }}/>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+                    {[...p.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any,i:number)=>{
+                      const retard = e.retard_jours || 0;
+                      const retardLabel = retard > 30 ? `Saisi ${retard}j après` : retard > 7 ? `Saisi ${retard}j après` : null;
+                      const retardColor = retard > 30 ? "#dc2626" : "#ca631f";
+                      return (
+                        <div key={e.id} style={{ paddingLeft:32, position:"relative" as const }}>
+                          {/* Point du fil */}
+                          <div style={{ position:"absolute" as const, left:10, top:12, width:10, height:10, borderRadius:"50%", background:"#004f91", border:"2px solid #fff", boxShadow:"0 0 0 2px #004f91" }}/>
+                          <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px" }}>
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, flexWrap:"wrap" as const, gap:6 }}>
+                              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                                <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>
+                                  {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
+                                </span>
+                                <span style={{ fontSize:11, color:"#9aa5b4" }}>· {e.contact_par}</span>
+                              </div>
+                              {retardLabel && (
+                                <span style={{ fontSize:10, fontWeight:700, color:retardColor, background:retardColor+"15", border:`1px solid ${retardColor}33`, padding:"2px 7px", borderRadius:999 }}>
+                                  {retardLabel}
+                                </span>
+                              )}
+                            </div>
+                            {e.commentaire && (
+                              <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7, marginTop:4 }}
+                                dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
+                            )}
+                            <p style={{ fontSize:10, color:"#C5BFBB", marginTop:8 }}>
+                              Saisi le {new Date(e.enregistre_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
+                            </p>
+                          </div>
                         </div>
-                        {c.date_premier_contact && <p style={{ fontSize:11, color:"#9aa5b4", display:"flex", alignItems:"center", gap:4 }}><Clock size={10}/>{new Date(c.date_premier_contact).toLocaleDateString("fr-FR")}</p>}
-                        {c.commentaires && <p style={{ fontSize:12, color:"#4a5568", marginTop:6, lineHeight:1.6 }}>{c.commentaires}</p>}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
           )}
 
           <div style={{ display:"flex", gap:8, marginTop:20, justifyContent:"space-between", borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
-            <button onClick={onAddContact}
+            <button onClick={onContacter}
               style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
-              <MessageSquare size={13}/> Enregistrer un contact
+              <MessageSquare size={13}/> Contacter
             </button>
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={onEdit}
@@ -765,11 +843,11 @@ export default function ProspectsPage() {
   const [prospects,    setProspects]    = useState<any[]>([]);
   const [total,        setTotal]        = useState(0);
   const [loading,      setLoading]      = useState(true);
-  const [onglet,       setOnglet]       = useState<"cibles"|"contactes">("cibles");
+  const [onglet,       setOnglet]       = useState<"cibles"|"historique">("cibles");
   const [modal,        setModal]        = useState(false);
   const [edit,         setEdit]         = useState<any>(null);
   const [vue,          setVue]          = useState<any>(null);
-  const [contactModal, setContactModal] = useState(false);
+  const [echangeModal, setEchangeModal] = useState(false);
   const [deleting,     setDeleting]     = useState<number|null>(null);
   const [q,            setQ]            = useState("");
 
@@ -778,7 +856,7 @@ export default function ProspectsPage() {
     try {
       const params = new URLSearchParams({ page:"1", per_page:"50" });
       if (q) params.set("q", q);
-      params.set("contactes", onglet==="contactes"?"true":"false");
+      params.set("contactes", onglet==="historique"?"true":"false");
       const res  = await fetch(`${API}/prospects?${params}`);
       const data = await res.json();
       setProspects(data.data||[]); setTotal(data.total||0);
@@ -821,7 +899,7 @@ export default function ProspectsPage() {
 
       {/* Onglets */}
       <div style={{ display:"flex", gap:2, background:"rgba(0,0,0,0.04)", borderRadius:10, padding:3, width:"fit-content", marginBottom:24, border:"1px solid #E8E5E3" }}>
-        {([["cibles","Investisseurs ciblés"],["contactes","Investisseurs contactés"]] as const).map(([key,label])=>(
+        {([["cibles","Investisseurs ciblés"],["historique","Historique des contacts"]] as const).map(([key,label])=>(
           <button key={key} onClick={()=>setOnglet(key)}
             style={{ padding:"8px 20px", borderRadius:7, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, transition:"all 0.15s", background:onglet===key?"#ca631f":"transparent", color:onglet===key?"#fff":"#4a5568" }}>
             {label}
@@ -842,7 +920,7 @@ export default function ProspectsPage() {
         <div style={{ textAlign:"center" as const, padding:"80px 0", color:"#9aa5b4" }}>
           <User size={48} style={{ marginBottom:16, opacity:0.3 }}/>
           <p style={{ fontSize:16, fontWeight:600 }}>Aucun prospect</p>
-          <p style={{ fontSize:13, marginTop:4 }}>{onglet==="cibles"?"Ajoutez votre premier prospect ciblé":"Aucun prospect contacté pour l'instant"}</p>
+          <p style={{ fontSize:13, marginTop:4 }}>{onglet==="cibles"?"Ajoutez votre premier prospect ciblé":"Aucun échange enregistré pour l'instant"}</p>
         </div>
       ) : (
         <>
@@ -865,16 +943,16 @@ export default function ProspectsPage() {
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:10 }}>
                     {p.type==="physique" && p.pays_origine_nom && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:5,height:5,borderRadius:"50%",background:accent,flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.pays_origine_nom}</span></div>}
                     {p.type==="morale" && p.siege_nom && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:5,height:5,borderRadius:"50%",background:accent,flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.siege_nom}</span></div>}
-                    {p.contacts?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.contacts.length} contact{p.contacts.length>1?"s":""}</span></div>}
+                    {p.nb_echanges > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
                   </div>
                   <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
                     <button onClick={()=>{ setEdit(p); setModal(true); }}
                       style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.08)`, border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
                       <Pencil size={12}/> Modifier
                     </button>
-                    <button onClick={()=>{ setVue(p); setTimeout(()=>setContactModal(true),50); }}
+                    <button onClick={()=>{ setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
                       style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
-                      <MessageSquare size={12}/> Contact
+                      <MessageSquare size={12}/> Contacter
                     </button>
                     <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
                       style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
@@ -891,8 +969,9 @@ export default function ProspectsPage() {
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
       {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
-        onAddContact={()=>setContactModal(true)}/>}
-      {vue && <ContactModal open={contactModal} onClose={()=>setContactModal(false)} prospect={vue} onSaved={()=>{ setContactModal(false); charger(); }}/>}
+        onContacter={()=>setEchangeModal(true)}/>}
+      {vue && <EchangeModal open={echangeModal} onClose={()=>setEchangeModal(false)} prospect={vue}
+        onSaved={(updated)=>{ setEchangeModal(false); setVue(updated); charger(); }}/>}
     </div>
   );
 }

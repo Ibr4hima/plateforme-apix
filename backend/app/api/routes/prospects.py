@@ -1,11 +1,12 @@
+from datetime import date as date_type
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
-from app.models.prospect import Prospect, ProspectContact, ProspectContactHistorique, ProspectPointFocal
+from app.models.prospect import Prospect, ProspectPointFocal, ProspectEchange
 from app.models.projet import Projet
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
@@ -14,7 +15,7 @@ LOAD_OPTS = [
     selectinload(Prospect.pays_origine),
     selectinload(Prospect.siege),
     selectinload(Prospect.points_focaux),
-    selectinload(Prospect.contacts).selectinload(ProspectContact.historique),
+    selectinload(Prospect.echanges),
 ]
 
 
@@ -22,19 +23,40 @@ async def get_projet_titre(db: AsyncSession, projet_id: int | None) -> str | Non
     if not projet_id:
         return None
     res = await db.execute(select(Projet.titre_projet).where(Projet.id == projet_id))
-    row = res.scalar_one_or_none()
-    return row
+    return res.scalar_one_or_none()
+
+
+def echange_to_dict(e: ProspectEchange) -> dict:
+    enregistre = e.enregistre_le
+    echange_dt  = e.date_echange
+    retard_jours = None
+    if enregistre and echange_dt:
+        from datetime import datetime, timezone
+        if hasattr(enregistre, "date"):
+            delta = enregistre.date() - echange_dt
+        else:
+            delta = enregistre - echange_dt
+        retard_jours = delta.days if delta.days > 0 else 0
+    return {
+        "id":            e.id,
+        "prospect_id":   e.prospect_id,
+        "date_echange":  e.date_echange.isoformat() if e.date_echange else None,
+        "commentaire":   e.commentaire,
+        "contact_par":   e.contact_par,
+        "enregistre_le": e.enregistre_le.isoformat() if e.enregistre_le else None,
+        "retard_jours":  retard_jours,
+    }
+
 
 def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
+    echanges_sorted = sorted(p.echanges or [], key=lambda e: e.date_echange)
     return {
         "id":              p.id,
         "type":            p.type or "physique",
         "nom":             p.nom,
         "prenom":          p.prenom,
-        # physique
         "pays_origine_id": p.pays_origine_id,
         "pays_origine_nom":p.pays_origine.nom_fr if p.pays_origine else None,
-        # morale
         "siege_id":        p.siege_id,
         "siege_nom":       p.siege.nom_fr if p.siege else None,
         "secteur_ids":     p.secteur_ids or [],
@@ -45,7 +67,6 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
              "telephones": pf.telephones or [], "mails": pf.mails or []}
             for pf in (p.points_focaux or [])
         ],
-        # commun
         "telephones":      p.telephones or [],
         "mails":           p.mails or [],
         "details":         p.details,
@@ -66,18 +87,12 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
         "objet_adequation_activite_ids":  p.objet_adequation_activite_ids or [],
         "objet_adequation_details":       p.objet_adequation_details,
         "objet_commentaires":             p.objet_commentaires,
-        "contacts": [
-            {
-                "id":                   c.id,
-                "projet_nom":           c.projet_nom,
-                "projet_description":   c.projet_description,
-                "date_premier_contact": c.date_premier_contact.isoformat() if c.date_premier_contact else None,
-                "etat_avancement":      c.etat_avancement,
-                "commentaires":         c.commentaires,
-                "contraintes":          c.contraintes,
-            }
-            for c in (p.contacts or []) if not c.is_deleted
-        ],
+        # échanges
+        "nb_echanges":         len(echanges_sorted),
+        "date_premier_echange": echanges_sorted[0].date_echange.isoformat() if echanges_sorted else None,
+        "date_dernier_echange": echanges_sorted[-1].date_echange.isoformat() if echanges_sorted else None,
+        "dernier_contact_par":  echanges_sorted[-1].contact_par if echanges_sorted else None,
+        "echanges": [echange_to_dict(e) for e in echanges_sorted],
     }
 
 
@@ -90,7 +105,7 @@ async def liste_prospects(
     contactes: Optional[bool] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    from sqlalchemy import or_
+    from sqlalchemy import or_, exists
     base = select(Prospect).options(*LOAD_OPTS).where(Prospect.is_deleted == False)
     if q:
         base = base.where(or_(
@@ -98,29 +113,23 @@ async def liste_prospects(
             Prospect.prenom.ilike(f"%{q}%"),
         ))
     if contactes is True:
-        from sqlalchemy import exists
-        base = base.where(exists().where(
-            ProspectContact.prospect_id == Prospect.id,
-            ProspectContact.is_deleted == False
-        ))
+        base = base.where(exists().where(ProspectEchange.prospect_id == Prospect.id))
     elif contactes is False:
-        from sqlalchemy import exists
-        base = base.where(~exists().where(
-            ProspectContact.prospect_id == Prospect.id,
-            ProspectContact.is_deleted == False
-        ))
+        base = base.where(~exists().where(ProspectEchange.prospect_id == Prospect.id))
     base = base.order_by(Prospect.created_at.desc())
-    count_res = await db.execute(select(Prospect.id).where(Prospect.is_deleted == False))
-    total = len(count_res.fetchall())
-    res = await db.execute(base.offset((page-1)*per_page).limit(per_page))
+    count_res = await db.execute(select(func.count()).select_from(
+        select(Prospect.id).where(Prospect.is_deleted == False).subquery()
+    ))
+    total = count_res.scalar_one()
+    res = await db.execute(base.offset((page - 1) * per_page).limit(per_page))
     prospects = res.scalars().all()
-    # Charge les titres de projets liés en une seule requête
     projet_ids = list({p.objet_projet_id for p in prospects if p.objet_projet_id})
     titres: dict = {}
     if projet_ids:
         r = await db.execute(select(Projet.id, Projet.titre_projet).where(Projet.id.in_(projet_ids)))
         titres = {row[0]: row[1] for row in r.fetchall()}
-    return {"data": [prospect_to_dict(p, titres.get(p.objet_projet_id)) for p in prospects], "total": total, "page": page, "per_page": per_page}
+    return {"data": [prospect_to_dict(p, titres.get(p.objet_projet_id)) for p in prospects],
+            "total": total, "page": page, "per_page": per_page}
 
 
 # ── POST /prospects ───────────────────────────────────────────────────────────
@@ -178,13 +187,16 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
 @router.patch("/{prospect_id}")
 async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
-    p   = res.scalar_one_or_none()
-    if not p: raise HTTPException(404, "Prospect introuvable")
-    for f in ["type","nom","prenom","adresse","details",
-              "objet_intentions_details","objet_adequation_details","objet_commentaires"]:
-        if f in payload: setattr(p, f, payload[f] or None)
-    for f in ["objet_projet","objet_intentions_etranger","objet_adequation_senegal","est_publie"]:
-        if f in payload: setattr(p, f, payload[f])
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Prospect introuvable")
+    for f in ["type", "nom", "prenom", "adresse", "details",
+              "objet_intentions_details", "objet_adequation_details", "objet_commentaires"]:
+        if f in payload:
+            setattr(p, f, payload[f] or None)
+    for f in ["objet_projet", "objet_intentions_etranger", "objet_adequation_senegal", "est_publie"]:
+        if f in payload:
+            setattr(p, f, payload[f])
     if "telephones"      in payload: p.telephones      = payload["telephones"] or []
     if "mails"           in payload: p.mails           = payload["mails"] or []
     if "pays_origine_id" in payload: p.pays_origine_id = payload["pays_origine_id"] or None
@@ -193,10 +205,11 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     if "secteur_ids"     in payload: p.secteur_ids     = payload["secteur_ids"] or []
     if "branche_ids"     in payload: p.branche_ids     = payload["branche_ids"] or []
     if "activite_ids"    in payload: p.activite_ids    = payload["activite_ids"] or []
-    for f in ["objet_intentions_secteur_ids","objet_intentions_branche_ids","objet_intentions_activite_ids",
-              "objet_adequation_secteur_ids","objet_adequation_branche_ids","objet_adequation_activite_ids"]:
-        if f in payload: setattr(p, f, payload[f] or [])
-    if "points_focaux"  in payload:
+    for f in ["objet_intentions_secteur_ids", "objet_intentions_branche_ids", "objet_intentions_activite_ids",
+              "objet_adequation_secteur_ids", "objet_adequation_branche_ids", "objet_adequation_activite_ids"]:
+        if f in payload:
+            setattr(p, f, payload[f] or [])
+    if "points_focaux" in payload:
         from sqlalchemy import delete as sqldel
         await db.execute(sqldel(ProspectPointFocal).where(ProspectPointFocal.prospect_id == prospect_id))
         for pf_data in payload["points_focaux"] or []:
@@ -220,89 +233,70 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
 @router.delete("/{prospect_id}", status_code=204)
 async def supprimer_prospect(prospect_id: int, db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(Prospect).where(Prospect.id == prospect_id))
-    p   = res.scalar_one_or_none()
-    if not p: raise HTTPException(404, "Prospect introuvable")
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Prospect introuvable")
     await db.delete(p)
     await db.flush()
 
 
-# ── GET /prospects/:id/contacts ───────────────────────────────────────────────
-@router.get("/{prospect_id}/contacts")
-async def liste_contacts(prospect_id: int, db: AsyncSession = Depends(get_db)):
+# ── POST /prospects/:id/echanges ──────────────────────────────────────────────
+@router.post("/{prospect_id}/echanges", status_code=201)
+async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    # Vérifier que le prospect existe
+    p_res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
+    if not p_res.scalar_one_or_none():
+        raise HTTPException(404, "Prospect introuvable")
+
+    # Valider les champs requis
+    contact_par = (payload.get("contact_par") or "").strip()
+    if not contact_par:
+        raise HTTPException(422, "Le nom du marketer est obligatoire")
+    if not payload.get("date_echange"):
+        raise HTTPException(422, "La date de l'échange est obligatoire")
+
+    # Parser la date saisie
+    try:
+        date_saisie = date_type.fromisoformat(payload["date_echange"])
+    except ValueError:
+        raise HTTPException(422, "Format de date invalide (attendu : YYYY-MM-DD)")
+
+    today = date_type.today()
+
+    # Règle 1 : pas dans le futur (côté serveur, pas navigateur)
+    if date_saisie > today:
+        raise HTTPException(422, f"La date ne peut pas être dans le futur (aujourd'hui : {today.isoformat()})")
+
+    # Récupérer le dernier échange pour ce prospect
+    last_res = await db.execute(
+        select(func.max(ProspectEchange.date_echange))
+        .where(ProspectEchange.prospect_id == prospect_id)
+    )
+    last_date = last_res.scalar_one_or_none()
+
+    # Règle 2 : strictement supérieur au dernier échange
+    if last_date and date_saisie <= last_date:
+        raise HTTPException(422,
+            f"La date doit être postérieure au dernier échange ({last_date.isoformat()})")
+
+    e = ProspectEchange(
+        prospect_id  = prospect_id,
+        date_echange = date_saisie,
+        commentaire  = payload.get("commentaire") or None,
+        contact_par  = contact_par,
+    )
+    db.add(e)
+    await db.flush()
+    await db.refresh(e)
+    return echange_to_dict(e)
+
+
+# ── GET /prospects/:id/echanges ───────────────────────────────────────────────
+@router.get("/{prospect_id}/echanges")
+async def liste_echanges(prospect_id: int, db: AsyncSession = Depends(get_db)):
     res = await db.execute(
-        select(ProspectContact)
-        .options(selectinload(ProspectContact.historique))
-        .where(ProspectContact.prospect_id == prospect_id, ProspectContact.is_deleted == False)
-        .order_by(ProspectContact.created_at.desc())
+        select(ProspectEchange)
+        .where(ProspectEchange.prospect_id == prospect_id)
+        .order_by(ProspectEchange.date_echange)
     )
-    return [contact_to_dict(c) for c in res.scalars().all()]
-
-
-def contact_to_dict(c: ProspectContact) -> dict:
-    return {
-        "id":                   c.id,
-        "prospect_id":          c.prospect_id,
-        "projet_nom":           c.projet_nom,
-        "projet_description":   c.projet_description,
-        "date_premier_contact": c.date_premier_contact.isoformat() if c.date_premier_contact else None,
-        "etat_avancement":      c.etat_avancement,
-        "commentaires":         c.commentaires,
-        "contraintes":          c.contraintes,
-        "historique": [
-            {"id": h.id, "etat": h.etat, "commentaire": h.commentaire, "date": h.date_changement.isoformat() if h.date_changement else None}
-            for h in (c.historique or [])
-        ],
-    }
-
-
-# ── POST /prospects/:id/contacts ──────────────────────────────────────────────
-@router.post("/{prospect_id}/contacts", status_code=201)
-async def ajouter_contact(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
-    from datetime import date
-    c = ProspectContact(
-        prospect_id          = prospect_id,
-        projet_nom           = payload.get("projet_nom", "").strip() or "Contact",
-        projet_description   = payload.get("projet_description") or None,
-        date_premier_contact = payload.get("date_premier_contact") or date.today().isoformat(),
-        etat_avancement      = payload.get("etat_avancement", "en_cours"),
-        commentaires         = payload.get("commentaires") or None,
-        contraintes          = payload.get("contraintes") or None,
-    )
-    db.add(c)
-    await db.flush()
-    # Enregistrer l'état initial dans l'historique
-    h = ProspectContactHistorique(contact_id=c.id, etat=c.etat_avancement, commentaire="Création")
-    db.add(h)
-    await db.flush()
-    await db.refresh(c)
-    res = await db.execute(select(ProspectContact).options(selectinload(ProspectContact.historique)).where(ProspectContact.id == c.id))
-    return contact_to_dict(res.scalar_one())
-
-
-# ── PATCH /prospects/contacts/:id ────────────────────────────────────────────
-@router.patch("/contacts/{contact_id}")
-async def modifier_contact(contact_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(ProspectContact).options(selectinload(ProspectContact.historique)).where(ProspectContact.id == contact_id))
-    c   = res.scalar_one_or_none()
-    if not c: raise HTTPException(404, "Contact introuvable")
-    ancien_etat = c.etat_avancement
-    for f in ["projet_nom","projet_description","commentaires","contraintes"]:
-        if f in payload: setattr(c, f, payload[f] or None)
-    if "date_premier_contact" in payload: c.date_premier_contact = payload["date_premier_contact"]
-    if "etat_avancement" in payload and payload["etat_avancement"] != ancien_etat:
-        c.etat_avancement = payload["etat_avancement"]
-        h = ProspectContactHistorique(contact_id=c.id, etat=c.etat_avancement, commentaire=payload.get("commentaire_historique") or None)
-        db.add(h)
-    await db.flush()
-    res = await db.execute(select(ProspectContact).options(selectinload(ProspectContact.historique)).where(ProspectContact.id == contact_id))
-    return contact_to_dict(res.scalar_one())
-
-
-# ── DELETE /prospects/contacts/:id ───────────────────────────────────────────
-@router.delete("/contacts/{contact_id}", status_code=204)
-async def supprimer_contact(contact_id: int, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(ProspectContact).where(ProspectContact.id == contact_id))
-    c   = res.scalar_one_or_none()
-    if not c: raise HTTPException(404, "Contact introuvable")
-    await db.delete(c)
-    await db.flush()
+    return [echange_to_dict(e) for e in res.scalars().all()]
