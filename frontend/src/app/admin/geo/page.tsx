@@ -126,9 +126,9 @@ export default function AdminGeo() {
       .map(dep => ({
         departement_id: dep.id,
         noms: (importInputs[dep.id] || "")
-          .split("\n")
+          .split(/\r?\n/)
           .map((s: string) => s.trim())
-          .filter(Boolean),
+          .filter((s: string) => s.length > 0),
       }))
       .filter(item => item.noms.length > 0);
 

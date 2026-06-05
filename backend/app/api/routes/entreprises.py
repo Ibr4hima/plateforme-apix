@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import selectinload
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from app.core.database import get_db
 from app.models.entreprise import (
@@ -467,7 +467,7 @@ async def creer_arrondissement(payload: dict, db: AsyncSession = Depends(get_db)
     return {"id": arr.id, "nom": arr.nom, "departement_id": arr.departement_id}
 
 @router.post("/ref/arrondissements/bulk", status_code=201)
-async def importer_arrondissements_bulk(payload: list, db: AsyncSession = Depends(get_db)):
+async def importer_arrondissements_bulk(payload: List[Any], db: AsyncSession = Depends(get_db)):
     """
     payload: [{ departement_id: int, noms: [str] }, ...]
     Insère tous les arrondissements listés pour chaque département.
