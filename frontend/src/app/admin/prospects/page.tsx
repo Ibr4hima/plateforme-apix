@@ -656,9 +656,18 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
 }
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
-function ProspectVue({ p, onClose, onEdit, onContacter }: any) {
+function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
   const LBL = ({t}:{t:string}) => <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>{t}</p>;
   const [showEchanges, setShowEchanges] = useState(true);
+  const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
+
+  const handleDeleteEchange = async (id:number) => {
+    if (!confirm("Supprimer cet échange ?")) return;
+    setDeletingEchange(id);
+    await fetch(`${API}/prospects/echanges/${id}`, { method:"DELETE" });
+    setDeletingEchange(null);
+    onRefresh();
+  };
   const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
 
   return (
@@ -806,9 +815,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter }: any) {
                               <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7, marginTop:4 }}
                                 dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                             )}
-                            <p style={{ fontSize:10, color:"#C5BFBB", marginTop:8 }}>
-                              Saisi le {new Date(e.enregistre_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
-                            </p>
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:8 }}>
+                              <p style={{ fontSize:10, color:"#C5BFBB" }}>
+                                Saisi le {new Date(e.enregistre_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
+                              </p>
+                              <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
+                                style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", opacity:0.4 }}
+                                title="Supprimer (mode test)">
+                                {deletingEchange===e.id
+                                  ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
+                                  : <Trash2 size={11} style={{ color:"#dc2626" }}/>}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -969,7 +987,8 @@ export default function ProspectsPage() {
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
       {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
-        onContacter={()=>setEchangeModal(true)}/>}
+        onContacter={()=>setEchangeModal(true)}
+        onRefresh={async()=>{ await charger(); const r=await fetch(`${API}/prospects?page=1&per_page=200`); const d=await r.json(); const up=(d.data||[]).find((x:any)=>x.id===vue.id); if(up) setVue(up); }}/>}
       {vue && <EchangeModal open={echangeModal} onClose={()=>setEchangeModal(false)} prospect={vue}
         onSaved={(updated)=>{ setEchangeModal(false); setVue(updated); charger(); }}/>}
     </div>

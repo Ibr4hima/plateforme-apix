@@ -300,3 +300,14 @@ async def liste_echanges(prospect_id: int, db: AsyncSession = Depends(get_db)):
         .order_by(ProspectEchange.date_echange)
     )
     return [echange_to_dict(e) for e in res.scalars().all()]
+
+
+# ── DELETE /prospects/echanges/:id ── (désactiver quand auth en prod)
+@router.delete("/echanges/{echange_id}", status_code=204)
+async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(ProspectEchange).where(ProspectEchange.id == echange_id))
+    e = res.scalar_one_or_none()
+    if not e:
+        raise HTTPException(404, "Échange introuvable")
+    await db.delete(e)
+    await db.flush()
