@@ -12,6 +12,7 @@ router = APIRouter(prefix="/prospects", tags=["Prospects"])
 LOAD_OPTS = [
     selectinload(Prospect.pays_origine),
     selectinload(Prospect.siege),
+    selectinload(Prospect.projet_cible),
     selectinload(Prospect.points_focaux),
     selectinload(Prospect.contacts).selectinload(ProspectContact.historique),
 ]
@@ -43,6 +44,17 @@ def prospect_to_dict(p: Prospect) -> dict:
         "details":         p.details,
         "est_publie":      p.est_publie,
         "created_at":      p.created_at.isoformat() if p.created_at else None,
+        # objet du ciblage
+        "objet_projet":              p.objet_projet or False,
+        "objet_projet_id":           p.objet_projet_id,
+        "objet_projet_titre":        p.projet_cible.titre_projet if p.projet_cible else None,
+        "objet_intentions_etranger": p.objet_intentions_etranger or False,
+        "objet_intentions_details":  p.objet_intentions_details,
+        "objet_adequation_senegal":  p.objet_adequation_senegal or False,
+        "objet_adequation_details":  p.objet_adequation_details,
+        "objet_secteur_prioritaire": p.objet_secteur_prioritaire or False,
+        "objet_secteur_details":     p.objet_secteur_details,
+        "objet_commentaires":        p.objet_commentaires,
         "contacts": [
             {
                 "id":                   c.id,
@@ -111,6 +123,15 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
         mails           = payload.get("mails") or [],
         adresse         = payload.get("adresse") or None,
         details         = payload.get("details") or None,
+        objet_projet              = payload.get("objet_projet") or False,
+        objet_projet_id           = payload.get("objet_projet_id") or None,
+        objet_intentions_etranger = payload.get("objet_intentions_etranger") or False,
+        objet_intentions_details  = payload.get("objet_intentions_details") or None,
+        objet_adequation_senegal  = payload.get("objet_adequation_senegal") or False,
+        objet_adequation_details  = payload.get("objet_adequation_details") or None,
+        objet_secteur_prioritaire = payload.get("objet_secteur_prioritaire") or False,
+        objet_secteur_details     = payload.get("objet_secteur_details") or None,
+        objet_commentaires        = payload.get("objet_commentaires") or None,
     )
     db.add(p)
     await db.flush()
@@ -135,16 +156,20 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Prospect introuvable")
-    for f in ["type","nom","prenom","adresse","details"]:
+    for f in ["type","nom","prenom","adresse","details",
+              "objet_intentions_details","objet_adequation_details",
+              "objet_secteur_details","objet_commentaires"]:
         if f in payload: setattr(p, f, payload[f] or None)
-    if "telephones"     in payload: p.telephones     = payload["telephones"] or []
-    if "mails"          in payload: p.mails          = payload["mails"] or []
-    if "pays_origine_id"in payload: p.pays_origine_id= payload["pays_origine_id"] or None
-    if "siege_id"       in payload: p.siege_id       = payload["siege_id"] or None
-    if "secteur_ids"    in payload: p.secteur_ids    = payload["secteur_ids"] or []
-    if "branche_ids"    in payload: p.branche_ids    = payload["branche_ids"] or []
-    if "activite_ids"   in payload: p.activite_ids   = payload["activite_ids"] or []
-    if "est_publie"     in payload: p.est_publie     = payload["est_publie"]
+    for f in ["objet_projet","objet_intentions_etranger","objet_adequation_senegal","objet_secteur_prioritaire","est_publie"]:
+        if f in payload: setattr(p, f, payload[f])
+    if "telephones"      in payload: p.telephones      = payload["telephones"] or []
+    if "mails"           in payload: p.mails           = payload["mails"] or []
+    if "pays_origine_id" in payload: p.pays_origine_id = payload["pays_origine_id"] or None
+    if "siege_id"        in payload: p.siege_id        = payload["siege_id"] or None
+    if "objet_projet_id" in payload: p.objet_projet_id = payload["objet_projet_id"] or None
+    if "secteur_ids"     in payload: p.secteur_ids     = payload["secteur_ids"] or []
+    if "branche_ids"     in payload: p.branche_ids     = payload["branche_ids"] or []
+    if "activite_ids"    in payload: p.activite_ids    = payload["activite_ids"] or []
     if "points_focaux"  in payload:
         from sqlalchemy import delete as sqldel
         await db.execute(sqldel(ProspectPointFocal).where(ProspectPointFocal.prospect_id == prospect_id))

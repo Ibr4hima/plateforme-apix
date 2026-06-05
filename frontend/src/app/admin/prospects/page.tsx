@@ -40,6 +40,16 @@ const EMPTY_FORM = {
   telephones:       [""] as string[],
   mails:            [""] as string[],
   details:          "",
+  // objet du ciblage
+  objet_projet:              false,
+  objet_projet_id:           null as number|null,
+  objet_intentions_etranger: false,
+  objet_intentions_details:  "",
+  objet_adequation_senegal:  false,
+  objet_adequation_details:  "",
+  objet_secteur_prioritaire: false,
+  objet_secteur_details:     "",
+  objet_commentaires:        "",
 };
 
 // ── Sélecteur type ────────────────────────────────────────────────────────────
@@ -159,6 +169,47 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove, canRemove }: {
   );
 }
 
+// ── Toggle Oui/Non avec zone de détails optionnelle ──────────────────────────
+function ToggleField({ label, desc, value, onChange, children }: {
+  label:string; desc?:string; value:boolean; onChange:(v:boolean)=>void; children?:React.ReactNode;
+}) {
+  return (
+    <div style={{ border:"1px solid #E8E5E3", borderRadius:12, overflow:"hidden" }}>
+      <button type="button" onClick={()=>onChange(!value)}
+        style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center",
+          padding:"12px 16px", background:value?"rgba(202,99,31,0.05)":"#fff", border:"none", cursor:"pointer", textAlign:"left" as const }}>
+        <div>
+          <span style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{label}</span>
+          {desc && <p style={{ fontSize:11, color:"#9aa5b4", marginTop:2 }}>{desc}</p>}
+        </div>
+        <div style={{ flexShrink:0, marginLeft:12, width:36, height:20, borderRadius:10, background:value?"#ca631f":"#C5BFBB", position:"relative" as const, transition:"background 0.2s" }}>
+          <div style={{ position:"absolute" as const, top:2, left:value?18:2, width:16, height:16, borderRadius:8, background:"#fff", transition:"left 0.2s", boxShadow:"0 1px 3px rgba(0,0,0,0.2)" }}/>
+        </div>
+      </button>
+      {value && children && (
+        <div style={{ padding:"12px 16px 16px", borderTop:"1px solid #F2F0EF", background:"rgba(202,99,31,0.02)" }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Sélecteur de projet ───────────────────────────────────────────────────────
+function ProjetSelect({ value, onChange }: { value:number|null; onChange:(id:number|null)=>void }) {
+  const [projets, setProjets] = useState<any[]>([]);
+  useEffect(()=>{
+    fetch(`${API}/projets?per_page=100&admin=true`)
+      .then(r=>r.json()).then(d=>setProjets(d.data||[])).catch(()=>{});
+  }, []);
+  return (
+    <select value={value??""} onChange={e=>onChange(e.target.value?Number(e.target.value):null)} style={IS}>
+      <option value="">— Sélectionner un projet —</option>
+      {projets.map((p:any)=><option key={p.id} value={p.id}>{p.titre_projet}</option>)}
+    </select>
+  );
+}
+
 // ── Modal création/édition Prospect ──────────────────────────────────────────
 function ProspectModal({ open, onClose, edit, onSaved }: {
   open:boolean; onClose:()=>void; edit:any; onSaved:()=>void;
@@ -190,6 +241,15 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         telephones:       edit.telephones?.length ? edit.telephones : [""],
         mails:            edit.mails?.length ? edit.mails : [""],
         details:          edit.details||"",
+        objet_projet:              edit.objet_projet||false,
+        objet_projet_id:           edit.objet_projet_id||null,
+        objet_intentions_etranger: edit.objet_intentions_etranger||false,
+        objet_intentions_details:  edit.objet_intentions_details||"",
+        objet_adequation_senegal:  edit.objet_adequation_senegal||false,
+        objet_adequation_details:  edit.objet_adequation_details||"",
+        objet_secteur_prioritaire: edit.objet_secteur_prioritaire||false,
+        objet_secteur_details:     edit.objet_secteur_details||"",
+        objet_commentaires:        edit.objet_commentaires||"",
       });
     } else {
       setForm({ ...EMPTY_FORM, points_focaux:[{ ...EMPTY_FOCAL }] });
@@ -208,6 +268,16 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         telephones:form.telephones.filter(Boolean),
         mails:     form.mails.filter(Boolean),
         details:   form.details||null,
+        // objet du ciblage
+        objet_projet:              form.objet_projet,
+        objet_projet_id:           form.objet_projet && form.objet_projet_id ? form.objet_projet_id : null,
+        objet_intentions_etranger: form.objet_intentions_etranger,
+        objet_intentions_details:  form.objet_intentions_etranger ? (form.objet_intentions_details||null) : null,
+        objet_adequation_senegal:  form.objet_adequation_senegal,
+        objet_adequation_details:  form.objet_adequation_senegal ? (form.objet_adequation_details||null) : null,
+        objet_secteur_prioritaire: form.objet_secteur_prioritaire,
+        objet_secteur_details:     form.objet_secteur_prioritaire ? (form.objet_secteur_details||null) : null,
+        objet_commentaires:        form.objet_commentaires||null,
       };
       if (form.type==="physique") {
         payload.prenom          = form.prenom.trim()||null;
@@ -355,6 +425,68 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
 
             </div>
           )}
+
+          {/* ── Objet du ciblage (commun physique + morale) ── */}
+          <div style={{ marginTop:24, paddingTop:24, borderTop:"1px solid #E8E5E3" }}>
+            <p style={SEC}>Objet du ciblage</p>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+
+              <ToggleField
+                label="Lié à un projet particulier ?"
+                desc="L'investisseur est ciblé dans le cadre d'un projet d'investissement spécifique"
+                value={form.objet_projet} onChange={v=>{ upd("objet_projet",v); if(!v) upd("objet_projet_id",null); }}>
+                <div style={{ marginTop:8 }}>
+                  <label style={LS}>Sélectionner le projet</label>
+                  <ProjetSelect value={form.objet_projet_id} onChange={id=>upd("objet_projet_id",id)}/>
+                </div>
+              </ToggleField>
+
+              <ToggleField
+                label="Intentions d'investissement à l'étranger ?"
+                desc="L'investisseur a exprimé des intentions d'investir hors de son pays d'origine"
+                value={form.objet_intentions_etranger} onChange={v=>upd("objet_intentions_etranger",v)}>
+                <div style={{ marginTop:8 }}>
+                  <label style={LS}>Détails</label>
+                  <div style={{ minHeight:120 }}>
+                    <RichTextEditor value={form.objet_intentions_details} onChange={v=>upd("objet_intentions_details",v)}/>
+                  </div>
+                </div>
+              </ToggleField>
+
+              <ToggleField
+                label="Adéquation profil / destination Sénégal"
+                desc="Le profil de l'investisseur correspond aux opportunités et secteurs prioritaires du Sénégal"
+                value={form.objet_adequation_senegal} onChange={v=>upd("objet_adequation_senegal",v)}>
+                <div style={{ marginTop:8 }}>
+                  <label style={LS}>Détails de l'adéquation</label>
+                  <div style={{ minHeight:120 }}>
+                    <RichTextEditor value={form.objet_adequation_details} onChange={v=>upd("objet_adequation_details",v)}/>
+                  </div>
+                </div>
+              </ToggleField>
+
+              <ToggleField
+                label="Secteur d'activité prioritaire pour le Sénégal"
+                desc="L'investisseur opère dans un secteur identifié comme prioritaire par le Sénégal"
+                value={form.objet_secteur_prioritaire} onChange={v=>upd("objet_secteur_prioritaire",v)}>
+                <div style={{ marginTop:8 }}>
+                  <label style={LS}>Préciser le secteur et la pertinence</label>
+                  <div style={{ minHeight:120 }}>
+                    <RichTextEditor value={form.objet_secteur_details} onChange={v=>upd("objet_secteur_details",v)}/>
+                  </div>
+                </div>
+              </ToggleField>
+
+              <div>
+                <label style={LS}>Commentaires sur le ciblage</label>
+                <p style={{ fontSize:12, color:"#888", marginBottom:8 }}>Contexte général, stratégie d'approche, notes internes…</p>
+                <div style={{ minHeight:120 }}>
+                  <RichTextEditor value={form.objet_commentaires} onChange={v=>upd("objet_commentaires",v)}/>
+                </div>
+              </div>
+
+            </div>
+          </div>
 
           {error && <p style={{ fontSize:12, color:"#dc2626", marginTop:16 }}>{error}</p>}
 
@@ -525,6 +657,45 @@ function ProspectVue({ p, onClose, onEdit, onAddContact }: any) {
               <LBL t={p.type==="morale"?"Commentaires":"Détails"}/>
               <div style={{ background:"rgba(202,99,31,0.04)", border:"1px solid rgba(202,99,31,0.12)", borderRadius:10, padding:"12px 14px", fontSize:13, color:"#4a5568", lineHeight:1.7 }}
                 dangerouslySetInnerHTML={{ __html:p.details }}/>
+            </div>
+          )}
+
+          {/* Objet du ciblage */}
+          {(p.objet_projet || p.objet_intentions_etranger || p.objet_adequation_senegal || p.objet_secteur_prioritaire || p.objet_commentaires) && (
+            <div style={{ marginBottom:16 }}>
+              <LBL t="Objet du ciblage"/>
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                {p.objet_projet && (
+                  <div style={{ background:"rgba(202,99,31,0.05)", border:"1px solid rgba(202,99,31,0.15)", borderRadius:10, padding:"10px 14px" }}>
+                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Lié à un projet</p>
+                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{p.objet_projet_titre || `Projet #${p.objet_projet_id}`}</p>
+                  </div>
+                )}
+                {p.objet_intentions_etranger && (
+                  <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
+                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Intentions d'investissement à l'étranger</p>
+                    {p.objet_intentions_details && <div style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_intentions_details }}/>}
+                  </div>
+                )}
+                {p.objet_adequation_senegal && (
+                  <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
+                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Adéquation profil / destination Sénégal</p>
+                    {p.objet_adequation_details && <div style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_adequation_details }}/>}
+                  </div>
+                )}
+                {p.objet_secteur_prioritaire && (
+                  <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
+                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Secteur d'activité prioritaire pour le Sénégal</p>
+                    {p.objet_secteur_details && <div style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_secteur_details }}/>}
+                  </div>
+                )}
+                {p.objet_commentaires && (
+                  <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
+                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Commentaires</p>
+                    <div style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_commentaires }}/>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

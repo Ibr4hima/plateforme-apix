@@ -29,8 +29,20 @@ class Prospect(Base):
     created_at       = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at       = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
+    # Objet du ciblage
+    objet_projet              = Column(Boolean, default=False)
+    objet_projet_id           = Column(Integer, ForeignKey("projets.id"), nullable=True)
+    objet_intentions_etranger = Column(Boolean, default=False)
+    objet_intentions_details  = Column(Text)
+    objet_adequation_senegal  = Column(Boolean, default=False)
+    objet_adequation_details  = Column(Text)
+    objet_secteur_prioritaire = Column(Boolean, default=False)
+    objet_secteur_details     = Column(Text)
+    objet_commentaires        = Column(Text)
+
     pays_origine     = relationship("RefPays", foreign_keys=[pays_origine_id], lazy="joined")
     siege            = relationship("RefPays", foreign_keys=[siege_id], lazy="joined")
+    projet_cible     = relationship("Projet", foreign_keys=[objet_projet_id], lazy="joined")
     contacts         = relationship("ProspectContact", back_populates="prospect",
                                    cascade="all, delete-orphan", order_by="ProspectContact.created_at")
     points_focaux    = relationship("ProspectPointFocal", back_populates="prospect",
