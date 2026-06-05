@@ -519,7 +519,8 @@ async def _get_unctad_token(client_id: str, client_secret: str) -> str:
             data={"grant_type": "client_credentials"},
             headers={"Authorization": f"Basic {credentials}"},
         )
-        r.raise_for_status()
+        if not r.is_success:
+            raise ValueError(f"HTTP {r.status_code} — réponse: {r.text[:500]}")
         return r.json()["access_token"]
 
 
