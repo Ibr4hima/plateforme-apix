@@ -382,11 +382,11 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Suivi des projets — lien direct */}
-            <Link href="/suivi-projets" style={{ color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
+            {/* Tableau de bord — lien direct */}
+            <Link href="/tableau-de-bord" style={{ color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = "#ca631f")}
               onMouseLeave={e => (e.currentTarget.style.color = textColor)}>
-              Suivi des projets
+              Tableau de bord
             </Link>
 
             {/* Code des investissements */}
@@ -422,9 +422,9 @@ export default function Navbar() {
                 {m.label}
               </Link>
             ))}
-            <Link href="/suivi-projets" onClick={() => setMenuOpen(false)}
+            <Link href="/tableau-de-bord" onClick={() => setMenuOpen(false)}
               style={{ display: "block", padding: "10px 14px", color: "#ca631f", textDecoration: "none", fontSize: 14, fontWeight: 600, borderRadius: 10 }}>
-              Suivi des projets
+              Tableau de bord
             </Link>
             <button onClick={() => { setMenuOpen(false); setCodeOpen(true); }}
               style={{ display: "block", width: "100%", textAlign: "left" as const, padding: "10px 14px", color: "#ca631f", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
