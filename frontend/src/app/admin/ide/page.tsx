@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { CheckCircle, Link2, Loader2, RefreshCw, Trash2, UploadCloud, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
 const IS: any  = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
 
-type RefPays    = { id: number; nom_fr: string; code_iso2: string | null };
-type StatPays   = { ref_pays_id: number; pays: string; code_iso2: string | null; series: Record<string, { annee_min: number; annee_max: number; nb: number }> };
-type ImportResult  = { pays: string; ref_pays_id: number; insere: number; mis_a_jour: number };
-type NonResolu  = { label: string; nb_lignes: number };
-type ImportRes  = { pays: ImportResult[]; erreurs: string[]; non_resolus: NonResolu[] };
+type RefPays     = { id: number; nom_fr: string; code_iso2: string | null };
+type StatPays    = { ref_pays_id: number; pays: string; code_iso2: string | null; series: Record<string, { annee_min: number; annee_max: number; nb: number }> };
+type ImportResult= { pays: string; ref_pays_id: number; insere: number; mis_a_jour: number };
+type NonResolu   = { label: string; nb_lignes: number };
+type ImportRes   = { pays: ImportResult[]; erreurs: string[]; non_resolus: NonResolu[] };
+type MergedPays  = StatPays & { hasData: boolean };
 
 const SERIES_LABELS: Record<string, string> = {
   entrant_flux: "Flux entrants", sortant_flux: "Flux sortants",
@@ -29,8 +30,7 @@ function MultiFileZone({ label, sublabel, files, onChange }: { label: string; su
   const [drag, setDrag] = useState(false);
   function addFiles(newFiles: FileList | null) {
     if (!newFiles) return;
-    const added = Array.from(newFiles);
-    onChange([...files, ...added.filter(f => !files.some(e => e.name === f.name))]);
+    onChange([...files, ...Array.from(newFiles).filter(f => !files.some(e => e.name === f.name))]);
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -53,9 +53,7 @@ function MultiFileZone({ label, sublabel, files, onChange }: { label: string; su
                 <span style={{ color: "#333", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
                 <span style={{ color: "#888" }}>({(f.size / 1024).toFixed(0)} Ko)</span>
               </div>
-              <button onClick={() => onChange(files.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "#999", padding: 0 }}>
-                <X size={12} />
-              </button>
+              <button onClick={() => onChange(files.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "#999", padding: 0 }}><X size={12} /></button>
             </div>
           ))}
         </div>
@@ -64,30 +62,21 @@ function MultiFileZone({ label, sublabel, files, onChange }: { label: string; su
   );
 }
 
-// Autocomplete pour associer un label UNCTAD à un pays ref_pays
-function AssociatePicker({ label, paysList, onSelect }: { label: string; paysList: RefPays[]; onSelect: (id: number, nom: string) => void }) {
+function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect: (id: number, nom: string) => void }) {
   const [search, setSearch] = useState("");
   const [open,   setOpen]   = useState(false);
-  const [chosen, setChosen] = useState<string>("");
+  const [chosen, setChosen] = useState("");
   const ref = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     function close(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); }
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, []);
-
   const filtered = paysList.filter(p => p.nom_fr.toLowerCase().includes(search.toLowerCase())).slice(0, 30);
-
   return (
     <div ref={ref} style={{ position: "relative", flex: 1 }}>
-      <input
-        value={chosen || search}
-        onChange={e => { setSearch(e.target.value); setChosen(""); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        placeholder="Rechercher dans ref_pays…"
-        style={{ ...IS, borderColor: chosen ? "#004f91" : undefined }}
-      />
+      <input value={chosen || search} onChange={e => { setSearch(e.target.value); setChosen(""); setOpen(true); }} onFocus={() => setOpen(true)}
+        placeholder="Rechercher dans ref_pays…" style={{ ...IS, borderColor: chosen ? "#004f91" : undefined }} />
       {open && filtered.length > 0 && !chosen && (
         <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #C5BFBB", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,.1)", maxHeight: 220, overflowY: "auto", marginTop: 2 }}>
           {filtered.map(p => (
@@ -95,8 +84,7 @@ function AssociatePicker({ label, paysList, onSelect }: { label: string; paysLis
               style={{ padding: "8px 12px", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
               onMouseEnter={e => (e.currentTarget.style.background = "#F0F4FF")}
               onMouseLeave={e => (e.currentTarget.style.background = "")}>
-              <Flag code={p.code_iso2} />
-              {p.nom_fr}
+              <Flag code={p.code_iso2} />{p.nom_fr}
             </div>
           ))}
         </div>
@@ -116,16 +104,14 @@ export default function AdminIdePage() {
   const [stockEntrant, setStockEntrant] = useState<File[]>([]);
   const [stockSortant, setStockSortant] = useState<File[]>([]);
 
-  const [importing,   setImporting]   = useState(false);
-  const [importRes,   setImportRes]   = useState<ImportRes | null>(null);
-
-  // Associations manuelles : label UNCTAD → { ref_pays_id, nom_fr }
+  const [importing,    setImporting]    = useState(false);
+  const [importRes,    setImportRes]    = useState<ImportRes | null>(null);
   const [associations, setAssociations] = useState<Record<string, { id: number; nom: string }>>({});
   const [associating,  setAssociating]  = useState(false);
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [refreshRes, setRefreshRes] = useState<any>(null);
-  const [deleting,   setDeleting]   = useState<number | null>(null);
+  const [refreshing,   setRefreshing]   = useState(false);
+  const [refreshRes,   setRefreshRes]   = useState<{ ok: boolean; msg: string } | null>(null);
+  const [deleting,     setDeleting]     = useState<number | null>(null);
 
   async function loadData() {
     const [st, cfg, pr] = await Promise.all([
@@ -141,6 +127,19 @@ export default function AdminIdePage() {
 
   useEffect(() => { loadData(); }, []);
 
+  // Fusionner tous les pays ref_pays avec les stats : importés d'abord, puis grisés
+  const mergedPays: MergedPays[] = useMemo(() => {
+    const withData: MergedPays[] = stats.map(s => ({ ...s, hasData: true }));
+    const importedIds = new Set(stats.map(s => s.ref_pays_id));
+    const withoutData: MergedPays[] = paysList
+      .filter(p => !importedIds.has(p.id))
+      .map(p => ({ ref_pays_id: p.id, pays: p.nom_fr, code_iso2: p.code_iso2, series: {}, hasData: false }));
+    return [...withData, ...withoutData];
+  }, [stats, paysList]);
+
+  const nbImportes = stats.length;
+  const nbTotal    = paysList.length;
+
   const hasFiles = fluxEntrant.length || fluxSortant.length || stockEntrant.length || stockSortant.length;
   const nonResolus: NonResolu[] = importRes?.non_resolus ?? [];
 
@@ -155,56 +154,46 @@ export default function AdminIdePage() {
 
   async function handleImport() {
     if (!hasFiles) return;
-    setImporting(true);
-    setImportRes(null);
-    setAssociations({});
+    setImporting(true); setImportRes(null); setAssociations({});
     try {
       const res  = await fetch(`${API}/ide/importer`, { method: "POST", body: buildFormData() });
       const data = await res.json();
       if (res.ok) {
         setImportRes(data);
-        // Vider les fichiers seulement si tout est résolu
-        if (!data.non_resolus?.length) {
-          setFluxEntrant([]); setFluxSortant([]); setStockEntrant([]); setStockSortant([]);
-        }
+        if (!data.non_resolus?.length) { setFluxEntrant([]); setFluxSortant([]); setStockEntrant([]); setStockSortant([]); }
         await loadData();
       } else {
         setImportRes({ pays: [], erreurs: [data.detail || "Erreur inconnue"], non_resolus: [] });
       }
-    } catch (e: any) {
-      setImportRes({ pays: [], erreurs: ["Erreur réseau : " + e.message], non_resolus: [] });
-    }
+    } catch (e: any) { setImportRes({ pays: [], erreurs: ["Erreur réseau : " + e.message], non_resolus: [] }); }
     setImporting(false);
   }
 
   async function handleAssocierEtReimporter() {
     const toAssociate = Object.entries(associations).filter(([, v]) => v.id);
     if (!toAssociate.length) return;
-
     setAssociating(true);
-    // 1. Enregistrer chaque association
     for (const [label, { id }] of toAssociate) {
-      await fetch(`${API}/ide/associer-pays`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label_cnuced: label, ref_pays_id: id }),
-      });
+      await fetch(`${API}/ide/associer-pays`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ label_cnuced: label, ref_pays_id: id }) });
     }
-    // 2. Réimporter avec les mêmes fichiers
     setAssociating(false);
     await handleImport();
   }
 
   async function handleRefresh() {
+    if (!unctadOk) return;
     setRefreshing(true); setRefreshRes(null);
     try {
       const res  = await fetch(`${API}/ide/rafraichir`, { method: "POST" });
       const data = await res.json();
-      setRefreshRes(data);
-      if (data.success) await loadData();
-    } catch (e: any) {
-      setRefreshRes({ success: false, erreur: "Erreur réseau : " + e.message });
-    }
+      if (data.success) {
+        const nb = (data.pays || []).reduce((acc: number, p: any) => acc + p.insere + p.mis_a_jour, 0);
+        setRefreshRes({ ok: true, msg: `${nb} lignes mises à jour pour ${data.pays?.length ?? 0} pays.` });
+        await loadData();
+      } else {
+        setRefreshRes({ ok: false, msg: data.erreur || "Erreur inconnue" });
+      }
+    } catch (e: any) { setRefreshRes({ ok: false, msg: "Erreur réseau : " + e.message }); }
     setRefreshing(false);
   }
 
@@ -215,8 +204,6 @@ export default function AdminIdePage() {
     setDeleting(null);
   }
 
-  const allAssociated = nonResolus.length > 0 && nonResolus.every(nr => associations[nr.label]?.id);
-
   return (
     <div style={{ padding: "32px 40px", maxWidth: 1100, margin: "0 auto", fontFamily: "var(--font-google-sans)" }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>IDE — Investissements Directs Étrangers</h1>
@@ -226,7 +213,7 @@ export default function AdminIdePage() {
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 20 }}>
         <div style={SEC}>Importer des données CNUCED</div>
         <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
-          Déposez un ou plusieurs fichiers CSV par série. Le pays est détecté automatiquement depuis la colonne <strong>Economy_Label</strong>. Un seul fichier peut contenir plusieurs pays.
+          Déposez un ou plusieurs fichiers CSV par série. Le pays est détecté automatiquement depuis <strong>Economy_Label</strong>. Un fichier peut contenir plusieurs pays.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
           <MultiFileZone label="Flux entrants"  sublabel="1 ou N pays par fichier" files={fluxEntrant}  onChange={setFluxEntrant} />
@@ -234,17 +221,11 @@ export default function AdminIdePage() {
           <MultiFileZone label="Stock entrants" sublabel="1 ou N pays par fichier" files={stockEntrant} onChange={setStockEntrant} />
           <MultiFileZone label="Stock sortants" sublabel="1 ou N pays par fichier" files={stockSortant} onChange={setStockSortant} />
         </div>
-
-        {/* Résultats import */}
         {importRes && (
           <div style={{ marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 }}>
             {importRes.pays.length > 0 && (
               <div style={{ padding: "10px 14px", borderRadius: 8, background: "#EDFBF1", border: "1px solid #B2EAC5" }}>
-                {importRes.pays.map(p => (
-                  <div key={p.pays} style={{ fontSize: 13, color: "#1a7a3c" }}>
-                    ✓ <strong>{p.pays}</strong> — {p.insere} insérées, {p.mis_a_jour} mises à jour
-                  </div>
-                ))}
+                {importRes.pays.map(p => <div key={p.pays} style={{ fontSize: 13, color: "#1a7a3c" }}>✓ <strong>{p.pays}</strong> — {p.insere} insérées, {p.mis_a_jour} mises à jour</div>)}
               </div>
             )}
             {importRes.erreurs.length > 0 && (
@@ -254,7 +235,6 @@ export default function AdminIdePage() {
             )}
           </div>
         )}
-
         <button onClick={handleImport} disabled={importing || !hasFiles}
           style={{ background: importing || !hasFiles ? "#ccc" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 13, fontWeight: 600, cursor: importing || !hasFiles ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
           {importing ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />}
@@ -265,13 +245,8 @@ export default function AdminIdePage() {
       {/* ── Pays non reconnus ── */}
       {nonResolus.length > 0 && (
         <div style={{ background: "#fff", borderRadius: 12, border: "2px solid #F5A623", padding: "24px 28px", marginBottom: 20 }}>
-          <div style={{ ...SEC, color: "#B7661B", borderBottomColor: "#FAD7A0" }}>
-            {nonResolus.length} pays non reconnus — association manuelle
-          </div>
-          <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
-            Ces noms UNCTAD ne correspondent à aucun pays dans <strong>ref_pays</strong>. Associez-les une fois — la prochaine fois ils seront reconnus automatiquement.
-          </p>
-
+          <div style={{ ...SEC, color: "#B7661B", borderBottomColor: "#FAD7A0" }}>{nonResolus.length} pays non reconnus — association manuelle</div>
+          <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>Associez-les une fois — ils seront reconnus automatiquement lors des prochains imports.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {nonResolus.map(nr => (
               <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "#FFF9F0", borderRadius: 8, border: "1px solid #FAD7A0" }}>
@@ -279,75 +254,55 @@ export default function AdminIdePage() {
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#B7661B" }}>{nr.label}</div>
                   <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>{nr.nb_lignes} lignes non importées</div>
                 </div>
-                <AssociatePicker
-                  label={nr.label}
-                  paysList={paysList}
-                  onSelect={(id, nom) => setAssociations(prev => ({ ...prev, [nr.label]: { id, nom } }))}
-                />
-                {associations[nr.label] && (
-                  <CheckCircle size={18} color="#27ae60" style={{ flexShrink: 0 }} />
-                )}
+                <AssociatePicker paysList={paysList} onSelect={(id, nom) => setAssociations(prev => ({ ...prev, [nr.label]: { id, nom } }))} />
+                {associations[nr.label] && <CheckCircle size={18} color="#27ae60" style={{ flexShrink: 0 }} />}
               </div>
             ))}
           </div>
-
           <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center" }}>
-            <button onClick={handleAssocierEtReimporter}
-              disabled={associating || !Object.values(associations).some(v => v.id)}
+            <button onClick={handleAssocierEtReimporter} disabled={associating || !Object.values(associations).some(v => v.id)}
               style={{ background: associating || !Object.values(associations).some(v => v.id) ? "#ccc" : "#B7661B", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
               {associating ? <Loader2 size={15} className="animate-spin" /> : <Link2 size={15} />}
-              {associating ? "Association en cours…" : allAssociated ? "Associer tout et réimporter" : "Associer les sélectionnés et réimporter"}
+              {associating ? "Association en cours…" : "Associer et réimporter"}
             </button>
-            {!allAssociated && (
-              <span style={{ fontSize: 12, color: "#999" }}>
-                {Object.values(associations).filter(v => v.id).length}/{nonResolus.length} associés
-              </span>
-            )}
+            <span style={{ fontSize: 12, color: "#999" }}>{Object.values(associations).filter(v => v.id).length}/{nonResolus.length} associés</span>
           </div>
         </div>
       )}
 
-      {/* ── Auto-refresh ── */}
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "20px 28px", marginBottom: 20 }}>
-        <div style={SEC}>Mise à jour automatique UNCTAD</div>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 13, color: "#555", margin: 0, marginBottom: 6 }}>
-              Récupère les nouvelles données directement depuis l'API UNCTAD pour tous les pays déjà importés. Tourne automatiquement <strong>chaque dimanche à 2h</strong>.
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
-              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: unctadOk === null ? "#CCC" : unctadOk ? "#27ae60" : "#e74c3c" }} />
-              {unctadOk === null ? "Vérification…"
-                : unctadOk ? "Credentials configurés"
-                : "Credentials non configurés — ajoutez UNCTAD_CLIENT_ID et UNCTAD_CLIENT_SECRET dans le .env"}
-            </div>
+      {/* ── Tableau pays ── */}
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px" }}>
+
+        {/* En-tête avec compteur + refresh */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" }}>Données importées par pays</span>
+            {!loading && (
+              <span style={{ background: nbImportes === nbTotal ? "#EDFBF1" : "#EEF4FB", color: nbImportes === nbTotal ? "#1a7a3c" : "#004f91", border: `1px solid ${nbImportes === nbTotal ? "#B2EAC5" : "#BDD5F0"}`, borderRadius: 20, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>
+                {nbImportes} / {nbTotal} pays
+              </span>
+            )}
           </div>
           <button onClick={handleRefresh} disabled={refreshing || !unctadOk}
-            style={{ background: refreshing || !unctadOk ? "#ccc" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, cursor: refreshing || !unctadOk ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", flexShrink: 0 }}>
-            {refreshing ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
-            {refreshing ? "Rafraîchissement…" : "Rafraîchir maintenant"}
+            title={unctadOk ? "Rafraîchir depuis l'API UNCTAD" : "Credentials UNCTAD non configurés"}
+            style={{ background: "none", border: "1px solid #C5BFBB", borderRadius: 8, padding: "6px 10px", cursor: unctadOk ? "pointer" : "not-allowed", color: unctadOk ? "#004f91" : "#CCC", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+            {refreshing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+            {refreshing ? "Actualisation…" : "Actualiser UNCTAD"}
           </button>
         </div>
+
+        {/* Message résultat refresh */}
         {refreshRes && (
-          <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 8, border: "1px solid", background: refreshRes.success ? "#EDFBF1" : "#FFF2F2", borderColor: refreshRes.success ? "#B2EAC5" : "#F5C6CB" }}>
-            {refreshRes.success
-              ? <>
-                  {refreshRes.pays?.map((p: any) => <div key={p.pays} style={{ fontSize: 13, color: "#1a7a3c" }}>✓ <strong>{p.pays}</strong> — {p.insere} insérées, {p.mis_a_jour} mises à jour</div>)}
-                  {refreshRes.erreurs?.map((e: any, i: number) => <div key={i} style={{ fontSize: 13, color: "#c0392b" }}>⚠ {e}</div>)}
-                </>
-              : <div style={{ fontSize: 13, color: "#c0392b" }}>✗ {refreshRes.erreur}</div>
-            }
+          <div style={{ marginBottom: 12, padding: "8px 14px", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "space-between", background: refreshRes.ok ? "#EDFBF1" : "#FFF2F2", border: `1px solid ${refreshRes.ok ? "#B2EAC5" : "#F5C6CB"}` }}>
+            <span style={{ fontSize: 13, color: refreshRes.ok ? "#1a7a3c" : "#c0392b" }}>{refreshRes.ok ? "✓" : "✗"} {refreshRes.msg}</span>
+            <button onClick={() => setRefreshRes(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#999" }}><X size={14} /></button>
           </div>
         )}
-      </div>
 
-      {/* ── Stats ── */}
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px" }}>
-        <div style={SEC}>Données importées par pays</div>
         {loading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} color="#004f91" className="animate-spin" /></div>
-        ) : stats.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 40, color: "#888", fontSize: 13 }}>Aucune donnée importée.</div>
+        ) : mergedPays.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 40, color: "#888", fontSize: 13 }}>Aucun pays dans ref_pays.</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
@@ -360,12 +315,12 @@ export default function AdminIdePage() {
               </tr>
             </thead>
             <tbody>
-              {stats.map(s => (
-                <tr key={s.ref_pays_id} style={{ borderBottom: "1px solid #F0EEEC" }}>
+              {mergedPays.map(s => (
+                <tr key={s.ref_pays_id} style={{ borderBottom: "1px solid #F0EEEC", opacity: s.hasData ? 1 : 0.4 }}>
                   <td style={{ padding: "10px 12px" }}>
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <Flag code={s.code_iso2} />
-                      <span style={{ fontWeight: 600 }}>{s.pays}</span>
+                      <span style={{ fontWeight: s.hasData ? 600 : 400, color: s.hasData ? "#1a1a2e" : "#888" }}>{s.pays}</span>
                     </div>
                   </td>
                   {Object.keys(SERIES_LABELS).map(k => {
@@ -374,16 +329,18 @@ export default function AdminIdePage() {
                       <td key={k} style={{ padding: "10px 12px", textAlign: "center" }}>
                         {serie
                           ? <span style={{ background: "#EEF4FB", padding: "3px 10px", borderRadius: 20, fontSize: 12, color: "#004f91", whiteSpace: "nowrap" }}>{serie.annee_min}–{serie.annee_max} <span style={{ color: "#888" }}>({serie.nb})</span></span>
-                          : <span style={{ color: "#CCC", fontSize: 18 }}>–</span>}
+                          : <span style={{ color: "#DDD" }}>–</span>}
                       </td>
                     );
                   })}
                   <td style={{ padding: "10px 12px", textAlign: "center" }}>
-                    <button onClick={() => handleDelete(s.ref_pays_id, s.pays)} disabled={deleting === s.ref_pays_id}
-                      style={{ background: "none", border: "1px solid #e74c3c", color: "#e74c3c", borderRadius: 6, padding: "5px 10px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12 }}>
-                      {deleting === s.ref_pays_id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
-                      Supprimer
-                    </button>
+                    {s.hasData && (
+                      <button onClick={() => handleDelete(s.ref_pays_id, s.pays)} disabled={deleting === s.ref_pays_id}
+                        style={{ background: "none", border: "1px solid #e74c3c", color: "#e74c3c", borderRadius: 6, padding: "5px 10px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                        {deleting === s.ref_pays_id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                        Supprimer
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
