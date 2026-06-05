@@ -50,7 +50,6 @@ class EntreprisePointFocal(Base):
 class RefRegion(Base):
     __tablename__ = "ref_regions"
     id    = Column(Integer, primary_key=True)
-    code  = Column(String(10))
     nom   = Column(String(100))
     actif = Column(Boolean, default=True)
 
@@ -59,7 +58,6 @@ class RefDepartement(Base):
     __tablename__ = "ref_departements"
     id        = Column(Integer, primary_key=True)
     region_id = Column(Integer, ForeignKey("ref_regions.id"))
-    code      = Column(String(10))
     nom       = Column(String(100))
     actif     = Column(Boolean, default=True)
 
@@ -68,7 +66,6 @@ class RefArrondissement(Base):
     __tablename__ = "ref_arrondissements"
     id               = Column(Integer, primary_key=True)
     departement_id   = Column(Integer, ForeignKey("ref_departements.id"))
-    code             = Column(String(10))
     nom              = Column(String(100))
     actif            = Column(Boolean, default=True)
 

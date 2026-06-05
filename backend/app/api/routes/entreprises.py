@@ -174,7 +174,7 @@ async def liste_regions(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(RefRegion).where(RefRegion.actif == True).order_by(RefRegion.nom)
     )
-    return [{"id": r.id, "code": r.code, "nom": r.nom} for r in result.scalars().all()]
+    return [{"id": r.id, "nom": r.nom} for r in result.scalars().all()]
 
 @router.get("/ref/departements")
 async def liste_departements(
@@ -186,7 +186,7 @@ async def liste_departements(
     if region_id:
         q = q.where(RefDepartement.region_id == region_id)
     result = await db.execute(q.order_by(RefDepartement.nom))
-    return [{"id": d.id, "code": d.code, "nom": d.nom, "region_id": d.region_id} for d in result.scalars().all()]
+    return [{"id": d.id, "nom": d.nom, "region_id": d.region_id} for d in result.scalars().all()]
 
 @router.get("/ref/arrondissements")
 async def liste_arrondissements(
@@ -198,7 +198,7 @@ async def liste_arrondissements(
     if departement_id:
         q = q.where(RefArrondissement.departement_id == departement_id)
     result = await db.execute(q.order_by(RefArrondissement.nom))
-    return [{"id": a.id, "code": a.code, "nom": a.nom, "departement_id": a.departement_id} for a in result.scalars().all()]
+    return [{"id": a.id, "nom": a.nom, "departement_id": a.departement_id} for a in result.scalars().all()]
 
 
 
@@ -406,11 +406,11 @@ async def supprimer_entreprise(
 @router.post("/ref/regions", status_code=201)
 async def creer_region(payload: dict, db: AsyncSession = Depends(get_db)):
     from sqlalchemy import select
-    region = RefRegion(**payload)
+    region = RefRegion(nom=payload["nom"])
     db.add(region)
     await db.flush()
     await db.refresh(region)
-    return {"id": region.id, "code": region.code, "nom": region.nom}
+    return {"id": region.id, "nom": region.nom}
 
 @router.patch("/ref/regions/{region_id}")
 async def modifier_region(region_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
@@ -418,9 +418,9 @@ async def modifier_region(region_id: int, payload: dict, db: AsyncSession = Depe
     result = await db.execute(select(RefRegion).where(RefRegion.id == region_id))
     r = result.scalar_one_or_none()
     if not r: raise HTTPException(status_code=404, detail="Région introuvable")
-    for k, v in payload.items(): setattr(r, k, v)
+    if "nom" in payload: r.nom = payload["nom"]
     await db.flush()
-    return {"id": r.id, "code": r.code, "nom": r.nom}
+    return {"id": r.id, "nom": r.nom}
 
 @router.delete("/ref/regions/{region_id}", status_code=204)
 async def supprimer_region(region_id: int, db: AsyncSession = Depends(get_db)):
@@ -433,11 +433,11 @@ async def supprimer_region(region_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/ref/departements", status_code=201)
 async def creer_departement(payload: dict, db: AsyncSession = Depends(get_db)):
-    dep = RefDepartement(**payload)
+    dep = RefDepartement(nom=payload["nom"], region_id=payload["region_id"])
     db.add(dep)
     await db.flush()
     await db.refresh(dep)
-    return {"id": dep.id, "code": dep.code, "nom": dep.nom, "region_id": dep.region_id}
+    return {"id": dep.id, "nom": dep.nom, "region_id": dep.region_id}
 
 @router.patch("/ref/departements/{dep_id}")
 async def modifier_departement(dep_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
@@ -445,9 +445,9 @@ async def modifier_departement(dep_id: int, payload: dict, db: AsyncSession = De
     result = await db.execute(select(RefDepartement).where(RefDepartement.id == dep_id))
     d = result.scalar_one_or_none()
     if not d: raise HTTPException(status_code=404, detail="Département introuvable")
-    for k, v in payload.items(): setattr(d, k, v)
+    if "nom" in payload: d.nom = payload["nom"]
     await db.flush()
-    return {"id": d.id, "code": d.code, "nom": d.nom, "region_id": d.region_id}
+    return {"id": d.id, "nom": d.nom, "region_id": d.region_id}
 
 @router.delete("/ref/departements/{dep_id}", status_code=204)
 async def supprimer_departement(dep_id: int, db: AsyncSession = Depends(get_db)):
@@ -460,11 +460,37 @@ async def supprimer_departement(dep_id: int, db: AsyncSession = Depends(get_db))
 
 @router.post("/ref/arrondissements", status_code=201)
 async def creer_arrondissement(payload: dict, db: AsyncSession = Depends(get_db)):
-    arr = RefArrondissement(**payload)
+    arr = RefArrondissement(nom=payload["nom"], departement_id=payload["departement_id"])
     db.add(arr)
     await db.flush()
     await db.refresh(arr)
-    return {"id": arr.id, "code": arr.code, "nom": arr.nom, "departement_id": arr.departement_id}
+    return {"id": arr.id, "nom": arr.nom, "departement_id": arr.departement_id}
+
+@router.post("/ref/arrondissements/bulk", status_code=201)
+async def importer_arrondissements_bulk(payload: list, db: AsyncSession = Depends(get_db)):
+    """
+    payload: [{ departement_id: int, noms: [str] }, ...]
+    Insère tous les arrondissements listés pour chaque département.
+    Ignore les noms vides ou déjà existants.
+    """
+    from sqlalchemy import select
+    total = 0
+    for item in payload:
+        dep_id = item.get("departement_id")
+        noms   = [n.strip() for n in (item.get("noms") or []) if n.strip()]
+        if not dep_id or not noms:
+            continue
+        # Noms déjà présents pour ce département
+        existing = set((await db.execute(
+            select(RefArrondissement.nom).where(RefArrondissement.departement_id == dep_id)
+        )).scalars().all())
+        for nom in noms:
+            if nom not in existing:
+                db.add(RefArrondissement(departement_id=dep_id, nom=nom))
+                existing.add(nom)
+                total += 1
+    await db.flush()
+    return {"created": total}
 
 @router.patch("/ref/arrondissements/{arr_id}")
 async def modifier_arrondissement(arr_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
@@ -472,9 +498,9 @@ async def modifier_arrondissement(arr_id: int, payload: dict, db: AsyncSession =
     result = await db.execute(select(RefArrondissement).where(RefArrondissement.id == arr_id))
     a = result.scalar_one_or_none()
     if not a: raise HTTPException(status_code=404, detail="Arrondissement introuvable")
-    for k, v in payload.items(): setattr(a, k, v)
+    if "nom" in payload: a.nom = payload["nom"]
     await db.flush()
-    return {"id": a.id, "code": a.code, "nom": a.nom, "departement_id": a.departement_id}
+    return {"id": a.id, "nom": a.nom, "departement_id": a.departement_id}
 
 @router.delete("/ref/arrondissements/{arr_id}", status_code=204)
 async def supprimer_arrondissement(arr_id: int, db: AsyncSession = Depends(get_db)):
