@@ -42,7 +42,6 @@ class Prospect(Base):
 
     pays_origine     = relationship("RefPays", foreign_keys=[pays_origine_id], lazy="joined")
     siege            = relationship("RefPays", foreign_keys=[siege_id], lazy="joined")
-    projet_cible     = relationship("Projet", foreign_keys=[objet_projet_id], lazy="joined")
     contacts         = relationship("ProspectContact", back_populates="prospect",
                                    cascade="all, delete-orphan", order_by="ProspectContact.created_at")
     points_focaux    = relationship("ProspectPointFocal", back_populates="prospect",

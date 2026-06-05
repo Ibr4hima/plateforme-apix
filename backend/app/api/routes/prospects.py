@@ -6,19 +6,26 @@ from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.models.prospect import Prospect, ProspectContact, ProspectContactHistorique, ProspectPointFocal
+from app.models.projet import Projet
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
 
 LOAD_OPTS = [
     selectinload(Prospect.pays_origine),
     selectinload(Prospect.siege),
-    selectinload(Prospect.projet_cible),
     selectinload(Prospect.points_focaux),
     selectinload(Prospect.contacts).selectinload(ProspectContact.historique),
 ]
 
 
-def prospect_to_dict(p: Prospect) -> dict:
+async def get_projet_titre(db: AsyncSession, projet_id: int | None) -> str | None:
+    if not projet_id:
+        return None
+    res = await db.execute(select(Projet.titre_projet).where(Projet.id == projet_id))
+    row = res.scalar_one_or_none()
+    return row
+
+def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
     return {
         "id":              p.id,
         "type":            p.type or "physique",
@@ -47,7 +54,7 @@ def prospect_to_dict(p: Prospect) -> dict:
         # objet du ciblage
         "objet_projet":              p.objet_projet or False,
         "objet_projet_id":           p.objet_projet_id,
-        "objet_projet_titre":        p.projet_cible.titre_projet if p.projet_cible else None,
+        "objet_projet_titre":        projet_titre,
         "objet_intentions_etranger": p.objet_intentions_etranger or False,
         "objet_intentions_details":  p.objet_intentions_details,
         "objet_adequation_senegal":  p.objet_adequation_senegal or False,
@@ -102,7 +109,14 @@ async def liste_prospects(
     count_res = await db.execute(select(Prospect.id).where(Prospect.is_deleted == False))
     total = len(count_res.fetchall())
     res = await db.execute(base.offset((page-1)*per_page).limit(per_page))
-    return {"data": [prospect_to_dict(p) for p in res.scalars().all()], "total": total, "page": page, "per_page": per_page}
+    prospects = res.scalars().all()
+    # Charge les titres de projets liés en une seule requête
+    projet_ids = list({p.objet_projet_id for p in prospects if p.objet_projet_id})
+    titres: dict = {}
+    if projet_ids:
+        r = await db.execute(select(Projet.id, Projet.titre_projet).where(Projet.id.in_(projet_ids)))
+        titres = {row[0]: row[1] for row in r.fetchall()}
+    return {"data": [prospect_to_dict(p, titres.get(p.objet_projet_id)) for p in prospects], "total": total, "page": page, "per_page": per_page}
 
 
 # ── POST /prospects ───────────────────────────────────────────────────────────
@@ -147,7 +161,9 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
         ))
     await db.flush()
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == p.id))
-    return prospect_to_dict(res.scalar_one())
+    p2 = res.scalar_one()
+    titre = await get_projet_titre(db, p2.objet_projet_id)
+    return prospect_to_dict(p2, titre)
 
 
 # ── PATCH /prospects/:id ──────────────────────────────────────────────────────
@@ -185,7 +201,9 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
             ))
     await db.flush()
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id))
-    return prospect_to_dict(res.scalar_one())
+    p2 = res.scalar_one()
+    titre = await get_projet_titre(db, p2.objet_projet_id)
+    return prospect_to_dict(p2, titre)
 
 
 # ── DELETE /prospects/:id ─────────────────────────────────────────────────────
