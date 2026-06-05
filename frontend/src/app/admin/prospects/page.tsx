@@ -797,7 +797,15 @@ export default function ProspectsPage() {
 
   return (
     <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        [data-rte] ul{padding-left:20px;list-style-type:disc}
+        [data-rte] ol{padding-left:20px;list-style-type:decimal}
+        [data-rte] li{margin-bottom:2px}
+        [data-rte] b,[data-rte] strong{font-weight:700}
+        [data-rte] i,[data-rte] em{font-style:italic}
+        [data-rte] *{font-family:var(--font-google-sans);font-size:13px}
+      `}</style>
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
         <div>
