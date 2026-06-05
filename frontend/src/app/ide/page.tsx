@@ -18,11 +18,6 @@ function getPaysColor(nom: string, index: number): string {
   return PAYS_COLORS[nom] || PALETTE[index % PALETTE.length];
 }
 
-function flag(iso2: string) {
-  try { return String.fromCodePoint(...iso2.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
-  catch { return "🌍"; }
-}
-
 function fmtVal(v: number|null) {
   if (v === null || v === undefined) return "N/A";
   const abs = Math.abs(v);
@@ -759,10 +754,10 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   };
 
   return (
-    <div style={{ display:"flex", height:"100%", overflow:"hidden" as const }}>
+    <div style={{ display:"flex", alignItems:"flex-start" }}>
 
       {/* ── Sidebar indépendante ───────────────────────────────────────────── */}
-      <div style={{ width:292, flexShrink:0, overflowY:"auto" as const, height:"100%", borderRight:"1px solid #E8E5E3", background:"#fff" }}>
+      <div style={{ width:280, flexShrink:0, overflowY:"auto" as const, height:"calc(100vh - 72px)", position:"sticky" as const, top:72, borderRight:"1px solid #E8E5E3", background:"#fff", display:"flex", flexDirection:"column" as const }}>
 
         {/* Header sticky */}
         <div style={{ padding:"14px 20px", borderBottom:"1px solid #E8E5E3", background:"#FAFAF9", position:"sticky" as const, top:0, zIndex:2 }}>
@@ -810,7 +805,6 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                             style={{ display:"flex", alignItems:"center", gap:7, padding:"6px 10px", borderRadius:8, border:`1.5px solid ${sel?col+"40":"transparent"}`, background:sel?`${col}09`:"transparent", cursor:"pointer", textAlign:"left" as const, transition:"all 0.12s", width:"100%" }}
                             onMouseEnter={e=>{ if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6"; }}
                             onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background=sel?`${col}09`:"transparent"; }}>
-                            <span style={{ fontSize:15, lineHeight:1, flexShrink:0 }}>{p.code_iso2?flag(p.code_iso2):"🌍"}</span>
                             <span style={{ fontSize:12, fontWeight:sel?700:400, color:sel?col:"#4a5568" }}>{p.nom}</span>
                           </button>
                         );
@@ -916,13 +910,12 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
       </div>
 
       {/* ── Zone principale indépendante ────────────────────────────────────── */}
-      <div style={{ flex:1, minWidth:0, overflowY:"auto" as const, height:"100%", background:"#F2F0EF" }}>
-        <div style={{ padding:"24px 32px 48px" }}>
+      <div style={{ flex:1, minWidth:0, background:"#F2F0EF", padding:"24px 32px 48px" }}>
+        <div>
 
           {/* Header */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <span style={{ fontSize:22, lineHeight:1 }}>{paysDispo.find(p=>p.nom===paysSelec)?.code_iso2 ? flag(paysDispo.find(p=>p.nom===paysSelec)!.code_iso2) : "🌍"}</span>
               <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
               <span style={{ fontSize:12, color:"#9aa5b4" }}>
                 · {modeAnnees==="specifiques"&&anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}` : `${anneeMin}–${anneeMax}`}
@@ -1038,10 +1031,10 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
   const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
 
   return (
-    <div style={{ display:"flex", height:"100%", overflow:"hidden" as const }}>
+    <div style={{ display:"flex", alignItems:"flex-start" }}>
 
       {/* Sidebar */}
-      <div style={{ width:sidebarOpen?292:52, flexShrink:0, transition:"width 0.2s", overflow:"hidden" as const, height:"100%", borderRight:"1px solid #E8E5E3", background:"#fff", display:"flex", flexDirection:"column" as const }}>
+      <div style={{ width:sidebarOpen?292:52, flexShrink:0, transition:"width 0.2s", overflow:"hidden" as const, height:"calc(100vh - 72px)", position:"sticky" as const, top:72, borderRight:"1px solid #E8E5E3", background:"#fff", display:"flex", flexDirection:"column" as const }}>
         {/* Header */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", borderBottom:"1px solid #F2F0EF", background:"#FAFAF9", flexShrink:0 }}>
           {sidebarOpen && <span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", display:"flex", alignItems:"center", gap:6 }}><Filter size={13} style={{color:"#188038"}}/>Filtres</span>}
@@ -1087,7 +1080,6 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                                 <input type="checkbox" checked={sel}
                                   onChange={e=>{ if(!e.target.checked&&paysSelec.length<=1) return; if(e.target.checked) setPaysSelec(prev=>[...prev,p.nom]); else setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); }}
                                   style={{ accentColor:col, width:13, height:13, flexShrink:0 }} />
-                                <span style={{ fontSize:15, lineHeight:1, flexShrink:0 }}>{p.code_iso2?flag(p.code_iso2):"🌍"}</span>
                                 <span style={{ fontSize:12, fontWeight:sel?600:400, color:sel?col:"#4a5568" }}>{p.nom}</span>
                               </label>
                             );
@@ -1170,8 +1162,8 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
       </div>
 
       {/* Zone graphes */}
-      <div style={{ flex:1, minWidth:0, overflowY:"auto" as const, height:"100%", background:"#F2F0EF" }}>
-        <div style={{ padding:"24px 32px 48px" }}>
+      <div style={{ flex:1, minWidth:0, background:"#F2F0EF", padding:"24px 32px 48px" }}>
+        <div>
           {/* Badges pays + bouton données */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:16, flexWrap:"wrap" as const }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
@@ -1244,7 +1236,7 @@ export default function IdePage() {
   }, []);
 
   return (
-    <main style={{ height:"100vh", display:"flex", flexDirection:"column" as const, background:"#F2F0EF", fontFamily:"var(--font-google-sans)", overflow:"hidden" as const }}>
+    <div style={{ minHeight:"100vh", background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}>
       <div id="d3-tooltip" style={{ position:"fixed", pointerEvents:"none", background:"rgba(26,26,46,0.92)", color:"#fff", borderRadius:8, padding:"8px 12px", fontSize:12, lineHeight:1.5, opacity:0, zIndex:9999, backdropFilter:"blur(4px)" }} />
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <Navbar />
@@ -1291,28 +1283,26 @@ export default function IdePage() {
       )}
 
       {/* ── Contenu ────────────────────────────────────────────────────────── */}
-      <div style={{ flex:1, overflow:"hidden" as const }}>
-        {source === "cnuced" ? (
-          <>
-            {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} />}
-            {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} />}
-            {sousOnglet === "monde"       && <OngletMonde />}
-          </>
-        ) : (
-          <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
-            <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
-              <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <span style={{ fontSize:32 }}>📈</span>
-              </div>
-              <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>FDI Markets</h2>
-              <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
-              <div style={{ background:"rgba(0,79,145,0.07)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:10, padding:"10px 20px" }}>
-                <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Disponible prochainement</span>
-              </div>
+      {source === "cnuced" ? (
+        <>
+          {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} />}
+          {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} />}
+          {sousOnglet === "monde"       && <OngletMonde />}
+        </>
+      ) : (
+        <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
+          <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
+            <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <span style={{ fontSize:32 }}>📈</span>
+            </div>
+            <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>FDI Markets</h2>
+            <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
+            <div style={{ background:"rgba(0,79,145,0.07)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:10, padding:"10px 20px" }}>
+              <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Disponible prochainement</span>
             </div>
           </div>
-        )}
-      </div>
-    </main>
+        </div>
+      )}
+    </div>
   );
 }
