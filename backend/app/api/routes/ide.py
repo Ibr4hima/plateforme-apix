@@ -511,13 +511,11 @@ UNCTAD_SERIES = [
 
 
 async def _get_unctad_token(client_id: str, client_secret: str) -> str:
-    import httpx, base64
-    credentials = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+    import httpx
     async with httpx.AsyncClient(timeout=30) as client:
         r = await client.post(
             UNCTAD_TOKEN_URL,
-            data={"grant_type": "client_credentials"},
-            headers={"Authorization": f"Basic {credentials}"},
+            data={"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret},
         )
         if not r.is_success:
             raise ValueError(f"HTTP {r.status_code} — réponse: {r.text[:500]}")
