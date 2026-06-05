@@ -34,12 +34,7 @@ export default function AdminGeo() {
   const [deleting, setDeleting] = useState<number|null>(null);
 
   // Modal import bulk arrondissements
-  const [importModal,     setImportModal]     = useState(false);
-  const [importRegionId,  setImportRegionId]  = useState<number|"">("");
-  const [importInputs,    setImportInputs]    = useState<Record<number, string>>({});
-  const [importing,       setImporting]       = useState(false);
-  const [importResult,    setImportResult]    = useState<{created:number}|null>(null);
-  const [importError,     setImportError]     = useState("");
+  const [importModal, setImportModal] = useState(false);
 
   const charger = useCallback(async () => {
     setLoading(true);
@@ -112,28 +107,69 @@ export default function AdminGeo() {
   };
 
   // ── Import bulk ──────────────────────────────────────────────────────────────
+  const [importTab,       setImportTab]       = useState<"excel"|"manual">("excel");
+  const [importRegionId,  setImportRegionId]  = useState<number|"">("");
+  const [importInputs,    setImportInputs]    = useState<Record<number, string>>({});
+  const [importing,       setImporting]       = useState(false);
+  const [importResult,    setImportResult]    = useState<{created:number}|null>(null);
+  const [importError,     setImportError]     = useState("");
+  // Mode Excel : coller tout d'un coup
+  const [excelPaste,      setExcelPaste]      = useState("");
+  const [excelPreview,    setExcelPreview]    = useState<{dep:string; arrs:string[]}[]>([]);
+  const [excelPayload,    setExcelPayload]    = useState<{departement_id:number; noms:string[]}[]>([]);
+
   const openImport = () => {
+    setImportTab("excel");
     setImportRegionId("");
     setImportInputs({});
     setImportResult(null);
     setImportError("");
+    setExcelPaste("");
+    setExcelPreview([]);
+    setExcelPayload([]);
     setImportModal(true);
   };
 
-  const handleImport = async () => {
-    const depsVisible = importRegionId ? depsDuReg(Number(importRegionId)) : [];
-    const payload = depsVisible
-      .map(dep => ({
-        departement_id: dep.id,
-        noms: (importInputs[dep.id] || "")
-          .split(/\r?\n/)
-          .map((s: string) => s.trim())
-          .filter((s: string) => s.length > 0),
-      }))
-      .filter(item => item.noms.length > 0);
+  // Parse le collé Excel (colonnes séparées par Tab, lignes par \n)
+  // Format attendu dans le fichier : Région | Département | Arrondissement
+  // On accepte aussi 2 colonnes : Département | Arrondissement
+  const parseExcel = (text: string) => {
+    setImportResult(null); setImportError("");
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    // Regrouper par département : Map<depNom, Set<arrNom>>
+    const byDep = new Map<string, Set<string>>();
+    for (const line of lines) {
+      const cols = line.split("\t").map(c => c.trim()).filter(Boolean);
+      if (cols.length < 2) continue;
+      // Si 3 colonnes : col[1]=dép, col[2]=arr  |  Si 2 colonnes : col[0]=dép, col[1]=arr
+      const depNom = cols.length >= 3 ? cols[1] : cols[0];
+      const arrNom = cols.length >= 3 ? cols[2] : cols[1];
+      if (!depNom || !arrNom) continue;
+      if (!byDep.has(depNom)) byDep.set(depNom, new Set());
+      byDep.get(depNom)!.add(arrNom);
+    }
+    // Construire preview et payload
+    const preview: {dep:string; arrs:string[]}[] = [];
+    const payload: {departement_id:number; noms:string[]}[] = [];
+    const notFound: string[] = [];
+    for (const [depNom, arrsSet] of byDep) {
+      const dep = departements.find(d =>
+        d.nom.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"") ===
+        depNom.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+      );
+      if (!dep) { notFound.push(depNom); continue; }
+      const arrs = Array.from(arrsSet);
+      preview.push({ dep: dep.nom, arrs });
+      payload.push({ departement_id: dep.id, noms: arrs });
+    }
+    if (notFound.length > 0) setImportError(`Départements non reconnus : ${notFound.join(", ")}`);
+    setExcelPreview(preview);
+    setExcelPayload(payload);
+  };
 
-    if (payload.length === 0) { setImportError("Aucun arrondissement saisi."); return; }
-    setImporting(true); setImportError("");
+  const sendBulk = async (payload: {departement_id:number; noms:string[]}[]) => {
+    if (payload.length === 0) { setImportError("Aucun arrondissement à importer."); return; }
+    setImporting(true); setImportError(""); setImportResult(null);
     try {
       const res = await fetch(`${API_BASE}/entreprises/ref/arrondissements/bulk`, {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -146,6 +182,20 @@ export default function AdminGeo() {
     } catch (e: any) {
       setImportError(e.message || "Erreur");
     } finally { setImporting(false); }
+  };
+
+  const handleImportManual = async () => {
+    const depsVisible = importRegionId ? depsDuReg(Number(importRegionId)) : [];
+    const payload = depsVisible
+      .map(dep => ({
+        departement_id: dep.id,
+        noms: (importInputs[dep.id] || "")
+          .split(/\r?\n/)
+          .map((s: string) => s.trim())
+          .filter((s: string) => s.length > 0),
+      }))
+      .filter(item => item.noms.length > 0);
+    await sendBulk(payload);
   };
 
   if (loading) return (
@@ -351,7 +401,7 @@ export default function AdminGeo() {
         <div onClick={e => { if (e.target === e.currentTarget) setImportModal(false); }}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(6px)",
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 300, padding: 24 }}>
-          <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 780, maxHeight: "90vh",
+          <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 820, maxHeight: "92vh",
             overflowY: "auto", border: "1px solid #C5BFBB", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ height: 4, background: "linear-gradient(90deg,#ca631f,#e07a3a)", borderRadius: "20px 20px 0 0" }}/>
             <div style={{ padding: "24px 28px 28px" }}>
@@ -359,9 +409,6 @@ export default function AdminGeo() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                 <div>
                   <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e" }}>Importer des arrondissements</h2>
-                  <p style={{ fontSize: 12, color: "#9aa5b4", marginTop: 4 }}>
-                    Choisissez une région, puis saisissez les arrondissements de chaque département (un par ligne).
-                  </p>
                 </div>
                 <button onClick={() => setImportModal(false)}
                   style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}>
@@ -369,45 +416,101 @@ export default function AdminGeo() {
                 </button>
               </div>
 
-              {/* Sélecteur de région */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={LS}>Région</label>
-                <select value={importRegionId} onChange={e => { setImportRegionId(e.target.value ? Number(e.target.value) : ""); setImportInputs({}); setImportResult(null); }}
-                  style={IS}>
-                  <option value="">— Sélectionner une région —</option>
-                  {regions.map(r => <option key={r.id} value={r.id}>{r.nom}</option>)}
-                </select>
+              {/* Onglets */}
+              <div style={{ display: "flex", gap: 2, background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: 3, marginBottom: 24, width: "fit-content", border: "1px solid #E8E5E3" }}>
+                {([["excel","Coller depuis Excel"],["manual","Par département"]] as const).map(([key,label]) => (
+                  <button key={key} onClick={() => { setImportTab(key); setImportResult(null); setImportError(""); }}
+                    style={{ padding: "7px 18px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
+                      background: importTab === key ? "#ca631f" : "transparent", color: importTab === key ? "#fff" : "#4a5568" }}>
+                    {label}
+                  </button>
+                ))}
               </div>
 
-              {/* Grille des départements */}
-              {importRegionId !== "" && (() => {
-                const deps = depsDuReg(Number(importRegionId));
-                if (deps.length === 0) return <p style={{ color: "#9aa5b4", fontSize: 13 }}>Aucun département dans cette région.</p>;
-                return (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12, marginBottom: 20 }}>
-                    {deps.map(dep => {
-                      const existants = arrsDuDep(dep.id);
-                      return (
-                        <div key={dep.id} style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 12, padding: "12px 14px" }}>
-                          <div style={{ marginBottom: 8 }}>
-                            <p style={{ fontSize: 13, fontWeight: 700, color: "#1a1a2e" }}>{dep.nom}</p>
-                            {existants.length > 0 && (
-                              <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 2 }}>{existants.length} arrondissement{existants.length > 1 ? "s" : ""} déjà présent{existants.length > 1 ? "s" : ""}</p>
-                            )}
-                          </div>
-                          <textarea
-                            value={importInputs[dep.id] || ""}
-                            onChange={e => setImportInputs(prev => ({ ...prev, [dep.id]: e.target.value }))}
-                            placeholder={"Un arrondissement\npar ligne…"}
-                            rows={5}
-                            style={{ ...IS, resize: "vertical" as const, lineHeight: 1.7, fontSize: 12 }}
-                          />
-                        </div>
-                      );
-                    })}
+              {/* ── Onglet Excel ── */}
+              {importTab === "excel" && (
+                <div>
+                  <div style={{ background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 12, padding: "14px 16px", marginBottom: 18 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#004f91", marginBottom: 6 }}>Mode rapide — tout en une seule fois</p>
+                    <ol style={{ fontSize: 12, color: "#4a5568", lineHeight: 2, paddingLeft: 18, margin: 0 }}>
+                      <li>Dans votre fichier Excel, sélectionnez les colonnes <strong>Région · Département · Arrondissement</strong> (ou juste Département · Arrondissement)</li>
+                      <li>Copiez (<strong>Ctrl+C</strong>)</li>
+                      <li>Collez ci-dessous (<strong>Ctrl+V</strong>), puis cliquez sur Analyser</li>
+                    </ol>
                   </div>
-                );
-              })()}
+                  <div style={{ marginBottom: 14 }}>
+                    <label style={LS}>Données copiées depuis Excel</label>
+                    <textarea
+                      value={excelPaste}
+                      onChange={e => { setExcelPaste(e.target.value); setExcelPreview([]); setExcelPayload([]); setImportResult(null); setImportError(""); }}
+                      placeholder={"Dakar\tDakar\tGrand Dakar\nDakar\tDakar\tMédina\nDakar\tPikine\tDiamaguène…"}
+                      rows={8}
+                      style={{ ...IS, resize: "vertical" as const, lineHeight: 1.8, fontSize: 12, fontFamily: "monospace" }}
+                    />
+                  </div>
+                  <button onClick={() => parseExcel(excelPaste)} disabled={!excelPaste.trim()}
+                    style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontWeight: 600, fontSize: 13, cursor: "pointer", marginBottom: 16 }}>
+                    Analyser
+                  </button>
+                  {/* Prévisualisation */}
+                  {excelPreview.length > 0 && (
+                    <div style={{ marginBottom: 16 }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: "#4a5568", marginBottom: 10 }}>
+                        Aperçu — {excelPayload.reduce((s,p)=>s+p.noms.length,0)} arrondissements dans {excelPreview.length} département{excelPreview.length>1?"s":""}
+                      </p>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
+                        {excelPreview.map((row, i) => (
+                          <div key={i} style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 10, padding: "10px 12px" }}>
+                            <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", marginBottom: 6 }}>{row.dep}</p>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                              {row.arrs.map((a,j) => (
+                                <span key={j} style={{ fontSize: 11, background: "rgba(202,99,31,0.08)", color: "#ca631f", padding: "2px 7px", borderRadius: 999 }}>{a}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Onglet Manuel par département ── */}
+              {importTab === "manual" && (
+                <div>
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={LS}>Région</label>
+                    <select value={importRegionId} onChange={e => { setImportRegionId(e.target.value ? Number(e.target.value) : ""); setImportInputs({}); setImportResult(null); }}
+                      style={IS}>
+                      <option value="">— Sélectionner une région —</option>
+                      {regions.map(r => <option key={r.id} value={r.id}>{r.nom}</option>)}
+                    </select>
+                  </div>
+                  {importRegionId !== "" && (() => {
+                    const deps = depsDuReg(Number(importRegionId));
+                    if (deps.length === 0) return <p style={{ color: "#9aa5b4", fontSize: 13 }}>Aucun département dans cette région.</p>;
+                    return (
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12, marginBottom: 16 }}>
+                        {deps.map(dep => {
+                          const existants = arrsDuDep(dep.id);
+                          return (
+                            <div key={dep.id} style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 12, padding: "12px 14px" }}>
+                              <div style={{ marginBottom: 8 }}>
+                                <p style={{ fontSize: 13, fontWeight: 700, color: "#1a1a2e" }}>{dep.nom}</p>
+                                {existants.length > 0 && <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 2 }}>{existants.length} déjà présent{existants.length>1?"s":""}</p>}
+                              </div>
+                              <textarea value={importInputs[dep.id] || ""}
+                                onChange={e => setImportInputs(prev => ({ ...prev, [dep.id]: e.target.value }))}
+                                placeholder={"Un arrondissement\npar ligne…"} rows={5}
+                                style={{ ...IS, resize: "vertical" as const, lineHeight: 1.7, fontSize: 12 }}/>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
 
               {importError && <div style={{ background: "#fee2e2", color: "#dc2626", padding: "10px 14px", borderRadius: 8, fontSize: 12, marginBottom: 14 }}>{importError}</div>}
               {importResult && (
@@ -419,12 +522,23 @@ export default function AdminGeo() {
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
                 <button onClick={() => setImportModal(false)}
                   style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>Fermer</button>
-                <button onClick={handleImport} disabled={importing || importRegionId === ""}
-                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none",
-                    background: importing || importRegionId === "" ? "#ccc" : "#ca631f",
-                    color: "#fff", fontWeight: 700, cursor: importing || importRegionId === "" ? "not-allowed" : "pointer", fontSize: 13 }}>
-                  {importing ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }}/> Import en cours…</> : <><Upload size={13}/> Importer</>}
-                </button>
+                {importTab === "excel" ? (
+                  <button onClick={() => sendBulk(excelPayload)}
+                    disabled={importing || excelPayload.length === 0}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none",
+                      background: importing || excelPayload.length === 0 ? "#ccc" : "#ca631f",
+                      color: "#fff", fontWeight: 700, cursor: importing || excelPayload.length === 0 ? "not-allowed" : "pointer", fontSize: 13 }}>
+                    {importing ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }}/> Import…</> : <><Upload size={13}/> Tout importer</>}
+                  </button>
+                ) : (
+                  <button onClick={handleImportManual}
+                    disabled={importing || importRegionId === ""}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none",
+                      background: importing || importRegionId === "" ? "#ccc" : "#ca631f",
+                      color: "#fff", fontWeight: 700, cursor: importing || importRegionId === "" ? "not-allowed" : "pointer", fontSize: 13 }}>
+                    {importing ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }}/> Import…</> : <><Upload size={13}/> Importer</>}
+                  </button>
+                )}
               </div>
             </div>
           </div>
