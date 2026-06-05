@@ -55,13 +55,17 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
         "objet_projet":              p.objet_projet or False,
         "objet_projet_id":           p.objet_projet_id,
         "objet_projet_titre":        projet_titre,
-        "objet_intentions_etranger": p.objet_intentions_etranger or False,
-        "objet_intentions_details":  p.objet_intentions_details,
-        "objet_adequation_senegal":  p.objet_adequation_senegal or False,
-        "objet_adequation_details":  p.objet_adequation_details,
-        "objet_secteur_prioritaire": p.objet_secteur_prioritaire or False,
-        "objet_secteur_details":     p.objet_secteur_details,
-        "objet_commentaires":        p.objet_commentaires,
+        "objet_intentions_etranger":      p.objet_intentions_etranger or False,
+        "objet_intentions_secteur_ids":   p.objet_intentions_secteur_ids or [],
+        "objet_intentions_branche_ids":   p.objet_intentions_branche_ids or [],
+        "objet_intentions_activite_ids":  p.objet_intentions_activite_ids or [],
+        "objet_intentions_details":       p.objet_intentions_details,
+        "objet_adequation_senegal":       p.objet_adequation_senegal or False,
+        "objet_adequation_secteur_ids":   p.objet_adequation_secteur_ids or [],
+        "objet_adequation_branche_ids":   p.objet_adequation_branche_ids or [],
+        "objet_adequation_activite_ids":  p.objet_adequation_activite_ids or [],
+        "objet_adequation_details":       p.objet_adequation_details,
+        "objet_commentaires":             p.objet_commentaires,
         "contacts": [
             {
                 "id":                   c.id,
@@ -139,13 +143,17 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
         details         = payload.get("details") or None,
         objet_projet              = payload.get("objet_projet") or False,
         objet_projet_id           = payload.get("objet_projet_id") or None,
-        objet_intentions_etranger = payload.get("objet_intentions_etranger") or False,
-        objet_intentions_details  = payload.get("objet_intentions_details") or None,
-        objet_adequation_senegal  = payload.get("objet_adequation_senegal") or False,
-        objet_adequation_details  = payload.get("objet_adequation_details") or None,
-        objet_secteur_prioritaire = payload.get("objet_secteur_prioritaire") or False,
-        objet_secteur_details     = payload.get("objet_secteur_details") or None,
-        objet_commentaires        = payload.get("objet_commentaires") or None,
+        objet_intentions_etranger     = payload.get("objet_intentions_etranger") or False,
+        objet_intentions_secteur_ids  = payload.get("objet_intentions_secteur_ids") or [],
+        objet_intentions_branche_ids  = payload.get("objet_intentions_branche_ids") or [],
+        objet_intentions_activite_ids = payload.get("objet_intentions_activite_ids") or [],
+        objet_intentions_details      = payload.get("objet_intentions_details") or None,
+        objet_adequation_senegal      = payload.get("objet_adequation_senegal") or False,
+        objet_adequation_secteur_ids  = payload.get("objet_adequation_secteur_ids") or [],
+        objet_adequation_branche_ids  = payload.get("objet_adequation_branche_ids") or [],
+        objet_adequation_activite_ids = payload.get("objet_adequation_activite_ids") or [],
+        objet_adequation_details      = payload.get("objet_adequation_details") or None,
+        objet_commentaires            = payload.get("objet_commentaires") or None,
     )
     db.add(p)
     await db.flush()
@@ -173,10 +181,9 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Prospect introuvable")
     for f in ["type","nom","prenom","adresse","details",
-              "objet_intentions_details","objet_adequation_details",
-              "objet_secteur_details","objet_commentaires"]:
+              "objet_intentions_details","objet_adequation_details","objet_commentaires"]:
         if f in payload: setattr(p, f, payload[f] or None)
-    for f in ["objet_projet","objet_intentions_etranger","objet_adequation_senegal","objet_secteur_prioritaire","est_publie"]:
+    for f in ["objet_projet","objet_intentions_etranger","objet_adequation_senegal","est_publie"]:
         if f in payload: setattr(p, f, payload[f])
     if "telephones"      in payload: p.telephones      = payload["telephones"] or []
     if "mails"           in payload: p.mails           = payload["mails"] or []
@@ -186,6 +193,9 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     if "secteur_ids"     in payload: p.secteur_ids     = payload["secteur_ids"] or []
     if "branche_ids"     in payload: p.branche_ids     = payload["branche_ids"] or []
     if "activite_ids"    in payload: p.activite_ids    = payload["activite_ids"] or []
+    for f in ["objet_intentions_secteur_ids","objet_intentions_branche_ids","objet_intentions_activite_ids",
+              "objet_adequation_secteur_ids","objet_adequation_branche_ids","objet_adequation_activite_ids"]:
+        if f in payload: setattr(p, f, payload[f] or [])
     if "points_focaux"  in payload:
         from sqlalchemy import delete as sqldel
         await db.execute(sqldel(ProspectPointFocal).where(ProspectPointFocal.prospect_id == prospect_id))

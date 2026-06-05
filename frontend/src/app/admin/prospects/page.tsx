@@ -43,13 +43,17 @@ const EMPTY_FORM = {
   // objet du ciblage
   objet_projet:              false,
   objet_projet_id:           null as number|null,
-  objet_intentions_etranger: false,
-  objet_intentions_details:  "",
-  objet_adequation_senegal:  false,
-  objet_adequation_details:  "",
-  objet_secteur_prioritaire: false,
-  objet_secteur_details:     "",
-  objet_commentaires:        "",
+  objet_intentions_etranger:      false,
+  objet_intentions_secteur_ids:   [] as number[],
+  objet_intentions_branche_ids:   [] as number[],
+  objet_intentions_activite_ids:  [] as number[],
+  objet_intentions_details:       "",
+  objet_adequation_senegal:       false,
+  objet_adequation_secteur_ids:   [] as number[],
+  objet_adequation_branche_ids:   [] as number[],
+  objet_adequation_activite_ids:  [] as number[],
+  objet_adequation_details:       "",
+  objet_commentaires:             "",
 };
 
 // ── Sélecteur type ────────────────────────────────────────────────────────────
@@ -243,13 +247,17 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         details:          edit.details||"",
         objet_projet:              edit.objet_projet||false,
         objet_projet_id:           edit.objet_projet_id||null,
-        objet_intentions_etranger: edit.objet_intentions_etranger||false,
-        objet_intentions_details:  edit.objet_intentions_details||"",
-        objet_adequation_senegal:  edit.objet_adequation_senegal||false,
-        objet_adequation_details:  edit.objet_adequation_details||"",
-        objet_secteur_prioritaire: edit.objet_secteur_prioritaire||false,
-        objet_secteur_details:     edit.objet_secteur_details||"",
-        objet_commentaires:        edit.objet_commentaires||"",
+        objet_intentions_etranger:      edit.objet_intentions_etranger||false,
+        objet_intentions_secteur_ids:   edit.objet_intentions_secteur_ids||[],
+        objet_intentions_branche_ids:   edit.objet_intentions_branche_ids||[],
+        objet_intentions_activite_ids:  edit.objet_intentions_activite_ids||[],
+        objet_intentions_details:       edit.objet_intentions_details||"",
+        objet_adequation_senegal:       edit.objet_adequation_senegal||false,
+        objet_adequation_secteur_ids:   edit.objet_adequation_secteur_ids||[],
+        objet_adequation_branche_ids:   edit.objet_adequation_branche_ids||[],
+        objet_adequation_activite_ids:  edit.objet_adequation_activite_ids||[],
+        objet_adequation_details:       edit.objet_adequation_details||"",
+        objet_commentaires:             edit.objet_commentaires||"",
       });
     } else {
       setForm({ ...EMPTY_FORM, points_focaux:[{ ...EMPTY_FOCAL }] });
@@ -271,13 +279,17 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         // objet du ciblage
         objet_projet:              form.objet_projet,
         objet_projet_id:           form.objet_projet && form.objet_projet_id ? form.objet_projet_id : null,
-        objet_intentions_etranger: form.objet_intentions_etranger,
-        objet_intentions_details:  form.objet_intentions_etranger ? (form.objet_intentions_details||null) : null,
-        objet_adequation_senegal:  form.objet_adequation_senegal,
-        objet_adequation_details:  form.objet_adequation_senegal ? (form.objet_adequation_details||null) : null,
-        objet_secteur_prioritaire: form.objet_secteur_prioritaire,
-        objet_secteur_details:     form.objet_secteur_prioritaire ? (form.objet_secteur_details||null) : null,
-        objet_commentaires:        form.objet_commentaires||null,
+        objet_intentions_etranger:      form.objet_intentions_etranger,
+        objet_intentions_secteur_ids:   form.objet_intentions_etranger ? form.objet_intentions_secteur_ids : [],
+        objet_intentions_branche_ids:   form.objet_intentions_etranger ? form.objet_intentions_branche_ids : [],
+        objet_intentions_activite_ids:  form.objet_intentions_etranger ? form.objet_intentions_activite_ids : [],
+        objet_intentions_details:       form.objet_intentions_etranger ? (form.objet_intentions_details||null) : null,
+        objet_adequation_senegal:       form.objet_adequation_senegal,
+        objet_adequation_secteur_ids:   form.objet_adequation_senegal ? form.objet_adequation_secteur_ids : [],
+        objet_adequation_branche_ids:   form.objet_adequation_senegal ? form.objet_adequation_branche_ids : [],
+        objet_adequation_activite_ids:  form.objet_adequation_senegal ? form.objet_adequation_activite_ids : [],
+        objet_adequation_details:       form.objet_adequation_senegal ? (form.objet_adequation_details||null) : null,
+        objet_commentaires:             form.objet_commentaires||null,
       };
       if (form.type==="physique") {
         payload.prenom          = form.prenom.trim()||null;
@@ -445,10 +457,20 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
                 label="Intentions d'investissement à l'étranger ?"
                 desc="L'investisseur a exprimé des intentions d'investir hors de son pays d'origine"
                 value={form.objet_intentions_etranger} onChange={v=>upd("objet_intentions_etranger",v)}>
-                <div style={{ marginTop:8 }}>
-                  <label style={LS}>Détails</label>
-                  <div style={{ minHeight:120 }}>
-                    <RichTextEditor value={form.objet_intentions_details} onChange={v=>upd("objet_intentions_details",v)}/>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:12, marginTop:8 }}>
+                  <div>
+                    <label style={LS}>Activités visées</label>
+                    <NaemaSelect
+                      secteurIds={form.objet_intentions_secteur_ids} onChangeSecteurs={ids=>upd("objet_intentions_secteur_ids",ids)}
+                      brancheIds={form.objet_intentions_branche_ids} onChangeBranches={ids=>upd("objet_intentions_branche_ids",ids)}
+                      activiteIds={form.objet_intentions_activite_ids} onChangeActivites={ids=>upd("objet_intentions_activite_ids",ids)}
+                    />
+                  </div>
+                  <div>
+                    <label style={LS}>Détails</label>
+                    <div style={{ minHeight:120 }}>
+                      <RichTextEditor value={form.objet_intentions_details} onChange={v=>upd("objet_intentions_details",v)}/>
+                    </div>
                   </div>
                 </div>
               </ToggleField>
@@ -457,22 +479,20 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
                 label="Adéquation profil / destination Sénégal"
                 desc="Le profil de l'investisseur correspond aux opportunités et secteurs prioritaires du Sénégal"
                 value={form.objet_adequation_senegal} onChange={v=>upd("objet_adequation_senegal",v)}>
-                <div style={{ marginTop:8 }}>
-                  <label style={LS}>Détails de l'adéquation</label>
-                  <div style={{ minHeight:120 }}>
-                    <RichTextEditor value={form.objet_adequation_details} onChange={v=>upd("objet_adequation_details",v)}/>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:12, marginTop:8 }}>
+                  <div>
+                    <label style={LS}>Activités prioritaires pour le Sénégal en phase avec son profil</label>
+                    <NaemaSelect
+                      secteurIds={form.objet_adequation_secteur_ids} onChangeSecteurs={ids=>upd("objet_adequation_secteur_ids",ids)}
+                      brancheIds={form.objet_adequation_branche_ids} onChangeBranches={ids=>upd("objet_adequation_branche_ids",ids)}
+                      activiteIds={form.objet_adequation_activite_ids} onChangeActivites={ids=>upd("objet_adequation_activite_ids",ids)}
+                    />
                   </div>
-                </div>
-              </ToggleField>
-
-              <ToggleField
-                label="Secteur d'activité prioritaire pour le Sénégal"
-                desc="L'investisseur opère dans un secteur identifié comme prioritaire par le Sénégal"
-                value={form.objet_secteur_prioritaire} onChange={v=>upd("objet_secteur_prioritaire",v)}>
-                <div style={{ marginTop:8 }}>
-                  <label style={LS}>Préciser le secteur et la pertinence</label>
-                  <div style={{ minHeight:120 }}>
-                    <RichTextEditor value={form.objet_secteur_details} onChange={v=>upd("objet_secteur_details",v)}/>
+                  <div>
+                    <label style={LS}>Détails de l'adéquation</label>
+                    <div style={{ minHeight:120 }}>
+                      <RichTextEditor value={form.objet_adequation_details} onChange={v=>upd("objet_adequation_details",v)}/>
+                    </div>
                   </div>
                 </div>
               </ToggleField>
@@ -655,13 +675,13 @@ function ProspectVue({ p, onClose, onEdit, onAddContact }: any) {
           {p.details && (
             <div style={{ marginBottom:16 }}>
               <LBL t={p.type==="morale"?"Commentaires":"Détails"}/>
-              <div style={{ background:"rgba(202,99,31,0.04)", border:"1px solid rgba(202,99,31,0.12)", borderRadius:10, padding:"12px 14px", fontSize:13, color:"#4a5568", lineHeight:1.7 }}
+              <div data-rte style={{ background:"rgba(202,99,31,0.04)", border:"1px solid rgba(202,99,31,0.12)", borderRadius:10, padding:"12px 14px", fontSize:13, color:"#4a5568", lineHeight:1.7 }}
                 dangerouslySetInnerHTML={{ __html:p.details }}/>
             </div>
           )}
 
           {/* Objet du ciblage */}
-          {(p.objet_projet || p.objet_intentions_etranger || p.objet_adequation_senegal || p.objet_secteur_prioritaire || p.objet_commentaires) && (
+          {(p.objet_projet || p.objet_intentions_etranger || p.objet_adequation_senegal || p.objet_commentaires) && (
             <div style={{ marginBottom:16 }}>
               <LBL t="Objet du ciblage"/>
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
@@ -673,26 +693,20 @@ function ProspectVue({ p, onClose, onEdit, onAddContact }: any) {
                 )}
                 {p.objet_intentions_etranger && (
                   <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Intentions d'investissement à l'étranger</p>
-                    {p.objet_intentions_details && <div style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_intentions_details }}/>}
+                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:6 }}>Intentions d'investissement à l'étranger</p>
+                    {p.objet_intentions_details && <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_intentions_details }}/>}
                   </div>
                 )}
                 {p.objet_adequation_senegal && (
                   <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Adéquation profil / destination Sénégal</p>
-                    {p.objet_adequation_details && <div style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_adequation_details }}/>}
-                  </div>
-                )}
-                {p.objet_secteur_prioritaire && (
-                  <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Secteur d'activité prioritaire pour le Sénégal</p>
-                    {p.objet_secteur_details && <div style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_secteur_details }}/>}
+                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:6 }}>Adéquation profil / destination Sénégal</p>
+                    {p.objet_adequation_details && <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_adequation_details }}/>}
                   </div>
                 )}
                 {p.objet_commentaires && (
                   <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Commentaires</p>
-                    <div style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_commentaires }}/>
+                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:6 }}>Commentaires</p>
+                    <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_commentaires }}/>
                   </div>
                 )}
               </div>
