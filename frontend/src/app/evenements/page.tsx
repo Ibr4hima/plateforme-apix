@@ -409,7 +409,7 @@ export default function EvenementsPage() {
                             <span style={{color:"#4a5568"}}>{dateStr}</span>
                           </div>}
                           {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:6,height:6,borderRadius:"50%",background:"#E4D96F",flexShrink:0}}/>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
                             <span style={{color:"#4a5568"}}>{lieu}</span>
                           </div>}
                         </div>
