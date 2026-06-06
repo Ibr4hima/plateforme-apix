@@ -8,6 +8,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const ROLES_APIX: Record<string,string> = { organisateur:"Organisateur", co_organisateur:"Co-organisateur", participant:"Participant", partenaire:"Partenaire", sponsor:"Sponsor" };
+const ROLE_COLORS: Record<string,{color:string;bg:string}> = {
+  organisateur:    { color:"#15803d", bg:"rgba(21,128,61,0.1)"   },
+  co_organisateur: { color:"#004f91", bg:"rgba(0,79,145,0.1)"    },
+  participant:     { color:"#ca631f", bg:"rgba(202,99,31,0.1)"   },
+  partenaire:      { color:"#7c3aed", bg:"rgba(124,58,237,0.1)"  },
+  sponsor:         { color:"#d97706", bg:"rgba(217,119,6,0.1)"   },
+};
 
 function fmtDate(d: string) {
   if (!d) return "";
@@ -390,7 +397,7 @@ export default function EvenementsPage() {
               </div>
             ):(
               <>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 340px))",gap:12}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:12}}>
                   {evenements.map(e=>{
                     const dateStr = e.date_debut
                       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
@@ -398,10 +405,15 @@ export default function EvenementsPage() {
                     const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
                     return (
                       <div key={e.id} onClick={()=>setSelec(e)}
-                        style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
+                        style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
                         onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
                         onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
-                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8}}>{e.nom_event}</div>
+                        {e.role_apix&&(()=>{const rc=ROLE_COLORS[e.role_apix]||{color:"#6b7280",bg:"#f3f4f6"}; return (
+                          <div style={{position:"absolute" as const,top:12,right:12}}>
+                            <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,color:rc.color,background:rc.bg}}>{ROLES_APIX[e.role_apix]||e.role_apix}</span>
+                          </div>
+                        );})()}
+                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8,paddingRight:e.role_apix?90:0}}>{e.nom_event}</div>
                         {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinal(e.edition)}</div>}
                         <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                           {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
