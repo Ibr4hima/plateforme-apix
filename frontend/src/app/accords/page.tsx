@@ -11,10 +11,6 @@ function fmtDate(d: string) {
   const [y,m,j] = d.split("-").map(Number);
   return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
 }
-function flag(code: string) {
-  try { return String.fromCodePoint(...code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
-  catch { return ""; }
-}
 
 const STATUT_OPTS = [
   { value:"",           label:"Tous",        bg:"#F2F0EF", text:"#4a5568" },
@@ -22,9 +18,9 @@ const STATUT_OPTS = [
   { value:"expire",     label:"Expirés",     bg:"#f3f4f6", text:"#6b7280" },
 ];
 
-function SideFilter({ label, items, selected, onToggle, color }: {
-  label:string; items:{value:string;label:string;flag?:string}[];
-  selected:string[]; onToggle:(v:string)=>void; color:string;
+function SideFilter({ label, items, selected, onToggle, color, listMaxHeight }: {
+  label:string; items:{value:string;label:string}[];
+  selected:string[]; onToggle:(v:string)=>void; color:string; listMaxHeight?:number;
 }) {
   const [open, setOpen] = useState(true);
   return (
@@ -39,7 +35,7 @@ function SideFilter({ label, items, selected, onToggle, color }: {
         {open?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
       </button>
       {open&&(
-        <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+        <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:listMaxHeight,overflowY:listMaxHeight?"auto" as const:undefined}}>
           {items.map(item=>{
             const sel=selected.includes(item.value);
             return (
@@ -50,7 +46,6 @@ function SideFilter({ label, items, selected, onToggle, color }: {
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                {item.flag&&<span style={{fontSize:13}}>{item.flag}</span>}
                 <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{item.label}</span>
               </button>
             );
@@ -99,9 +94,12 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
               <button key={b.nom} onClick={()=>onBranche(b.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.1)":"transparent",textAlign:"left" as const}}
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.1)":"transparent",textAlign:"left" as const}}
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.1)":"transparent";}}>
-                <div style={{width:6,height:6,borderRadius:"50%",background:sel?"#004f91":"#C5BFBB",flexShrink:0}}/><span style={{fontSize:12,color:sel?"#004f91":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
+                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+                <span style={{fontSize:12,color:sel?"#004f91":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
               </button>);})}
           </div>
         </div>}
@@ -110,22 +108,21 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {activites.map((a:any)=>{const sel=activitesSel.includes(a.nom); return (
               <button key={a.nom} onClick={()=>onActivite(a.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(24,128,56,0.08)":"transparent",textAlign:"left" as const}}
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(24,128,56,0.08)":"transparent",textAlign:"left" as const}}
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(24,128,56,0.08)":"transparent";}}>
-                <div style={{width:5,height:5,borderRadius:"50%",background:sel?"#188038":"#C5BFBB",flexShrink:0}}/><span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+                <span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
               </button>);})}
           </div>
         </div>}
-        {hasFilter&&<button onClick={()=>{onSecteur("");branchesSel.slice().forEach(onBranche);activitesSel.slice().forEach(onActivite);}}
-          style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0"}}>
-          <X size={10}/> Effacer thématiques
-        </button>}
       </div>}
     </div>
   );
 }
 
-// ── Modal vue accord (identique admin) ───────────────────────────────────────
+// ── Modal vue accord ─────────────────────────────────────────────────────────
 function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
   const [fichiers,  setFichiers]  = useState<any[]>([]);
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
@@ -261,13 +258,12 @@ export default function AccordsPage() {
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
   const [allPays,     setAllPays]     = useState<any[]>([]);
 
-  // Filtres — pays filtrés par ID maintenant
-  const [recherche,    setRecherche]    = useState("");
-  const [statutFiltre, setStatutFiltre] = useState("");
+  const [recherche,      setRecherche]      = useState("");
+  const [statutFiltre,   setStatutFiltre]   = useState("");
   const [paysIdsFiltres, setPaysIdsFiltres] = useState<number[]>([]);
-  const [secteursSel,  setSecteursSel]  = useState<string[]>([]);
-  const [branchesSel,  setBranchesSel]  = useState<string[]>([]);
-  const [activitesSel, setActivitesSel] = useState<string[]>([]);
+  const [secteursSel,    setSecteursSel]    = useState<string[]>([]);
+  const [branchesSel,    setBranchesSel]    = useState<string[]>([]);
+  const [activitesSel,   setActivitesSel]   = useState<string[]>([]);
 
   useEffect(()=>{
     const safe = (p:Promise<any>,fb:any)=>p.catch(()=>fb);
@@ -278,7 +274,6 @@ export default function AccordsPage() {
       safe(fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),  []),
       safe(fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()),       []),
     ]).then(([partiesData,secsData,brasData,actsData,paysData])=>{
-      // parties-distinctes retourne maintenant {id, nom, code_iso2}
       setPaysDistincts(partiesData?.pays||[]);
       setAllPays(paysData||[]);
       const tree=(secsData||[]).map((s:any)=>({...s,
@@ -302,7 +297,6 @@ export default function AccordsPage() {
 
   useEffect(()=>{charger();},[charger]);
 
-  // Résoudre les noms de pays depuis IDs pour un accord
   const getPaysNoms = (a:any, max=2): string => {
     let noms: string[] = [];
     if (a.parties_pays_ids?.length>0) {
@@ -312,13 +306,10 @@ export default function AccordsPage() {
     } else if (a.parties_signataires) {
       noms = a.parties_signataires.split(", ").filter(Boolean);
     }
-    if (max && noms.length > max) {
-      return noms.slice(0, max).join(", ") + `, +${noms.length - max}`;
-    }
+    if (max && noms.length > max) return noms.slice(0, max).join(", ") + `, +${noms.length - max}`;
     return noms.join(", ");
   };
 
-  // Filtrage côté client
   const accords = tous.filter(a=>{
     if (recherche) {
       const q=recherche.toLowerCase();
@@ -326,12 +317,9 @@ export default function AccordsPage() {
       if (!a.titre?.toLowerCase().includes(q)&&!a.reference?.toLowerCase().includes(q)&&!paysStr.includes(q)) return false;
     }
     if (statutFiltre&&a.statut!==statutFiltre) return false;
-    // Filtre par pays — on compare les IDs
     if (paysIdsFiltres.length>0) {
-      const hasMatch = paysIdsFiltres.some(id=>(a.parties_pays_ids||[]).includes(id));
-      if (!hasMatch) return false;
+      if (!paysIdsFiltres.some(id=>(a.parties_pays_ids||[]).includes(id))) return false;
     }
-    // Filtre thématiques par IDs (secteur_ids, branche_ids, activite_ids)
     if (secteursSel.length>0) {
       const secIds=secteursSel.map((nom:string)=>secteurs.find((s:any)=>s.nom===nom)?.id).filter(Boolean);
       if (!secIds.some((id:number)=>(a.secteur_ids||[]).includes(id))) return false;
@@ -347,7 +335,11 @@ export default function AccordsPage() {
     return true;
   });
 
-  const stats = { total:tous.length, en_vigueur:tous.filter(a=>a.statut==="en_vigueur").length };
+  const stats = {
+    total:      tous.length,
+    en_vigueur: tous.filter(a=>a.statut==="en_vigueur").length,
+    expire:     tous.filter(a=>a.statut==="expire").length,
+  };
   const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
   const nbFiltres=(recherche?1:0)+(statutFiltre?1:0)+paysIdsFiltres.length+secteursSel.length+branchesSel.length+activitesSel.length;
@@ -361,7 +353,6 @@ export default function AccordsPage() {
   const toggleActivite=(v:string)=>setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
   const toggleSecteur =(v:string)=>{setSecteursSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setBranchesSel([]);setActivitesSel([]);};
 
-  // Pour SideFilter on passe les noms (affichage) mais on filtre par IDs en interne
   const paysSelNoms = paysIdsFiltres.map(id=>paysDistincts.find(p=>p.id===id)?.nom||"").filter(Boolean);
 
   return (
@@ -378,11 +369,11 @@ export default function AccordsPage() {
           <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
             <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Accords &amp; Traités</h1>
-          <p style={{color:"rgba(255,255,255,0.45)",fontSize:15,maxWidth:540,lineHeight:1.7,marginBottom:24}}>Accords internationaux de coopération économique et traités bilatéraux d'investissement signés par le Sénégal.</p>
+          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Accords &amp; Traités</h1>
           <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
             {stats.total>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.total} accord{stats.total>1?"s":""}</span>}
-            {stats.en_vigueur>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(202,99,31,0.18)",border:"1px solid rgba(202,99,31,0.35)",padding:"6px 14px",borderRadius:999}}>{stats.en_vigueur} en vigueur</span>}
+            {stats.en_vigueur>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(21,128,61,0.25)",border:"1px solid rgba(21,128,61,0.4)",padding:"6px 14px",borderRadius:999}}>{stats.en_vigueur} en vigueur</span>}
+            {stats.expire>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(107,114,128,0.25)",border:"1px solid rgba(107,114,128,0.4)",padding:"6px 14px",borderRadius:999}}>{stats.expire} expiré{stats.expire>1?"s":""}</span>}
           </div>
         </div>
       </section>
@@ -408,7 +399,7 @@ export default function AccordsPage() {
                 </button>}
                 <div style={{position:"relative" as const,marginBottom:18}}>
                   <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Titre, référence, partie…"
+                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
@@ -425,7 +416,7 @@ export default function AccordsPage() {
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <SideFilter label="Parties signataires" color="#004f91" selected={paysSelNoms} onToggle={togglePays}
-                  items={paysDistincts.map((p:any)=>({value:p.nom,label:p.nom}))}/>
+                  items={paysDistincts.map((p:any)=>({value:p.nom,label:p.nom}))} listMaxHeight={200}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs}
                   secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
@@ -448,34 +439,38 @@ export default function AccordsPage() {
                 {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
               </div>
             ) : (
-              <>
-                <p style={{fontSize:13,color:"#9aa5b4",marginBottom:16}}>{accords.length} accord{accords.length>1?"s":""}{hasFilter?" trouvé"+(accords.length>1?"s":""):""}</p>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
-                  {accords.map(a=>(
-                    <div key={a.id} onClick={()=>setSelec(a)}
-                      style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-                      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderTopColor="#FFB0A1";ev.currentTarget.style.borderRightColor="#FFB0A1";ev.currentTarget.style.borderBottomColor="#FFB0A1";}}
-                      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
-                      <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?2:8}}>{a.titre}</div>
-                      {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
-                      <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:10}}>
-                        {a.date_expiration&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                          <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/><span style={{color:"#4a5568"}}>Expire le {fmtDate(a.date_expiration)}</span>
-                        </div>}
-                        {getPaysNoms(a,2)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                          <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{getPaysNoms(a,2)}</span>
-                        </div>}
-                      </div>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",borderTop:"1px solid #F2F0EF",paddingTop:8}}>
-                        <span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:999,color:a.statut==="en_vigueur"?"#15803d":"#6b7280",background:a.statut==="en_vigueur"?"rgba(21,128,61,0.08)":"#f3f4f6"}}>
-                          {a.statut==="en_vigueur"?"En vigueur":"Expiré"}
-                        </span>
-                        <span style={{fontSize:11,color:"#ca631f",fontWeight:600}}>Voir les détails →</span>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 340px))",gap:12}}>
+                {accords.map(a=>(
+                  <div key={a.id} onClick={()=>setSelec(a)}
+                    style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+
+                    {/* Badge statut — coin supérieur droit */}
+                    <div style={{position:"absolute" as const,top:12,right:12}}>
+                      <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,color:a.statut==="en_vigueur"?"#15803d":"#6b7280",background:a.statut==="en_vigueur"?"rgba(21,128,61,0.08)":"#f3f4f6"}}>
+                        {a.statut==="en_vigueur"?"En vigueur":"Expiré"}
+                      </span>
+                    </div>
+
+                    <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?2:8,paddingRight:90}}>{a.titre}</div>
+                    {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
+                      {a.date_expiration&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/><span style={{color:"#4a5568"}}>Expire le {fmtDate(a.date_expiration)}</span>
+                      </div>}
+                      {getPaysNoms(a,2)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a,2)}</span>
+                      </div>}
+                    </div>
+                    <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(202,99,31,0.08)",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}>
+                        Voir les détails →
                       </div>
                     </div>
-                  ))}
-                </div>
-              </>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
