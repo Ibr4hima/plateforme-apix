@@ -9,10 +9,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const ROLES_APIX: Record<string,string> = { organisateur:"Organisateur", co_organisateur:"Co-organisateur", participant:"Participant", partenaire:"Partenaire", sponsor:"Sponsor" };
 
-function flag(code: string) {
-  try { return String.fromCodePoint(...code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
-  catch { return ""; }
-}
 function fmtDate(d: string) {
   if (!d) return "";
   const [y,m,j] = d.split("-").map(Number);
@@ -28,7 +24,7 @@ const STATUT_OPTS = [
 ];
 
 function SideFilter({ label, items, selected, onToggle, color }: {
-  label:string; items:{value:string;label:string;flag?:string}[];
+  label:string; items:{value:string;label:string}[];
   selected:string[]; onToggle:(v:string)=>void; color:string;
 }) {
   const [open, setOpen] = useState(true);
@@ -55,7 +51,6 @@ function SideFilter({ label, items, selected, onToggle, color }: {
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                {item.flag&&<span style={{fontSize:13}}>{item.flag}</span>}
                 <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{item.label}</span>
               </button>
             );
@@ -149,12 +144,6 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                 })}
               </div>
             </div>
-          )}
-          {hasFilter&&(
-            <button onClick={()=>{secteursSel.slice().forEach(onSecteur);branchesSel.slice().forEach(onBranche);activitesSel.slice().forEach(onActivite);}}
-              style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0",marginTop:2}}>
-              <X size={10}/> Effacer thématiques
-            </button>
           )}
         </div>
       )}
@@ -334,8 +323,7 @@ export default function EvenementsPage() {
           <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
             <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Événements</h1>
-          <p style={{color:"rgba(255,255,255,0.45)",fontSize:15,maxWidth:540,lineHeight:1.7,marginBottom:24}}>Forums, salons, missions de prospection et rencontres B2B — agenda mondial de la promotion des investissements.</p>
+          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Événements</h1>
           <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
   {(stats.total||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.total} événement{stats.total>1?"s":""}</span>}
   {(stats.en_cours||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(202,99,31,0.18)",border:"1px solid rgba(202,99,31,0.35)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.en_cours} en cours</span>}
@@ -363,7 +351,7 @@ export default function EvenementsPage() {
                 {hasFilter&&<button onClick={reinit} style={{display:"flex",alignItems:"center",gap:5,width:"100%",background:"#fee2e2",color:"#dc2626",border:"none",borderRadius:8,padding:"7px 10px",fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:16}}><X size={12}/> Effacer tous les filtres</button>}
                 <div style={{position:"relative" as const,marginBottom:18}}>
                   <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher un événement…"
+                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
@@ -380,7 +368,7 @@ export default function EvenementsPage() {
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <SideFilter label="Pays hôte" color="#004f91" selected={paysFiltres} onToggle={togglePays}
-                  items={paysHotes.map(p=>({value:p.nom,label:p.nom,flag:p.code_iso2?flag(p.code_iso2):undefined}))}/>
+                  items={paysHotes.map(p=>({value:p.nom,label:p.nom}))}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
               </>}
@@ -402,7 +390,6 @@ export default function EvenementsPage() {
               </div>
             ):(
               <>
-                <p style={{fontSize:13,color:"#9aa5b4",marginBottom:16}}>{evenements.length} événement{evenements.length>1?"s":""}{hasFilter?" trouvé"+(evenements.length>1?"s":""):""}</p>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
                   {evenements.map(e=>{
                     const dateStr = e.date_debut
@@ -411,22 +398,22 @@ export default function EvenementsPage() {
                     const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
                     return (
                       <div key={e.id} onClick={()=>setSelec(e)}
-                        style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderTopColor="#ca631f";ev.currentTarget.style.borderRightColor="#ca631f";ev.currentTarget.style.borderBottomColor="#ca631f";}}
-                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
+                        style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
+                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
                         <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8}}>{e.nom_event}</div>
                         {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinal(e.edition)}</div>}
-                        <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:10}}>
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                           {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
                             <span style={{color:"#4a5568"}}>{dateStr}</span>
                           </div>}
                           {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#174EA6",flexShrink:0}}/>
                             <span style={{color:"#4a5568"}}>{lieu}</span>
                           </div>}
                         </div>
-                        <div style={{fontSize:11,color:"#ca631f",fontWeight:600,borderTop:"1px solid #F2F0EF",paddingTop:8}}>Voir les détails →</div>
+                        <div style={{fontSize:11,color:"#ca631f",fontWeight:600,borderTop:"1px solid #F2F0EF",paddingTop:10}}>Voir les détails →</div>
                       </div>
                     );
                   })}
