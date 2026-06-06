@@ -453,7 +453,7 @@ export default function AccordsPage() {
                 {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
               </div>
             ) : (
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 340px))",gap:12}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:12}}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);
                   return (
