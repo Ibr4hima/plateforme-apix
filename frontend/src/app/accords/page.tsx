@@ -23,6 +23,7 @@ function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
 }
 
 const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"gray" };
+const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
 
 const STATUT_OPTS = [
   { value:"",           label:"Tous",        bg:"#F2F0EF",             text:"#4a5568" },
@@ -156,7 +157,6 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
   const LBL = ({children}:{children:string}) => (
     <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
   );
-  const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
   const statut = computeStatut(a);
   const secIds:number[] = a.secteur_ids  || [];
   const braIds:number[] = a.branche_ids  || [];
