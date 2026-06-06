@@ -278,6 +278,8 @@ export default function AccordsPage() {
   const [secteursSel,    setSecteursSel]    = useState<string[]>([]);
   const [branchesSel,    setBranchesSel]    = useState<string[]>([]);
   const [activitesSel,   setActivitesSel]   = useState<string[]>([]);
+  const [apixFiltre,     setApixFiltre]     = useState(false);
+  const [partiesOpen,    setPartiesOpen]    = useState(true);
 
   useEffect(()=>{
     const safe = (p:Promise<any>,fb:any)=>p.catch(()=>fb);
@@ -331,8 +333,11 @@ export default function AccordsPage() {
       if (!a.titre?.toLowerCase().includes(q)&&!a.reference?.toLowerCase().includes(q)&&!paysStr.includes(q)) return false;
     }
     if (statutFiltre&&computeStatut(a)!==statutFiltre) return false;
-    if (paysIdsFiltres.length>0) {
-      if (!paysIdsFiltres.some(id=>(a.parties_pays_ids||[]).includes(id))) return false;
+    const hasPartiesFilter = paysIdsFiltres.length>0||apixFiltre;
+    if (hasPartiesFilter) {
+      const matchesPays = paysIdsFiltres.length>0&&paysIdsFiltres.some(id=>(a.parties_pays_ids||[]).includes(id));
+      const matchesApix = apixFiltre&&!!(a.parties_signataires?.toLowerCase().includes("apix"));
+      if (!matchesPays&&!matchesApix) return false;
     }
     if (secteursSel.length>0) {
       const secIds=secteursSel.map((nom:string)=>secteurs.find((s:any)=>s.nom===nom)?.id).filter(Boolean);
@@ -354,20 +359,17 @@ export default function AccordsPage() {
     en_vigueur: tous.filter(a=>computeStatut(a)==="en_vigueur").length,
     expire:     tous.filter(a=>computeStatut(a)==="expire").length,
   };
-  const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
-  const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
-  const nbFiltres=(recherche?1:0)+(statutFiltre?1:0)+paysIdsFiltres.length+secteursSel.length+branchesSel.length+activitesSel.length;
+  const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||apixFiltre||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
+  const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setApixFiltre(false);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
+  const nbFiltres=(recherche?1:0)+(statutFiltre?1:0)+paysIdsFiltres.length+(apixFiltre?1:0)+secteursSel.length+branchesSel.length+activitesSel.length;
 
-  const togglePays    =(v:string)=>{
-    const id=paysDistincts.find(p=>p.nom===v)?.id;
-    if (!id) return;
-    setPaysIdsFiltres(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
-  };
   const toggleBranche =(v:string)=>{setBranchesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setActivitesSel([]);};
   const toggleActivite=(v:string)=>setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
   const toggleSecteur =(v:string)=>{setSecteursSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setBranchesSel([]);setActivitesSel([]);};
+  const togglePaysId  =(id:number)=>setPaysIdsFiltres(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
 
-  const paysSelNoms = paysIdsFiltres.map(id=>paysDistincts.find(p=>p.id===id)?.nom||"").filter(Boolean);
+  const senegalId  = paysDistincts.find((p:any)=>p.nom==="Sénégal")?.id;
+  const autresPays = paysDistincts.filter((p:any)=>p.nom!=="Sénégal").sort((a:any,b:any)=>a.nom.localeCompare(b.nom,"fr"));
 
   return (
     <main style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
@@ -429,8 +431,61 @@ export default function AccordsPage() {
                   </div>
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Parties signataires" color="#004f91" selected={paysSelNoms} onToggle={togglePays}
-                  items={paysDistincts.map((p:any)=>({value:p.nom,label:p.nom}))} listMaxHeight={200}/>
+                {/* Parties signataires — section personnalisée */}
+                <div style={{marginBottom:18}}>
+                  <button onClick={()=>setPartiesOpen(o=>!o)}
+                    style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:partiesOpen?8:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      {(paysIdsFiltres.length>0||apixFiltre)&&<span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",display:"inline-block"}}/>}
+                      <span style={{fontSize:11,fontWeight:700,color:(paysIdsFiltres.length>0||apixFiltre)?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Parties signataires</span>
+                      {(paysIdsFiltres.length>0||apixFiltre)&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{paysIdsFiltres.length+(apixFiltre?1:0)}</span>}
+                    </div>
+                    {partiesOpen?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+                  </button>
+                  {partiesOpen&&<div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+                    {/* Sénégal */}
+                    {senegalId!==undefined&&(()=>{const sel=paysIdsFiltres.includes(senegalId); return (
+                      <button onClick={()=>togglePaysId(senegalId)}
+                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
+                        onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                        onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
+                        <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>Sénégal</span>
+                      </button>
+                    );})()}
+                    {/* APIX S.A */}
+                    {(()=>{const sel=apixFiltre; return (
+                      <button onClick={()=>setApixFiltre(f=>!f)}
+                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
+                        onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                        onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
+                        <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>APIX S.A</span>
+                      </button>
+                    );})()}
+                    {/* Sous-section Pays */}
+                    {autresPays.length>0&&<>
+                      <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",margin:"8px 0 2px",padding:"0 8px"}}>Pays</p>
+                      <div style={{maxHeight:160,overflowY:"auto" as const}}>
+                        {autresPays.map((p:any)=>{const sel=paysIdsFiltres.includes(p.id); return (
+                          <button key={p.id} onClick={()=>togglePaysId(p.id)}
+                            style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
+                            onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                            onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
+                            <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                              {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                            </div>
+                            <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{p.nom}</span>
+                          </button>
+                        );})}
+                      </div>
+                    </>}
+                  </div>}
+                </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs}
                   secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
