@@ -7,13 +7,14 @@ import { useCallback, useEffect, useState } from "react";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const ROLES_APIX: Record<string,string> = { organisateur:"Organisateur", co_organisateur:"Co-organisateur", participant:"Participant", partenaire:"Partenaire", sponsor:"Sponsor" };
+const ROLES_APIX: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
 const ROLE_COLORS: Record<string,{color:string;bg:string}> = {
-  organisateur:    { color:"#fff",    bg:"#188038" },
-  co_organisateur: { color:"#5a4100", bg:"#E4D96F" },
-  participant:     { color:"#fff",    bg:"#c68346" },
-  partenaire:      { color:"#1a3330", bg:"#A8C3BC" },
-  sponsor:         { color:"#4b0082", bg:"#d3d3ff" },
+  "Organisateur":    { color:"#fff",    bg:"#188038" },
+  "Co-organisateur": { color:"#5a4100", bg:"#E4D96F" },
+  "Participant":     { color:"#fff",    bg:"#c68346" },
+  "Partenaire":      { color:"#1a3330", bg:"#A8C3BC" },
+  "Sponsor":         { color:"#4b0082", bg:"#d3d3ff" },
+  "Invité":          { color:"#fff",    bg:"#6b7280" },
 };
 
 function fmtDate(d: string) {
