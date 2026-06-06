@@ -409,11 +409,15 @@ export default function EvenementsPage() {
                             <span style={{color:"#4a5568"}}>{dateStr}</span>
                           </div>}
                           {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:6,height:6,borderRadius:"50%",background:"#174EA6",flexShrink:0}}/>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#E4D96F",flexShrink:0}}/>
                             <span style={{color:"#4a5568"}}>{lieu}</span>
                           </div>}
                         </div>
-                        <div style={{fontSize:11,color:"#ca631f",fontWeight:600,borderTop:"1px solid #F2F0EF",paddingTop:10}}>Voir les détails →</div>
+                        <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                          <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(202,99,31,0.08)",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}>
+                            Voir les détails →
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
