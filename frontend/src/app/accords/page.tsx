@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -20,6 +21,8 @@ function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
   if (ref && ref <= today) return "en_vigueur";
   return null;
 }
+
+const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"gray" };
 
 const STATUT_OPTS = [
   { value:"",           label:"Tous",        bg:"#F2F0EF",             text:"#4a5568" },
@@ -170,12 +173,7 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{a.titre}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
                 {a.reference&&<span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{a.reference}</span>}
-                {statut&&<span style={{fontSize:11,fontWeight:700,padding:"2px 9px",borderRadius:999,
-                  color:statut==="en_vigueur"?"#15803d":statut==="signe"?"#004f91":"#6b7280",
-                  background:statut==="en_vigueur"?"rgba(21,128,61,0.08)":statut==="signe"?"rgba(0,79,145,0.08)":"#f3f4f6",
-                  border:`1px solid ${statut==="en_vigueur"?"rgba(21,128,61,0.2)":statut==="signe"?"rgba(0,79,145,0.2)":"#e5e7eb"}`}}>
-                  {STATUT_LABELS[statut]}
-                </span>}
+                {statut&&<Badge variant={STATUT_VARIANT[statut]||"gray"} size="xs">{STATUT_LABELS[statut]}</Badge>}
               </div>
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
@@ -519,11 +517,7 @@ export default function AccordsPage() {
 
                     {/* Badge statut — coin supérieur droit */}
                     {statut&&<div style={{position:"absolute" as const,top:12,right:12}}>
-                      <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,
-                        color:statut==="en_vigueur"?"#15803d":statut==="signe"?"#004f91":"#6b7280",
-                        background:statut==="en_vigueur"?"rgba(21,128,61,0.08)":statut==="signe"?"rgba(0,79,145,0.08)":"#f3f4f6"}}>
-                        {statut==="en_vigueur"?"En vigueur":statut==="signe"?"Signé":"Expiré"}
-                      </span>
+                      <Badge variant={STATUT_VARIANT[statut]||"gray"} size="xs">{STATUT_LABELS[statut]}</Badge>
                     </div>}
 
                     <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?2:8,paddingRight:90}}>{a.titre}</div>
