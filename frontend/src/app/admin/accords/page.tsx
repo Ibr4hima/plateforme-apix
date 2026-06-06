@@ -7,8 +7,16 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const STATUTS = ["en_vigueur","expire"];
-const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré" };
+const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
+
+function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
+  const today = new Date().toISOString().split("T")[0];
+  if (a.date_expiration && a.date_expiration < today) return "expire";
+  if (a.date_signature && a.date_entree_vigueur && a.date_signature <= today && today < a.date_entree_vigueur) return "signe";
+  const ref = a.date_entree_vigueur || a.date_signature;
+  if (ref && ref <= today) return "en_vigueur";
+  return null;
+}
 const SENEGAL = "Sénégal";
 const APIX    = "APIX S.A";
 
@@ -28,10 +36,11 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     pays_ids:[] as number[], orgs:[] as string[],
     date_signature:"", date_entree_vigueur:"", date_expiration:"",
     secteur_ids:[] as number[], branche_ids:[] as number[], activite_ids:[] as number[],
-    commentaires:"", statut:"en_vigueur",
+    commentaires:"",
   });
-  const [saisieOrg, setSaisieOrg] = useState("");
-  const [fichiers,  setFichiers]  = useState<any[]>([]);
+  const [saisieOrg,  setSaisieOrg]  = useState("");
+  const [searchPays, setSearchPays] = useState("");
+  const [fichiers,   setFichiers]   = useState<any[]>([]);
   const [pdfQueue,  setPdfQueue]  = useState<{file:File;titre:string}[]>([]);
   const [saving,    setSaving]    = useState(false);
   const [saveOk,    setSaveOk]    = useState(false);
@@ -46,7 +55,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
 
   useEffect(()=>{
     if (!open) return;
-    setPdfQueue([]); setError(""); setSaveOk(false);
+    setPdfQueue([]); setError(""); setSaveOk(false); setSearchPays("");
     if (editItem) {
       const mode = editItem.parties_pays_ids?.length > 0 ? "pays" : "organisation";
       const pays_ids = editItem.parties_pays_ids || [];
@@ -66,14 +75,13 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         branche_ids:         editItem.branche_ids         || [],
         activite_ids:        editItem.activite_ids        || [],
         commentaires:        editItem.commentaires        || "",
-        statut:              editItem.statut              || "en_vigueur",
       });
       setSaisieOrg("");
       fetch(`${API_BASE}/accords/${editItem.id}/fichiers`)
         .then(r=>r.json()).then(setFichiers).catch(()=>{});
     } else {
       const senId = allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id;
-      setForm((f:any)=>({...f, titre:"", reference:"", mode_signataire:"pays", pays_ids:senId?[senId]:[], orgs:[], date_signature:"", date_entree_vigueur:"", date_expiration:"", secteur_ids:[], branche_ids:[], activite_ids:[], commentaires:"", statut:"en_vigueur"}));
+      setForm((f:any)=>({...f, titre:"", reference:"", mode_signataire:"pays", pays_ids:senId?[senId]:[], orgs:[], date_signature:"", date_entree_vigueur:"", date_expiration:"", secteur_ids:[], branche_ids:[], activite_ids:[], commentaires:""}));
       setFichiers([]); setSaisieOrg("");
     }
   },[open, editItem?.id, allPays]);
@@ -89,12 +97,10 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     if (!form.titre.trim())        { setError("Le titre est obligatoire"); return; }
     if (!form.reference.trim())    { setError("La référence est obligatoire"); return; }
     if (!form.date_signature)      { setError("La date de signature est obligatoire"); return; }
-    if (!form.date_entree_vigueur) { setError("La date d'entrée en vigueur est obligatoire"); return; }
-    if (!form.date_expiration)     { setError("La date d'expiration est obligatoire"); return; }
     const today = new Date().toISOString().split("T")[0];
     if (form.date_signature > today) { setError("La date de signature doit être dans le passé"); return; }
-    if (form.date_entree_vigueur < form.date_signature) { setError("L'entrée en vigueur doit être après la signature"); return; }
-    if (form.date_expiration <= form.date_entree_vigueur) { setError("L'expiration doit être après l'entrée en vigueur"); return; }
+    if (form.date_entree_vigueur && form.date_entree_vigueur < form.date_signature) { setError("L'entrée en vigueur doit être après la signature"); return; }
+    if (form.date_expiration && form.date_entree_vigueur && form.date_expiration <= form.date_entree_vigueur) { setError("L'expiration doit être après l'entrée en vigueur"); return; }
     if (form.mode_signataire==="pays" && (form.pays_ids as number[]).length < 2) { setError("Ajoutez au moins deux pays signataires"); return; }
     if (form.mode_signataire==="organisation" && (form.orgs as string[]).length === 0) { setError("Ajoutez au moins une organisation partenaire"); return; }
     setSaving(true); setError("");
@@ -111,7 +117,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             date_entree_vigueur:form.date_entree_vigueur||null,
             date_expiration:form.date_expiration||null,
             secteur_ids:form.secteur_ids, branche_ids:form.branche_ids, activite_ids:form.activite_ids,
-            commentaires:form.commentaires||null, statut:form.statut,
+            commentaires:form.commentaires||null,
           }),
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -136,7 +142,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         if (form.date_entree_vigueur) fd.append("date_entree_vigueur",form.date_entree_vigueur);
         if (form.date_expiration)     fd.append("date_expiration",    form.date_expiration);
         if (form.commentaires)        fd.append("commentaires",       form.commentaires);
-        fd.append("statut",form.statut); fd.append("est_publie","true");
+        fd.append("est_publie","true");
         const res = await fetch(`${API_BASE}/accords`,{method:"POST",body:fd});
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
         const na = await res.json();
@@ -175,12 +181,6 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                 <div><label style={LS}>Titre *</label><input value={form.titre} onChange={e=>update("titre",e.target.value)} placeholder="Intitulé complet de l'accord" style={IS}/></div>
                 <div><label style={LS}>Référence *</label><input value={form.reference} onChange={e=>update("reference",e.target.value)} placeholder="Ex : APIX/2024/ACC-001" style={IS}/></div>
               </div>
-              <div style={{maxWidth:200}}>
-                <label style={LS}>Statut</label>
-                <select value={form.statut} onChange={e=>update("statut",e.target.value)} style={{...IS,cursor:"pointer"}}>
-                  {STATUTS.map(s=><option key={s} value={s}>{STATUT_LABELS[s]}</option>)}
-                </select>
-              </div>
             </div>
 
             {/* Parties signataires */}
@@ -212,11 +212,18 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                       </span>:null;
                     })}
                   </div>
+                  {/* Recherche pays */}
+                  <div style={{position:"relative",marginBottom:8}}>
+                    <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
+                      style={{width:"100%",padding:"7px 10px 7px 30px",borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
+                    <svg style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    {searchPays&&<button onClick={()=>setSearchPays("")} style={{position:"absolute",right:7,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>}
+                  </div>
                   {/* Liste groupée par continent */}
                   <div style={{border:"1px solid #E8E5E3",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff"}}>
                     {Object.entries(
                       allPays
-                        .filter((p:any)=>!(form.pays_ids as number[]).includes(p.id))
+                        .filter((p:any)=>!(form.pays_ids as number[]).includes(p.id) && (!searchPays||p.nom_fr.toLowerCase().includes(searchPays.toLowerCase())))
                         .reduce((acc:any,p:any)=>{
                           const cont=p.region_monde||"Autre";
                           if(!acc[cont]) acc[cont]=[];
@@ -268,8 +275,8 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
               <p style={SS}>Dates</p>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
                 <div><label style={LS}>Date de signature *</label><input type="date" value={form.date_signature} max={new Date().toISOString().split("T")[0]} onChange={e=>update("date_signature",e.target.value)} style={IS}/></div>
-                <div><label style={LS}>Entrée en vigueur *</label><input type="date" value={form.date_entree_vigueur} min={form.date_signature||undefined} onChange={e=>update("date_entree_vigueur",e.target.value)} style={IS}/></div>
-                <div><label style={LS}>Date d'expiration *</label><input type="date" value={form.date_expiration} onChange={e=>update("date_expiration",e.target.value)} style={IS}/></div>
+                <div><label style={LS}>Entrée en vigueur</label><input type="date" value={form.date_entree_vigueur} min={form.date_signature||undefined} onChange={e=>update("date_entree_vigueur",e.target.value)} style={IS}/></div>
+                <div><label style={LS}>Date d'expiration</label><input type="date" value={form.date_expiration} onChange={e=>update("date_expiration",e.target.value)} style={IS}/></div>
               </div>
             </div>
 
@@ -392,9 +399,12 @@ function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>voi
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{a.titre}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
                 {a.reference&&<span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{a.reference}</span>}
-                <span style={{fontSize:11,fontWeight:700,padding:"2px 9px",borderRadius:999,color:a.statut==="en_vigueur"?"#188038":"#6b7280",background:a.statut==="en_vigueur"?"rgba(24,128,56,0.08)":"#f3f4f6",border:`1px solid ${a.statut==="en_vigueur"?"rgba(24,128,56,0.2)":"#e5e7eb"}`}}>
-                  {STATUT_LABELS[a.statut]||a.statut}
-                </span>
+                {(()=>{ const st=computeStatut(a); return st&&<span style={{fontSize:11,fontWeight:700,padding:"2px 9px",borderRadius:999,
+                  color:st==="en_vigueur"?"#188038":st==="signe"?"#004f91":"#6b7280",
+                  background:st==="en_vigueur"?"rgba(24,128,56,0.08)":st==="signe"?"rgba(0,79,145,0.08)":"#f3f4f6",
+                  border:`1px solid ${st==="en_vigueur"?"rgba(24,128,56,0.2)":st==="signe"?"rgba(0,79,145,0.2)":"#e5e7eb"}`}}>
+                  {STATUT_LABELS[st]}
+                </span>; })()}
                 <span style={{fontSize:11,fontWeight:700,color:a.est_publie?"#15803d":"#9aa5b4",background:a.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{a.est_publie?"Publié":"Non publié"}</span>
               </div>
             </div>
@@ -404,7 +414,7 @@ function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>voi
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {a.date_signature&&<div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date de signature</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_signature)}</p></div>}
             {a.date_entree_vigueur&&<div style={{background:"rgba(24,128,56,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Entrée en vigueur</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p></div>}
-            {a.date_expiration&&<div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Expiration</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_expiration)}</p></div>}
+            <div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Expiration</LBL><p style={{fontSize:13,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Date d'expiration non définie"}</p></div>
           </div>
           {(a.parties_pays_ids?.length>0||a.parties_signataires)&&<div style={{marginBottom:16}}>
             <LBL>Parties signataires</LBL>
@@ -568,11 +578,16 @@ export default function AdminAccords() {
               onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
               <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?3:8}}>{a.titre.length>65?a.titre.slice(0,65)+"…":a.titre}</div>
               {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
+              {(()=>{ const st=computeStatut(a); return st&&<span style={{display:"inline-block",fontSize:10,fontWeight:700,padding:"1px 7px",borderRadius:999,marginBottom:6,
+                color:st==="en_vigueur"?"#15803d":st==="signe"?"#004f91":"#6b7280",
+                background:st==="en_vigueur"?"rgba(21,128,61,0.08)":st==="signe"?"rgba(0,79,145,0.08)":"#f3f4f6"}}>
+                {st==="en_vigueur"?"En vigueur":st==="signe"?"Signé":"Expiré"}
+              </span>; })()}
               <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                {a.date_expiration&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-                  <span style={{color:"#4a5568"}}>Expire le {fmtDate(a.date_expiration)}</span>
-                </div>}
+                <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#ca631f":"#C5BFBB",flexShrink:0}}/>
+                  <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4"}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
+                </div>
                 {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
                   <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
                   <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{getPaysNoms(a)}</span>

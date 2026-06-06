@@ -12,10 +12,20 @@ function fmtDate(d: string) {
   return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
 }
 
+function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
+  const today = new Date().toISOString().split("T")[0];
+  if (a.date_expiration && a.date_expiration < today) return "expire";
+  if (a.date_signature && a.date_entree_vigueur && a.date_signature <= today && today < a.date_entree_vigueur) return "signe";
+  const ref = a.date_entree_vigueur || a.date_signature;
+  if (ref && ref <= today) return "en_vigueur";
+  return null;
+}
+
 const STATUT_OPTS = [
-  { value:"",           label:"Tous",        bg:"#F2F0EF", text:"#4a5568" },
-  { value:"en_vigueur", label:"En vigueur",  bg:"#dcfce7", text:"#15803d" },
-  { value:"expire",     label:"Expirés",     bg:"#f3f4f6", text:"#6b7280" },
+  { value:"",           label:"Tous",        bg:"#F2F0EF",             text:"#4a5568" },
+  { value:"en_vigueur", label:"En vigueur",  bg:"#dcfce7",             text:"#15803d" },
+  { value:"signe",      label:"Signé",       bg:"rgba(0,79,145,0.08)", text:"#004f91" },
+  { value:"expire",     label:"Expirés",     bg:"#f3f4f6",             text:"#6b7280" },
 ];
 
 function SideFilter({ label, items, selected, onToggle, color, listMaxHeight }: {
@@ -143,7 +153,8 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
   const LBL = ({children}:{children:string}) => (
     <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
   );
-  const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré" };
+  const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
+  const statut = computeStatut(a);
   const secIds:number[] = a.secteur_ids  || [];
   const braIds:number[] = a.branche_ids  || [];
   const actIds:number[] = a.activite_ids || [];
@@ -159,9 +170,12 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{a.titre}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
                 {a.reference&&<span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{a.reference}</span>}
-                <span style={{fontSize:11,fontWeight:700,padding:"2px 9px",borderRadius:999,color:a.statut==="en_vigueur"?"#15803d":"#6b7280",background:a.statut==="en_vigueur"?"rgba(21,128,61,0.08)":"#f3f4f6",border:`1px solid ${a.statut==="en_vigueur"?"rgba(21,128,61,0.2)":"#e5e7eb"}`}}>
-                  {STATUT_LABELS[a.statut]||a.statut}
-                </span>
+                {statut&&<span style={{fontSize:11,fontWeight:700,padding:"2px 9px",borderRadius:999,
+                  color:statut==="en_vigueur"?"#15803d":statut==="signe"?"#004f91":"#6b7280",
+                  background:statut==="en_vigueur"?"rgba(21,128,61,0.08)":statut==="signe"?"rgba(0,79,145,0.08)":"#f3f4f6",
+                  border:`1px solid ${statut==="en_vigueur"?"rgba(21,128,61,0.2)":statut==="signe"?"rgba(0,79,145,0.2)":"#e5e7eb"}`}}>
+                  {STATUT_LABELS[statut]}
+                </span>}
               </div>
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
@@ -173,7 +187,7 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {a.date_signature&&<div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date de signature</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_signature)}</p></div>}
             {a.date_entree_vigueur&&<div style={{background:"rgba(24,128,56,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Entrée en vigueur</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p></div>}
-            {a.date_expiration&&<div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Expiration</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_expiration)}</p></div>}
+            <div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Expiration</LBL><p style={{fontSize:13,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Date d'expiration non définie"}</p></div>
           </div>
           {(a.parties_pays_ids?.length>0||a.parties_signataires)&&<div style={{marginBottom:16}}>
             <LBL>Parties signataires</LBL>
@@ -316,7 +330,7 @@ export default function AccordsPage() {
       const paysStr=getPaysNoms(a).toLowerCase();
       if (!a.titre?.toLowerCase().includes(q)&&!a.reference?.toLowerCase().includes(q)&&!paysStr.includes(q)) return false;
     }
-    if (statutFiltre&&a.statut!==statutFiltre) return false;
+    if (statutFiltre&&computeStatut(a)!==statutFiltre) return false;
     if (paysIdsFiltres.length>0) {
       if (!paysIdsFiltres.some(id=>(a.parties_pays_ids||[]).includes(id))) return false;
     }
@@ -337,8 +351,8 @@ export default function AccordsPage() {
 
   const stats = {
     total:      tous.length,
-    en_vigueur: tous.filter(a=>a.statut==="en_vigueur").length,
-    expire:     tous.filter(a=>a.statut==="expire").length,
+    en_vigueur: tous.filter(a=>computeStatut(a)==="en_vigueur").length,
+    expire:     tous.filter(a=>computeStatut(a)==="expire").length,
   };
   const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
@@ -440,25 +454,30 @@ export default function AccordsPage() {
               </div>
             ) : (
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 340px))",gap:12}}>
-                {accords.map(a=>(
+                {accords.map(a=>{
+                  const statut = computeStatut(a);
+                  return (
                   <div key={a.id} onClick={()=>setSelec(a)}
                     style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
 
                     {/* Badge statut — coin supérieur droit */}
-                    <div style={{position:"absolute" as const,top:12,right:12}}>
-                      <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,color:a.statut==="en_vigueur"?"#15803d":"#6b7280",background:a.statut==="en_vigueur"?"rgba(21,128,61,0.08)":"#f3f4f6"}}>
-                        {a.statut==="en_vigueur"?"En vigueur":"Expiré"}
+                    {statut&&<div style={{position:"absolute" as const,top:12,right:12}}>
+                      <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,
+                        color:statut==="en_vigueur"?"#15803d":statut==="signe"?"#004f91":"#6b7280",
+                        background:statut==="en_vigueur"?"rgba(21,128,61,0.08)":statut==="signe"?"rgba(0,79,145,0.08)":"#f3f4f6"}}>
+                        {statut==="en_vigueur"?"En vigueur":statut==="signe"?"Signé":"Expiré"}
                       </span>
-                    </div>
+                    </div>}
 
                     <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?2:8,paddingRight:90}}>{a.titre}</div>
                     {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
                     <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                      {a.date_expiration&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                        <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/><span style={{color:"#4a5568"}}>Expire le {fmtDate(a.date_expiration)}</span>
-                      </div>}
+                      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#188038":"#C5BFBB",flexShrink:0}}/>
+                        <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4"}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
+                      </div>
                       {getPaysNoms(a,2)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
                         <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a,2)}</span>
                       </div>}
@@ -469,7 +488,8 @@ export default function AccordsPage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
