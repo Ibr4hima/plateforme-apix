@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { CalendarDays, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -8,13 +9,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const ROLES_APIX: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
-const ROLE_COLORS: Record<string,{color:string;bg:string}> = {
-  "Organisateur":    { color:"#fff",    bg:"#188038" },
-  "Co-organisateur": { color:"#5a4100", bg:"#E4D96F" },
-  "Participant":     { color:"#fff",    bg:"#c68346" },
-  "Partenaire":      { color:"#1a3330", bg:"#A8C3BC" },
-  "Sponsor":         { color:"#4b0082", bg:"#d3d3ff" },
-  "Invité":          { color:"#fff",    bg:"#6b7280" },
+const ROLE_VARIANT: Record<string, BadgeVariant> = {
+  "Organisateur":    "green",
+  "Co-organisateur": "yellow",
+  "Participant":     "orange",
+  "Partenaire":      "teal",
+  "Sponsor":         "lavender",
+  "Invité":          "gray",
 };
 
 function fmtDate(d: string) {
@@ -178,7 +179,7 @@ function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
               <h2 style={{fontWeight:800,fontSize:"1.2rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{e.nom_event}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
                 {e.edition!=null&&<span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{ordinal(e.edition)}</span>}
-                {e.role_apix&&<span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",border:"1px solid rgba(0,79,145,0.2)",padding:"2px 9px",borderRadius:999}}>{ROLES_APIX[e.role_apix]||e.role_apix}</span>}
+                {e.role_apix&&<Badge variant={ROLE_VARIANT[e.role_apix]||"gray"} size="xs">{ROLES_APIX[e.role_apix]||e.role_apix}</Badge>}
               </div>
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
@@ -409,11 +410,9 @@ export default function EvenementsPage() {
                         style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
                         onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
                         onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
-                        {e.role_apix&&(()=>{const rc=ROLE_COLORS[e.role_apix]||{color:"#6b7280",bg:"#f3f4f6"}; return (
-                          <div style={{position:"absolute" as const,top:12,right:12}}>
-                            <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:999,color:rc.color,background:rc.bg}}>{ROLES_APIX[e.role_apix]||e.role_apix}</span>
-                          </div>
-                        );})()}
+                        {e.role_apix&&<div style={{position:"absolute" as const,top:12,right:12}}>
+                          <Badge variant={ROLE_VARIANT[e.role_apix]||"gray"} size="xs">{ROLES_APIX[e.role_apix]||e.role_apix}</Badge>
+                        </div>}
                         <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8,paddingRight:e.role_apix?90:0}}>{e.nom_event}</div>
                         {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinal(e.edition)}</div>}
                         <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
