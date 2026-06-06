@@ -9,11 +9,11 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const ROLES_APIX: Record<string,string> = { organisateur:"Organisateur", co_organisateur:"Co-organisateur", participant:"Participant", partenaire:"Partenaire", sponsor:"Sponsor" };
 const ROLE_COLORS: Record<string,{color:string;bg:string}> = {
-  organisateur:    { color:"#15803d", bg:"rgba(21,128,61,0.1)"   },
-  co_organisateur: { color:"#004f91", bg:"rgba(0,79,145,0.1)"    },
-  participant:     { color:"#ca631f", bg:"rgba(202,99,31,0.1)"   },
-  partenaire:      { color:"#7c3aed", bg:"rgba(124,58,237,0.1)"  },
-  sponsor:         { color:"#d97706", bg:"rgba(217,119,6,0.1)"   },
+  organisateur:    { color:"#fff",    bg:"#188038" },
+  co_organisateur: { color:"#5a4100", bg:"#E4D96F" },
+  participant:     { color:"#fff",    bg:"#c68346" },
+  partenaire:      { color:"#1a3330", bg:"#A8C3BC" },
+  sponsor:         { color:"#4b0082", bg:"#d3d3ff" },
 };
 
 function fmtDate(d: string) {
