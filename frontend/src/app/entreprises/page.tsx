@@ -49,7 +49,7 @@ function SideFilter({ label, items, selected, onToggle, color, searchable=false 
                   <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                     {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
-                  <span style={{fontSize:11,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item}</span>
+                  <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item}</span>
                 </button>
               );
             })}
@@ -80,7 +80,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
       </button>
       {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
         <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#E35336",marginBottom:4}}>Secteur</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#E35336",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {secteurs.map((s:any)=>{const sel=secteursSel.includes(s.nom); return (
               <button key={s.nom} onClick={()=>onSecteur(s.nom)}
@@ -89,12 +89,12 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#E35336":"#C5BFBB"}`,background:sel?"#E35336":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#E35336":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
+                <span style={{fontSize:12,color:sel?"#E35336":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
               </button>);})}
           </div>
         </div>
         {secteursSel.length>0&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(227,83,54,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4}}>Branche</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
               <button key={b.nom} onClick={()=>onBranche(b.nom)}
@@ -103,12 +103,12 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#366FE3":"#C5BFBB"}`,background:sel?"#366FE3":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
+                <span style={{fontSize:12,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
               </button>);})}
           </div>
         </div>}
         {branchesSel.length>0&&activites.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(24,128,56,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4}}>Activité</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {activites.map((a:any)=>{const sel=activitesSel.includes(a.nom); return (
               <button key={a.nom} onClick={()=>onActivite(a.nom)}
@@ -117,7 +117,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                <span style={{fontSize:12,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
               </button>);})}
           </div>
         </div>}
@@ -150,7 +150,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
       </button>
       {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
         <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4}}>Région</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Région</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:160,overflowY:"auto" as const}}>
             {regions.map((r:any)=>{const sel=regionsSel.includes(r.nom); return (
               <button key={r.nom} onClick={()=>onRegion(r.nom)}
@@ -158,12 +158,12 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(54,111,227,0.1)":"transparent";}}>
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#366FE3":"#C5BFBB"}`,background:sel?"#366FE3":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div><span style={{fontSize:11,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{r.nom}</span>
+                </div><span style={{fontSize:12,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{r.nom}</span>
               </button>);})}
           </div>
         </div>
         {regionsSel.length>0&&departements.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(54,111,227,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4}}>Département</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Département</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:140,overflowY:"auto" as const}}>
             {departements.map((d:any)=>{const sel=departementsSel.includes(d.nom); return (
               <button key={d.nom} onClick={()=>onDepartement(d.nom)}
@@ -171,12 +171,12 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(24,128,56,0.08)":"transparent";}}>
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div><span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{d.nom}</span>
+                </div><span style={{fontSize:12,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{d.nom}</span>
               </button>);})}
           </div>
         </div>}
         {departementsSel.length>0&&arrondissements.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(124,58,237,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#7c3aed",marginBottom:4}}>Arrondissement</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#7c3aed",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Arrondissement</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:120,overflowY:"auto" as const}}>
             {arrondissements.map((a:any)=>{const sel=arrondissementsSel.includes(a.nom); return (
               <button key={a.nom} onClick={()=>onArrond(a.nom)}
@@ -184,7 +184,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(124,58,237,0.08)":"transparent";}}>
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#7c3aed":"#C5BFBB"}`,background:sel?"#7c3aed":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div><span style={{fontSize:11,color:sel?"#7c3aed":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                </div><span style={{fontSize:12,color:sel?"#7c3aed":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
               </button>);})}
           </div>
         </div>}

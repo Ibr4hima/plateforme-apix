@@ -104,7 +104,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
       {open&&(
         <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
           <div>
-            <p style={{fontSize:10,fontWeight:700,color:"#E35336",marginBottom:4}}>Secteur</p>
+            <p style={{fontSize:10,fontWeight:700,color:"#E35336",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</p>
             <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
               {secteurs.map((s:any)=>{
                 const sel=secteursSel.includes(s.nom);
@@ -124,7 +124,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           </div>
           {secteursSel.length>0&&branches.length>0&&(
             <div style={{paddingLeft:12,borderLeft:"2px solid rgba(227,83,54,0.15)"}}>
-              <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4}}>Branche</p>
+              <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</p>
               <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
                 {branches.map((b:any)=>{
                   const sel=branchesSel.includes(b.nom);
@@ -145,7 +145,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           )}
           {branchesSel.length>0&&activites.length>0&&(
             <div style={{paddingLeft:24,borderLeft:"2px solid rgba(24,128,56,0.15)"}}>
-              <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4}}>Activité</p>
+              <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</p>
               <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
                 {activites.map((a:any)=>{
                   const sel=activitesSel.includes(a.nom);
@@ -157,7 +157,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                       <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                         {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                       </div>
-                      <span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                      <span style={{fontSize:12,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
                     </button>
                   );
                 })}
