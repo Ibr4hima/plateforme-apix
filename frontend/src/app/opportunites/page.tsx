@@ -1094,32 +1094,6 @@ export default function OpportunitesPage() {
                       onBranche={v=>{setAvgBranches(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setAvgActivites([]);}}
                       onActivite={v=>setAvgActivites(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v])}
                     />
-                    {refAvgTypes.filter((t:any)=>t.actif).length>0&&<>
-                      <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                      <div style={{marginBottom:18}}>
-                        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                          {avgTypes.length>0&&<span style={{width:6,height:6,borderRadius:"50%",background:"#7c3aed",display:"inline-block"}}/>}
-                          <span style={{fontSize:11,fontWeight:700,color:avgTypes.length>0?"#7c3aed":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Type d'avantage</span>
-                          {avgTypes.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#7c3aed",background:"rgba(124,58,237,0.12)",padding:"1px 6px",borderRadius:999}}>{avgTypes.length}</span>}
-                        </div>
-                        <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-                          {refAvgTypes.filter((t:any)=>t.actif).map((t:any)=>{
-                            const sel=avgTypes.includes(t.libelle);
-                            return (
-                              <button key={t.id} onClick={()=>setAvgTypes(p=>p.includes(t.libelle)?p.filter(x=>x!==t.libelle):[...p,t.libelle])}
-                                style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(124,58,237,0.1)":"transparent",textAlign:"left" as const}}
-                                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
-                                onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(124,58,237,0.1)":"transparent";}}>
-                                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#7c3aed":"#C5BFBB"}`,background:sel?"#7c3aed":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                                </div>
-                                <span style={{fontSize:12,color:sel?"#7c3aed":"#4a5568",fontWeight:sel?600:400}}>{t.libelle}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </>}
                   </>}
                 </>
               )}
@@ -1294,20 +1268,13 @@ export default function OpportunitesPage() {
                                   style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
                                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderColor=color;ev.currentTarget.style.borderLeftColor=color;}}
                                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=color;}}>
-                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{a.activite_nom}</div>
-                                  <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
-                                    {a.secteur_nom&&<span style={{fontSize:11,color:"#9aa5b4"}}>{a.secteur_nom}</span>}
-                                    {a.branche_nom&&<><span style={{fontSize:10,color:"#C5BFBB"}}>›</span><span style={{fontSize:11,color:"#9aa5b4"}}>{a.branche_nom}</span></>}
-                                  </div>
-                                  {(a.selections||[]).length>0&&(
-                                    <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:8}}>
-                                      {(a.selections||[]).slice(0,3).map((s:any)=>(
-                                        <span key={s.id} style={{fontSize:10,fontWeight:600,color,background:`${color}10`,border:`1px solid ${color}25`,padding:"2px 8px",borderRadius:999}}>{s.type_libelle}</span>
-                                      ))}
-                                      {(a.selections||[]).length>3&&<span style={{fontSize:10,color:"#9aa5b4"}}>+{(a.selections||[]).length-3}</span>}
+                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{a.activite_nom}</div>
+                                  {(a.secteur_nom||a.branche_nom)&&(
+                                    <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
+                                      {a.secteur_nom&&<span style={{fontSize:10,fontWeight:600,color,background:`${color}0e`,border:`1px solid ${color}28`,padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const}}>{a.secteur_nom}</span>}
+                                      {a.branche_nom&&<span style={{fontSize:10,fontWeight:600,color:"#4a5568",background:"rgba(74,85,104,0.07)",border:"1px solid rgba(74,85,104,0.18)",padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:10}}>{a.branche_nom}</span>}
                                     </div>
                                   )}
-                                  {a.fichiers?.length>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
                                   <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
                                     <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color,fontWeight:600}}>Voir les détails →</div>
                                   </div>
