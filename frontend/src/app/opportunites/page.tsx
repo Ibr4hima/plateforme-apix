@@ -2,11 +2,13 @@
 
 import Navbar from "@/components/layout/Navbar";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
+import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const devSymbole = (code?:string, sym?:string) => sym || (code ? ({XOF:"FCFA",USD:"$",EUR:"€"}[code]||code) : "");
+function fmtPhone(raw:string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const DEVISE_SYM: Record<string,string> = { XOF:"FCFA", USD:"$", EUR:"€", GBP:"£", CNY:"¥" };
@@ -322,29 +324,17 @@ function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
                 <p style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>{invest}</p>
               </div>
             )}
-            {p.porteur_projet && (
-              <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}>
-                <LBL>Porteur du projet</LBL>
-                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{p.porteur_projet}</p>
-              </div>
-            )}
-            {p.date_attribution && (
+            {p.date_debut && (
               <div style={{background:"rgba(5,150,105,0.05)",borderRadius:10,padding:"12px 14px"}}>
-                <LBL>Date d'attribution</LBL>
-                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.date_attribution+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
-              </div>
-            )}
-            {p.date_fin_prevue && (
-              <div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}>
-                <LBL>Date de fin prévue</LBL>
-                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.date_fin_prevue+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
+                <LBL>Date de début</LBL>
+                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.date_debut+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
               </div>
             )}
           </div>
 
           {(p.secteur_ids?.length > 0 || p.branche_ids?.length > 0) && (
             <div style={{marginBottom:16}}>
-              <LBL>Thématiques NAEMA</LBL>
+              <LBL>Thématique(s) du projet</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {(p.secteur_ids||[]).map((secId:number) => {
                   const sec = secteurs.find((s:any) => s.id === secId);
@@ -388,71 +378,69 @@ function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
             </div>
           )}
 
-          {p.moa_list?.length>0 && p.moa_list[0].nom && (
+          {p.porteurs?.length>0 && (
             <div style={{marginBottom:16}}>
-              <LBL>Maître d'ouvrage</LBL>
-              <div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
-                <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8}}>{p.moa_list[0].nom}</p>
-                {(p.moa_list[0].telephones||[]).filter(Boolean).length>0&&(
-                  <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:5}}>
-                    {(p.moa_list[0].telephones||[]).filter(Boolean).map((t:string,i:number)=>(
-                      <span key={i} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:12,color:"#004f91",background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.15)",padding:"2px 9px",borderRadius:999}}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 12a19.79 19.79 0 01-3.07-8.67A2 2 0 012.86 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.6a16 16 0 006.29 6.29l1.01-1.01a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {(p.moa_list[0].mails||[]).filter(Boolean).length>0&&(
-                  <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
-                    {(p.moa_list[0].mails||[]).filter(Boolean).map((m:string,i:number)=>(
-                      <span key={i} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:12,color:"#ca631f",background:"rgba(202,99,31,0.07)",border:"1px solid rgba(202,99,31,0.15)",padding:"2px 9px",borderRadius:999}}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-                )}
+              <LBL>Porteur(s) du projet</LBL>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                {p.porteurs.map((por:any,pi:number)=>{
+                  const tels=(por.telephones||[]).filter(Boolean);
+                  const mails=(por.mails||[]).filter(Boolean);
+                  return (
+                    <div key={pi} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px"}}>
+                      {por.nom && <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:tels.length||mails.length?6:0}}>{por.nom}</p>}
+                      {tels.length>0 && (
+                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:mails.length?5:0}}>
+                          {tels.map((t:string,ti:number)=>(
+                            <span key={ti} style={{fontSize:11,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{fmtPhone(t)}</span>
+                          ))}
+                        </div>
+                      )}
+                      {mails.length>0 && (
+                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
+                          {mails.map((m:string,mi:number)=>(
+                            <span key={mi} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{m.trim()}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {p.coordinateurs?.length>0 && (
+          {p.points_focaux?.length>0 && (
             <div style={{marginBottom:16}}>
-              <LBL>Coordinateurs</LBL>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-                {p.coordinateurs.map((c:any)=>(
-                  <div key={c.id} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px",display:"flex",gap:10,alignItems:"center"}}>
-                    <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(54,111,227,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                      <User size={13} style={{color:"#366FE3"}}/>
-                    </div>
-                    <div>
-                      <p style={{fontWeight:600,fontSize:13,color:"#1a1a2e"}}>{[c.civilite,c.prenom,c.nom].filter(Boolean).join(" ")}</p>
-                      <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginTop:4}}>
-                        {(c.telephones||[]).filter(Boolean).length>0&&(
-                          <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
-                            {(c.telephones||[]).filter(Boolean).map((t:string,i:number)=>(
-                              <span key={i} style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:11,color:"#004f91",background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.15)",padding:"2px 8px",borderRadius:999}}>
-                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 12a19.79 19.79 0 01-3.07-8.67A2 2 0 012.86 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.6a16 16 0 006.29 6.29l1.01-1.01a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                                {t}
-                              </span>
+              <LBL>Points focaux</LBL>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                {p.points_focaux.map((pf:any,fi:number)=>{
+                  const tels=(pf.telephones||[]).filter(Boolean);
+                  const mails=(pf.mails||[]).filter(Boolean);
+                  return (
+                    <div key={fi} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                      <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(54,111,227,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>
+                        <User size={13} style={{color:"#366FE3"}}/>
+                      </div>
+                      <div style={{flex:1}}>
+                        <p style={{fontWeight:600,fontSize:13,color:"#1a1a2e"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
+                        {tels.length>0 && (
+                          <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:6}}>
+                            {tels.map((t:string,ti:number)=>(
+                              <span key={ti} style={{fontSize:11,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{fmtPhone(t)}</span>
                             ))}
                           </div>
                         )}
-                        {(c.mails||[]).filter(Boolean).length>0&&(
-                          <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
-                            {(c.mails||[]).filter(Boolean).map((m:string,i:number)=>(
-                              <span key={i} style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:11,color:"#ca631f",background:"rgba(202,99,31,0.07)",border:"1px solid rgba(202,99,31,0.15)",padding:"2px 8px",borderRadius:999}}>
-                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                                {m}
-                              </span>
+                        {mails.length>0 && (
+                          <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:5}}>
+                            {mails.map((m:string,mi:number)=>(
+                              <span key={mi} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{m.trim()}</span>
                             ))}
                           </div>
                         )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
