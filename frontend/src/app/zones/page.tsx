@@ -200,7 +200,7 @@ function SunburstPoles({ zones }: { zones:any[] }) {
       if(d.depth===0) return "#F2F2F2";
       const pi=d.data.poleIndex??0;
       const c=POLE_COLORS[pi%POLE_COLORS.length];
-      const a=d.depth===1?0.40:0.12+d.depth*0.15;
+      const a=d.depth===1?0.45:0.12+d.depth*0.15;
       return c+Math.round(Math.min(a,0.85)*255).toString(16).padStart(2,"0");
     };
     const rectH=(d:any)=>Math.max(0,d.x1-d.x0-Math.min(1,(d.x1-d.x0)/2));
