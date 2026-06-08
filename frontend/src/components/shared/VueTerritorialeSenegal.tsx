@@ -169,7 +169,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
           {poles.map(p => (
             <div key={p.id} onClick={() => setActivePole((prev:any) => prev?.id === p.id ? null : p)}
               style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"5px 8px", borderRadius:8, background: activePole?.id===p.id ? getPoleColor(p.id)+"33" : "transparent", transition:"background 0.15s" }}>
-              <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
+              <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgba(0,0,0,0.08)", opacity:0.95 }}/>
               <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{p.pole_territoire}</span>
             </div>
           ))}
