@@ -3,13 +3,29 @@
 import Navbar from "@/components/layout/Navbar";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Fuse from "@/lib/fuse";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const devSymbole = (code?:string, sym?:string) => sym || (code ? ({XOF:"FCFA",USD:"$",EUR:"€"}[code]||code) : "");
 function fmtPhone(raw:string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
+
+function ScrollTitle({ text }: { text: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [tx, setTx] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const overflow = el.scrollWidth - el.clientWidth;
+    setTx(overflow > 4 ? overflow : 0);
+  }, [text]);
+  return (
+    <div ref={ref} style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const,...(tx>0?{animation:"aptitle-scroll 3.5s ease-in-out infinite","--aptitle-tx":`-${tx}px`} as React.CSSProperties:{})}}>
+      {text}
+    </div>
+  );
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const DEVISE_SYM: Record<string,string> = { XOF:"FCFA", USD:"$", EUR:"€", GBP:"£", CNY:"¥" };
@@ -1262,13 +1278,14 @@ export default function OpportunitesPage() {
                                 {isOpen?<ChevronDown size={12} style={{color}}/>:<ChevronUp size={12} style={{color}}/>}
                               </button>
                             </div>
+                            <style>{`@keyframes aptitle-scroll{0%,15%{transform:translateX(0)}70%,85%{transform:translateX(var(--aptitle-tx,0))}100%{transform:translateX(0)}}`}</style>
                             {showGrid&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                               {sec.items.map((a:any)=>(
                                 <div key={a.id} onClick={()=>setAvgSel(a)}
                                   style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
                                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderColor=color;ev.currentTarget.style.borderLeftColor=color;}}
                                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=color;}}>
-                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,lineHeight:1.35}}>{a.activite_nom}</div>
+                                  <ScrollTitle text={a.activite_nom||""} />
                                   {(a.secteur_nom||a.branche_nom)&&(
                                     <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
                                       {a.secteur_nom&&<span style={{fontSize:10,fontWeight:600,color,background:`${color}0e`,border:`1px solid ${color}28`,padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const}}>{a.secteur_nom}</span>}
