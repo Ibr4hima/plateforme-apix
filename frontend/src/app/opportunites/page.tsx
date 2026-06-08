@@ -93,7 +93,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#E35336":"#C5BFBB"}`,background:sel?"#E35336":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#E35336":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
+                <span style={{fontSize:12,color:sel?"#E35336":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
               </button>);})}
           </div>
         </div>
@@ -107,7 +107,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#366FE3":"#C5BFBB"}`,background:sel?"#366FE3":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
+                <span style={{fontSize:12,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
               </button>);})}
           </div>
         </div>}
@@ -121,7 +121,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                <span style={{fontSize:12,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
               </button>);})}
           </div>
         </div>}
@@ -164,7 +164,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#366FE3":"#C5BFBB"}`,background:sel?"#366FE3":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{r.nom}</span>
+                <span style={{fontSize:12,color:sel?"#366FE3":"#4a5568",fontWeight:sel?600:400}}>{r.nom}</span>
               </button>);})}
           </div>
         </div>
@@ -178,7 +178,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{d.nom}</span>
+                <span style={{fontSize:12,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{d.nom}</span>
               </button>);})}
           </div>
         </div>}
@@ -192,7 +192,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
                 <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#7c3aed":"#C5BFBB"}`,background:sel?"#7c3aed":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{fontSize:11,color:sel?"#7c3aed":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                <span style={{fontSize:12,color:sel?"#7c3aed":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
               </button>);})}
           </div>
         </div>}
@@ -255,7 +255,7 @@ function AtotusFiltreFilter({ pots, refAvantages, selected, onToggle }: {
                         <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                           {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         </div>
-                        <span style={{fontSize:11,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{atout}</span>
+                        <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{atout}</span>
                       </button>
                     );
                   })}
