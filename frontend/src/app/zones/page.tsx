@@ -21,6 +21,7 @@ const POLE_COLORS = ["#efd0bc","#b2cade","#b9d9c3","#f5e6c8","#d4c5e8","#fadadd"
 function SunburstZones({ zones }: { zones:any[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const [ficheEnt, setFicheEnt] = useState<any>(null);
 
   useEffect(() => {
     if (!zones.length || !svgRef.current || !wrapRef.current) return;
@@ -130,6 +131,11 @@ function SunburstZones({ zones }: { zones:any[] }) {
 
     let focus=root;
     cell.select("rect").on("click",function(_:any,p:any){
+      if(p.depth===3&&p.data.data?.id){
+        fetch(`${API_BASE}/entreprises/${p.data.data.id}`)
+          .then(r=>r.json()).then(d=>setFicheEnt(d)).catch(()=>{});
+        return;
+      }
       focus=focus===p?(p=p.parent):p;
       if(!p) return;
       root.each((d:any)=>{ d.target={
@@ -147,6 +153,7 @@ function SunburstZones({ zones }: { zones:any[] }) {
   return (
     <div ref={wrapRef}>
       <svg ref={svgRef} style={{ width:"100%",height:500,display:"block" }}/>
+      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>
     </div>
   );
 }
