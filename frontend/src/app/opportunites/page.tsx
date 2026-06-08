@@ -84,7 +84,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
       </button>
       {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
         <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#E35336",marginBottom:4}}>Secteur</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#E35336",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {secteurs.map((s:any)=>{const sel=secteursSel.includes(s.nom); return (
               <button key={s.nom} onClick={()=>onSecteur(s.nom)}
@@ -98,7 +98,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           </div>
         </div>
         {secteursSel.length>0&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(227,83,54,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4}}>Branche</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
               <button key={b.nom} onClick={()=>onBranche(b.nom)}
@@ -112,7 +112,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           </div>
         </div>}
         {branchesSel.length>0&&activites.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(24,128,56,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4}}>Activité</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {activites.map((a:any)=>{const sel=activitesSel.includes(a.nom); return (
               <button key={a.nom} onClick={()=>onActivite(a.nom)}
@@ -155,7 +155,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
       </button>
       {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
         <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4}}>Région</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#366FE3",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Région</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:160,overflowY:"auto" as const}}>
             {regions.map((r:any)=>{const sel=regionsSel.includes(r.nom); return (
               <button key={r.nom} onClick={()=>onRegion(r.nom)}
@@ -169,7 +169,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
           </div>
         </div>
         {regionsSel.length>0&&departements.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(54,111,227,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4}}>Département</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Département</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:140,overflowY:"auto" as const}}>
             {departements.map((d:any)=>{const sel=departementsSel.includes(d.nom); return (
               <button key={d.nom} onClick={()=>onDepartement(d.nom)}
@@ -183,7 +183,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
           </div>
         </div>}
         {departementsSel.length>0&&arrondissements.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(124,58,237,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#7c3aed",marginBottom:4}}>Arrondissement</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#7c3aed",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Arrondissement</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:120,overflowY:"auto" as const}}>
             {arrondissements.map((a:any)=>{const sel=arrondissementsSel.includes(a.nom); return (
               <button key={a.nom} onClick={()=>onArrondissement(a.nom)}
