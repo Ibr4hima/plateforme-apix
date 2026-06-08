@@ -82,7 +82,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
 
       const d3: any = (window as any).d3;
       const topojson: any = (window as any).topojson;
-      const W = Math.min(container.clientWidth || 700, 700);
+      const W = Math.min(container.clientWidth || 560, 560);
       const H = Math.round(W * 1.08);
 
       container.innerHTML = "";
@@ -185,101 +185,89 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
   const activeColor = activePole ? getPoleColor(activePole.id) : "#E8E5E3";
 
   return (
-    <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+    <div style={{ paddingTop:36 }}>
 
-      {/* Carte — propriété exclusive de D3 */}
-      <div style={{ flex:1, borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
-
-        {/* Conteneur D3 — aucun enfant React */}
+      {/* Carte */}
+      <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
         <div ref={containerRef} style={{ width:"100%" }}/>
-
-        {/* Tooltip React en overlay */}
         {tooltip && (
-          <div style={{
-            position:"absolute",
-            left: Math.min(tooltip.x + 14, 300),
-            top: Math.max(tooltip.y - 20, 6),
-            background:"var(--color-background-primary)",
-            border:"0.5px solid var(--color-border-secondary)",
-            borderRadius:8, padding:"7px 13px",
-            fontSize:13, fontWeight:600,
-            color:"var(--color-text-primary)",
-            pointerEvents:"none", zIndex:20,
-            boxShadow:"0 4px 16px rgba(0,0,0,0.10)",
-            whiteSpace:"nowrap",
-          }}>
+          <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#FAFAF9", border:"1px solid #E8E5E3", borderRadius:8, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"0 4px 16px rgba(0,0,0,0.10)", whiteSpace:"nowrap" as const }}>
             {tooltip.nom}
           </div>
         )}
       </div>
 
-      {/* Panel latéral pôle actif */}
+      {/* Modal pôle */}
       {activePole && (
-        <div style={{ width:268, flexShrink:0, background:"var(--color-background-primary)", border:"0.5px solid var(--color-border-tertiary)", borderRadius:14, padding:"18px 16px", display:"flex", flexDirection:"column" as const, gap:14, maxHeight:520, overflowY:"auto" as const }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-            <div>
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-                <div style={{ width:12, height:12, borderRadius:3, background:activeColor, flexShrink:0 }}/>
-                <div style={{ fontSize:10, fontWeight:700, color:"var(--color-text-secondary)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pôle territorial</div>
-              </div>
-              <div style={{ fontSize:15, fontWeight:600, color:"var(--color-text-primary)", lineHeight:1.3 }}>{activePole.pole_territoire}</div>
-              <div style={{ fontSize:11, color:"var(--color-text-secondary)", marginTop:3 }}>{activePole.localisation}</div>
-            </div>
-            <button onClick={() => setActivePole(null)} style={{ background:"var(--color-background-secondary)", border:"0.5px solid var(--color-border-tertiary)", borderRadius:99, padding:"3px 9px", fontSize:11, cursor:"pointer", color:"var(--color-text-secondary)", flexShrink:0 }}>✕</button>
-          </div>
-
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-            {[
-              { l:"Entreprises", v:poleEnts.length, sub:`${nbInst} installée${nbInst!==1?"s":""}` },
-              { l:"Zones", v:poleZones.length, sub:`${poleZones.filter((z:any)=>z.type_zone==="ZES").length} ZES · ${poleZones.filter((z:any)=>z.type_zone==="ZAI").length} ZAI` },
-              { l:"Éligibles", v:nbElig, sub:"à démarcher", col:nbElig>0?"#b45309":undefined },
-              { l:"Régions", v:(activePole.region_ids||[]).length, sub:"dans ce pôle" },
-            ].map((k:any) => (
-              <div key={k.l} style={{ background:"var(--color-background-secondary)", borderRadius:8, padding:"10px 12px", border:"0.5px solid var(--color-border-tertiary)" }}>
-                <div style={{ fontSize:10, color:"var(--color-text-secondary)", textTransform:"uppercase" as const, letterSpacing:"0.08em", marginBottom:4 }}>{k.l}</div>
-                <div style={{ fontSize:20, fontWeight:500, color:k.col||"var(--color-text-primary)", lineHeight:1 }}>{k.v}</div>
-                <div style={{ fontSize:11, color:"var(--color-text-secondary)", marginTop:2 }}>{k.sub}</div>
-              </div>
-            ))}
-          </div>
-
-          {poleZones.length > 0 && (
-            <div>
-              <div style={{ fontSize:11, fontWeight:500, color:"var(--color-text-secondary)", textTransform:"uppercase" as const, letterSpacing:"0.1em", paddingBottom:6, borderBottom:"0.5px solid var(--color-border-tertiary)", marginBottom:8 }}>Zones</div>
-              {poleZones.map((z: any) => {
-                const tc = z.type_zone==="ZES"?"#c0392b":z.type_zone==="ZAI"?"#2563eb":"#16a34a";
-                return (
-                  <div key={z.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:"0.5px solid var(--color-border-tertiary)", fontSize:11 }}>
-                    <span style={{ fontSize:9, fontWeight:700, color:tc, background:tc+"18", padding:"2px 5px", borderRadius:4, minWidth:28, textAlign:"center" as const }}>{z.type_zone}</span>
-                    <span style={{ color:"var(--color-text-primary)", flex:1 }}>{z.nom_zone}</span>
-                    <span style={{ color:"var(--color-text-secondary)", flexShrink:0 }}>{(z.entreprises||[]).length}</span>
+        <div onClick={e=>{ if(e.target===e.currentTarget) setActivePole(null); }}
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+          <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>
+            <div style={{ height:5, background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)" }}/>
+            <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
+                <div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                    <div style={{ width:12, height:12, borderRadius:3, background:activeColor, flexShrink:0 }}/>
+                    <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Pôle territorial</span>
                   </div>
-                );
-              })}
-            </div>
-          )}
-
-          {poleEnts.length > 0 && (
-            <div>
-              <div style={{ fontSize:11, fontWeight:500, color:"var(--color-text-secondary)", textTransform:"uppercase" as const, letterSpacing:"0.1em", paddingBottom:6, borderBottom:"0.5px solid var(--color-border-tertiary)", marginBottom:8 }}>Entreprises</div>
-              {poleEnts.slice(0,7).map((ze: any, i: number) => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:i<Math.min(poleEnts.length,7)-1?"0.5px solid var(--color-border-tertiary)":"none", fontSize:12 }}>
-                  <div style={{ width:6, height:6, borderRadius:"50%", background:ze.statut==="installee"?"#059669":"#b45309", flexShrink:0 }}/>
-                  <span style={{ flex:1, color:"var(--color-text-primary)" }}>{ze.entreprise?.nom}</span>
-                  <span style={{ fontSize:10, fontWeight:500, color:ze.statut==="installee"?"#059669":"#b45309", background:ze.statut==="installee"?"#dcfce7":"#fef9c3", padding:"1px 6px", borderRadius:99, flexShrink:0 }}>
-                    {ze.statut==="installee"?"Installée":"Éligible"}
-                  </span>
+                  <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3, marginBottom:4 }}>{activePole.pole_territoire}</h2>
+                  <div style={{ fontSize:12, color:"#9aa5b4" }}>{activePole.localisation}</div>
                 </div>
-              ))}
-              {poleEnts.length > 7 && <div style={{ fontSize:11, color:"var(--color-text-secondary)", textAlign:"center" as const, paddingTop:6 }}>+{poleEnts.length-7} autres</div>}
-            </div>
-          )}
+                <button onClick={()=>setActivePole(null)} style={{ background:"rgba(0,0,0,0.06)", border:"none", borderRadius:99, width:28, height:28, cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>✕</button>
+              </div>
 
-          {poleZones.length===0 && poleEnts.length===0 && (
-            <div style={{ textAlign:"center" as const, padding:"20px 0", fontSize:12, color:"var(--color-text-secondary)" }}>
-              Aucune zone ni entreprise pour ce pôle
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:20 }}>
+                {[
+                  { l:"Entreprises", v:poleEnts.length, sub:`${nbInst} installée${nbInst!==1?"s":""}` },
+                  { l:"Zones", v:poleZones.length, sub:`${poleZones.filter((z:any)=>z.type_zone==="ZES").length} ZES · ${poleZones.filter((z:any)=>z.type_zone==="ZAI").length} ZAI` },
+                  { l:"Éligibles", v:nbElig, sub:"à démarcher", col:nbElig>0?"#b45309":undefined },
+                  { l:"Régions", v:(activePole.region_ids||[]).length, sub:"dans ce pôle" },
+                ].map((k:any)=>(
+                  <div key={k.l} style={{ background:"#F2F0EF", borderRadius:10, padding:"12px 14px", border:"1px solid #E8E5E3" }}>
+                    <div style={{ fontSize:10, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.08em", marginBottom:4 }}>{k.l}</div>
+                    <div style={{ fontSize:22, fontWeight:700, color:k.col||"#1a1a2e", lineHeight:1 }}>{k.v}</div>
+                    <div style={{ fontSize:11, color:"#9aa5b4", marginTop:2 }}>{k.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {poleZones.length>0 && (
+                <div style={{ marginBottom:16 }}>
+                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Zones</p>
+                  {poleZones.map((z:any)=>{
+                    const tc=z.type_zone==="ZES"?"#E35336":z.type_zone==="ZAI"?"#366FE3":"#188038";
+                    return (
+                      <div key={z.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:"1px solid #E8E5E3", fontSize:12 }}>
+                        <span style={{ fontSize:9, fontWeight:700, color:tc, background:tc+"18", padding:"2px 6px", borderRadius:4 }}>{z.type_zone}</span>
+                        <span style={{ color:"#1a1a2e", flex:1 }}>{z.nom_zone}</span>
+                        <span style={{ color:"#9aa5b4", flexShrink:0 }}>{(z.entreprises||[]).length}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {poleEnts.length>0 && (
+                <div>
+                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Entreprises</p>
+                  {poleEnts.slice(0,8).map((ze:any,i:number)=>(
+                    <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:i<Math.min(poleEnts.length,8)-1?"1px solid #E8E5E3":"none", fontSize:12 }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:ze.statut==="installee"?"#059669":"#b45309", flexShrink:0 }}/>
+                      <span style={{ flex:1, color:"#1a1a2e" }}>{ze.entreprise?.nom}</span>
+                      <span style={{ fontSize:10, fontWeight:600, color:ze.statut==="installee"?"#059669":"#b45309", background:ze.statut==="installee"?"#dcfce7":"#fef9c3", padding:"1px 7px", borderRadius:99 }}>
+                        {ze.statut==="installee"?"Installée":"Éligible"}
+                      </span>
+                    </div>
+                  ))}
+                  {poleEnts.length>8 && <div style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const, paddingTop:8 }}>+{poleEnts.length-8} autres</div>}
+                </div>
+              )}
+
+              {poleZones.length===0&&poleEnts.length===0&&(
+                <div style={{ textAlign:"center" as const, padding:"24px 0", fontSize:13, color:"#9aa5b4" }}>Aucune zone ni entreprise pour ce pôle</div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>
