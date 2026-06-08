@@ -81,7 +81,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
 
       const topojson: any = (window as any).topojson;
       const W = Math.min(container.clientWidth || 780, 780);
-      const H = Math.round(W * 1.08);
+      const H = Math.round(W * 0.78);
 
       container.innerHTML = "";
       const svg = d3.select(container)
