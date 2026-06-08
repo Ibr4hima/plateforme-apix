@@ -200,7 +200,7 @@ function SunburstPoles({ zones }: { zones:any[] }) {
       if(d.depth===0) return "#F2F2F2";
       const pi=d.data.poleIndex??0;
       const c=POLE_COLORS[pi%POLE_COLORS.length];
-      const a=d.depth===1?0.45:0.12+d.depth*0.15;
+      const a=d.depth===1?0.45:d.depth===2?0.40:d.depth===3?0.37:0.12+d.depth*0.15;
       return c+Math.round(Math.min(a,0.85)*255).toString(16).padStart(2,"0");
     };
     const rectH=(d:any)=>Math.max(0,d.x1-d.x0-Math.min(1,(d.x1-d.x0)/2));
@@ -251,24 +251,25 @@ function SunburstPoles({ zones }: { zones:any[] }) {
         });
       });
 
-    // Badge entreprises pour les zones (depth=2)
-    cell.filter((d:any)=>d.depth===2&&labelOk(d)&&(d.x1-d.x0)>32)
+    // Badge numérique à l'extrême droite pour les zones (depth=2)
+    cell.filter((d:any)=>d.depth===2&&labelOk(d)&&(d.x1-d.x0)>24)
       .each(function(d:any) {
         const ents=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
-        if (!ents) return;
-        const txt=`${ents} entreprise${ents>1?"s":""}`;
+        if(!ents) return;
         const col="#059669";
         const w=Math.max(0,d.y1-d.y0-12);
         d3.select(this as SVGGElement).append("foreignObject")
-          .attr("x",6).attr("y",18).attr("width",w).attr("height",26)
+          .attr("x",6).attr("y",2).attr("width",w).attr("height",18)
           .attr("pointer-events","none")
           .append("xhtml:div")
-          .style("display","inline-flex").style("align-items","center").style("height","18px")
-          .style("padding","0 7px").style("background",col+"20").style("border",`1px solid ${col}50`)
-          .style("border-radius","8px").style("font-size","9px").style("font-weight","700")
+          .style("display","flex").style("justify-content","flex-end").style("align-items","center").style("height","18px")
+          .append("xhtml:span")
+          .style("display","inline-flex").style("align-items","center")
+          .style("height","15px").style("padding","0 6px")
+          .style("background",col+"22").style("border",`1px solid ${col}55`)
+          .style("border-radius","6px").style("font-size","9px").style("font-weight","700")
           .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
-          .style("white-space","nowrap")
-          .text(txt);
+          .text(`${ents}`);
       });
 
     let focus=root;
