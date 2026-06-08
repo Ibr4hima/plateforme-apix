@@ -57,6 +57,11 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
     }
   }, []);
 
+  // Réinitialiser quand la valeur devient vide (ex: réouverture d'un formulaire vierge)
+  useEffect(() => {
+    if (!value) { setIso2(""); setDisplay(""); setTouched(false); setNumType(""); }
+  }, [value]);
+
   // Fermer dropdown au clic extérieur
   useEffect(() => {
     const handler = (e: MouseEvent) => {

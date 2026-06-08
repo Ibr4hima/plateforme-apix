@@ -80,7 +80,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         : [{...EMPTY_FOCAL}]);
     } else {
       setForm({...EMPTY_FORM});
-      setFocaux([{...EMPTY_FOCAL}]);
+      setFocaux([{...EMPTY_FOCAL, est_principal: true}]);
     }
   },[open, editItem?.id]);
 
@@ -259,7 +259,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             </div>
 
             {/* NAEMA */}
-            <div><p style={SS}>Classification NAEMA</p>
+            <div><p style={SS}>Activité(s) de l&apos;entreprise</p>
               <NaemaSelect secteurIds={form.secteur_ids||[]} brancheIds={form.branche_ids||[]} activiteIds={form.activite_ids||[]}
                 onChangeSecteurs={ids=>update("secteur_ids",ids)} onChangeBranches={ids=>update("branche_ids",ids)} onChangeActivites={ids=>update("activite_ids",ids)}/>
             </div>
@@ -277,7 +277,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                 {focaux.map((pf,i)=>(
                   <div key={i} style={{background:"#F8F7F6",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                      <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"#ca631f"}}/><span style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>Contact {i+1}</span></div>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"#ca631f"}}/><span style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>Contact — {i+1}</span></div>
                       <div style={{display:"flex",alignItems:"center",gap:10}}>
                         <label style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"#4a5568",cursor:"pointer"}}>
                           <input type="checkbox" checked={pf.est_principal} onChange={e=>updFocal(i,"est_principal",e.target.checked)}/> Principal
@@ -412,7 +412,7 @@ function EntrepriseVue({ ent:e, onClose, onEdit }: { ent:any; onClose:()=>void; 
           </div>
 
           {hasNaema&&<div style={{marginBottom:16}}>
-            <LBL>Classification NAEMA</LBL>
+            <LBL>Activité(s) de l&apos;entreprise</LBL>
             <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
               {secIds.map((secId:number)=>{
                 const sec=secteurs.find(s=>s.id===secId); if (!sec) return null;
