@@ -82,7 +82,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
 
       const d3: any = (window as any).d3;
       const topojson: any = (window as any).topojson;
-      const W = Math.min(container.clientWidth || 560, 560);
+      const W = Math.min(container.clientWidth || 700, 700);
       const H = Math.round(W * 1.08);
 
       container.innerHTML = "";
@@ -91,7 +91,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${W} ${H}`)
         .style("display", "block")
-        .style("max-width", `${W}px`)
+        .style("max-width", "700px")
         .style("margin", "0 auto");
 
       const geojson = topojson.feature(topo, topo.objects.sen);
