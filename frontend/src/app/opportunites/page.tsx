@@ -1172,8 +1172,15 @@ export default function OpportunitesPage() {
                                     if (!rNom&&!dNom) return null;
                                     return (
                                       <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
-                                        {rNom&&<span style={{fontSize:11,fontWeight:600,color:"#225BCC",background:"rgba(34,91,204,0.08)",border:"1px solid rgba(34,91,204,0.2)",padding:"2px 9px",borderRadius:999,alignSelf:"flex-start" as const}}>Région de {rNom}</span>}
-                                        {dNom&&<span style={{fontSize:11,fontWeight:600,color:"#575799",background:"rgba(87,87,153,0.08)",border:"1px solid rgba(87,87,153,0.2)",padding:"2px 9px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:12}}>Dép. de {dNom}</span>}
+                                        {rNom&&<span style={{fontSize:10,fontWeight:600,
+                                          color: groupe.key==="departement" ? "#575799" : "#0D9488",
+                                          background: groupe.key==="departement" ? "rgba(87,87,153,0.07)" : "rgba(13,148,136,0.07)",
+                                          border: groupe.key==="departement" ? "1px solid rgba(87,87,153,0.22)" : "1px solid rgba(13,148,136,0.2)",
+                                          padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const}}>Région de {rNom}</span>}
+                                        {dNom&&<span style={{fontSize:10,fontWeight:600,
+                                          color:"#0a6b64",background:"rgba(13,148,136,0.13)",
+                                          border:"1px solid rgba(13,148,136,0.32)",
+                                          padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:10}}>Dép. de {dNom}</span>}
                                       </div>
                                     );
                                   })()}
