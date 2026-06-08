@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
+import Badge from "@/components/shared/Badge";
 import { Building2, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -321,31 +322,35 @@ export default function EntreprisesPage() {
                 {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#E35336",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
               </div>
             ):(
-              <>
-                <p style={{fontSize:13,color:"#9aa5b4",marginBottom:16}}>{entreprises.length} entreprise{entreprises.length>1?"s":""}{hasFilter?" trouvée"+(entreprises.length>1?"s":""):""}</p>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
-                  {entreprises.map(e=>(
-                    <div key={e.id} onClick={()=>setSelec(e)}
-                      style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-                      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)";ev.currentTarget.style.borderTopColor="#E35336";ev.currentTarget.style.borderRightColor="#E35336";ev.currentTarget.style.borderBottomColor="#E35336";}}
-                      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
-                      <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.forme_juridique?2:8,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
-                      {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{e.forme_juridique}</div>}
-                      <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:10}}>
-                        {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                          <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/>
-                          <span style={{color:"#4a5568"}}>Créée le {fmtDate(e.date_creation)}</span>
-                        </div>}
-                        {(e.departement_nom||e.region_nom)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                          <div style={{width:5,height:5,borderRadius:"50%",background:"#C5BFBB",flexShrink:0}}/>
-                          <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[e.arrondissement_nom,e.departement_nom,e.region_nom].filter(Boolean).join(", ")}</span>
-                        </div>}
-                      </div>
-                      <div style={{fontSize:11,color:"#ca631f",fontWeight:600,borderTop:"1px solid #F2F0EF",paddingTop:8}}>Voir la fiche →</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:12}}>
+                {entreprises.map(e=>(
+                  <div key={e.id} onClick={()=>setSelec(e)}
+                    style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+                    {e.region_nom&&<div style={{position:"absolute" as const,top:12,right:12}}>
+                      <Badge variant="navy" size="xs">{e.region_nom}</Badge>
+                    </div>}
+                    <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.forme_juridique?2:8,paddingRight:e.region_nom?90:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
+                    {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{e.forme_juridique}</div>}
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
+                      {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                        <span style={{color:"#4a5568"}}>Créée le {fmtDate(e.date_creation)}</span>
+                      </div>}
+                      {(e.arrondissement_nom||e.departement_nom)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
+                        <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[e.arrondissement_nom,e.departement_nom].filter(Boolean).join(", ")}</span>
+                      </div>}
                     </div>
-                  ))}
-                </div>
-              </>
+                    <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(202,99,31,0.08)",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}>
+                        Voir la fiche →
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
