@@ -1160,17 +1160,19 @@ export default function OpportunitesPage() {
                                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${groupe.color}18`;ev.currentTarget.style.borderColor=groupe.color;ev.currentTarget.style.borderLeftColor=groupe.color;}}
                                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=groupe.color;}}>
                                   <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:6}}>{potTitle(p)}</div>
-                                  {groupe.key==="departement"&&p.region_nom&&(
-                                    <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:8}}>
-                                      <span style={{fontSize:11,fontWeight:600,color:"#225BCC",background:"rgba(34,91,204,0.08)",border:"1px solid rgba(34,91,204,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>
-                                    </div>
-                                  )}
-                                  {groupe.key==="arrondissement"&&(p.region_nom||p.departement_nom)&&(
-                                    <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
-                                      {p.region_nom&&<span style={{fontSize:11,fontWeight:600,color:"#225BCC",background:"rgba(34,91,204,0.08)",border:"1px solid rgba(34,91,204,0.2)",padding:"2px 9px",borderRadius:999,alignSelf:"flex-start" as const}}>Région de {p.region_nom}</span>}
-                                      {p.departement_nom&&<span style={{fontSize:11,fontWeight:600,color:"#575799",background:"rgba(87,87,153,0.08)",border:"1px solid rgba(87,87,153,0.2)",padding:"2px 9px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:12}}>Dép. de {p.departement_nom}</span>}
-                                    </div>
-                                  )}
+                                  {(()=>{
+                                    const rNom = (groupe.key==="departement"||groupe.key==="arrondissement")
+                                      ? regions.find((r:any)=>r.id===p.region_id)?.nom : null;
+                                    const dNom = groupe.key==="arrondissement"
+                                      ? regions.flatMap((r:any)=>r.departements||[]).find((d:any)=>d.id===p.departement_id)?.nom : null;
+                                    if (!rNom&&!dNom) return null;
+                                    return (
+                                      <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
+                                        {rNom&&<span style={{fontSize:11,fontWeight:600,color:"#225BCC",background:"rgba(34,91,204,0.08)",border:"1px solid rgba(34,91,204,0.2)",padding:"2px 9px",borderRadius:999,alignSelf:"flex-start" as const}}>Région de {rNom}</span>}
+                                        {dNom&&<span style={{fontSize:11,fontWeight:600,color:"#575799",background:"rgba(87,87,153,0.08)",border:"1px solid rgba(87,87,153,0.2)",padding:"2px 9px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:12}}>Dép. de {dNom}</span>}
+                                      </div>
+                                    );
+                                  })()}
                                   {selCount>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{selCount} atout{selCount>1?"s":""} référencé{selCount>1?"s":""}</div>}
                                   <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
                                     <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${groupe.color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color:groupe.color,fontWeight:600}}>Voir les détails →</div>
