@@ -107,18 +107,20 @@ function SunburstZones({ zones }: { zones:any[] }) {
           .text(`${n} ${d.data.type||""}`);
       });
 
-    // depth=2 : badge numérique aligné à droite sur la ligne du nom
+    // depth=2 : badge numérique juste après le nom de la zone
     cell.filter((d:any)=>d.depth===2&&labelOk(d)&&(d.x1-d.x0)>24)
       .each(function(d:any) {
         const ents=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
         if(!ents) return;
         const col=getTypeColor(d);
-        const w=Math.max(0,d.y1-d.y0-12);
+        const textEl=d3.select(this as SVGGElement).select("text").node() as SVGTextElement|null;
+        let textW=40;
+        try { textW=textEl?.getBBox()?.width||40; } catch(_){}
         d3.select(this as SVGGElement).append("foreignObject")
-          .attr("x",6).attr("y",2).attr("width",w).attr("height",18)
+          .attr("x",6+textW+5).attr("y",2).attr("width",28).attr("height",18)
           .attr("pointer-events","none")
           .append("xhtml:div")
-          .style("display","flex").style("justify-content","flex-end").style("align-items","center").style("height","18px")
+          .style("display","inline-flex").style("align-items","center").style("height","18px")
           .append("xhtml:span")
           .style("display","inline-flex").style("align-items","center")
           .style("height","15px").style("padding","0 6px")
