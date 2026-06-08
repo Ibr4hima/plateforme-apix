@@ -148,7 +148,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
   return (
     <>
 
-    <div style={{ display:"flex", gap:24, alignItems:"stretch", maxWidth:1020, margin:"0 auto" }}>
+    <div style={{ display:"flex", gap:24, alignItems:"flex-start", maxWidth:1020, margin:"0 auto" }}>
 
       {/* Carte */}
       <div style={{ flex:1, minWidth:0 }}>
@@ -163,13 +163,13 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
       </div>
 
       {/* Légende */}
-      <div style={{ width:196, flexShrink:0, background:"#FAFAF9", border:"0.5px solid var(--color-border-tertiary)", borderRadius:14, padding:"18px 16px", overflowY:"auto" as const }}>
+      <div style={{ width:196, flexShrink:0, background:"#FAFAF9", border:"0.5px solid var(--color-border-tertiary)", borderRadius:14, padding:"18px 16px" }}>
         <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Pôles territoriaux</p>
         <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
           {poles.map(p => (
             <div key={p.id} onClick={() => setActivePole((prev:any) => prev?.id === p.id ? null : p)}
               style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"5px 8px", borderRadius:8, background: activePole?.id===p.id ? getPoleColor(p.id)+"33" : "transparent", transition:"background 0.15s" }}>
-              <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgba(0,0,0,0.08)", opacity:0.95 }}/>
+              <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
               <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{p.pole_territoire}</span>
             </div>
           ))}
