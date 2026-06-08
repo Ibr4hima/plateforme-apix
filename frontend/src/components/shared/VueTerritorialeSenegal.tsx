@@ -41,20 +41,6 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
   // Couleur par pole.id (1-based index dans la palette)
   const getPoleColor = (poleId: number) => POLE_PALETTE[(poleId - 1) % POLE_PALETTE.length];
 
-  // Mapping région → pôle (via localisation ou region_ids)
-  const getPoleByRegion = (regionNom: string) =>
-    poles.find(p => splitLocalisation(p.localisation).includes(regionNom));
-
-  // Entreprises par région
-  const entByRegion: Record<string, number> = {};
-  poles.forEach(p => {
-    const total = zones.filter((z: any) => z.pole_id === p.id)
-      .reduce((s: number, z: any) => s + (z.entreprises?.length || 0), 0);
-    splitLocalisation(p.localisation).forEach((r: string) => {
-      entByRegion[r] = (entByRegion[r] || 0) + total;
-    });
-  });
-  const maxEnts = Math.max(1, ...Object.values(entByRegion));
 
   useEffect(() => {
     const container = containerRef.current;
@@ -102,8 +88,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
           splitLocalisation(p.localisation).includes(nom)
         );
         const color = pole ? getPoleColor(pole.id) : "#E8E5E3";
-        const ents = entByRegion[nom] || 0;
-        const baseOpacity = 0.85;
+        const baseOpacity = 0.95;
 
         const g = svg.append("g")
           .style("cursor", "pointer")
@@ -113,32 +98,10 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
           .attr("d", pathGen(feature))
           .attr("fill", color)
           .attr("fill-opacity", baseOpacity)
-          .attr("stroke", "#F2F0EF")
+          .attr("stroke", "#949392")
           .attr("stroke-width", 0.5)
           .attr("stroke-linejoin", "round")
           .style("transition", "fill-opacity 0.15s");
-
-        // Badge entreprises (petit, discret)
-        if (ents > 0) {
-          const centroid = pathGen.centroid(feature);
-          if (centroid && !isNaN(centroid[0])) {
-            g.append("circle")
-              .attr("cx", centroid[0]).attr("cy", centroid[1])
-              .attr("r", 9)
-              .attr("fill", pole ? getPoleColor(pole.id) : "#aaa")
-              .attr("fill-opacity", 0.9)
-              .attr("stroke", "#fff")
-              .attr("stroke-width", 1.2)
-              .attr("pointer-events", "none");
-            g.append("text")
-              .attr("x", centroid[0]).attr("y", centroid[1])
-              .attr("text-anchor", "middle").attr("dominant-baseline", "central")
-              .attr("font-size", 8).attr("font-weight", "700")
-              .attr("fill", "#333").attr("pointer-events", "none")
-              .style("user-select", "none")
-              .text(ents);
-          }
-        }
 
         // Centroid pour le zoom centré sur la région
         const centroidPt = pathGen.centroid(feature);
@@ -146,7 +109,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         const cy = centroidPt && !isNaN(centroidPt[1]) ? centroidPt[1] : H / 2;
 
         g.on("mouseenter", function(event: MouseEvent) {
-          d3.select(this).select("path").attr("fill-opacity", 1.0);
+          d3.select(this).select("path").attr("fill-opacity", 1.75);
           const rect = container.getBoundingClientRect();
           setTooltip({ nom, x: event.clientX - rect.left, y: event.clientY - rect.top });
         })
