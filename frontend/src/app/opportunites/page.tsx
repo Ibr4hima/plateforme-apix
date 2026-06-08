@@ -1144,16 +1144,14 @@ export default function OpportunitesPage() {
                       const isOpen=groupsOpen[groupe.key]!==false;
                       return (
                         <div key={groupe.key}>
-                          <button onClick={()=>setGroupsOpen(prev=>({...prev,[groupe.key]:!prev[groupe.key]}))}
-                            style={{display:"flex",alignItems:"center",gap:8,marginBottom:isOpen?12:0,background:"none",border:"none",cursor:"pointer",padding:0,width:"100%",textAlign:"left" as const}}>
+                          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:isOpen?12:0}}>
                             <div style={{width:3,height:18,borderRadius:2,background:groupe.color,flexShrink:0}}/>
                             <span style={{fontSize:12,fontWeight:700,color:groupe.color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{groupe.label}</span>
-                            <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:6}}>
-                              <span style={{fontSize:11,fontWeight:600,color:groupe.color,background:`${groupe.color}12`,border:`1px solid ${groupe.color}30`,padding:"2px 10px",borderRadius:999}}>
-                                {isOpen ? "Réduire ▲" : `Afficher (${items.length}) ▼`}
-                              </span>
-                            </div>
-                          </button>
+                            <button onClick={()=>setGroupsOpen(prev=>({...prev,[groupe.key]:!prev[groupe.key]}))}
+                              style={{display:"flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:6,border:`1px solid ${groupe.color}35`,background:`${groupe.color}0f`,cursor:"pointer",flexShrink:0}}>
+                              {isOpen?<ChevronUp size={12} style={{color:groupe.color}}/>:<ChevronDown size={12} style={{color:groupe.color}}/>}
+                            </button>
+                          </div>
                           {isOpen&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                             {items.map((p:any)=>{
                               const selCount=(p.avantage_ids||[]).length;
