@@ -89,7 +89,8 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         .append("svg")
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${W} ${H}`)
-        .style("display", "block");
+        .style("display", "block")
+        .style("max-height", "460px");
 
       const geojson = topojson.feature(topo, topo.objects.sen);
       const features = geojson.features;
@@ -104,7 +105,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         );
         const color = pole ? getPoleColor(pole.id) : "#E8E5E3";
         const ents = entByRegion[nom] || 0;
-        const baseOpacity = 0.75;
+        const baseOpacity = 0.85;
 
         const g = svg.append("g")
           .style("cursor", "pointer")
@@ -147,7 +148,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         const cy = centroidPt && !isNaN(centroidPt[1]) ? centroidPt[1] : H / 2;
 
         g.on("mouseenter", function(event: MouseEvent) {
-          d3.select(this).select("path").attr("fill-opacity", 0.95);
+          d3.select(this).select("path").attr("fill-opacity", 1.0);
           const rect = container.getBoundingClientRect();
           setTooltip({ nom, x: event.clientX - rect.left, y: event.clientY - rect.top });
         })
@@ -187,10 +188,10 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
     <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
 
       {/* Carte — propriété exclusive de D3 */}
-      <div style={{ flex:1, borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative", minHeight:520 }}>
+      <div style={{ flex:1, borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
 
         {/* Conteneur D3 — aucun enfant React */}
-        <div ref={containerRef} style={{ width:"100%", minHeight:520 }}/>
+        <div ref={containerRef} style={{ width:"100%" }}/>
 
         {/* Tooltip React en overlay */}
         {tooltip && (
