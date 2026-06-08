@@ -997,7 +997,7 @@ export default function OpportunitesPage() {
                   {onglet==="projets"&&<>
                     <div style={{position:"relative" as const,marginBottom:18}}>
                       <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-                      <input value={projQ} onChange={e=>setProjQ(e.target.value)} placeholder="Titre, porteur…"
+                      <input value={projQ} onChange={e=>setProjQ(e.target.value)} placeholder="Rechercher…"
                         style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
                       {projQ&&<button onClick={()=>setProjQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                     </div>
@@ -1096,7 +1096,6 @@ export default function OpportunitesPage() {
             {/* ── Onglet Projets ── */}
             {onglet==="projets"&&(
               <>
-                <p style={{fontSize:13,color:"#9aa5b4",marginBottom:16}}>{projetsFiltres.length} projet{projetsFiltres.length>1?"s":""}{hasFilterProj?" trouvé"+(projetsFiltres.length>1?"s":""):""}</p>
                 {projLoad ? (
                   <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
                 ) : projetsFiltres.length===0 ? (
@@ -1105,31 +1104,27 @@ export default function OpportunitesPage() {
                     <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                   </div>
                 ) : (
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                     {projetsFiltres.map(p=>(
                       <div key={p.id} onClick={()=>setProjSel(p)}
-                        style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:"3px solid #ca631f",cursor:"pointer",transition:"all 0.15s"}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)"; ev.currentTarget.style.borderColor="#e0b89a";}}
-                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor="#ca631f";}}>
-                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
-                          {p.titre_projet}
+                        style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s",position:"relative" as const}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
+                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
+                          {p.pole_nom&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                            <span style={{color:"#4a5568"}}>{p.pole_nom}</span>
+                          </div>}
+                          {p.region_nom&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
+                            <span style={{color:"#4a5568"}}>Région de {p.region_nom}</span>
+                          </div>}
                         </div>
-                        <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12,marginTop:6}}>
-                          {p.pole_nom&&(
-                            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-                              <span style={{color:"#4a5568"}}>{p.pole_nom}</span>
-                            </div>
-                          )}
-                          {(p.region_nom||p.departement_nom||p.arrondissement_nom)&&(
-                            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
-                              <span style={{color:"#9aa5b4"}}>{[p.arrondissement_nom,p.departement_nom,p.region_nom].filter(Boolean).join(", ")}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div style={{borderTop:"1px solid #F2F0EF",paddingTop:8,display:"flex",justifyContent:"flex-end"}}>
-                          <span style={{fontSize:11,color:"#ca631f",fontWeight:600}}>Voir les détails →</span>
+                        <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                          <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(202,99,31,0.08)",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}>
+                            Voir les détails →
+                          </div>
                         </div>
                       </div>
                     ))}
