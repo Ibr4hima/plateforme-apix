@@ -1268,7 +1268,7 @@ export default function OpportunitesPage() {
                                   style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
                                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderColor=color;ev.currentTarget.style.borderLeftColor=color;}}
                                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=color;}}>
-                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{a.activite_nom}</div>
+                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,lineHeight:1.35}}>{a.activite_nom}</div>
                                   {(a.secteur_nom||a.branche_nom)&&(
                                     <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
                                       {a.secteur_nom&&<span style={{fontSize:10,fontWeight:600,color,background:`${color}0e`,border:`1px solid ${color}28`,padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const}}>{a.secteur_nom}</span>}
