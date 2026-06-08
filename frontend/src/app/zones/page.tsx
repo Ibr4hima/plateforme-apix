@@ -467,6 +467,7 @@ export default function ZonesPage() {
 
   const stats = {
     total:      zones.length,
+    poles:      new Set(zones.map((z:any)=>z.pole_id).filter(Boolean)).size,
     zes:        zones.filter(z=>z.type_zone==="ZES").length,
     zai:        zones.filter(z=>z.type_zone==="ZAI").length,
     zfi:        zones.filter(z=>z.type_zone==="ZFI").length,
@@ -490,8 +491,12 @@ export default function ZonesPage() {
           <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
             <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase" as const}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Zones d&apos;Investissement</h1>
+          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:20}}>Zones d&apos;Investissement</h1>
           <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
+            {stats.poles>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.poles} Pôle{stats.poles>1?"s":""} territorial{stats.poles>1?"x":""}</span>}
+            {stats.zes>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.zes} ZES</span>}
+            {stats.zai>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.zai} ZAI</span>}
+            {stats.zfi>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.zfi} ZFI</span>}
           </div>
         </div>
       </section>
