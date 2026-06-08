@@ -18,6 +18,16 @@ const ROLE_VARIANT: Record<string, BadgeVariant> = {
   "Invité":          "gray",
 };
 
+function computeStatutEvenement(e: any): "a_venir" | "en_cours" | "termine" | null {
+  if (!e.date_debut) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const debut = new Date(e.date_debut + "T00:00:00");
+  const fin   = e.date_fin ? new Date(e.date_fin + "T00:00:00") : debut;
+  if (debut > today) return "a_venir";
+  if (fin   < today) return "termine";
+  return "en_cours";
+}
+
 function fmtDate(d: string) {
   if (!d) return "";
   const [y,m,j] = d.split("-").map(Number);
@@ -405,15 +415,19 @@ export default function EvenementsPage() {
                       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
                       : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
                     const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
+                    const statut = computeStatutEvenement(e);
                     return (
                       <div key={e.id} onClick={()=>setSelec(e)}
                         style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
                         onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
                         onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
-                        {e.role_apix&&<div style={{position:"absolute" as const,top:12,right:12}}>
-                          <Badge variant={ROLE_VARIANT[e.role_apix]||"gray"} size="xs">{ROLES_APIX[e.role_apix]||e.role_apix}</Badge>
-                        </div>}
-                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8,paddingRight:e.role_apix?90:0}}>{e.nom_event}</div>
+                        <div style={{position:"absolute" as const,top:12,right:12}}>
+                          {statut==="en_cours" ? <Badge variant="green"  size="xs">En cours</Badge>
+                          :statut==="termine"  ? <Badge variant="gray"   size="xs">Terminé</Badge>
+                          :e.role_apix         ? <Badge variant={ROLE_VARIANT[e.role_apix]||"gray"} size="xs">{ROLES_APIX[e.role_apix]||e.role_apix}</Badge>
+                          :null}
+                        </div>
+                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8,paddingRight:(statut&&statut!=="a_venir")||e.role_apix?90:0}}>{e.nom_event}</div>
                         {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinal(e.edition)}</div>}
                         <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                           {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
