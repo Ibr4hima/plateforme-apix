@@ -1161,10 +1161,14 @@ export default function OpportunitesPage() {
                                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=groupe.color;}}>
                                   <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:6}}>{potTitle(p)}</div>
                                   {(()=>{
-                                    const rNom = (groupe.key==="departement"||groupe.key==="arrondissement")
-                                      ? regions.find((r:any)=>r.id===p.region_id)?.nom : null;
+                                    const rNom = groupe.key==="departement"
+                                      ? regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.id===p.departement_id))?.nom
+                                      : groupe.key==="arrondissement"
+                                      ? regions.find((r:any)=>(r.departements||[]).some((d:any)=>(d.arrondissements||[]).some((a:any)=>a.id===p.arrondissement_id)))?.nom
+                                      : null;
                                     const dNom = groupe.key==="arrondissement"
-                                      ? regions.flatMap((r:any)=>r.departements||[]).find((d:any)=>d.id===p.departement_id)?.nom : null;
+                                      ? regions.flatMap((r:any)=>r.departements||[]).find((d:any)=>(d.arrondissements||[]).some((a:any)=>a.id===p.arrondissement_id))?.nom
+                                      : null;
                                     if (!rNom&&!dNom) return null;
                                     return (
                                       <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
