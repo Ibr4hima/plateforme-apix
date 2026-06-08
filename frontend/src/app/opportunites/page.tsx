@@ -380,7 +380,7 @@ function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
 
           {p.porteurs?.length>0 && (
             <div style={{marginBottom:16}}>
-              <LBL>Porteur(s) du projet</LBL>
+              <LBL>Porteur du projet</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
                 {p.porteurs.map((por:any,pi:number)=>{
                   const tels=(por.telephones||[]).filter(Boolean);
@@ -417,11 +417,8 @@ function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
                   const tels=(pf.telephones||[]).filter(Boolean);
                   const mails=(pf.mails||[]).filter(Boolean);
                   return (
-                    <div key={fi} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
-                      <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(54,111,227,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>
-                        <User size={13} style={{color:"#366FE3"}}/>
-                      </div>
-                      <div style={{flex:1}}>
+                    <div key={fi} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px"}}>
+                      <div>
                         <p style={{fontWeight:600,fontSize:13,color:"#1a1a2e"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
                         {tels.length>0 && (
                           <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:6}}>
