@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import Badge from "@/components/shared/Badge";
 import { Building2, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -197,6 +197,55 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
   );
 }
 
+function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
+  minYear: number; maxYear: number; startYear: number; endYear: number;
+  onChange: (start: number, end: number) => void;
+}) {
+  const [open, setOpen] = useState(true);
+  const isFiltered = startYear > minYear || endYear < maxYear;
+  const range      = maxYear - minYear || 1;
+  const leftPct    = ((startYear - minYear) / range) * 100;
+  const rightPct   = ((endYear   - minYear) / range) * 100;
+
+  return (
+    <div style={{marginBottom:18}}>
+      <button onClick={()=>setOpen(o=>!o)}
+        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",display:"inline-block"}}/>}
+          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"#ca631f":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
+        </div>
+        {open?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+      </button>
+      {open&&(
+        <div style={{padding:"2px 4px 0"}}>
+          <div style={{position:"relative" as const,height:24,marginBottom:10}}>
+            <div style={{position:"absolute" as const,top:"50%",left:0,right:0,height:4,background:"#E8E5E3",borderRadius:2,transform:"translateY(-50%)"}}/>
+            <div style={{position:"absolute" as const,top:"50%",left:`${leftPct}%`,width:`${Math.max(0,rightPct-leftPct)}%`,height:4,background:"#ca631f",borderRadius:2,transform:"translateY(-50%)"}}/>
+            <input type="range" min={minYear} max={maxYear} value={startYear}
+              onChange={ev=>onChange(Math.min(Number(ev.target.value),endYear-1),endYear)}
+              className="drs-thumb"
+              style={{zIndex:startYear>=endYear-1?4:2} as React.CSSProperties}/>
+            <input type="range" min={minYear} max={maxYear} value={endYear}
+              onChange={ev=>onChange(startYear,Math.max(Number(ev.target.value),startYear+1))}
+              className="drs-thumb"
+              style={{zIndex:3} as React.CSSProperties}/>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
+            <span style={{fontSize:10,color:"#9aa5b4"}}>—</span>
+            <span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
+          </div>
+          {isFiltered&&<button onClick={()=>onChange(minYear,maxYear)}
+            style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:4}}>
+            <X size={10}/> Réinitialiser
+          </button>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function EntreprisesPage() {
   const [tous,        setTous]        = useState<any[]>([]);
@@ -217,6 +266,11 @@ export default function EntreprisesPage() {
   const [deptsSel,     setDeptsSel]     = useState<string[]>([]);
   const [arrondsSel,   setArrondsSel]   = useState<string[]>([]);
   const [polesSel,     setPolesSel]     = useState<string[]>([]);
+  const [dateMin,   setDateMin]   = useState(0);
+  const [dateMax,   setDateMax]   = useState(0);
+  const [dateStart, setDateStart] = useState(0);
+  const [dateEnd,   setDateEnd]   = useState(0);
+  const dateInitRef = useRef(false);
 
   useEffect(()=>{
     const safe=(p:Promise<any>,fb:any)=>p.catch(()=>fb);
@@ -251,6 +305,17 @@ export default function EntreprisesPage() {
 
   useEffect(()=>{charger();},[charger]);
 
+  useEffect(()=>{
+    if (dateInitRef.current||tous.length===0) return;
+    dateInitRef.current=true;
+    const years=tous.filter(e=>e.date_creation).map(e=>parseInt(e.date_creation.split("-")[0])).filter(y=>!isNaN(y));
+    if (years.length===0) return;
+    const mn=Math.min(...years), mx=Math.max(...years);
+    setDateMin(mn); setDateMax(mx); setDateStart(mn); setDateEnd(mx);
+  },[tous]);
+
+  const isDateFiltered = dateMin<dateMax && (dateStart>dateMin||dateEnd<dateMax);
+
   const entreprises = tous.filter(e=>{
     if (recherche){const q=recherche.toLowerCase();if(!e.nom?.toLowerCase().includes(q)&&!e.forme_juridique?.toLowerCase().includes(q)&&!e.adresse?.toLowerCase().includes(q))return false;}
     if (formesSel.length>0&&!formesSel.includes(e.forme_juridique||""))return false;
@@ -261,12 +326,13 @@ export default function EntreprisesPage() {
     if (deptsSel.length>0&&!deptsSel.includes(e.departement_nom||""))return false;
     if (arrondsSel.length>0&&!arrondsSel.includes(e.arrondissement_nom||""))return false;
     if (polesSel.length>0&&!polesSel.includes(e.pole_territoire_nom||""))return false;
+    if (isDateFiltered&&e.date_creation){const y=parseInt(e.date_creation.split("-")[0]);if(!isNaN(y)&&(y<dateStart||y>dateEnd))return false;}
     return true;
   });
 
-  const hasFilter=!!recherche||formesSel.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0||arrondsSel.length>0||polesSel.length>0;
-  const reinit=()=>{setRecherche("");setFormesSel([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);setRegionsSel([]);setDeptsSel([]);setArrondsSel([]);setPolesSel([]);};
-  const nbFiltres=(recherche?1:0)+formesSel.length+secteursSel.length+branchesSel.length+activitesSel.length+regionsSel.length+deptsSel.length+arrondsSel.length+polesSel.length;
+  const hasFilter=!!recherche||formesSel.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0||arrondsSel.length>0||polesSel.length>0||isDateFiltered;
+  const reinit=()=>{setRecherche("");setFormesSel([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);setRegionsSel([]);setDeptsSel([]);setArrondsSel([]);setPolesSel([]);setDateStart(dateMin);setDateEnd(dateMax);};
+  const nbFiltres=(recherche?1:0)+formesSel.length+secteursSel.length+branchesSel.length+activitesSel.length+regionsSel.length+deptsSel.length+arrondsSel.length+polesSel.length+(isDateFiltered?1:0);
 
   const toggleForme   =(v:string)=>setFormesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
   const toggleSecteur =(v:string)=>{setSecteursSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setBranchesSel([]);setActivitesSel([]);};
@@ -279,7 +345,12 @@ export default function EntreprisesPage() {
 
   return (
     <main style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
+.drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}
+.drs-thumb::-moz-range-track{background:transparent;height:4px}
+.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#ca631f;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(202,99,31,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
+.drs-thumb::-moz-range-thumb{background:#ca631f;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(202,99,31,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <Navbar/>
       <section style={{padding:"100px 40px 40px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
@@ -317,6 +388,7 @@ export default function EntreprisesPage() {
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <SideFilter label="Forme juridique" color="#188038" items={formeOpts} selected={formesSel} onToggle={toggleForme}/>
+                {dateMin<dateMax&&<DateRangeFilter minYear={dateMin} maxYear={dateMax} startYear={dateStart} endYear={dateEnd} onChange={(s,e)=>{setDateStart(s);setDateEnd(e);}}/>}
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
