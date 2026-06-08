@@ -67,8 +67,8 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
                   <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:5}}>{e.nom}</h2>
                   <div style={{display:"flex",gap:5,flexWrap:"wrap" as const}}>
                     {e.forme_juridique && <span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>{e.forme_juridique}</span>}
+                    {e.pole_territoire_nom && <span style={{fontSize:11,fontWeight:700,color:"#7c3aed",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)",padding:"2px 9px",borderRadius:999}}>{e.pole_territoire_nom}</span>}
                     {e.region_nom && <span style={{fontSize:11,fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {e.region_nom}</span>}
-                    {e.departement_nom && <span style={{fontSize:11,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>Dép. de {e.departement_nom}</span>}
                   </div>
                 </div>
               </div>
