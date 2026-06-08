@@ -88,9 +88,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         .append("svg")
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${W} ${H}`)
-        .style("display", "block")
-        .style("max-width", "780px")
-        .style("margin", "0 auto");
+        .style("display", "block");
 
       const geojson = topojson.feature(topo, topo.objects.sen);
       const features = geojson.features;
@@ -185,11 +183,11 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
   const activeColor = activePole ? getPoleColor(activePole.id) : "#E8E5E3";
 
   return (
-    <div>
+    <div style={{ maxWidth:780, margin:"0 auto" }}>
 
       {/* Carte */}
       <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
-        <div ref={containerRef} style={{ width:"100%", aspectRatio:"1/1.08", maxWidth:780, margin:"0 auto" }}/>
+        <div ref={containerRef} style={{ width:"100%" }}/>
         {tooltip && (
           <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#FAFAF9", border:"1px solid #E8E5E3", borderRadius:8, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"0 4px 16px rgba(0,0,0,0.10)", whiteSpace:"nowrap" as const }}>
             {tooltip.nom}
