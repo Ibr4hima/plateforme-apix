@@ -98,7 +98,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
           .attr("d", pathGen(feature))
           .attr("fill", color)
           .attr("fill-opacity", baseOpacity)
-          .attr("stroke", "#949392")
+          .attr("stroke", "#66615E")
           .attr("stroke-width", 0.5)
           .attr("stroke-linejoin", "round")
           .style("transition", "filter 0.15s");
