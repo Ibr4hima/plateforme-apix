@@ -129,7 +129,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
           {/* NAEMA */}
           {hasNaema && secteurs.length > 0 && (
             <div style={{marginBottom:20}}>
-              <LBL>Classification NAEMA</LBL>
+              <LBL>Activité(s) de l&apos;entreprise</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
                 {secIds.map((secId:number) => {
                   const sec = secteurs.find((s:any) => s.id === secId);
@@ -185,10 +185,20 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
                       {pf.poste && <span style={{color:"#9aa5b4"}}>— {pf.poste}</span>}
                       {pf.est_principal && <span style={{fontSize:10,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",borderRadius:999,padding:"1px 7px"}}>Principal</span>}
                     </div>
-                    <div style={{color:"#4a5568"}}>
-                      {pf.telephone && <span>{pf.telephone.split(",").map((t:string)=>fmtPhone(t.trim())).join(" · ")}</span>}
-                      {pf.mail && <span>{pf.telephone ? " · " : ""}{pf.mail}</span>}
-                    </div>
+                    {pf.telephone && (
+                      <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:6}}>
+                        {pf.telephone.split(",").map((t:string,ti:number) => (
+                          <span key={ti} style={{fontSize:11,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{fmtPhone(t.trim())}</span>
+                        ))}
+                      </div>
+                    )}
+                    {pf.mail && (
+                      <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:5}}>
+                        {pf.mail.split(",").map((m:string,mi:number) => (
+                          <span key={mi} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{m.trim()}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
