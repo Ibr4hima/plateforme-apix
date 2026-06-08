@@ -90,7 +90,9 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         .append("svg")
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${W} ${H}`)
-        .style("display", "block");
+        .style("display", "block")
+        .style("max-width", `${W}px`)
+        .style("margin", "0 auto");
 
       const geojson = topojson.feature(topo, topo.objects.sen);
       const features = geojson.features;
@@ -185,7 +187,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
   const activeColor = activePole ? getPoleColor(activePole.id) : "#E8E5E3";
 
   return (
-    <div style={{ paddingTop:36 }}>
+    <div>
 
       {/* Carte */}
       <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
