@@ -104,7 +104,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         );
         const color = pole ? getPoleColor(pole.id) : "#E8E5E3";
         const ents = entByRegion[nom] || 0;
-        const baseOpacity = ents === 0 ? 0.55 : 0.55 + (ents / maxEnts) * 0.4;
+        const baseOpacity = 0.45;
 
         const g = svg.append("g")
           .style("cursor", "pointer")
@@ -147,12 +147,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         const cy = centroidPt && !isNaN(centroidPt[1]) ? centroidPt[1] : H / 2;
 
         g.on("mouseenter", function(event: MouseEvent) {
-          // Zoom centré sur la région — couleur inchangée
-          d3.select(this)
-            .raise()
-            .style("transform-origin", `${cx}px ${cy}px`)
-            .style("transform", "scale(1.06)")
-            .style("filter", "drop-shadow(0 2px 8px rgba(0,0,0,0.18))");
+          d3.select(this).select("path").attr("fill-opacity", 0.60);
           const rect = container.getBoundingClientRect();
           setTooltip({ nom, x: event.clientX - rect.left, y: event.clientY - rect.top });
         })
@@ -161,9 +156,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
           setTooltip(prev => prev ? { ...prev, x: event.clientX - rect.left, y: event.clientY - rect.top } : null);
         })
         .on("mouseleave", function() {
-          d3.select(this)
-            .style("transform", "scale(1)")
-            .style("filter", "none");
+          d3.select(this).select("path").attr("fill-opacity", baseOpacity);
           setTooltip(null);
         })
         .on("click", function() {
