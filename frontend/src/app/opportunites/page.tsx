@@ -1148,8 +1148,11 @@ export default function OpportunitesPage() {
                             style={{display:"flex",alignItems:"center",gap:8,marginBottom:isOpen?12:0,background:"none",border:"none",cursor:"pointer",padding:0,width:"100%",textAlign:"left" as const}}>
                             <div style={{width:3,height:18,borderRadius:2,background:groupe.color,flexShrink:0}}/>
                             <span style={{fontSize:12,fontWeight:700,color:groupe.color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{groupe.label}</span>
-                            <span style={{fontSize:11,color:"#9aa5b4",marginLeft:2}}>({items.length})</span>
-                            <div style={{marginLeft:"auto"}}>{isOpen?<ChevronUp size={13} style={{color:groupe.color}}/>:<ChevronDown size={13} style={{color:groupe.color}}/>}</div>
+                            <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:6}}>
+                              <span style={{fontSize:11,fontWeight:600,color:groupe.color,background:`${groupe.color}12`,border:`1px solid ${groupe.color}30`,padding:"2px 10px",borderRadius:999}}>
+                                {isOpen ? "Réduire ▲" : `Afficher (${items.length}) ▼`}
+                              </span>
+                            </div>
                           </button>
                           {isOpen&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                             {items.map((p:any)=>{
