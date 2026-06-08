@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import * as d3 from "d3";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -60,27 +61,24 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
     if (!container) return;
     let cancelled = false;
 
-    const loadLib = (src: string, globalKey: string) =>
-      new Promise<void>((res, rej) => {
-        const poll = () => { if ((window as any)[globalKey]) res(); else setTimeout(poll, 50); };
-        if ((window as any)[globalKey]) { res(); return; }
-        if (document.querySelector(`script[data-lib="${globalKey}"]`)) { poll(); return; }
+    const loadTopojson = () =>
+      new Promise<any>((res, rej) => {
+        const poll = () => { if ((window as any).topojson) res((window as any).topojson); else setTimeout(poll, 50); };
+        if ((window as any).topojson) { res((window as any).topojson); return; }
+        if (document.querySelector('script[data-lib="topojson"]')) { poll(); return; }
         const s = document.createElement("script");
-        s.setAttribute("data-lib", globalKey);
-        s.src = src; s.onerror = rej; s.onload = poll;
+        s.setAttribute("data-lib", "topojson");
+        s.src = "https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js";
+        s.onerror = rej; s.onload = poll;
         document.head.appendChild(s);
       });
 
-    Promise.all([
-      loadLib("https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js", "d3"),
-      loadLib("https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js", "topojson"),
-    ])
+    loadTopojson()
     .then(() => fetch("https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/sen.topo.json"))
     .then(r => r.json())
     .then((topo: any) => {
       if (cancelled || !containerRef.current) return;
 
-      const d3: any = (window as any).d3;
       const topojson: any = (window as any).topojson;
       const W = Math.min(container.clientWidth || 780, 780);
       const H = Math.round(W * 1.08);
@@ -191,7 +189,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
 
       {/* Carte */}
       <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
-        <div ref={containerRef} style={{ width:"100%" }}/>
+        <div ref={containerRef} style={{ width:"100%", aspectRatio:"1/1.08", maxWidth:780, margin:"0 auto" }}/>
         {tooltip && (
           <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#FAFAF9", border:"1px solid #E8E5E3", borderRadius:8, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"0 4px 16px rgba(0,0,0,0.10)", whiteSpace:"nowrap" as const }}>
             {tooltip.nom}
