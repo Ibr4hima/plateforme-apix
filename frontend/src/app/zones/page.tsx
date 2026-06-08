@@ -113,11 +113,13 @@ function SunburstZones({ zones }: { zones:any[] }) {
         const ents=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
         if(!ents) return;
         const col=getTypeColor(d);
-        const textEl=d3.select(this as SVGGElement).select("text").node() as SVGTextElement|null;
-        let textW=40;
-        try { textW=textEl?.getBBox()?.width||40; } catch(_){}
+        const cellW=d.y1-d.y0-12;
+        const name=d.data.name||"";
+        const maxChars=Math.floor(cellW/6.5);
+        const shownLen=Math.min(name.length,maxChars);
+        const estTextW=shownLen*6.5;
         d3.select(this as SVGGElement).append("foreignObject")
-          .attr("x",6+textW+5).attr("y",2).attr("width",28).attr("height",18)
+          .attr("x",6+estTextW+4).attr("y",2).attr("width",28).attr("height",18)
           .attr("pointer-events","none")
           .append("xhtml:div")
           .style("display","inline-flex").style("align-items","center").style("height","18px")
