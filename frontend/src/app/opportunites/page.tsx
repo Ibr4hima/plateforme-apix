@@ -12,17 +12,21 @@ const devSymbole = (code?:string, sym?:string) => sym || (code ? ({XOF:"FCFA",US
 function fmtPhone(raw:string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
 
 function ScrollTitle({ text }: { text: string }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLSpanElement>(null);
   const [tx, setTx] = useState(0);
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const overflow = el.scrollWidth - el.clientWidth;
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) return;
+    const overflow = inner.offsetWidth - outer.clientWidth;
     setTx(overflow > 4 ? overflow : 0);
   }, [text]);
   return (
-    <div ref={ref} style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const,...(tx>0?{animation:"aptitle-scroll 3.5s ease-in-out infinite","--aptitle-tx":`-${tx}px`} as React.CSSProperties:{})}}>
-      {text}
+    <div ref={outerRef} style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const}}>
+      <span ref={innerRef} style={{display:"inline-block",...(tx>0?{animation:"aptitle-scroll 3.5s ease-in-out infinite","--aptitle-tx":`-${tx}px`} as React.CSSProperties:{})}}>
+        {text}
+      </span>
     </div>
   );
 }
