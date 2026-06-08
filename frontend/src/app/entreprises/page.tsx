@@ -130,13 +130,14 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
   );
 }
 
-function LocalisationFilter({ regions, regionsSel, departementsSel, onRegion, onDepartement }: {
-  regions:any[]; regionsSel:string[]; departementsSel:string[];
-  onRegion:(v:string)=>void; onDepartement:(v:string)=>void;
+function LocalisationFilter({ regions, regionsSel, departementsSel, arrondissementsSel, onRegion, onDepartement, onArrond }: {
+  regions:any[]; regionsSel:string[]; departementsSel:string[]; arrondissementsSel:string[];
+  onRegion:(v:string)=>void; onDepartement:(v:string)=>void; onArrond:(v:string)=>void;
 }) {
   const [open, setOpen] = useState(true);
-  const departements = regions.filter(r=>regionsSel.includes(r.nom)).flatMap((r:any)=>r.departements||[]);
-  const hasFilter = regionsSel.length>0||departementsSel.length>0;
+  const departements    = regions.filter(r=>regionsSel.includes(r.nom)).flatMap((r:any)=>r.departements||[]);
+  const arrondissements = departements.filter(d=>departementsSel.includes(d.nom)).flatMap((d:any)=>d.arrondissements||[]);
+  const hasFilter = regionsSel.length>0||departementsSel.length>0||arrondissementsSel.length>0;
   return (
     <div style={{marginBottom:18}}>
       <button onClick={()=>setOpen(o=>!o)}
@@ -174,7 +175,20 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, onRegion, on
               </button>);})}
           </div>
         </div>}
-        {hasFilter&&<button onClick={()=>{regionsSel.slice().forEach(onRegion);departementsSel.slice().forEach(onDepartement);}}
+        {departementsSel.length>0&&arrondissements.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(124,58,237,0.15)"}}>
+          <p style={{fontSize:10,fontWeight:700,color:"#7c3aed",marginBottom:4}}>Arrondissement</p>
+          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:120,overflowY:"auto" as const}}>
+            {arrondissements.map((a:any)=>{const sel=arrondissementsSel.includes(a.nom); return (
+              <button key={a.nom} onClick={()=>onArrond(a.nom)}
+                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(124,58,237,0.08)":"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(124,58,237,0.08)":"transparent";}}>
+                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#7c3aed":"#C5BFBB"}`,background:sel?"#7c3aed":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div><span style={{fontSize:11,color:sel?"#7c3aed":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+              </button>);})}
+          </div>
+        </div>}
+        {hasFilter&&<button onClick={()=>{regionsSel.slice().forEach(onRegion);departementsSel.slice().forEach(onDepartement);arrondissementsSel.slice().forEach(onArrond);}}
           style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0"}}>
           <X size={10}/> Effacer localisation
         </button>}
@@ -201,6 +215,7 @@ export default function EntreprisesPage() {
   const [activitesSel, setActivitesSel] = useState<string[]>([]);
   const [regionsSel,   setRegionsSel]   = useState<string[]>([]);
   const [deptsSel,     setDeptsSel]     = useState<string[]>([]);
+  const [arrondsSel,   setArrondsSel]   = useState<string[]>([]);
   const [polesSel,     setPolesSel]     = useState<string[]>([]);
 
   useEffect(()=>{
@@ -212,12 +227,13 @@ export default function EntreprisesPage() {
       safe(fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),        []),
       safe(fetch(`${API_BASE}/entreprises/ref/regions`).then(r=>r.json()),          []),
       safe(fetch(`${API_BASE}/entreprises/ref/departements`).then(r=>r.json()),     []),
+      safe(fetch(`${API_BASE}/entreprises/ref/arrondissements`).then(r=>r.json()), []),
       safe(fetch(`${API_BASE}/entreprises/ref/poles`).then(r=>r.json()),            []),
-    ]).then(([formes,secsData,brasData,actsData,regsData,deptsData,polesData])=>{
+    ]).then(([formes,secsData,brasData,actsData,regsData,deptsData,arrsData,polesData])=>{
       setFormeOpts(Array.isArray(formes)?formes:[]);
       const tree=(secsData||[]).map((s:any)=>({...s,branches:(brasData||[]).filter((b:any)=>b.secteur_id===s.id).map((b:any)=>({...b,activites:(actsData||[]).filter((a:any)=>a.branche_id===b.id)}))}));
       setSecteurs(tree);
-      const regTree=(regsData||[]).map((r:any)=>({...r,departements:(deptsData||[]).filter((d:any)=>d.region_id===r.id)}));
+      const regTree=(regsData||[]).map((r:any)=>({...r,departements:(deptsData||[]).filter((d:any)=>d.region_id===r.id).map((d:any)=>({...d,arrondissements:(arrsData||[]).filter((a:any)=>a.departement_id===d.id)}))}));
       setRegions(regTree);
       setPoles((polesData||[]).map((p:any)=>p.nom));
     });
@@ -243,20 +259,22 @@ export default function EntreprisesPage() {
     if (activitesSel.length>0){const ids=activitesSel.map((n:string)=>secteurs.flatMap((s:any)=>s.branches||[]).flatMap((b:any)=>b.activites||[]).find((a:any)=>a.nom===n)?.id).filter(Boolean);if(!ids.some((id:number)=>(e.activite_ids||[]).includes(id)))return false;}
     if (regionsSel.length>0&&!regionsSel.includes(e.region_nom||""))return false;
     if (deptsSel.length>0&&!deptsSel.includes(e.departement_nom||""))return false;
+    if (arrondsSel.length>0&&!arrondsSel.includes(e.arrondissement_nom||""))return false;
     if (polesSel.length>0&&!polesSel.includes(e.pole_territoire_nom||""))return false;
     return true;
   });
 
-  const hasFilter=!!recherche||formesSel.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0||polesSel.length>0;
-  const reinit=()=>{setRecherche("");setFormesSel([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);setRegionsSel([]);setDeptsSel([]);setPolesSel([]);};
-  const nbFiltres=(recherche?1:0)+formesSel.length+secteursSel.length+branchesSel.length+activitesSel.length+regionsSel.length+deptsSel.length+polesSel.length;
+  const hasFilter=!!recherche||formesSel.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0||arrondsSel.length>0||polesSel.length>0;
+  const reinit=()=>{setRecherche("");setFormesSel([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);setRegionsSel([]);setDeptsSel([]);setArrondsSel([]);setPolesSel([]);};
+  const nbFiltres=(recherche?1:0)+formesSel.length+secteursSel.length+branchesSel.length+activitesSel.length+regionsSel.length+deptsSel.length+arrondsSel.length+polesSel.length;
 
   const toggleForme   =(v:string)=>setFormesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
   const toggleSecteur =(v:string)=>{setSecteursSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setBranchesSel([]);setActivitesSel([]);};
   const toggleBranche =(v:string)=>{setBranchesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setActivitesSel([]);};
   const toggleActivite=(v:string)=>setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
-  const toggleRegion  =(v:string)=>{setRegionsSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setDeptsSel([]);};
-  const toggleDept    =(v:string)=>setDeptsSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
+  const toggleRegion  =(v:string)=>{setRegionsSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setDeptsSel([]);setArrondsSel([]);};
+  const toggleDept    =(v:string)=>{setDeptsSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);setArrondsSel([]);};
+  const toggleArr     =(v:string)=>setArrondsSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
   const togglePole    =(v:string)=>setPolesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
 
   return (
@@ -302,7 +320,7 @@ export default function EntreprisesPage() {
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <LocalisationFilter regions={regions} regionsSel={regionsSel} departementsSel={deptsSel} onRegion={toggleRegion} onDepartement={toggleDept}/>
+                <LocalisationFilter regions={regions} regionsSel={regionsSel} departementsSel={deptsSel} arrondissementsSel={arrondsSel} onRegion={toggleRegion} onDepartement={toggleDept} onArrond={toggleArr}/>
                 {poles.length>0&&<><div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <SideFilter label="Pôle territoire" color="#ca631f" items={poles} selected={polesSel} onToggle={togglePole}/></>}
               </>}
@@ -328,19 +346,16 @@ export default function EntreprisesPage() {
                     style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
-                    {e.region_nom&&<div style={{position:"absolute" as const,top:12,right:12}}>
-                      <Badge variant="navy" size="xs">{e.region_nom}</Badge>
-                    </div>}
-                    <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.forme_juridique?2:8,paddingRight:e.region_nom?90:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
+                    <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.forme_juridique?2:8,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
                     {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{e.forme_juridique}</div>}
                     <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                       {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
                         <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
                         <span style={{color:"#4a5568"}}>Créée le {fmtDate(e.date_creation)}</span>
                       </div>}
-                      {(e.arrondissement_nom||e.departement_nom)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                      {(e.departement_nom||e.region_nom)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
                         <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
-                        <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[e.arrondissement_nom,e.departement_nom].filter(Boolean).join(", ")}</span>
+                        <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[e.departement_nom,e.region_nom].filter(Boolean).join(", ")}</span>
                       </div>}
                     </div>
                     <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
