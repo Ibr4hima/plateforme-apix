@@ -739,6 +739,7 @@ export default function OpportunitesPage() {
   const [potsBranches,setPotsBranches]=useState<string[]>([]);
   const [potsActivites,setPotsActivites]=useState<string[]>([]);
   const [potsAtouts, setPotsAtouts] = useState<string[]>([]); // libellés d'atouts
+  const [groupsOpen, setGroupsOpen] = useState<Record<string,boolean>>({pole:true,region:true,departement:true,arrondissement:true});
 
   // ── Avantages ──
   const [avgs,          setAvgs]          = useState<any[]>([]);
@@ -1135,18 +1136,22 @@ export default function OpportunitesPage() {
                     {([
                       {key:"pole",label:"Pôles territoires",color:"#ca631f"},
                       {key:"region",label:"Régions",color:"#225BCC"},
-                      {key:"departement",label:"Départements",color:"#CCCC22"},
+                      {key:"departement",label:"Départements",color:"#575799"},
                       {key:"arrondissement",label:"Arrondissements",color:"#0D9488"},
                     ] as const).map(groupe=>{
                       const items=potsFiltres.filter((p:any)=>p.niveau===groupe.key);
                       if (items.length===0) return null;
+                      const isOpen=groupsOpen[groupe.key]!==false;
                       return (
                         <div key={groupe.key}>
-                          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                            <div style={{width:3,height:18,borderRadius:2,background:groupe.color}}/>
+                          <button onClick={()=>setGroupsOpen(prev=>({...prev,[groupe.key]:!prev[groupe.key]}))}
+                            style={{display:"flex",alignItems:"center",gap:8,marginBottom:isOpen?12:0,background:"none",border:"none",cursor:"pointer",padding:0,width:"100%",textAlign:"left" as const}}>
+                            <div style={{width:3,height:18,borderRadius:2,background:groupe.color,flexShrink:0}}/>
                             <span style={{fontSize:12,fontWeight:700,color:groupe.color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{groupe.label}</span>
-                          </div>
-                          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+                            <span style={{fontSize:11,color:"#9aa5b4",marginLeft:2}}>({items.length})</span>
+                            <div style={{marginLeft:"auto"}}>{isOpen?<ChevronUp size={13} style={{color:groupe.color}}/>:<ChevronDown size={13} style={{color:groupe.color}}/>}</div>
+                          </button>
+                          {isOpen&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                             {items.map((p:any)=>{
                               const selCount=(p.avantage_ids||[]).length;
                               return (
@@ -1154,7 +1159,18 @@ export default function OpportunitesPage() {
                                   style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${groupe.color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
                                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${groupe.color}18`;ev.currentTarget.style.borderColor=groupe.color;ev.currentTarget.style.borderLeftColor=groupe.color;}}
                                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=groupe.color;}}>
-                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:8}}>{potTitle(p)}</div>
+                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:6}}>{potTitle(p)}</div>
+                                  {groupe.key==="departement"&&p.region_nom&&(
+                                    <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:8}}>
+                                      <span style={{fontSize:11,fontWeight:600,color:"#225BCC",background:"rgba(34,91,204,0.08)",border:"1px solid rgba(34,91,204,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>
+                                    </div>
+                                  )}
+                                  {groupe.key==="arrondissement"&&(p.region_nom||p.departement_nom)&&(
+                                    <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
+                                      {p.region_nom&&<span style={{fontSize:11,fontWeight:600,color:"#225BCC",background:"rgba(34,91,204,0.08)",border:"1px solid rgba(34,91,204,0.2)",padding:"2px 9px",borderRadius:999,alignSelf:"flex-start" as const}}>Région de {p.region_nom}</span>}
+                                      {p.departement_nom&&<span style={{fontSize:11,fontWeight:600,color:"#575799",background:"rgba(87,87,153,0.08)",border:"1px solid rgba(87,87,153,0.2)",padding:"2px 9px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:12}}>Dép. de {p.departement_nom}</span>}
+                                    </div>
+                                  )}
                                   {selCount>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{selCount} atout{selCount>1?"s":""} référencé{selCount>1?"s":""}</div>}
                                   <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
                                     <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${groupe.color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color:groupe.color,fontWeight:600}}>Voir les détails →</div>
@@ -1162,7 +1178,7 @@ export default function OpportunitesPage() {
                                 </div>
                               );
                             })}
-                          </div>
+                          </div>}
                         </div>
                       );
                     })}
