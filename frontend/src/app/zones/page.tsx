@@ -55,11 +55,12 @@ function SunburstZones({ zones }: { zones:any[] }) {
 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("width",W).attr("height",H).attr("style","max-width:100%;height:auto;");
 
+    const ZONE_COL: Record<string,string> = { ZES:POLE_COLORS[0], ZAI:POLE_COLORS[1], ZFI:POLE_COLORS[2] };
     const getColor = (d:any):string => {
       if (d.depth===0) return "#F2F2F2";
       let n=d; while(n.depth>1) n=n.parent;
-      const c = TYPE_META[n.data.type]?.color || "#9aa5b4";
-      const a = 0.12 + d.depth*0.15;
+      const c = ZONE_COL[n.data.type] || "#9aa5b4";
+      const a = d.depth===1?0.45:d.depth===2?0.40:0.12+d.depth*0.15;
       return c + Math.round(Math.min(a,0.85)*255).toString(16).padStart(2,"0");
     };
     const rectH = (d:any)=>Math.max(0,d.x1-d.x0-Math.min(1,(d.x1-d.x0)/2));
