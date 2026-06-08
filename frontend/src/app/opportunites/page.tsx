@@ -3,7 +3,8 @@
 import Navbar from "@/components/layout/Navbar";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Fuse from "fuse.js";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -738,7 +739,8 @@ export default function OpportunitesPage() {
   const [potsSects,  setPotsSects]  = useState<string[]>([]);
   const [potsBranches,setPotsBranches]=useState<string[]>([]);
   const [potsActivites,setPotsActivites]=useState<string[]>([]);
-  const [potsAtouts, setPotsAtouts] = useState<string[]>([]); // libellés d'atouts
+  const [potsAtouts, setPotsAtouts] = useState<string[]>([]);
+  const [potsQ,      setPotsQ]      = useState("");
   const [groupsOpen, setGroupsOpen] = useState<Record<string,boolean>>({pole:true,region:true,departement:true,arrondissement:true});
 
   // ── Avantages ──
@@ -846,11 +848,28 @@ export default function OpportunitesPage() {
   });
 
   // ── Filtrage potentialités ──
-  // Arbre secteurs plat pour filtrage potentialités
   const potBranchesPlats = secteurs.flatMap((s:any)=>s.branches||[]);
   const potActivitesPlats = potBranchesPlats.flatMap((b:any)=>b.activites||[]);
 
-  const potsFiltres = pots.filter(p=>{
+  // Enrichissement texte pour Fuse
+  const potsWithText = useMemo(()=>pots.map(p=>({
+    ...p,
+    _secteurs:  (p.secteur_ids||[]).map((id:number)=>secteurs.find((s:any)=>s.id===id)?.nom||"").filter(Boolean).join(" "),
+    _branches:  (p.branche_ids||[]).map((id:number)=>potBranchesPlats.find((b:any)=>b.id===id)?.nom||"").filter(Boolean).join(" "),
+    _activites: (p.activite_ids||[]).map((id:number)=>potActivitesPlats.find((a:any)=>a.id===id)?.nom||"").filter(Boolean).join(" "),
+    _atouts:    (p.avantage_ids||[]).map((id:number)=>refAvantages.find((a:any)=>a.id===id)?.libelle||"").filter(Boolean).join(" "),
+  })),[pots,secteurs,potBranchesPlats,potActivitesPlats,refAvantages]);
+
+  const fuse = useMemo(()=>new Fuse(potsWithText,{
+    keys:["titre","description","niveau_nom","pole_nom","_secteurs","_branches","_activites","_atouts"],
+    threshold:0.35,
+    ignoreLocation:true,
+    minMatchCharLength:2,
+  }),[potsWithText]);
+
+  const potsBase = potsQ.trim() ? fuse.search(potsQ.trim()).map(r=>r.item) : potsWithText;
+
+  const potsFiltres = potsBase.filter(p=>{
     if (potsNiveau.length>0&&!potsNiveau.includes(p.niveau)) return false;
     if (potsPoles.length>0&&!potsPoles.includes(p.pole_nom||"")) return false;
     if (potsSects.length>0) {
@@ -899,12 +918,12 @@ export default function OpportunitesPage() {
 
   // ── Helpers filtres ──
   const hasFilterProj = projQ||projPoles.length>0||projSects.length>0||projBranches.length>0||projActivites.length>0||projRegions.length>0||projDepts.length>0||projArrs.length>0;
-  const hasFilterPots = potsNiveau.length>0||potsPoles.length>0||potsSects.length>0||potsBranches.length>0||potsActivites.length>0||potsAtouts.length>0;
+  const hasFilterPots = !!potsQ||potsNiveau.length>0||potsPoles.length>0||potsSects.length>0||potsBranches.length>0||potsActivites.length>0||potsAtouts.length>0;
   const hasFilterAvgs = avgSects.length>0||avgBranches.length>0||avgActivites.length>0||avgTypes.length>0;
-  const nbFiltres = onglet==="projets"?(projQ?1:0)+projPoles.length+projSects.length+projBranches.length+projActivites.length+projRegions.length+projDepts.length+projArrs.length : onglet==="potentialites"?potsNiveau.length+potsPoles.length+potsSects.length+potsBranches.length+potsActivites.length+potsAtouts.length : avgSects.length+avgBranches.length+avgActivites.length+avgTypes.length;
-  const reinit = () => { setProjQ(""); setProjPoles([]); setProjSects([]); setProjBranches([]); setProjActivites([]); setProjRegions([]); setProjDepts([]); setProjArrs([]); setPotsNiveau([]); setPotsPoles([]); setPotsSects([]); setPotsBranches([]); setPotsActivites([]); setPotsAtouts([]); setAvgSects([]); setAvgBranches([]); setAvgActivites([]); setAvgTypes([]); };
+  const nbFiltres = onglet==="projets"?(projQ?1:0)+projPoles.length+projSects.length+projBranches.length+projActivites.length+projRegions.length+projDepts.length+projArrs.length : onglet==="potentialites"?(potsQ?1:0)+potsNiveau.length+potsPoles.length+potsSects.length+potsBranches.length+potsActivites.length+potsAtouts.length : avgSects.length+avgBranches.length+avgActivites.length+avgTypes.length;
+  const reinit = () => { setProjQ(""); setProjPoles([]); setProjSects([]); setProjBranches([]); setProjActivites([]); setProjRegions([]); setProjDepts([]); setProjArrs([]); setPotsQ(""); setPotsNiveau([]); setPotsPoles([]); setPotsSects([]); setPotsBranches([]); setPotsActivites([]); setPotsAtouts([]); setAvgSects([]); setAvgBranches([]); setAvgActivites([]); setAvgTypes([]); };
 
-  const toggle = (arr:string[], setArr:(v:string[])=>void) => (v:string) => setArr(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
+  const toggle = (arr:string[], setArr:(v:string[])=>void) => (v:string) => setArr(arr.includes(v)?arr.filter((x:string)=>x!==v):[...arr,v]);
 
   // ── Accordéon avantages ──
   const secMap = new Map<number,{id:number;nom:string;branches:Map<number,{id:number;nom:string;items:any[]}>}>();
@@ -1014,6 +1033,13 @@ export default function OpportunitesPage() {
 
                   {/* Filtres Potentialités */}
                   {onglet==="potentialites"&&<>
+                    <div style={{position:"relative" as const,marginBottom:18}}>
+                      <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+                      <input value={potsQ} onChange={e=>setPotsQ(e.target.value)} placeholder="Rechercher…"
+                        style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
+                      {potsQ&&<button onClick={()=>setPotsQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                    </div>
+                    <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                     <SideFilter label="Zone" color="#059669"
                       items={[{value:"pole",label:"Pôles"},{value:"region",label:"Régions"},{value:"departement",label:"Départements"},{value:"arrondissement",label:"Arrondissements"}]}
                       selected={potsNiveau} onToggle={toggle(potsNiveau,setPotsNiveau)}/>
