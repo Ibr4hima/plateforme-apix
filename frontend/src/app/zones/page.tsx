@@ -449,32 +449,42 @@ export default function ZonesPage() {
       <Navbar/>
 
       {/* ── Hero ── */}
-      <section style={{ padding:"100px 40px 0", background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", position:"relative" as const, overflow:"hidden" }}>
-        <div style={{ maxWidth:1280, margin:"0 auto", position:"relative" as const, zIndex:1 }}>
-          <div style={{ display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:16 }}>
-            <span style={{ fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase" as const }}>Investir au Sénégal</span>
+      <section style={{padding:"100px 40px 40px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
+        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
+          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
+        </div>
+        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
+            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase" as const}}>Investir au Sénégal</span>
           </div>
-          <h1 style={{ fontWeight:800, fontSize:"clamp(2rem,4vw,3rem)", color:"#fff", lineHeight:1.1, marginBottom:10 }}>Zones d'Investissement</h1>
-          <p style={{ color:"rgba(255,255,255,0.5)", fontSize:14, maxWidth:540, lineHeight:1.7, marginBottom:28 }}>
-            Cartographie des zones économiques spéciales, zones aménagées et zones franches industrielles du Sénégal — avec les entreprises installées et éligibles.
-          </p>
-
-          {/* Onglets dans le hero */}
-          <div style={{ display:"flex", gap:2, background:"rgba(255,255,255,0.05)", borderRadius:10, padding:3, width:"fit-content", border:"1px solid rgba(255,255,255,0.08)" }}>
-            {[{k:"zones",l:"Zones d'investissement"},{k:"poles",l:"Pôles territoires"},{k:"territoire",l:"Vue territoriale"},{k:"liste",l:"Vue détaillée"}].map(o=>(
-              <button key={o.k} onClick={()=>setOnglet(o.k as any)}
-                style={{ padding:"8px 20px",borderRadius:7,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all 0.15s", background:onglet===o.k?"#ca631f":"transparent", color:onglet===o.k?"#fff":"rgba(255,255,255,0.5)" }}>
-                {o.l}
-              </button>
-            ))}
+          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Zones d&apos;Investissement</h1>
+          <p style={{color:"rgba(255,255,255,0.45)",fontSize:15,maxWidth:560,lineHeight:1.7,marginBottom:24}}>Cartographie des zones économiques spéciales, zones aménagées et zones franches industrielles du Sénégal.</p>
+          <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
+            {stats.total>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.total} zone{stats.total>1?"s":""}</span>}
+            {stats.installes>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.installes} entreprise{stats.installes>1?"s":""} installée{stats.installes>1?"s":""}</span>}
           </div>
         </div>
-        {/* Fond arrondi de transition */}
-        <div style={{ height:32, background:"#F2F0EF", borderRadius:"20px 20px 0 0", marginTop:28 }}/>
       </section>
 
+      {/* Onglets sticky */}
+      <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:0,zIndex:10}}>
+        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
+          {([
+            {key:"zones",      label:"Zones d'investissement", color:"#ca631f"},
+            {key:"poles",      label:"Pôles territoires",      color:"#ca631f"},
+            {key:"territoire", label:"Vue territoriale",       color:"#ca631f"},
+            {key:"liste",      label:"Vue détaillée",          color:"#ca631f"},
+          ] as const).map(t=>(
+            <button key={t.key} onClick={()=>setOnglet(t.key)}
+              style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── Contenu ── */}
-      <section style={{ padding:"0 40px 80px", maxWidth:1280, margin:"0 auto" }}>
+      <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
 
         {/* Vue sunburst par type */}
         {onglet==="zones" && (
