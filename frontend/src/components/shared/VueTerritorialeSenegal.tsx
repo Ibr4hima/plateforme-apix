@@ -104,7 +104,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         );
         const color = pole ? getPoleColor(pole.id) : "#E8E5E3";
         const ents = entByRegion[nom] || 0;
-        const baseOpacity = 0.45;
+        const baseOpacity = 0.75;
 
         const g = svg.append("g")
           .style("cursor", "pointer")
@@ -147,7 +147,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         const cy = centroidPt && !isNaN(centroidPt[1]) ? centroidPt[1] : H / 2;
 
         g.on("mouseenter", function(event: MouseEvent) {
-          d3.select(this).select("path").attr("fill-opacity", 0.60);
+          d3.select(this).select("path").attr("fill-opacity", 0.95);
           const rect = container.getBoundingClientRect();
           setTooltip({ nom, x: event.clientX - rect.left, y: event.clientY - rect.top });
         })
