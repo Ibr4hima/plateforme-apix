@@ -4,7 +4,6 @@ import Navbar from "@/components/layout/Navbar";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Fuse from "fuse.js";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -851,7 +850,7 @@ export default function OpportunitesPage() {
   const potBranchesPlats = secteurs.flatMap((s:any)=>s.branches||[]);
   const potActivitesPlats = potBranchesPlats.flatMap((b:any)=>b.activites||[]);
 
-  // Enrichissement texte pour Fuse
+  // Enrichissement texte pour recherche
   const potsWithText = useMemo(()=>pots.map(p=>({
     ...p,
     _secteurs:  (p.secteur_ids||[]).map((id:number)=>secteurs.find((s:any)=>s.id===id)?.nom||"").filter(Boolean).join(" "),
@@ -860,14 +859,16 @@ export default function OpportunitesPage() {
     _atouts:    (p.avantage_ids||[]).map((id:number)=>refAvantages.find((a:any)=>a.id===id)?.libelle||"").filter(Boolean).join(" "),
   })),[pots,secteurs,potBranchesPlats,potActivitesPlats,refAvantages]);
 
-  const fuse = useMemo(()=>new Fuse(potsWithText,{
-    keys:["titre","description","niveau_nom","pole_nom","_secteurs","_branches","_activites","_atouts"],
-    threshold:0.35,
-    ignoreLocation:true,
-    minMatchCharLength:2,
-  }),[potsWithText]);
-
-  const potsBase = potsQ.trim() ? fuse.search(potsQ.trim()).map(r=>r.item) : potsWithText;
+  const potsBase = useMemo(()=>{
+    const q = potsQ.trim().toLowerCase();
+    if (!q) return potsWithText;
+    const words = q.split(/\s+/).filter(w=>w.length>1);
+    return potsWithText.filter(p=>{
+      const haystack = [p.titre,p.description,p.niveau_nom,p.pole_nom,p._secteurs,p._branches,p._activites,p._atouts]
+        .filter(Boolean).join(" ").toLowerCase();
+      return words.every(w=>haystack.includes(w));
+    });
+  },[potsQ,potsWithText]);
 
   const potsFiltres = potsBase.filter(p=>{
     if (potsNiveau.length>0&&!potsNiveau.includes(p.niveau)) return false;
