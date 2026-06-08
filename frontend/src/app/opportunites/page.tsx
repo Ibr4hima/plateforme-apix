@@ -751,6 +751,8 @@ export default function OpportunitesPage() {
   const [avgBranches,   setAvgBranches]   = useState<string[]>([]);
   const [avgActivites,  setAvgActivites]  = useState<string[]>([]);
   const [avgTypes,      setAvgTypes]      = useState<string[]>([]);
+  const [avgsQ,         setAvgsQ]         = useState("");
+  const [avgsOpen,      setAvgsOpen]      = useState<Record<number,boolean>>({});
   const [refAvgTypes,   setRefAvgTypes]   = useState<any[]>([]);
   const [expandedSec, setExpandedSec] = useState<number|null>(null);
   const [expandedBranch,setExpandedBranch] = useState<number|null>(null);
@@ -898,7 +900,17 @@ export default function OpportunitesPage() {
   const avgBranchesPlats = secteurs.flatMap((s:any)=>s.branches||[]);
   const avgActivitesPlats = avgBranchesPlats.flatMap((b:any)=>b.activites||[]);
 
-  const avgsFiltres = avgs.filter(a=>{
+  const avgsBase = useMemo(()=>{
+    const q=avgsQ.trim().toLowerCase();
+    if (!q) return avgs;
+    const words=q.split(/\s+/).filter(w=>w.length>1);
+    return avgs.filter(a=>{
+      const hay=[a.activite_nom,a.secteur_nom,a.branche_nom,...(a.selections||[]).map((s:any)=>s.type_libelle)].filter(Boolean).join(" ").toLowerCase();
+      return words.every(w=>hay.includes(w));
+    });
+  },[avgsQ,avgs]);
+
+  const avgsFiltres = avgsBase.filter(a=>{
     if (avgSects.length>0) {
       const secIds = avgSects.map(n=>secteurs.find((s:any)=>s.nom===n)?.id).filter(Boolean);
       if (!secIds.includes(a.secteur_id)) return false;
@@ -921,9 +933,9 @@ export default function OpportunitesPage() {
   // ── Helpers filtres ──
   const hasFilterProj = projQ||projPoles.length>0||projSects.length>0||projBranches.length>0||projActivites.length>0||projRegions.length>0||projDepts.length>0||projArrs.length>0;
   const hasFilterPots = !!potsQ||potsNiveau.length>0||potsPoles.length>0||potsSects.length>0||potsBranches.length>0||potsActivites.length>0||potsAtouts.length>0;
-  const hasFilterAvgs = avgSects.length>0||avgBranches.length>0||avgActivites.length>0||avgTypes.length>0;
-  const nbFiltres = onglet==="projets"?(projQ?1:0)+projPoles.length+projSects.length+projBranches.length+projActivites.length+projRegions.length+projDepts.length+projArrs.length : onglet==="potentialites"?(potsQ?1:0)+potsNiveau.length+potsPoles.length+potsSects.length+potsBranches.length+potsActivites.length+potsAtouts.length : avgSects.length+avgBranches.length+avgActivites.length+avgTypes.length;
-  const reinit = () => { setProjQ(""); setProjPoles([]); setProjSects([]); setProjBranches([]); setProjActivites([]); setProjRegions([]); setProjDepts([]); setProjArrs([]); setPotsQ(""); setPotsNiveau([]); setPotsPoles([]); setPotsSects([]); setPotsBranches([]); setPotsActivites([]); setPotsAtouts([]); setAvgSects([]); setAvgBranches([]); setAvgActivites([]); setAvgTypes([]); };
+  const hasFilterAvgs = !!avgsQ||avgSects.length>0||avgBranches.length>0||avgActivites.length>0||avgTypes.length>0;
+  const nbFiltres = onglet==="projets"?(projQ?1:0)+projPoles.length+projSects.length+projBranches.length+projActivites.length+projRegions.length+projDepts.length+projArrs.length : onglet==="potentialites"?(potsQ?1:0)+potsNiveau.length+potsPoles.length+potsSects.length+potsBranches.length+potsActivites.length+potsAtouts.length : (avgsQ?1:0)+avgSects.length+avgBranches.length+avgActivites.length+avgTypes.length;
+  const reinit = () => { setProjQ(""); setProjPoles([]); setProjSects([]); setProjBranches([]); setProjActivites([]); setProjRegions([]); setProjDepts([]); setProjArrs([]); setPotsQ(""); setPotsNiveau([]); setPotsPoles([]); setPotsSects([]); setPotsBranches([]); setPotsActivites([]); setPotsAtouts([]); setAvgsQ(""); setAvgSects([]); setAvgBranches([]); setAvgActivites([]); setAvgTypes([]); };
 
   const toggle = (arr:string[], setArr:(v:string[])=>void) => (v:string) => setArr(arr.includes(v)?arr.filter((x:string)=>x!==v):[...arr,v]);
 
@@ -1068,6 +1080,13 @@ export default function OpportunitesPage() {
 
                   {/* Filtres Avantages */}
                   {onglet==="avantages"&&<>
+                    <div style={{position:"relative" as const,marginBottom:18}}>
+                      <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+                      <input value={avgsQ} onChange={e=>setAvgsQ(e.target.value)} placeholder="Rechercher…"
+                        style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
+                      {avgsQ&&<button onClick={()=>setAvgsQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                    </div>
+                    <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                     <ThematiquesCascadeFilter
                       secteurs={secteurs}
                       secteursSel={avgSects} branchesSel={avgBranches} activitesSel={avgActivites}
@@ -1080,7 +1099,7 @@ export default function OpportunitesPage() {
                       <div style={{marginBottom:18}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
                           {avgTypes.length>0&&<span style={{width:6,height:6,borderRadius:"50%",background:"#7c3aed",display:"inline-block"}}/>}
-                          <span style={{fontSize:11,fontWeight:700,color:avgTypes.length>0?"#7c3aed":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Avantages & incitations</span>
+                          <span style={{fontSize:11,fontWeight:700,color:avgTypes.length>0?"#7c3aed":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Type d'avantage</span>
                           {avgTypes.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#7c3aed",background:"rgba(124,58,237,0.12)",padding:"1px 6px",borderRadius:999}}>{avgTypes.length}</span>}
                         </div>
                         <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
@@ -1233,7 +1252,6 @@ export default function OpportunitesPage() {
             {/* ── Onglet Avantages ── */}
             {onglet==="avantages"&&(
               <>
-                <p style={{fontSize:13,color:"#9aa5b4",marginBottom:20}}>{avgsFiltres.length} fiche{avgsFiltres.length>1?"s":""}{hasFilterAvgs?" trouvée"+(avgsFiltres.length>1?"s":""):""}</p>
                 {avgsLoad ? (
                   <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
                 ) : avgsFiltres.length===0 ? (
@@ -1241,7 +1259,7 @@ export default function OpportunitesPage() {
                     <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucune fiche trouvée</p>
                   </div>
                 ) : (
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:28}}>
+                  <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
                     {(()=>{
                       const SEC_ORDER=["primaire","secondaire","tertiaire"];
                       const secMap=new Map<number,{id:number;nom:string;items:any[]}>();
@@ -1250,7 +1268,7 @@ export default function OpportunitesPage() {
                         if(!secMap.has(sid))secMap.set(sid,{id:sid,nom:a.secteur_nom||"Sans secteur",items:[]});
                         secMap.get(sid)!.items.push(a);
                       });
-                      const SECT_COLORS=["#ca631f","#004f91","#059669","#7c3aed","#0891b2","#d97706","#E35336","#188038"];
+                      const SECT_COLORS=["#ca631f","#225BCC","#575799","#7c3aed","#0891b2","#d97706","#E35336","#188038"];
                       const secList=Array.from(secMap.values()).sort((a,b)=>{
                         const ai=SEC_ORDER.findIndex(o=>a.nom.toLowerCase().includes(o));
                         const bi=SEC_ORDER.findIndex(o=>b.nom.toLowerCase().includes(o));
@@ -1258,20 +1276,25 @@ export default function OpportunitesPage() {
                       });
                       return secList.map((sec,si)=>{
                         const color=SECT_COLORS[si%SECT_COLORS.length];
+                        const isOpen=avgsOpen[sec.id]!==false;
+                        const showGrid=isOpen||hasFilterAvgs;
                         return (
                           <div key={sec.id}>
-                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
-                              <div style={{width:3,height:20,borderRadius:2,background:color,flexShrink:0}}/>
-                              <span style={{fontSize:13,fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
-                              <span style={{fontSize:11,color:"#9aa5b4"}}>({sec.items.length} fiche{sec.items.length>1?"s":""})</span>
+                            <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:showGrid?12:0}}>
+                              <div style={{width:3,height:18,borderRadius:2,background:color,flexShrink:0}}/>
+                              <span style={{fontSize:12,fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
+                              <button onClick={()=>setAvgsOpen(prev=>({...prev,[sec.id]:!prev[sec.id]}))}
+                                style={{display:"flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:6,border:`1px solid ${color}35`,background:`${color}0f`,cursor:"pointer",flexShrink:0}}>
+                                {isOpen?<ChevronDown size={12} style={{color}}/>:<ChevronUp size={12} style={{color}}/>}
+                              </button>
                             </div>
-                            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
+                            {showGrid&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                               {sec.items.map((a:any)=>(
                                 <div key={a.id} onClick={()=>setAvgSel(a)}
-                                  style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:`3px solid ${color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-                                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderTopColor=`${color}50`;ev.currentTarget.style.borderRightColor=`${color}50`;ev.currentTarget.style.borderBottomColor=`${color}50`;}}
-                                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
-                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{a.activite_nom}</div>
+                                  style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
+                                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderColor=color;ev.currentTarget.style.borderLeftColor=color;}}
+                                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=color;}}>
+                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{a.activite_nom}</div>
                                   <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
                                     {a.secteur_nom&&<span style={{fontSize:11,color:"#9aa5b4"}}>{a.secteur_nom}</span>}
                                     {a.branche_nom&&<><span style={{fontSize:10,color:"#C5BFBB"}}>›</span><span style={{fontSize:11,color:"#9aa5b4"}}>{a.branche_nom}</span></>}
@@ -1284,13 +1307,13 @@ export default function OpportunitesPage() {
                                       {(a.selections||[]).length>3&&<span style={{fontSize:10,color:"#9aa5b4"}}>+{(a.selections||[]).length-3}</span>}
                                     </div>
                                   )}
-                                  {a.fichiers?.length>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:4}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
-                                  <div style={{borderTop:"1px solid #F2F0EF",paddingTop:8,display:"flex",justifyContent:"flex-end"}}>
-                                    <span style={{fontSize:11,color,fontWeight:600}}>Voir les avantages →</span>
+                                  {a.fichiers?.length>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
+                                  <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                                    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color,fontWeight:600}}>Voir les détails →</div>
                                   </div>
                                 </div>
                               ))}
-                            </div>
+                            </div>}
                           </div>
                         );
                       });
