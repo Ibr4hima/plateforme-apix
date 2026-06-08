@@ -422,7 +422,7 @@ export default function EvenementsPage() {
                         onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
                         onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
                         <div style={{position:"absolute" as const,top:12,right:12}}>
-                          {statut==="en_cours" ? <Badge variant="green"  size="xs">En cours</Badge>
+                          {statut==="en_cours" ? <Badge variant="green"  size="xs" style={{color:"#188038",background:"rgba(24,128,56,0.06)",borderColor:"rgba(24,128,56,0.12)"}}>En cours</Badge>
                           :statut==="termine"  ? <Badge variant="gray"   size="xs">Terminé</Badge>
                           :e.role_apix         ? <Badge variant={ROLE_VARIANT[e.role_apix]||"gray"} size="xs">{ROLES_APIX[e.role_apix]||e.role_apix}</Badge>
                           :null}
