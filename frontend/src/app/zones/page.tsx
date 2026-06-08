@@ -185,7 +185,7 @@ function SunburstPoles({ zones }: { zones:any[] }) {
         children: zs.map((z:any)=>({
           name:z.nom_zone, poleIndex:pi, type:z.type_zone, value:1, data:z,
           children: z.entreprises?.filter((ze:any)=>ze.statut==="installee").length>0
-            ? z.entreprises.filter((ze:any)=>ze.statut==="installee").map((ze:any)=>({ name:ze.entreprise?.nom||"—", poleIndex:pi, value:1 }))
+            ? z.entreprises.filter((ze:any)=>ze.statut==="installee").map((ze:any)=>({ name:ze.entreprise?.nom||"—", poleIndex:pi, value:1, data:ze.entreprise }))
             : undefined,
         })),
       })),
