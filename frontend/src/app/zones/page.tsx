@@ -86,16 +86,12 @@ function SunburstZones({ zones }: { zones:any[] }) {
     });
 
     // ── Badges via foreignObject (centrage CSS parfait) ───────────────────────
-    const getBadgeText = (d:any):string => {
-      if (d.depth===1) { const n=d.children?.length||0; return n?`${n} ${d.data.type||""}`:"";}
-      if (d.depth===2) { const e=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length; return e?`${e} entreprise${e>1?"s":""}`:"";}
-      return "";
-    };
     const getTypeColor = (d:any):string => { let n=d; while(n.depth>1) n=n.parent; return TYPE_META[n.data.type]?.color||"#9aa5b4"; };
 
-    cell.filter((d:any)=>d.depth>0&&d.depth<3&&d.children&&labelOk(d)&&(d.x1-d.x0)>32)
+    // depth=1 : badge "N ZES" centré sous le titre
+    cell.filter((d:any)=>d.depth===1&&d.children&&labelOk(d)&&(d.x1-d.x0)>32)
       .each(function(d:any) {
-        const txt=getBadgeText(d); if(!txt) return;
+        const n=d.children?.length||0; if(!n) return;
         const col=getTypeColor(d);
         const w=Math.max(0,d.y1-d.y0-12);
         d3.select(this as SVGGElement).append("foreignObject")
@@ -108,7 +104,28 @@ function SunburstZones({ zones }: { zones:any[] }) {
           .style("border-radius","8px").style("font-size","9px").style("font-weight","700")
           .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
           .style("white-space","nowrap").style("line-height","18px")
-          .text(txt);
+          .text(`${n} ${d.data.type||""}`);
+      });
+
+    // depth=2 : badge numérique aligné à droite sur la ligne du nom
+    cell.filter((d:any)=>d.depth===2&&labelOk(d)&&(d.x1-d.x0)>24)
+      .each(function(d:any) {
+        const ents=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+        if(!ents) return;
+        const col=getTypeColor(d);
+        const w=Math.max(0,d.y1-d.y0-12);
+        d3.select(this as SVGGElement).append("foreignObject")
+          .attr("x",6).attr("y",2).attr("width",w).attr("height",18)
+          .attr("pointer-events","none")
+          .append("xhtml:div")
+          .style("display","flex").style("justify-content","flex-end").style("align-items","center").style("height","18px")
+          .append("xhtml:span")
+          .style("display","inline-flex").style("align-items","center")
+          .style("height","15px").style("padding","0 6px")
+          .style("background",col+"22").style("border",`1px solid ${col}55`)
+          .style("border-radius","6px").style("font-size","9px").style("font-weight","700")
+          .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
+          .text(`${ents}`);
       });
 
     let focus=root;
