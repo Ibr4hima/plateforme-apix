@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Fuse from "@/lib/fuse";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -859,16 +860,16 @@ export default function OpportunitesPage() {
     _atouts:    (p.avantage_ids||[]).map((id:number)=>refAvantages.find((a:any)=>a.id===id)?.libelle||"").filter(Boolean).join(" "),
   })),[pots,secteurs,potBranchesPlats,potActivitesPlats,refAvantages]);
 
-  const potsBase = useMemo(()=>{
-    const q = potsQ.trim().toLowerCase();
-    if (!q) return potsWithText;
-    const words = q.split(/\s+/).filter(w=>w.length>1);
-    return potsWithText.filter(p=>{
-      const haystack = [p.titre,p.description,p.niveau_nom,p.pole_nom,p._secteurs,p._branches,p._activites,p._atouts]
-        .filter(Boolean).join(" ").toLowerCase();
-      return words.every(w=>haystack.includes(w));
-    });
-  },[potsQ,potsWithText]);
+  const fuse = useMemo(()=>new Fuse(potsWithText,{
+    keys:["titre","description","niveau_nom","pole_nom","_secteurs","_branches","_activites","_atouts"],
+    threshold:0.35,
+    ignoreLocation:true,
+    minMatchCharLength:2,
+  }),[potsWithText]);
+
+  const potsBase = useMemo(()=>
+    potsQ.trim() ? fuse.search(potsQ.trim()).map((r:any)=>r.item) : potsWithText
+  ,[potsQ,fuse,potsWithText]);
 
   const potsFiltres = potsBase.filter(p=>{
     if (potsNiveau.length>0&&!potsNiveau.includes(p.niveau)) return false;
