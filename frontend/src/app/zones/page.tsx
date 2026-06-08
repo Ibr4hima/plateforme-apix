@@ -163,6 +163,7 @@ function SunburstZones({ zones }: { zones:any[] }) {
 function SunburstPoles({ zones }: { zones:any[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const [ficheEnt, setFicheEnt] = useState<any>(null);
 
   useEffect(() => {
     if (!zones.length || !svgRef.current || !wrapRef.current) return;
@@ -275,6 +276,11 @@ function SunburstPoles({ zones }: { zones:any[] }) {
 
     let focus=root;
     cell.select("rect").on("click",function(_:any,p:any){
+      if(p.depth===3&&p.data.data?.id){
+        fetch(`${API_BASE}/entreprises/${p.data.data.id}`)
+          .then(r=>r.json()).then(d=>setFicheEnt(d)).catch(()=>{});
+        return;
+      }
       focus=focus===p?(p=p.parent):p; if(!p) return;
       root.each((d:any)=>{ d.target={
         x0:(d.x0-p.x0)/(p.x1-p.x0)*H, x1:(d.x1-p.x0)/(p.x1-p.x0)*H,
@@ -291,6 +297,7 @@ function SunburstPoles({ zones }: { zones:any[] }) {
   return (
     <div ref={wrapRef}>
       <svg ref={svgRef} style={{ width:"100%",height:500,display:"block" }}/>
+      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>
     </div>
   );
 }
