@@ -918,6 +918,9 @@ export default function OpportunitesPage() {
   const SECT_COLORS=["#ca631f","#004f91","#059669","#7c3aed","#0891b2","#d97706","#E35336"];
 
   const NIVEAUX_LABELS: Record<string,string> = {pole:"Pôles",region:"Régions",departement:"Départements",arrondissement:"Arrondissements"};
+  const potTitle = (p:any) => (p.titre||"")
+    .replace(/^[Pp]otentialité\s+(de\s+l['']|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
+    .replace(/^(.)/, (_:string,c:string) => c.toUpperCase());
 
   return (
     <main style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
@@ -946,8 +949,8 @@ export default function OpportunitesPage() {
         <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
           {([
             {key:"projets",       label:"Banque de projets",      color:"#ca631f"},
-            {key:"potentialites", label:"Potentialités par zone",  color:"#059669"},
-            {key:"avantages",     label:"Avantages & incitations", color:"#7c3aed"},
+            {key:"potentialites", label:"Potentialités par zone",  color:"#ca631f"},
+            {key:"avantages",     label:"Avantages & incitations", color:"#ca631f"},
           ] as const).map(t=>(
             <button key={t.key} onClick={()=>setOnglet(t.key)}
               style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
@@ -1121,7 +1124,6 @@ export default function OpportunitesPage() {
             {/* ── Onglet Potentialités ── */}
             {onglet==="potentialites"&&(
               <>
-                <p style={{fontSize:13,color:"#9aa5b4",marginBottom:16}}>{potsFiltres.length} fiche{potsFiltres.length>1?"s":""}{hasFilterPots?" trouvée"+(potsFiltres.length>1?"s":""):""}</p>
                 {potsLoad ? (
                   <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
                 ) : potsFiltres.length===0 ? (
@@ -1143,20 +1145,19 @@ export default function OpportunitesPage() {
                           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
                             <div style={{width:3,height:18,borderRadius:2,background:groupe.color}}/>
                             <span style={{fontSize:12,fontWeight:700,color:groupe.color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{groupe.label}</span>
-                            <span style={{fontSize:11,color:"#9aa5b4"}}>({items.length})</span>
                           </div>
-                          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
+                          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                             {items.map((p:any)=>{
                               const selCount=(p.avantage_ids||[]).length;
                               return (
                                 <div key={p.id} onClick={()=>setPotSel(p)}
-                                  style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:`3px solid ${groupe.color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-                                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${groupe.color}20`;ev.currentTarget.style.borderTopColor=`${groupe.color}50`;ev.currentTarget.style.borderRightColor=`${groupe.color}50`;ev.currentTarget.style.borderBottomColor=`${groupe.color}50`;}}
-                                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
-                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:8}}>{p.titre}</div>
+                                  style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${groupe.color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
+                                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${groupe.color}18`;ev.currentTarget.style.borderColor=groupe.color;ev.currentTarget.style.borderLeftColor=groupe.color;}}
+                                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=groupe.color;}}>
+                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:8}}>{potTitle(p)}</div>
                                   {selCount>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{selCount} atout{selCount>1?"s":""} référencé{selCount>1?"s":""}</div>}
-                                  <div style={{borderTop:"1px solid #F2F0EF",paddingTop:8,display:"flex",justifyContent:"flex-end"}}>
-                                    <span style={{fontSize:11,color:groupe.color,fontWeight:600}}>Voir les potentialités →</span>
+                                  <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                                    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${groupe.color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color:groupe.color,fontWeight:600}}>Voir les détails →</div>
                                   </div>
                                 </div>
                               );
