@@ -919,7 +919,7 @@ export default function OpportunitesPage() {
 
   const NIVEAUX_LABELS: Record<string,string> = {pole:"Pôles",region:"Régions",departement:"Départements",arrondissement:"Arrondissements"};
   const potTitle = (p:any) => (p.titre||"")
-    .replace(/^[Pp]otentialité\s+(de\s+l['']|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
+    .replace(/^[Pp]otentialités?\s+(de\s+l[''’]|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
     .replace(/^(.)/, (_:string,c:string) => c.toUpperCase());
 
   return (
