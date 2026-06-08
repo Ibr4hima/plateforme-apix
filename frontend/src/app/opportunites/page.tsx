@@ -24,7 +24,7 @@ function ScrollTitle({ text }: { text: string }) {
   }, [text]);
   return (
     <div ref={outerRef} style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const}}>
-      <span ref={innerRef} style={{display:"inline-block",...(tx>0?{animation:"aptitle-scroll 3.5s ease-in-out infinite","--aptitle-tx":`-${tx}px`} as React.CSSProperties:{})}}>
+      <span ref={innerRef} style={{display:"inline-block",...(tx>0?{animation:"aptitle-scroll 6s ease-in-out infinite","--aptitle-tx":`-${tx}px`} as React.CSSProperties:{})}}>
         {text}
       </span>
     </div>
