@@ -1134,9 +1134,9 @@ export default function OpportunitesPage() {
                   <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
                     {([
                       {key:"pole",label:"Pôles territoires",color:"#ca631f"},
-                      {key:"region",label:"Régions",color:"#E35336"},
-                      {key:"departement",label:"Départements",color:"#0891b2"},
-                      {key:"arrondissement",label:"Arrondissements",color:"#7c3aed"},
+                      {key:"region",label:"Régions",color:"#225BCC"},
+                      {key:"departement",label:"Départements",color:"#CCCC22"},
+                      {key:"arrondissement",label:"Arrondissements",color:"#0D9488"},
                     ] as const).map(groupe=>{
                       const items=potsFiltres.filter((p:any)=>p.niveau===groupe.key);
                       if (items.length===0) return null;
