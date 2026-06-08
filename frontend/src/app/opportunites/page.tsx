@@ -940,21 +940,18 @@ export default function OpportunitesPage() {
       <Navbar/>
 
       {/* Hero */}
-      <section style={{padding:"100px 40px 40px",background:"linear-gradient(160deg,#1a1a2e 0%,#2d2d44 50%,#1a1a2e 100%)",position:"relative" as const,overflow:"hidden"}}>
+      <section style={{padding:"100px 40px 40px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,top:"10%",right:"5%",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(202,99,31,0.08) 0%,transparent 65%)"}}/>
-          <div style={{position:"absolute" as const,bottom:"-20%",left:"10%",width:350,height:350,borderRadius:"50%",background:"radial-gradient(circle,rgba(54,111,227,0.06) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
         </div>
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.12)",border:"1px solid rgba(202,99,31,0.3)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
-            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>APIX · Agence de Promotion des Investissements et des Grands Travaux</span>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
+            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Opportunités d'investissement</h1>
+          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Opportunités d&apos;investissement</h1>
           <p style={{color:"rgba(255,255,255,0.45)",fontSize:15,maxWidth:560,lineHeight:1.7,marginBottom:24}}>Projets structurants, potentialités territoriales et avantages fiscaux pour investir au Sénégal.</p>
           <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
-            {stats.projets>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.18)",padding:"6px 14px",borderRadius:999}}>{stats.projets} projet{stats.projets>1?"s":""}</span>}
-            {stats.potentialites>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(5,150,105,0.15)",border:"1px solid rgba(5,150,105,0.3)",padding:"6px 14px",borderRadius:999}}>{stats.potentialites} fiche{stats.potentialites>1?"s":""} de potentialités</span>}
-            {stats.activites>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(124,58,237,0.15)",border:"1px solid rgba(124,58,237,0.3)",padding:"6px 14px",borderRadius:999}}>{stats.activites} activité{stats.activites>1?"s":""} avec avantages</span>}
+            {stats.projets>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.projets} projet{stats.projets>1?"s":""}</span>}
           </div>
         </div>
       </section>
