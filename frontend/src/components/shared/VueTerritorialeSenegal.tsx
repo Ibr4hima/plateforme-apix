@@ -82,15 +82,15 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
 
       const d3: any = (window as any).d3;
       const topojson: any = (window as any).topojson;
-      const W = 460, H = 500;
+      const W = Math.min(container.clientWidth || 700, 700);
+      const H = Math.round(W * 1.08);
 
       container.innerHTML = "";
       const svg = d3.select(container)
         .append("svg")
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${W} ${H}`)
-        .style("display", "block")
-        .style("max-height", "460px");
+        .style("display", "block");
 
       const geojson = topojson.feature(topo, topo.objects.sen);
       const features = geojson.features;
