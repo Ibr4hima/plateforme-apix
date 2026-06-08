@@ -455,19 +455,22 @@ function ZoneCard({ zone }: { zone:any }) {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function ZonesPage() {
-  const [zones,   setZones]   = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [onglet,  setOnglet]  = useState<"zones"|"poles"|"liste"|"territoire">("zones");
+  const [zones,      setZones]      = useState<any[]>([]);
+  const [polesCount, setPolesCount] = useState(0);
+  const [loading,    setLoading]    = useState(true);
+  const [onglet,     setOnglet]     = useState<"zones"|"poles"|"liste"|"territoire">("zones");
 
   useEffect(()=>{
     fetch(`${API_BASE}/zones-types`)
       .then(r=>r.json()).then(d=>{ setZones(d||[]); setLoading(false); })
       .catch(()=>setLoading(false));
+    fetch(`${API_BASE}/zones-types/poles`)
+      .then(r=>r.json()).then((d:any[])=>setPolesCount(d?.length||0)).catch(()=>{});
   },[]);
 
   const stats = {
     total:      zones.length,
-    poles:      new Set(zones.map((z:any)=>z.pole_id).filter(Boolean)).size,
+    poles:      polesCount,
     zes:        zones.filter(z=>z.type_zone==="ZES").length,
     zai:        zones.filter(z=>z.type_zone==="ZAI").length,
     zfi:        zones.filter(z=>z.type_zone==="ZFI").length,
@@ -493,7 +496,7 @@ export default function ZonesPage() {
           </div>
           <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:20}}>Zones d&apos;Investissement</h1>
           <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
-            {stats.poles>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.poles} Pôle{stats.poles>1?"s":""} territorial{stats.poles>1?"x":""}</span>}
+            {stats.poles>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.poles} Pôles territoires</span>}
             {stats.zes>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.zes} ZES</span>}
             {stats.zai>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.zai} ZAI</span>}
             {stats.zfi>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.zfi} ZFI</span>}
