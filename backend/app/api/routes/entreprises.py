@@ -41,6 +41,8 @@ def enrich_entreprise(e: EntrepriseIntallee) -> dict:
         "region_nom": e.region.nom if hasattr(e, "region") and e.region else None,
         "departement_nom": e.departement.nom if hasattr(e, "departement") and e.departement else None,
         "arrondissement_nom": e.arrondissement.nom if hasattr(e, "arrondissement") and e.arrondissement else None,
+        "pole_id": e.pole_id,
+        "pole_territoire_nom": e.pole.pole_territoire if hasattr(e, "pole") and e.pole else None,
     }
 
 

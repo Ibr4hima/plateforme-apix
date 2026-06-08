@@ -84,6 +84,7 @@ class EntrepriseIntallee(Base):
     region_id           = Column(Integer, ForeignKey("ref_regions.id"))
     departement_id      = Column(Integer, ForeignKey("ref_departements.id"))
     arrondissement_id   = Column(Integer, ForeignKey("ref_arrondissements.id"))
+    pole_id             = Column(Integer, ForeignKey("poles_territoires.id"))
     adresse             = Column(Text)
 
     telephone       = Column(String(50))
@@ -105,6 +106,7 @@ class EntrepriseIntallee(Base):
     points_focaux = relationship("EntreprisePointFocal", backref="entreprise", lazy="selectin",
                                   foreign_keys=[EntreprisePointFocal.entreprise_id],
                                   cascade="all, delete-orphan")
-    region       = relationship("RefRegion",        foreign_keys=[region_id],        lazy="joined")
-    departement  = relationship("RefDepartement",   foreign_keys=[departement_id],   lazy="joined")
+    region         = relationship("RefRegion",         foreign_keys=[region_id],         lazy="joined")
+    departement    = relationship("RefDepartement",    foreign_keys=[departement_id],    lazy="joined")
     arrondissement = relationship("RefArrondissement", foreign_keys=[arrondissement_id], lazy="joined")
+    pole           = relationship("PoleTerritoire",    foreign_keys=[pole_id],           lazy="joined")
