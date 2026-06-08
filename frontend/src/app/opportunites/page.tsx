@@ -1142,17 +1142,18 @@ export default function OpportunitesPage() {
                       const items=potsFiltres.filter((p:any)=>p.niveau===groupe.key);
                       if (items.length===0) return null;
                       const isOpen=groupsOpen[groupe.key]!==false;
+                      const showGrid=isOpen||hasFilterPots;
                       return (
                         <div key={groupe.key}>
-                          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:isOpen?12:0}}>
+                          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:showGrid?12:0}}>
                             <div style={{width:3,height:18,borderRadius:2,background:groupe.color,flexShrink:0}}/>
                             <span style={{fontSize:12,fontWeight:700,color:groupe.color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{groupe.label}</span>
                             <button onClick={()=>setGroupsOpen(prev=>({...prev,[groupe.key]:!prev[groupe.key]}))}
                               style={{display:"flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:6,border:`1px solid ${groupe.color}35`,background:`${groupe.color}0f`,cursor:"pointer",flexShrink:0}}>
-                              {isOpen?<ChevronUp size={12} style={{color:groupe.color}}/>:<ChevronDown size={12} style={{color:groupe.color}}/>}
+                              {isOpen?<ChevronDown size={12} style={{color:groupe.color}}/>:<ChevronUp size={12} style={{color:groupe.color}}/>}
                             </button>
                           </div>
-                          {isOpen&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+                          {showGrid&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                             {items.map((p:any)=>{
                               const selCount=(p.avantage_ids||[]).length;
                               return (
