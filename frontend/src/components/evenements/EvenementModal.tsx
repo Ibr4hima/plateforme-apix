@@ -52,7 +52,7 @@ export default function EvenementModal({ event, onClose }: { event: any; onClose
         border: "1px solid #C5BFBB",
       }}>
         {/* Bande colorée haut */}
-        <div style={{ height: 5, background: `linear-gradient(90deg, ${accent}, ${accent}88)`, borderRadius: "24px 24px 0 0" }} />
+        <div style={{ height: 5, background: "linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)" }} />
 
         <div style={{ padding: "28px 32px 32px" }}>
 
