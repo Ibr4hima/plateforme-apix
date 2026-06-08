@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, X } from "lucide-react";
+import { parsePhoneNumber } from "libphonenumber-js";
 import { useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -9,6 +10,11 @@ function fmtDate(d: string) {
   if (!d) return "";
   const [y,m,j] = d.split("-").map(Number);
   return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+}
+
+function fmtPhone(raw: string): string {
+  if (!raw) return raw;
+  try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
 }
 
 const LBL = ({children}:{children:string}) => (
@@ -58,15 +64,14 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
                   <Building2 size={18} style={{color:"#E35336"}}/>
                 </div>
                 <div>
-                  <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:3}}>{e.nom}</h2>
-                  {e.forme_juridique && <span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>{e.forme_juridique}</span>}
+                  <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:5}}>{e.nom}</h2>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap" as const}}>
+                    {e.forme_juridique && <span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>{e.forme_juridique}</span>}
+                    {e.region_nom && <span style={{fontSize:11,fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {e.region_nom}</span>}
+                    {e.departement_nom && <span style={{fontSize:11,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>Dép. de {e.departement_nom}</span>}
+                  </div>
                 </div>
               </div>
-              {e.est_publie !== undefined && (
-                <span style={{fontSize:11,fontWeight:700,color:e.est_publie?"#15803d":"#9aa5b4",background:e.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>
-                  {e.est_publie ? "Publiée" : "Non publiée"}
-                </span>
-              )}
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
@@ -101,7 +106,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
               <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}>
                 <LBL>Téléphone(s)</LBL>
                 {e.telephone.split(",").map((t:string,i:number) => (
-                  <p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{t.trim()}</p>
+                  <p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtPhone(t.trim())}</p>
                 ))}
               </div>
             )}
@@ -181,7 +186,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
                       {pf.est_principal && <span style={{fontSize:10,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",borderRadius:999,padding:"1px 7px"}}>Principal</span>}
                     </div>
                     <div style={{color:"#4a5568"}}>
-                      {pf.telephone && <span>{pf.telephone}</span>}
+                      {pf.telephone && <span>{pf.telephone.split(",").map((t:string)=>fmtPhone(t.trim())).join(" · ")}</span>}
                       {pf.mail && <span>{pf.telephone ? " · " : ""}{pf.mail}</span>}
                     </div>
                   </div>
