@@ -242,10 +242,12 @@ async def liste_entreprises(
     branche_list:         List[str] = Query(default=[], alias="branche_nom"),
     activite_list:        List[str] = Query(default=[], alias="activite_nom"),
     admin:                bool      = Query(False),
+    pole_id:              Optional[int] = Query(None),
     db:           AsyncSession  = Depends(get_db),
 ):
     from sqlalchemy import any_ as sa_any
     filters = [] if admin else [EntrepriseIntallee.est_publie == True, EntrepriseIntallee.is_deleted == False]
+    if pole_id:  filters.append(EntrepriseIntallee.pole_id == pole_id)
     if region:  filters.append(EntrepriseIntallee.region_id.in_(select(RefRegion.id).where(RefRegion.nom.ilike(f"%{region}%"))))
     if pays:    filters.append(EntrepriseIntallee.pays.ilike(f"%{pays}%"))
     if search:

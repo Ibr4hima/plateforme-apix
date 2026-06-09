@@ -42,13 +42,11 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
     fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(setSecteurRef).catch(() => {});
   }, []);
 
-  // Charger toutes les entreprises des régions du pôle actif
+  // Charger toutes les entreprises du pôle actif (via pole_id direct)
   useEffect(() => {
     if (!activePole) { setPoleEntsData([]); return; }
-    const regions = splitLocalisation(activePole.localisation);
-    const params = regions.map(r => `region_noms=${encodeURIComponent(r)}`).join("&");
     setPoleEntsLoading(true);
-    fetch(`${API_BASE}/entreprises?${params}&per_page=2000`)
+    fetch(`${API_BASE}/entreprises?pole_id=${activePole.id}&per_page=2000`)
       .then(r => r.json())
       .then(d => { setPoleEntsData(Array.isArray(d) ? d : (d.data || [])); })
       .catch(() => setPoleEntsData([]))
