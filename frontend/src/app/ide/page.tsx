@@ -1290,15 +1290,15 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
 
 // ── Onglet Monde ──────────────────────────────────────────────────────────────
 function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowTable: (v:boolean)=>void }) {
-  const [donnees,      setDonnees]      = useState<any[]>([]);
-  const [loading,      setLoading]      = useState(false);
-  const [anneeMin,     setAnneeMin]     = useState(1990);
-  const [anneeMax,     setAnneeMax]     = useState(2024);
-  const [anneesSpec,   setAnneesSpec]   = useState<number[]>([]);
-  const [modeAnnees,   setModeAnnees]   = useState<"plage"|"specifiques">("plage");
-  const [typeG,        setTypeG]        = useState<"line"|"bar">("line");
-  const [sidebarOpen,  setSidebarOpen]  = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [donnees,     setDonnees]    = useState<any[]>([]);
+  const [loading,     setLoading]    = useState(false);
+  const [anneeMin,    setAnneeMin]   = useState(1990);
+  const [anneeMax,    setAnneeMax]   = useState(2024);
+  const [anneesSpec,  setAnneesSpec] = useState<number[]>([]);
+  const [modeAnnees,  setModeAnnees] = useState<"plage"|"specifiques">("plage");
+  const [typeG,       setTypeG]      = useState<"line"|"bar">("line");
+  const [sidebarOpen, setSidebarOpen]= useState(true);
+  const [sidebarWidth,setSidebarWidth]=useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => {
     isResizing.current = true;
@@ -1308,81 +1308,39 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
-  // Groupements
-  const [groupements,    setGroupements]    = useState<any[]>([]);
-  const [grpSelec,       setGrpSelec]       = useState<number[]>([]);
-  const [membresParGrp,  setMembresParGrp]  = useState<Record<number,string[]>>({});
-  const [searchGrp,      setSearchGrp]      = useState("");
-  const chargerGen = useRef(0);
+  const [groupements, setGroupements] = useState<{code:string; nom_fr:string}[]>([]);
+  const [grpSelec,    setGrpSelec]    = useState<string[]>([]);
+  const [searchGrp,   setSearchGrp]   = useState("");
 
   useEffect(() => {
-    fetch(`${API}/ref-pays/groupements/liste`).then(r=>r.json()).then(d=>setGroupements(d||[])).catch(()=>{});
+    fetch(`${API}/ide/monde/groupements`).then(r=>r.json()).then(d=>setGroupements(d||[])).catch(()=>{});
   }, []);
 
-  // Charger membres d'un groupement si pas encore chargé
-  useEffect(() => {
-    grpSelec.forEach(id => {
-      if (membresParGrp[id]) return;
-      fetch(`${API}/ref-pays/groupements/${id}/membres`).then(r=>r.json()).then((membres:any[]) => {
-        const noms = membres.map(p=>p.nom_cnuced||p.nom_fr).filter(Boolean);
-        setMembresParGrp(prev=>({...prev,[id]:noms}));
-      }).catch(()=>{});
-    });
-  }, [grpSelec]);
-
-  const grpAvecCouleur = grpSelec.map((id,i) => {
-    const g = groupements.find(x=>x.id===id);
-    return { id, nom: g?.code||String(id), label: g?.nom_fr||String(id), couleur: COMP_PALETTE[i]??COMP_PALETTE[4] };
+  const grpAvecCouleur = grpSelec.map((code, i) => {
+    const g = groupements.find(x => x.code === code);
+    return { nom: code, label: g?.nom_fr || code, couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] };
   });
 
   const charger = useCallback(async () => {
     if (!grpSelec.length) { setDonnees([]); return; }
-    const allLoaded = grpSelec.every(id=>membresParGrp[id]);
-    if (!allLoaded) return;
-    const gen = ++chargerGen.current;
     setLoading(true);
     try {
-      // Un fetch par groupement pour éviter tout problème de matching de noms
-      const allAgg: any[] = [];
-      await Promise.all(grpSelec.map(async id => {
-        const membres = membresParGrp[id]||[];
-        if (!membres.length) return;
-        const code = groupements.find(x=>x.id===id)?.code||String(id);
-        const params = new URLSearchParams();
-        params.set("pays_list", membres.join(","));
-        if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
-        else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
-        const raw: any[] = await fetch(`${API}/ide/cnuced?${params}`).then(r=>r.json());
-        // Un seul value par (pays, direction, indicateur, annee) — déduplique par pays
-        const parPays = new Map<string, Map<string,number>>();
-        (raw||[]).filter(d=>d.valeur!=null&&!isNaN(d.valeur)).forEach(d=>{
-          if (!parPays.has(d.pays)) parPays.set(d.pays, new Map());
-          parPays.get(d.pays)!.set(`${d.direction}|${d.indicateur}|${d.annee}`, d.valeur);
-        });
-        // Moyenne sur tous les pays retournés
-        const sumMap = new Map<string,number>();
-        const cntMap = new Map<string,number>();
-        parPays.forEach(keyMap => {
-          keyMap.forEach((valeur,k) => {
-            sumMap.set(k,(sumMap.get(k)||0)+valeur);
-            cntMap.set(k,(cntMap.get(k)||0)+1);
-          });
-        });
-        sumMap.forEach((sum,k)=>{
-          const [direction,indicateur,anneeStr]=k.split("|");
-          allAgg.push({pays:code, direction, indicateur, annee:Number(anneeStr), valeur:sum/(cntMap.get(k)||1)});
-        });
-      }));
-      if (gen !== chargerGen.current) return;
-      setDonnees(allAgg);
+      const params = new URLSearchParams();
+      params.set("codes_list", grpSelec.join(","));
+      if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
+      else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
+      const raw: any[] = await fetch(`${API}/ide/monde?${params}`).then(r=>r.json());
+      setDonnees((raw||[]).map(d => ({
+        pays: d.code, direction: d.direction, indicateur: d.indicateur, annee: d.annee, valeur: d.moyenne,
+      })));
     } catch(e){ console.error(e); }
-    finally { if (gen===chargerGen.current) setLoading(false); }
-  }, [grpSelec, membresParGrp, anneeMin, anneeMax, anneesSpec, modeAnnees, groupements]);
+    finally { setLoading(false); }
+  }, [grpSelec, anneeMin, anneeMax, anneesSpec, modeAnnees]);
 
-  useEffect(()=>{ charger(); },[charger]);
+  useEffect(() => { charger(); }, [charger]);
 
-  const buildSeries = (dir:string,ind:string) =>
-    grpAvecCouleur.map(g=>({ nom:g.nom, couleur:g.couleur, data:donnees.filter(d=>d.pays===g.nom&&d.direction===dir&&d.indicateur===ind) }));
+  const buildSeries = (dir:string, ind:string) =>
+    grpAvecCouleur.map(g => ({ nom:g.nom, couleur:g.couleur, data:donnees.filter(d=>d.pays===g.nom&&d.direction===dir&&d.indicateur===ind) }));
 
   const GRAPHES = [
     { id:"fe", titre:"Flux d'IDE entrants",      series: buildSeries("entrant","flux") },
@@ -1402,7 +1360,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
-      {/* Sidebar bande */}
+      {/* Sidebar */}
       <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 72px)", overflowY:"auto" as const, position:"sticky" as const, top:72, display:"flex", flexDirection:"column" as const }}>
         {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
@@ -1488,14 +1446,14 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
               <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=5?"#ca631f":"#9aa5b4", background:grpSelec.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/5</span>
             </div>
             <div style={{ maxHeight:260, overflowY:"auto" as const }}>
-              {filteredGrp.map((g:any,i:number) => {
-                const sel = grpSelec.includes(g.id);
-                const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.id)] : "#C5BFBB";
+              {filteredGrp.map((g) => {
+                const sel = grpSelec.includes(g.code);
+                const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "#C5BFBB";
                 const canAdd = !sel && grpSelec.length < 5;
                 const disabled = !sel && !canAdd;
                 return (
-                  <button key={g.id}
-                    onClick={()=>{ if(sel) setGrpSelec(prev=>prev.filter(id=>id!==g.id)); else if(canAdd) setGrpSelec(prev=>[...prev,g.id]); }}
+                  <button key={g.code}
+                    onClick={()=>{ if(sel) setGrpSelec(prev=>prev.filter(c=>c!==g.code)); else if(canAdd) setGrpSelec(prev=>[...prev,g.code]); }}
                     style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:2 }}
                     onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
                     onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"transparent";}}>
@@ -1506,7 +1464,6 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
                       <div style={{ fontSize:12, color:sel?col:"#1a1a2e", fontWeight:sel?700:600, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{g.code}</div>
                       <div style={{ fontSize:10, color:"#9aa5b4", whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{g.nom_fr}</div>
                     </div>
-                    {g.nb_pays>0&&<span style={{ fontSize:9, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 5px", borderRadius:4, flexShrink:0 }}>{g.nb_pays} pays</span>}
                   </button>
                 );
               })}
@@ -1546,7 +1503,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
             {grpAvecCouleur.map(g=>(
-              <div key={g.id} style={{ display:"flex", alignItems:"center", gap:6, background:`${g.couleur}12`, border:`1.5px solid ${g.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
+              <div key={g.nom} style={{ display:"flex", alignItems:"center", gap:6, background:`${g.couleur}12`, border:`1.5px solid ${g.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
                 <span style={{ fontSize:12, fontWeight:700, color:g.couleur }}>{g.nom}</span>
               </div>
             ))}
@@ -1557,7 +1514,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
           <div style={{ display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", height:300, gap:12, color:"#9aa5b4" }}>
             <span style={{ fontSize:32 }}>🌍</span>
             <p style={{ fontSize:14, fontWeight:600, color:"#4a5568" }}>Sélectionnez un ou plusieurs groupements</p>
-            <p style={{ fontSize:13 }}>Les données agrégées des pays membres s'afficheront ici.</p>
+            <p style={{ fontSize:13 }}>Les statistiques agrégées s'afficheront ici.</p>
           </div>
         ) : loading ? (
           <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
@@ -1566,7 +1523,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
         ) : (
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
-              <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Source CNUCED (agrégé)" series={g.series} grapheId={g.id}
+              <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Moyenne pays membres · CNUCED" series={g.series} grapheId={g.id}
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={typeG} titre={g.id}/>}>
                 <GrapheMultiPays series={g.series} height={145} type={typeG} titre={g.id}/>
               </GrapheCard>

@@ -1,10 +1,11 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, distinct
 
 from app.core.database import get_db
 from app.models.ide import IdeCnuced, IdeAnalyse, IdeKpiConfig
+from app.models.shared import IdeCnucedMonde
 
 router = APIRouter(prefix="/ide", tags=["IDE"])
 
@@ -86,6 +87,45 @@ def calc_kpis(rows: list) -> dict:
         "flux_entrant_total_periode":  {"valeur":total,"annee":None,"variation":None,"unite":"M$","sens":"info"},
         "flux_entrant_acceleration":   {"valeur":acceleration,"annee":None,"variation":None,"unite":"%","sens":"hausse_bien"},
     }
+
+
+# ── GET /ide/monde/groupements ────────────────────────────────────────────────
+@router.get("/monde/groupements")
+async def liste_monde_groupements(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        select(IdeCnucedMonde.code, IdeCnucedMonde.nom_fr)
+        .distinct()
+        .order_by(IdeCnucedMonde.code)
+    )
+    return [{"code": code, "nom_fr": nom_fr} for code, nom_fr in res.all()]
+
+
+# ── GET /ide/monde ─────────────────────────────────────────────────────────────
+@router.get("/monde")
+async def get_monde(
+    codes_list: Optional[str] = Query(None),   # "CEDEAO,G7"
+    annee_min:  Optional[int] = Query(None),
+    annee_max:  Optional[int] = Query(None),
+    annees:     Optional[str] = Query(None),    # "2003,2008,2020"
+    db: AsyncSession = Depends(get_db),
+):
+    q = select(IdeCnucedMonde)
+    if codes_list:
+        codes = [c.strip() for c in codes_list.split(",") if c.strip()]
+        q = q.where(IdeCnucedMonde.code.in_(codes))
+    if annees:
+        liste = [int(a.strip()) for a in annees.split(",") if a.strip().isdigit()]
+        if liste: q = q.where(IdeCnucedMonde.annee.in_(liste))
+    else:
+        if annee_min: q = q.where(IdeCnucedMonde.annee >= annee_min)
+        if annee_max: q = q.where(IdeCnucedMonde.annee <= annee_max)
+    q = q.order_by(IdeCnucedMonde.code, IdeCnucedMonde.annee)
+    res = await db.execute(q)
+    def f(v): return float(v) if v is not None else None
+    return [{"code":r.code,"nom_fr":r.nom_fr,"annee":r.annee,"indicateur":r.indicateur,
+             "direction":r.direction,"moyenne":f(r.moyenne),"min":f(r.min),"max":f(r.max),
+             "variance":f(r.variance),"ecart_type":f(r.ecart_type)}
+            for r in res.scalars().all()]
 
 
 # ── GET /ide/cnuced — données brutes ──────────────────────────────────────────
