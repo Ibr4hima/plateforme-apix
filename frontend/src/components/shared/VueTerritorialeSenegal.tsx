@@ -237,14 +237,25 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
                   if(["B","C","D","E","F"].includes(c)) return "secondaire";
                   return "tertiaire";
                 };
+                // Entreprises dans les régions du pôle (toutes zones confondues)
+                const poleRegions = splitLocalisation(activePole.localisation);
+                const seen = new Set<number>();
+                const regionEnts: Array<{ze:any; zone:any}> = [];
+                zones.forEach((z:any)=>{
+                  (z.entreprises||[]).forEach((ze:any)=>{
+                    if(!poleRegions.includes(ze.entreprise?.region_nom)) return;
+                    if(ze.statut!=="installee") return;
+                    const id=ze.entreprise?.id;
+                    if(id && seen.has(id)) return;
+                    if(id) seen.add(id);
+                    regionEnts.push({ze, zone:z});
+                  });
+                });
                 const counts:{[k:string]:number} = { primaire:0, secondaire:0, tertiaire:0 };
-                poleZones.forEach((z:any)=>{
-                  const nE=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
-                  if(!nE) return;
-                  const secIds:number[] = z.secteur_ids||[];
-                  if(secIds.length===0){ counts.tertiaire+=nE; return; }
-                  const sec=secteurRef.find((s:any)=>s.id===secIds[0]);
-                  counts[sec?classif(sec.code):"tertiaire"]+=nE;
+                regionEnts.forEach(({zone})=>{
+                  const secIds:number[] = zone.secteur_ids||[];
+                  const sec = secIds.length>0 ? secteurRef.find((s:any)=>s.id===secIds[0]) : null;
+                  counts[sec?classif(sec.code):"tertiaire"]++;
                 });
                 const total=counts.primaire+counts.secondaire+counts.tertiaire||1;
                 const rows=[
