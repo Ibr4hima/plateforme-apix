@@ -70,13 +70,15 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
   const wrapRef= useRef<HTMLDivElement>(null);
 
   const draw = useCallback(() => {
-    if (!ref.current || !series.length) return;
+    if (!ref.current) return;
     const el = ref.current;
+    // Toujours effacer en premier pour éviter les ghosts D3
+    d3.select(el).selectAll("*").remove();
+    if (!series.length) return;
     const W  = el.parentElement?.clientWidth || el.clientWidth || 700;
     const H  = height;
     const M  = { top:12, right:20, bottom:34, left:64 };
 
-    d3.select(el).selectAll("*").remove();
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
 
     const allData = series.flatMap(s => s.data.filter(d => d.valeur !== null) as {annee:number;valeur:number}[]);
@@ -1311,6 +1313,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
   const [grpSelec,       setGrpSelec]       = useState<number[]>([]);
   const [membresParGrp,  setMembresParGrp]  = useState<Record<number,string[]>>({});
   const [searchGrp,      setSearchGrp]      = useState("");
+  const chargerGen = useRef(0);
 
   useEffect(() => {
     fetch(`${API}/ref-pays/groupements/liste`).then(r=>r.json()).then(d=>setGroupements(d||[])).catch(()=>{});
@@ -1338,6 +1341,8 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
     if (!allLoaded) return;
     const allPays = [...new Set(grpSelec.flatMap(id=>membresParGrp[id]||[]))];
     if (!allPays.length) return;
+    // Génération pour ignorer les réponses obsolètes
+    const gen = ++chargerGen.current;
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -1345,6 +1350,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
       if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
       else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
       const raw: any[] = await fetch(`${API}/ide/cnuced?${params}`).then(r=>r.json());
+      if (gen !== chargerGen.current) return; // réponse obsolète, on l'ignore
       // Agréger par groupement (moyenne des pays membres)
       const agg: any[] = [];
       grpSelec.forEach(id => {
@@ -1365,7 +1371,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
       });
       setDonnees(agg);
     } catch(e){ console.error(e); }
-    finally { setLoading(false); }
+    finally { if (gen === chargerGen.current) setLoading(false); }
   }, [grpSelec, membresParGrp, anneeMin, anneeMax, anneesSpec, modeAnnees, groupements]);
 
   useEffect(()=>{ charger(); },[charger]);
