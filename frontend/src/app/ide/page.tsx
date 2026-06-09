@@ -1001,7 +1001,7 @@ function OngletPays({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; 
 }
 
 // ── Palette fixe pour l'analyse comparative ───────────────────────────────────
-const COMP_PALETTE = ["#004f91","#ca631f","#188038","#EFBF04","#575799"];
+const COMP_PALETTE = ["#004f91","#ca631f","#188038","#FF7E70","#575799"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
 function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void }) {
