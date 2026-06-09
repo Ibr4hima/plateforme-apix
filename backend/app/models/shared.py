@@ -1,7 +1,7 @@
 """
 Modèles SQLAlchemy partagés entre plusieurs modules.
 """
-from sqlalchemy import Column, String, Boolean, Integer, SmallInteger, ForeignKey, Text, ARRAY
+from sqlalchemy import Column, String, Boolean, Integer, SmallInteger, ForeignKey, Text, ARRAY, Numeric
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
 from app.core.database import Base
@@ -42,7 +42,14 @@ class RefPaysGroupement(Base):
 
 class IdeCnucedMonde(Base):
     __tablename__ = "ide_cnuced_monde"
-    id       = Column(Integer, primary_key=True)
-    code     = Column(String(20), unique=True, nullable=False)
-    nom_fr   = Column(String(200), nullable=False)
-    pays_ids = Column(ARRAY(Integer), nullable=False, server_default="{}")
+    id         = Column(Integer, primary_key=True)
+    code       = Column(String(20), nullable=False)
+    nom_fr     = Column(String(200), nullable=False)
+    annee      = Column(SmallInteger, nullable=False)
+    indicateur = Column(String(10), nullable=False)
+    direction  = Column(String(10), nullable=False)
+    moyenne    = Column(Numeric(16, 4))
+    min        = Column(Numeric(16, 4))
+    max        = Column(Numeric(16, 4))
+    variance   = Column(Numeric(22, 4))
+    ecart_type = Column(Numeric(16, 4))
