@@ -1001,7 +1001,7 @@ function OngletPays({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; 
 }
 
 // ── Palette fixe pour l'analyse comparative ───────────────────────────────────
-const COMP_PALETTE = ["#ca631f","#174EA6","#188038","#575799","#286B6B"];
+const COMP_PALETTE = ["#004f91","#ca631f","#188038","#EFBF04","#575799"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
 function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void }) {
@@ -1249,10 +1249,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:16, flexWrap:"wrap" as const }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
-              <span style={{ fontSize:12, color:"#9aa5b4" }}>Comparaison :</span>
               {paysAvecCouleur.map(p=>(
                 <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:6, background:`${p.couleur}12`, border:`1.5px solid ${p.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
-                  <div style={{ width:7, height:7, borderRadius:"50%", background:p.couleur }} />
                   <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
                 </div>
               ))}
