@@ -898,33 +898,23 @@ export default function ZonesPage() {
       </div>
 
       {/* ── Contenu ── */}
-      <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
+      {onglet !== "liste" && (
+        <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
+          {onglet==="zones" && (
+            loading ? <Loader/> : <SunburstZones zones={zones}/>
+          )}
+          {onglet==="poles" && (
+            loading ? <Loader/> : <SunburstPoles zones={zones}/>
+          )}
+          {onglet==="territoire" && (
+            loading ? <Loader/> : <VueTerritorialeSenegal zones={zones}/>
+          )}
+        </section>
+      )}
 
-        {/* Vue sunburst par type */}
-        {onglet==="zones" && (
-          loading
-            ? <Loader/>
-            : <SunburstZones zones={zones}/>
-        )}
-
-        {/* Vue sunburst par pôle */}
-        {onglet==="poles" && (
-          loading
-            ? <Loader/>
-            : <SunburstPoles zones={zones}/>
-        )}
-
-        {/* Liste détaillée */}
-        {onglet==="territoire" && (
-          loading
-            ? <Loader/>
-            : <VueTerritorialeSenegal zones={zones}/>
-        )}
-
-        {onglet==="liste" && (
-          loading ? <Loader/> : <VueDetaillee zones={zones}/>
-        )}
-      </section>
+      {onglet==="liste" && (
+        loading ? <div style={{padding:"36px 40px"}}><Loader/></div> : <VueDetaillee zones={zones}/>
+      )}
     </main>
   );
 }
