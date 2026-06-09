@@ -357,7 +357,7 @@ function TableauDonnees({ donnees, paysSelectionnes }: any) {
                   </div>
                 </td>
                 {annees.map(a=>(
-                  <td key={a} style={{ padding:"7px 10px", textAlign:"center" as const, fontSize:12, color:"#1a1a2e" }}>
+                  <td key={a} style={{ padding:"7px 10px", textAlign:"center" as const, fontSize:12, color:"#1a1a2e", whiteSpace:"nowrap" as const }}>
                     {get(pays.nom, s.dir, s.ind, a)}
                   </td>
                 ))}
@@ -483,7 +483,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
                       const display = v!==null&&v!==undefined ? fmtVal(v) : "—";
                       const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#ca631f" : "#004f91";
                       return (
-                        <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums" }}>
+                        <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
                           {display}
                         </td>
                       );
@@ -644,7 +644,7 @@ function splitKpiLabel(label: string, dernAnnee: number): { main: string; badge:
   return { main: label, badge: null };
 }
 
-function OngletPays({ paysDispo }: { paysDispo: any[] }) {
+function OngletPays({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -652,7 +652,6 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   const [anneeMax,    setAnneeMax]    = useState(2024);
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
-  const [showTable,   setShowTable]   = useState(false);
   const [kpisOrdre,   setKpisOrdre]   = useState<string[]>(KPI_25_IDS);
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
   const [kpiActif,     setKpiActif]     = useState<KpiResult|null>(null);
@@ -952,12 +951,6 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                   : `${anneeMin} — ${anneeMax}`}
               </span>
             </div>
-            <button onClick={()=>setShowTable(true)}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:9, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, transition:"all 0.15s", boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}
-              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)"; }}>
-              <Table size={12}/> Tableau de données
-            </button>
           </div>
 
           {/* KPI cards */}
@@ -1011,7 +1004,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
 const COMP_PALETTE = ["#ca631f","#174EA6","#188038","#575799","#286B6B"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
-function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
+function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -1020,7 +1013,6 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
   const [typeG,       setTypeG]       = useState<"line"|"bar">("line");
-  const [showTable,   setShowTable]   = useState(false);
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
@@ -1266,12 +1258,6 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
               ))}
               <span style={{ fontSize:12, color:"#9aa5b4" }}>· {modeAnnees==="plage"?`${anneeMin}–${anneeMax}`:anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
             </div>
-            <button onClick={()=>setShowTable(true)}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:9, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, flexShrink:0, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}
-              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#1a1a2e"; e.currentTarget.style.color="#1a1a2e"; e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)"; }}>
-              <Table size={12}/> Tableaux de données
-            </button>
           </div>
 
           {loading ? (
@@ -1318,10 +1304,13 @@ function OngletMonde() {
 export default function IdePage() {
   const [sousOnglet,setSousOnglet]= useState("pays");
   const [paysDispo, setPaysDispo] = useState<any[]>([]);
+  const [showTable, setShowTable] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/ide/cnuced/pays-disponibles`).then(r=>r.json()).then(d=>setPaysDispo(d||[])).catch(()=>{});
   }, []);
+
+  useEffect(() => { setShowTable(false); }, [sousOnglet]);
 
   return (
     <div style={{ minHeight:"100vh", background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}>
@@ -1349,25 +1338,35 @@ export default function IdePage() {
 
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
       <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", position:"sticky" as const, top:0, zIndex:10, flexShrink:0 }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px", display:"flex" }}>
-          {([
-            {v:"pays",        l:"Pays"},
-            {v:"comparative", l:"Analyse comparative"},
-            {v:"monde",       l:"Monde"},
-            {v:"fdi_markets", l:"FDI Markets"},
-          ] as const).map(o=>(
-            <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-              style={{ padding:"16px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:sousOnglet===o.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
-              {o.l}
-              {(o.v==="monde"||o.v==="fdi_markets") && <span style={{ marginLeft:6, fontSize:10, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:999 }}>Bientôt</span>}
+        <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <div style={{ display:"flex" }}>
+            {([
+              {v:"pays",        l:"Pays"},
+              {v:"comparative", l:"Analyse comparative"},
+              {v:"monde",       l:"Monde"},
+              {v:"fdi_markets", l:"FDI Markets"},
+            ] as const).map(o=>(
+              <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                style={{ padding:"16px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:sousOnglet===o.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+                {o.l}
+                {(o.v==="monde"||o.v==="fdi_markets") && <span style={{ marginLeft:6, fontSize:10, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:999 }}>Bientôt</span>}
+              </button>
+            ))}
+          </div>
+          {(sousOnglet==="pays"||sousOnglet==="comparative")&&(
+            <button onClick={()=>setShowTable(true)}
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:50, border:"none", borderBottom:"2px solid transparent", background:"transparent", fontSize:13, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.color="#4a5568"; }}>
+              <Table size={14}/> Tableau de données
             </button>
-          ))}
+          )}
         </div>
       </div>
 
       {/* ── Contenu ──────────────────────────────────────────────────────────── */}
-      {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} />}
-      {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} />}
+      {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
+      {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
       {sousOnglet === "monde"       && <OngletMonde />}
       {sousOnglet === "fdi_markets" && (
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
