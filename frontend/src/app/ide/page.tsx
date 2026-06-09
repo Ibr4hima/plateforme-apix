@@ -3,7 +3,8 @@
 import Navbar from "@/components/layout/Navbar";
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
-import { X, Maximize2, Table, ChevronDown, ChevronUp, SlidersHorizontal, Search } from "lucide-react";
+import { X, Maximize2, Table, ChevronDown, ChevronUp, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -369,75 +370,60 @@ function TableauDonnees({ donnees, paysSelectionnes }: any) {
   );
 }
 
-// ── Export données pour ML ────────────────────────────────────────────────────
-function exportCSV(donnees: any[], paysSelectionnes: any[], periode: string) {
+// ── Export Excel (XLSX) ───────────────────────────────────────────────────────
+function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string) {
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const series = [
-    {dir:"entrant",ind:"flux",col:"flux_entrant_M_USD"},
-    {dir:"sortant",ind:"flux",col:"flux_sortant_M_USD"},
-    {dir:"entrant",ind:"stock",col:"stock_entrant_M_USD"},
-    {dir:"sortant",ind:"stock",col:"stock_sortant_M_USD"},
+    {dir:"entrant", ind:"flux",  label:"Flux entrants (M$ USD)"},
+    {dir:"sortant", ind:"flux",  label:"Flux sortants (M$ USD)"},
+    {dir:"entrant", ind:"stock", label:"Stock entrant (M$ USD)"},
+    {dir:"sortant", ind:"stock", label:"Stock sortant (M$ USD)"},
   ];
-  const get = (pays:string,dir:string,ind:string,annee:number) => {
-    const r = donnees.find((d:any)=>d.pays===pays&&d.direction===dir&&d.indicateur===ind&&d.annee===annee);
-    return r?.valeur!==null&&r?.valeur!==undefined ? r.valeur.toFixed(2) : "";
-  };
-  // Header
-  const cols = ["pays","annee",...series.map(s=>s.col),"flux_net_M_USD","stock_net_M_USD"];
-  const rows: string[] = [cols.join(",")];
-  paysSelectionnes.forEach((p:any) => {
-    annees.forEach(a => {
-      const fe = donnees.find((d:any)=>d.pays===p.nom&&d.direction==="entrant"&&d.indicateur==="flux"&&d.annee===a)?.valeur;
-      const fs = donnees.find((d:any)=>d.pays===p.nom&&d.direction==="sortant"&&d.indicateur==="flux"&&d.annee===a)?.valeur;
-      const se = donnees.find((d:any)=>d.pays===p.nom&&d.direction==="entrant"&&d.indicateur==="stock"&&d.annee===a)?.valeur;
-      const ss = donnees.find((d:any)=>d.pays===p.nom&&d.direction==="sortant"&&d.indicateur==="stock"&&d.annee===a)?.valeur;
-      const fn = fe!==undefined&&fe!==null&&fs!==undefined&&fs!==null ? (fe-fs).toFixed(2) : "";
-      const sn = se!==undefined&&se!==null&&ss!==undefined&&ss!==null ? (se-ss).toFixed(2) : "";
-      rows.push([
-        `"${p.nom}"`, a,
-        fe!==null&&fe!==undefined?fe.toFixed(2):"",
-        fs!==null&&fs!==undefined?fs.toFixed(2):"",
-        se!==null&&se!==undefined?se.toFixed(2):"",
-        ss!==null&&ss!==undefined?ss.toFixed(2):"",
-        fn, sn
-      ].join(","));
-    });
-  });
-  const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8;"});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href=url; a.download=`IDE_CNUCED_${paysSelectionnes.map((p:any)=>p.nom.replace(/\s/g,"_")).join("_")}_${periode}.csv`;
-  a.click(); URL.revokeObjectURL(url);
-}
 
-function exportJSON(donnees: any[], paysSelectionnes: any[], periode: string) {
-  const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
-  const result = paysSelectionnes.map((p:any) => ({
-    pays: p.nom,
-    source: "CNUCED",
-    unite: "M$ USD",
-    periode,
-    donnees: annees.map(a => {
-      const fe=donnees.find((d:any)=>d.pays===p.nom&&d.direction==="entrant"&&d.indicateur==="flux"&&d.annee===a)?.valeur??null;
-      const fs=donnees.find((d:any)=>d.pays===p.nom&&d.direction==="sortant"&&d.indicateur==="flux"&&d.annee===a)?.valeur??null;
-      const se=donnees.find((d:any)=>d.pays===p.nom&&d.direction==="entrant"&&d.indicateur==="stock"&&d.annee===a)?.valeur??null;
-      const ss=donnees.find((d:any)=>d.pays===p.nom&&d.direction==="sortant"&&d.indicateur==="stock"&&d.annee===a)?.valeur??null;
-      return {
-        annee: a,
-        flux_entrant_M_USD: fe,
-        flux_sortant_M_USD: fs,
-        flux_net_M_USD: fe!==null&&fs!==null?+(fe-fs).toFixed(2):null,
-        stock_entrant_M_USD: se,
-        stock_sortant_M_USD: ss,
-        stock_net_M_USD: se!==null&&ss!==null?+(se-ss).toFixed(2):null,
-      };
-    })
-  }));
-  const blob = new Blob([JSON.stringify(result, null, 2)], {type:"application/json"});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href=url; a.download=`IDE_CNUCED_${paysSelectionnes.map((p:any)=>p.nom.replace(/\s/g,"_")).join("_")}_${periode}.json`;
-  a.click(); URL.revokeObjectURL(url);
+  const wb = XLSX.utils.book_new();
+
+  paysSelectionnes.forEach((p:any) => {
+    // En-tête : Indicateur | 1990 | 1991 | ...
+    const header = ["Indicateur", ...annees.map(String)];
+    const rows: (string|number|null)[][] = [header];
+
+    series.forEach(s => {
+      const row: (string|number|null)[] = [s.label];
+      annees.forEach(a => {
+        const r = donnees.find((d:any)=>d.pays===p.nom&&d.direction===s.dir&&d.indicateur===s.ind&&d.annee===a);
+        const v = r?.valeur;
+        row.push(v !== null && v !== undefined ? Number(v.toFixed(2)) : null);
+      });
+      rows.push(row);
+    });
+
+    // Flux net et Stock net
+    ["flux","stock"].forEach(ind => {
+      const label = ind==="flux" ? "Flux net (M$ USD)" : "Stock net (M$ USD)";
+      const row: (string|number|null)[] = [label];
+      annees.forEach(a => {
+        const re = donnees.find((d:any)=>d.pays===p.nom&&d.direction==="entrant"&&d.indicateur===ind&&d.annee===a)?.valeur;
+        const rs = donnees.find((d:any)=>d.pays===p.nom&&d.direction==="sortant"&&d.indicateur===ind&&d.annee===a)?.valeur;
+        const net = re!==null&&re!==undefined&&rs!==null&&rs!==undefined ? +(re-rs).toFixed(2) : null;
+        row.push(net);
+      });
+      rows.push(row);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Largeur auto des colonnes
+    const colWidths = rows[0].map((_:any, ci:number) => {
+      const maxLen = Math.max(...rows.map(r => String(r[ci] ?? "").length));
+      return { wch: Math.min(Math.max(maxLen + 2, 12), 50) };
+    });
+    ws["!cols"] = colWidths;
+
+    // Nom de feuille = nom du pays (max 31 chars)
+    XLSX.utils.book_append_sheet(wb, ws, p.nom.slice(0, 31));
+  });
+
+  XLSX.writeFile(wb, `IDE_CNUCED_${paysSelectionnes.map((p:any)=>p.nom.replace(/\s/g,"_")).join("_")}_${periode}.xlsx`);
 }
 
 // ── Modal données ─────────────────────────────────────────────────────────────
@@ -445,7 +431,6 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
-  const dlIcon = <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
 
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
@@ -468,17 +453,12 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
 
           {/* Actions */}
           <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0, marginLeft:16 }}>
-            <button onClick={()=>exportCSV(donnees,paysSelectionnes,periode)}
+            <button onClick={()=>exportXLSX(donnees,paysSelectionnes,periode)}
+              title="Télécharger en Excel"
               style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}
               onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; }}
               onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
-              {dlIcon} CSV
-            </button>
-            <button onClick={()=>exportJSON(donnees,paysSelectionnes,periode)}
-              style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}
-              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
-              {dlIcon} JSON
+              <FileSpreadsheet size={13}/> Excel
             </button>
             <div style={{ width:1, height:22, background:"#E8E5E3" }} />
             <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 8px", display:"flex" }}><X size={14} color="#4a5568"/></button>
