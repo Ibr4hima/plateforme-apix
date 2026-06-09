@@ -1345,19 +1345,22 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
       if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
       else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
       const raw: any[] = await fetch(`${API}/ide/cnuced?${params}`).then(r=>r.json());
-      // Agréger par groupement (somme des pays membres)
+      // Agréger par groupement (moyenne des pays membres)
       const agg: any[] = [];
       grpSelec.forEach(id => {
         const membres = membresParGrp[id]||[];
         const code = groupements.find(x=>x.id===id)?.code||String(id);
-        const byKey = new Map<string,number>();
-        raw.filter(d=>membres.includes(d.pays)).forEach(d=>{
+        const sumMap = new Map<string,number>();
+        const cntMap = new Map<string,number>();
+        raw.filter(d=>membres.includes(d.pays) && d.valeur!=null && !isNaN(d.valeur)).forEach(d=>{
           const k=`${d.direction}|${d.indicateur}|${d.annee}`;
-          byKey.set(k,(byKey.get(k)||0)+(d.valeur??0));
+          sumMap.set(k,(sumMap.get(k)||0)+(d.valeur));
+          cntMap.set(k,(cntMap.get(k)||0)+1);
         });
-        byKey.forEach((valeur,k)=>{
+        sumMap.forEach((sum,k)=>{
+          const cnt = cntMap.get(k)||1;
           const [direction,indicateur,anneeStr]=k.split("|");
-          agg.push({pays:code,direction,indicateur,annee:Number(anneeStr),valeur});
+          agg.push({pays:code,direction,indicateur,annee:Number(anneeStr),valeur:sum/cnt});
         });
       });
       setDonnees(agg);
