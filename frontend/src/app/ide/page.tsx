@@ -1312,6 +1312,13 @@ export default function IdePage() {
   const [paysDispo, setPaysDispo] = useState<any[]>([]);
   const [showTable, setShowTable] = useState(false);
   const [heroVisible, setHeroVisible] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     fetch(`${API}/ide/cnuced/pays-disponibles`).then(r=>r.json()).then(d=>setPaysDispo(d||[])).catch(()=>{});
@@ -1345,8 +1352,11 @@ export default function IdePage() {
         </section>
       )}
 
+      {/* Spacer : place la hauteur du tab bar fixe dans le flux */}
+      <div style={{ height: 50 }} />
+
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
-      <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", position:"sticky" as const, top:72, zIndex:10, flexShrink:0 }}>
+      <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", position:"fixed" as const, top: scrolled ? 60 : 72, left:0, right:0, zIndex:40 }}>
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex" }}>
             {([
