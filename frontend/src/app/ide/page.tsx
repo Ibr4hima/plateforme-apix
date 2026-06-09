@@ -1287,21 +1287,284 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
 }
 
 // ── Onglet Monde ──────────────────────────────────────────────────────────────
-function OngletMonde() {
+function OngletMonde({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void }) {
+  const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
+  const [donnees,     setDonnees]     = useState<any[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [anneeMin,    setAnneeMin]    = useState(1990);
+  const [anneeMax,    setAnneeMax]    = useState(2024);
+  const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
+  const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
+  const [typeG,       setTypeG]       = useState<"line"|"bar">("line");
+  const [sidebarOpen,  setSidebarOpen]  = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const isResizing = useRef(false);
+  const startResize = (e: React.MouseEvent) => {
+    isResizing.current = true;
+    const startX = e.clientX, startW = sidebarWidth;
+    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
+    const onUp = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+  };
+  const [searchPays,  setSearchPays]  = useState("");
+  const [openConts,   setOpenConts]   = useState<Set<string>>(new Set(["Afrique"]));
+
+  const charger = useCallback(async () => {
+    if (!paysSelec.length) return;
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.set("pays_list", paysSelec.join(","));
+      if (modeAnnees==="specifiques" && anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
+      else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
+      const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>r.json());
+      setDonnees(dataR||[]);
+    } catch(e){ console.error(e); }
+    finally { setLoading(false); }
+  }, [paysSelec, anneeMin, anneeMax, anneesSpec, modeAnnees]);
+
+  useEffect(() => { charger(); }, [charger]);
+
+  const paysAvecCouleur = paysSelec.map((nom,i) => ({ nom, couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] }));
+
+  const buildSeries = (dir: string, ind: string) =>
+    paysAvecCouleur.map(p=>({ nom:p.nom, couleur:p.couleur, data:donnees.filter(d=>d.pays===p.nom&&d.direction===dir&&d.indicateur===ind) }));
+
+  const GRAPHES = [
+    { id:"fe", titre:"Flux d'IDE entrants",     series: buildSeries("entrant","flux") },
+    { id:"fs", titre:"Flux d'IDE sortants",      series: buildSeries("sortant","flux") },
+    { id:"se", titre:"Stock d'IDE entrant",      series: buildSeries("entrant","stock") },
+    { id:"ss", titre:"Stock d'IDE sortant",      series: buildSeries("sortant","stock") },
+    { id:"vs", titre:"Flux entrants vs sortants", series: [
+      ...paysAvecCouleur.map(p=>({ nom:`${p.nom} — ent.`, couleur:p.couleur, data:donnees.filter(d=>d.pays===p.nom&&d.direction==="entrant"&&d.indicateur==="flux") })),
+      ...paysAvecCouleur.map(p=>({ nom:`${p.nom} — sort.`, couleur:p.couleur+"88", data:donnees.filter(d=>d.pays===p.nom&&d.direction==="sortant"&&d.indicateur==="flux") })),
+    ]},
+  ];
+
+  const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
+  const groupedPays  = groupByContinent(filteredPays);
+  const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
+
+  const hasFilter = paysSelec.length>1||paysSelec[0]!=="Sénégal"||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))||typeG!=="line";
+  const nbFiltres = (paysSelec.length>1||paysSelec[0]!=="Sénégal"?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0)+(typeG!=="line"?1:0);
+  const reinit = () => { setPaysSelec(["Sénégal"]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); setTypeG("line"); };
+
   return (
-    <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
-      <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
-        <div style={{ width:64, height:64, borderRadius:16, background:"rgba(24,128,56,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <span style={{ fontSize:32 }}>🌍</span>
+    <div style={{ display:"flex", alignItems:"flex-start" }}>
+
+        {/* Sidebar bande */}
+        <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 72px)", overflowY:"auto" as const, position:"sticky" as const, top:72, display:"flex", flexDirection:"column" as const }}>
+          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+          <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
+            {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
+              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
+            </button>
+          </div>
+          {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+              {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
+                <X size={12}/> Effacer tous les filtres
+              </button>}
+              <div style={{ position:"relative" as const, marginBottom:18 }}>
+                <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
+                <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
+                  style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+                {searchPays&&<button onClick={()=>setSearchPays("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+              </div>
+              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+              {/* Pays */}
+              <div style={{ marginBottom:18 }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    {(paysSelec.length>1||paysSelec[0]!=="Sénégal")&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
+                    <span style={{ fontSize:11, fontWeight:700, color:(paysSelec.length>1||paysSelec[0]!=="Sénégal")?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
+                  </div>
+                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec.length>=5?"#ca631f":"#9aa5b4", background:paysSelec.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{paysSelec.length}/5</span>
+                </div>
+                {/* Sénégal épinglé */}
+                {(()=>{
+                  const sel = paysSelec.includes("Sénégal");
+                  const col = COMP_PALETTE[paysSelec.indexOf("Sénégal")] ?? COMP_PALETTE[0];
+                  const canAdd = !sel && paysSelec.length < 5;
+                  return (
+                    <div style={{ marginBottom:8 }}>
+                      <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
+                      <button onClick={()=>{ if(sel){if(paysSelec.length>1)setPaysSelec(prev=>prev.filter(n=>n!=="Sénégal"));}else if(canAdd){setPaysSelec(prev=>[...prev,"Sénégal"]);} }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:sel||canAdd?"pointer":"not-allowed", background:sel?col+"12":"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%", opacity:!sel&&!canAdd?0.4:1 }}
+                        onMouseEnter={e=>{if(sel||canAdd)(e.currentTarget as HTMLElement).style.background=sel?col+"20":"#F8F7F6";}}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"rgba(24,128,56,0.04)";}}>
+                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <span style={{ fontSize:12, color:sel?col:"#4a5568", fontWeight:sel?600:400 }}>Sénégal</span>
+                        <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
+                      </button>
+                    </div>
+                  );
+                })()}
+                <div style={{ height:1, background:"#F2F0EF", marginBottom:8 }}/>
+                <div style={{ maxHeight:200, overflowY:"auto" as const }}>
+                  {sortContinents(Object.keys(groupedPays)).map(continent => {
+                    const isOpen = openConts.has(continent);
+                    const zones  = groupedPays[continent];
+                    return (
+                      <div key={continent} style={{ marginBottom:6 }}>
+                        <button onClick={()=>toggleCont(continent)}
+                          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(202,99,31,0.06)", border:"none", cursor:"pointer", marginBottom:3 }}>
+                          <span style={{ fontSize:10, fontWeight:700, color:"#ca631f", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
+                          <ChevronDown size={11} style={{ color:"#ca631f", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                        </button>
+                        {isOpen&&Object.entries(zones).sort(([a],[b])=>a.localeCompare(b,"fr")).map(([zone,paysInZone]) => (
+                          <div key={zone} style={{ marginLeft:6, marginBottom:4 }}>
+                            <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:2 }}>{zone}</p>
+                            {(paysInZone as any[]).map((p:any) => {
+                              const sel = paysSelec.includes(p.nom);
+                              const col = sel ? COMP_PALETTE[paysSelec.indexOf(p.nom)] : "#C5BFBB";
+                              const canAdd = !sel && paysSelec.length < 5;
+                              const disabled = !sel && !canAdd;
+                              if (p.nom==="Sénégal") return (
+                                <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
+                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                  </div>
+                                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
+                                  <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4" }}>Réf.</span>
+                                </div>
+                              );
+                              return (
+                                <button key={p.nom} onClick={()=>{ if(sel&&paysSelec.length>1) setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); else if(canAdd) setPaysSelec(prev=>[...prev,p.nom]); }}
+                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1 }}
+                                  onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+                                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"transparent";}}>
+                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                  </div>
+                                  <span style={{ fontSize:12, color:sel?col:"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                  {Object.keys(groupedPays).length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>}
+                </div>
+              </div>
+              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+              {/* Type graphe */}
+              <div style={{ marginBottom:18 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:10 }}>
+                  {typeG!=="line"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
+                  <span style={{ fontSize:11, fontWeight:700, color:typeG!=="line"?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Type de graphe</span>
+                </div>
+                <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3 }}>
+                  {[{v:"line",l:"Courbes"},{v:"bar",l:"Barres"}].map(t=>(
+                    <button key={t.v} onClick={()=>setTypeG(t.v as "line"|"bar")}
+                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:typeG===t.v?"#fff":"transparent", color:typeG===t.v?"#1a1a2e":"#9aa5b4", boxShadow:typeG===t.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
+                      {t.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+              {/* Période */}
+              <div style={{ marginBottom:18 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
+                  {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024)))&&
+                    <span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
+                  <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                </div>
+                <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
+                  {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
+                    <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
+                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
+                      {m.l}
+                    </button>
+                  ))}
+                </div>
+                {modeAnnees==="plage" ? (
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                    <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
+                      <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#ca631f", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <input type="range" min={1990} max={2024} value={anneeMin}
+                        onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
+                        className="drs-thumb"
+                        style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
+                      <input type="range" min={1990} max={2024} value={anneeMax}
+                        onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
+                        className="drs-thumb"
+                        style={{zIndex:3} as React.CSSProperties}/>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                      <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                    </div>
+                    <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
+                      {Array.from({length:35},(_,i)=>1990+i).map(a=>{
+                        const sel=anneesSpec.includes(a);
+                        return (
+                          <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
+                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#ca631f":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#ca631f":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                            {a}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between" }}>
+                      <span style={{ fontSize:11, color:"#4a5568" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+                      {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"#9aa5b4", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
+                    </div>
+                  </div>
+                )}
+              </div>
+          </div>}
+        </aside>
+
+        {/* Zone graphes */}
+        <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:8, marginBottom:20 }}>
+            {/* Badge période */}
+            <div>
+              <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em" }}>
+                {modeAnnees==="specifiques"&&anneesSpec.length>0
+                  ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                  : `${anneeMin} — ${anneeMax}`}
+              </span>
+            </div>
+            {/* Badges pays */}
+            <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
+              {paysAvecCouleur.map(p=>(
+                <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:6, background:`${p.couleur}12`, border:`1.5px solid ${p.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
+                  <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {loading ? (
+            <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
+              <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+            </div>
+          ) : (
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+              {GRAPHES.map(g=>(
+                <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Source CNUCED" series={g.series} grapheId={g.id}
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type={typeG} titre={g.id}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type={typeG} titre={g.id}/>
+                </GrapheCard>
+              ))}
+            </div>
+          )}
         </div>
-        <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>Données mondiales</h2>
-        <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:420, lineHeight:1.7 }}>
-          Cette section affichera des KPIs et graphes globaux sur les IDE mondiaux une fois que suffisamment de pays auront été importés.
-        </p>
-        <div style={{ background:"rgba(24,128,56,0.07)", border:"1px solid rgba(24,128,56,0.2)", borderRadius:10, padding:"10px 20px" }}>
-          <span style={{ fontSize:12, fontWeight:700, color:"#188038" }}>Disponible prochainement</span>
-        </div>
-      </div>
+      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} />
     </div>
   );
 }
@@ -1355,11 +1618,11 @@ export default function IdePage() {
               <button key={o.v} onClick={()=>setSousOnglet(o.v)}
                 style={{ padding:"16px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:sousOnglet===o.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
                 {o.l}
-                {(o.v==="monde"||o.v==="fdi_markets") && <span style={{ marginLeft:6, fontSize:10, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:999 }}>Bientôt</span>}
+                {o.v==="fdi_markets" && <span style={{ marginLeft:6, fontSize:10, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:999 }}>Bientôt</span>}
               </button>
             ))}
           </div>
-          {(sousOnglet==="pays"||sousOnglet==="comparative")&&(
+          {(sousOnglet==="pays"||sousOnglet==="comparative"||sousOnglet==="monde")&&(
             <button onClick={()=>setShowTable(true)}
               style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:50, border:"none", borderBottom:"2px solid transparent", background:"transparent", fontSize:13, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
               onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
@@ -1373,7 +1636,7 @@ export default function IdePage() {
       {/* ── Contenu ──────────────────────────────────────────────────────────── */}
       {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
       {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
-      {sousOnglet === "monde"       && <OngletMonde />}
+      {sousOnglet === "monde"       && <OngletMonde paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
       {sousOnglet === "fdi_markets" && (
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
           <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
