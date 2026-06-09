@@ -3,7 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -265,7 +265,26 @@ export default function AccordsPage() {
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [selec,       setSelec]       = useState<any>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen,  setSidebarOpen]  = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const isResizing = useRef(false);
+
+  const startResize = (e: React.MouseEvent) => {
+    isResizing.current = true;
+    const startX = e.clientX;
+    const startW = sidebarWidth;
+    const onMove = (ev: MouseEvent) => {
+      if (!isResizing.current) return;
+      setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX)));
+    };
+    const onUp = () => {
+      isResizing.current = false;
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
   const [paysDistincts, setPaysDistincts] = useState<{id:number;nom:string;code_iso2:string}[]>([]);
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
   const [allPays,     setAllPays]     = useState<any[]>([]);
@@ -393,21 +412,25 @@ export default function AccordsPage() {
       </section>
 
       {/* Layout sidebar + contenu */}
-      <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
-        <div style={{display:"flex",gap:24,alignItems:"flex-start"}}>
+      <div style={{display:"flex",alignItems:"flex-start"}}>
 
-          {/* Sidebar */}
-          <div style={{width:sidebarOpen?280:52,flexShrink:0,transition:"width 0.25s"}}>
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",padding:sidebarOpen?"20px 16px":"10px 8px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)",position:"sticky" as const,top:24,maxHeight:"calc(100vh - 80px)",overflowY:"auto" as const}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
-                {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
-                <button onClick={()=>setSidebarOpen(o=>!o)}
-                  style={{background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
-                  <SlidersHorizontal size={14} style={{color:"#ca631f"}}/>
-                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
-                </button>
-              </div>
-              {sidebarOpen&&<>
+          {/* Sidebar bande */}
+          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 72px)",overflowY:"auto" as const,position:"sticky" as const,top:72,display:"flex",flexDirection:"column" as const}}>
+            {/* Handle de resize */}
+            {sidebarOpen&&<div onMouseDown={startResize}
+              style={{position:"absolute" as const,right:0,top:0,bottom:0,width:4,cursor:"col-resize",zIndex:10,background:"transparent",transition:"background 0.15s"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}}
+              onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+            {/* Header toggle */}
+            <div style={{padding:sidebarOpen?"14px 16px 10px":"12px 8px",borderBottom:"1px solid #F2F0EF",display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",flexShrink:0}}>
+              {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
+              <button onClick={()=>setSidebarOpen(o=>!o)}
+                style={{background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
+                <SlidersHorizontal size={14} style={{color:"#ca631f"}}/>
+                {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
+              </button>
+            </div>
+            {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
                 {hasFilter&&<button onClick={reinit} style={{display:"flex",alignItems:"center",gap:5,width:"100%",background:"#fee2e2",color:"#dc2626",border:"none",borderRadius:8,padding:"7px 10px",fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:16}}>
                   <X size={12}/> Effacer tous les filtres
                 </button>}
@@ -488,12 +511,11 @@ export default function AccordsPage() {
                 <ThematiquesCascadeFilter secteurs={secteurs}
                   secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
                   onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
-              </>}
-            </div>
-          </div>
+            </div>}
+          </aside>
 
           {/* Grille accords */}
-          <div style={{flex:1,minWidth:0}}>
+          <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
             {loading ? (
               <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}>
                 <Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:14}}>Chargement…</span>
@@ -542,8 +564,7 @@ export default function AccordsPage() {
               </div>
             )}
           </div>
-        </div>
-      </section>
+      </div>
 
       {selec&&<AccordVue accord={selec} onClose={()=>setSelec(null)}/>}
     </main>
