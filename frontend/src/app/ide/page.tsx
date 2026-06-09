@@ -1247,8 +1247,8 @@ export default function IdePage() {
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section style={{ background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}>
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"100px 40px 32px" }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(24,128,56,0.1)", border:"1px solid rgba(24,128,56,0.3)", borderRadius:999, padding:"6px 14px", marginBottom:16 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:"#4ade80", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Données officielles</span>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(202,99,31,0.1)", border:"1px solid rgba(202,99,31,0.25)", borderRadius:999, padding:"6px 14px", marginBottom:16 }}>
+            <span style={{ fontSize:11, fontWeight:700, color:"#D96D3B", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
           <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1 }}>Investissements Directs Étrangers</h1>
         </div>
@@ -1264,7 +1264,7 @@ export default function IdePage() {
             {v:"fdi_markets", l:"FDI Markets"},
           ] as const).map(o=>(
             <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-              style={{ padding:"16px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#188038":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:sousOnglet===o.v?"#188038":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+              style={{ padding:"16px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:sousOnglet===o.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
               {o.l}
               {(o.v==="monde"||o.v==="fdi_markets") && <span style={{ marginLeft:6, fontSize:10, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:999 }}>Bientôt</span>}
             </button>
