@@ -33,9 +33,11 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
   const [poles, setPoles] = useState<any[]>([]);
   const [activePole, setActivePole] = useState<any>(null);
   const [tooltip, setTooltip] = useState<{ nom: string; x: number; y: number } | null>(null);
+  const [secteurRef, setSecteurRef] = useState<any[]>([]);
 
   useEffect(() => {
     fetch(`${API_BASE}/zones-types/poles`).then(r => r.json()).then(setPoles).catch(() => {});
+    fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(setSecteurRef).catch(() => {});
   }, []);
 
   // Couleur par pole.id (1-based index dans la palette)
@@ -185,68 +187,93 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
           <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>
             <div style={{ height:5, background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)" }}/>
             <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-                <div>
+              {/* En-tête */}
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+                <div style={{ flex:1, paddingRight:12 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
                     <div style={{ width:12, height:12, borderRadius:3, background:activeColor, flexShrink:0 }}/>
                     <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Pôle territorial</span>
                   </div>
-                  <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3, marginBottom:4 }}>{activePole.pole_territoire}</h2>
-                  <div style={{ fontSize:12, color:"#9aa5b4" }}>{activePole.localisation}</div>
+                  <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3, marginBottom:10 }}>{activePole.pole_territoire}</h2>
+                  {/* Régions badgées */}
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const }}>
+                    {splitLocalisation(activePole.localisation).map((r:string) => (
+                      <span key={r} style={{ fontSize:11, fontWeight:600, color:"#1a1a2e", background:activeColor+"33", border:`1px solid ${activeColor}88`, padding:"3px 10px", borderRadius:999 }}>{r}</span>
+                    ))}
+                  </div>
                 </div>
                 <button onClick={()=>setActivePole(null)} style={{ background:"rgba(0,0,0,0.06)", border:"none", borderRadius:99, width:28, height:28, cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>✕</button>
               </div>
 
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:20 }}>
-                {[
-                  { l:"Entreprises", v:poleEnts.length, sub:`${nbInst} installée${nbInst!==1?"s":""}` },
-                  { l:"Zones", v:poleZones.length, sub:`${poleZones.filter((z:any)=>z.type_zone==="ZES").length} ZES · ${poleZones.filter((z:any)=>z.type_zone==="ZAI").length} ZAI` },
-                  { l:"Éligibles", v:nbElig, sub:"à démarcher", col:nbElig>0?"#b45309":undefined },
-                  { l:"Régions", v:(activePole.region_ids||[]).length, sub:"dans ce pôle" },
-                ].map((k:any)=>(
-                  <div key={k.l} style={{ background:"#F2F0EF", borderRadius:10, padding:"12px 14px", border:"1px solid #E8E5E3" }}>
-                    <div style={{ fontSize:10, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.08em", marginBottom:4 }}>{k.l}</div>
-                    <div style={{ fontSize:22, fontWeight:700, color:k.col||"#1a1a2e", lineHeight:1 }}>{k.v}</div>
-                    <div style={{ fontSize:11, color:"#9aa5b4", marginTop:2 }}>{k.sub}</div>
-                  </div>
-                ))}
+              {/* Entreprises installées */}
+              <div style={{ background:"#F2F0EF", borderRadius:10, padding:"14px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:14, border:"1px solid #E8E5E3" }}>
+                <div style={{ fontSize:34, fontWeight:800, color:"#059669", lineHeight:1 }}>{nbInst}</div>
+                <div style={{ fontSize:13, color:"#1a1a2e", fontWeight:600, lineHeight:1.3 }}>entreprise{nbInst!==1?"s":""} installée{nbInst!==1?"s":""}</div>
               </div>
 
+              {/* Zones d'investissement */}
               {poleZones.length>0 && (
                 <div style={{ marginBottom:16 }}>
-                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Zones</p>
+                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Zones d&apos;investissement</p>
                   {poleZones.map((z:any)=>{
                     const tc=z.type_zone==="ZES"?"#E35336":z.type_zone==="ZAI"?"#366FE3":"#188038";
+                    const nbEnts=(z.entreprises||[]).length;
                     return (
                       <div key={z.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:"1px solid #E8E5E3", fontSize:12 }}>
-                        <span style={{ fontSize:9, fontWeight:700, color:tc, background:tc+"18", padding:"2px 6px", borderRadius:4 }}>{z.type_zone}</span>
+                        <span style={{ fontSize:9, fontWeight:700, color:tc, background:tc+"18", padding:"2px 6px", borderRadius:4, flexShrink:0 }}>{z.type_zone}</span>
                         <span style={{ color:"#1a1a2e", flex:1 }}>{z.nom_zone}</span>
-                        <span style={{ color:"#9aa5b4", flexShrink:0 }}>{(z.entreprises||[]).length}</span>
+                        <span style={{ fontSize:11, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 8px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
                       </div>
                     );
                   })}
                 </div>
               )}
 
-              {poleEnts.length>0 && (
-                <div>
-                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Entreprises</p>
-                  {poleEnts.slice(0,8).map((ze:any,i:number)=>(
-                    <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:i<Math.min(poleEnts.length,8)-1?"1px solid #E8E5E3":"none", fontSize:12 }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:ze.statut==="installee"?"#059669":"#b45309", flexShrink:0 }}/>
-                      <span style={{ flex:1, color:"#1a1a2e" }}>{ze.entreprise?.nom}</span>
-                      <span style={{ fontSize:10, fontWeight:600, color:ze.statut==="installee"?"#059669":"#b45309", background:ze.statut==="installee"?"#dcfce7":"#fef9c3", padding:"1px 7px", borderRadius:99 }}>
-                        {ze.statut==="installee"?"Installée":"Éligible"}
-                      </span>
+              {/* Répartition sectorielle */}
+              {(()=>{
+                const classif = (code:string) => {
+                  const c=(code||"").toUpperCase()[0];
+                  if(c==="A") return "primaire";
+                  if(["B","C","D","E","F"].includes(c)) return "secondaire";
+                  return "tertiaire";
+                };
+                const counts:{[k:string]:number} = { primaire:0, secondaire:0, tertiaire:0 };
+                poleZones.forEach((z:any)=>{
+                  const nE=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+                  if(!nE) return;
+                  const secIds:number[] = z.secteur_ids||[];
+                  if(secIds.length===0){ counts.tertiaire+=nE; return; }
+                  const sec=secteurRef.find((s:any)=>s.id===secIds[0]);
+                  counts[sec?classif(sec.code):"tertiaire"]+=nE;
+                });
+                const total=counts.primaire+counts.secondaire+counts.tertiaire||1;
+                const rows=[
+                  {label:"Secteur primaire",   key:"primaire",   color:"#059669"},
+                  {label:"Secteur secondaire",  key:"secondaire", color:"#366FE3"},
+                  {label:"Secteur tertiaire",   key:"tertiaire",  color:"#E35336"},
+                ];
+                return (
+                  <div>
+                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Répartition sectorielle</p>
+                    <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+                      {rows.map(r=>{
+                        const pct=Math.round(counts[r.key]/total*100);
+                        return (
+                          <div key={r.key}>
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
+                              <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
+                              <span style={{ fontWeight:700, color:r.color, fontSize:12 }}>{pct}%</span>
+                            </div>
+                            <div style={{ height:6, background:"#E8E5E3", borderRadius:99, overflow:"hidden" }}>
+                              <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99, transition:"width 0.4s ease" }}/>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                  {poleEnts.length>8 && <div style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const, paddingTop:8 }}>+{poleEnts.length-8} autres</div>}
-                </div>
-              )}
-
-              {poleZones.length===0&&poleEnts.length===0&&(
-                <div style={{ textAlign:"center" as const, padding:"24px 0", fontSize:13, color:"#9aa5b4" }}>Aucune zone ni entreprise pour ce pôle</div>
-              )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
