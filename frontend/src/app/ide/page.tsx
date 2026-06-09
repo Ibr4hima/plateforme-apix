@@ -793,18 +793,18 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                 {/* Sénégal épinglé */}
                 {(()=>{
                   const sel = paysSelec==="Sénégal";
-                  const col = getPaysColor("Sénégal",0);
+                  const col = "#174EA6";
                   return (
                     <div style={{ marginBottom:8 }}>
                       <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
                       <button onClick={()=>setPaysSelec("Sénégal")}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?col+"12":"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%" }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?"#174EA612":"rgba(23,78,166,0.04)", textAlign:"left" as const, width:"100%" }}
                         onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"rgba(24,128,56,0.04)";}}>
-                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?"#174EA612":"rgba(23,78,166,0.04)";}}>
+                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?"#174EA6":"#C5BFBB"}`, background:sel?"#174EA6":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                           {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         </div>
-                        <span style={{ fontSize:12, color:sel?col:"#4a5568", fontWeight:sel?600:400 }}>Sénégal</span>
+                        <span style={{ fontSize:12, color:sel?"#174EA6":"#4a5568", fontWeight:sel?600:400 }}>Sénégal</span>
                         <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
                       </button>
                     </div>
@@ -827,10 +827,9 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                             <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:2 }}>{zone}</p>
                             {(paysInZone as any[]).map((p:any) => {
                               const sel = paysSelec === p.nom;
-                              const col = getPaysColor(p.nom, paysDispo.indexOf(p));
                               if (p.nom==="Sénégal") return (
                                 <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
-                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?"#174EA6":"#C5BFBB"}`, background:sel?"#174EA6":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                                     {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                   </div>
                                   <span style={{ fontSize:12, color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
@@ -839,13 +838,13 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                               );
                               return (
                                 <button key={p.nom} onClick={()=>setPaysSelec(p.nom)}
-                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%" }}
+                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?"#174EA612":"transparent", textAlign:"left" as const, width:"100%" }}
                                   onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"transparent";}}>
-                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?"#174EA612":"transparent";}}>
+                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?"#174EA6":"#C5BFBB"}`, background:sel?"#174EA6":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                                     {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                   </div>
-                                  <span style={{ fontSize:12, color:sel?col:"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
+                                  <span style={{ fontSize:12, color:sel?"#174EA6":"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
                                 </button>
                               );
                             })}
@@ -919,7 +918,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>KPI affichés</span>
-                  <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#ca631f":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
+                  <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#174EA6":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(23,78,166,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
                 </div>
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:2, maxHeight:200, overflowY:"auto" as const }}>
                   {kpisSidebar.map((k,i)=>{
@@ -931,10 +930,10 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                         onDragStart={()=>handleDragStart(i)} onDragOver={e=>handleDragOver(e,i)}
                         onDrop={()=>handleDrop(i)} onDragEnd={handleDragEnd}
                         title={k.description}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, background:isOver?"rgba(202,99,31,0.05)":epingle?"rgba(202,99,31,0.04)":"transparent", cursor:"grab", opacity:isDragging?0.3:disabled?0.3:1, transition:"background 0.1s", userSelect:"none" as const }}
-                        onMouseEnter={ev=>{ if(!isDragging) ev.currentTarget.style.background=epingle?"rgba(202,99,31,0.07)":"#F8F7F6"; }}
-                        onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(202,99,31,0.04)":"transparent"; }}>
-                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${epingle?"#ca631f":"#C5BFBB"}`, background:epingle?"#ca631f":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:disabled?"not-allowed":"pointer" }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, background:isOver?"rgba(23,78,166,0.05)":epingle?"rgba(23,78,166,0.04)":"transparent", cursor:"grab", opacity:isDragging?0.3:disabled?0.3:1, transition:"background 0.1s", userSelect:"none" as const }}
+                        onMouseEnter={ev=>{ if(!isDragging) ev.currentTarget.style.background=epingle?"rgba(23,78,166,0.07)":"#F8F7F6"; }}
+                        onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(23,78,166,0.04)":"transparent"; }}>
+                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${epingle?"#174EA6":"#C5BFBB"}`, background:epingle?"#174EA6":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:disabled?"not-allowed":"pointer" }}
                           onClick={ev=>{ ev.stopPropagation(); !disabled&&toggleEpingle(k.id); }}>
                           {epingle&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         </div>
@@ -974,16 +973,13 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
             {kpisCards.map(k=>{
               const indicatif = getIndicatif(k);
-              const isPos = k.valeur!==null&&["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe","fn_last","sn_last","dist_max_fe"].includes(k.id)&&k.valeur>0;
-              const isNeg = k.valeur!==null&&["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe","fn_last","sn_last","dist_max_fe"].includes(k.id)&&k.valeur<0;
-              const cardColor = isPos?"#188038":isNeg?"#dc2626":couleur;
               return (
                 <div key={k.id} onClick={()=>setKpiActif(k)}
-                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:`3px solid ${cardColor}`, cursor:"pointer", transition:"all 0.15s" }}
+                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:"3px solid #174EA6", cursor:"pointer", transition:"all 0.15s" }}
                   onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)"; e.currentTarget.style.transform="translateY(-1px)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; }}>
                   <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{k.label}</p>
-                  <p style={{ fontSize:"1.1rem", fontWeight:800, color:cardColor, lineHeight:1 }}>{fmtKpi(k)}</p>
+                  <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#174EA6", lineHeight:1 }}>{fmtKpi(k)}</p>
                   {indicatif && <p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>{indicatif}</p>}
                 </div>
               );
