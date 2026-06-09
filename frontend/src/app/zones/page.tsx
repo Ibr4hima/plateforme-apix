@@ -529,104 +529,144 @@ function ZoneSideFilter({ label, items, selected, onToggle, color, itemColors }:
 
 // ── Modal détail zone ─────────────────────────────────────────────────────────
 function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
-  const [ficheEnt, setFicheEnt] = useState<any>(null);
+  const [ficheEnt,  setFicheEnt]  = useState<any>(null);
+  const [secteurs,  setSecteurs]  = useState<any[]>([]);
+  const [branches,  setBranches]  = useState<any[]>([]);
+  const [activites, setActivites] = useState<any[]>([]);
+
+  useEffect(() => {
+    setSecteurs([]); setBranches([]); setActivites([]);
+    Promise.all([
+      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
+      fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
+      fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
+    ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); })
+      .catch(()=>{});
+  }, [zone.id]);
 
   const ouvrirFiche = async (id:number) => {
     try { const res=await fetch(`${API_BASE}/entreprises/${id}`); setFicheEnt(await res.json()); }
     catch(e){ console.error(e); }
   };
 
-  const meta     = TYPE_META[zone.type_zone]||TYPE_META.ZES;
-  const col      = meta.color;
-  const poleColor= zone.pole_id ? POLE_COLORS[(zone.pole_id-1)%POLE_COLORS.length] : "#E8E5E3";
-  const installes= (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee");
-  const eligibles= (zone.entreprises||[]).filter((ze:any)=>ze.statut==="eligible");
+  const meta      = TYPE_META[zone.type_zone]||TYPE_META.ZES;
+  const col       = meta.color;
+  const poleColor = zone.pole_id ? POLE_COLORS[(zone.pole_id-1)%POLE_COLORS.length] : "#E8E5E3";
+  const installes = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee");
+  const eligibles = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="eligible");
+  const secIds: number[] = zone.secteur_ids||[];
+  const braIds: number[] = zone.branche_ids||[];
+  const actIds: number[] = zone.activite_ids||[];
+  const hasActivites = secIds.length>0||braIds.length>0||actIds.length>0;
+
+  const LBL = ({children}:{children:string}) => (
+    <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
+  );
 
   return (
     <>
-      <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-        <div onClick={e=>e.stopPropagation()}
-          style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:640, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden", display:"flex", flexDirection:"column" as const }}>
-
-          {/* Bande colorée */}
-          <div style={{ height:5, background:col, borderRadius:"20px 20px 0 0", flexShrink:0 }}/>
-
-          <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, flex:1 }}>
+      <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+        <div onClick={e=>e.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.25)",overflow:"hidden",display:"flex",flexDirection:"column" as const}}>
+          <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)",borderRadius:"20px 20px 0 0",flexShrink:0}}/>
+          <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,flex:1}}>
 
             {/* En-tête */}
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-              <div style={{ flex:1, paddingRight:16 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-                  <div style={{ width:40, height:40, borderRadius:11, background:meta.bg, border:`1px solid ${meta.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <span style={{ fontSize:11, fontWeight:800, color:col }}>{zone.type_zone}</span>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+              <div style={{flex:1,paddingRight:16}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                  <div style={{width:40,height:40,borderRadius:11,background:meta.bg,border:`1px solid ${meta.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{fontSize:11,fontWeight:800,color:col}}>{zone.type_zone}</span>
                   </div>
                   <div>
-                    <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3, marginBottom:6 }}>{zone.nom_zone}</h2>
-                    <div style={{ display:"flex", gap:5, flexWrap:"wrap" as const }}>
-                      {zone.pole_nom&&<span style={{ fontSize:11, fontWeight:700, color:"#1a1a2e", background:poleColor, opacity:0.95, border:"1px solid rgba(0,0,0,0.08)", padding:"2px 9px", borderRadius:999 }}>{zone.pole_nom}</span>}
-                      {zone.region_nom&&<span style={{ fontSize:11, fontWeight:700, color:"#366FE3", background:"rgba(54,111,227,0.08)", border:"1px solid rgba(54,111,227,0.2)", padding:"2px 9px", borderRadius:999 }}>{zone.region_nom}</span>}
+                    <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:5}}>{zone.nom_zone}</h2>
+                    <div style={{display:"flex",gap:5,flexWrap:"wrap" as const}}>
+                      <span style={{fontSize:11,fontWeight:700,color:col,background:meta.bg,border:`1px solid ${meta.border}`,padding:"2px 9px",borderRadius:999}}>{zone.type_zone}</span>
+                      {zone.pole_nom&&<span style={{fontSize:11,fontWeight:700,color:"#1a1a2e",background:poleColor,opacity:0.95,border:"1px solid rgba(0,0,0,0.08)",padding:"2px 9px",borderRadius:999}}>{zone.pole_nom}</span>}
+                      {zone.region_nom&&<span style={{fontSize:11,fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{zone.region_nom}</span>}
                     </div>
                   </div>
                 </div>
               </div>
-              <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7, flexShrink:0 }}>
-                <X size={14} color="#4a5568"/>
-              </button>
+              <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
             </div>
 
-            {/* Infos clés */}
+            {/* Infos principales */}
             {(zone.date_creation||zone.superficie||zone.departement_nom||zone.decret_creation)&&(
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:20 }}>
-                {zone.date_creation&&(
-                  <div style={{ background:"#fff", borderRadius:10, padding:"10px 14px", border:"1px solid #E8E5E3" }}>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:4 }}>Créée le</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{fmtDate(zone.date_creation)}</p>
-                  </div>
-                )}
-                {zone.superficie&&(
-                  <div style={{ background:"#fff", borderRadius:10, padding:"10px 14px", border:"1px solid #E8E5E3" }}>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:4 }}>Superficie</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</p>
-                  </div>
-                )}
-                {zone.departement_nom&&(
-                  <div style={{ background:"#fff", borderRadius:10, padding:"10px 14px", border:"1px solid #E8E5E3" }}>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:4 }}>Département</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{zone.departement_nom}</p>
-                  </div>
-                )}
-                {zone.decret_creation&&(
-                  <div style={{ background:"#fff", borderRadius:10, padding:"10px 14px", border:"1px solid #E8E5E3" }}>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:4 }}>Décret</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{zone.decret_creation}</p>
-                  </div>
-                )}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+                {zone.date_creation&&<div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Créée le</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(zone.date_creation)}</p></div>}
+                {zone.superficie&&<div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Superficie</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</p></div>}
+                {zone.departement_nom&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Département</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{zone.departement_nom}</p></div>}
+                {zone.decret_creation&&<div style={{background:"rgba(227,83,54,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Décret</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{zone.decret_creation}</p></div>}
               </div>
             )}
 
             {/* Description */}
             {zone.description&&(
               <><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-              <div data-rte dangerouslySetInnerHTML={{__html:zone.description}} style={{ fontSize:13, color:"#4a5568", lineHeight:1.75, marginBottom:20, padding:"12px 16px", background:"#fff", borderRadius:10, border:"1px solid #E8E5E3" }}/></>
+              <div data-rte dangerouslySetInnerHTML={{__html:zone.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.75,marginBottom:20,padding:"12px 16px",background:"#fff",borderRadius:10,border:"1px solid #E8E5E3"}}/></>
+            )}
+
+            {/* Activités autorisées */}
+            {hasActivites&&secteurs.length>0&&(
+              <div style={{marginBottom:20}}>
+                <LBL>Activités autorisées</LBL>
+                <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                  {secIds.map((secId:number)=>{
+                    const sec=secteurs.find((s:any)=>s.id===secId); if(!sec) return null;
+                    const brasDuSec=branches.filter((b:any)=>b.secteur_id===secId&&braIds.includes(b.id));
+                    return (
+                      <div key={secId}>
+                        <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
+                          <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
+                          <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec.nom}</span>
+                        </div>
+                        {brasDuSec.length>0&&(
+                          <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:5}}>
+                            {brasDuSec.map((bra:any)=>{
+                              const actsDeBra=activites.filter((a:any)=>a.branche_id===bra.id&&actIds.includes(a.id));
+                              return (
+                                <div key={bra.id}>
+                                  <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?4:0}}>
+                                    <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                                    <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span>
+                                  </div>
+                                  {actsDeBra.length>0&&(
+                                    <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
+                                      {actsDeBra.map((act:any)=>(
+                                        <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
+                                          <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                          <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             )}
 
             {/* Entreprises installées */}
             {installes.length>0&&(
-              <div style={{ marginBottom:16 }}>
-                <p style={{ fontSize:10, fontWeight:700, color:"#059669", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:10 }}>Entreprises installées</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+              <div style={{marginBottom:16}}>
+                <LBL>Entreprises installées</LBL>
+                <div style={{display:"flex",flexDirection:"column" as const,gap:6,maxHeight:installes.length>3?200:undefined,overflowY:installes.length>3?"auto" as const:undefined,paddingRight:installes.length>3?4:undefined}}>
                   {installes.map((ze:any)=>(
-                    <div key={ze.id||ze.entreprise?.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"#fff", borderRadius:10, border:"1px solid #E8E5E3" }}>
-                      <div style={{ width:32, height:32, borderRadius:8, background:"rgba(24,128,56,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <Building2 size={14} style={{ color:"#059669" }}/>
+                    <div key={ze.id||ze.entreprise?.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"#fff",borderRadius:10,border:"1px solid #E8E5E3"}}>
+                      <div style={{width:32,height:32,borderRadius:8,background:"rgba(24,128,56,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                        <Building2 size={14} style={{color:"#059669"}}/>
                       </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontWeight:600, fontSize:13, color:"#1a1a2e", marginBottom:1 }}>{ze.entreprise?.nom}</div>
-                        {ze.entreprise?.forme_juridique&&<div style={{ fontSize:11, color:"#9aa5b4" }}>{ze.entreprise.forme_juridique}</div>}
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontWeight:600,fontSize:13,color:"#1a1a2e",marginBottom:1}}>{ze.entreprise?.nom}</div>
+                        {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"#9aa5b4"}}>{ze.entreprise.forme_juridique}</div>}
                       </div>
-                      <span style={{ fontSize:10, fontWeight:700, color:"#059669", background:"#dcfce7", border:"1px solid #86efac", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>Installée</span>
-                      <button onClick={()=>ouvrirFiche(ze.entreprise?.id)}
-                        style={{ display:"flex", alignItems:"center", gap:4, padding:"5px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:11, fontWeight:600, color:"#4a5568", cursor:"pointer", flexShrink:0 }}>
+                      <button onClick={()=>ouvrirFiche(ze.entreprise?.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:11,fontWeight:600,color:"#4a5568",cursor:"pointer",flexShrink:0}}>
                         <Building2 size={11}/> Fiche
                       </button>
                     </div>
@@ -637,21 +677,19 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
 
             {/* Entreprises éligibles */}
             {eligibles.length>0&&(
-              <div style={{ marginBottom:16 }}>
-                <p style={{ fontSize:10, fontWeight:700, color:"#b45309", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:10 }}>Entreprises éligibles</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+              <div style={{marginBottom:16}}>
+                <LBL>Entreprises éligibles</LBL>
+                <div style={{display:"flex",flexDirection:"column" as const,gap:6,maxHeight:eligibles.length>3?200:undefined,overflowY:eligibles.length>3?"auto" as const:undefined,paddingRight:eligibles.length>3?4:undefined}}>
                   {eligibles.map((ze:any)=>(
-                    <div key={ze.id||ze.entreprise?.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"#fff", borderRadius:10, border:"1px solid #E8E5E3" }}>
-                      <div style={{ width:32, height:32, borderRadius:8, background:"rgba(180,83,9,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <Building2 size={14} style={{ color:"#b45309" }}/>
+                    <div key={ze.id||ze.entreprise?.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"#fff",borderRadius:10,border:"1px solid #E8E5E3"}}>
+                      <div style={{width:32,height:32,borderRadius:8,background:"rgba(180,83,9,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                        <Building2 size={14} style={{color:"#b45309"}}/>
                       </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontWeight:600, fontSize:13, color:"#1a1a2e", marginBottom:1 }}>{ze.entreprise?.nom}</div>
-                        {ze.entreprise?.forme_juridique&&<div style={{ fontSize:11, color:"#9aa5b4" }}>{ze.entreprise.forme_juridique}</div>}
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontWeight:600,fontSize:13,color:"#1a1a2e",marginBottom:1}}>{ze.entreprise?.nom}</div>
+                        {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"#9aa5b4"}}>{ze.entreprise.forme_juridique}</div>}
                       </div>
-                      <span style={{ fontSize:10, fontWeight:700, color:"#b45309", background:"#fef9c3", border:"1px solid #fde68a", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>Éligible</span>
-                      <button onClick={()=>ouvrirFiche(ze.entreprise?.id)}
-                        style={{ display:"flex", alignItems:"center", gap:4, padding:"5px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:11, fontWeight:600, color:"#4a5568", cursor:"pointer", flexShrink:0 }}>
+                      <button onClick={()=>ouvrirFiche(ze.entreprise?.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:11,fontWeight:600,color:"#4a5568",cursor:"pointer",flexShrink:0}}>
                         <Building2 size={11}/> Fiche
                       </button>
                     </div>
@@ -660,17 +698,24 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
               </div>
             )}
 
-            {/* Fichiers */}
+            {/* Documents PDF */}
             {zone.fichiers?.length>0&&(
-              <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6 }}>
-                {zone.fichiers.map((f:any)=>(
-                  <a key={f.id} href={`${API_BASE}/zones-types/${zone.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{ display:"inline-flex", alignItems:"center", gap:5, background:"#fff", border:`1px solid ${meta.border}`, borderRadius:7, padding:"5px 12px", fontSize:11, color:col, textDecoration:"none", fontWeight:600 }}>
-                    <FileText size={11}/>{f.titre||f.nom}
-                  </a>
-                ))}
+              <div style={{marginBottom:16}}>
+                <LBL>Documents PDF</LBL>
+                <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+                  {zone.fichiers.map((f:any)=>(
+                    <a key={f.id} href={`${API_BASE}/zones-types/${zone.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                      style={{display:"inline-flex",alignItems:"center",gap:5,background:"#fff",border:`1px solid ${meta.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,color:col,textDecoration:"none",fontWeight:600}}>
+                      <FileText size={11}/>{f.titre||f.nom}
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
+
+            <div style={{display:"flex",justifyContent:"flex-end",marginTop:20,borderTop:"1px solid #F2F0EF",paddingTop:18}}>
+              <button onClick={onClose} style={{padding:"9px 20px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
+            </div>
 
           </div>
         </div>
