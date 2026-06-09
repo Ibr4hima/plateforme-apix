@@ -38,3 +38,11 @@ class RefPaysGroupement(Base):
     __tablename__ = "ref_pays_groupements"
     pays_id       = Column(Integer, ForeignKey("ref_pays.id", ondelete="CASCADE"), primary_key=True)
     groupement_id = Column(Integer, ForeignKey("ref_groupements.id", ondelete="CASCADE"), primary_key=True)
+
+
+class IdeCnucedMonde(Base):
+    __tablename__ = "ide_cnuced_monde"
+    id       = Column(Integer, primary_key=True)
+    code     = Column(String(20), unique=True, nullable=False)
+    nom_fr   = Column(String(200), nullable=False)
+    pays_ids = Column(ARRAY(Integer), nullable=False, server_default="{}")
