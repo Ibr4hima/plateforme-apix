@@ -1339,39 +1339,44 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
     if (!grpSelec.length) { setDonnees([]); return; }
     const allLoaded = grpSelec.every(id=>membresParGrp[id]);
     if (!allLoaded) return;
-    const allPays = [...new Set(grpSelec.flatMap(id=>membresParGrp[id]||[]))];
-    if (!allPays.length) return;
-    // Génération pour ignorer les réponses obsolètes
     const gen = ++chargerGen.current;
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.set("pays_list", allPays.join(","));
-      if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
-      else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
-      const raw: any[] = await fetch(`${API}/ide/cnuced?${params}`).then(r=>r.json());
-      if (gen !== chargerGen.current) return; // réponse obsolète, on l'ignore
-      // Agréger par groupement (moyenne des pays membres)
-      const agg: any[] = [];
-      grpSelec.forEach(id => {
+      // Un fetch par groupement pour éviter tout problème de matching de noms
+      const allAgg: any[] = [];
+      await Promise.all(grpSelec.map(async id => {
         const membres = membresParGrp[id]||[];
+        if (!membres.length) return;
         const code = groupements.find(x=>x.id===id)?.code||String(id);
+        const params = new URLSearchParams();
+        params.set("pays_list", membres.join(","));
+        if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
+        else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
+        const raw: any[] = await fetch(`${API}/ide/cnuced?${params}`).then(r=>r.json());
+        // Un seul value par (pays, direction, indicateur, annee) — déduplique par pays
+        const parPays = new Map<string, Map<string,number>>();
+        (raw||[]).filter(d=>d.valeur!=null&&!isNaN(d.valeur)).forEach(d=>{
+          if (!parPays.has(d.pays)) parPays.set(d.pays, new Map());
+          parPays.get(d.pays)!.set(`${d.direction}|${d.indicateur}|${d.annee}`, d.valeur);
+        });
+        // Moyenne sur tous les pays retournés
         const sumMap = new Map<string,number>();
         const cntMap = new Map<string,number>();
-        raw.filter(d=>membres.includes(d.pays) && d.valeur!=null && !isNaN(d.valeur)).forEach(d=>{
-          const k=`${d.direction}|${d.indicateur}|${d.annee}`;
-          sumMap.set(k,(sumMap.get(k)||0)+(d.valeur));
-          cntMap.set(k,(cntMap.get(k)||0)+1);
+        parPays.forEach(keyMap => {
+          keyMap.forEach((valeur,k) => {
+            sumMap.set(k,(sumMap.get(k)||0)+valeur);
+            cntMap.set(k,(cntMap.get(k)||0)+1);
+          });
         });
         sumMap.forEach((sum,k)=>{
-          const cnt = cntMap.get(k)||1;
           const [direction,indicateur,anneeStr]=k.split("|");
-          agg.push({pays:code,direction,indicateur,annee:Number(anneeStr),valeur:sum/cnt});
+          allAgg.push({pays:code, direction, indicateur, annee:Number(anneeStr), valeur:sum/(cntMap.get(k)||1)});
         });
-      });
-      setDonnees(agg);
+      }));
+      if (gen !== chargerGen.current) return;
+      setDonnees(allAgg);
     } catch(e){ console.error(e); }
-    finally { if (gen === chargerGen.current) setLoading(false); }
+    finally { if (gen===chargerGen.current) setLoading(false); }
   }, [grpSelec, membresParGrp, anneeMin, anneeMax, anneesSpec, modeAnnees, groupements]);
 
   useEffect(()=>{ charger(); },[charger]);
