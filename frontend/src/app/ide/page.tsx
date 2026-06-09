@@ -1231,7 +1231,6 @@ function OngletMonde() {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function IdePage() {
-  const [source,    setSource]    = useState("cnuced");
   const [sousOnglet,setSousOnglet]= useState("pays");
   const [paysDispo, setPaysDispo] = useState<any[]>([]);
 
@@ -1245,59 +1244,39 @@ export default function IdePage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <Navbar />
 
-      {/* ── Header avec onglets sources ─────────────────────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section style={{ background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"100px 40px 0" }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", padding:"100px 40px 32px" }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(24,128,56,0.1)", border:"1px solid rgba(24,128,56,0.3)", borderRadius:999, padding:"6px 14px", marginBottom:16 }}>
             <span style={{ fontSize:11, fontWeight:700, color:"#4ade80", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Données officielles</span>
           </div>
-          <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1, marginBottom:12 }}>Investissements Directs Étrangers</h1>
-          <p style={{ color:"rgba(255,255,255,0.45)", fontSize:15, maxWidth:520, lineHeight:1.7, marginBottom:20 }}>
-            Analysez les flux et stocks d'IDE par pays, comparez les économies et explorez les tendances mondiales.
-          </p>
-          {paysDispo.length > 0 && (
-            <span style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, color:"#fff", background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.2)", padding:"6px 14px", borderRadius:999, marginBottom:20 }}>
-              {paysDispo.length} pays disponible{paysDispo.length>1?"s":""}
-            </span>
-          )}
-          {/* Onglets sources */}
-          <div style={{ display:"flex", gap:2 }}>
-            {[{v:"cnuced",l:"CNUCED"},{v:"fdi_markets",l:"FDI Markets"}].map(o=>(
-              <button key={o.v} onClick={()=>{ setSource(o.v); setSousOnglet("pays"); }}
-                style={{ padding:"11px 22px", border:"none", borderRadius:"10px 10px 0 0", cursor:"pointer", fontSize:14, fontWeight:source===o.v?700:500,
-                  background:source===o.v?"#F2F0EF":"rgba(255,255,255,0.1)",
-                  color:source===o.v?"#1a1a2e":"rgba(255,255,255,0.6)",
-                  transition:"all 0.15s" }}>
-                {o.l}
-              </button>
-            ))}
-          </div>
+          <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1 }}>Investissements Directs Étrangers</h1>
         </div>
       </section>
 
-      {/* ── Sous-onglets (si CNUCED) ─────────────────────────────────────────── */}
-      {source === "cnuced" && (
-        <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", flexShrink:0 }}>
-          <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px", display:"flex" }}>
-            {[{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}].map(o=>(
-              <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                style={{ padding:"14px 20px", border:"none", borderBottom:`3px solid ${sousOnglet===o.v?"#188038":"transparent"}`, background:"transparent", fontSize:13, fontWeight:sousOnglet===o.v?700:500, color:sousOnglet===o.v?"#188038":"#9aa5b4", cursor:"pointer", transition:"all 0.15s" }}>
-                {o.l}
-                {o.v==="monde" && <span style={{ marginLeft:6, fontSize:10, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:999 }}>Bientôt</span>}
-              </button>
-            ))}
-          </div>
+      {/* ── Onglets ──────────────────────────────────────────────────────────── */}
+      <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", position:"sticky" as const, top:0, zIndex:10, flexShrink:0 }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px", display:"flex" }}>
+          {([
+            {v:"pays",        l:"Pays"},
+            {v:"comparative", l:"Analyse comparative"},
+            {v:"monde",       l:"Monde"},
+            {v:"fdi_markets", l:"FDI Markets"},
+          ] as const).map(o=>(
+            <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+              style={{ padding:"16px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#188038":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:sousOnglet===o.v?"#188038":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+              {o.l}
+              {(o.v==="monde"||o.v==="fdi_markets") && <span style={{ marginLeft:6, fontSize:10, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:999 }}>Bientôt</span>}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* ── Contenu ────────────────────────────────────────────────────────── */}
-      {source === "cnuced" ? (
-        <>
-          {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} />}
-          {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} />}
-          {sousOnglet === "monde"       && <OngletMonde />}
-        </>
-      ) : (
+      {/* ── Contenu ──────────────────────────────────────────────────────────── */}
+      {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} />}
+      {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} />}
+      {sousOnglet === "monde"       && <OngletMonde />}
+      {sousOnglet === "fdi_markets" && (
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
           <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
             <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
