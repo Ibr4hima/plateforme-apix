@@ -790,7 +790,28 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                   <span style={{ fontSize:11, fontWeight:700, color:paysSelec!=="Sénégal"?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
                   {paysSelec!=="Sénégal"&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
                 </div>
-                <div style={{ maxHeight:220, overflowY:"auto" as const }}>
+                {/* Sénégal épinglé */}
+                {(()=>{
+                  const sel = paysSelec==="Sénégal";
+                  const col = getPaysColor("Sénégal",0);
+                  return (
+                    <div style={{ marginBottom:8 }}>
+                      <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
+                      <button onClick={()=>setPaysSelec("Sénégal")}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?col+"12":"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%" }}
+                        onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"rgba(24,128,56,0.04)";}}>
+                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <span style={{ fontSize:12, color:sel?col:"#4a5568", fontWeight:sel?600:400 }}>Sénégal</span>
+                        <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
+                      </button>
+                    </div>
+                  );
+                })()}
+                <div style={{ height:1, background:"#F2F0EF", marginBottom:8 }}/>
+                <div style={{ maxHeight:200, overflowY:"auto" as const }}>
                   {sortContinents(Object.keys(groupedPays)).map(continent => {
                     const isOpen = openConts.has(continent);
                     const zones  = groupedPays[continent];
@@ -807,6 +828,15 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                             {(paysInZone as any[]).map((p:any) => {
                               const sel = paysSelec === p.nom;
                               const col = getPaysColor(p.nom, paysDispo.indexOf(p));
+                              if (p.nom==="Sénégal") return (
+                                <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
+                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                  </div>
+                                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
+                                  <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4" }}>Réf.</span>
+                                </div>
+                              );
                               return (
                                 <button key={p.nom} onClick={()=>setPaysSelec(p.nom)}
                                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%" }}
@@ -844,16 +874,24 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                   ))}
                 </div>
                 {modeAnnees==="plage" ? (
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#F8F7F6", borderRadius:8, padding:"8px 14px" }}>
-                      <span style={{ fontSize:17, fontWeight:800, color:"#1a1a2e" }}>{anneeMin}</span>
-                      <span style={{ fontSize:11, color:"#C5BFBB" }}>→</span>
-                      <span style={{ fontSize:17, fontWeight:800, color:"#1a1a2e" }}>{anneeMax}</span>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                    <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
+                      <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#ca631f", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <input type="range" min={1990} max={2024} value={anneeMin}
+                        onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
+                        className="drs-thumb"
+                        style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
+                      <input type="range" min={1990} max={2024} value={anneeMax}
+                        onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
+                        className="drs-thumb"
+                        style={{zIndex:3} as React.CSSProperties}/>
                     </div>
-                    <div><label style={{ fontSize:10, color:"#9aa5b4", display:"block", marginBottom:3 }}>Début</label>
-                      <input type="range" min={1990} max={2024} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))} style={{ width:"100%", accentColor:"#ca631f" }}/></div>
-                    <div><label style={{ fontSize:10, color:"#9aa5b4", display:"block", marginBottom:3 }}>Fin</label>
-                      <input type="range" min={1990} max={2024} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))} style={{ width:"100%", accentColor:"#ca631f" }}/></div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                      <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                    </div>
                     <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
                   </div>
                 ) : (
@@ -863,7 +901,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                         const sel=anneesSpec.includes(a);
                         return (
                           <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"transparent":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#1a1a2e":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#ca631f":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#ca631f":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
                             {a}
                           </button>
                         );
@@ -908,7 +946,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                 <p style={{ fontSize:10, color:"#C5BFBB", marginTop:8, lineHeight:1.5 }}>Cochez jusqu'à 5 · glissez pour réorganiser</p>
               </div>
               <button onClick={charger}
-                style={{ width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"#188038", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
+                style={{ width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"#ca631f", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
                 Appliquer
               </button>
             </>}
@@ -1077,7 +1115,28 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                   </div>
                   <span style={{ fontSize:11, color:"#9aa5b4" }}>{paysSelec.length} sélectionné{paysSelec.length>1?"s":""}</span>
                 </div>
-                <div style={{ maxHeight:220, overflowY:"auto" as const }}>
+                {/* Sénégal épinglé */}
+                {(()=>{
+                  const sel = paysSelec.includes("Sénégal");
+                  const col = getPaysColor("Sénégal",0);
+                  return (
+                    <div style={{ marginBottom:8 }}>
+                      <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
+                      <button onClick={()=>{ if(sel){if(paysSelec.length>1)setPaysSelec(prev=>prev.filter(n=>n!=="Sénégal"));}else{setPaysSelec(prev=>[...prev,"Sénégal"]);} }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?col+"12":"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%" }}
+                        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"20":"#F8F7F6";}}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"rgba(24,128,56,0.04)";}}>
+                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <span style={{ fontSize:12, color:sel?col:"#4a5568", fontWeight:sel?600:400 }}>Sénégal</span>
+                        <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
+                      </button>
+                    </div>
+                  );
+                })()}
+                <div style={{ height:1, background:"#F2F0EF", marginBottom:8 }}/>
+                <div style={{ maxHeight:200, overflowY:"auto" as const }}>
                   {sortContinents(Object.keys(groupedPays)).map(continent => {
                     const isOpen = openConts.has(continent);
                     const zones  = groupedPays[continent];
@@ -1094,6 +1153,15 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                             {(paysInZone as any[]).map((p:any) => {
                               const sel = paysSelec.includes(p.nom);
                               const col = getPaysColor(p.nom, paysDispo.indexOf(p));
+                              if (p.nom==="Sénégal") return (
+                                <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
+                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                  </div>
+                                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
+                                  <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4" }}>Réf.</span>
+                                </div>
+                              );
                               return (
                                 <button key={p.nom} onClick={()=>{ if(!sel) setPaysSelec(prev=>[...prev,p.nom]); else if(paysSelec.length>1) setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); }}
                                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%" }}
@@ -1147,16 +1215,24 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                   ))}
                 </div>
                 {modeAnnees==="plage" ? (
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#F8F7F6", borderRadius:8, padding:"8px 14px" }}>
-                      <span style={{ fontSize:17, fontWeight:800, color:"#1a1a2e" }}>{anneeMin}</span>
-                      <span style={{ fontSize:11, color:"#C5BFBB" }}>→</span>
-                      <span style={{ fontSize:17, fontWeight:800, color:"#1a1a2e" }}>{anneeMax}</span>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                    <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
+                      <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#ca631f", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <input type="range" min={1990} max={2024} value={anneeMin}
+                        onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
+                        className="drs-thumb"
+                        style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
+                      <input type="range" min={1990} max={2024} value={anneeMax}
+                        onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
+                        className="drs-thumb"
+                        style={{zIndex:3} as React.CSSProperties}/>
                     </div>
-                    <div><label style={{ fontSize:10, color:"#9aa5b4", display:"block", marginBottom:3 }}>Début</label>
-                      <input type="range" min={1990} max={2024} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))} style={{ width:"100%", accentColor:"#ca631f" }}/></div>
-                    <div><label style={{ fontSize:10, color:"#9aa5b4", display:"block", marginBottom:3 }}>Fin</label>
-                      <input type="range" min={1990} max={2024} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))} style={{ width:"100%", accentColor:"#ca631f" }}/></div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                      <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                    </div>
                     <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
                   </div>
                 ) : (
@@ -1166,7 +1242,7 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                         const sel=anneesSpec.includes(a);
                         return (
                           <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"transparent":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#1a1a2e":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#ca631f":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#ca631f":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
                             {a}
                           </button>
                         );
@@ -1180,7 +1256,7 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                 )}
               </div>
               <button onClick={charger}
-                style={{ width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"#188038", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
+                style={{ width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"#ca631f", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
                 Appliquer
               </button>
             </>}
@@ -1261,7 +1337,12 @@ export default function IdePage() {
   return (
     <div style={{ minHeight:"100vh", background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}>
       <div id="d3-tooltip" style={{ position:"fixed", pointerEvents:"none", background:"rgba(26,26,46,0.92)", color:"#fff", borderRadius:8, padding:"8px 12px", fontSize:12, lineHeight:1.5, opacity:0, zIndex:9999, backdropFilter:"blur(4px)" }} />
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
+.drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}
+.drs-thumb::-moz-range-track{background:transparent;height:4px}
+.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#ca631f;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(202,99,31,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
+.drs-thumb::-moz-range-thumb{background:#ca631f;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(202,99,31,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <Navbar />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
