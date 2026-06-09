@@ -397,19 +397,6 @@ function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string) {
       rows.push(row);
     });
 
-    // Flux net et Stock net
-    ["flux","stock"].forEach(ind => {
-      const label = ind==="flux" ? "Flux net (M$ USD)" : "Stock net (M$ USD)";
-      const row: (string|number|null)[] = [label];
-      annees.forEach(a => {
-        const re = donnees.find((d:any)=>d.pays===p.nom&&d.direction==="entrant"&&d.indicateur===ind&&d.annee===a)?.valeur;
-        const rs = donnees.find((d:any)=>d.pays===p.nom&&d.direction==="sortant"&&d.indicateur===ind&&d.annee===a)?.valeur;
-        const net = re!==null&&re!==undefined&&rs!==null&&rs!==undefined ? +(re-rs).toFixed(2) : null;
-        row.push(net);
-      });
-      rows.push(row);
-    });
-
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
     // Largeur auto des colonnes
