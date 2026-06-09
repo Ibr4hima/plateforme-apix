@@ -445,46 +445,43 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
+  const dlIcon = <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, border:"1px solid #E8E5E3", boxShadow:"0 40px 100px rgba(0,0,0,0.25)" }}>
-        <div style={{ height:3, background:"linear-gradient(90deg,#188038,#3b6bcc,#e07a2e)", borderRadius:"20px 20px 0 0" }} />
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, border:"1px solid #E8E5E3", boxShadow:"0 40px 100px rgba(0,0,0,0.25)", overflow:"hidden" }}>
+
+        {/* Bande gradient hero */}
+        <div style={{ height:5, background:"linear-gradient(90deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)", flexShrink:0 }} />
 
         {/* Header */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"20px 26px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-            <div>
-              <h3 style={{ fontWeight:800, fontSize:"1.05rem", color:"#1a1a2e" }}>Données brutes</h3>
-              <p style={{ fontSize:12, color:"#9aa5b4", marginTop:2 }}>Source CNUCED · Valeurs en M$ USD · {annees.length} années</p>
-            </div>
-            {/* Badges pays */}
-            <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const }}>
-              {paysSelectionnes.map((p:any)=>(
-                <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:5, background:`${p.couleur}10`, border:`1.5px solid ${p.couleur}30`, borderRadius:999, padding:"3px 12px" }}>
-                  <div style={{ width:6, height:6, borderRadius:"50%", background:p.couleur }} />
-                  <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
-                </div>
-              ))}
-            </div>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"18px 26px", borderBottom:"1px solid #F2F0EF", flexShrink:0, background:"linear-gradient(180deg,rgba(0,79,145,0.03) 0%,transparent 100%)" }}>
+          {/* Titre : bullet(s) pays */}
+          <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
+            {paysSelectionnes.map((p:any)=>(
+              <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <div style={{ width:8, height:8, borderRadius:"50%", background:p.couleur, flexShrink:0 }} />
+                <span style={{ fontSize:"1rem", fontWeight:800, color:"#1a1a2e" }}>{p.nom}</span>
+              </div>
+            ))}
           </div>
 
           {/* Actions */}
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <div style={{ display:"flex", gap:4 }}>
-              <button onClick={()=>exportCSV(donnees,paysSelectionnes,periode)}
-                style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#1a1a2e", cursor:"pointer" }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                CSV
-              </button>
-              <button onClick={()=>exportJSON(donnees,paysSelectionnes,periode)}
-                style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#1a1a2e", cursor:"pointer" }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                JSON
-              </button>
-            </div>
-            <div style={{ width:1, height:24, background:"#E8E5E3" }} />
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:8 }}><X size={14} color="#4a5568"/></button>
+          <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0, marginLeft:16 }}>
+            <button onClick={()=>exportCSV(donnees,paysSelectionnes,periode)}
+              style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}
+              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
+              {dlIcon} CSV
+            </button>
+            <button onClick={()=>exportJSON(donnees,paysSelectionnes,periode)}
+              style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}
+              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
+              {dlIcon} JSON
+            </button>
+            <div style={{ width:1, height:22, background:"#E8E5E3" }} />
+            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 8px", display:"flex" }}><X size={14} color="#4a5568"/></button>
           </div>
         </div>
 
@@ -493,7 +490,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
           <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
             <thead style={{ position:"sticky" as const, top:0, zIndex:1 }}>
               <tr style={{ background:"#F8F7F6" }}>
-                <th style={{ padding:"10px 16px", textAlign:"left" as const, fontSize:11, fontWeight:700, color:"#9aa5b4", position:"sticky" as const, left:0, background:"#F8F7F6", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const, minWidth:180 }}>Pays · Indicateur</th>
+                <th style={{ padding:"10px 16px", textAlign:"left" as const, fontSize:11, fontWeight:700, color:"#9aa5b4", position:"sticky" as const, left:0, background:"#F8F7F6", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const, minWidth:160 }}>Indicateur</th>
                 {annees.map(a=><th key={a} style={{ padding:"10px 12px", fontSize:11, fontWeight:700, color:"#9aa5b4", textAlign:"right" as const, minWidth:80 }}>{a}</th>)}
               </tr>
             </thead>
@@ -511,28 +508,15 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
                     onMouseEnter={e=>e.currentTarget.style.background="#F8F7F6"}
                     onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
                     <td style={{ padding:"9px 16px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        {si===0 ? (
-                          <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-                            <div style={{ width:8, height:8, borderRadius:"50%", background:pays.couleur, flexShrink:0 }} />
-                            <span style={{ fontSize:12, fontWeight:800, color:pays.couleur }}>{pays.nom}</span>
-                            <span style={{ fontSize:11, color:"#9aa5b4", fontWeight:400 }}>·</span>
-                            <span style={{ fontSize:11, color:"#4a5568" }}>{s.label}</span>
-                          </div>
-                        ) : (
-                          <div style={{ display:"flex", alignItems:"center", gap:7, paddingLeft:15 }}>
-                            <span style={{ fontSize:11, color:"#4a5568" }}>{s.label}</span>
-                          </div>
-                        )}
-                      </div>
+                      <span style={{ fontSize:12, color:"#4a5568" }}>{s.label}</span>
                     </td>
                     {annees.map(a=>{
                       const r = donnees.find((d:any)=>d.pays===pays.nom&&d.direction===s.dir&&d.indicateur===s.ind&&d.annee===a);
                       const v = r?.valeur;
                       const display = v!==null&&v!==undefined ? fmtVal(v) : "—";
-                      const isNeg = v!==null&&v!==undefined&&v<0;
+                      const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#ca631f" : "#004f91";
                       return (
-                        <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color:isNeg?"#dc2626":v===null||v===undefined?"#C5BFBB":"#1a1a2e", fontWeight:v!==null&&v!==undefined?500:400, fontVariantNumeric:"tabular-nums" }}>
+                        <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums" }}>
                           {display}
                         </td>
                       );
@@ -545,11 +529,10 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
         </div>
 
         {/* Footer */}
-        <div style={{ padding:"12px 26px", borderTop:"1px solid #F2F0EF", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0, background:"#FAFAF9", borderRadius:"0 0 20px 20px" }}>
+        <div style={{ padding:"11px 26px", borderTop:"1px solid #F2F0EF", flexShrink:0, background:"#FAFAF9", borderRadius:"0 0 20px 20px" }}>
           <p style={{ fontSize:11, color:"#9aa5b4" }}>
-            {paysSelectionnes.length} pays · {annees.length} années · {paysSelectionnes.length*4} séries · valeurs en M$ USD
+            {paysSelectionnes.length} pays · {annees.length} années · valeurs en M$ USD · Source CNUCED
           </p>
-          <p style={{ fontSize:11, color:"#9aa5b4" }}>CSV et JSON formatés pour Python/R/ML</p>
         </div>
       </div>
     </div>
@@ -990,7 +973,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
             </div>
             <button onClick={()=>setShowTable(true)}
               style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:9, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, transition:"all 0.15s", boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}
-              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#1a1a2e"; e.currentTarget.style.color="#1a1a2e"; e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)"; }}
+              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)"; }}
               onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)"; }}>
               <Table size={12}/> Tableau de données
             </button>
