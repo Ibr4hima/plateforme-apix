@@ -34,11 +34,26 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
   const [activePole, setActivePole] = useState<any>(null);
   const [tooltip, setTooltip] = useState<{ nom: string; x: number; y: number } | null>(null);
   const [secteurRef, setSecteurRef] = useState<any[]>([]);
+  const [poleEntsData, setPoleEntsData] = useState<any[]>([]);
+  const [poleEntsLoading, setPoleEntsLoading] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/zones-types/poles`).then(r => r.json()).then(setPoles).catch(() => {});
     fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(setSecteurRef).catch(() => {});
   }, []);
+
+  // Charger toutes les entreprises des régions du pôle actif
+  useEffect(() => {
+    if (!activePole) { setPoleEntsData([]); return; }
+    const regions = splitLocalisation(activePole.localisation);
+    const params = regions.map(r => `region_noms=${encodeURIComponent(r)}`).join("&");
+    setPoleEntsLoading(true);
+    fetch(`${API_BASE}/entreprises?${params}&per_page=2000`)
+      .then(r => r.json())
+      .then(d => { setPoleEntsData(Array.isArray(d) ? d : (d.data || [])); })
+      .catch(() => setPoleEntsData([]))
+      .finally(() => setPoleEntsLoading(false));
+  }, [activePole?.id]);
 
   // Couleur par pole.id (1-based index dans la palette)
   const getPoleColor = (poleId: number) => POLE_PALETTE[(poleId - 1) % POLE_PALETTE.length];
@@ -143,8 +158,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
     });
     return acc;
   }, []);
-  const nbInst = poleEnts.filter((e: any) => e.statut === "installee").length;
-  const nbElig = poleEnts.filter((e: any) => e.statut === "eligible").length;
+  const nbInst = poleEntsData.length; // toutes les entreprises des régions du pôle
   const activeColor = activePole ? getPoleColor(activePole.id) : "#E8E5E3";
 
   return (
@@ -207,7 +221,10 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
 
               {/* Entreprises installées */}
               <div style={{ background:"#F2F0EF", borderRadius:10, padding:"14px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:14, border:"1px solid #E8E5E3" }}>
-                <div style={{ fontSize:34, fontWeight:800, color:"#059669", lineHeight:1 }}>{nbInst}</div>
+                {poleEntsLoading
+                  ? <div style={{ width:24, height:24, border:"2px solid #E8E5E3", borderTopColor:"#059669", borderRadius:"50%", animation:"spin 1s linear infinite" }}/>
+                  : <div style={{ fontSize:34, fontWeight:800, color:"#059669", lineHeight:1 }}>{nbInst}</div>
+                }
                 <div style={{ fontSize:13, color:"#1a1a2e", fontWeight:600, lineHeight:1.3 }}>entreprise{nbInst!==1?"s":""} installée{nbInst!==1?"s":""}</div>
               </div>
 
@@ -237,14 +254,12 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
                   if(["B","C","D","E","F"].includes(c)) return "secondaire";
                   return "tertiaire";
                 };
-                // Entreprises installées dans les zones du pôle (via pole_id)
+                // Secteurs des entreprises réelles du pôle (via secteur_ids sur chaque entreprise)
                 const counts:{[k:string]:number} = { primaire:0, secondaire:0, tertiaire:0 };
-                poleZones.forEach((z:any)=>{
-                  const nE=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
-                  if(!nE) return;
-                  const secIds:number[] = z.secteur_ids||[];
+                poleEntsData.forEach((ent:any)=>{
+                  const secIds:number[] = ent.secteur_ids||[];
                   const sec = secIds.length>0 ? secteurRef.find((s:any)=>s.id===secIds[0]) : null;
-                  counts[sec?classif(sec.code):"tertiaire"]+=nE;
+                  counts[sec?classif(sec.code):"tertiaire"]++;
                 });
                 const total=counts.primaire+counts.secondaire+counts.tertiaire||1;
                 const rows=[
