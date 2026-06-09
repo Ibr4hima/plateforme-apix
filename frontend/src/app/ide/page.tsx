@@ -679,7 +679,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   const [openConts,    setOpenConts]    = useState<Set<string>>(new Set(["Afrique"]));
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
 
-  const couleur = getPaysColor(paysSelec, 0);
+  const couleur = "#174EA6";
 
   const charger = useCallback(async () => {
     setLoading(true);
@@ -945,10 +945,6 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                 </div>
                 <p style={{ fontSize:10, color:"#C5BFBB", marginTop:8, lineHeight:1.5 }}>Cochez jusqu'à 5 · glissez pour réorganiser</p>
               </div>
-              <button onClick={charger}
-                style={{ width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"#ca631f", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
-                Appliquer
-              </button>
             </>}
           </div>
         </div>
@@ -970,7 +966,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
               style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:9, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, transition:"all 0.15s", boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}
               onMouseEnter={e=>{ e.currentTarget.style.borderColor="#1a1a2e"; e.currentTarget.style.color="#1a1a2e"; e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)"; }}
               onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)"; }}>
-              <Table size={12}/> Données brutes
+              <Table size={12}/> Tableau de données
             </button>
           </div>
 
@@ -1025,6 +1021,9 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   );
 }
 
+// ── Palette fixe pour l'analyse comparative ───────────────────────────────────
+const COMP_PALETTE = ["#ca631f","#174EA6","#188038","#575799","#286B6B"];
+
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
 function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
   const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
@@ -1056,7 +1055,7 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
 
   useEffect(() => { charger(); }, [charger]);
 
-  const paysAvecCouleur = paysSelec.map((nom,i) => ({ nom, couleur: getPaysColor(nom, i) }));
+  const paysAvecCouleur = paysSelec.map((nom,i) => ({ nom, couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] }));
 
   const buildSeries = (dir: string, ind: string) =>
     paysAvecCouleur.map(p=>({ nom:p.nom, couleur:p.couleur, data:donnees.filter(d=>d.pays===p.nom&&d.direction===dir&&d.indicateur===ind) }));
@@ -1111,20 +1110,20 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                   <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                     {(paysSelec.length>1||paysSelec[0]!=="Sénégal")&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
                     <span style={{ fontSize:11, fontWeight:700, color:(paysSelec.length>1||paysSelec[0]!=="Sénégal")?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
-                    {(paysSelec.length>1||paysSelec[0]!=="Sénégal")&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{paysSelec.length}</span>}
                   </div>
-                  <span style={{ fontSize:11, color:"#9aa5b4" }}>{paysSelec.length} sélectionné{paysSelec.length>1?"s":""}</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec.length>=5?"#ca631f":"#9aa5b4", background:paysSelec.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{paysSelec.length}/5</span>
                 </div>
                 {/* Sénégal épinglé */}
                 {(()=>{
                   const sel = paysSelec.includes("Sénégal");
-                  const col = getPaysColor("Sénégal",0);
+                  const col = COMP_PALETTE[paysSelec.indexOf("Sénégal")] ?? COMP_PALETTE[0];
+                  const canAdd = !sel && paysSelec.length < 5;
                   return (
                     <div style={{ marginBottom:8 }}>
                       <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
-                      <button onClick={()=>{ if(sel){if(paysSelec.length>1)setPaysSelec(prev=>prev.filter(n=>n!=="Sénégal"));}else{setPaysSelec(prev=>[...prev,"Sénégal"]);} }}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?col+"12":"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%" }}
-                        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"20":"#F8F7F6";}}
+                      <button onClick={()=>{ if(sel){if(paysSelec.length>1)setPaysSelec(prev=>prev.filter(n=>n!=="Sénégal"));}else if(canAdd){setPaysSelec(prev=>[...prev,"Sénégal"]);} }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:sel||canAdd?"pointer":"not-allowed", background:sel?col+"12":"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%", opacity:!sel&&!canAdd?0.4:1 }}
+                        onMouseEnter={e=>{if(sel||canAdd)(e.currentTarget as HTMLElement).style.background=sel?col+"20":"#F8F7F6";}}
                         onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"rgba(24,128,56,0.04)";}}>
                         <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                           {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -1152,7 +1151,9 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                             <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:2 }}>{zone}</p>
                             {(paysInZone as any[]).map((p:any) => {
                               const sel = paysSelec.includes(p.nom);
-                              const col = getPaysColor(p.nom, paysDispo.indexOf(p));
+                              const col = sel ? COMP_PALETTE[paysSelec.indexOf(p.nom)] : "#C5BFBB";
+                              const canAdd = !sel && paysSelec.length < 5;
+                              const disabled = !sel && !canAdd;
                               if (p.nom==="Sénégal") return (
                                 <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
                                   <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -1163,9 +1164,9 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                                 </div>
                               );
                               return (
-                                <button key={p.nom} onClick={()=>{ if(!sel) setPaysSelec(prev=>[...prev,p.nom]); else if(paysSelec.length>1) setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); }}
-                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%" }}
-                                  onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+                                <button key={p.nom} onClick={()=>{ if(sel&&paysSelec.length>1) setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); else if(canAdd) setPaysSelec(prev=>[...prev,p.nom]); }}
+                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1 }}
+                                  onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
                                   onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"transparent";}}>
                                   <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                                     {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -1255,10 +1256,6 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                   </div>
                 )}
               </div>
-              <button onClick={charger}
-                style={{ width:"100%", padding:"10px 0", borderRadius:10, border:"none", background:"#ca631f", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
-                Appliquer
-              </button>
             </>}
           </div>
         </div>
@@ -1280,7 +1277,7 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
               style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:9, border:"1.5px solid #E8E5E3", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12, flexShrink:0, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}
               onMouseEnter={e=>{ e.currentTarget.style.borderColor="#1a1a2e"; e.currentTarget.style.color="#1a1a2e"; e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)"; }}
               onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)"; }}>
-              <Table size={12}/> Données brutes
+              <Table size={12}/> Tableaux de données
             </button>
           </div>
 
