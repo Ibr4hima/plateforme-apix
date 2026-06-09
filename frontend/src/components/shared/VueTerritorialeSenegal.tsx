@@ -217,7 +217,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
                   <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Zones d&apos;investissement</p>
                   {poleZones.map((z:any)=>{
                     const tc=z.type_zone==="ZES"?"#E35336":z.type_zone==="ZAI"?"#366FE3":"#188038";
-                    const nbEnts=(z.entreprises||[]).length;
+                    const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
                     return (
                       <div key={z.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:"1px solid #E8E5E3", fontSize:12 }}>
                         <span style={{ fontSize:9, fontWeight:700, color:tc, background:tc+"18", padding:"2px 6px", borderRadius:4, flexShrink:0 }}>{z.type_zone}</span>
@@ -237,25 +237,14 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
                   if(["B","C","D","E","F"].includes(c)) return "secondaire";
                   return "tertiaire";
                 };
-                // Entreprises dans les régions du pôle (toutes zones confondues)
-                const poleRegions = splitLocalisation(activePole.localisation);
-                const seen = new Set<number>();
-                const regionEnts: Array<{ze:any; zone:any}> = [];
-                zones.forEach((z:any)=>{
-                  (z.entreprises||[]).forEach((ze:any)=>{
-                    if(!poleRegions.includes(ze.entreprise?.region_nom)) return;
-                    if(ze.statut!=="installee") return;
-                    const id=ze.entreprise?.id;
-                    if(id && seen.has(id)) return;
-                    if(id) seen.add(id);
-                    regionEnts.push({ze, zone:z});
-                  });
-                });
+                // Entreprises installées dans les zones du pôle (via pole_id)
                 const counts:{[k:string]:number} = { primaire:0, secondaire:0, tertiaire:0 };
-                regionEnts.forEach(({zone})=>{
-                  const secIds:number[] = zone.secteur_ids||[];
+                poleZones.forEach((z:any)=>{
+                  const nE=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+                  if(!nE) return;
+                  const secIds:number[] = z.secteur_ids||[];
                   const sec = secIds.length>0 ? secteurRef.find((s:any)=>s.id===secIds[0]) : null;
-                  counts[sec?classif(sec.code):"tertiaire"]++;
+                  counts[sec?classif(sec.code):"tertiaire"]+=nE;
                 });
                 const total=counts.primaire+counts.secondaire+counts.tertiaire||1;
                 const rows=[
