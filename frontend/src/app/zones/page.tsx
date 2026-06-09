@@ -9,6 +9,12 @@ import { Building2, ChevronDown, ChevronRight, ChevronUp, FileText, MapPin, Sear
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
+function fmtDate(d: string) {
+  if (!d) return "";
+  const [y,m,j] = d.split("-").map(Number);
+  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
+}
+
 const TYPE_META: Record<string,{label:string;color:string;bg:string;border:string}> = {
   ZES: { label:"Zones Économiques Spéciales",           color:"#E35336", bg:"rgba(227,83,54,0.06)",  border:"rgba(227,83,54,0.2)" },
   ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#366FE3", bg:"rgba(54,111,227,0.06)", border:"rgba(54,111,227,0.2)" },
@@ -455,56 +461,28 @@ function ZoneCard({ zone, defaultOpen=false }: { zone:any; defaultOpen?:boolean 
 
 // ── Card zone grille 3 colonnes ────────────────────────────────────────────────
 function ZoneCardGrid({ zone, onClick }: { zone:any; onClick:()=>void }) {
-  const meta = TYPE_META[zone.type_zone] || TYPE_META.ZES;
-  const poleColor = zone.pole_id ? POLE_COLORS[(zone.pole_id-1)%POLE_COLORS.length] : "#E8E5E3";
-  const installes = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
   return (
     <div onClick={onClick}
-      style={{ background:"#fff", borderRadius:14, border:"1px solid #E8E5E3", padding:16, cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}
-      onMouseEnter={e=>{(e.currentTarget as HTMLDivElement).style.boxShadow="0 4px 16px rgba(0,0,0,0.10)";(e.currentTarget as HTMLDivElement).style.borderColor=meta.color;}}
-      onMouseLeave={e=>{(e.currentTarget as HTMLDivElement).style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";(e.currentTarget as HTMLDivElement).style.borderColor="#E8E5E3";}}>
-
-      {/* Pôle badge haut droite */}
-      <div style={{ display:"flex", justifyContent:"flex-end", minHeight:22, marginBottom:8 }}>
-        {zone.pole_nom&&(
-          <span style={{ fontSize:10, fontWeight:700, color:"#1a1a2e", background:poleColor, opacity:0.95, padding:"3px 9px", borderRadius:999, border:"1px solid rgba(0,0,0,0.08)", whiteSpace:"nowrap" as const, maxWidth:"100%", overflow:"hidden", textOverflow:"ellipsis" }}>
-            {zone.pole_nom}
-          </span>
-        )}
+      style={{ background:"#fff", border:"1px solid #E8E5E3", borderLeft:"3px solid #ca631f", borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", position:"relative" as const }}
+      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
+      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+      <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", lineHeight:1.35, marginBottom:zone.pole_nom?2:8, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
+      {zone.pole_nom&&<div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginBottom:8, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.pole_nom}</div>}
+      <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
+        {zone.date_creation&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
+          <span style={{ color:"#4a5568" }}>Créée le {fmtDate(zone.date_creation)}</span>
+        </div>}
+        {(zone.departement_nom||zone.region_nom)&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:"#B7410E", flexShrink:0 }}/>
+          <span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</span>
+        </div>}
       </div>
-
-      {/* Badge type */}
-      <div style={{ display:"inline-flex", alignItems:"center", background:meta.bg, border:`1px solid ${meta.border}`, borderRadius:6, padding:"2px 8px", marginBottom:8 }}>
-        <span style={{ fontSize:10, fontWeight:800, color:meta.color }}>{zone.type_zone}</span>
-      </div>
-
-      {/* Nom zone */}
-      <h3 style={{ fontWeight:700, fontSize:14, color:"#1a1a2e", lineHeight:1.35, marginBottom:12 }}>{zone.nom_zone}</h3>
-
-      {/* Infos */}
-      <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-        {(zone.departement_nom||zone.region_nom)&&(
-          <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:"#4a5568" }}>
-            <MapPin size={11} style={{ color:"#C5BFBB", flexShrink:0 }}/>
-            <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</span>
-          </div>
-        )}
-        {zone.superficie&&(
-          <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12 }}>
-            <span style={{ color:"#9aa5b4" }}>Superficie :</span>
-            <span style={{ color:"#4a5568", fontWeight:600 }}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</span>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      {installes>0&&(
-        <div style={{ marginTop:14, paddingTop:10, borderTop:"1px solid #F2F0EF" }}>
-          <span style={{ fontSize:11, fontWeight:700, color:"#059669", background:"rgba(5,150,105,0.08)", border:"1px solid rgba(5,150,105,0.2)", padding:"2px 8px", borderRadius:999 }}>
-            {installes} installée{installes>1?"s":""}
-          </span>
+      <div style={{ display:"flex", borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
+        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(202,99,31,0.08)", borderRadius:7, padding:"6px 0", fontSize:11, color:"#ca631f", fontWeight:600 }}>
+          Voir les détails →
         </div>
-      )}
+      </div>
     </div>
   );
 }
