@@ -574,14 +574,10 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
               <div style={{flex:1,paddingRight:16}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-                  <div style={{width:40,height:40,borderRadius:11,background:meta.bg,border:`1px solid ${meta.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontSize:11,fontWeight:800,color:col}}>{zone.type_zone}</span>
-                  </div>
                   <div>
                     <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:5}}>{zone.nom_zone}</h2>
                     <div style={{display:"flex",gap:5,flexWrap:"wrap" as const}}>
-                      <span style={{fontSize:11,fontWeight:700,color:col,background:meta.bg,border:`1px solid ${meta.border}`,padding:"2px 9px",borderRadius:999}}>{zone.type_zone}</span>
-                      {zone.pole_nom&&<span style={{fontSize:11,fontWeight:700,color:"#1a1a2e",background:poleColor,opacity:0.95,border:"1px solid rgba(0,0,0,0.08)",padding:"2px 9px",borderRadius:999}}>{zone.pole_nom}</span>}
+                      {zone.pole_nom&&<span style={{fontSize:11,fontWeight:700,color:"#1a1a2e",background:poleColor+"55",border:"1px solid rgba(0,0,0,0.06)",padding:"2px 9px",borderRadius:999}}>{zone.pole_nom}</span>}
                       {zone.region_nom&&<span style={{fontSize:11,fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{zone.region_nom}</span>}
                     </div>
                   </div>
