@@ -1311,6 +1311,7 @@ export default function IdePage() {
   const [sousOnglet,setSousOnglet]= useState("pays");
   const [paysDispo, setPaysDispo] = useState<any[]>([]);
   const [showTable, setShowTable] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
 
   useEffect(() => {
     fetch(`${API}/ide/cnuced/pays-disponibles`).then(r=>r.json()).then(d=>setPaysDispo(d||[])).catch(()=>{});
@@ -1330,20 +1331,22 @@ export default function IdePage() {
       <Navbar />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section style={{ background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"100px 40px 32px" }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(202,99,31,0.1)", border:"1px solid rgba(202,99,31,0.25)", borderRadius:999, padding:"6px 14px", marginBottom:16 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:"#D96D3B", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
+      {heroVisible && (
+        <section style={{ background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}>
+          <div style={{ maxWidth:1400, margin:"0 auto", padding:"100px 40px 32px" }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(202,99,31,0.1)", border:"1px solid rgba(202,99,31,0.25)", borderRadius:999, padding:"6px 14px", marginBottom:16 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"#D96D3B", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
+            </div>
+            <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1, marginBottom:20 }}>Investissements Directs Étrangers</h1>
+            <span style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, color:"#fff", background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.2)", padding:"6px 14px", borderRadius:999 }}>
+              Données officielles — {sousOnglet==="fdi_markets"?"FDI Markets":"CNUCED"}
+            </span>
           </div>
-          <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1, marginBottom:20 }}>Investissements Directs Étrangers</h1>
-          <span style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, color:"#fff", background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.2)", padding:"6px 14px", borderRadius:999 }}>
-            Données officielles — {sousOnglet==="fdi_markets"?"FDI Markets":"CNUCED"}
-          </span>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
-      <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", position:"sticky" as const, top:0, zIndex:10, flexShrink:0 }}>
+      <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", position:"sticky" as const, top:72, zIndex:10, flexShrink:0 }}>
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex" }}>
             {([
@@ -1359,14 +1362,24 @@ export default function IdePage() {
               </button>
             ))}
           </div>
-          {(sousOnglet==="pays"||sousOnglet==="comparative")&&(
-            <button onClick={()=>setShowTable(true)}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:50, border:"none", borderBottom:"2px solid transparent", background:"transparent", fontSize:13, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
-              onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.color="#4a5568"; }}>
-              <Table size={14}/> Tableau de données
+          <div style={{ display:"flex", alignItems:"center" }}>
+            {(sousOnglet==="pays"||sousOnglet==="comparative")&&(
+              <button onClick={()=>setShowTable(true)}
+                style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:50, border:"none", borderBottom:"2px solid transparent", background:"transparent", fontSize:13, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.color="#4a5568"; }}>
+                <Table size={14}/> Tableau de données
+              </button>
+            )}
+            <div style={{ width:1, height:24, background:"#E8E5E3", margin:"0 4px" }}/>
+            <button onClick={()=>setHeroVisible(v=>!v)}
+              title={heroVisible?"Masquer l'en-tête":"Afficher l'en-tête"}
+              style={{ display:"flex", alignItems:"center", gap:5, padding:"0 14px", height:50, border:"none", background:"transparent", fontSize:12, fontWeight:600, color:"#9aa5b4", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"color 0.15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.color="#4a5568"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.color="#9aa5b4"; }}>
+              {heroVisible ? <ChevronUp size={15}/> : <ChevronDown size={15}/>}
             </button>
-          )}
+          </div>
         </div>
       </div>
 
