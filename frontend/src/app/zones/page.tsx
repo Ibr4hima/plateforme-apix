@@ -17,7 +17,7 @@ function fmtDate(d: string) {
 
 const TYPE_META: Record<string,{label:string;color:string;bg:string;border:string}> = {
   ZES: { label:"Zones Économiques Spéciales",           color:"#E35336", bg:"rgba(227,83,54,0.06)",  border:"rgba(227,83,54,0.2)" },
-  ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#366FE3", bg:"rgba(54,111,227,0.06)", border:"rgba(54,111,227,0.2)" },
+  ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#174EA6", bg:"rgba(23,78,166,0.06)",  border:"rgba(23,78,166,0.2)" },
   ZFI: { label:"Zones Franches Industrielles",           color:"#188038", bg:"rgba(24,128,56,0.06)",  border:"rgba(24,128,56,0.2)" },
 };
 
@@ -461,11 +461,12 @@ function ZoneCard({ zone, defaultOpen=false }: { zone:any; defaultOpen?:boolean 
 
 // ── Card zone grille 3 colonnes ────────────────────────────────────────────────
 function ZoneCardGrid({ zone, onClick }: { zone:any; onClick:()=>void }) {
+  const col = (TYPE_META[zone.type_zone]||TYPE_META.ZES).color;
   return (
     <div onClick={onClick}
-      style={{ background:"#fff", border:"1px solid #E8E5E3", borderLeft:"3px solid #ca631f", borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", position:"relative" as const }}
-      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
-      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+      style={{ background:"#fff", border:"1px solid #E8E5E3", borderLeft:`3px solid ${col}`, borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", position:"relative" as const }}
+      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${col}20`;ev.currentTarget.style.borderColor=col;}}
+      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=col;}}>
       <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", lineHeight:1.35, marginBottom:zone.pole_nom?2:8, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
       {zone.pole_nom&&<div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginBottom:8, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.pole_nom}</div>}
       <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
@@ -479,7 +480,7 @@ function ZoneCardGrid({ zone, onClick }: { zone:any; onClick:()=>void }) {
         </div>}
       </div>
       <div style={{ display:"flex", borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
-        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(202,99,31,0.08)", borderRadius:7, padding:"6px 0", fontSize:11, color:"#ca631f", fontWeight:600 }}>
+        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:col+"14", borderRadius:7, padding:"6px 0", fontSize:11, color:col, fontWeight:600 }}>
           Voir les détails →
         </div>
       </div>
@@ -537,13 +538,20 @@ function VueDetaillee({ zones }: { zones:any[] }) {
   const allPoles   = Array.from(new Set(zones.map((z:any)=>z.pole_nom).filter(Boolean))).sort() as string[];
   const allRegions = Array.from(new Set(zones.map((z:any)=>z.region_nom).filter(Boolean))).sort() as string[];
 
-  const filtered = zones.filter((z:any)=>{
-    if (search&&!z.nom_zone?.toLowerCase().includes(search.toLowerCase())) return false;
-    if (typesSel.length>0&&!typesSel.includes(z.type_zone)) return false;
-    if (polesSel.length>0&&!polesSel.includes(z.pole_nom)) return false;
-    if (regionsSel.length>0&&!regionsSel.includes(z.region_nom)) return false;
-    return true;
-  });
+  const TYPE_ORDER: Record<string,number> = { ZES:0, ZAI:1, ZFI:2 };
+  const filtered = zones
+    .filter((z:any)=>{
+      if (search&&!z.nom_zone?.toLowerCase().includes(search.toLowerCase())) return false;
+      if (typesSel.length>0&&!typesSel.includes(z.type_zone)) return false;
+      if (polesSel.length>0&&!polesSel.includes(z.pole_nom)) return false;
+      if (regionsSel.length>0&&!regionsSel.includes(z.region_nom)) return false;
+      return true;
+    })
+    .sort((a:any,b:any)=>{
+      const tDiff=(TYPE_ORDER[a.type_zone]??3)-(TYPE_ORDER[b.type_zone]??3);
+      if (tDiff!==0) return tDiff;
+      return (a.date_creation||"").localeCompare(b.date_creation||"");
+    });
 
   const toggle=(setter:React.Dispatch<React.SetStateAction<string[]>>)=>(v:string)=>
     setter(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
