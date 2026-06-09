@@ -46,7 +46,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
   useEffect(() => {
     if (!activePole) { setPoleEntsData([]); return; }
     setPoleEntsLoading(true);
-    fetch(`${API_BASE}/entreprises?pole_id=${activePole.id}&per_page=2000`)
+    fetch(`${API_BASE}/entreprises?pole_id=${activePole.id}&per_page=2000&admin=true`)
       .then(r => r.json())
       .then(d => { setPoleEntsData(Array.isArray(d) ? d : (d.data || [])); })
       .catch(() => setPoleEntsData([]))
