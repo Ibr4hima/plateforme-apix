@@ -1248,22 +1248,14 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
         {/* Zone graphes */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
           <div style={{ display:"flex", flexDirection:"column" as const, gap:8, marginBottom:20 }}>
-            {/* Badge période — gradient des couleurs pays */}
-            {(()=>{
-              const cols = paysAvecCouleur.map(p=>p.couleur);
-              const periodeLabel = modeAnnees==="specifiques"&&anneesSpec.length>0
-                ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                : `${anneeMin} — ${anneeMax}`;
-              const bg = cols.length===0 ? "#E8E5E3"
-                : cols.length===1 ? `${cols[0]}22`
-                : `linear-gradient(135deg,${cols.map((c,i)=>`${c}28 ${Math.round(i*100/(cols.length-1))}%`).join(",")})`;
-              const borderColor = cols.length>0 ? `${cols[0]}55` : "#E8E5E3";
-              return (
-                <div style={{ alignSelf:"flex-start" as const, background:bg, border:`1.5px solid ${borderColor}`, borderRadius:999, padding:"5px 16px" }}>
-                  <span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.04em" }}>{periodeLabel}</span>
-                </div>
-              );
-            })()}
+            {/* Badge période */}
+            <div>
+              <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em" }}>
+                {modeAnnees==="specifiques"&&anneesSpec.length>0
+                  ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                  : `${anneeMin} — ${anneeMax}`}
+              </span>
+            </div>
             {/* Badges pays */}
             <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
               {paysAvecCouleur.map(p=>(
