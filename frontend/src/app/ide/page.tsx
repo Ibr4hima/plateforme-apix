@@ -605,30 +605,55 @@ function interpreterKpi(k: KpiResult, pays: string, couleur: string): string {
 function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pays: string; couleur: string; onClose: ()=>void }) {
   if (!kpi) return null;
   const interp = interpreterKpi(kpi, pays, couleur);
+  const isTrend = ["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe"].includes(kpi.id);
   const isPos = kpi.valeur !== null && kpi.valeur > 0;
   const isNeg = kpi.valeur !== null && kpi.valeur < 0;
-  const signalColor = ["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe"].includes(kpi.id)
-    ? (isPos?"#188038":isNeg?"#dc2626":"#9aa5b4") : couleur;
+  const signalColor = isTrend ? (isPos?"#188038":isNeg?"#dc2626":"#9aa5b4") : couleur;
+  const signalBg    = isTrend ? (isPos?"rgba(24,128,56,0.07)":isNeg?"rgba(220,38,38,0.07)":"rgba(0,0,0,0.04)") : "rgba(0,79,145,0.06)";
+  const signalBorder= isTrend ? (isPos?"rgba(24,128,56,0.2)":isNeg?"rgba(220,38,38,0.2)":"#E8E5E3") : "rgba(0,79,145,0.2)";
+  const trendLabel  = isTrend ? (isPos?"Positif":isNeg?"Négatif":"Neutre") : null;
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:16, width:"100%", maxWidth:480, border:"1px solid #E8E5E3", boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }}>
-        <div style={{ height:3, background:`linear-gradient(90deg,${signalColor},${signalColor}88)`, borderRadius:"16px 16px 0 0" }} />
-        <div style={{ padding:"20px 22px 22px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:540, border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
+
+        {/* Bande gradient hero */}
+        <div style={{ height:5, background:"linear-gradient(90deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)" }} />
+
+        {/* Zone valeur + en-tête */}
+        <div style={{ padding:"22px 24px 20px", background:"linear-gradient(180deg,rgba(0,79,145,0.04) 0%,transparent 100%)", borderBottom:"1px solid #F2F0EF" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
             <div style={{ flex:1, paddingRight:12 }}>
-              <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:5 }}>{kpi.label}</p>
-              <div style={{ display:"flex", alignItems:"baseline", gap:8 }}>
-                <p style={{ fontSize:"2rem", fontWeight:800, color:signalColor, lineHeight:1 }}>{fmtKpi(kpi)}</p>
-                {kpi.annee && <p style={{ fontSize:12, color:"#9aa5b4" }}>en {kpi.annee}</p>}
+              {/* Pays badge */}
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+                <div style={{ width:7, height:7, borderRadius:"50%", background:couleur, flexShrink:0 }} />
+                <span style={{ fontSize:11, fontWeight:700, color:couleur }}>{pays}</span>
+                {trendLabel && (
+                  <span style={{ fontSize:10, fontWeight:700, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}`, padding:"1px 8px", borderRadius:999 }}>
+                    {trendLabel}
+                  </span>
+                )}
+              </div>
+              {/* Label KPI */}
+              <p style={{ fontSize:11, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>{kpi.label}</p>
+              {/* Valeur principale */}
+              <div style={{ display:"flex", alignItems:"baseline", gap:10 }}>
+                <span style={{ fontSize:"2.4rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtKpi(kpi)}</span>
+                {kpi.annee && <span style={{ fontSize:13, color:"#9aa5b4", fontWeight:500 }}>en {kpi.annee}</span>}
               </div>
             </div>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:6, flexShrink:0 }}><X size={13} color="#4a5568"/></button>
+            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:9, padding:"7px 8px", display:"flex", alignItems:"center", flexShrink:0 }}>
+              <X size={14} color="#4a5568"/>
+            </button>
           </div>
-          <div style={{ background:isPos?"rgba(24,128,56,0.05)":isNeg?"rgba(220,38,38,0.05)":"rgba(0,0,0,0.03)", border:`1px solid ${isPos?"rgba(24,128,56,0.15)":isNeg?"rgba(220,38,38,0.15)":"#E8E5E3"}`, borderLeft:`3px solid ${signalColor}`, borderRadius:"0 10px 10px 0", padding:"12px 16px", marginBottom:12 }}>
-            <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.7 }}>{interp}</p>
+        </div>
+
+        {/* Interprétation */}
+        <div style={{ padding:"20px 24px 22px" }}>
+          <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderLeft:`3px solid ${signalColor}`, borderRadius:"0 12px 12px 0", padding:"14px 18px", marginBottom:16 }}>
+            <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.75 }}>{interp}</p>
           </div>
-          <p style={{ fontSize:11, color:"#9aa5b4", lineHeight:1.6 }}>{kpi.description}</p>
+          <p style={{ fontSize:11, color:"#C5BFBB", lineHeight:1.65 }}>{kpi.description}</p>
         </div>
       </div>
     </div>
@@ -954,11 +979,13 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
 
           {/* Header */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
               <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
               <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
-              <span style={{ fontSize:12, color:"#9aa5b4" }}>
-                · {modeAnnees==="specifiques"&&anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}` : `${anneeMin}–${anneeMax}`}
+              <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em", flexShrink:0 }}>
+                {modeAnnees==="specifiques"&&anneesSpec.length>0
+                  ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                  : `${anneeMin} — ${anneeMax}`}
               </span>
             </div>
             <button onClick={()=>setShowTable(true)}
