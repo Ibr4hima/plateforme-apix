@@ -742,20 +742,18 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   const reinit = () => { setPaysSelec("Sénégal"); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); setKpisEpingles(KPI_DEFAUT); };
 
   return (
-    <section style={{ padding:"36px 40px 80px", maxWidth:1400, margin:"0 auto" }}>
-      <div style={{ display:"flex", gap:24, alignItems:"flex-start" }}>
+    <div style={{ display:"flex", alignItems:"flex-start" }}>
 
-        {/* Sidebar */}
-        <div style={{ width:sidebarOpen?280:52, flexShrink:0, transition:"width 0.25s" }}>
-          <div style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", padding:sidebarOpen?"20px 16px":"10px 8px", boxShadow:"0 2px 8px rgba(0,0,0,0.04)", position:"sticky" as const, top:24, maxHeight:"calc(100vh - 80px)", overflowY:"auto" as const }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", marginBottom:sidebarOpen?18:0 }}>
-              {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-              <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-                <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
-                {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
-              </button>
-            </div>
-            {sidebarOpen&&<>
+        {/* Sidebar bande */}
+        <aside style={{ width:sidebarOpen?280:52, flexShrink:0, transition:"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 72px)", overflowY:"auto" as const, position:"sticky" as const, top:72, display:"flex", flexDirection:"column" as const }}>
+          <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
+            {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
+              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
+            </button>
+          </div>
+          {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
               {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
                 <X size={12}/> Effacer tous les filtres
               </button>}
@@ -926,12 +924,11 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                   })}
                 </div>
               </div>
-            </>}
-          </div>
-        </div>
+          </div>}
+        </aside>
 
         {/* Zone principale */}
-        <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
         <div>
 
           {/* Header */}
@@ -997,7 +994,6 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={[{nom:paysSelec,couleur}]} />
       <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} onClose={()=>setKpiActif(null)} />
     </div>
-    </section>
   );
 }
 
@@ -1060,20 +1056,18 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
   const reinit = () => { setPaysSelec(["Sénégal"]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); setTypeG("line"); };
 
   return (
-    <section style={{ padding:"36px 40px 80px", maxWidth:1400, margin:"0 auto" }}>
-      <div style={{ display:"flex", gap:24, alignItems:"flex-start" }}>
+    <div style={{ display:"flex", alignItems:"flex-start" }}>
 
-        {/* Sidebar */}
-        <div style={{ width:sidebarOpen?280:52, flexShrink:0, transition:"width 0.25s" }}>
-          <div style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", padding:sidebarOpen?"20px 16px":"10px 8px", boxShadow:"0 2px 8px rgba(0,0,0,0.04)", position:"sticky" as const, top:24, maxHeight:"calc(100vh - 80px)", overflowY:"auto" as const }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", marginBottom:sidebarOpen?18:0 }}>
-              {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-              <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-                <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
-                {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
-              </button>
-            </div>
-            {sidebarOpen&&<>
+        {/* Sidebar bande */}
+        <aside style={{ width:sidebarOpen?280:52, flexShrink:0, transition:"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 72px)", overflowY:"auto" as const, position:"sticky" as const, top:72, display:"flex", flexDirection:"column" as const }}>
+          <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
+            {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
+              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
+            </button>
+          </div>
+          {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
               {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
                 <X size={12}/> Effacer tous les filtres
               </button>}
@@ -1236,12 +1230,11 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
                   </div>
                 )}
               </div>
-            </>}
-          </div>
-        </div>
+          </div>}
+        </aside>
 
         {/* Zone graphes */}
-        <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:16, flexWrap:"wrap" as const }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
               <span style={{ fontSize:12, color:"#9aa5b4" }}>Comparaison :</span>
@@ -1276,9 +1269,8 @@ function OngletAnalyseComparative({ paysDispo }: { paysDispo: any[] }) {
             </div>
           )}
         </div>
-      </div>
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} />
-    </section>
+    </div>
   );
 }
 
