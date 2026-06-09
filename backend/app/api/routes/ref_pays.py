@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, text
+from sqlalchemy import select, text
 
 from app.core.database import get_db
 from app.models.shared import RefPays, RefGroupement, RefPaysGroupement
@@ -18,9 +18,10 @@ def pays_to_dict(p: RefPays) -> dict:
             "est_industrialise":p.est_industrialise,"est_emergent":p.est_emergent,
             "nom_cnuced":p.nom_cnuced,"actif":p.actif}
 
-def grp_to_dict(g: RefGroupement, nb_pays: int = 0) -> dict:
+def grp_to_dict(g: RefGroupement) -> dict:
+    pays_ids = g.pays_ids or []
     return {"id":g.id,"code":g.code,"nom_fr":g.nom_fr,"nom_en":g.nom_en,
-            "description":g.description,"nb_pays":nb_pays}
+            "description":g.description,"pays_ids":pays_ids,"nb_pays":len(pays_ids)}
 
 
 # ── Routes fixes AVANT les routes avec paramètres ─────────────────────────────
@@ -34,12 +35,8 @@ async def meta(db: AsyncSession = Depends(get_db)):
 
 @router.get("/groupements/liste")
 async def liste_groupements(db: AsyncSession = Depends(get_db)):
-    res = await db.execute(
-        select(RefGroupement, func.count(RefPaysGroupement.pays_id).label("nb"))
-        .outerjoin(RefPaysGroupement, RefPaysGroupement.groupement_id == RefGroupement.id)
-        .group_by(RefGroupement.id).order_by(RefGroupement.code)
-    )
-    return [grp_to_dict(g, nb) for g, nb in res.all()]
+    res = await db.execute(select(RefGroupement).order_by(RefGroupement.code))
+    return [grp_to_dict(g) for g in res.scalars().all()]
 
 
 @router.get("/groupements/{grp_id}/membres")
@@ -61,7 +58,7 @@ async def creer_groupement(payload: dict, db: AsyncSession = Depends(get_db)):
     g = RefGroupement(code=payload["code"].upper(), nom_fr=payload["nom_fr"],
                       nom_en=payload.get("nom_en") or None, description=payload.get("description") or None)
     db.add(g); await db.flush()
-    return grp_to_dict(g, 0)
+    return grp_to_dict(g)
 
 
 @router.patch("/groupements/{grp_id}")
