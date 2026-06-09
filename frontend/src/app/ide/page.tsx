@@ -636,6 +636,14 @@ function groupByContinent(pays: any[]): Record<string, Record<string, any[]>> {
 }
 
 // ── Onglet Pays — analyse individuelle ────────────────────────────────────────
+function splitKpiLabel(label: string, dernAnnee: number): { main: string; badge: string | null } {
+  const lastYearMatch = label.match(/^(.+?)\s*—\s*dernière année$/);
+  if (lastYearMatch) return { main: lastYearMatch[1], badge: String(dernAnnee) };
+  const parenMatch = label.match(/^(.+?)\s*\(([^)]+)\)$/);
+  if (parenMatch) return { main: parenMatch[1], badge: parenMatch[2] };
+  return { main: label, badge: null };
+}
+
 function OngletPays({ paysDispo }: { paysDispo: any[] }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
@@ -892,7 +900,7 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
               {/* KPI */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>KPI affichés</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
                   <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#004f91":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
                 </div>
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:2, maxHeight:200, overflowY:"auto" as const }}>
@@ -912,12 +920,11 @@ function OngletPays({ paysDispo }: { paysDispo: any[] }) {
                           onClick={ev=>{ ev.stopPropagation(); !disabled&&toggleEpingle(k.id); }}>
                           {epingle&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         </div>
-                        <span style={{ fontSize:12, color:epingle?"#1a1a2e":"#4a5568", flex:1, lineHeight:1.35, fontWeight:epingle?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{k.label}</span>
+                        {(()=>{ const dernAnnee=modeAnnees==="specifiques"&&anneesSpec.length>0?anneesSpec[anneesSpec.length-1]:anneeMax; const {main,badge}=splitKpiLabel(k.label,dernAnnee); return (<><span style={{ fontSize:12, color:epingle?"#1a1a2e":"#4a5568", flex:1, minWidth:0, lineHeight:1.35, fontWeight:epingle?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{main}</span>{badge&&<span style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{badge}</span>}</>); })()}
                       </div>
                     );
                   })}
                 </div>
-                <p style={{ fontSize:10, color:"#C5BFBB", marginTop:8, lineHeight:1.5 }}>Cochez jusqu'à 5 · glissez pour réorganiser</p>
               </div>
             </>}
           </div>
