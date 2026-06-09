@@ -1247,14 +1247,30 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
 
         {/* Zone graphes */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:16, flexWrap:"wrap" as const }}>
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:8, marginBottom:20 }}>
+            {/* Badge période — gradient des couleurs pays */}
+            {(()=>{
+              const cols = paysAvecCouleur.map(p=>p.couleur);
+              const periodeLabel = modeAnnees==="specifiques"&&anneesSpec.length>0
+                ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                : `${anneeMin} — ${anneeMax}`;
+              const bg = cols.length===0 ? "#E8E5E3"
+                : cols.length===1 ? `${cols[0]}22`
+                : `linear-gradient(135deg,${cols.map((c,i)=>`${c}28 ${Math.round(i*100/(cols.length-1))}%`).join(",")})`;
+              const borderColor = cols.length>0 ? `${cols[0]}55` : "#E8E5E3";
+              return (
+                <div style={{ alignSelf:"flex-start" as const, background:bg, border:`1.5px solid ${borderColor}`, borderRadius:999, padding:"5px 16px" }}>
+                  <span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.04em" }}>{periodeLabel}</span>
+                </div>
+              );
+            })()}
+            {/* Badges pays */}
             <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
               {paysAvecCouleur.map(p=>(
                 <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:6, background:`${p.couleur}12`, border:`1.5px solid ${p.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
                   <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
                 </div>
               ))}
-              <span style={{ fontSize:12, color:"#9aa5b4" }}>· {modeAnnees==="plage"?`${anneeMin}–${anneeMax}`:anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
             </div>
           </div>
 
