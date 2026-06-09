@@ -489,8 +489,8 @@ function ZoneCardGrid({ zone, onClick }: { zone:any; onClick:()=>void }) {
 }
 
 // ── Sidebar filter générique ───────────────────────────────────────────────────
-function ZoneSideFilter({ label, items, selected, onToggle, color }: {
-  label:string; items:string[]; selected:string[]; onToggle:(v:string)=>void; color:string;
+function ZoneSideFilter({ label, items, selected, onToggle, color, itemColors }: {
+  label:string; items:string[]; selected:string[]; onToggle:(v:string)=>void; color:string; itemColors?:Record<string,string>;
 }) {
   const [open, setOpen] = useState(true);
   return (
@@ -508,15 +508,16 @@ function ZoneSideFilter({ label, items, selected, onToggle, color }: {
         <div style={{ display:"flex", flexDirection:"column" as const, gap:2, maxHeight:200, overflowY:"auto" as const }}>
           {items.map(item=>{
             const sel=selected.includes(item);
+            const ic=itemColors?.[item]||color;
             return (
               <button key={item} onClick={()=>onToggle(item)}
-                style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?color+"12":"transparent", textAlign:"left" as const }}
+                style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?ic+"12":"transparent", textAlign:"left" as const }}
                 onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLButtonElement).style.background="#F8F7F6";}}
-                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=sel?color+"12":"transparent";}}>
-                <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?color:"#C5BFBB"}`, background:sel?color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=sel?ic+"12":"transparent";}}>
+                <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?ic:"#C5BFBB"}`, background:sel?ic:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span style={{ fontSize:12, color:sel?"#1a1a2e":"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{item}</span>
+                <span style={{ fontSize:12, color:sel?ic:"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{item}</span>
               </button>
             );
           })}
@@ -583,7 +584,7 @@ function VueDetaillee({ zones }: { zones:any[] }) {
               {search&&<button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
             </div>
             <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-            <ZoneSideFilter label="Type de zone" color="#ca631f" items={["ZES","ZAI","ZFI"]} selected={typesSel} onToggle={toggle(setTypesSel)}/>
+            <ZoneSideFilter label="Type de zone" color="#ca631f" items={["ZES","ZAI","ZFI"]} selected={typesSel} onToggle={toggle(setTypesSel)} itemColors={{ ZES:"#E35336", ZAI:"#174EA6", ZFI:"#188038" }}/>
             {allPoles.length>0&&<><div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
             <ZoneSideFilter label="Pôle territorial" color="#ca631f" items={allPoles} selected={polesSel} onToggle={toggle(setPolesSel)}/></>}
             {allRegions.length>0&&<><div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
