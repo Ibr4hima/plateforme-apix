@@ -1308,9 +1308,10 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
-  const [groupements, setGroupements] = useState<{code:string; nom_fr:string}[]>([]);
+  const [groupements, setGroupements] = useState<{code:string; nom_fr:string; categorie:string}[]>([]);
   const [grpSelec,    setGrpSelec]    = useState<string[]>([]);
   const [searchGrp,   setSearchGrp]   = useState("");
+  const [contExpanded,setContExpanded]= useState<Record<string,boolean>>({});
 
   useEffect(() => {
     fetch(`${API}/ide/monde/groupements`).then(r=>r.json()).then(d=>setGroupements(d||[])).catch(()=>{});
@@ -1353,7 +1354,16 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
     ]},
   ];
 
-  const filteredGrp = searchGrp ? groupements.filter(g=>(g.nom_fr+g.code).toLowerCase().includes(searchGrp.toLowerCase())) : groupements;
+  const q = searchGrp.toLowerCase();
+  const matchGrp = (g: {code:string; nom_fr:string}) => !q || g.nom_fr.toLowerCase().includes(q) || g.code.toLowerCase().includes(q);
+  const continents = groupements.filter(g => g.categorie === 'continent');
+  const groupes    = groupements.filter(g => g.categorie === 'groupe');
+  const revenus    = groupements.filter(g => g.categorie === 'revenu');
+  const regionsDe  = (cont: string) => groupements.filter(g => g.categorie === cont);
+  const toggle = (code: string) => {
+    if (grpSelec.includes(code)) setGrpSelec(p => p.filter(c => c !== code));
+    else if (grpSelec.length < 5) setGrpSelec(p => [...p, code]);
+  };
   const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))||typeG!=="line";
   const nbFiltres = (grpSelec.length>0?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0)+(typeG!=="line"?1:0);
   const reinit = () => { setGrpSelec([]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); setTypeG("line"); };
@@ -1436,42 +1446,98 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
           </div>
           <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
 
-          {/* Groupements */}
-          <div style={{ marginBottom:18 }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                {grpSelec.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-                <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Groupements</span>
-              </div>
-              <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=5?"#ca631f":"#9aa5b4", background:grpSelec.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/5</span>
-            </div>
-            <div style={{ maxHeight:260, overflowY:"auto" as const }}>
-              {filteredGrp.map((g) => {
-                const sel = grpSelec.includes(g.code);
-                const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "#C5BFBB";
-                const canAdd = !sel && grpSelec.length < 5;
-                const disabled = !sel && !canAdd;
-                return (
-                  <button key={g.code}
-                    onClick={()=>{ if(sel) setGrpSelec(prev=>prev.filter(c=>c!==g.code)); else if(canAdd) setGrpSelec(prev=>[...prev,g.code]); }}
-                    style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:2 }}
-                    onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                    onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"transparent";}}>
-                    <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:12, color:sel?col:"#1a1a2e", fontWeight:sel?700:600, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{g.code}</div>
-                      <div style={{ fontSize:10, color:"#9aa5b4", whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{g.nom_fr}</div>
-                    </div>
-                  </button>
-                );
-              })}
-              {filteredGrp.length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun groupement trouvé</p>}
-              {groupements.length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Chargement…</p>}
-            </div>
+          {/* compteur global */}
+          <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:10 }}>
+            <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=5?"#ca631f":"#9aa5b4", background:grpSelec.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/5</span>
           </div>
-          <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+
+          {groupements.length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Chargement…</p>}
+
+          {/* Helper render d'un item */}
+          {(() => {
+            const Item = ({ g }: { g: {code:string; nom_fr:string}; }) => {
+              const sel = grpSelec.includes(g.code);
+              const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "#C5BFBB";
+              const disabled = !sel && grpSelec.length >= 5;
+              return (
+                <button key={g.code} onClick={()=>toggle(g.code)}
+                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:1 }}
+                  onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"transparent";}}>
+                  <div style={{ width:13, height:13, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
+                  <span style={{ fontSize:12, color:sel?col:"#1a1a2e", fontWeight:sel?600:400, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{g.nom_fr}</span>
+                </button>
+              );
+            };
+
+            const SectionTitle = ({ label }: { label: string }) => (
+              <div style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6, marginTop:2 }}>{label}</div>
+            );
+
+            const filtCont  = continents.filter(matchGrp);
+            const filtGrp   = groupes.filter(matchGrp);
+            const filtRev   = revenus.filter(matchGrp);
+
+            const showContSection = filtCont.length > 0 || continents.some(c => regionsDe(c.nom_fr).some(matchGrp));
+            const showGrpSection  = filtGrp.length > 0;
+            const showRevSection  = filtRev.length > 0;
+
+            return (
+              <>
+                {/* ── Continents & Régions ───────────────── */}
+                {showContSection && <>
+                  <SectionTitle label="Continents & Régions"/>
+                  {continents.map(cont => {
+                    const regions  = regionsDe(cont.nom_fr);
+                    const visRegs  = regions.filter(matchGrp);
+                    const contMatch= matchGrp(cont);
+                    if (!contMatch && visRegs.length === 0) return null;
+                    const expanded = q ? true : (contExpanded[cont.code] ?? false);
+                    return (
+                      <div key={cont.code} style={{ marginBottom:2 }}>
+                        {/* Ligne continent */}
+                        <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+                          <button onClick={()=>setContExpanded(p=>({...p,[cont.code]:!expanded}))}
+                            style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 2px", flexShrink:0, color:"#9aa5b4", display:"flex", alignItems:"center" }}>
+                            {expanded ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+                          </button>
+                          {contMatch ? <div style={{ flex:1 }}><Item g={cont}/></div>
+                            : <span style={{ fontSize:12, fontWeight:600, color:"#4a5568", padding:"5px 4px", flex:1 }}>{cont.nom_fr}</span>}
+                        </div>
+                        {/* Régions du continent */}
+                        {expanded && visRegs.length > 0 && (
+                          <div style={{ paddingLeft:20, borderLeft:"2px solid #F2F0EF", marginLeft:8, marginBottom:4 }}>
+                            {visRegs.map(r => <Item key={r.code} g={r}/>)}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  <div style={{ height:1, background:"#F2F0EF", margin:"12px 0" }}/>
+                </>}
+
+                {/* ── Groupements ───────────────────────── */}
+                {showGrpSection && <>
+                  <SectionTitle label="Groupements"/>
+                  {filtGrp.map(g => <Item key={g.code} g={g}/>)}
+                  <div style={{ height:1, background:"#F2F0EF", margin:"12px 0" }}/>
+                </>}
+
+                {/* ── Niveau de revenu ──────────────────── */}
+                {showRevSection && <>
+                  <SectionTitle label="Niveau de revenu"/>
+                  {filtRev.map(g => <Item key={g.code} g={g}/>)}
+                  <div style={{ height:1, background:"#F2F0EF", margin:"12px 0" }}/>
+                </>}
+
+                {!showContSection && !showGrpSection && !showRevSection && q &&
+                  <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
+              </>
+            );
+          })()}
+
 
           {/* Type graphe */}
           <div style={{ marginBottom:18 }}>
