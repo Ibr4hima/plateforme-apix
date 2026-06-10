@@ -1410,8 +1410,8 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
   );
 }
 
-// ── Vertical bar chart — Flux net / Stock net ─────────────────────────────────
-function VBarChartNet({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
+// ── Diverging bars — Net (entrant − sortant) ──────────────────────────────────
+function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
   const svgRef  = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [annee, setAnnee] = useState<number|null>(null);
@@ -1429,82 +1429,90 @@ function VBarChartNet({ donnees, mini=false }: { donnees: any[]; mini?: boolean 
 
     type Row = { pays: string; iso3: string|null; net: number };
     const paysList = [...new Set(donnees.map((d:any)=>d.pays as string))];
-    const allNet: Row[] = paysList.map(pays => {
+    const data: Row[] = paysList.map(pays => {
       const ent = donnees.find((d:any)=>d.pays===pays&&d.annee===curAnnee&&d.indicateur===curInd&&d.direction==="entrant");
       const sor = donnees.find((d:any)=>d.pays===pays&&d.annee===curAnnee&&d.indicateur===curInd&&d.direction==="sortant");
       return { pays, iso3: ent?.code_iso3??sor?.code_iso3??null, net:(ent?.valeur??0)-(sor?.valeur??0) };
-    }).filter(d=>d.net!==0);
-
-    const data = allNet.sort((a,b)=>Math.abs(b.net)-Math.abs(a.net))
-      .slice(0, mini ? 8 : 10)
-      .sort((a,b)=>b.net-a.net);
+    })
+    .filter(d=>d.net!==0)
+    .sort((a,b)=>Math.abs(b.net)-Math.abs(a.net)).slice(0, 10)
+    .sort((a,b)=>b.net-a.net);   // positifs en haut, négatifs en bas
 
     if (!data.length) return;
 
-    const W  = wrapRef.current.clientWidth || 500;
-    const H  = mini ? 100 : 280;
-    const M  = mini
-      ? {top:4,  right:8,  bottom:22, left:28}
-      : {top:16, right:16, bottom:44, left:52};
+    const COLOR_POS = "#188038";
+    const COLOR_NEG = "#c2185b";
+    const rowH = mini ? 10 : 28;
+    const W    = wrapRef.current.clientWidth || 500;
+    const MT   = mini ? 4  : 26;
+    const MB   = mini ? 4  : 8;
+    const MH   = mini ? 18 : 58;  // marge gauche/droite pour labels valeurs
+    const H    = MT + data.length * rowH + MB;
 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
 
-    const x = d3.scaleBand().domain(data.map(d=>d.pays)).range([M.left, W-M.right]).padding(0.28);
     const maxAbs = d3.max(data, d=>Math.abs(d.net)) ?? 1;
-    const y = d3.scaleLinear().domain([-maxAbs*1.08, maxAbs*1.08]).range([H-M.bottom, M.top]).nice();
-    const zero = y(0);
+    const x = d3.scaleLinear().domain([-maxAbs*1.15, maxAbs*1.15]).range([MH, W-MH]).nice();
+    const cx = x(0);  // position du centre (valeur 0)
 
-    // Grille horizontale
+    const y = d3.scaleBand().domain(data.map(d=>d.pays)).range([MT, MT+data.length*rowH]).padding(0.2);
+
+    const fmt = (v:number) => {
+      const abs = Math.abs(v), sign = v>0?"+":"-";
+      return abs>=1000 ? `${sign}${(abs/1000).toFixed(1)}k` : `${sign}${Math.round(abs)}`;
+    };
+
+    // Grille verticale (full uniquement)
     if (!mini) {
-      const fmt = (v:number) => Math.abs(v)>=1000?`${(v/1000).toFixed(1)}k`:String(Math.round(v));
-      svg.append("g").attr("transform",`translate(${M.left},0)`)
-        .call(d3.axisLeft(y).ticks(6).tickFormat(v=>fmt(+v)))
+      svg.append("g").attr("transform",`translate(0,${MT})`)
+        .call(d3.axisTop(x).ticks(6).tickFormat(v=>fmt(+v)))
         .call(g=>{g.select(".domain").remove();
-          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("stroke-width",1).attr("x2",W-M.left-M.right);
+          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("y2",data.length*rowH);
           g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
     }
 
     // Barres
-    svg.selectAll<SVGRectElement,Row>("rect.bar")
+    svg.selectAll<SVGRectElement,Row>("rect")
       .data(data).enter().append("rect")
-      .attr("x",     d=>x(d.pays)!)
-      .attr("y",     d=>d.net>=0 ? y(d.net) : zero)
-      .attr("width", x.bandwidth())
-      .attr("height",d=>Math.max(1, Math.abs(y(d.net)-zero)))
-      .attr("fill",  d=>d.net>=0 ? "#004f91" : "#e15759");
+      .attr("x",     d=>d.net>=0 ? cx : x(d.net))
+      .attr("y",     d=>y(d.pays)!)
+      .attr("width", d=>Math.max(1, Math.abs(x(d.net)-cx)))
+      .attr("height",y.bandwidth())
+      .attr("fill",  d=>d.net>=0 ? COLOR_POS : COLOR_NEG);
 
-    // Règle Y=0
+    // Règle X=0
     svg.append("line")
-      .attr("x1",M.left).attr("x2",W-M.right)
-      .attr("y1",zero).attr("y2",zero)
+      .attr("x1",cx).attr("x2",cx).attr("y1",MT).attr("y2",MT+data.length*rowH)
       .attr("stroke","#374151").attr("stroke-width",mini?0.8:1.2);
 
-    // Labels valeur (full uniquement)
+    // Noms pays au centre — positifs à gauche du centre, négatifs à droite
+    data.forEach(d=>{
+      const isPos = d.net >= 0;
+      const name  = mini
+        ? (d.iso3 ?? d.pays.slice(0,3).toUpperCase())
+        : (d.pays.length>13 ? d.pays.slice(0,12)+"…" : d.pays);
+      svg.append("text")
+        .attr("x",  isPos ? cx-5 : cx+5)
+        .attr("y",  (y(d.pays)??0)+y.bandwidth()/2)
+        .attr("dy","0.35em")
+        .attr("text-anchor", isPos ? "end" : "start")
+        .attr("font-size", mini ? 6 : 9.5)
+        .attr("font-weight","600")
+        .attr("fill","#374151")
+        .text(name);
+    });
+
+    // Valeurs aux extrémités des barres (full uniquement)
     if (!mini) {
-      const fmt = (v:number) => Math.abs(v)>=1000?`${(v/1000).toFixed(1)}k`:`${Math.round(v)}`;
       svg.selectAll<SVGTextElement,Row>("text.val")
         .data(data).enter().append("text")
-        .attr("x",  d=>(x(d.pays)??0)+x.bandwidth()/2)
-        .attr("y",  d=>d.net>=0 ? y(d.net)-5 : zero+Math.abs(y(d.net)-zero)+12)
-        .attr("text-anchor","middle").attr("font-size",8).attr("font-weight","600")
-        .attr("fill",d=>d.net>=0?"#004f91":"#e15759")
+        .attr("x",  d=>d.net>=0 ? x(d.net)+5 : x(d.net)-5)
+        .attr("y",  d=>(y(d.pays)??0)+y.bandwidth()/2)
+        .attr("dy","0.35em")
+        .attr("text-anchor",d=>d.net>=0?"start":"end")
+        .attr("font-size",8).attr("font-weight","600")
+        .attr("fill",d=>d.net>=0?COLOR_POS:COLOR_NEG)
         .text(d=>fmt(d.net));
-    }
-
-    // Labels X
-    svg.selectAll<SVGTextElement,Row>("text.xlab")
-      .data(data).enter().append("text")
-      .attr("x",  d=>(x(d.pays)??0)+x.bandwidth()/2)
-      .attr("y",  H-M.bottom+5).attr("dy","0.75em")
-      .attr("text-anchor","middle").attr("font-size",mini?7:9).attr("fill","#374151")
-      .text(d=>mini ? (d.iso3??d.pays.slice(0,3).toUpperCase()) : (d.pays.length>9?d.pays.slice(0,8)+"…":d.pays));
-
-    // Axe Y mini
-    if (mini) {
-      svg.append("g").attr("transform",`translate(${M.left},0)`)
-        .call(d3.axisLeft(y).ticks(3).tickFormat(v=>Math.abs(+v)>=1000?`${(+v/1000).toFixed(0)}k`:String(Math.round(+v))))
-        .call(g=>{g.select(".domain").remove();g.selectAll(".tick line").remove();
-          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",7);});
     }
   }, [donnees, annee, ind, mini]);
 
@@ -1862,9 +1870,9 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
                 <HBarChart donnees={donneesDetail} mini/>
               </GrapheCard>
-              <GrapheCard titre="Flux net / Stock net par pays" sous_titre="Top 10 · entrant − sortant · M$ USD" grapheId="vbnet"
-                fullChildren={<VBarChartNet donnees={donneesDetail}/>}>
-                <VBarChartNet donnees={donneesDetail} mini/>
+              <GrapheCard titre="Net par pays — diverging bars" sous_titre="Top 10 · entrant − sortant · vert positif / rose négatif" grapheId="divbar"
+                fullChildren={<DivergingBars donnees={donneesDetail}/>}>
+                <DivergingBars donnees={donneesDetail} mini/>
               </GrapheCard>
             </div>
           )}
