@@ -5,7 +5,7 @@ from sqlalchemy import select, distinct
 
 from app.core.database import get_db
 from app.models.ide import IdeCnuced, IdeAnalyse, IdeKpiConfig
-from app.models.shared import IdeCnucedMonde
+from app.models.shared import IdeCnucedMonde, RefGroupement
 
 router = APIRouter(prefix="/ide", tags=["IDE"])
 
@@ -99,6 +99,36 @@ async def liste_monde_groupements(db: AsyncSession = Depends(get_db)):
     )
     return [{"code": code, "nom_fr": nom_fr, "categorie": categorie}
             for code, nom_fr, categorie in res.all()]
+
+
+# ── GET /ide/monde/details ────────────────────────────────────────────────────
+# Données individuelles par pays pour un groupement donné (heatmap, radar, etc.)
+@router.get("/monde/details")
+async def get_monde_details(
+    code:       str            = Query(...),
+    annee_min:  Optional[int]  = Query(None),
+    annee_max:  Optional[int]  = Query(None),
+    indicateur: Optional[str]  = Query(None),
+    direction:  Optional[str]  = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    grp_res = await db.execute(select(RefGroupement).where(RefGroupement.code == code))
+    grp = grp_res.scalar_one_or_none()
+    if not grp or not grp.pays_ids:
+        return []
+
+    q = select(IdeCnuced).where(IdeCnuced.ref_pays_id.in_(grp.pays_ids))
+    if annee_min:   q = q.where(IdeCnuced.annee >= annee_min)
+    if annee_max:   q = q.where(IdeCnuced.annee <= annee_max)
+    if indicateur:  q = q.where(IdeCnuced.indicateur == indicateur)
+    if direction:   q = q.where(IdeCnuced.direction == direction)
+    q = q.order_by(IdeCnuced.pays, IdeCnuced.annee)
+
+    res = await db.execute(q)
+    def f(v): return float(v) if v is not None else None
+    return [{"pays": r.pays, "ref_pays_id": r.ref_pays_id, "annee": r.annee,
+             "indicateur": r.indicateur, "direction": r.direction, "valeur": f(r.valeur)}
+            for r in res.scalars().all()]
 
 
 # ── GET /ide/monde ─────────────────────────────────────────────────────────────

@@ -1344,15 +1344,22 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
     grpAvecCouleur.map(g => ({ nom:g.nom, couleur:g.couleur, data:donnees.filter(d=>d.pays===g.nom&&d.direction===dir&&d.indicateur===ind) }));
 
   const GRAPHES = [
-    { id:"fe", titre:"Flux d'IDE entrants",      series: buildSeries("entrant","flux") },
-    { id:"fs", titre:"Flux d'IDE sortants",       series: buildSeries("sortant","flux") },
-    { id:"se", titre:"Stock d'IDE entrant",       series: buildSeries("entrant","stock") },
-    { id:"ss", titre:"Stock d'IDE sortant",       series: buildSeries("sortant","stock") },
-    { id:"vs", titre:"Flux entrants vs sortants", series: [
-      ...grpAvecCouleur.map(g=>({ nom:`${g.nom} — ent.`, couleur:g.couleur, data:donnees.filter(d=>d.pays===g.nom&&d.direction==="entrant"&&d.indicateur==="flux") })),
-      ...grpAvecCouleur.map(g=>({ nom:`${g.nom} — sort.`, couleur:g.couleur+"88", data:donnees.filter(d=>d.pays===g.nom&&d.direction==="sortant"&&d.indicateur==="flux") })),
-    ]},
+    { id:"fe", titre:"Flux d'IDE entrants",  series: buildSeries("entrant","flux") },
+    { id:"fs", titre:"Flux d'IDE sortants",  series: buildSeries("sortant","flux") },
+    { id:"se", titre:"Stock d'IDE entrant",  series: buildSeries("entrant","stock") },
+    { id:"ss", titre:"Stock d'IDE sortant",  series: buildSeries("sortant","stock") },
   ];
+
+  const [donneesDetail, setDonneesDetail] = useState<any[]>([]);
+  const modeDetail = grpSelec.length === 1;
+
+  useEffect(() => {
+    if (!modeDetail) { setDonneesDetail([]); return; }
+    const params = new URLSearchParams({ code: grpSelec[0] });
+    if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees_spec", anneesSpec.join(","));
+    else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
+    fetch(`${API}/ide/monde/details?${params}`).then(r=>r.json()).then(d=>setDonneesDetail(d||[])).catch(()=>{});
+  }, [modeDetail, grpSelec, anneeMin, anneeMax, anneesSpec, modeAnnees]);
 
   const q = searchGrp.toLowerCase();
   const matchGrp = (g: {code:string; nom_fr:string}) => !q || g.nom_fr.toLowerCase().includes(q) || g.code.toLowerCase().includes(q);
@@ -1587,6 +1594,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
             <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
           </div>
         ) : (
+          <>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
               <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Somme pays membres · CNUCED" series={g.series} grapheId={g.id}
@@ -1595,6 +1603,36 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
               </GrapheCard>
             ))}
           </div>
+
+          {/* Graphes détail pays — visible quand 1 seul groupement sélectionné */}
+          {modeDetail && (
+            <div style={{ marginTop:28 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+                <div style={{ height:2, flex:1, background:"linear-gradient(90deg,#004f91,transparent)" }}/>
+                <span style={{ fontSize:11, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Détail par pays — {grpAvecCouleur[0]?.label}</span>
+                <div style={{ height:2, flex:1, background:"linear-gradient(90deg,transparent,#004f91)" }}/>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+                {/* Heatmap pays × année — top 15 */}
+                <div style={{ gridColumn:"1/-1", background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:280, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Heatmap pays × année (top 15) — à venir</span>
+                </div>
+                {/* Radar chart — top 5 */}
+                <div style={{ background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:260, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Radar chart top 5 pays — à venir</span>
+                </div>
+                {/* Horizontal bar — top 10 */}
+                <div style={{ background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:260, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Horizontal bar chart top 10 — à venir</span>
+                </div>
+                {/* Bar chart race */}
+                <div style={{ gridColumn:"1/-1", background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:280, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Bar chart race — à venir</span>
+                </div>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={grpAvecCouleur} />
