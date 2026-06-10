@@ -211,8 +211,7 @@ function VizCard({ card, viz, onRemove, onChangeType, onChangeSize, onChangePara
     <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 6px rgba(0,0,0,0.05)",overflow:"hidden",gridColumn:card.size==="lg"?"span 2":"span 1",display:"flex",flexDirection:"column" as const}}>
       <div style={{padding:"14px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div style={{flex:1,minWidth:0}}>
-          <p style={{fontSize:13,fontWeight:700,color:"#1a1a2e",marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{viz.titre}</p>
-          {viz.description&&<p style={{fontSize:11,color:"#9aa5b4"}}>{viz.description}</p>}
+          <p style={{fontSize:13,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{viz.titre}</p>
         </div>
         <div style={{display:"flex",gap:4,marginLeft:8,flexShrink:0}}>
           <button onClick={()=>setShowSettings(s=>!s)} style={{background:showSettings?"#F2F0EF":"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:5,color:"#4a5568"}}><Settings2 size={13}/></button>
@@ -538,8 +537,8 @@ export default function TableauDeBordPage() {
           onglet={onglet}/>
         <main style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
 
-          {/* KPIs — toujours visibles */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
+          {/* KPIs — onglet viz uniquement */}
+          {onglet==="viz"&&<div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
             {config.kpisActifs.map(id=><KPICard key={id} kpiId={id} value={kpis[id]}/>)}
             {Array.from({length:Math.max(0,5-config.kpisActifs.length)}).map((_,i)=>(
               <div key={`empty-${i}`} style={{background:"#fff",borderRadius:12,padding:"13px 14px",border:"1.5px dashed #E8E5E3",display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:4,minHeight:72}}>
@@ -547,7 +546,7 @@ export default function TableauDeBordPage() {
                 <span style={{fontSize:10,color:"#C5BFBB",textAlign:"center" as const,lineHeight:1.5}}>Choisir dans<br/>le filtre</span>
               </div>
             ))}
-          </div>
+          </div>}
 
           {/* ── Onglet Visualisation de données ────────────────────────────── */}
           {onglet==="viz" && (

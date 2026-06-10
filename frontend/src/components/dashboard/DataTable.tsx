@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpDown, ChevronDown, ChevronUp, Download, FileSpreadsheet, Loader2, Search, X } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronUp, FileSpreadsheet, Loader2, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -218,30 +218,15 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
     }}>
 
       {/* ── Header ── */}
-      <div style={{ padding: "18px 20px 0", background: "#fff", borderBottom: "1px solid #f1f5f9" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", marginBottom: 2 }}>{titre}</h2>
-            {description && <p style={{ fontSize: 11, color: "#94a3b8" }}>{description}</p>}
-          </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center", marginLeft: 12, flexShrink: 0 }}>
-            {!loading && (
-              <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600,
-                background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "3px 10px" }}>
-                {filtered.length.toLocaleString("fr-FR")} ligne{filtered.length !== 1 ? "s" : ""}
-              </span>
-            )}
+      <div style={{ padding: "18px 20px 14px", background: "#fff", borderBottom: "1px solid #f1f5f9" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b" }}>{titre}</h2>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
             <button onClick={exportXLSX} title={`Exporter ${sorted.length} lignes en Excel`}
               style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px",
                 background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8,
                 cursor: "pointer", fontSize: 11, color: "#15803d", fontWeight: 600 }}>
               <FileSpreadsheet size={11} /> Excel
-            </button>
-            <button onClick={exportCSV} title={`Exporter ${sorted.length} lignes en CSV`}
-              style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px",
-                background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8,
-                cursor: "pointer", fontSize: 11, color: "#64748b", fontWeight: 600 }}>
-              <Download size={11} /> CSV
             </button>
             {onClose && (
               <button onClick={onClose}
@@ -249,36 +234,6 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
                 <X size={13} color="#64748b" />
               </button>
             )}
-          </div>
-        </div>
-
-        {/* Recherche + sélecteur lignes */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center" }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8,
-            background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 9, padding: "7px 12px" }}>
-            <Search size={13} style={{ color: "#94a3b8", flexShrink: 0 }} />
-            <input value={search} onChange={e => { setSearch(e.target.value); }}
-              placeholder="Filtrer les résultats…"
-              style={{ border: "none", background: "transparent", outline: "none",
-                fontSize: 12, color: "#334155", flex: 1, fontFamily: "inherit" }} />
-            {search && (
-              <button onClick={() => setSearch("")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                <X size={11} color="#94a3b8" />
-              </button>
-            )}
-          </div>
-          {/* Sélecteur nb lignes */}
-          <div style={{ display: "flex", alignItems: "center", gap: 1,
-            background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 9, padding: "3px 4px" }}>
-            {ROWS_OPTIONS.map(opt => (
-              <button key={String(opt)} onClick={() => setRowsLimit(opt as any)}
-                style={{ padding: "4px 10px", borderRadius: 7, border: "none", cursor: "pointer",
-                  fontSize: 11, fontWeight: 600, transition: "all 0.12s",
-                  background: rowsLimit === opt ? "#004f91" : "transparent",
-                  color: rowsLimit === opt ? "#fff" : "#64748b" }}>
-                {opt}
-              </button>
-            ))}
           </div>
         </div>
       </div>
