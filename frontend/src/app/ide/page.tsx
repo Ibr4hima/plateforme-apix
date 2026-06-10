@@ -1451,8 +1451,13 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
 
-    const maxAbs = d3.max(data, d=>Math.abs(d.net)) ?? 1;
-    const x = d3.scaleLinear().domain([-maxAbs*1.15, maxAbs*1.15]).range([MH, W-MH]).nice();
+    const minV = d3.min(data, d=>d.net) ?? 0;
+    const maxV = d3.max(data, d=>d.net) ?? 0;
+    const span = Math.max(maxV - minV, 1);
+    // Echelle asymétrique : s'adapte aux vraies valeurs, garantit que 0 est visible
+    const lo = Math.min(minV - span*0.08, -span*0.02);
+    const hi = Math.max(maxV + span*0.08,  span*0.02);
+    const x = d3.scaleLinear().domain([lo, hi]).range([MH, W-MH]).nice();
     const cx = x(0);  // position du centre (valeur 0)
 
     const y = d3.scaleBand().domain(data.map(d=>d.pays)).range([MT, MT+data.length*rowH]).padding(0.2);
@@ -1490,7 +1495,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
       const isPos = d.net >= 0;
       const name  = mini
         ? (d.iso3 ?? d.pays.slice(0,3).toUpperCase())
-        : (d.pays.length>13 ? d.pays.slice(0,12)+"…" : d.pays);
+        : d.pays;
       svg.append("text")
         .attr("x",  isPos ? cx-5 : cx+5)
         .attr("y",  (y(d.pays)??0)+y.bandwidth()/2)
