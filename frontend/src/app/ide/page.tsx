@@ -1439,6 +1439,252 @@ function RadarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean })
   );
 }
 
+// ── Bar Chart Race ────────────────────────────────────────────────────────────
+function BarChartRace({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
+  const wrapRef   = useRef<HTMLDivElement>(null);
+  const stopRef   = useRef(true);
+  const [playing, setPlaying] = useState(false);
+  const [ind, setInd] = useState("flux");
+  const [dir, setDir] = useState("entrant");
+
+  const N   = 10;   // barres visibles
+  const K   = 6;    // étapes d'interpolation entre deux années
+  const DUR = 180;  // ms par étape
+
+  // Couleurs stables par pays
+  const colorMap = useRef(new Map<string, string>());
+  const scheme   = ["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f",
+                    "#edc948","#b07aa1","#ff9da7","#9c755f","#bab0ac",
+                    "#003f5c","#58508d","#bc5090","#ff6361","#ffa600"];
+  const getColor = useCallback((name: string) => {
+    if (!colorMap.current.has(name)) {
+      colorMap.current.set(name, scheme[colorMap.current.size % scheme.length]);
+    }
+    return colorMap.current.get(name)!;
+  }, []);
+
+  // Construction des keyframes
+  const buildKeyframes = useCallback((data: any[]) => {
+    const names = new Set<string>(data.map((d:any) => d.pays as string));
+
+    const byAnnee = d3.rollup(data, (v:any[]) => v[0].valeur as number,
+      (d:any) => d.annee as number, (d:any) => d.pays as string);
+    const dated = [...byAnnee.entries()]
+      .map(([a, m]) => [a, m] as [number, Map<string,number>])
+      .sort(([a],[b]) => a-b);
+
+    const rank = (val: (n:string)=>number) => {
+      const arr = [...names].map(name => ({ name, value: val(name) }));
+      arr.sort((a,b)=>d3.descending(a.value,b.value));
+      return arr.map((d,i)=>({ ...d, rank: Math.min(N, i) }));
+    };
+
+    const keyframes: [number, {name:string;value:number;rank:number}[]][] = [];
+    for (const [[ka,a],[kb,b]] of d3.pairs(dated)) {
+      for (let i=0;i<K;i++) {
+        const t = i/K;
+        keyframes.push([ka*(1-t)+kb*t,
+          rank(n=>(a.get(n)||0)*(1-t)+(b.get(n)||0)*t)]);
+      }
+    }
+    const [lastA, lastM] = dated[dated.length-1];
+    keyframes.push([lastA, rank(n=>lastM.get(n)||0)]);
+
+    const nameframes = d3.groups(keyframes.flatMap(([,d])=>d), d=>d.name);
+    const prev = new Map(nameframes.flatMap(([,d])=>d3.pairs(d,(a,b)=>[b,a] as const)));
+    const next = new Map(nameframes.flatMap(([,d])=>d3.pairs(d)));
+    return { keyframes, prev, next };
+  }, [N, K]);
+
+  const fmtVal = (v:number) => Math.abs(v)>=1000 ? `${(v/1000).toFixed(1)} Md$` : `${Math.round(v)} M$`;
+  const fmtYr  = (y:number) => String(Math.round(y));
+
+  // Lance l'animation
+  const startAnimation = useCallback(async () => {
+    if (!wrapRef.current) return;
+    const filtered = donnees.filter((d:any)=>d.indicateur===ind&&d.direction===dir&&d.valeur!==null);
+    if (!filtered.length) return;
+
+    const { keyframes, prev, next } = buildKeyframes(filtered);
+    stopRef.current = false;
+
+    const W   = wrapRef.current.clientWidth || 700;
+    const BAR = 32, MT = 44, ML = 140, MR = 20, MB = 12;
+    const H   = MT + (N+1.6)*BAR + MB;
+
+    // Vider le conteneur et créer le SVG
+    d3.select(wrapRef.current).selectAll("svg").remove();
+    const svg = d3.select(wrapRef.current).append("svg")
+      .attr("viewBox",`0 0 ${W} ${H}`)
+      .attr("width",W).attr("height",H)
+      .style("max-width","100%").style("height","auto");
+
+    const x = d3.scaleLinear().range([ML, W-MR]);
+    const y = d3.scaleBand<number>()
+      .domain(d3.range(N+1)).padding(0.1)
+      .rangeRound([MT+BAR+8, MT+(N+1.6)*BAR+8]);
+
+    // Groupes
+    const gBars   = svg.append("g").attr("fill-opacity",0.85);
+    const gLabels = svg.append("g").style("font-variant-numeric","tabular-nums");
+    const gAxis   = svg.append("g").attr("transform",`translate(0,${MT})`);
+    const ticker  = svg.append("text")
+      .style("font",`bold ${BAR*0.9}px sans-serif`)
+      .style("font-variant-numeric","tabular-nums")
+      .attr("text-anchor","end").attr("fill","#9aa5b4")
+      .attr("x",W-MR).attr("y",MT+BAR*(N-0.45)).attr("dy","0.32em");
+
+    let bar   = gBars.selectAll<SVGRectElement,  {name:string;value:number;rank:number}>("rect");
+    let label = gLabels.selectAll<SVGGElement,   {name:string;value:number;rank:number}>("g");
+
+    for (const [annee, data] of keyframes) {
+      if (stopRef.current) break;
+
+      x.domain([0, (data[0]?.value||1)*1.05]);
+
+      // Named transition so child selections can reference it by string (avoids TS generic mismatch)
+      const trName = "bcr";
+      const svgTr = svg.transition(trName).duration(DUR).ease(d3.easeLinear);
+
+      // Axe X
+      gAxis.transition(trName)
+        .call(d3.axisTop(x).ticks(Math.floor(W/120),".2s").tickSizeOuter(0)
+          .tickSizeInner(-BAR*(N+y.padding())))
+        .call(g=>{g.select(".domain").remove();
+          g.selectAll(".tick line").attr("stroke","#e5e7eb");
+          g.selectAll(".tick text").attr("fill","#6b7280").attr("font-size",10);});
+
+      // Barres
+      bar = bar.data(data.slice(0,N), (d:any)=>d.name)
+        .join(
+          enter => enter.append("rect")
+            .attr("fill", (d:any)=>getColor(d.name))
+            .attr("height", y.bandwidth())
+            .attr("x", x(0)).attr("rx",3)
+            .attr("y",  (d:any)=>y((prev.get(d)||d).rank)??H)
+            .attr("width",(d:any)=>Math.max(2, x((prev.get(d)||d).value)-x(0))),
+          update => update,
+          exit   => exit.transition(trName).remove()
+            .attr("y",    (d:any)=>y((next.get(d)||d).rank)??H)
+            .attr("width",(d:any)=>Math.max(2, x((next.get(d)||d).value)-x(0)))
+        )
+        .call(g=>g.transition(trName)
+          .attr("y",    (d:any)=>y(d.rank)??0)
+          .attr("width",(d:any)=>Math.max(2, x(d.value)-x(0))));
+
+      // Labels (nom + valeur)
+      label = label.data(data.slice(0,N),(d:any)=>d.name)
+        .join(
+          enter => {
+            const g = enter.append("g")
+              .attr("transform",(d:any)=>`translate(${x((prev.get(d)||d).value)},${y((prev.get(d)||d).rank)??H})`);
+            g.append("text").attr("class","lnom")
+              .attr("text-anchor","end").attr("x",-8).attr("y",y.bandwidth()/2)
+              .attr("dy","0.35em").attr("fill","#374151")
+              .style("font","bold 11px sans-serif");
+            g.append("text").attr("class","lval")
+              .attr("text-anchor","end").attr("x",-8).attr("y",y.bandwidth()/2)
+              .attr("dy","1.5em").attr("fill","#9aa5b4")
+              .style("font","10px sans-serif");
+            return g;
+          },
+          update => update,
+          exit => exit.transition(trName).remove()
+            .attr("transform",(d:any)=>`translate(${x((next.get(d)||d).value)},${y((next.get(d)||d).rank)??H})`)
+        )
+        .call(g => g.transition(trName)
+          .attr("transform",(d:any)=>`translate(${x(d.value)},${y(d.rank)??0})`)
+          .call(g2 => {
+            g2.select(".lnom").text((d:any)=>d.name);
+            g2.select(".lval").tween("text", (d:any)=>{
+              const pv = (prev.get(d)||d).value;
+              const i  = d3.interpolateNumber(pv, d.value);
+              return (t:number)=>{ (d3.select(g2.node()?.querySelector(".lval") as Element)).text(fmtVal(i(t))); };
+            });
+          }));
+
+      // Ticker (année)
+      ticker.text(fmtYr(annee));
+
+      try { await svgTr.end(); } catch { break; }
+    }
+
+    setPlaying(false);
+    stopRef.current = true;
+  }, [donnees, ind, dir, N, K, DUR, buildKeyframes, getColor]);
+
+  // Mini mode : snapshot statique de la dernière année
+  const drawMini = useCallback(() => {
+    if (!wrapRef.current) return;
+    const filtered = donnees.filter((d:any)=>d.indicateur==="flux"&&d.direction==="entrant"&&d.valeur!==null);
+    if (!filtered.length) return;
+
+    const annees = [...new Set(filtered.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
+    const lastYr = annees[0];
+    const data   = filtered.filter((d:any)=>d.annee===lastYr)
+      .sort((a:any,b:any)=>b.valeur-a.valeur).slice(0,N);
+
+    const W=wrapRef.current.clientWidth||400, BAR=12, ML=60, MR=8, MT=4, MB=4;
+    const H=MT+data.length*(BAR+3)+MB;
+
+    d3.select(wrapRef.current).selectAll("svg").remove();
+    const svg=d3.select(wrapRef.current).append("svg")
+      .attr("viewBox",`0 0 ${W} ${H}`).style("max-width","100%").style("height","auto");
+
+    const maxV=d3.max(data,(d:any)=>d.valeur) as number;
+    const xS=d3.scalePow().exponent(0.5).domain([0,maxV]).range([ML,W-MR]);
+
+    data.forEach((d:any,i:number) => {
+      const yp=MT+i*(BAR+3);
+      svg.append("rect").attr("x",ML).attr("y",yp)
+        .attr("width",Math.max(2,xS(d.valeur)-ML)).attr("height",BAR)
+        .attr("fill",getColor(d.pays)).attr("rx",2);
+      svg.append("text").attr("x",ML-4).attr("y",yp+BAR/2).attr("dy","0.35em")
+        .attr("text-anchor","end").attr("font-size",8).attr("fill","#374151")
+        .text(d.pays.length>10?d.pays.slice(0,9)+"…":d.pays);
+    });
+  }, [donnees, N, getColor]);
+
+  useEffect(()=>{
+    stopRef.current=true; setPlaying(false);
+    if (mini) drawMini();
+  }, [donnees, ind, dir, mini, drawMini]);
+
+  const handlePlay = () => {
+    if (playing) { stopRef.current=true; setPlaying(false); }
+    else         { setPlaying(true); startAnimation(); }
+  };
+
+  const Pill = ({label,active,onClick}:{label:string;active:boolean;onClick:()=>void}) => (
+    <button onClick={onClick} style={{padding:"4px 10px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:active?"#004f91":"#F2F0EF",color:active?"#fff":"#9aa5b4",transition:"all 0.15s"}}>{label}</button>
+  );
+
+  return (
+    <div>
+      {!mini && (
+        <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap" as const,alignItems:"center"}}>
+          <button onClick={handlePlay}
+            style={{padding:"5px 14px",borderRadius:7,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:playing?"#dc2626":"#188038",color:"#fff",display:"flex",alignItems:"center",gap:6,transition:"all 0.15s"}}>
+            {playing ? (
+              <><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1" y="1" width="3" height="8" fill="white" rx="1"/><rect x="6" y="1" width="3" height="8" fill="white" rx="1"/></svg>Pause</>
+            ) : (
+              <><svg width="10" height="10" viewBox="0 0 10 10"><polygon points="1,1 9,5 1,9" fill="white"/></svg>Play</>
+            )}
+          </button>
+          <div style={{width:1,background:"#E8E5E3",margin:"0 2px"}}/>
+          <Pill label="Flux"    active={ind==="flux"}    onClick={()=>{stopRef.current=true;setPlaying(false);setInd("flux");}}/>
+          <Pill label="Stock"   active={ind==="stock"}   onClick={()=>{stopRef.current=true;setPlaying(false);setInd("stock");}}/>
+          <div style={{width:1,background:"#E8E5E3",margin:"0 2px"}}/>
+          <Pill label="Entrant" active={dir==="entrant"} onClick={()=>{stopRef.current=true;setPlaying(false);setDir("entrant");}}/>
+          <Pill label="Sortant" active={dir==="sortant"} onClick={()=>{stopRef.current=true;setPlaying(false);setDir("sortant");}}/>
+        </div>
+      )}
+      <div ref={wrapRef} style={{width:"100%",overflow:"hidden"}}/>
+      {donnees.length===0&&!mini&&<p style={{textAlign:"center" as const,color:"#9aa5b4",fontSize:12,marginTop:16}}>Chargement…</p>}
+    </div>
+  );
+}
+
 // ── Horizontal bar chart top 10 ──────────────────────────────────────────────
 function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
   const svgRef  = useRef<SVGSVGElement>(null);
@@ -2042,8 +2288,11 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
                   <HBarChart donnees={donneesDetail} mini/>
                 </GrapheCard>
                 {/* Bar chart race */}
-                <div style={{ gridColumn:"1/-1", background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:280, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Bar chart race — à venir</span>
+                <div style={{ gridColumn:"1/-1" }}>
+                  <GrapheCard titre="Bar Chart Race" sous_titre="Évolution du classement pays · flux entrant · M$ USD" grapheId="bcrace"
+                    fullChildren={<BarChartRace donnees={donneesDetail}/>}>
+                    <BarChartRace donnees={donneesDetail} mini/>
+                  </GrapheCard>
                 </div>
               </div>
             </div>
