@@ -749,10 +749,6 @@ function OngletPays({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; 
     { id:"fs", titre:"Flux sortants",       series: buildSerie("sortant","flux") },
     { id:"se", titre:"Stock entrant",       series: buildSerie("entrant","stock") },
     { id:"ss", titre:"Stock sortant",       series: buildSerie("sortant","stock") },
-    { id:"vs", titre:"Flux ent. vs sort.",  series: [
-      { nom:`${paysSelec} — entrants`, couleur, data: donnees.filter(d=>d.direction==="entrant"&&d.indicateur==="flux") },
-      { nom:`${paysSelec} — sortants`, couleur:couleur+"88", data: donnees.filter(d=>d.direction==="sortant"&&d.indicateur==="flux") },
-    ]},
   ];
 
   // Indicatif grisé sous la valeur
@@ -1076,10 +1072,6 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
     { id:"fs", titre:"Flux d'IDE sortants",      series: buildSeries("sortant","flux") },
     { id:"se", titre:"Stock d'IDE entrant",      series: buildSeries("entrant","stock") },
     { id:"ss", titre:"Stock d'IDE sortant",      series: buildSeries("sortant","stock") },
-    { id:"vs", titre:"Flux entrants vs sortants", series: [
-      ...paysAvecCouleur.map(p=>({ nom:`${p.nom} — ent.`, couleur:p.couleur, data:donnees.filter(d=>d.pays===p.nom&&d.direction==="entrant"&&d.indicateur==="flux") })),
-      ...paysAvecCouleur.map(p=>({ nom:`${p.nom} — sort.`, couleur:p.couleur+"88", data:donnees.filter(d=>d.pays===p.nom&&d.direction==="sortant"&&d.indicateur==="flux") })),
-    ]},
   ];
 
   const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
