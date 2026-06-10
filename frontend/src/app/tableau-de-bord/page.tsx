@@ -324,16 +324,11 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
   sidebarWidth: number; setSidebarWidth:(v:number)=>void;
   onglet: "viz"|"tables";
 }) {
-  const [openSections,setOpenSections] = useState<Record<string,boolean>>({kpis:true,viz:true,tables:true});
-  const [openCats,setOpenCats]         = useState<Record<string,boolean>>({entreprises:true});
   const [search,setSearch]             = useState("");
   const isResizing                     = useRef(false);
 
-  const toggle    = (k:string) => setOpenSections(s=>({...s,[k]:!s[k]}));
-  const toggleCat = (k:string) => setOpenCats(s=>({...s,[k]:!s[k]}));
   const filtered       = CATALOGUE.filter(v=>!search||v.titre.toLowerCase().includes(search.toLowerCase()));
   const filteredTables = TABLES_ANALYTIQUES.filter(t=>!search||t.titre.toLowerCase().includes(search.toLowerCase()));
-  const catColors: Record<string,string> = {entreprises:"#ca631f",zones:"#004f91",croisements:"#7c3aed",accords:"#059669",evenements:"#d97706",intentions:"#0891b2",prospects:"#E35336"};
 
   const startResize = (e: React.MouseEvent) => {
     isResizing.current = true;
@@ -381,77 +376,47 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
         {/* KPIs — onglet viz uniquement */}
         {onglet==="viz"&&<>
         <div style={{ marginBottom:18 }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              {config.kpisActifs.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:config.kpisActifs.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
-              {config.kpisActifs.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.kpisActifs.length}/5</span>}
-            </div>
-            <button onClick={()=>toggle("kpis")} style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:"#9aa5b4" }}>
-              {openSections.kpis?<ChevronDown size={13}/>:<ChevronRight size={13}/>}
-            </button>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+            <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
+            {config.kpisActifs.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.kpisActifs.length}/5</span>}
           </div>
-          {openSections.kpis&&(
-            <div>
-              {KPIS_DISPONIBLES.map(kpi=>{
-                const active=config.kpisActifs.includes(kpi.id);
-                const disabled=!active&&config.kpisActifs.length>=5;
-                return (
-                  <label key={kpi.id} className="sb-item" style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1 }}>
-                    <div style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?kpi.color:"#C5BFBB"}`, background:active?kpi.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                    </div>
-                    <input type="checkbox" checked={active} disabled={disabled} onChange={()=>onToggleKPI(kpi.id)} style={{ display:"none" }}/>
-                    <span style={{ fontSize:12, color:active?kpi.color:"#4a5568", fontWeight:active?600:400, flex:1 }}>{kpi.label}</span>
-                  </label>
-                );
-              })}
-            </div>
-          )}
+          <div>
+            {KPIS_DISPONIBLES.map(kpi=>{
+              const active=config.kpisActifs.includes(kpi.id);
+              const disabled=!active&&config.kpisActifs.length>=5;
+              return (
+                <label key={kpi.id} className="sb-item" style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1 }}>
+                  <div style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?kpi.color:"#C5BFBB"}`, background:active?kpi.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
+                  <input type="checkbox" checked={active} disabled={disabled} onChange={()=>onToggleKPI(kpi.id)} style={{ display:"none" }}/>
+                  <span style={{ fontSize:12, color:active?kpi.color:"#4a5568", fontWeight:active?600:400, flex:1 }}>{kpi.label}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
         <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
 
         {/* Visualisations */}
         <div style={{ marginBottom:18 }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              {config.cards.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:config.cards.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Visualisation de données</span>
-              {config.cards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.cards.length}</span>}
-            </div>
-            <button onClick={()=>toggle("viz")} style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:"#9aa5b4" }}>
-              {openSections.viz?<ChevronDown size={13}/>:<ChevronRight size={13}/>}
-            </button>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+            {config.cards.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
+            <span style={{ fontSize:11, fontWeight:700, color:config.cards.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Visualisation de données</span>
+            {config.cards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.cards.length}</span>}
           </div>
-          {openSections.viz&&(
-            <div>
-              {CATEGORIES.map(cat=>{
-                const items=filtered.filter(v=>v.categorie===cat.key);
-                if(!items.length) return null;
-                return (
-                  <div key={cat.key}>
-                    <button onClick={()=>toggleCat(cat.key)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px 5px 6px", background:"none", border:"none", cursor:"pointer", borderRadius:7 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-                        <div style={{ width:6, height:6, borderRadius:2, background:catColors[cat.key]||"#9aa5b4" }}/>
-                        <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{cat.label}</span>
-                      </div>
-                      {openCats[cat.key]?<ChevronDown size={11} color="#9aa5b4"/>:<ChevronRight size={11} color="#9aa5b4"/>}
-                    </button>
-                    {openCats[cat.key]&&items.map(viz=>(
-                      <button key={viz.id} className="sb-item" onClick={()=>onAddCard(viz)}
-                        style={{ width:"100%", display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:8, padding:"7px 8px 7px 20px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderRadius:7 }}>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <p style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
-                          {viz.params?.length?<span style={{ fontSize:10, color:"#9aa5b4" }}>⚙ Paramétrable</span>:null}
-                        </div>
-                        <span style={{ fontSize:18, color:"#C5BFBB", lineHeight:1, marginTop:1 }}>+</span>
-                      </button>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <div>
+            {filtered.map(viz=>(
+              <button key={viz.id} className="sb-item" onClick={()=>onAddCard(viz)}
+                style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"5px 8px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderRadius:7 }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:"#C5BFBB", flexShrink:0 }}/>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <p style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
+                  {viz.params?.length?<span style={{ fontSize:10, color:"#9aa5b4" }}>⚙ Paramétrable</span>:null}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
         <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
         </>}
@@ -459,30 +424,23 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
         {/* Tableaux analytiques — onglet tables uniquement */}
         {onglet==="tables"&&
         <div>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              {config.tableCards.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:config.tableCards.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Tableaux</span>
-              {config.tableCards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.tableCards.length}</span>}
-            </div>
-            <button onClick={()=>toggle("tables")} style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:"#9aa5b4" }}>
-              {openSections.tables?<ChevronDown size={13}/>:<ChevronRight size={13}/>}
-            </button>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+            {config.tableCards.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
+            <span style={{ fontSize:11, fontWeight:700, color:config.tableCards.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Tableaux analytiques</span>
+            {config.tableCards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.tableCards.length}</span>}
           </div>
-          {openSections.tables&&(
-            <div>
-              {filteredTables.map(t=>(
-                <button key={t.id} className="sb-item" onClick={()=>onAddTable(t.id)}
-                  style={{ width:"100%", display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:8, padding:"7px 8px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderRadius:7 }}>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
-                    <p style={{ fontSize:10, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.description}</p>
-                  </div>
-                  <span style={{ fontSize:18, color:"#C5BFBB", lineHeight:1, marginTop:2, flexShrink:0 }}>+</span>
-                </button>
-              ))}
-            </div>
-          )}
+          <div>
+            {filteredTables.map(t=>(
+              <button key={t.id} className="sb-item" onClick={()=>onAddTable(t.id)}
+                style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"5px 8px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderRadius:7 }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:"#C5BFBB", flexShrink:0 }}/>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <p style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
+                  <p style={{ fontSize:10, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>}
 
       </div>}
@@ -547,16 +505,18 @@ export default function TableauDeBordPage() {
 
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
       <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:72,zIndex:10,flexShrink:0}}>
-        <div style={{padding:`0 0 0 ${sidebarOpen ? sidebarWidth : 52}px`,display:"flex",alignItems:"center"}}>
-          {([
-            {v:"viz",    l:"Visualisation de données"},
-            {v:"tables", l:"Tableaux analytiques"},
-          ] as const).map(o=>(
-            <button key={o.v} onClick={()=>setOnglet(o.v)}
-              style={{padding:"16px 22px",border:"none",borderBottom:`2px solid ${onglet===o.v?"#ca631f":"transparent"}`,background:"transparent",fontSize:13,fontWeight:600,color:onglet===o.v?"#ca631f":"#9aa5b4",cursor:"pointer",transition:"all 0.15s",fontFamily:"var(--font-google-sans)"}}>
-              {o.l}
-            </button>
-          ))}
+        <div style={{maxWidth:1400,margin:"0 auto",padding:"0 40px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex"}}>
+            {([
+              {v:"viz",    l:"Visualisation de données"},
+              {v:"tables", l:"Tableaux analytiques"},
+            ] as const).map(o=>(
+              <button key={o.v} onClick={()=>setOnglet(o.v)}
+                style={{padding:"16px 22px",border:"none",borderBottom:`2px solid ${onglet===o.v?"#ca631f":"transparent"}`,background:"transparent",fontSize:13,fontWeight:600,color:onglet===o.v?"#ca631f":"#9aa5b4",cursor:"pointer",transition:"all 0.15s",fontFamily:"var(--font-google-sans)"}}>
+                {o.l}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
