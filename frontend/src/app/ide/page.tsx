@@ -1451,14 +1451,15 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
 
-    const minV = d3.min(data, d=>d.net) ?? 0;
-    const maxV = d3.max(data, d=>d.net) ?? 0;
-    const span = Math.max(maxV - minV, 1);
-    // Echelle asymétrique : s'adapte aux vraies valeurs, garantit que 0 est visible
-    const lo = Math.min(minV - span*0.08, -span*0.02);
-    const hi = Math.max(maxV + span*0.08,  span*0.02);
-    const x = d3.scaleLinear().domain([lo, hi]).range([MH, W-MH]).nice();
-    const cx = x(0);  // position du centre (valeur 0)
+    // 0 fixé au centre, deux échelles indépendantes gauche (négatif) et droite (positif)
+    const cx  = MH + (W - 2*MH) / 2;
+    const maxPos = Math.max(1, d3.max(data.filter(d=>d.net>0), d=>d.net) ?? 1);
+    const maxNeg = Math.max(1, d3.max(data.filter(d=>d.net<0), d=>-d.net) ?? 1);
+    const xPos = d3.scaleLinear().domain([0, maxPos*1.08]).range([cx, W-MH]).nice();
+    const xNeg = d3.scaleLinear().domain([0, maxNeg*1.08]).range([cx, MH]).nice();
+
+    // px position d'une valeur nette
+    const xOf = (v: number) => v >= 0 ? xPos(v) : xNeg(-v);
 
     const y = d3.scaleBand().domain(data.map(d=>d.pays)).range([MT, MT+data.length*rowH]).padding(0.2);
 
@@ -1467,10 +1468,17 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
       return abs>=1000 ? `${sign}${(abs/1000).toFixed(1)}k` : `${sign}${Math.round(abs)}`;
     };
 
-    // Grille verticale (full uniquement)
+    // Axes indépendants en haut (full uniquement)
     if (!mini) {
+      // Axe droite (positif)
       svg.append("g").attr("transform",`translate(0,${MT})`)
-        .call(d3.axisTop(x).ticks(6).tickFormat(v=>fmt(+v)))
+        .call(d3.axisTop(xPos).ticks(4).tickFormat(v=>v===0?"":fmt(+v)))
+        .call(g=>{g.select(".domain").remove();
+          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("y2",data.length*rowH);
+          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
+      // Axe gauche (négatif) — inverser le signe pour l'affichage
+      svg.append("g").attr("transform",`translate(0,${MT})`)
+        .call(d3.axisTop(xNeg).ticks(3).tickFormat(v=>v===0?"":fmt(-(+v))))
         .call(g=>{g.select(".domain").remove();
           g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("y2",data.length*rowH);
           g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
@@ -1479,9 +1487,9 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
     // Barres
     svg.selectAll<SVGRectElement,Row>("rect")
       .data(data).enter().append("rect")
-      .attr("x",     d=>d.net>=0 ? cx : x(d.net))
+      .attr("x",     d=>d.net>=0 ? cx : xOf(d.net))
       .attr("y",     d=>y(d.pays)!)
-      .attr("width", d=>Math.max(1, Math.abs(x(d.net)-cx)))
+      .attr("width", d=>Math.max(1, Math.abs(xOf(d.net)-cx)))
       .attr("height",y.bandwidth())
       .attr("fill",  d=>d.net>=0 ? COLOR_POS : COLOR_NEG);
 
@@ -1511,7 +1519,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
     if (!mini) {
       svg.selectAll<SVGTextElement,Row>("text.val")
         .data(data).enter().append("text")
-        .attr("x",  d=>d.net>=0 ? x(d.net)+5 : x(d.net)-5)
+        .attr("x",  d=>d.net>=0 ? xOf(d.net)+5 : xOf(d.net)-5)
         .attr("y",  d=>(y(d.pays)??0)+y.bandwidth()/2)
         .attr("dy","0.35em")
         .attr("text-anchor",d=>d.net>=0?"start":"end")
