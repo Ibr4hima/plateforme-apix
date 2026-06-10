@@ -1448,8 +1448,8 @@ function BarChartRace({ donnees, mini=false }: { donnees: any[]; mini?: boolean 
   const [dir, setDir] = useState("entrant");
 
   const N   = 10;   // barres visibles
-  const K   = 6;    // étapes d'interpolation entre deux années
-  const DUR = 180;  // ms par étape
+  const K   = 8;    // étapes d'interpolation entre deux années
+  const DUR = 500;  // ms par étape
 
   // Couleurs stables par pays
   const colorMap = useRef(new Map<string, string>());
@@ -1509,8 +1509,8 @@ function BarChartRace({ donnees, mini=false }: { donnees: any[]; mini?: boolean 
     stopRef.current = false;
 
     const W   = wrapRef.current.clientWidth || 700;
-    const BAR = 32, MT = 44, ML = 140, MR = 20, MB = 12;
-    const H   = MT + (N+1.6)*BAR + MB;
+    const BAR = 44, MT = 28, ML = 140, MR = 20, MB = 24;
+    const H   = MT + (N+1)*BAR + MB;
 
     // Vider le conteneur et créer le SVG
     d3.select(wrapRef.current).selectAll("svg").remove();
@@ -1521,18 +1521,18 @@ function BarChartRace({ donnees, mini=false }: { donnees: any[]; mini?: boolean 
 
     const x = d3.scaleLinear().range([ML, W-MR]);
     const y = d3.scaleBand<number>()
-      .domain(d3.range(N+1)).padding(0.1)
-      .rangeRound([MT+BAR+8, MT+(N+1.6)*BAR+8]);
+      .domain(d3.range(N+1)).padding(0.12)
+      .rangeRound([MT+BAR, MT+(N+1)*BAR]);
 
     // Groupes
     const gBars   = svg.append("g").attr("fill-opacity",0.85);
     const gLabels = svg.append("g").style("font-variant-numeric","tabular-nums");
-    const gAxis   = svg.append("g").attr("transform",`translate(0,${MT})`);
+    const gAxis   = svg.append("g").attr("transform",`translate(0,${MT+BAR})`);
     const ticker  = svg.append("text")
-      .style("font",`bold ${BAR*0.9}px sans-serif`)
+      .style("font",`bold ${BAR*0.85}px sans-serif`)
       .style("font-variant-numeric","tabular-nums")
-      .attr("text-anchor","end").attr("fill","#9aa5b4")
-      .attr("x",W-MR).attr("y",MT+BAR*(N-0.45)).attr("dy","0.32em");
+      .attr("text-anchor","end").attr("fill","#d1d5db")
+      .attr("x",W-MR).attr("y",H-MB).attr("dy","0em");
 
     let bar   = gBars.selectAll<SVGRectElement,  {name:string;value:number;rank:number}>("rect");
     let label = gLabels.selectAll<SVGGElement,   {name:string;value:number;rank:number}>("g");
@@ -1549,7 +1549,7 @@ function BarChartRace({ donnees, mini=false }: { donnees: any[]; mini?: boolean 
       // Axe X
       gAxis.transition(trName)
         .call(d3.axisTop(x).ticks(Math.floor(W/120),".2s").tickSizeOuter(0)
-          .tickSizeInner(-BAR*(N+y.padding())))
+          .tickSizeInner(-(N+1)*BAR))
         .call(g=>{g.select(".domain").remove();
           g.selectAll(".tick line").attr("stroke","#e5e7eb");
           g.selectAll(".tick text").attr("fill","#6b7280").attr("font-size",10);});
@@ -1560,7 +1560,7 @@ function BarChartRace({ donnees, mini=false }: { donnees: any[]; mini?: boolean 
           enter => enter.append("rect")
             .attr("fill", (d:any)=>getColor(d.name))
             .attr("height", y.bandwidth())
-            .attr("x", x(0)).attr("rx",3)
+            .attr("x", x(0))
             .attr("y",  (d:any)=>y((prev.get(d)||d).rank)??H)
             .attr("width",(d:any)=>Math.max(2, x((prev.get(d)||d).value)-x(0))),
           update => update,
@@ -1579,13 +1579,13 @@ function BarChartRace({ donnees, mini=false }: { donnees: any[]; mini?: boolean 
             const g = enter.append("g")
               .attr("transform",(d:any)=>`translate(${x((prev.get(d)||d).value)},${y((prev.get(d)||d).rank)??H})`);
             g.append("text").attr("class","lnom")
-              .attr("text-anchor","end").attr("x",-8).attr("y",y.bandwidth()/2)
-              .attr("dy","0.35em").attr("fill","#374151")
-              .style("font","bold 11px sans-serif");
+              .attr("text-anchor","end").attr("x",-8).attr("y",y.bandwidth()*0.38)
+              .attr("dy","0.35em").attr("fill","#111")
+              .style("font","bold 12px sans-serif");
             g.append("text").attr("class","lval")
-              .attr("text-anchor","end").attr("x",-8).attr("y",y.bandwidth()/2)
-              .attr("dy","1.5em").attr("fill","#9aa5b4")
-              .style("font","10px sans-serif");
+              .attr("text-anchor","end").attr("x",-8).attr("y",y.bandwidth()*0.72)
+              .attr("dy","0.35em").attr("fill","#333")
+              .style("font","bold 10px sans-serif");
             return g;
           },
           update => update,
@@ -1638,7 +1638,7 @@ function BarChartRace({ donnees, mini=false }: { donnees: any[]; mini?: boolean 
       const yp=MT+i*(BAR+3);
       svg.append("rect").attr("x",ML).attr("y",yp)
         .attr("width",Math.max(2,xS(d.valeur)-ML)).attr("height",BAR)
-        .attr("fill",getColor(d.pays)).attr("rx",2);
+        .attr("fill",getColor(d.pays));
       svg.append("text").attr("x",ML-4).attr("y",yp+BAR/2).attr("dy","0.35em")
         .attr("text-anchor","end").attr("font-size",8).attr("fill","#374151")
         .text(d.pays.length>10?d.pays.slice(0,9)+"…":d.pays);
