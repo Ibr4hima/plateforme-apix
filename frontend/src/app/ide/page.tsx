@@ -72,67 +72,82 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
   const draw = useCallback(() => {
     if (!ref.current) return;
     const el = ref.current;
-    // Toujours effacer en premier pour éviter les ghosts D3
     d3.select(el).selectAll("*").remove();
     if (!series.length) return;
     const W  = el.parentElement?.clientWidth || el.clientWidth || 700;
     const H  = height;
-    const M  = { top:12, right:20, bottom:34, left:64 };
-
-    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
 
     const allData = series.flatMap(s => s.data.filter(d => d.valeur !== null) as {annee:number;valeur:number}[]);
     if (!allData.length) return;
 
+    // ── Détection double axe (courbes multi-séries à magnitudes très différentes)
+    const serieRanges = series.map(s => {
+      const vals = s.data.filter(d=>d.valeur!==null).map(d=>d.valeur as number);
+      const mn = d3.min(vals) ?? 0;
+      const mx = d3.max(vals) ?? 1;
+      return { mn, mx, span: mx - mn };
+    });
+    const spanRatio = Math.max(...serieRanges.map(r=>r.span)) / Math.max(1, Math.min(...serieRanges.map(r=>r.span)));
+    const useDual = type === "line" && series.length >= 2 && spanRatio > 4;
+
+    const M = { top:12, right: useDual ? 58 : 20, bottom:34, left:64 };
+    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
+
     const allAnnees = [...new Set(allData.map(d=>d.annee))].sort();
-    const rawMin = d3.min(allData,d=>d.valeur)!;
-    const maxVal = d3.max(allData,d=>d.valeur)!;
-    const yPad   = (maxVal - rawMin) * 0.08;
-    // Barres : axe part de 0 ; courbes : axe part du min réel pour éviter l'écrasement
-    const minVal = type === "bar" ? Math.min(0, rawMin) : rawMin - yPad;
+
+    // ── Construction des échelles Y (une par série si dual, sinon partagée)
+    const buildScale = (mn: number, mx: number, forBar: boolean) => {
+      const pad = (mx - mn) * 0.08;
+      const lo = forBar ? Math.min(0, mn) : mn - pad;
+      return d3.scaleLinear().domain([lo, mx * 1.08]).nice().range([H-M.bottom, M.top]);
+    };
+    const yScales = useDual
+      ? series.map((_,i) => buildScale(serieRanges[i].mn, serieRanges[i].mx, false))
+      : (() => {
+          const rawMin = d3.min(allData,d=>d.valeur)!;
+          const maxVal = d3.max(allData,d=>d.valeur)!;
+          const shared = buildScale(rawMin, maxVal, type === "bar");
+          return series.map(() => shared);
+        })();
+    const y = yScales[0]; // échelle principale (axe gauche, grille)
 
     const xBand = d3.scaleBand().domain(allAnnees.map(String)).range([M.left,W-M.right]).padding(0.18);
     const xLin  = d3.scaleLinear().domain([allAnnees[0], allAnnees[allAnnees.length-1]]).range([M.left,W-M.right]);
-    const y     = d3.scaleLinear().domain([minVal, maxVal*1.08]).nice().range([H-M.bottom,M.top]);
 
-    // Grille horizontale légère
+    // Grille horizontale (basée sur l'échelle principale)
     svg.append("g").selectAll("line").data(y.ticks(4)).enter().append("line")
       .attr("x1",M.left).attr("x2",W-M.right).attr("y1",d=>y(d)).attr("y2",d=>y(d))
       .attr("stroke","#EBEBEB").attr("stroke-width",1);
 
-    if (minVal < 0)
+    if (y.domain()[0] < 0)
       svg.append("line").attr("x1",M.left).attr("x2",W-M.right).attr("y1",y(0)).attr("y2",y(0))
         .attr("stroke","#C5BFBB").attr("stroke-width",1.2).attr("stroke-dasharray","4,3");
 
     const tooltip = d3.select("#d3-tooltip") as any;
+    const fmtAxis = (v: d3.NumberValue) => {
+      const n = +v; const a = Math.abs(n);
+      return a>=1e9?`${(n/1e9).toFixed(1)}Md`:a>=1e6?`${(n/1e6).toFixed(0)}M`:`${n.toFixed(0)}`;
+    };
 
-    // ── BARRES (style D3 Observable) ────────────────────────────────────────
+    // ── BARRES ────────────────────────────────────────────────────────────────
     if (type === "bar") {
       const nbSeries = series.length;
       const xGroup   = nbSeries > 1
         ? d3.scaleBand().domain(series.map(s=>s.nom)).range([0,xBand.bandwidth()]).padding(0.06)
         : null;
 
-      series.forEach(s => {
+      series.forEach((s,si) => {
+        const ys = yScales[si];
         const valid = s.data.filter(d=>d.valeur!==null) as {annee:number;valeur:number}[];
         if (!valid.length) return;
-
-        const getX = (d:{annee:number}) => {
-          const base = xBand(String(d.annee))!;
-          return xGroup ? base + xGroup(s.nom)! : base;
-        };
-        const getW = () => xGroup ? xGroup.bandwidth() : xBand.bandwidth();
-
+        const getX = (d:{annee:number}) => { const base=xBand(String(d.annee))!; return xGroup?base+xGroup(s.nom)!:base; };
+        const getW = () => xGroup?xGroup.bandwidth():xBand.bandwidth();
         svg.selectAll(`.b${s.nom.replace(/\W/g,"")}`)
           .data(valid).enter().append("rect")
-          .attr("class",`b${s.nom.replace(/\W/g,"")}`)
-          .attr("x",d=>getX(d))
-          .attr("width",getW())
-          .attr("y",d=>d.valeur>=0?y(d.valeur):y(0))
-          .attr("height",d=>Math.abs(y(d.valeur)-y(0)))
-          .attr("fill",s.couleur)
-          .attr("rx",3)
-          .style("cursor","pointer")
+          .attr("x",d=>getX(d)).attr("width",getW())
+          .attr("y",d=>d.valeur>=0?ys(d.valeur):ys(0))
+          .attr("height",d=>Math.abs(ys(d.valeur)-ys(0)))
+          .attr("fill",s.couleur).attr("rx",3).style("cursor","pointer")
           .on("mouseover",(e,d)=>{
             d3.select(e.currentTarget as SVGRectElement).attr("opacity",0.75);
             tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px")
@@ -141,7 +156,6 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
           .on("mouseout",(e)=>{ d3.select(e.currentTarget as SVGRectElement).attr("opacity",1); tooltip.style("opacity",0); });
       });
 
-      // Axe X barres
       const maxTicks = Math.floor((W - M.left - M.right) / 28);
       const step = Math.ceil(allAnnees.length / maxTicks);
       const tickVals = allAnnees.filter((_,i)=>i%step===0).map(String);
@@ -151,13 +165,14 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
         .call(g=>g.selectAll("line").remove())
         .call(g=>g.selectAll("text").style("fill","#9aa5b4").style("font-size","10px"));
 
-    // ── COURBES ──────────────────────────────────────────────────────────────
+    // ── COURBES ───────────────────────────────────────────────────────────────
     } else {
-      series.forEach(s => {
+      series.forEach((s,si) => {
+        const ys = yScales[si];
         const valid = s.data.filter(d=>d.valeur!==null) as {annee:number;valeur:number}[];
         if (!valid.length) return;
 
-        // Dégradé aire
+        const areaBase = ys(Math.max(ys.domain()[0], 0));
         const gid = `g${s.nom.replace(/\W/g,"")}`;
         const defs = svg.append("defs");
         const grad = defs.append("linearGradient").attr("id",gid).attr("x1","0").attr("x2","0").attr("y1","0").attr("y2","1");
@@ -165,32 +180,30 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
         grad.append("stop").attr("offset","100%").attr("stop-color",s.couleur).attr("stop-opacity",0);
 
         svg.append("path").datum(valid).attr("fill",`url(#${gid})`)
-          .attr("d",d3.area<{annee:number;valeur:number}>().x(d=>xLin(d.annee)).y0(y(0)).y1(d=>y(d.valeur)).curve(d3.curveMonotoneX));
+          .attr("d",d3.area<{annee:number;valeur:number}>().x(d=>xLin(d.annee)).y0(areaBase).y1(d=>ys(d.valeur)).curve(d3.curveMonotoneX));
 
         svg.append("path").datum(valid).attr("fill","none").attr("stroke",s.couleur).attr("stroke-width",2.2)
-          .attr("d",d3.line<{annee:number;valeur:number}>().x(d=>xLin(d.annee)).y(d=>y(d.valeur)).curve(d3.curveMonotoneX));
+          .attr("d",d3.line<{annee:number;valeur:number}>().x(d=>xLin(d.annee)).y(d=>ys(d.valeur)).curve(d3.curveMonotoneX));
 
         const nb = valid.length;
         const rBase = nb > 25 ? 0 : nb > 18 ? 1.5 : nb > 10 ? 2 : 2.5;
         if (rBase > 0) {
           svg.selectAll(`.p${s.nom.replace(/\W/g,"")}`)
             .data(valid).enter().append("circle")
-            .attr("cx",d=>xLin(d.annee)).attr("cy",d=>y(d.valeur)).attr("r",rBase)
+            .attr("cx",d=>xLin(d.annee)).attr("cy",d=>ys(d.valeur)).attr("r",rBase)
             .attr("fill","#fff").attr("stroke",s.couleur).attr("stroke-width",1.5).style("cursor","pointer")
             .on("mouseover",(e,d)=>{ d3.select(e.currentTarget as any).attr("r",rBase+2); tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px").html(`<strong>${d.annee} — ${s.nom}</strong><br/>${fmtVal(d.valeur)}`); })
             .on("mouseout",(e)=>{ d3.select(e.currentTarget as any).attr("r",rBase); tooltip.style("opacity",0); });
         } else {
-          // Zone hover invisible pour tooltip même sans points visibles
           svg.selectAll(`.ph${s.nom.replace(/\W/g,"")}`)
             .data(valid).enter().append("circle")
-            .attr("cx",d=>xLin(d.annee)).attr("cy",d=>y(d.valeur)).attr("r",6)
+            .attr("cx",d=>xLin(d.annee)).attr("cy",d=>ys(d.valeur)).attr("r",6)
             .attr("fill","transparent").attr("stroke","none").style("cursor","pointer")
             .on("mouseover",(e,d)=>{ tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px").html(`<strong>${d.annee} — ${s.nom}</strong><br/>${fmtVal(d.valeur)}`); })
             .on("mouseout",()=>{ tooltip.style("opacity",0); });
         }
       });
 
-      // Axe X courbes
       svg.append("g").attr("transform",`translate(0,${H-M.bottom})`)
         .call(d3.axisBottom(xLin).ticks(8).tickFormat(d3.format("d")).tickSizeOuter(0))
         .call(g=>g.select(".domain").attr("stroke","#E8E5E3"))
@@ -198,15 +211,21 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
         .call(g=>g.selectAll("text").style("fill","#9aa5b4").style("font-size","10px"));
     }
 
-    // Axe Y commun
+    // ── Axe Y gauche (série 0)
     svg.append("g").attr("transform",`translate(${M.left},0)`)
-      .call(d3.axisLeft(y).ticks(4).tickFormat(d=>{
-        const v = +d; const abs=Math.abs(v);
-        return abs>=1e9?`${(v/1e9).toFixed(1)}Md`:abs>=1e6?`${(v/1e6).toFixed(0)}M`:`${v.toFixed(0)}`;
-      }))
+      .call(d3.axisLeft(y).ticks(4).tickFormat(fmtAxis))
       .call(g=>g.select(".domain").remove())
       .call(g=>g.selectAll("line").remove())
-      .call(g=>g.selectAll("text").style("fill","#9aa5b4").style("font-size","10px"));
+      .call(g=>g.selectAll("text").style("fill", useDual ? series[0].couleur : "#9aa5b4").style("font-size","10px").style("font-weight", useDual ? "600" : "400"));
+
+    // ── Axe Y droit (série 1) si double axe
+    if (useDual) {
+      svg.append("g").attr("transform",`translate(${W-M.right},0)`)
+        .call(d3.axisRight(yScales[1]).ticks(4).tickFormat(fmtAxis))
+        .call(g=>g.select(".domain").remove())
+        .call(g=>g.selectAll("line").remove())
+        .call(g=>g.selectAll("text").style("fill", series[1].couleur).style("font-size","10px").style("font-weight","600"));
+    }
 
   }, [series, type, height]);
 
