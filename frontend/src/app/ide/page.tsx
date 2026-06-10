@@ -1441,12 +1441,12 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
     if (!data.length) return;
 
     const COLOR_POS = "#188038";
-    const COLOR_NEG = "#c2185b";
-    const rowH = mini ? 10 : 28;
+    const COLOR_NEG = "#ca631f";
+    const rowH = mini ? 16 : 28;
     const W    = wrapRef.current.clientWidth || 500;
     const MT   = mini ? 4  : 26;
     const MB   = mini ? 4  : 8;
-    const MH   = mini ? 18 : 58;  // marge gauche/droite pour labels valeurs
+    const MH   = mini ? 18 : 58;
     const H    = MT + data.length * rowH + MB;
 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
