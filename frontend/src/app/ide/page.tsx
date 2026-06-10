@@ -85,8 +85,11 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
     if (!allData.length) return;
 
     const allAnnees = [...new Set(allData.map(d=>d.annee))].sort();
-    const minVal    = Math.min(0, d3.min(allData,d=>d.valeur)!);
-    const maxVal    = d3.max(allData,d=>d.valeur)!;
+    const rawMin = d3.min(allData,d=>d.valeur)!;
+    const maxVal = d3.max(allData,d=>d.valeur)!;
+    const yPad   = (maxVal - rawMin) * 0.08;
+    // Barres : axe part de 0 ; courbes : axe part du min réel pour éviter l'écrasement
+    const minVal = type === "bar" ? Math.min(0, rawMin) : rawMin - yPad;
 
     const xBand = d3.scaleBand().domain(allAnnees.map(String)).range([M.left,W-M.right]).padding(0.18);
     const xLin  = d3.scaleLinear().domain([allAnnees[0], allAnnees[allAnnees.length-1]]).range([M.left,W-M.right]);
