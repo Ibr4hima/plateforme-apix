@@ -35,7 +35,7 @@ interface TableCardConfig {
 type ChartType = "auto"|"bar_h"|"bar_v"|"donut"|"line"|"table";
 
 const DEFAULT_CONFIG: DashConfig = {
-  kpisActifs: ["entreprises_total","zones_total","accords_vigueur","evenements_a_venir","prospects_total"],
+  kpisActifs: [],
   cards: [],
   tableCards: [],
 };
@@ -359,11 +359,6 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
 
       {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
 
-        {/* Effacer tout */}
-        {hasAdded&&<button onClick={onReset} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
-          <X size={12}/> Réinitialiser le tableau de bord
-        </button>}
-
         {/* Recherche */}
         <div style={{ position:"relative" as const, marginBottom:18 }}>
           <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
@@ -390,7 +385,7 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
                     {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
                   <input type="checkbox" checked={active} disabled={disabled} onChange={()=>onToggleKPI(kpi.id)} style={{ display:"none" }}/>
-                  <span style={{ fontSize:12, color:active?kpi.color:"#4a5568", fontWeight:active?600:400, flex:1 }}>{kpi.label}</span>
+                  <span style={{ fontSize:12, color:active?kpi.color:"#4a5568", fontWeight:active?500:400, flex:1 }}>{kpi.label}</span>
                 </label>
               );
             })}
