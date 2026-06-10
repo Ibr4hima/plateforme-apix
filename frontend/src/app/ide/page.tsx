@@ -1439,6 +1439,134 @@ function RadarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean })
   );
 }
 
+// ── Horizontal bar chart top 10 ──────────────────────────────────────────────
+function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
+  const svgRef  = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [annee, setAnnee] = useState<number|null>(null);
+  const [ind,   setInd]   = useState("flux");
+  const [dir,   setDir]   = useState("entrant");
+
+  const draw = useCallback(() => {
+    if (!svgRef.current || !wrapRef.current) return;
+    const el = svgRef.current;
+    d3.select(el).selectAll("*").remove();
+    if (!donnees.length) return;
+
+    const curInd = mini ? "flux"    : ind;
+    const curDir = mini ? "entrant" : dir;
+
+    const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
+    const curAnnee = annee ?? annees[0];
+
+    const data = donnees
+      .filter((d:any)=>d.annee===curAnnee && d.indicateur===curInd && d.direction===curDir && d.valeur!==null)
+      .sort((a:any,b:any)=>b.valeur-a.valeur)
+      .slice(0, 10);
+
+    if (!data.length) return;
+
+    const N   = data.length;
+    const W   = wrapRef.current.clientWidth || 600;
+    const rowH = mini ? 16 : 32;
+    const M    = mini
+      ? { top:4, right:12, bottom:4, left:70 }
+      : { top:10, right:80, bottom:10, left:130 };
+    const H    = N * rowH + M.top + M.bottom;
+
+    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
+
+    const maxVal = d3.max(data,(d:any)=>d.valeur) as number;
+    const x = d3.scaleLinear().domain([0, maxVal*1.02]).range([M.left, W-M.right]);
+    const y = d3.scaleBand().domain(data.map((d:any)=>d.pays)).range([M.top, H-M.bottom]).padding(0.22);
+
+    // Barres
+    svg.selectAll<SVGRectElement,any>("rect.bar")
+      .data(data).enter().append("rect")
+      .attr("x",     M.left)
+      .attr("y",     (d:any)=>y(d.pays)!)
+      .attr("width", (d:any)=>Math.max(0, x(d.valeur)-M.left))
+      .attr("height",y.bandwidth())
+      .attr("fill",  COMP_PALETTE[0])
+      .attr("rx", 3);
+
+    // Labels valeur à l'intérieur des barres (blanc, aligné à droite)
+    svg.selectAll<SVGTextElement,any>("text.val")
+      .data(data).enter().append("text")
+      .attr("x",  (d:any)=>x(d.valeur)-5)
+      .attr("y",  (d:any)=>y(d.pays)! + y.bandwidth()/2)
+      .attr("dy", "0.35em")
+      .attr("text-anchor","end")
+      .attr("font-size", mini ? 8 : 11)
+      .attr("font-weight","600")
+      .attr("fill","white")
+      .text((d:any)=>Math.abs(d.valeur)>=1000 ? `${(d.valeur/1000).toFixed(1)} Md$` : `${Math.round(d.valeur)} M$`);
+
+    // Noms pays (axe Y)
+    svg.selectAll<SVGTextElement,any>("text.pays")
+      .data(data).enter().append("text")
+      .attr("x",  M.left-6)
+      .attr("y",  (d:any)=>y(d.pays)! + y.bandwidth()/2)
+      .attr("dy", "0.35em")
+      .attr("text-anchor","end")
+      .attr("font-size", mini ? 8 : 11)
+      .attr("fill","#374151")
+      .text((d:any)=>{
+        const name = d.pays as string;
+        return mini && name.length>12 ? name.slice(0,11)+"…" : name;
+      });
+
+    // Rang (numéro) en tête de barre
+    if (!mini) {
+      svg.selectAll<SVGTextElement,any>("text.rank")
+        .data(data).enter().append("text")
+        .attr("x",  M.left+6)
+        .attr("y",  (d:any,i)=>y(d.pays)! + y.bandwidth()/2)
+        .attr("dy", "0.35em")
+        .attr("font-size",9).attr("fill","rgba(255,255,255,0.7)").attr("font-weight","700")
+        .text((_:any,i:number)=>`#${i+1}`);
+    }
+
+  }, [donnees, annee, ind, dir, mini]);
+
+  useEffect(()=>{ draw(); },[draw]);
+  useEffect(()=>{
+    if (!wrapRef.current) return;
+    const obs = new ResizeObserver(()=>draw());
+    obs.observe(wrapRef.current);
+    return ()=>obs.disconnect();
+  },[draw]);
+
+  const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
+
+  const Pill = ({ label, active, onClick }: { label:string; active:boolean; onClick:()=>void }) => (
+    <button onClick={onClick} style={{ padding:"4px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize:11, fontWeight:600, background:active?"#004f91":"#F2F0EF", color:active?"#fff":"#9aa5b4", transition:"all 0.15s" }}>{label}</button>
+  );
+
+  return (
+    <div>
+      {!mini && (
+        <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" as const, alignItems:"center" }}>
+          <select value={annee??annees[0]} onChange={e=>setAnnee(Number(e.target.value))}
+            style={{ fontSize:11, padding:"3px 8px", borderRadius:6, border:"1px solid #E8E5E3", background:"#F8F7F6", color:"#1a1a2e", cursor:"pointer", outline:"none" }}>
+            {annees.map(a=><option key={a} value={a}>{a}</option>)}
+          </select>
+          <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
+          <Pill label="Flux"    active={ind==="flux"}    onClick={()=>setInd("flux")}/>
+          <Pill label="Stock"   active={ind==="stock"}   onClick={()=>setInd("stock")}/>
+          <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
+          <Pill label="Entrant" active={dir==="entrant"} onClick={()=>setDir("entrant")}/>
+          <Pill label="Sortant" active={dir==="sortant"} onClick={()=>setDir("sortant")}/>
+        </div>
+      )}
+      <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
+        <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
+      </div>
+      {donnees.length===0&&!mini&&<p style={{ textAlign:"center" as const, color:"#9aa5b4", fontSize:12, marginTop:16 }}>Chargement…</p>}
+    </div>
+  );
+}
+
 // ── Heatmap pays × année ─────────────────────────────────────────────────────
 function HeatmapPaysAnnee({ donnees, mini=false, ind: indProp="flux", dir: dirProp="entrant" }: {
   donnees: any[]; mini?: boolean; ind?: string; dir?: string;
@@ -1913,9 +2041,10 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
                   <RadarChart donnees={donneesDetail} mini/>
                 </GrapheCard>
                 {/* Horizontal bar — top 10 */}
-                <div style={{ background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:260, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Horizontal bar chart top 10 — à venir</span>
-                </div>
+                <GrapheCard titre="Classement pays — Top 10" sous_titre="M$ USD · année et indicateur sélectionnables" grapheId="hbar"
+                  fullChildren={<HBarChart donnees={donneesDetail}/>}>
+                  <HBarChart donnees={donneesDetail} mini/>
+                </GrapheCard>
                 {/* Bar chart race */}
                 <div style={{ gridColumn:"1/-1", background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:280, display:"flex", alignItems:"center", justifyContent:"center" }}>
                   <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Bar chart race — à venir</span>
