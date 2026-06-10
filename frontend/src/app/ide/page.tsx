@@ -1289,6 +1289,131 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
 }
 
 // ── Onglet Monde ──────────────────────────────────────────────────────────────
+// ── Heatmap pays × année ─────────────────────────────────────────────────────
+function HeatmapPaysAnnee({ donnees }: { donnees: any[] }) {
+  const svgRef  = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [ind, setInd] = useState<"flux"|"stock">("flux");
+  const [dir, setDir] = useState<"entrant"|"sortant">("entrant");
+
+  const draw = useCallback(() => {
+    if (!svgRef.current || !wrapRef.current) return;
+    const el = svgRef.current;
+    d3.select(el).selectAll("*").remove();
+
+    const filtered = donnees.filter(d => d.indicateur === ind && d.direction === dir && d.valeur !== null);
+    if (!filtered.length) return;
+
+    // Top 15 pays par somme des valeurs absolues
+    const byPays = d3.rollup(filtered, v => d3.sum(v, d => Math.abs(d.valeur)), d => d.pays);
+    const top15  = [...byPays.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15).map(([p])=>p);
+    const data   = filtered.filter(d => top15.includes(d.pays));
+    const annees = [...new Set(data.map((d:any)=>d.annee as number))].sort((a,b)=>a-b);
+
+    const W  = wrapRef.current.clientWidth || 800;
+    const M  = { top:14, right:16, bottom:48, left:130 };
+    const rowH = 26;
+    const H  = top15.length * rowH + M.top + M.bottom;
+
+    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
+
+    const x = d3.scaleBand().domain(annees.map(String)).range([M.left, W-M.right]).padding(0.04);
+    const y = d3.scaleBand().domain(top15).range([M.top, H-M.bottom]).padding(0.04);
+
+    const vals   = data.map((d:any)=>d.valeur);
+    const maxAbs = Math.max(1, d3.max(vals.map(Math.abs))!);
+    const color  = d3.scaleDiverging<string>().domain([-maxAbs, 0, maxAbs]).interpolator(d3.interpolateRdYlBu);
+
+    // Cellules
+    svg.selectAll<SVGRectElement, any>("rect.cell")
+      .data(data)
+      .enter().append("rect")
+      .attr("x",     d => x(String(d.annee))!)
+      .attr("y",     d => y(d.pays)!)
+      .attr("width", x.bandwidth())
+      .attr("height",y.bandwidth())
+      .attr("fill",  d => color(d.valeur))
+      .attr("rx", 2);
+
+    // Labels si la cellule est assez large
+    const cellW = x.bandwidth();
+    if (cellW >= 22) {
+      svg.selectAll<SVGTextElement, any>("text.lbl")
+        .data(data)
+        .enter().append("text")
+        .attr("x",  d => x(String(d.annee))! + cellW/2)
+        .attr("y",  d => y(d.pays)! + y.bandwidth()/2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor","middle")
+        .attr("font-size", Math.min(9, cellW/3.5))
+        .attr("fill", d => Math.abs(d.valeur) > maxAbs*0.55 ? "#fff" : "#333")
+        .text(d => {
+          const v = Math.abs(d.valeur);
+          return v >= 1000 ? `${(d.valeur/1000).toFixed(0)}G` : `${Math.round(d.valeur)}`;
+        });
+    }
+
+    // Axe X — 1 tick sur 5 si trop dense
+    const step = annees.length > 20 ? 5 : annees.length > 12 ? 2 : 1;
+    const ticks = annees.filter((_,i)=>i%step===0).map(String);
+    svg.append("g")
+      .attr("transform",`translate(0,${H-M.bottom})`)
+      .call(d3.axisBottom(x).tickValues(ticks).tickSize(0))
+      .call(g=>g.select(".domain").remove())
+      .call(g=>g.selectAll("text").attr("font-size",10).attr("fill","#666")
+        .attr("transform","rotate(-40)").attr("text-anchor","end").attr("dy","0.5em"));
+
+    // Axe Y — noms de pays
+    svg.append("g")
+      .attr("transform",`translate(${M.left},0)`)
+      .call(d3.axisLeft(y).tickSize(0))
+      .call(g=>g.select(".domain").remove())
+      .call(g=>g.selectAll("text").attr("font-size",11).attr("fill","#333").attr("dx","-6"));
+
+    // Légende couleur (gradient horizontal)
+    const lgW = 160, lgH = 10, lgX = W - M.right - lgW, lgY = H - 14;
+    const defs = svg.append("defs");
+    const grdId = "heatmap-grd";
+    const grd = defs.append("linearGradient").attr("id", grdId);
+    [0,0.25,0.5,0.75,1].forEach(t => {
+      grd.append("stop").attr("offset",`${t*100}%`).attr("stop-color", color(maxAbs*(2*t-1)));
+    });
+    svg.append("rect").attr("x",lgX).attr("y",lgY).attr("width",lgW).attr("height",lgH)
+      .attr("fill",`url(#${grdId})`).attr("rx",3);
+    svg.append("text").attr("x",lgX).attr("y",lgY-3).attr("font-size",8).attr("fill","#888").text(`−${Math.round(maxAbs/1000)}G`);
+    svg.append("text").attr("x",lgX+lgW).attr("y",lgY-3).attr("font-size",8).attr("fill","#888").attr("text-anchor","end").text(`+${Math.round(maxAbs/1000)}G`);
+
+  }, [donnees, ind, dir]);
+
+  useEffect(()=>{ draw(); },[draw]);
+  useEffect(()=>{
+    if (!wrapRef.current) return;
+    const obs = new ResizeObserver(()=>draw());
+    obs.observe(wrapRef.current);
+    return ()=>obs.disconnect();
+  },[draw]);
+
+  const Pill = ({ label, active, onClick }: { label:string; active:boolean; onClick:()=>void }) => (
+    <button onClick={onClick} style={{ padding:"4px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize:11, fontWeight:600, background:active?"#004f91":"#F2F0EF", color:active?"#fff":"#9aa5b4", transition:"all 0.15s" }}>{label}</button>
+  );
+
+  return (
+    <div>
+      <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" as const }}>
+        <Pill label="Flux"  active={ind==="flux"}    onClick={()=>setInd("flux")}/>
+        <Pill label="Stock" active={ind==="stock"}   onClick={()=>setInd("stock")}/>
+        <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
+        <Pill label="Entrant"  active={dir==="entrant"}  onClick={()=>setDir("entrant")}/>
+        <Pill label="Sortant"  active={dir==="sortant"}  onClick={()=>setDir("sortant")}/>
+      </div>
+      <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
+        <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
+      </div>
+      {donnees.length===0 && <p style={{ textAlign:"center" as const, color:"#9aa5b4", fontSize:12, marginTop:16 }}>Chargement…</p>}
+    </div>
+  );
+}
+
 function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowTable: (v:boolean)=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
   const [loading,     setLoading]    = useState(false);
@@ -1614,8 +1739,9 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
               </div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
                 {/* Heatmap pays × année — top 15 */}
-                <div style={{ gridColumn:"1/-1", background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:280, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Heatmap pays × année (top 15) — à venir</span>
+                <div style={{ gridColumn:"1/-1", background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#1a1a2e", marginBottom:12 }}>Heatmap pays × année <span style={{ fontSize:11, color:"#9aa5b4", fontWeight:400 }}>Top 15 pays · M$ USD</span></div>
+                  <HeatmapPaysAnnee donnees={donneesDetail}/>
                 </div>
                 {/* Radar chart — top 5 */}
                 <div style={{ background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:260, display:"flex", alignItems:"center", justifyContent:"center" }}>
