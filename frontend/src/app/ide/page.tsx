@@ -1441,7 +1441,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
     if (!data.length) return;
 
     const COLOR_POS = "#188038";
-    const COLOR_NEG = "#ca631f";
+    const COLOR_NEG = "#A50E0E";
     const rowH = mini ? 16 : 28;
     const W    = wrapRef.current.clientWidth || 500;
     const MT   = mini ? 4  : 26;
@@ -1455,8 +1455,8 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
     const cx  = MH + (W - 2*MH) / 2;
     const maxPos = Math.max(1, d3.max(data.filter(d=>d.net>0), d=>d.net) ?? 1);
     const maxNeg = Math.max(1, d3.max(data.filter(d=>d.net<0), d=>-d.net) ?? 1);
-    const xPos = d3.scaleLinear().domain([0, maxPos*1.08]).range([cx, W-MH]).nice();
-    const xNeg = d3.scaleLinear().domain([0, maxNeg*1.08]).range([cx, MH]).nice();
+    const xPos = d3.scalePow().exponent(0.5).domain([0, maxPos*1.08]).range([cx, W-MH]);
+    const xNeg = d3.scalePow().exponent(0.5).domain([0, maxNeg*1.08]).range([cx, MH]);
 
     // px position d'une valeur nette
     const xOf = (v: number) => v >= 0 ? xPos(v) : xNeg(-v);
@@ -1879,11 +1879,11 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
 
           {modeDetail && (
             <div style={{ marginTop:28, display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-              <GrapheCard titre="Classement pays — Top 10" sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
+              <GrapheCard titre="Flux entrant — Top 10 (groupement sélectionné)" sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
                 <HBarChart donnees={donneesDetail} mini/>
               </GrapheCard>
-              <GrapheCard titre="Net par pays — diverging bars" sous_titre="Top 10 · entrant − sortant · vert positif / rose négatif" grapheId="divbar"
+              <GrapheCard titre="Ent. vs Sort. — Top 10 (groupement sélectionné)" sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar"
                 fullChildren={<DivergingBars donnees={donneesDetail}/>}>
                 <DivergingBars donnees={donneesDetail} mini/>
               </GrapheCard>
