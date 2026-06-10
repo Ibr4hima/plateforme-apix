@@ -1331,7 +1331,9 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
 
     const fmtLabel = (v:number) => Math.abs(v)>=1000 ? `${(v/1000).toFixed(1)} Md$` : `${Math.round(v)} M$`;
     const minLabelInside = mini ? 40 : 80;
-    const label = (d:any) => (d.code_iso3 as string|null) ?? (d.pays as string).slice(0,3).toUpperCase();
+    const label = (d:any) => mini
+      ? ((d.code_iso3 as string|null) ?? (d.pays as string).slice(0,3).toUpperCase())
+      : (d.pays as string);
 
     svg.selectAll<SVGRectElement,any>("rect.bar")
       .data(data).enter().append("rect")
