@@ -1293,9 +1293,6 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
 function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
   const svgRef  = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [annee, setAnnee] = useState<number|null>(null);
-  const [ind,   setInd]   = useState("flux");
-  const [dir,   setDir]   = useState("entrant");
 
   const draw = useCallback(() => {
     if (!svgRef.current || !wrapRef.current) return;
@@ -1303,35 +1300,33 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
     d3.select(el).selectAll("*").remove();
     if (!donnees.length) return;
 
-    const curInd = mini ? "flux"    : ind;
-    const curDir = mini ? "entrant" : dir;
-
+    // Toujours flux entrant, dernière année disponible
     const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
-    const curAnnee = annee ?? annees[0];
+    const curAnnee = annees[0];
 
     const data = donnees
-      .filter((d:any)=>d.annee===curAnnee && d.indicateur===curInd && d.direction===curDir && d.valeur!==null)
+      .filter((d:any)=>d.annee===curAnnee && d.indicateur==="flux" && d.direction==="entrant" && d.valeur!==null)
       .sort((a:any,b:any)=>b.valeur-a.valeur)
       .slice(0, 10);
 
     if (!data.length) return;
 
-    const N   = data.length;
-    const W   = wrapRef.current.clientWidth || 600;
-    const rowH = mini ? 16 : 32;
+    const W    = wrapRef.current.clientWidth || 600;
+    const rowH = mini ? 18 : 46;
     const M    = mini
-      ? { top:4, right:12, bottom:4, left:70 }
-      : { top:10, right:80, bottom:10, left:130 };
-    const H    = N * rowH + M.top + M.bottom;
+      ? { top:4, right:12, bottom:4, left:34 }
+      : { top:10, right:90, bottom:10, left:46 };
+    const H    = data.length * rowH + M.top + M.bottom;
 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
 
     const maxVal = d3.max(data,(d:any)=>d.valeur) as number;
     const x = d3.scalePow().exponent(0.5).domain([0, maxVal]).range([M.left, W-M.right]);
-    const y = d3.scaleBand().domain(data.map((d:any)=>d.pays)).range([M.top, H-M.bottom]).padding(0.22);
+    const y = d3.scaleBand().domain(data.map((d:any)=>d.pays)).range([M.top, H-M.bottom]).padding(0.18);
 
     const fmtLabel = (v:number) => Math.abs(v)>=1000 ? `${(v/1000).toFixed(1)} Md$` : `${Math.round(v)} M$`;
     const minLabelInside = mini ? 40 : 80;
+    const label = (d:any) => (d.code_iso3 as string|null) ?? (d.pays as string).slice(0,3).toUpperCase();
 
     svg.selectAll<SVGRectElement,any>("rect.bar")
       .data(data).enter().append("rect")
@@ -1339,8 +1334,7 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
       .attr("y",     (d:any)=>y(d.pays)!)
       .attr("width", (d:any)=>Math.max(2, x(d.valeur)-M.left))
       .attr("height",y.bandwidth())
-      .attr("fill",  COMP_PALETTE[0])
-      .attr("rx", 3);
+      .attr("fill",  COMP_PALETTE[0]);
 
     svg.selectAll<SVGTextElement,any>("text.val")
       .data(data).enter().append("text")
@@ -1351,25 +1345,24 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
       .attr("y",  (d:any)=>y(d.pays)! + y.bandwidth()/2)
       .attr("dy", "0.35em")
       .attr("text-anchor",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"end":"start")
-      .attr("font-size", mini ? 8 : 11)
+      .attr("font-size", mini ? 7 : 11)
       .attr("font-weight","600")
       .attr("fill",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"white":COMP_PALETTE[0])
       .text((d:any)=>fmtLabel(d.valeur));
 
-    svg.selectAll<SVGTextElement,any>("text.pays")
+    // Étiquette ISO3 à gauche de la barre
+    svg.selectAll<SVGTextElement,any>("text.iso")
       .data(data).enter().append("text")
-      .attr("x",  M.left-6)
+      .attr("x",  M.left-4)
       .attr("y",  (d:any)=>y(d.pays)! + y.bandwidth()/2)
       .attr("dy", "0.35em")
       .attr("text-anchor","end")
-      .attr("font-size", mini ? 8 : 11)
+      .attr("font-size", mini ? 7 : 11)
+      .attr("font-weight","600")
       .attr("fill","#374151")
-      .text((d:any)=>{
-        const name = d.pays as string;
-        return mini && name.length>12 ? name.slice(0,11)+"…" : name;
-      });
+      .text(label);
 
-  }, [donnees, annee, ind, dir, mini]);
+  }, [donnees, mini]);
 
   useEffect(()=>{ draw(); },[draw]);
   useEffect(()=>{
@@ -1379,31 +1372,9 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
     return ()=>obs.disconnect();
   },[draw]);
 
-  const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
-
-  const Pill = ({ label, active, onClick }: { label:string; active:boolean; onClick:()=>void }) => (
-    <button onClick={onClick} style={{ padding:"4px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize:11, fontWeight:600, background:active?"#004f91":"#F2F0EF", color:active?"#fff":"#9aa5b4", transition:"all 0.15s" }}>{label}</button>
-  );
-
   return (
-    <div>
-      {!mini && (
-        <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" as const, alignItems:"center" }}>
-          <select value={annee??annees[0]} onChange={e=>setAnnee(Number(e.target.value))}
-            style={{ fontSize:11, padding:"3px 8px", borderRadius:6, border:"1px solid #E8E5E3", background:"#F8F7F6", color:"#1a1a2e", cursor:"pointer", outline:"none" }}>
-            {annees.map(a=><option key={a} value={a}>{a}</option>)}
-          </select>
-          <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
-          <Pill label="Flux"    active={ind==="flux"}    onClick={()=>setInd("flux")}/>
-          <Pill label="Stock"   active={ind==="stock"}   onClick={()=>setInd("stock")}/>
-          <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
-          <Pill label="Entrant" active={dir==="entrant"} onClick={()=>setDir("entrant")}/>
-          <Pill label="Sortant" active={dir==="sortant"} onClick={()=>setDir("sortant")}/>
-        </div>
-      )}
-      <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
-        <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
-      </div>
+    <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
+      <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
       {donnees.length===0&&!mini&&<p style={{ textAlign:"center" as const, color:"#9aa5b4", fontSize:12, marginTop:16 }}>Chargement…</p>}
     </div>
   );
@@ -1726,18 +1697,11 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
           </div>
 
           {modeDetail && (
-            <div style={{ marginTop:28 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
-                <div style={{ height:2, flex:1, background:"linear-gradient(90deg,#004f91,transparent)" }}/>
-                <span style={{ fontSize:11, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Détail par pays — {grpAvecCouleur[0]?.label}</span>
-                <div style={{ height:2, flex:1, background:"linear-gradient(90deg,transparent,#004f91)" }}/>
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-                <GrapheCard titre="Classement pays — Top 10" sous_titre="M$ USD · année et indicateur sélectionnables" grapheId="hbar"
-                  fullChildren={<HBarChart donnees={donneesDetail}/>}>
-                  <HBarChart donnees={donneesDetail} mini/>
-                </GrapheCard>
-              </div>
+            <div style={{ marginTop:28, display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+              <GrapheCard titre="Classement pays — Top 10" sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
+                fullChildren={<HBarChart donnees={donneesDetail}/>}>
+                <HBarChart donnees={donneesDetail} mini/>
+              </GrapheCard>
             </div>
           )}
           </>

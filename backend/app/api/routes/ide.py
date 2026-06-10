@@ -5,7 +5,7 @@ from sqlalchemy import select, distinct
 
 from app.core.database import get_db
 from app.models.ide import IdeCnuced, IdeAnalyse, IdeKpiConfig
-from app.models.shared import IdeCnucedMonde, RefGroupement
+from app.models.shared import IdeCnucedMonde, RefGroupement, RefPays
 
 router = APIRouter(prefix="/ide", tags=["IDE"])
 
@@ -125,10 +125,20 @@ async def get_monde_details(
     q = q.order_by(IdeCnuced.pays, IdeCnuced.annee)
 
     res = await db.execute(q)
+    rows = res.scalars().all()
+
+    # Enrichir avec code_iso3
+    ref_ids = list({r.ref_pays_id for r in rows if r.ref_pays_id})
+    pays_map: dict = {}
+    if ref_ids:
+        rp_res = await db.execute(select(RefPays).where(RefPays.id.in_(ref_ids)))
+        pays_map = {p.id: p for p in rp_res.scalars().all()}
+
     def f(v): return float(v) if v is not None else None
-    return [{"pays": r.pays, "ref_pays_id": r.ref_pays_id, "annee": r.annee,
-             "indicateur": r.indicateur, "direction": r.direction, "valeur": f(r.valeur)}
-            for r in res.scalars().all()]
+    return [{"pays": r.pays, "ref_pays_id": r.ref_pays_id,
+             "code_iso3": pays_map.get(r.ref_pays_id, None) and pays_map[r.ref_pays_id].code_iso3,
+             "annee": r.annee, "indicateur": r.indicateur, "direction": r.direction, "valeur": f(r.valeur)}
+            for r in rows]
 
 
 # ── GET /ide/monde ─────────────────────────────────────────────────────────────
