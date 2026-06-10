@@ -1879,11 +1879,11 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
 
           {modeDetail && (
             <div style={{ marginTop:28, display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-              <GrapheCard titre="Flux entrant — Top 10 (groupement sélectionné)" sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
+              <GrapheCard titre={`Flux entrant — Top 10 · ${grpAvecCouleur[0]?.nom ?? ''}`} sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
                 <HBarChart donnees={donneesDetail} mini/>
               </GrapheCard>
-              <GrapheCard titre="Ent. vs Sort. — Top 10 (groupement sélectionné)" sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar"
+              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.nom ?? ''}`} sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar"
                 fullChildren={<DivergingBars donnees={donneesDetail}/>}>
                 <DivergingBars donnees={donneesDetail} mini/>
               </GrapheCard>
