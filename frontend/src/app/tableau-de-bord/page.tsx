@@ -414,8 +414,7 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
                     {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
                   <div onClick={()=>onToggleCard(viz)} style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?600:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
-                    {viz.params?.length?<span style={{ fontSize:10, color:"#9aa5b4" }}>⚙ Paramétrable</span>:null}
+                    <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?500:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
                   </div>
                 </label>
               );
@@ -442,8 +441,7 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
                     {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
                   <div onClick={()=>onToggleTable(t.id)} style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?600:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
-                    <p style={{ fontSize:10, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.description}</p>
+                    <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?500:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
                   </div>
                 </label>
               );
