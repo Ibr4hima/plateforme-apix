@@ -302,15 +302,14 @@ function TableCard({ card, onRemove }: {
 function KPICard({ kpiId, value }: { kpiId:string; value:any }) {
   const def=KPIS_DISPONIBLES.find(k=>k.id===kpiId);
   if(!def) return null;
-  const Icon=ICON_MAP[def.icon]||Activity;
   const displayValue=kpiId==="intentions_usd"?`${(Number(value)/1_000_000||0).toFixed(1)} M$`:Number(value||0).toLocaleString("fr-FR");
   return (
-    <div style={{background:"#fff",borderRadius:16,padding:"20px 22px",border:"1px solid #E8E5E3",boxShadow:"0 1px 6px rgba(0,0,0,0.05)",flex:1,minWidth:140}}>
-      <div style={{width:36,height:36,borderRadius:10,background:`${def.color}12`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14}}>
-        <Icon size={16} style={{color:def.color}}/>
-      </div>
-      <div style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e",lineHeight:1,marginBottom:5}}>{displayValue}</div>
-      <div style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>{def.label}</div>
+    <div
+      style={{background:"#fff",borderRadius:12,padding:"13px 14px",border:"1px solid #E8E5E3",borderLeft:`3px solid ${def.color}`,cursor:"default",transition:"all 0.15s"}}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)";}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";}}>
+      <p style={{fontSize:9,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.07em",marginBottom:6,lineHeight:1.4}}>{def.label}</p>
+      <p style={{fontSize:"1.1rem",fontWeight:800,color:def.color,lineHeight:1}}>{displayValue}</p>
     </div>
   );
 }
@@ -484,11 +483,15 @@ export default function TableauDeBordPage() {
         <Sidebar config={config} onAddCard={addCard} onAddTable={addTable} onToggleKPI={toggleKPI}/>
         <main style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
           {/* KPIs */}
-          {config.kpisActifs.length>0&&(
-            <div style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap"}}>
-              {config.kpisActifs.map(id=><KPICard key={id} kpiId={id} value={kpis[id]}/>)}
-            </div>
-          )}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:24}}>
+            {config.kpisActifs.map(id=><KPICard key={id} kpiId={id} value={kpis[id]}/>)}
+            {Array.from({length:Math.max(0,5-config.kpisActifs.length)}).map((_,i)=>(
+              <div key={`empty-${i}`} style={{background:"#fff",borderRadius:12,padding:"13px 14px",border:"1.5px dashed #E8E5E3",display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:4,minHeight:72}}>
+                <span style={{fontSize:20,color:"#C5BFBB",lineHeight:1}}>+</span>
+                <span style={{fontSize:10,color:"#C5BFBB",textAlign:"center" as const,lineHeight:1.5}}>Choisir dans<br/>le filtre</span>
+              </div>
+            ))}
+          </div>
           {/* Grille */}
           {totalItems===0?(
             <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"80px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
