@@ -1293,6 +1293,9 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
 function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
   const svgRef  = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const [annee, setAnnee] = useState<number|null>(null);
+  const [ind,   setInd]   = useState("flux");
+  const [dir,   setDir]   = useState("entrant");
 
   const draw = useCallback(() => {
     if (!svgRef.current || !wrapRef.current) return;
@@ -1300,12 +1303,14 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
     d3.select(el).selectAll("*").remove();
     if (!donnees.length) return;
 
-    // Toujours flux entrant, dernière année disponible
+    const curInd = mini ? "flux"    : ind;
+    const curDir = mini ? "entrant" : dir;
+
     const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
-    const curAnnee = annees[0];
+    const curAnnee = mini ? annees[0] : (annee ?? annees[0]);
 
     const data = donnees
-      .filter((d:any)=>d.annee===curAnnee && d.indicateur==="flux" && d.direction==="entrant" && d.valeur!==null)
+      .filter((d:any)=>d.annee===curAnnee && d.indicateur===curInd && d.direction===curDir && d.valeur!==null)
       .sort((a:any,b:any)=>b.valeur-a.valeur)
       .slice(0, 10);
 
@@ -1362,7 +1367,7 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
       .attr("fill","#374151")
       .text(label);
 
-  }, [donnees, mini]);
+  }, [donnees, annee, ind, dir, mini]);
 
   useEffect(()=>{ draw(); },[draw]);
   useEffect(()=>{
@@ -1372,9 +1377,31 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
     return ()=>obs.disconnect();
   },[draw]);
 
+  const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
+
+  const Pill = ({ label, active, onClick }: { label:string; active:boolean; onClick:()=>void }) => (
+    <button onClick={onClick} style={{ padding:"4px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize:11, fontWeight:600, background:active?"#004f91":"#F2F0EF", color:active?"#fff":"#9aa5b4", transition:"all 0.15s" }}>{label}</button>
+  );
+
   return (
-    <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
-      <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
+    <div>
+      {!mini && (
+        <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" as const, alignItems:"center" }}>
+          <select value={annee??annees[0]} onChange={e=>setAnnee(Number(e.target.value))}
+            style={{ fontSize:11, padding:"3px 8px", borderRadius:6, border:"1px solid #E8E5E3", background:"#F8F7F6", color:"#1a1a2e", cursor:"pointer", outline:"none" }}>
+            {annees.map(a=><option key={a} value={a}>{a}</option>)}
+          </select>
+          <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
+          <Pill label="Flux"    active={ind==="flux"}    onClick={()=>setInd("flux")}/>
+          <Pill label="Stock"   active={ind==="stock"}   onClick={()=>setInd("stock")}/>
+          <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
+          <Pill label="Entrant" active={dir==="entrant"} onClick={()=>setDir("entrant")}/>
+          <Pill label="Sortant" active={dir==="sortant"} onClick={()=>setDir("sortant")}/>
+        </div>
+      )}
+      <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
+        <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
+      </div>
       {donnees.length===0&&!mini&&<p style={{ textAlign:"center" as const, color:"#9aa5b4", fontSize:12, marginTop:16 }}>Chargement…</p>}
     </div>
   );
