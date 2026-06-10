@@ -1477,30 +1477,37 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
 
     const maxVal = d3.max(data,(d:any)=>d.valeur) as number;
-    const x = d3.scaleLinear().domain([0, maxVal*1.02]).range([M.left, W-M.right]);
+    // Échelle sqrt : réduit l'effet des outliers sans couper les données
+    const x = d3.scalePow().exponent(0.5).domain([0, maxVal]).range([M.left, W-M.right]);
     const y = d3.scaleBand().domain(data.map((d:any)=>d.pays)).range([M.top, H-M.bottom]).padding(0.22);
+
+    const fmtLabel = (v:number) => Math.abs(v)>=1000 ? `${(v/1000).toFixed(1)} Md$` : `${Math.round(v)} M$`;
+    const minLabelInside = mini ? 40 : 80; // px minimum pour afficher label à l'intérieur
 
     // Barres
     svg.selectAll<SVGRectElement,any>("rect.bar")
       .data(data).enter().append("rect")
       .attr("x",     M.left)
       .attr("y",     (d:any)=>y(d.pays)!)
-      .attr("width", (d:any)=>Math.max(0, x(d.valeur)-M.left))
+      .attr("width", (d:any)=>Math.max(2, x(d.valeur)-M.left))
       .attr("height",y.bandwidth())
       .attr("fill",  COMP_PALETTE[0])
       .attr("rx", 3);
 
-    // Labels valeur à l'intérieur des barres (blanc, aligné à droite)
+    // Labels valeur : intérieur si assez large, extérieur sinon
     svg.selectAll<SVGTextElement,any>("text.val")
       .data(data).enter().append("text")
-      .attr("x",  (d:any)=>x(d.valeur)-5)
+      .attr("x",  (d:any)=>{
+        const barW = x(d.valeur)-M.left;
+        return barW >= minLabelInside ? x(d.valeur)-5 : x(d.valeur)+5;
+      })
       .attr("y",  (d:any)=>y(d.pays)! + y.bandwidth()/2)
       .attr("dy", "0.35em")
-      .attr("text-anchor","end")
+      .attr("text-anchor",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"end":"start")
       .attr("font-size", mini ? 8 : 11)
       .attr("font-weight","600")
-      .attr("fill","white")
-      .text((d:any)=>Math.abs(d.valeur)>=1000 ? `${(d.valeur/1000).toFixed(1)} Md$` : `${Math.round(d.valeur)} M$`);
+      .attr("fill",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"white":COMP_PALETTE[0])
+      .text((d:any)=>fmtLabel(d.valeur));
 
     // Noms pays (axe Y)
     svg.selectAll<SVGTextElement,any>("text.pays")
@@ -1515,17 +1522,6 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
         const name = d.pays as string;
         return mini && name.length>12 ? name.slice(0,11)+"…" : name;
       });
-
-    // Rang (numéro) en tête de barre
-    if (!mini) {
-      svg.selectAll<SVGTextElement,any>("text.rank")
-        .data(data).enter().append("text")
-        .attr("x",  M.left+6)
-        .attr("y",  (d:any,i)=>y(d.pays)! + y.bandwidth()/2)
-        .attr("dy", "0.35em")
-        .attr("font-size",9).attr("fill","rgba(255,255,255,0.7)").attr("font-weight","700")
-        .text((_:any,i:number)=>`#${i+1}`);
-    }
 
   }, [donnees, annee, ind, dir, mini]);
 
