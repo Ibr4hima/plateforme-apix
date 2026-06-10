@@ -315,10 +315,10 @@ function KPICard({ kpiId, value }: { kpiId:string; value:any }) {
 }
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
+function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
   sidebarOpen, setSidebarOpen, sidebarWidth, setSidebarWidth, onglet }: {
-  config: DashConfig; onAddCard:(viz:Visualisation)=>void;
-  onAddTable:(tableId:string)=>void; onToggleKPI:(id:string)=>void;
+  config: DashConfig; onToggleCard:(viz:Visualisation)=>void;
+  onToggleTable:(tableId:string)=>void; onToggleKPI:(id:string)=>void;
   onReset:()=>void;
   sidebarOpen: boolean; setSidebarOpen:(v:boolean)=>void;
   sidebarWidth: number; setSidebarWidth:(v:number)=>void;
@@ -406,16 +406,20 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
             {config.cards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.cards.length}</span>}
           </div>
           <div>
-            {filtered.map(viz=>(
-              <button key={viz.id} className="sb-item" onClick={()=>onAddCard(viz)}
-                style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"5px 8px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderRadius:7 }}>
-                <div style={{ width:6, height:6, borderRadius:"50%", background:"#C5BFBB", flexShrink:0 }}/>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <p style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
-                  {viz.params?.length?<span style={{ fontSize:10, color:"#9aa5b4" }}>⚙ Paramétrable</span>:null}
-                </div>
-              </button>
-            ))}
+            {filtered.map(viz=>{
+              const active = config.cards.some(c=>c.vizId===viz.id);
+              return (
+                <label key={viz.id} className="sb-item" style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, cursor:"pointer" }}>
+                  <div onClick={()=>onToggleCard(viz)} style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
+                    {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
+                  <div onClick={()=>onToggleCard(viz)} style={{ flex:1, minWidth:0 }}>
+                    <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?600:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
+                    {viz.params?.length?<span style={{ fontSize:10, color:"#9aa5b4" }}>⚙ Paramétrable</span>:null}
+                  </div>
+                </label>
+              );
+            })}
           </div>
         </div>
         <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
@@ -430,16 +434,20 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
             {config.tableCards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.tableCards.length}</span>}
           </div>
           <div>
-            {filteredTables.map(t=>(
-              <button key={t.id} className="sb-item" onClick={()=>onAddTable(t.id)}
-                style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"5px 8px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderRadius:7 }}>
-                <div style={{ width:6, height:6, borderRadius:"50%", background:"#C5BFBB", flexShrink:0 }}/>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <p style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
-                  <p style={{ fontSize:10, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.description}</p>
-                </div>
-              </button>
-            ))}
+            {filteredTables.map(t=>{
+              const active = config.tableCards.some(c=>c.tableId===t.id);
+              return (
+                <label key={t.id} className="sb-item" style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, cursor:"pointer" }}>
+                  <div onClick={()=>onToggleTable(t.id)} style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
+                    {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
+                  <div onClick={()=>onToggleTable(t.id)} style={{ flex:1, minWidth:0 }}>
+                    <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?600:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
+                    <p style={{ fontSize:10, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.description}</p>
+                  </div>
+                </label>
+              );
+            })}
           </div>
         </div>}
 
@@ -460,14 +468,22 @@ export default function TableauDeBordPage() {
   useEffect(() => { fetch(`${API}/dashboard/stats`).then(r=>r.json()).then(setKpis).catch(()=>{}); }, []);
   useEffect(() => { if(hydrated) saveConfig(config); }, [config, hydrated]);
 
-  const addCard=useCallback((viz:Visualisation)=>{
-    const c:CardConfig={id:`${viz.id}_${Date.now()}`,vizId:viz.id,params:{},chartType:"auto",size:viz.defaultSize,col:0};
-    setConfig(prev=>({...prev,cards:[...prev.cards,c]}));
+  const toggleCard=useCallback((viz:Visualisation)=>{
+    setConfig(prev=>{
+      const existing=prev.cards.find(c=>c.vizId===viz.id);
+      if(existing) return {...prev,cards:prev.cards.filter(c=>c.id!==existing.id)};
+      const c:CardConfig={id:`${viz.id}_${Date.now()}`,vizId:viz.id,params:{},chartType:"auto",size:viz.defaultSize,col:0};
+      return {...prev,cards:[...prev.cards,c]};
+    });
   },[]);
 
-  const addTable=useCallback((tableId:string)=>{
-    const c:TableCardConfig={id:`table_${tableId}_${Date.now()}`,tableId,size:"md"};
-    setConfig(prev=>({...prev,tableCards:[...prev.tableCards,c]}));
+  const toggleTable=useCallback((tableId:string)=>{
+    setConfig(prev=>{
+      const existing=prev.tableCards.find(c=>c.tableId===tableId);
+      if(existing) return {...prev,tableCards:prev.tableCards.filter(c=>c.id!==existing.id)};
+      const c:TableCardConfig={id:`table_${tableId}_${Date.now()}`,tableId,size:"md"};
+      return {...prev,tableCards:[...prev.tableCards,c]};
+    });
   },[]);
 
   const removeCard=useCallback((id:string)=>setConfig(p=>({...p,cards:p.cards.filter(c=>c.id!==id)})),[]);
@@ -522,7 +538,7 @@ export default function TableauDeBordPage() {
 
       {/* ── Contenu ──────────────────────────────────────────────────────────── */}
       <div style={{display:"flex",alignItems:"flex-start"}}>
-        <Sidebar config={config} onAddCard={addCard} onAddTable={addTable} onToggleKPI={toggleKPI}
+        <Sidebar config={config} onToggleCard={toggleCard} onToggleTable={toggleTable} onToggleKPI={toggleKPI}
           onReset={resetConfig}
           sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
           sidebarWidth={sidebarWidth} setSidebarWidth={setSidebarWidth}
