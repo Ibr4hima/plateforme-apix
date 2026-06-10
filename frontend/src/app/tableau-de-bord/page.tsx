@@ -329,7 +329,7 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI }: {
   const catColors: Record<string,string>={entreprises:"#ca631f",zones:"#004f91",croisements:"#7c3aed",accords:"#059669",evenements:"#d97706",intentions:"#0891b2",prospects:"#E35336"};
 
   return (
-    <aside style={{width:280,flexShrink:0,background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 72px)",overflowY:"auto",position:"sticky" as const,top:72,display:"flex",flexDirection:"column" as const}}>
+    <aside style={{width:280,flexShrink:0,background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 122px)",overflowY:"auto",position:"sticky" as const,top:122,display:"flex",flexDirection:"column" as const}}>
       <style>{`::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#E8E5E3;border-radius:4px}.sb-item:hover{background:#F8F7F6!important}`}</style>
       <div style={{padding:"14px 16px 12px",borderBottom:"1px solid #F2F0EF",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Personnaliser</span>
@@ -462,11 +462,14 @@ export default function TableauDeBordPage() {
   }),[]);
 
   const totalItems=config.cards.length+config.tableCards.length;
+  const [onglet, setOnglet] = useState<"viz"|"tables">("viz");
 
   return (
     <div style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <Navbar/>
+
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section style={{background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}>
         <div style={{maxWidth:1400,margin:"0 auto",padding:"100px 40px 32px"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:16}}>
@@ -479,11 +482,28 @@ export default function TableauDeBordPage() {
         </div>
       </section>
 
+      {/* ── Onglets ──────────────────────────────────────────────────────────── */}
+      <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:72,zIndex:10,flexShrink:0}}>
+        <div style={{padding:"0 0 0 280px",display:"flex",alignItems:"center"}}>
+          {([
+            {v:"viz",    l:"Visualisation de données"},
+            {v:"tables", l:"Tableaux analytiques"},
+          ] as const).map(o=>(
+            <button key={o.v} onClick={()=>setOnglet(o.v)}
+              style={{padding:"16px 22px",border:"none",borderBottom:`2px solid ${onglet===o.v?"#ca631f":"transparent"}`,background:"transparent",fontSize:13,fontWeight:600,color:onglet===o.v?"#ca631f":"#9aa5b4",cursor:"pointer",transition:"all 0.15s",fontFamily:"var(--font-google-sans)"}}>
+              {o.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Contenu ──────────────────────────────────────────────────────────── */}
       <div style={{display:"flex",alignItems:"flex-start"}}>
         <Sidebar config={config} onAddCard={addCard} onAddTable={addTable} onToggleKPI={toggleKPI}/>
         <main style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
-          {/* KPIs */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:24}}>
+
+          {/* KPIs — toujours visibles */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
             {config.kpisActifs.map(id=><KPICard key={id} kpiId={id} value={kpis[id]}/>)}
             {Array.from({length:Math.max(0,5-config.kpisActifs.length)}).map((_,i)=>(
               <div key={`empty-${i}`} style={{background:"#fff",borderRadius:12,padding:"13px 14px",border:"1.5px dashed #E8E5E3",display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:4,minHeight:72}}>
@@ -492,25 +512,43 @@ export default function TableauDeBordPage() {
               </div>
             ))}
           </div>
-          {/* Grille */}
-          {totalItems===0?(
-            <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"80px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
-              <BarChart2 size={48} style={{color:"#E8E5E3",marginBottom:16}}/>
-              <p style={{fontSize:16,fontWeight:700,color:"#4a5568",marginBottom:8}}>Tableau de bord vide</p>
-              <p style={{fontSize:13,color:"#9aa5b4",maxWidth:360}}>Utilisez la barre latérale pour ajouter des KPIs, des visualisations et des tableaux analytiques.</p>
-            </div>
-          ):(
-            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,alignItems:"start"}}>
-              {config.cards.map(card=>{
-                const viz=CATALOGUE.find(v=>v.id===card.vizId);
-                if(!viz) return null;
-                return <VizCard key={card.id} card={card} viz={viz} onRemove={()=>removeCard(card.id)} onChangeType={t=>updateCard(card.id,{chartType:t})} onChangeSize={s=>updateCard(card.id,{size:s})} onChangeParams={p=>updateCard(card.id,{params:p})}/>;
-              })}
-              {config.tableCards.map(card=>(
-                <TableCard key={card.id} card={card} onRemove={()=>removeTable(card.id)}/>
-              ))}
-            </div>
+
+          {/* ── Onglet Visualisation de données ────────────────────────────── */}
+          {onglet==="viz" && (
+            config.cards.length===0?(
+              <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"80px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+                <BarChart2 size={48} style={{color:"#E8E5E3",marginBottom:16}}/>
+                <p style={{fontSize:16,fontWeight:700,color:"#4a5568",marginBottom:8}}>Aucune visualisation</p>
+                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:360}}>Utilisez la barre latérale pour ajouter des graphiques et visualisations.</p>
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,alignItems:"start"}}>
+                {config.cards.map(card=>{
+                  const viz=CATALOGUE.find(v=>v.id===card.vizId);
+                  if(!viz) return null;
+                  return <VizCard key={card.id} card={card} viz={viz} onRemove={()=>removeCard(card.id)} onChangeType={t=>updateCard(card.id,{chartType:t})} onChangeSize={s=>updateCard(card.id,{size:s})} onChangeParams={p=>updateCard(card.id,{params:p})}/>;
+                })}
+              </div>
+            )
           )}
+
+          {/* ── Onglet Tableaux analytiques ─────────────────────────────────── */}
+          {onglet==="tables" && (
+            config.tableCards.length===0?(
+              <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"80px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+                <Table2 size={48} style={{color:"#E8E5E3",marginBottom:16}}/>
+                <p style={{fontSize:16,fontWeight:700,color:"#4a5568",marginBottom:8}}>Aucun tableau</p>
+                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:360}}>Utilisez la barre latérale pour ajouter des tableaux analytiques.</p>
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"1fr",gap:18}}>
+                {config.tableCards.map(card=>(
+                  <TableCard key={card.id} card={card} onRemove={()=>removeTable(card.id)}/>
+                ))}
+              </div>
+            )
+          )}
+
         </main>
       </div>
     </div>
