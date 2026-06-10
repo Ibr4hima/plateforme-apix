@@ -26,7 +26,7 @@ class RefPays(Base):
 class RefGroupement(Base):
     __tablename__ = "ref_groupements"
     id          = Column(Integer, primary_key=True)
-    code        = Column(String(20), unique=True, nullable=False)
+    code        = Column(String(50), unique=True, nullable=False)
     nom_fr      = Column(String(200), nullable=False)
     nom_en      = Column(String(200))
     description = Column(Text)
@@ -43,7 +43,7 @@ class RefPaysGroupement(Base):
 class IdeCnucedMonde(Base):
     __tablename__ = "ide_cnuced_monde"
     id         = Column(Integer, primary_key=True)
-    code       = Column(String(20), nullable=False)
+    code       = Column(String(50), nullable=False)
     nom_fr     = Column(String(200), nullable=False)
     annee      = Column(SmallInteger, nullable=False)
     indicateur = Column(String(10), nullable=False)
