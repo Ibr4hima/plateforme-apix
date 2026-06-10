@@ -93,11 +93,12 @@ def calc_kpis(rows: list) -> dict:
 @router.get("/monde/groupements")
 async def liste_monde_groupements(db: AsyncSession = Depends(get_db)):
     res = await db.execute(
-        select(IdeCnucedMonde.code, IdeCnucedMonde.nom_fr)
+        select(IdeCnucedMonde.code, IdeCnucedMonde.nom_fr, IdeCnucedMonde.categorie)
         .distinct()
-        .order_by(IdeCnucedMonde.code)
+        .order_by(IdeCnucedMonde.categorie, IdeCnucedMonde.nom_fr)
     )
-    return [{"code": code, "nom_fr": nom_fr} for code, nom_fr in res.all()]
+    return [{"code": code, "nom_fr": nom_fr, "categorie": categorie}
+            for code, nom_fr, categorie in res.all()]
 
 
 # ── GET /ide/monde ─────────────────────────────────────────────────────────────
@@ -122,9 +123,10 @@ async def get_monde(
     q = q.order_by(IdeCnucedMonde.code, IdeCnucedMonde.annee)
     res = await db.execute(q)
     def f(v): return float(v) if v is not None else None
-    return [{"code":r.code,"nom_fr":r.nom_fr,"annee":r.annee,"indicateur":r.indicateur,
-             "direction":r.direction,"moyenne":f(r.moyenne),"somme":f(r.somme),
-             "min":f(r.min),"max":f(r.max),"variance":f(r.variance),"ecart_type":f(r.ecart_type)}
+    return [{"code":r.code,"nom_fr":r.nom_fr,"categorie":r.categorie,"annee":r.annee,
+             "indicateur":r.indicateur,"direction":r.direction,"moyenne":f(r.moyenne),
+             "somme":f(r.somme),"min":f(r.min),"max":f(r.max),
+             "variance":f(r.variance),"ecart_type":f(r.ecart_type)}
             for r in res.scalars().all()]
 
 

@@ -48,6 +48,7 @@ class IdeCnucedMonde(Base):
     annee      = Column(SmallInteger, nullable=False)
     indicateur = Column(String(10), nullable=False)
     direction  = Column(String(10), nullable=False)
+    categorie  = Column(String(100))
     moyenne    = Column(Numeric(16, 4))
     somme      = Column(Numeric(20, 4))
     min        = Column(Numeric(16, 4))
