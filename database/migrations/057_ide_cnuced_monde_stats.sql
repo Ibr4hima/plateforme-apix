@@ -16,6 +16,7 @@ CREATE TABLE ide_cnuced_monde (
     indicateur VARCHAR(10)   NOT NULL,  -- 'flux' | 'stock'
     direction  VARCHAR(10)   NOT NULL,  -- 'entrant' | 'sortant'
     moyenne    NUMERIC(16,4),
+    somme      NUMERIC(20,4),
     min        NUMERIC(16,4),
     max        NUMERIC(16,4),
     variance   NUMERIC(22,4),
@@ -26,7 +27,7 @@ CREATE TABLE ide_cnuced_monde (
 COMMENT ON TABLE ide_cnuced_monde IS 'Stats IDE pré-agrégées par groupement/zone (source : ide_cnuced × ref_groupements)';
 
 -- 3. Peupler depuis ref_groupements × ide_cnuced
-INSERT INTO ide_cnuced_monde (code, nom_fr, annee, indicateur, direction, moyenne, min, max, variance, ecart_type)
+INSERT INTO ide_cnuced_monde (code, nom_fr, annee, indicateur, direction, moyenne, somme, min, max, variance, ecart_type)
 SELECT
     g.code,
     g.nom_fr,
@@ -34,6 +35,7 @@ SELECT
     c.indicateur,
     c.direction,
     AVG(c.valeur)         AS moyenne,
+    SUM(c.valeur)         AS somme,
     MIN(c.valeur)         AS min,
     MAX(c.valeur)         AS max,
     VAR_POP(c.valeur)     AS variance,

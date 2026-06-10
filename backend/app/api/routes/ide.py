@@ -123,8 +123,8 @@ async def get_monde(
     res = await db.execute(q)
     def f(v): return float(v) if v is not None else None
     return [{"code":r.code,"nom_fr":r.nom_fr,"annee":r.annee,"indicateur":r.indicateur,
-             "direction":r.direction,"moyenne":f(r.moyenne),"min":f(r.min),"max":f(r.max),
-             "variance":f(r.variance),"ecart_type":f(r.ecart_type)}
+             "direction":r.direction,"moyenne":f(r.moyenne),"somme":f(r.somme),
+             "min":f(r.min),"max":f(r.max),"variance":f(r.variance),"ecart_type":f(r.ecart_type)}
             for r in res.scalars().all()]
 
 

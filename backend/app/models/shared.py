@@ -49,6 +49,7 @@ class IdeCnucedMonde(Base):
     indicateur = Column(String(10), nullable=False)
     direction  = Column(String(10), nullable=False)
     moyenne    = Column(Numeric(16, 4))
+    somme      = Column(Numeric(20, 4))
     min        = Column(Numeric(16, 4))
     max        = Column(Numeric(16, 4))
     variance   = Column(Numeric(22, 4))
