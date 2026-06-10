@@ -316,12 +316,13 @@ function KPICard({ kpiId, value }: { kpiId:string; value:any }) {
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
-  sidebarOpen, setSidebarOpen, sidebarWidth, setSidebarWidth }: {
+  sidebarOpen, setSidebarOpen, sidebarWidth, setSidebarWidth, onglet }: {
   config: DashConfig; onAddCard:(viz:Visualisation)=>void;
   onAddTable:(tableId:string)=>void; onToggleKPI:(id:string)=>void;
   onReset:()=>void;
   sidebarOpen: boolean; setSidebarOpen:(v:boolean)=>void;
   sidebarWidth: number; setSidebarWidth:(v:number)=>void;
+  onglet: "viz"|"tables";
 }) {
   const [openSections,setOpenSections] = useState<Record<string,boolean>>({kpis:true,viz:true,tables:true});
   const [openCats,setOpenCats]         = useState<Record<string,boolean>>({entreprises:true});
@@ -377,12 +378,13 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
         </div>
         <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
 
-        {/* KPIs */}
+        {/* KPIs — onglet viz uniquement */}
+        {onglet==="viz"&&<>
         <div style={{ marginBottom:18 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               {config.kpisActifs.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:config.kpisActifs.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>KPIs</span>
+              <span style={{ fontSize:11, fontWeight:700, color:config.kpisActifs.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
               {config.kpisActifs.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.kpisActifs.length}/5</span>}
             </div>
             <button onClick={()=>toggle("kpis")} style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:"#9aa5b4" }}>
@@ -414,7 +416,7 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               {config.cards.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:config.cards.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Visualisations</span>
+              <span style={{ fontSize:11, fontWeight:700, color:config.cards.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Visualisation de données</span>
               {config.cards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.cards.length}</span>}
             </div>
             <button onClick={()=>toggle("viz")} style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:"#9aa5b4" }}>
@@ -452,8 +454,10 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
           )}
         </div>
         <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+        </>}
 
-        {/* Tableaux analytiques */}
+        {/* Tableaux analytiques — onglet tables uniquement */}
+        {onglet==="tables"&&
         <div>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
@@ -479,7 +483,7 @@ function Sidebar({ config, onAddCard, onAddTable, onToggleKPI, onReset,
               ))}
             </div>
           )}
-        </div>
+        </div>}
 
       </div>}
     </aside>
@@ -561,7 +565,8 @@ export default function TableauDeBordPage() {
         <Sidebar config={config} onAddCard={addCard} onAddTable={addTable} onToggleKPI={toggleKPI}
           onReset={resetConfig}
           sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
-          sidebarWidth={sidebarWidth} setSidebarWidth={setSidebarWidth}/>
+          sidebarWidth={sidebarWidth} setSidebarWidth={setSidebarWidth}
+          onglet={onglet}/>
         <main style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
 
           {/* KPIs — toujours visibles */}
