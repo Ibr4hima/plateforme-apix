@@ -333,6 +333,13 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
               Voir tout ({sorted.length.toLocaleString("fr-FR")})
             </button>
           )}
+          {rowsLimit === "Tout" && (
+            <button onClick={() => setRowsLimit(7)}
+              style={{ fontSize: 11, fontWeight: 600, color: "#64748b",
+                background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+              Réduire
+            </button>
+          )}
         </div>
       )}
     </div>
