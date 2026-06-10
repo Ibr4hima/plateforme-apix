@@ -1318,9 +1318,10 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
 
     const W    = wrapRef.current.clientWidth || 600;
     const rowH = mini ? 18 : 46;
+    const longestName = mini ? 3 : Math.max(...data.map((d:any)=>(d.pays as string).length));
     const M    = mini
       ? { top:4, right:12, bottom:4, left:34 }
-      : { top:10, right:90, bottom:10, left:46 };
+      : { top:10, right:90, bottom:10, left: Math.max(80, longestName * 7 + 12) };
     const H    = data.length * rowH + M.top + M.bottom;
 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
