@@ -1410,18 +1410,12 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
   );
 }
 
-// ── Couleurs et constante partagées entre les graphes détail ──────────────────
-const TOP_N = 10;
-const C10 = ["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f",
-             "#edc948","#b07aa1","#ff9da7","#9c755f","#bab0ac"];
-
-// ── Treemap composition ───────────────────────────────────────────────────────
-function TreemapPays({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
+// ── Vertical bar chart — Flux net / Stock net ─────────────────────────────────
+function VBarChartNet({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
   const svgRef  = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [annee, setAnnee] = useState<number|null>(null);
   const [ind,   setInd]   = useState("flux");
-  const [dir,   setDir]   = useState("entrant");
 
   const draw = useCallback(() => {
     if (!svgRef.current || !wrapRef.current) return;
@@ -1429,49 +1423,90 @@ function TreemapPays({ donnees, mini=false }: { donnees: any[]; mini?: boolean }
     d3.select(el).selectAll("*").remove();
     if (!donnees.length) return;
 
-    const curInd = mini ? "flux"    : ind;
-    const curDir = mini ? "entrant" : dir;
+    const curInd = mini ? "flux" : ind;
     const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
     const curAnnee = mini ? annees[0] : (annee ?? annees[0]);
 
-    const data = donnees
-      .filter((d:any)=>d.annee===curAnnee&&d.indicateur===curInd&&d.direction===curDir&&d.valeur!=null&&d.valeur>0)
-      .sort((a:any,b:any)=>b.valeur-a.valeur).slice(0, TOP_N);
+    type Row = { pays: string; iso3: string|null; net: number };
+    const paysList = [...new Set(donnees.map((d:any)=>d.pays as string))];
+    const allNet: Row[] = paysList.map(pays => {
+      const ent = donnees.find((d:any)=>d.pays===pays&&d.annee===curAnnee&&d.indicateur===curInd&&d.direction==="entrant");
+      const sor = donnees.find((d:any)=>d.pays===pays&&d.annee===curAnnee&&d.indicateur===curInd&&d.direction==="sortant");
+      return { pays, iso3: ent?.code_iso3??sor?.code_iso3??null, net:(ent?.valeur??0)-(sor?.valeur??0) };
+    }).filter(d=>d.net!==0);
+
+    const data = allNet.sort((a,b)=>Math.abs(b.net)-Math.abs(a.net))
+      .slice(0, mini ? 8 : 10)
+      .sort((a,b)=>b.net-a.net);
+
     if (!data.length) return;
 
-    const W = wrapRef.current.clientWidth || 400;
-    const H = mini ? 120 : 300;
-    const colorMap = new Map(data.map((d:any,i:number)=>[d.pays, C10[i%C10.length]]));
+    const W  = wrapRef.current.clientWidth || 500;
+    const H  = mini ? 100 : 280;
+    const M  = mini
+      ? {top:4,  right:8,  bottom:22, left:28}
+      : {top:16, right:16, bottom:44, left:52};
 
     const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
 
-    const root = d3.hierarchy<any>({ children: data }).sum((d:any)=>d.valeur??0);
-    d3.treemap<any>().size([W, H]).padding(2).round(true)(root);
+    const x = d3.scaleBand().domain(data.map(d=>d.pays)).range([M.left, W-M.right]).padding(0.28);
+    const maxAbs = d3.max(data, d=>Math.abs(d.net)) ?? 1;
+    const y = d3.scaleLinear().domain([-maxAbs*1.08, maxAbs*1.08]).range([H-M.bottom, M.top]).nice();
+    const zero = y(0);
 
-    const leaf = svg.selectAll<SVGGElement,any>("g")
-      .data(root.leaves()).enter().append("g")
-      .attr("transform",(d:any)=>`translate(${d.x0},${d.y0})`);
+    // Grille horizontale
+    if (!mini) {
+      const fmt = (v:number) => Math.abs(v)>=1000?`${(v/1000).toFixed(1)}k`:String(Math.round(v));
+      svg.append("g").attr("transform",`translate(${M.left},0)`)
+        .call(d3.axisLeft(y).ticks(6).tickFormat(v=>fmt(+v)))
+        .call(g=>{g.select(".domain").remove();
+          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("stroke-width",1).attr("x2",W-M.left-M.right);
+          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
+    }
 
-    leaf.append("rect")
-      .attr("width",  (d:any)=>d.x1-d.x0)
-      .attr("height", (d:any)=>d.y1-d.y0)
-      .attr("fill",   (d:any)=>colorMap.get(d.data.pays)!)
-      .attr("fill-opacity", 0.88);
+    // Barres
+    svg.selectAll<SVGRectElement,Row>("rect.bar")
+      .data(data).enter().append("rect")
+      .attr("x",     d=>x(d.pays)!)
+      .attr("y",     d=>d.net>=0 ? y(d.net) : zero)
+      .attr("width", x.bandwidth())
+      .attr("height",d=>Math.max(1, Math.abs(y(d.net)-zero)))
+      .attr("fill",  d=>d.net>=0 ? "#004f91" : "#e15759");
 
-    leaf.filter((d:any)=>(d.x1-d.x0)>28&&(d.y1-d.y0)>14)
-      .append("text")
-      .attr("x",(d:any)=>(d.x1-d.x0)/2).attr("y",(d:any)=>(d.y1-d.y0)*0.42)
-      .attr("text-anchor","middle").attr("dy","0.35em")
-      .attr("font-size",mini?8:11).attr("font-weight","700").attr("fill","white")
-      .text((d:any)=>mini?(d.data.code_iso3??(d.data.pays as string).slice(0,3).toUpperCase()):d.data.pays);
+    // Règle Y=0
+    svg.append("line")
+      .attr("x1",M.left).attr("x2",W-M.right)
+      .attr("y1",zero).attr("y2",zero)
+      .attr("stroke","#374151").attr("stroke-width",mini?0.8:1.2);
 
-    leaf.filter((d:any)=>!mini&&(d.x1-d.x0)>50&&(d.y1-d.y0)>30)
-      .append("text")
-      .attr("x",(d:any)=>(d.x1-d.x0)/2).attr("y",(d:any)=>(d.y1-d.y0)*0.72)
-      .attr("text-anchor","middle").attr("dy","0.35em")
-      .attr("font-size",9).attr("fill","rgba(255,255,255,0.85)")
-      .text((d:any)=>{const v=d.data.valeur as number;return v>=1000?`${(v/1000).toFixed(1)} Md$`:`${Math.round(v)} M$`;});
-  }, [donnees, annee, ind, dir, mini]);
+    // Labels valeur (full uniquement)
+    if (!mini) {
+      const fmt = (v:number) => Math.abs(v)>=1000?`${(v/1000).toFixed(1)}k`:`${Math.round(v)}`;
+      svg.selectAll<SVGTextElement,Row>("text.val")
+        .data(data).enter().append("text")
+        .attr("x",  d=>(x(d.pays)??0)+x.bandwidth()/2)
+        .attr("y",  d=>d.net>=0 ? y(d.net)-5 : zero+Math.abs(y(d.net)-zero)+12)
+        .attr("text-anchor","middle").attr("font-size",8).attr("font-weight","600")
+        .attr("fill",d=>d.net>=0?"#004f91":"#e15759")
+        .text(d=>fmt(d.net));
+    }
+
+    // Labels X
+    svg.selectAll<SVGTextElement,Row>("text.xlab")
+      .data(data).enter().append("text")
+      .attr("x",  d=>(x(d.pays)??0)+x.bandwidth()/2)
+      .attr("y",  H-M.bottom+5).attr("dy","0.75em")
+      .attr("text-anchor","middle").attr("font-size",mini?7:9).attr("fill","#374151")
+      .text(d=>mini ? (d.iso3??d.pays.slice(0,3).toUpperCase()) : (d.pays.length>9?d.pays.slice(0,8)+"…":d.pays));
+
+    // Axe Y mini
+    if (mini) {
+      svg.append("g").attr("transform",`translate(${M.left},0)`)
+        .call(d3.axisLeft(y).ticks(3).tickFormat(v=>Math.abs(+v)>=1000?`${(+v/1000).toFixed(0)}k`:String(Math.round(+v))))
+        .call(g=>{g.select(".domain").remove();g.selectAll(".tick line").remove();
+          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",7);});
+    }
+  }, [donnees, annee, ind, mini]);
 
   useEffect(()=>{draw();},[draw]);
   useEffect(()=>{
@@ -1495,244 +1530,8 @@ function TreemapPays({ donnees, mini=false }: { donnees: any[]; mini?: boolean }
             {annees.map(a=><option key={a} value={a}>{a}</option>)}
           </select>
           <div style={{width:1,background:"#E8E5E3",margin:"0 2px"}}/>
-          <Pill label="Flux"    active={ind==="flux"}    onClick={()=>setInd("flux")}/>
-          <Pill label="Stock"   active={ind==="stock"}   onClick={()=>setInd("stock")}/>
-          <div style={{width:1,background:"#E8E5E3",margin:"0 2px"}}/>
-          <Pill label="Entrant" active={dir==="entrant"} onClick={()=>setDir("entrant")}/>
-          <Pill label="Sortant" active={dir==="sortant"} onClick={()=>setDir("sortant")}/>
-        </div>
-      )}
-      <div ref={wrapRef} style={{width:"100%",overflow:"hidden"}}>
-        <svg ref={svgRef} style={{width:"100%",height:"auto",display:"block"}}/>
-      </div>
-    </div>
-  );
-}
-
-// ── Stacked area top N pays ───────────────────────────────────────────────────
-function StackedAreaPays({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
-  const svgRef  = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [ind, setInd] = useState("flux");
-  const [dir, setDir] = useState("entrant");
-
-  const draw = useCallback(() => {
-    if (!svgRef.current || !wrapRef.current) return;
-    const el = svgRef.current;
-    d3.select(el).selectAll("*").remove();
-    if (!donnees.length) return;
-
-    const curInd = mini ? "flux"    : ind;
-    const curDir = mini ? "entrant" : dir;
-    const filtered = donnees.filter((d:any)=>d.indicateur===curInd&&d.direction===curDir&&d.valeur!=null);
-
-    const totals = d3.rollup(filtered, v=>d3.sum(v,(d:any)=>+d.valeur), (d:any)=>d.pays as string);
-    const topPays = [...totals.entries()].sort((a,b)=>b[1]-a[1]).slice(0,TOP_N).map(([p])=>p);
-
-    const annees = [...new Set(filtered.map((d:any)=>d.annee as number))].sort((a,b)=>a-b);
-    const byAnneePays = d3.rollup(
-      filtered.filter((d:any)=>topPays.includes(d.pays as string)),
-      v=>v[0].valeur as number,
-      (d:any)=>d.annee as number, (d:any)=>d.pays as string);
-
-    const pivot = annees.map(a => {
-      const row: any = { annee: a };
-      topPays.forEach(p=>{ row[p] = byAnneePays.get(a)?.get(p) ?? 0; });
-      return row;
-    });
-
-    const colorMap = new Map(topPays.map((p,i)=>[p, C10[i%C10.length]]));
-
-    const W = wrapRef.current.clientWidth || 500;
-    const H = mini ? 100 : 300;
-    const M = mini ? {top:4,right:4,bottom:16,left:28} : {top:10,right:16,bottom:48,left:52};
-
-    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
-
-    const x = d3.scaleLinear().domain(d3.extent(annees) as [number,number]).range([M.left, W-M.right]);
-    const stackedSeries = d3.stack<any>().keys(topPays).value((d,k)=>d[k]??0)
-      .order(d3.stackOrderDescending).offset(d3.stackOffsetNone)(pivot);
-    const maxY = d3.max(stackedSeries, s=>d3.max(s, d=>d[1])) ?? 1;
-    const y = d3.scaleLinear().domain([0, maxY*1.02]).range([H-M.bottom, M.top]);
-
-    const area = d3.area<any>().x(d=>x(d.data.annee)).y0(d=>y(d[0])).y1(d=>y(d[1])).curve(d3.curveMonotoneX);
-
-    svg.selectAll<SVGPathElement,any>("path.area")
-      .data(stackedSeries).enter().append("path").attr("class","area")
-      .attr("fill",(d:any)=>colorMap.get(d.key)!).attr("fill-opacity",0.82).attr("d",area);
-
-    const fmtY = (v:number) => Math.abs(v)>=1000?`${(v/1000).toFixed(0)}k`:String(Math.round(v));
-    svg.append("g").attr("transform",`translate(0,${H-M.bottom})`)
-      .call(d3.axisBottom(x).tickFormat(d3.format("d")).ticks(mini?4:Math.floor(W/70)))
-      .call(g=>{g.select(".domain").remove();g.selectAll(".tick line").remove();
-        g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",mini?7:9);});
-    if (!mini) {
-      svg.append("g").attr("transform",`translate(${M.left},0)`)
-        .call(d3.axisLeft(y).ticks(4).tickFormat(v=>fmtY(+v)))
-        .call(g=>{g.select(".domain").remove();
-          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("x2",W-M.left-M.right);
-          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
-      // Légende
-      const legY = H-M.bottom+18;
-      let lx = M.left;
-      let ly = legY;
-      topPays.forEach(p=>{
-        if (lx > W-80) { lx=M.left; ly+=14; }
-        svg.append("rect").attr("x",lx).attr("y",ly).attr("width",10).attr("height",10)
-          .attr("fill",colorMap.get(p)!).attr("fill-opacity",0.88);
-        const short = p.length>12?p.slice(0,11)+"…":p;
-        svg.append("text").attr("x",lx+13).attr("y",ly+5).attr("dy","0.35em")
-          .attr("font-size",8).attr("fill","#374151").text(short);
-        lx += 13+short.length*5+10;
-      });
-    }
-  }, [donnees, ind, dir, mini]);
-
-  useEffect(()=>{draw();},[draw]);
-  useEffect(()=>{
-    if (!wrapRef.current) return;
-    const obs = new ResizeObserver(()=>draw());
-    obs.observe(wrapRef.current);
-    return ()=>obs.disconnect();
-  },[draw]);
-
-  const Pill = ({label,active,onClick}:{label:string;active:boolean;onClick:()=>void}) => (
-    <button onClick={onClick} style={{padding:"4px 10px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:active?"#004f91":"#F2F0EF",color:active?"#fff":"#9aa5b4",transition:"all 0.15s"}}>{label}</button>
-  );
-
-  return (
-    <div>
-      {!mini&&(
-        <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap" as const,alignItems:"center"}}>
-          <Pill label="Flux"    active={ind==="flux"}    onClick={()=>setInd("flux")}/>
-          <Pill label="Stock"   active={ind==="stock"}   onClick={()=>setInd("stock")}/>
-          <div style={{width:1,background:"#E8E5E3",margin:"0 2px"}}/>
-          <Pill label="Entrant" active={dir==="entrant"} onClick={()=>setDir("entrant")}/>
-          <Pill label="Sortant" active={dir==="sortant"} onClick={()=>setDir("sortant")}/>
-        </div>
-      )}
-      <div ref={wrapRef} style={{width:"100%",overflow:"hidden"}}>
-        <svg ref={svgRef} style={{width:"100%",height:"auto",display:"block"}}/>
-      </div>
-    </div>
-  );
-}
-
-// ── Bump chart classement ─────────────────────────────────────────────────────
-function BumpChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
-  const svgRef  = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [ind, setInd] = useState("flux");
-  const [dir, setDir] = useState("entrant");
-
-  const draw = useCallback(() => {
-    if (!svgRef.current || !wrapRef.current) return;
-    const el = svgRef.current;
-    d3.select(el).selectAll("*").remove();
-    if (!donnees.length) return;
-
-    const curInd = mini ? "flux"    : ind;
-    const curDir = mini ? "entrant" : dir;
-    const filtered = donnees.filter((d:any)=>d.indicateur===curInd&&d.direction===curDir&&d.valeur!=null);
-
-    const totals = d3.rollup(filtered, v=>d3.sum(v,(d:any)=>+d.valeur), (d:any)=>d.pays as string);
-    const topPays = [...totals.entries()].sort((a,b)=>b[1]-a[1]).slice(0,TOP_N).map(([p])=>p);
-    const topSet  = new Set(topPays);
-
-    const annees = [...new Set(filtered.map((d:any)=>d.annee as number))].sort((a,b)=>a-b);
-    const rankMap = new Map<number,Map<string,number>>();
-    for (const a of annees) {
-      const yr = filtered.filter((d:any)=>d.annee===a&&topSet.has(d.pays as string))
-        .sort((x:any,y:any)=>y.valeur-x.valeur);
-      const rm = new Map<string,number>();
-      yr.forEach((d:any,i:number)=>rm.set(d.pays as string, i+1));
-      topPays.forEach(p=>{ if (!rm.has(p)) rm.set(p, TOP_N+1); });
-      rankMap.set(a, rm);
-    }
-
-    const colorMap = new Map(topPays.map((p,i)=>[p, C10[i%C10.length]]));
-
-    const W   = wrapRef.current.clientWidth || 500;
-    const H   = mini ? 110 : 340;
-    const LBL = mini ? 0 : 95;
-    const M   = {top:10, right:LBL, bottom:mini?14:22, left:LBL};
-
-    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
-
-    const x = d3.scalePoint<number>().domain(annees).range([M.left, W-M.right]).padding(0.2);
-    const y = d3.scaleLinear().domain([1, TOP_N]).range([M.top, H-M.bottom]);
-
-    if (!mini) {
-      for (let r=1;r<=TOP_N;r++) {
-        svg.append("line").attr("x1",M.left).attr("x2",W-M.right)
-          .attr("y1",y(r)).attr("y2",y(r)).attr("stroke","#f3f4f6").attr("stroke-width",1);
-      }
-    }
-
-    topPays.forEach(pays => {
-      const pts = annees.map(a=>({a, r:rankMap.get(a)?.get(pays)??TOP_N+1})).filter(p=>p.r<=TOP_N);
-      if (pts.length < 2) return;
-
-      const lineGen = d3.line<{a:number;r:number}>()
-        .x(p=>x(p.a)!).y(p=>y(p.r)).curve(d3.curveCatmullRom.alpha(0.5));
-
-      svg.append("path").datum(pts).attr("fill","none")
-        .attr("stroke",colorMap.get(pays)!).attr("stroke-width",mini?1.5:2.5)
-        .attr("stroke-opacity",0.85).attr("d",lineGen);
-
-      pts.forEach(p=>{
-        svg.append("circle").attr("cx",x(p.a)!).attr("cy",y(p.r))
-          .attr("r",mini?1.5:3.5).attr("fill",colorMap.get(pays)!)
-          .attr("stroke","white").attr("stroke-width",mini?0.5:1.2);
-      });
-
-      if (!mini) {
-        const first = pts[0];
-        svg.append("text").attr("x",(x(first.a)??0)-8).attr("y",y(first.r))
-          .attr("dy","0.35em").attr("text-anchor","end").attr("font-size",9.5)
-          .attr("font-weight","600").attr("fill",colorMap.get(pays)!)
-          .text(pays.length>11?pays.slice(0,10)+"…":pays);
-        const last = pts[pts.length-1];
-        svg.append("text").attr("x",(x(last.a)??0)+8).attr("y",y(last.r))
-          .attr("dy","0.35em").attr("text-anchor","start").attr("font-size",9.5)
-          .attr("font-weight","600").attr("fill",colorMap.get(pays)!)
-          .text(pays.length>11?pays.slice(0,10)+"…":pays);
-      }
-    });
-
-    svg.append("g").attr("transform",`translate(0,${H-M.bottom})`)
-      .call(d3.axisBottom(x).tickFormat(d3.format("d")).ticks(mini?4:Math.floor(W/70)))
-      .call(g=>{g.select(".domain").remove();g.selectAll(".tick line").remove();
-        g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",mini?7:9);});
-    if (!mini) {
-      svg.append("g").attr("transform",`translate(${M.left},0)`)
-        .call(d3.axisLeft(y).ticks(TOP_N).tickFormat(d=>`#${d}`))
-        .call(g=>{g.select(".domain").remove();g.selectAll(".tick line").remove();
-          g.selectAll(".tick text").attr("fill","#bbb").attr("font-size",8);});
-    }
-  }, [donnees, ind, dir, mini]);
-
-  useEffect(()=>{draw();},[draw]);
-  useEffect(()=>{
-    if (!wrapRef.current) return;
-    const obs = new ResizeObserver(()=>draw());
-    obs.observe(wrapRef.current);
-    return ()=>obs.disconnect();
-  },[draw]);
-
-  const Pill = ({label,active,onClick}:{label:string;active:boolean;onClick:()=>void}) => (
-    <button onClick={onClick} style={{padding:"4px 10px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:active?"#004f91":"#F2F0EF",color:active?"#fff":"#9aa5b4",transition:"all 0.15s"}}>{label}</button>
-  );
-
-  return (
-    <div>
-      {!mini&&(
-        <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap" as const,alignItems:"center"}}>
-          <Pill label="Flux"    active={ind==="flux"}    onClick={()=>setInd("flux")}/>
-          <Pill label="Stock"   active={ind==="stock"}   onClick={()=>setInd("stock")}/>
-          <div style={{width:1,background:"#E8E5E3",margin:"0 2px"}}/>
-          <Pill label="Entrant" active={dir==="entrant"} onClick={()=>setDir("entrant")}/>
-          <Pill label="Sortant" active={dir==="sortant"} onClick={()=>setDir("sortant")}/>
+          <Pill label="Flux net"  active={ind==="flux"}  onClick={()=>setInd("flux")}/>
+          <Pill label="Stock net" active={ind==="stock"} onClick={()=>setInd("stock")}/>
         </div>
       )}
       <div ref={wrapRef} style={{width:"100%",overflow:"hidden"}}>
@@ -2063,22 +1862,10 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
                 <HBarChart donnees={donneesDetail} mini/>
               </GrapheCard>
-              <GrapheCard titre="Composition du groupe" sous_titre="Top 10 pays · proportion des flux · M$ USD" grapheId="treemap"
-                fullChildren={<TreemapPays donnees={donneesDetail}/>}>
-                <TreemapPays donnees={donneesDetail} mini/>
+              <GrapheCard titre="Flux net / Stock net par pays" sous_titre="Top 10 · entrant − sortant · M$ USD" grapheId="vbnet"
+                fullChildren={<VBarChartNet donnees={donneesDetail}/>}>
+                <VBarChartNet donnees={donneesDetail} mini/>
               </GrapheCard>
-              <div style={{ gridColumn:"1/-1" }}>
-                <GrapheCard titre="Évolution empilée" sous_titre="Top 10 pays · cumul dans le temps · M$ USD" grapheId="stacked"
-                  fullChildren={<StackedAreaPays donnees={donneesDetail}/>}>
-                  <StackedAreaPays donnees={donneesDetail} mini/>
-                </GrapheCard>
-              </div>
-              <div style={{ gridColumn:"1/-1" }}>
-                <GrapheCard titre="Classement dans le temps" sous_titre="Top 10 pays · évolution des rangs · bump chart" grapheId="bump"
-                  fullChildren={<BumpChart donnees={donneesDetail}/>}>
-                  <BumpChart donnees={donneesDetail} mini/>
-                </GrapheCard>
-              </div>
             </div>
           )}
           </>
