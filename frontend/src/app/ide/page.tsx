@@ -1332,7 +1332,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
       else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
       const raw: any[] = await fetch(`${API}/ide/monde?${params}`).then(r=>r.json());
       setDonnees((raw||[]).map(d => ({
-        pays: d.code, direction: d.direction, indicateur: d.indicateur, annee: d.annee, valeur: d.moyenne,
+        pays: d.code, direction: d.direction, indicateur: d.indicateur, annee: d.annee, valeur: d.somme,
       })));
     } catch(e){ console.error(e); }
     finally { setLoading(false); }
@@ -1589,7 +1589,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
         ) : (
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
-              <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Moyenne pays membres · CNUCED" series={g.series} grapheId={g.id}
+              <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Somme pays membres · CNUCED" series={g.series} grapheId={g.id}
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={typeG} titre={g.id}/>}>
                 <GrapheMultiPays series={g.series} height={145} type={typeG} titre={g.id}/>
               </GrapheCard>
