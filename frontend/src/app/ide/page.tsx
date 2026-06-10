@@ -1289,6 +1289,156 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
 }
 
 // ── Onglet Monde ──────────────────────────────────────────────────────────────
+// ── Radar chart top 5 pays ───────────────────────────────────────────────────
+const RADAR_AXES = [
+  { key:"flux|entrant",  label:"Flux entrant"  },
+  { key:"stock|entrant", label:"Stock entrant" },
+  { key:"flux|sortant",  label:"Flux sortant"  },
+  { key:"stock|sortant", label:"Stock sortant" },
+];
+
+function RadarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
+  const svgRef  = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [annee, setAnnee] = useState<number|null>(null);
+
+  const draw = useCallback(() => {
+    if (!svgRef.current || !wrapRef.current) return;
+    const el = svgRef.current;
+    d3.select(el).selectAll("*").remove();
+    if (!donnees.length) return;
+
+    const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
+    const curAnnee = annee ?? annees[0];
+    const yearData = donnees.filter((d:any)=>d.annee===curAnnee && d.valeur!==null);
+    if (!yearData.length) return;
+
+    // Top 5 pays par valeur absolue totale sur l'année
+    const byPays = d3.rollup(yearData, v=>d3.sum(v,(d:any)=>Math.abs(d.valeur)), (d:any)=>d.pays);
+    const top5   = [...byPays.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5).map(([p])=>p);
+
+    const matrix = top5.map(pays => ({
+      pays,
+      vals: RADAR_AXES.map(ax => {
+        const [ind,dir] = ax.key.split("|");
+        const row = yearData.find((d:any)=>d.pays===pays&&d.indicateur===ind&&d.direction===dir);
+        return row?.valeur ?? 0;
+      })
+    }));
+
+    // Normalisation par axe (0→1 sur le max absolu de cet axe)
+    const maxPerAxis = RADAR_AXES.map((_,i)=>Math.max(1, d3.max(matrix,d=>Math.abs(d.vals[i]))??1));
+
+    const W  = wrapRef.current.clientWidth || 400;
+    const H  = mini ? Math.min(W*0.7, 180) : Math.min(W*0.85, 380);
+    const cx = W/2, cy = H/2;
+    const R  = Math.min(cx,cy) * (mini ? 0.55 : 0.58);
+    const N  = RADAR_AXES.length;
+    const ang = (i:number) => (2*Math.PI*i/N) - Math.PI/2;
+    const pt  = (i:number, norm:number) => ({
+      x: cx + R*norm*Math.cos(ang(i)),
+      y: cy + R*norm*Math.sin(ang(i))
+    });
+
+    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
+
+    // Grille circulaire
+    const levels = 5;
+    d3.range(1, levels+1).forEach(l => {
+      svg.append("circle").attr("cx",cx).attr("cy",cy).attr("r",R*l/levels)
+        .attr("fill","none").attr("stroke", l===levels?"#d1d5db":"#e5e7eb")
+        .attr("stroke-width", l===levels?1:0.5);
+      if (!mini && l<levels) {
+        svg.append("text").attr("x",cx+3).attr("y",cy-R*l/levels-2)
+          .attr("font-size",7).attr("fill","#bbb").text(`${Math.round(l/levels*100)}%`);
+      }
+    });
+
+    // Axes radiaux + labels
+    RADAR_AXES.forEach((ax,i) => {
+      const p = pt(i,1);
+      svg.append("line").attr("x1",cx).attr("y1",cy).attr("x2",p.x).attr("y2",p.y)
+        .attr("stroke","#e5e7eb").attr("stroke-width",1);
+      if (!mini) {
+        const lp = pt(i, 1.22);
+        const anchor = lp.x<cx-8?"end":lp.x>cx+8?"start":"middle";
+        svg.append("text").attr("x",lp.x).attr("y",lp.y).attr("dy","0.35em")
+          .attr("text-anchor",anchor).attr("font-size",10).attr("fill","#374151").attr("font-weight","600")
+          .text(ax.label);
+      }
+    });
+
+    // Zones remplies (une par pays)
+    matrix.forEach((d,ci) => {
+      const col = COMP_PALETTE[ci] ?? COMP_PALETTE[4];
+      const pts = d.vals.map((v,i)=>pt(i, Math.abs(v)/maxPerAxis[i]));
+
+      const lineGen = d3.line<{x:number;y:number}>()
+        .x(p=>p.x).y(p=>p.y)
+        .curve(d3.curveCardinalClosed.tension(0.3));
+
+      svg.append("path").datum(pts)
+        .attr("d", lineGen)
+        .attr("fill",col).attr("fill-opacity",0.12)
+        .attr("stroke",col).attr("stroke-width",mini?1.5:2)
+        .attr("stroke-linejoin","round");
+
+      if (!mini) {
+        // Dots + valeurs sur chaque sommet
+        pts.forEach((p,i) => {
+          svg.append("circle").attr("cx",p.x).attr("cy",p.y).attr("r",4)
+            .attr("fill",col).attr("stroke","white").attr("stroke-width",1.5);
+          const raw = d.vals[i];
+          const vLp = pt(i, Math.abs(raw)/maxPerAxis[i]+0.13);
+          svg.append("text").attr("x",vLp.x).attr("y",vLp.y).attr("dy","0.35em")
+            .attr("text-anchor","middle").attr("font-size",8).attr("fill",col)
+            .text(Math.abs(raw)>=1000?`${Math.round(raw/1000)}Md`:`${Math.round(raw)}`);
+        });
+      }
+    });
+
+    // Légende (vue full uniquement)
+    if (!mini) {
+      matrix.forEach((d,ci) => {
+        const col = COMP_PALETTE[ci]??COMP_PALETTE[4];
+        const ly = H-20-(matrix.length-1-ci)*16;
+        svg.append("circle").attr("cx",14).attr("cy",ly).attr("r",5).attr("fill",col);
+        svg.append("text").attr("x",24).attr("y",ly).attr("dy","0.35em")
+          .attr("font-size",10).attr("fill","#374151").text(d.pays);
+      });
+    }
+  }, [donnees, annee, mini]);
+
+  useEffect(()=>{ draw(); },[draw]);
+  useEffect(()=>{
+    if (!wrapRef.current) return;
+    const obs = new ResizeObserver(()=>draw());
+    obs.observe(wrapRef.current);
+    return ()=>obs.disconnect();
+  },[draw]);
+
+  const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
+
+  return (
+    <div>
+      {!mini && annees.length>0 && (
+        <div style={{ display:"flex", gap:6, marginBottom:10, alignItems:"center" }}>
+          <span style={{ fontSize:11, color:"#9aa5b4", fontWeight:600 }}>Année</span>
+          <select value={annee??annees[0]} onChange={e=>setAnnee(Number(e.target.value))}
+            style={{ fontSize:11, padding:"3px 8px", borderRadius:6, border:"1px solid #E8E5E3", background:"#F8F7F6", color:"#1a1a2e", cursor:"pointer", outline:"none" }}>
+            {annees.map(a=><option key={a} value={a}>{a}</option>)}
+          </select>
+          <span style={{ fontSize:10, color:"#9aa5b4" }}>· Top 5 pays · valeurs normalisées par axe</span>
+        </div>
+      )}
+      <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
+        <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
+      </div>
+      {donnees.length===0&&!mini&&<p style={{ textAlign:"center" as const, color:"#9aa5b4", fontSize:12, marginTop:16 }}>Chargement…</p>}
+    </div>
+  );
+}
+
 // ── Heatmap pays × année ─────────────────────────────────────────────────────
 function HeatmapPaysAnnee({ donnees, mini=false, ind: indProp="flux", dir: dirProp="entrant" }: {
   donnees: any[]; mini?: boolean; ind?: string; dir?: string;
@@ -1758,9 +1908,10 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
                   </GrapheCard>
                 </div>
                 {/* Radar chart — top 5 */}
-                <div style={{ background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:260, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Radar chart top 5 pays — à venir</span>
-                </div>
+                <GrapheCard titre="Radar chart — Top 5 pays" sous_titre="Valeurs normalisées par axe · année sélectionnable" grapheId="radar"
+                  fullChildren={<RadarChart donnees={donneesDetail}/>}>
+                  <RadarChart donnees={donneesDetail} mini/>
+                </GrapheCard>
                 {/* Horizontal bar — top 10 */}
                 <div style={{ background:"#fff", borderRadius:12, border:"1px solid #E8E5E3", padding:"20px 24px", minHeight:260, display:"flex", alignItems:"center", justifyContent:"center" }}>
                   <span style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Horizontal bar chart top 10 — à venir</span>
