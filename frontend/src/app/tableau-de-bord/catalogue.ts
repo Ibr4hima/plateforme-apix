@@ -1,188 +1,29 @@
-// ─── Catalogue des visualisations disponibles ─────────────────────────────────
-// Chaque entrée décrit une visualisation. Le système détecte automatiquement
-// le type de graphe selon la structure des données retournées.
-
-export type ParamType = "select_api" | "select_static";
-
-export interface Param {
-  key: string;
-  label: string;
-  type: ParamType;
-  endpoint?: string;           // API endpoint pour charger les options
-  labelField?: string;         // champ à afficher dans le select
-  valueField?: string;         // champ à utiliser comme valeur
-  dependsOn?: string;          // clé du param parent (cascade)
-  options?: {label:string; value:string}[]; // pour select_static
-}
-
 export interface Visualisation {
   id: string;
   titre: string;
-  description?: string;
-  categorie: "entreprises" | "zones" | "croisements" | "accords" | "evenements" | "intentions" | "prospects";
-  endpoint: string;            // endpoint de base
-  params?: Param[];            // paramètres configurables
+  endpoint: string;
   defaultSize: "sm" | "md" | "lg";
 }
 
-export const CATALOGUE: Visualisation[] = [
-
-  // ── ENTREPRISES ────────────────────────────────────────────────────────────
-  {
-    id: "ent_par_secteur",
-    titre: "Entreprises par secteur",
-    description: "Répartition selon le secteur NAEMA principal",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-par-secteur",
-    defaultSize: "md",
-  },
-  {
-    id: "ent_par_branche",
-    titre: "Entreprises par branche",
-    description: "Répartition selon la branche NAEMA",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-par-branche",
-    defaultSize: "md",
-  },
-  {
-    id: "ent_par_activite",
-    titre: "Entreprises par activité",
-    description: "Top activités NAEMA les plus représentées",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-par-activite",
-    defaultSize: "lg",
-  },
-  {
-    id: "ent_par_region",
-    titre: "Entreprises par région",
-    description: "Distribution géographique par région",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-par-region",
-    defaultSize: "md",
-  },
-  {
-    id: "ent_par_departement",
-    titre: "Entreprises par département",
-    description: "Top départements d'implantation",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-par-departement",
-    defaultSize: "md",
-  },
-  {
-    id: "ent_par_annee",
-    titre: "Créations d'entreprises par année",
-    description: "Évolution du registre depuis 1990",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-par-annee",
-    defaultSize: "md",
-  },
-  {
-    id: "ent_par_pays",
-    titre: "Entreprises par pays d'origine",
-    description: "Nationalité du siège social",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-par-pays",
-    defaultSize: "md",
-  },
-  {
-    id: "ent_dans_zone",
-    titre: "Entreprises dans une zone d'investissement",
-    description: "Nombre d'entreprises dans une zone spécifique",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-dans-zone",
-    defaultSize: "sm",
-    params: [
-      {
-        key: "type_zone",
-        label: "Type de zone",
-        type: "select_api",
-        endpoint: "/dashboard/params/types-zones",
-        labelField: "type_zone",
-        valueField: "type_zone",
-      },
-      {
-        key: "zone_id",
-        label: "Zone spécifique",
-        type: "select_api",
-        endpoint: "/dashboard/params/zones-par-type",
-        labelField: "nom_zone",
-        valueField: "id",
-        dependsOn: "type_zone",
-      },
-    ],
-  },
-  {
-    id: "ent_dans_secteur",
-    titre: "Entreprises dans un secteur",
-    description: "Détail des entreprises d'un secteur donné",
-    categorie: "entreprises",
-    endpoint: "/dashboard/viz/entreprises-dans-secteur",
-    defaultSize: "md",
-    params: [
-      {
-        key: "secteur_id",
-        label: "Secteur",
-        type: "select_api",
-        endpoint: "/dashboard/params/secteurs",
-        labelField: "nom",
-        valueField: "id",
-      },
-    ],
-  },
-
-  // ── CROISEMENTS ────────────────────────────────────────────────────────────
-  {
-    id: "crois_ent_par_zone",
-    titre: "Entreprises par zone",
-    description: "Nombre d'entreprises dans chaque zone",
-    categorie: "croisements",
-    endpoint: "/dashboard/viz/crois-entreprises-par-zone",
-    defaultSize: "md",
-  },
-  {
-    id: "crois_region",
-    titre: "Vue régionale consolidée",
-    description: "Entreprises + zones + pôles par région",
-    categorie: "croisements",
-    endpoint: "/dashboard/viz/crois-region",
-    defaultSize: "lg",
-  },
-  {
-    id: "crois_secteur_zone",
-    titre: "Secteurs dans les zones",
-    description: "Présence sectorielle par type de zone",
-    categorie: "croisements",
-    endpoint: "/dashboard/viz/crois-secteur-zone",
-    defaultSize: "lg",
-  },
-];
+export const CATALOGUE: Visualisation[] = [];
 
 export const KPIS_DISPONIBLES = [
-  { id: "entreprises_total",  label: "Total entreprises",       icon: "Building2",  color: "#ca631f" },
-  { id: "zones_total",        label: "Zones d'investissement",  icon: "MapPin",     color: "#004f91" },
-  { id: "poles_total",        label: "Pôles territoriaux",      icon: "MapPin",     color: "#0891b2" },
-  { id: "accords_total",      label: "Accords & Traités",       icon: "Handshake",  color: "#059669" },
-  { id: "accords_vigueur",    label: "Accords en vigueur",      icon: "Handshake",  color: "#15803d" },
-  { id: "evenements_total",   label: "Événements répertoriés",  icon: "Calendar",   color: "#7c3aed" },
-  { id: "evenements_a_venir", label: "Événements à venir",      icon: "Calendar",   color: "#d97706" },
-  { id: "prospects_total",    label: "Prospects suivis",        icon: "TrendingUp", color: "#E35336" },
-  { id: "projets_total",      label: "Projets",                 icon: "Layers",     color: "#6366f1" },
-  { id: "intentions_total",   label: "Intentions d'investissement", icon: "Target", color: "#0891b2" },
-  { id: "intentions_usd",     label: "Montant intentions (USD)", icon: "DollarSign", color: "#ca631f" },
-  { id: "zone_ent_total",     label: "Entreprises en zone",     icon: "Building2",  color: "#188038" },
+  { id: "entreprises_total",  label: "Total entreprises",           icon: "Building2",  color: "#ca631f" },
+  { id: "zones_total",        label: "Zones d'investissement",      icon: "MapPin",     color: "#004f91" },
+  { id: "poles_total",        label: "Pôles territoriaux",          icon: "MapPin",     color: "#0891b2" },
+  { id: "accords_total",      label: "Accords & Traités",           icon: "Handshake",  color: "#059669" },
+  { id: "accords_vigueur",    label: "Accords en vigueur",          icon: "Handshake",  color: "#15803d" },
+  { id: "evenements_total",   label: "Événements répertoriés",      icon: "Calendar",   color: "#7c3aed" },
+  { id: "evenements_a_venir", label: "Événements à venir",          icon: "Calendar",   color: "#d97706" },
+  { id: "prospects_total",    label: "Prospects suivis",            icon: "TrendingUp", color: "#E35336" },
+  { id: "projets_total",      label: "Projets",                     icon: "Layers",     color: "#6366f1" },
+  { id: "intentions_total",   label: "Intentions d'investissement", icon: "Target",     color: "#0891b2" },
+  { id: "intentions_usd",     label: "Montant intentions (USD)",    icon: "DollarSign", color: "#ca631f" },
+  { id: "zone_ent_total",     label: "Entreprises en zone",         icon: "Building2",  color: "#188038" },
 ];
 
-export const CATEGORIES = [
-  { key: "entreprises",  label: "Entreprises",  color: "#ca631f" },
-  { key: "zones",        label: "Zones & Pôles", color: "#004f91" },
-  { key: "croisements",  label: "Croisements",  color: "#7c3aed" },
-  { key: "accords",      label: "Accords",      color: "#059669" },
-  { key: "evenements",   label: "Événements",   color: "#d97706" },
-  { key: "intentions",   label: "Intentions",   color: "#0891b2" },
-  { key: "prospects",    label: "Prospects",    color: "#E35336" },
-];
+export const CATEGORIES: { key: string; label: string; color: string }[] = [];
 
-// ─── Tableaux analytiques ─────────────────────────────────────────────────────
 export interface TableAnalytique {
   id: string;
   titre: string;
@@ -208,7 +49,6 @@ export const TABLES_ANALYTIQUES: TableAnalytique[] = [
   { id:"avant-apres-pivot",         titre:"Entreprises par période de création",       description:"Avant 2010 / 2010–2019 / depuis 2020 par région" },
   { id:"densite-zones",             titre:"Densité des zones d'investissement",        description:"Entreprises par hectare dans chaque zone" },
   { id:"poles-sans-zones",          titre:"Pôles sans zones associées",               description:"Pôles territoriaux non encore structurés" },
-
   { id:"entreprises-par-arrondissement",     titre:"Entreprises par arrondissement",           description:"Top 20 arrondissements avec % et rang" },
   { id:"anciennete-entreprises",             titre:"Ancienneté des entreprises par région",    description:"Âge moyen, min, max et tranches par région" },
   { id:"projets-detail",                     titre:"Détail des projets",                        description:"Projets avec région, secteur, investissement et statut" },
@@ -217,7 +57,6 @@ export const TABLES_ANALYTIQUES: TableAnalytique[] = [
   { id:"matrice-region-zone",                titre:"Matrice région × type de zone",            description:"ZES, ZAI, ZFI, superficie et entreprises par région" },
   { id:"entreprises-par-continent",          titre:"Entreprises par continent d'origine",      description:"Répartition continentale des investisseurs" },
   { id:"secteur-x-pays-origine",             titre:"Secteur × pays d'origine",                description:"Corrélation secteur et nationalité de l'investisseur" },
-
   { id:"entreprises-par-zone-detail",          titre:"Entreprises dans chaque zone (détail)",         description:"Liste complète : zone, statut, entreprise, secteur, pays" },
   { id:"classement-zones-entreprises",          titre:"Classement des zones par entreprises",          description:"Rang général et rang par type de zone" },
   { id:"classement-regions-complet",            titre:"Classement complet des régions",               description:"Entreprises, zones, pôles, depts, arrondissements et rangs" },
