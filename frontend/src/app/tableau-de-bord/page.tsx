@@ -3,9 +3,9 @@
 import Navbar from "@/components/layout/Navbar";
 import * as d3 from "d3";
 import {
-  Activity, BarChart2, Building2, Calendar, ChevronDown, ChevronRight,
-  DollarSign, Handshake, Layers, Loader2, MapPin,
-  RotateCcw, Search, Settings2, SlidersHorizontal, Table2, Target, TrendingUp, X
+  Activity, BarChart2, Building2, Calendar,
+  DollarSign, Handshake, Layers, Loader2, MapPin, Maximize2,
+  RotateCcw, Search, SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CATALOGUE, KPIS_DISPONIBLES, CATEGORIES, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
@@ -190,13 +190,59 @@ function ParamSelect({ param, value, onChange, parentValue }: { param:any; value
   );
 }
 
+// ─── Download PNG ─────────────────────────────────────────────────────────────
+function downloadPNG(svgEl: SVGSVGElement, filename: string) {
+  const clone = svgEl.cloneNode(true) as SVGSVGElement;
+  clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  const W = svgEl.viewBox?.baseVal?.width || svgEl.clientWidth || 800;
+  const H = svgEl.viewBox?.baseVal?.height || svgEl.clientHeight || 400;
+  const blob = new Blob([clone.outerHTML], {type:"image/svg+xml"});
+  const url = URL.createObjectURL(blob);
+  const img = new Image(); img.width=W*2; img.height=H*2;
+  img.onload = () => {
+    const canvas = document.createElement("canvas"); canvas.width=W*2; canvas.height=H*2;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle="#fff"; ctx.fillRect(0,0,W*2,H*2);
+    ctx.drawImage(img,0,0,W*2,H*2);
+    const a = document.createElement("a"); a.href=canvas.toDataURL("image/png"); a.download=`${filename}.png`; a.click();
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+// ─── Modal visualisation ──────────────────────────────────────────────────────
+function VizModal({ open, onClose, titre, vizId, children }: { open:boolean; onClose:()=>void; titre:string; vizId:string; children:React.ReactNode }) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement|null;
+  if (!open) return null;
+  return (
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:32}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:1100,maxHeight:"90vh",overflowY:"auto",border:"1px solid #E8E5E3",boxShadow:"0 40px 100px rgba(0,0,0,0.25)"}}>
+        <div style={{height:3,background:"linear-gradient(90deg,#ca631f,#004f91)",borderRadius:"20px 20px 0 0"}}/>
+        <div style={{padding:"22px 28px 28px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+            <h3 style={{fontWeight:800,fontSize:"1.05rem",color:"#1a1a2e",margin:0}}>{titre}</h3>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <button onClick={()=>{const svg=getSvg();if(svg)downloadPNG(svg,vizId);}}
+                style={{fontSize:12,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #E8E5E3",background:"#fff",color:"#4a5568",cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Télécharger
+              </button>
+              <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:8}}><X size={15} color="#4a5568"/></button>
+            </div>
+          </div>
+          <div ref={modalRef}>{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Card visualisation ───────────────────────────────────────────────────────
-function VizCard({ card, viz, onRemove, onChangeType, onChangeSize, onChangeParams }: {
+function VizCard({ card, viz, onRemove }: {
   card:CardConfig; viz:Visualisation; onRemove:()=>void;
-  onChangeType:(t:ChartType)=>void; onChangeSize:(s:"sm"|"md"|"lg")=>void; onChangeParams:(p:Record<string,any>)=>void;
 }) {
-  const [data,setData]=useState<any[]>([]); const [loading,setLoading]=useState(true); const [showSettings,setShowSettings]=useState(false);
-  const chartH=card.size==="sm"?160:card.size==="md"?240:340;
+  const [data,setData]=useState<any[]>([]); const [loading,setLoading]=useState(true); const [open,setOpen]=useState(false);
   const fetchData=useCallback(()=>{
     setLoading(true);
     const params=new URLSearchParams();
@@ -205,67 +251,40 @@ function VizCard({ card, viz, onRemove, onChangeType, onChangeSize, onChangePara
     fetch(url).then(r=>r.json()).then(d=>{setData(Array.isArray(d)?d:[]);}).catch(()=>setData([])).finally(()=>setLoading(false));
   },[viz.endpoint,card.params]);
   useEffect(()=>{fetchData();},[fetchData]);
-  const hasParams=(viz.params||[]).length>0;
-  const missingRequired=hasParams&&(viz.params||[]).some(p=>!p.dependsOn&&!card.params[p.key]);
+
   return (
-    <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 6px rgba(0,0,0,0.05)",overflow:"hidden",gridColumn:card.size==="lg"?"span 2":"span 1",display:"flex",flexDirection:"column" as const}}>
-      <div style={{padding:"14px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div style={{flex:1,minWidth:0}}>
-          <p style={{fontSize:13,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{viz.titre}</p>
-        </div>
-        <div style={{display:"flex",gap:4,marginLeft:8,flexShrink:0}}>
-          <button onClick={()=>setShowSettings(s=>!s)} style={{background:showSettings?"#F2F0EF":"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:5,color:"#4a5568"}}><Settings2 size={13}/></button>
-          <button onClick={fetchData} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:5,color:"#4a5568"}}><RotateCcw size={13}/></button>
-          <button onClick={onRemove} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:5,color:"#9aa5b4"}}><X size={13}/></button>
-        </div>
-      </div>
-      {showSettings&&(
-        <div style={{margin:"10px 16px",padding:"12px",background:"#F8F7F6",borderRadius:10,border:"1px solid #E8E5E3"}}>
-          <p style={{fontSize:11,fontWeight:700,color:"#4a5568",marginBottom:6,textTransform:"uppercase" as const,letterSpacing:"0.05em"}}>Type</p>
-          <div style={{display:"flex",gap:4,marginBottom:12,flexWrap:"wrap"}}>
-            {(["auto","bar_h","bar_v","donut"] as ChartType[]).map(t=>(
-              <button key={t} onClick={()=>onChangeType(t)}
-                style={{padding:"4px 10px",borderRadius:6,border:"1px solid",fontSize:11,fontWeight:600,cursor:"pointer",borderColor:card.chartType===t?"#004f91":"#E8E5E3",background:card.chartType===t?"#004f91":"#fff",color:card.chartType===t?"#fff":"#4a5568"}}>
-                {t==="auto"?"Auto":t==="bar_h"?"Barres H":t==="bar_v"?"Barres V":"Donut"}
-              </button>
-            ))}
+    <>
+      <div onClick={()=>!loading&&data.length>0&&setOpen(true)}
+        style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",padding:"16px 18px",cursor:loading||data.length===0?"default":"pointer",transition:"all 0.18s",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}
+        onMouseEnter={e=>{if(!loading&&data.length>0){e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="#d4d0cd";}}}
+        onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#E8E5E3";}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+          <div style={{flex:1,minWidth:0}}>
+            <p style={{fontWeight:700,fontSize:12,color:"#1a1a2e",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{viz.titre}</p>
           </div>
-          <p style={{fontSize:11,fontWeight:700,color:"#4a5568",marginBottom:6,textTransform:"uppercase" as const,letterSpacing:"0.05em"}}>Taille</p>
-          <div style={{display:"flex",gap:4,marginBottom:hasParams?12:0}}>
-            {(["sm","md","lg"] as const).map(s=>(
-              <button key={s} onClick={()=>onChangeSize(s)}
-                style={{padding:"4px 14px",borderRadius:6,border:"1px solid",fontSize:11,fontWeight:600,cursor:"pointer",borderColor:card.size===s?"#ca631f":"#E8E5E3",background:card.size===s?"#ca631f":"#fff",color:card.size===s?"#fff":"#4a5568"}}>
-                {s==="sm"?"S":s==="md"?"M":"L"}
-              </button>
-            ))}
+          <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:8}}>
+            <button onClick={e=>{e.stopPropagation();fetchData();}} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#9aa5b4"}}><RotateCcw size={11}/></button>
+            <button onClick={e=>{e.stopPropagation();onRemove();}} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
+            <Maximize2 size={11} style={{color:"#C5BFBB"}}/>
           </div>
-          {hasParams&&(
-            <div style={{marginTop:12}}>
-              <p style={{fontSize:11,fontWeight:700,color:"#4a5568",marginBottom:8,textTransform:"uppercase" as const,letterSpacing:"0.05em"}}>Paramètres</p>
-              {(viz.params||[]).map(p=>(
-                <ParamSelect key={p.key} param={p} value={card.params[p.key]}
-                  parentValue={p.dependsOn?card.params[p.dependsOn]:undefined}
-                  onChange={v=>onChangeParams({...card.params,[p.key]:v})}/>
-              ))}
+        </div>
+        <div style={{pointerEvents:"none"}}>
+          {loading?(
+            <div style={{height:200,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:"#9aa5b4"}}>
+              <Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span>
             </div>
+          ):data.length===0?(
+            <EmptyState h={200}/>
+          ):(
+            <AutoChart data={data} chartType={card.chartType} height={200}/>
           )}
         </div>
-      )}
-      <div style={{padding:"12px 16px 16px",flex:1}}>
-        {loading?(
-          <div style={{height:chartH,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:"#9aa5b4"}}>
-            <Loader2 size={18} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span>
-          </div>
-        ):missingRequired?(
-          <div style={{height:chartH,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:8}}>
-            <Settings2 size={22} style={{color:"#E8E5E3"}}/><span style={{fontSize:12,color:"#9aa5b4"}}>Configurez les paramètres</span>
-            <button onClick={()=>setShowSettings(true)} style={{fontSize:11,color:"#004f91",background:"none",border:"none",cursor:"pointer",textDecoration:"underline"}}>Ouvrir les paramètres</button>
-          </div>
-        ):(
-          <AutoChart data={data} chartType={card.chartType} height={chartH}/>
-        )}
       </div>
-    </div>
+
+      <VizModal open={open} onClose={()=>setOpen(false)} titre={viz.titre} vizId={viz.id}>
+        <AutoChart data={data} chartType={card.chartType} height={380}/>
+      </VizModal>
+    </>
   );
 }
 
@@ -561,7 +580,7 @@ export default function TableauDeBordPage() {
                 {config.cards.map(card=>{
                   const viz=CATALOGUE.find(v=>v.id===card.vizId);
                   if(!viz) return null;
-                  return <VizCard key={card.id} card={card} viz={viz} onRemove={()=>removeCard(card.id)} onChangeType={t=>updateCard(card.id,{chartType:t})} onChangeSize={s=>updateCard(card.id,{size:s})} onChangeParams={p=>updateCard(card.id,{params:p})}/>;
+                  return <VizCard key={card.id} card={card} viz={viz} onRemove={()=>removeCard(card.id)}/>;
                 })}
               </div>
             )
