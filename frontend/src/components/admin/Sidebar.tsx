@@ -15,7 +15,6 @@ type NavItem =
   | { type: "separator"; label?: string };
 
 const MODULES: NavItem[] = [
-  { type: "link", label: "Dashboard",                       href: "/admin",                     icon: LayoutDashboard, color: "#1a1a2e" },
   { type: "link", label: "Événements",                      href: "/admin/evenements",          icon: Calendar,        color: "#004f91" },
   { type: "link", label: "Accords & Traités",               href: "/admin/accords",             icon: FileText,        color: "#7c3aed" },
   { type: "link", label: "Entreprises",                     href: "/admin/entreprises",         icon: Building2,       color: "#ca631f" },
