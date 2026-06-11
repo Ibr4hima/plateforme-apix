@@ -156,9 +156,9 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
 }
 
 // ─── Proportion Plot (Entreprises par secteur) ────────────────────────────────
-const PROPORTION_COLORS = ["#D2E3FC", "#FAD2CF", "#CEEAD6"];
+const PROPORTION_COLORS = ["#004f91", "#ca631f", "#188038"];
 
-function ProportionPlot({ data, height }: { data: { label: string; valeur: number }[]; height: number }) {
+function ProportionPlot({ data, height, compact = false }: { data: { label: string; valeur: number }[]; height: number; compact?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const plotRef = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(600);
@@ -181,16 +181,14 @@ function ProportionPlot({ data, height }: { data: { label: string; valeur: numbe
 
     const totalAll  = d3.sum(data, d => d.valeur);
     const totalZone = d3.sum(dataZone, d => d.valeur) || 1;
-
-    // All sectors present in either dataset
-    const secteurs = Array.from(new Set([...data.map(d => d.label), ...dataZone.map(d => d.label)]));
+    const secteurs  = Array.from(new Set([...data.map(d => d.label), ...dataZone.map(d => d.label)]));
 
     const rows = secteurs.flatMap(s => {
       const all  = data.find(d => d.label === s);
       const zone = dataZone.find(d => d.label === s);
       return [
-        all  ? { col: "Toutes entreprises", secteur: s, value: +((all.valeur  / totalAll)  * 100).toFixed(1), count: all.valeur  } : null,
-        zone ? { col: "Entreprises en zone", secteur: s, value: +((zone.valeur / totalZone) * 100).toFixed(1), count: zone.valeur } : null,
+        all  ? { col: "Toutes entreprises",  secteur: s, value: +((all.valeur  / totalAll)  * 100).toFixed(1), count: all.valeur  } : null,
+        zone ? { col: "Entreprises en zone",  secteur: s, value: +((zone.valeur / totalZone) * 100).toFixed(1), count: zone.valeur } : null,
       ].filter(Boolean);
     }) as { col: string; secteur: string; value: number; count: number }[];
 
@@ -198,12 +196,37 @@ function ProportionPlot({ data, height }: { data: { label: string; valeur: numbe
     const stack = (opts: object) =>
       Plot.stackY({}, { x: "col", y: "value", z: "secteur", ...opts });
 
+    const marks: any[] = [
+      Plot.areaY(rows, stack({ curve: "bump-x", fill: "secteur", stroke: "white", strokeWidth: 0.8 })),
+    ];
+
+    if (!compact) {
+      marks.push(
+        Plot.text(rows, stack({
+          filter: (d: any) => d.col === "Toutes entreprises",
+          text: (d: any) => `${d.value}%`,
+          textAnchor: "end", dx: -7, fill: "#4a5568", fontSize: 11,
+        })),
+        Plot.text(rows, stack({
+          filter: (d: any) => d.col === "Entreprises en zone",
+          text: (d: any) => `${d.value}%`,
+          textAnchor: "start", dx: 7, fill: "#4a5568", fontSize: 11,
+        })),
+        Plot.text(rows, stack({
+          filter: (d: any) => d.col === "Toutes entreprises",
+          text: (d: any) => d.secteur,
+          textAnchor: "start", dx: 8,
+          fill: "white", fontWeight: "bold", fontSize: 11,
+        })),
+      );
+    }
+
     const chart = Plot.plot({
       width: w,
       height,
       x: {
         domain: columns,
-        axis: "top",
+        axis: compact ? null : "top",
         label: null,
         tickFormat: (d: string) => d,
         tickSize: 0,
@@ -214,48 +237,30 @@ function ProportionPlot({ data, height }: { data: { label: string; valeur: numbe
         domain: secteurs,
         range: secteurs.map((_, i) => PROPORTION_COLORS[i % PROPORTION_COLORS.length]),
       },
-      marginLeft: 50,
-      marginRight: 60,
-      style: { fontSize: "12px", fontFamily: "var(--font-google-sans, sans-serif)" },
-      marks: [
-        Plot.areaY(rows, stack({ curve: "bump-x", fill: "secteur", stroke: "white", strokeWidth: 2 })),
-        // % gauche
-        Plot.text(rows, stack({
-          filter: (d: any) => d.col === "Toutes entreprises",
-          text: (d: any) => `${d.value}%`,
-          textAnchor: "end",
-          dx: -6,
-          fill: "#4a5568",
-          fontSize: 11,
-        })),
-        // % droite
-        Plot.text(rows, stack({
-          filter: (d: any) => d.col === "Entreprises en zone",
-          text: (d: any) => `${d.value}%`,
-          textAnchor: "start",
-          dx: 6,
-          fill: "#4a5568",
-          fontSize: 11,
-        })),
-        // nom du secteur dans la colonne gauche (bold white)
-        Plot.text(rows, stack({
-          filter: (d: any) => d.col === "Toutes entreprises",
-          text: (d: any) => { const t = d.secteur as string; return t.length > 16 ? t.slice(0, 15) + "…" : t; },
-          textAnchor: "start",
-          dx: 8,
-          fill: "white",
-          fontWeight: "bold",
-          fontSize: 11,
-        })),
-      ],
+      marginLeft:  compact ? 0 : 50,
+      marginRight: compact ? 0 : 60,
+      marginTop:   compact ? 0 : 20,
+      style: {
+        fontSize: "12px",
+        fontFamily: "var(--font-google-sans, sans-serif)",
+        border: "none",
+        outline: "none",
+        background: "transparent",
+        overflow: "visible",
+      },
+      marks,
     });
 
+    // Retire le border que Plot ajoute parfois via l'élément figure
+    (chart as HTMLElement).style.border = "none";
+    (chart as HTMLElement).style.outline = "none";
+
     plotRef.current.appendChild(chart);
-  }, [data, dataZone, w, height]);
+  }, [data, dataZone, w, height, compact]);
 
   if (!data.length) return <EmptyState h={height} />;
   return (
-    <div ref={containerRef} style={{ width: "100%" }}>
+    <div ref={containerRef} style={{ width: "100%", overflow: "hidden" }}>
       <div ref={plotRef} />
     </div>
   );
@@ -276,8 +281,8 @@ function AutoChart({ data, chartType, height }: { data:any[]; chartType:ChartTyp
   return <BarH data={data} height={height}/>;
 }
 
-function VizChart({ vizId, data, height }: { vizId: string; data: any[]; height: number }) {
-  if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} />;
+function VizChart({ vizId, data, height, compact }: { vizId: string; data: any[]; height: number; compact?: boolean }) {
+  if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} compact={compact} />;
   return <AutoChart data={data} chartType="auto" height={height} />;
 }
 
@@ -387,13 +392,13 @@ function VizCard({ card, viz, onRemove }: {
           ):data.length===0?(
             <EmptyState h={200}/>
           ):(
-            <VizChart vizId={viz.id} data={data} height={200}/>
+            <VizChart vizId={viz.id} data={data} height={200} compact/>
           )}
         </div>
       </div>
 
       <VizModal open={open} onClose={()=>setOpen(false)} titre={viz.titre} vizId={viz.id}>
-        <VizChart vizId={viz.id} data={data} height={380}/>
+        <VizChart vizId={viz.id} data={data} height={400}/>
       </VizModal>
     </>
   );
