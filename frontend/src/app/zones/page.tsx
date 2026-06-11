@@ -21,7 +21,7 @@ const TYPE_META: Record<string,{label:string;color:string;bg:string;border:strin
   ZFI: { label:"Zones Franches Industrielles",           color:"#188038", bg:"rgba(24,128,56,0.06)",  border:"rgba(24,128,56,0.2)" },
 };
 
-const POLE_COLORS = ["#efd0bc","#b2cade","#b9d9c3","#f5e6c8","#d4c5e8","#fadadd","#c8e6e8","#e8d5c4"];
+const POLE_COLORS = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
 
 // ── Sunburst par type ─────────────────────────────────────────────────────────
 function SunburstZones({ zones }: { zones:any[] }) {
@@ -208,8 +208,9 @@ function SunburstPoles({ zones }: { zones:any[] }) {
       if(d.depth===0) return "#F2F2F2";
       const pi=d.data.poleIndex??0;
       const c=POLE_COLORS[pi%POLE_COLORS.length];
-      const a=d.depth===1?0.45:d.depth===2?0.40:d.depth===3?0.37:0.12+d.depth*0.15;
-      return c+Math.round(Math.min(a,0.85)*255).toString(16).padStart(2,"0");
+      if(d.depth===1) return c;
+      const a=d.depth===2?0.62:d.depth===3?0.38:0.25;
+      return c+Math.round(a*255).toString(16).padStart(2,"0");
     };
     const rectH=(d:any)=>Math.max(0,d.x1-d.x0-Math.min(1,(d.x1-d.x0)/2));
     const labelOk=(d:any)=>d.y1<=W&&d.y0>=0&&d.x1-d.x0>16;
