@@ -4,10 +4,16 @@ import LocalisationSelect from "@/components/shared/LocalisationSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
 import PhoneInput from "@/components/shared/PhoneInput";
+import { parsePhoneNumber } from "libphonenumber-js";
 import { Building2, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+function fmtPhone(raw: string): string {
+  if (!raw) return raw;
+  try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
+}
 
 const FORMES_JURIDIQUES = [
   "Société en nom collectif (SNC)", "Société en commandite simple (SCS)",
@@ -405,7 +411,7 @@ function EntrepriseVue({ ent:e, onClose, onEdit }: { ent:any; onClose:()=>void; 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {e.date_creation&&<div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date de création</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtD(e.date_creation)}</p></div>}
             {e.adresse&&<div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Adresse</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{e.adresse}</p></div>}
-            {e.telephone&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Téléphone(s)</LBL>{e.telephone.split(",").map((t:string,i:number)=><p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{t.trim()}</p>)}</div>}
+            {e.telephone&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Téléphone(s)</LBL>{e.telephone.split(",").map((t:string,i:number)=><p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtPhone(t.trim())}</p>)}</div>}
             {e.mail&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Email(s)</LBL>{e.mail.split(",").map((m:string,i:number)=><p key={i} style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{m.trim()}</p>)}</div>}
             {locStr&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Localisation</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{locStr}</p></div>}
             {e.siteweb&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Site web</LBL><a href={e.siteweb} target="_blank" rel="noopener noreferrer" style={{fontSize:13,fontWeight:600,color:"#1a1a2e",textDecoration:"none"}}>{e.siteweb}</a></div>}
@@ -453,12 +459,21 @@ function EntrepriseVue({ ent:e, onClose, onEdit }: { ent:any; onClose:()=>void; 
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {e.points_focaux.map((pf:any,i:number)=>(
                   <div key={i} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px",fontSize:12}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                      <span style={{fontWeight:700,color:"#1a1a2e"}}>{pf.civilite} {pf.prenom} {pf.nom}</span>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3,flexWrap:"wrap" as const}}>
+                      <span style={{fontWeight:700,color:"#1a1a2e"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</span>
                       {pf.poste&&<span style={{color:"#9aa5b4"}}>— {pf.poste}</span>}
                       {pf.est_principal&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"1px 7px"}}>Principal</span>}
                     </div>
-                    <div style={{color:"#4a5568"}}>{pf.telephone}{pf.mail&&` · ${pf.mail}`}</div>
+                    {pf.telephone&&<div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:6}}>
+                      {pf.telephone.split(",").map((t:string,ti:number)=>(
+                        <span key={ti} style={{fontSize:11,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{fmtPhone(t.trim())}</span>
+                      ))}
+                    </div>}
+                    {pf.mail&&<div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:5}}>
+                      {pf.mail.split(",").map((m:string,mi:number)=>(
+                        <span key={mi} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{m.trim()}</span>
+                      ))}
+                    </div>}
                   </div>
                 ))}
               </div>
