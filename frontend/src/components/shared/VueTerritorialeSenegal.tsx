@@ -24,13 +24,13 @@ const REGION_PALETTE: Record<string, string> = {
   "Diourbel":     "#C2D685", // vert jaune
   "Louga":        "#d4c5e8", // lavande
   "Saint-Louis":  "#b2cade", // bleu ciel
-  "Matam":        "#EEC4C5", // rose pâle
+  "Matam":        "#FCD1D1", // rose très doux
   "Tambacounda":  "#EED9C4", // beige clair
   "Kédougou":     "#069494", // teal profond
   "Fatick":       "#FFB070", // orange doux
   "Kaolack":      "#FF7E70", // corail
   "Kaffrine":     "#E4D96F", // jaune vif
-  "Kolda":        "#99CC66", // vert lime
+  "Kolda":        "#BDD2B6", // vert sauge clair
   "Sédhiou":      "#B7C4CF", // gris bleuté
   "Ziguinchor":   "#4682A9", // bleu acier
 };
