@@ -9,6 +9,7 @@ export const CATALOGUE: Visualisation[] = [
   { id: "entreprises-par-secteur", titre: "Entreprises par secteur",  endpoint: "/dashboard/viz/entreprises-par-secteur",  defaultSize: "md" },
   { id: "entreprises-par-region",  titre: "Entreprises par région",      endpoint: "/dashboard/viz/entreprises-par-region",      defaultSize: "md" },
   { id: "entreprises-par-dept",    titre: "Entreprises par département", endpoint: "/dashboard/viz/entreprises-dept-par-region", defaultSize: "lg" },
+  { id: "entreprises-par-branche", titre: "Entreprises par branche",     endpoint: "/dashboard/viz/branches-par-secteur",        defaultSize: "md" },
 ];
 
 export const KPIS_DISPONIBLES = [

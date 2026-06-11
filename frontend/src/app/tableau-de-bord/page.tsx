@@ -381,6 +381,158 @@ function DeptStackedBars({ data, height, compact = false }: { data: DeptRow[]; h
   );
 }
 
+// ─── Treemap (Entreprises par branche) ───────────────────────────────────────
+type BrancheRow = { secteur: string; branche: string; valeur: number };
+
+function BrancheTreemap({ data, height, compact = false }: { data: BrancheRow[]; height: number; compact?: boolean }) {
+  const svgRef  = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const tipRef  = useRef<HTMLDivElement>(null);
+
+  const draw = useCallback(() => {
+    if (!svgRef.current || !wrapRef.current || !data.length) return;
+    d3.select(svgRef.current).selectAll("*").remove();
+
+    const W = wrapRef.current.clientWidth || 500;
+    const H = height;
+
+    // Hierarchy : root → secteur → branche
+    const root = d3.hierarchy<any>({
+      name: "root",
+      children: Array.from(
+        d3.group(data, d => d.secteur),
+        ([secteur, rows]) => ({
+          name: secteur,
+          children: rows.map(r => ({ name: r.branche, value: r.valeur, secteur })),
+        })
+      ),
+    }).sum(d => d.value ?? 0).sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+
+    d3.treemap<any>().size([W, H]).padding(compact ? 1 : 2).paddingTop(compact ? 0 : 16)(root);
+
+    const secteurNames = Array.from(new Set(data.map(d => d.secteur)));
+
+    const svg = d3.select(svgRef.current).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+
+    const leaves = root.leaves() as d3.HierarchyRectangularNode<any>[];
+
+    // Rects
+    svg.selectAll<SVGRectElement, typeof leaves[0]>("rect.cell")
+      .data(leaves).enter().append("rect")
+      .attr("class", "cell")
+      .attr("x",      d => d.x0)
+      .attr("y",      d => d.y0)
+      .attr("width",  d => Math.max(0, d.x1 - d.x0))
+      .attr("height", d => Math.max(0, d.y1 - d.y0))
+      .attr("fill",   d => {
+        const idx = secteurNames.indexOf(d.data.secteur);
+        const base = idx === 0 ? "#004f91" : idx === 1 ? "#9195BB" : "#BBB791";
+        // Vary lightness slightly per child index within sector
+        const siblings = leaves.filter(l => l.data.secteur === d.data.secteur);
+        const si = siblings.indexOf(d);
+        const t = siblings.length > 1 ? si / (siblings.length - 1) : 0;
+        return d3.color(base)!.brighter(t * 0.5).formatHex();
+      })
+      .style("cursor", "pointer")
+      .on("mouseenter", function(event) {
+        d3.select(this).attr("opacity", 0.8);
+        if (!tipRef.current) return;
+        const d = d3.select<SVGRectElement, typeof leaves[0]>(this).datum();
+        tipRef.current.style.opacity = "1";
+        tipRef.current.style.left    = `${event.offsetX + 12}px`;
+        tipRef.current.style.top     = `${event.offsetY - 8}px`;
+        tipRef.current.innerHTML =
+          `<span style="opacity:.7;font-size:10px">${d.data.secteur}</span><br/>`+
+          `<strong>${d.data.name}</strong><br/>${(d.value ?? 0).toLocaleString("fr-FR")} entreprises`;
+      })
+      .on("mousemove", function(event) {
+        if (tipRef.current) {
+          tipRef.current.style.left = `${event.offsetX + 12}px`;
+          tipRef.current.style.top  = `${event.offsetY - 8}px`;
+        }
+      })
+      .on("mouseleave", function() {
+        d3.select(this).attr("opacity", 1);
+        if (tipRef.current) tipRef.current.style.opacity = "0";
+      });
+
+    if (!compact) {
+      // Section headers (secteur)
+      const secteurNodes = root.children as d3.HierarchyRectangularNode<any>[];
+      secteurNodes?.forEach(sNode => {
+        svg.append("text")
+          .attr("x", sNode.x0 + 4)
+          .attr("y", sNode.y0 + 11)
+          .style("font-size", "9px")
+          .style("font-weight", "700")
+          .style("fill", "#fff")
+          .style("text-transform", "uppercase")
+          .style("letter-spacing", "0.08em")
+          .style("pointer-events", "none")
+          .text(sNode.data.name);
+      });
+    }
+
+    // Branch labels on leaves
+    svg.selectAll<SVGTextElement, typeof leaves[0]>("text.lbl")
+      .data(leaves).enter().append("text")
+      .attr("class", "lbl")
+      .attr("x",     d => d.x0 + 4)
+      .attr("y",     d => d.y0 + (compact ? (d.y1 - d.y0) / 2 + 4 : 28))
+      .style("font-size",     d => {
+        const w = d.x1 - d.x0, h = d.y1 - d.y0;
+        return Math.min(compact ? 8 : 11, Math.max(7, w / 9, h / 3)) + "px";
+      })
+      .style("fill",          "white")
+      .style("font-weight",   "600")
+      .style("pointer-events","none")
+      .text(d => {
+        const w = d.x1 - d.x0, h = d.y1 - d.y0;
+        if (w < 28 || h < 14) return "";
+        const maxChars = Math.floor(w / (compact ? 5 : 6.5));
+        const t = d.data.name as string;
+        return t.length > maxChars ? t.slice(0, maxChars - 1) + "…" : t;
+      });
+
+    // Value labels on leaves (full view only, if enough space)
+    if (!compact) {
+      svg.selectAll<SVGTextElement, typeof leaves[0]>("text.val")
+        .data(leaves).enter().append("text")
+        .attr("class", "val")
+        .attr("x",   d => d.x0 + 4)
+        .attr("y",   d => d.y0 + 40)
+        .style("font-size",      "9px")
+        .style("fill",           "rgba(255,255,255,0.75)")
+        .style("pointer-events", "none")
+        .text(d => {
+          const w = d.x1 - d.x0, h = d.y1 - d.y0;
+          return h > 46 && w > 40 ? (d.value ?? 0).toLocaleString("fr-FR") : "";
+        });
+    }
+  }, [data, height, compact]);
+
+  useEffect(() => { draw(); }, [draw]);
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const obs = new ResizeObserver(() => draw());
+    obs.observe(wrapRef.current);
+    return () => obs.disconnect();
+  }, [draw]);
+
+  if (!data.length) return <EmptyState h={height} />;
+  return (
+    <div ref={wrapRef} style={{ width: "100%", height, position: "relative" }}>
+      <svg ref={svgRef} style={{ width: "100%", height: "100%" }} />
+      <div ref={tipRef} style={{
+        position: "absolute", pointerEvents: "none", opacity: 0, transition: "opacity 0.12s",
+        background: "rgba(26,26,46,0.92)", color: "#fff", borderRadius: 8,
+        padding: "7px 11px", fontSize: 12, lineHeight: 1.6, whiteSpace: "nowrap",
+        backdropFilter: "blur(4px)", zIndex: 10,
+      }} />
+    </div>
+  );
+}
+
 // ─── Proportion Plot (Entreprises par secteur) ────────────────────────────────
 const PROPORTION_COLORS = ["#598db8", "#dc9a6d", "#69ac7d"];
 const SECTEUR_COLOR: Record<string, string> = {
@@ -534,6 +686,7 @@ function VizChart({ vizId, data, height, compact }: { vizId: string; data: any[]
   if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} compact={compact} />;
   if (vizId === "entreprises-par-region")  return <RegionBarPlot   data={data} height={height} compact={compact} />;
   if (vizId === "entreprises-par-dept")    return <DeptStackedBars data={data} height={height} compact={compact} />;
+  if (vizId === "entreprises-par-branche") return <BrancheTreemap  data={data} height={height} compact={compact} />;
   return <AutoChart data={data} chartType="auto" height={height} />;
 }
 

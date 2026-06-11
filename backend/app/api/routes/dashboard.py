@@ -119,6 +119,18 @@ async def viz_ent_branche(db: AsyncSession = Depends(get_db)):
         GROUP BY b.nom ORDER BY valeur DESC LIMIT 20
     """)
 
+@router.get("/viz/branches-par-secteur")
+async def viz_branches_secteur(db: AsyncSession = Depends(get_db)):
+    return await safe(db, """
+        SELECT s.nom as secteur, b.nom as branche, COUNT(DISTINCT e.id) as valeur
+        FROM entreprises_installees e
+        JOIN LATERAL unnest(e.branche_ids) bid ON TRUE
+        JOIN ref_branches b ON b.id = bid
+        JOIN ref_secteurs s ON s.id = b.secteur_id
+        WHERE e.is_deleted=FALSE AND array_length(e.branche_ids,1) > 0
+        GROUP BY s.nom, b.nom ORDER BY s.nom, valeur DESC
+    """)
+
 @router.get("/viz/entreprises-par-activite")
 async def viz_ent_activite(db: AsyncSession = Depends(get_db)):
     return await safe(db, """
