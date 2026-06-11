@@ -338,7 +338,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
           { label: "Secteur secondaire", key: "secondaire", color: "#366FE3" },
           { label: "Secteur tertiaire",  key: "tertiaire",  color: "#E35336" },
         ] as const;
-        const base = total || 1;
+        const base = (stats ? stats.primaire + stats.secondaire + stats.tertiaire : 0) || 1;
         return (
           <div onClick={e => { if (e.target === e.currentTarget) setActiveRegion(null); }}
             style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>

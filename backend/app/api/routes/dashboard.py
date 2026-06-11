@@ -157,9 +157,9 @@ async def viz_region_stats(db: AsyncSession = Depends(get_db)):
     return await safe(db, """
         SELECT r.nom as region,
                COUNT(DISTINCT e.id) as total,
-               COUNT(DISTINCT CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1))='A' THEN e.id END) as primaire,
-               COUNT(DISTINCT CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1)) IN ('B','C','D','E','F') THEN e.id END) as secondaire,
-               COUNT(DISTINCT CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1)) NOT IN ('A','B','C','D','E','F') THEN e.id END) as tertiaire
+               COUNT(CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1))='A' THEN 1 END) as primaire,
+               COUNT(CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1)) IN ('B','C','D','E','F') THEN 1 END) as secondaire,
+               COUNT(CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1)) NOT IN ('A','B','C','D','E','F') AND s.code IS NOT NULL THEN 1 END) as tertiaire
         FROM ref_regions r
         LEFT JOIN entreprises_installees e ON e.region_id = r.id AND e.is_deleted=FALSE
         LEFT JOIN LATERAL unnest(e.secteur_ids) sid ON TRUE
