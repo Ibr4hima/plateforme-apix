@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, Calendar } from "lucide-react";
+import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { api } from "@/lib/api";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -29,6 +30,30 @@ const ROLES_APIX = [
   { value: "Sponsor",         label: "Sponsor"          },
   { value: "Invité",          label: "Invité"           },
 ];
+
+const MOIS_VIEW = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const ROLES_APIX_LABELS: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
+const ROLE_VARIANT: Record<string, BadgeVariant> = { "Organisateur":"green","Co-organisateur":"yellow","Participant":"orange","Partenaire":"teal","Sponsor":"lavender","Invité":"gray" };
+
+function computeStatut(e: any): "a_venir"|"en_cours"|"termine"|null {
+  if (!e.date_debut) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const debut = new Date(e.date_debut+"T00:00:00");
+  const fin   = e.date_fin ? new Date(e.date_fin+"T00:00:00") : debut;
+  if (debut > today) return "a_venir";
+  if (fin   < today) return "termine";
+  return "en_cours";
+}
+
+function fmtDateFR(d: string) {
+  if (!d) return "";
+  const [y,m,j] = d.split("-").map(Number);
+  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
+}
+
+const LBL = ({children}:{children:string}) => (
+  <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
+);
 
 const EMPTY_FORM = {
   nom_event: "", edition: "" as string,
@@ -526,13 +551,6 @@ export default function EvenementsPage() {
     } finally { setTogglingId(null); }
   };
 
-  // Formater dates pour les cards
-  const MOIS = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
-  const fmtDate = (d: string) => {
-    if (!d) return null;
-    const [y,m,j] = d.split("-"); return `${parseInt(j)} ${MOIS[parseInt(m)-1]} ${y}`;
-  };
-
   return (
     <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
@@ -540,11 +558,10 @@ export default function EvenementsPage() {
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:32 }}>
         <div>
-          <p style={{ fontSize:11, fontWeight:700, color:"#004f91", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:4 }}>Administration</p>
           <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Événements</h1>
           <p style={{ color:"#9aa5b4", fontSize:13, marginTop:2 }}>{total} événement{total>1?"s":""} au total</p>
         </div>
-        <button onClick={openCreate} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#004f91,#003a6e)", color:"#fff", fontWeight:700, fontSize:13, padding:"11px 20px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:"0 4px 14px rgba(0,79,145,0.3)" }}>
+        <button onClick={openCreate} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#ca631f,#a0521a)", color:"#fff", fontWeight:700, fontSize:13, padding:"11px 20px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:"0 4px 14px rgba(202,99,31,0.3)" }}>
           <Plus size={15} /> Ajouter un événement
         </button>
       </div>
@@ -563,56 +580,45 @@ export default function EvenementsPage() {
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
           {evenements.map(e => {
             const dateStr = e.date_debut
-              ? (e.date_debut === e.date_fin || !e.date_fin)
-                ? fmtDate(e.date_debut)
-                : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`
-              : e.prochain_mois
-                ? `${e.prochain_jour ? e.prochain_jour+" " : ""}${MOIS[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}`
-                : null;
+              ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDateFR(e.date_debut) : `${fmtDateFR(e.date_debut)} → ${fmtDateFR(e.date_fin)}`)
+              : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS_VIEW[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
             const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
+            const statut = computeStatut(e);
             return (
-              <div key={e.id}
-                onClick={()=>setVue(e)}
-                style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", borderLeft:`3px solid ${e.est_publie?"#E35336":"#C5BFBB"}`, cursor:"pointer", transition:"all 0.15s" }}
-                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)"; ev.currentTarget.style.borderColor="#FFB0A1";}}
-                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor=e.est_publie?"#E35336":"#C5BFBB";}}>
+              <div key={e.id} onClick={()=>setVue(e)}
+                style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
+                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
+                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
 
-                {/* Nom + édition */}
-                <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", lineHeight:1.35, marginBottom:e.edition!=null?2:8 }}>
-                  {e.nom_event}
+                <div style={{position:"absolute" as const,top:12,right:12}}>
+                  {statut==="en_cours" ? <Badge variant="green"  size="xs" style={{color:"#188038",background:"rgba(24,128,56,0.06)",borderColor:"rgba(24,128,56,0.12)"}}>En cours</Badge>
+                  :statut==="termine"  ? <Badge variant="gray"   size="xs">Terminé</Badge>
+                  :e.role_apix         ? <Badge variant={ROLE_VARIANT[e.role_apix]||"gray"} size="xs">{ROLES_APIX_LABELS[e.role_apix]||e.role_apix}</Badge>
+                  :null}
                 </div>
-                {e.edition!=null && (
-                  <div style={{ fontSize:11, color:"#9aa5b4", marginBottom:8 }}>{ordinalEdition(e.edition)}</div>
-                )}
-
-                {/* Date + Lieu */}
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
-                  {dateStr && (
-                    <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#E35336", flexShrink:0 }}/>
-                      <span style={{ color:"#4a5568" }}>{dateStr}</span>
-                    </div>
-                  )}
-                  {lieu && (
-                    <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#366FE3", flexShrink:0 }}/>
-                      <span style={{ color:"#4a5568" }}>{lieu}</span>
-                    </div>
-                  )}
+                <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8,paddingRight:(statut&&statut!=="a_venir")||e.role_apix?90:0}}>{e.nom_event}</div>
+                {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinalEdition(e.edition)}</div>}
+                <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
+                  {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                    <span style={{color:"#4a5568"}}>{dateStr}</span>
+                  </div>}
+                  {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
+                    <span style={{color:"#4a5568"}}>{lieu}</span>
+                  </div>}
                 </div>
-
-                {/* Actions — stopPropagation pour ne pas ouvrir la vue */}
-                <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={ev=>ev.stopPropagation()}>
+                <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
                   <button onClick={()=>openEdit(e)}
-                    style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(54,111,227,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#366FE3", fontWeight:600 }}>
+                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}>
                     <Pencil size={12}/> Modifier
                   </button>
                   <button onClick={()=>handleTogglePublie(e)} disabled={togglingId===e.id}
-                    style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:e.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:e.est_publie?"#15803d":"#6b7280", fontWeight:600 }}>
+                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:e.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:e.est_publie?"#15803d":"#6b7280",fontWeight:600}}>
                     {togglingId===e.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:e.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                   </button>
                   <button onClick={()=>handleDelete(e.id)} disabled={deleting===e.id}
-                    style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
+                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
                     {deleting===e.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
                   </button>
                 </div>
@@ -622,161 +628,66 @@ export default function EvenementsPage() {
         </div>
       )}
 
-      {/* Modal vue — toutes les infos, couleurs E35336/FFB0A1/366FE3 */}
-      {vue && (
-        <div onClick={()=>setVue(null)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-          <div onClick={ev=>ev.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:600, maxHeight:"90vh", overflowY:"auto", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>
-            {/* Bande colorée */}
-            <div style={{ height:5, background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)" }}/>
-            <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
-
-              {/* Header */}
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-                <div style={{ flex:1, paddingRight:16 }}>
-                  <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:"#1a1a2e", lineHeight:1.3, marginBottom:6 }}>{vue.nom_event}</h2>
-                  <div style={{ display:"flex", gap:7, flexWrap:"wrap" as const }}>
-                    {vue.edition!=null && (
-                      <span style={{ fontSize:11, fontWeight:700, color:"#E35336", background:"rgba(227,83,54,0.08)", border:"1px solid rgba(227,83,54,0.2)", padding:"2px 9px", borderRadius:999 }}>
-                        {ordinalEdition(vue.edition)}
-                      </span>
-                    )}
-                    <span style={{ fontSize:11, fontWeight:700, color:vue.est_publie?"#15803d":"#9aa5b4", background:vue.est_publie?"#dcfce7":"#F2F0EF", padding:"2px 9px", borderRadius:999 }}>
-                      {vue.est_publie?"Publié":"Non publié"}
-                    </span>
-                    {vue.role_apix && (
-                      <span style={{ fontSize:11, fontWeight:700, color:"#366FE3", background:"rgba(54,111,227,0.08)", border:"1px solid rgba(54,111,227,0.2)", padding:"2px 9px", borderRadius:999 }}>
-                        {ROLES_APIX.find(r=>r.value===vue.role_apix)?.label||vue.role_apix}
-                      </span>
-                    )}
+      {vue&&(
+        <div onClick={()=>setVue(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+          <div onClick={ev=>ev.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.25)",overflow:"hidden"}}>
+            <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
+            <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+                <div style={{flex:1,paddingRight:16}}>
+                  <h2 style={{fontWeight:800,fontSize:"1.2rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{vue.nom_event}</h2>
+                  <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
+                    {vue.edition!=null&&<span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{ordinalEdition(vue.edition)}</span>}
+                    <span style={{fontSize:11,fontWeight:700,color:vue.est_publie?"#15803d":"#9aa5b4",background:vue.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{vue.est_publie?"Publié":"Non publié"}</span>
+                    {vue.role_apix&&<Badge variant={ROLE_VARIANT[vue.role_apix]||"gray"} size="xs">{ROLES_APIX_LABELS[vue.role_apix]||vue.role_apix}</Badge>}
                   </div>
                 </div>
-                <button onClick={()=>setVue(null)} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7, flexShrink:0 }}><X size={14} color="#4a5568"/></button>
+                <button onClick={()=>setVue(null)} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
               </div>
-
-              {/* Description */}
-              {vue.description && (
-                <div style={{ background:"rgba(227,83,54,0.04)", border:"1px solid rgba(227,83,54,0.1)", borderRadius:10, padding:"12px 14px", marginBottom:18 }}>
-                  <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-                  <div data-rte dangerouslySetInnerHTML={{__html:vue.description}} style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}/>
-                </div>
-              )}
-
-              {/* Grille infos principales */}
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:18 }}>
-                {/* Dates */}
-                {(vue.date_debut||vue.prochain_mois) && (
-                  <div style={{ background:"rgba(227,83,54,0.05)", borderRadius:10, padding:"12px 14px" }}>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#E35336", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>Date</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>
-                      {vue.date_debut
-                        ? (vue.date_debut===vue.date_fin||!vue.date_fin ? fmtDate(vue.date_debut) : `${fmtDate(vue.date_debut)} → ${fmtDate(vue.date_fin)}`)
-                        : `${vue.prochain_jour?vue.prochain_jour+" ":""}${MOIS[(vue.prochain_mois||1)-1]} ${vue.prochain_annee||""}`}
-                    </p>
-                    {vue.duree_jours && <p style={{ fontSize:11, color:"#9aa5b4", marginTop:3 }}>{vue.duree_jours} jour{vue.duree_jours>1?"s":""}</p>}
-                  </div>
-                )}
-                {/* Lieu */}
-                {(vue.ville||vue.pays_hote_nom) && (
-                  <div style={{ background:"rgba(54,111,227,0.05)", borderRadius:10, padding:"12px 14px" }}>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#366FE3", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>Lieu</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{[vue.ville,vue.pays_hote_nom].filter(Boolean).join(", ")}</p>
-                  </div>
-                )}
-                {/* Organisateur */}
-                {vue.organisateur && (
-                  <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>Organisateur</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{vue.organisateur}</p>
-                  </div>
-                )}
-                {/* Récurrence */}
-                {vue.est_recurrent && (
-                  <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>Récurrence</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>
-                      Tous les {vue.frequence_valeur} {vue.frequence_type==="mois"?"mois":`an${vue.frequence_valeur>1?"s":""}`}
-                    </p>
-                  </div>
-                )}
+              {vue.description&&<div style={{background:"rgba(202,99,31,0.04)",border:"1px solid rgba(202,99,31,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style><div data-rte dangerouslySetInnerHTML={{__html:vue.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/></div>}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+                {(vue.date_debut||vue.prochain_mois)&&<div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{vue.date_debut?(vue.date_debut===vue.date_fin||!vue.date_fin?fmtDateFR(vue.date_debut):`${fmtDateFR(vue.date_debut)} → ${fmtDateFR(vue.date_fin)}`):(`${vue.prochain_jour?vue.prochain_jour+" ":""}${MOIS_VIEW[(vue.prochain_mois||1)-1]} ${vue.prochain_annee||""}`)}</p>{vue.duree_jours&&<p style={{fontSize:11,color:"#9aa5b4",marginTop:3}}>{vue.duree_jours} jour{vue.duree_jours>1?"s":""}</p>}</div>}
+                {(vue.ville||vue.pays_hote_nom)&&<div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Lieu</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{[vue.ville,vue.pays_hote_nom].filter(Boolean).join(", ")}</p></div>}
+                {vue.organisateur&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Organisateur</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{vue.organisateur}</p></div>}
+                {vue.est_recurrent&&<div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}><LBL>Récurrence</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>Tous les {vue.frequence_valeur} {vue.frequence_type==="mois"?"mois":`an${vue.frequence_valeur>1?"s":""}`}</p></div>}
               </div>
-
-              {/* Thématiques NAEMA — arborescence */}
-              {vue.thematiques_tree && Object.keys(vue.thematiques_tree).length > 0 && (
-                <div style={{ marginBottom:16 }}>
-                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Thématiques</p>
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
-                    {Object.entries(vue.thematiques_tree).map(([sec, branches]:any) => (
+              {vue.thematiques_tree&&Object.keys(vue.thematiques_tree).length>0&&(
+                <div style={{marginBottom:16}}>
+                  <LBL>Thématiques</LBL>
+                  <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                    {Object.entries(vue.thematiques_tree).map(([sec,branches]:any)=>(
                       <div key={sec}>
-                        {/* Secteur */}
-                        <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:6 }}>
-                          <div style={{ width:8, height:8, borderRadius:"50%", background:"#E35336", flexShrink:0 }}/>
-                          <span style={{ fontSize:12, fontWeight:700, color:"#E35336" }}>{sec}</span>
+                        <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:Object.keys(branches).length?5:0}}>
+                          <div style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+                          <span style={{fontSize:12,fontWeight:700,color:"#ca631f"}}>{sec}</span>
                         </div>
-                        {/* Branches */}
-                        {Object.keys(branches).length > 0 && (
-                          <div style={{ display:"flex", flexDirection:"column" as const, gap:6, paddingLeft:20, borderLeft:"2px solid rgba(227,83,54,0.15)" }}>
-                            {Object.entries(branches).map(([bra, acts]:any) => (
-                              <div key={bra}>
-                                {/* Branche */}
-                                <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:acts.length>0?5:0 }}>
-                                  <div style={{ width:6, height:6, borderRadius:"50%", background:"#366FE3", flexShrink:0 }}/>
-                                  <span style={{ fontSize:11, fontWeight:600, color:"#366FE3" }}>{bra}</span>
-                                </div>
-                                {/* Activités */}
-                                {acts.length > 0 && (
-                                  <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3, marginTop:3 }}>
-                                    {acts.map((act:string) => (
-                                      <div key={act} style={{ display:"flex", alignItems:"center", gap:6 }}>
-                                        <div style={{ width:5, height:5, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
-                                        <span style={{ fontSize:11, color:"#188038", fontWeight:500 }}>{act}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
+                        {Object.entries(branches).map(([bra,acts]:any)=>(
+                          <div key={bra} style={{paddingLeft:20,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
+                            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:acts.length?4:0}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                              <span style={{fontSize:11,fontWeight:600,color:"#004f91"}}>{bra}</span>
+                            </div>
+                            {acts.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>{acts.map((act:string)=>(
+                              <div key={act} style={{display:"flex",alignItems:"center",gap:6}}>
+                                <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act}</span>
                               </div>
-                            ))}
+                            ))}</div>}
                           </div>
-                        )}
+                        ))}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-
-              {/* Pays invités */}
-              {vue.pays_invites_noms && (
-                <div style={{ marginBottom:14 }}>
-                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Pays invités</p>
-                  <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5 }}>
-                    {vue.pays_invites_noms.split(",").map((p:string)=>p.trim()).filter(Boolean).map((p:string)=>(
-                      <span key={p} style={{ fontSize:11, color:"#366FE3", background:"rgba(54,111,227,0.07)", border:"1px solid rgba(54,111,227,0.15)", padding:"2px 10px", borderRadius:999, fontWeight:500 }}>{p}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Entreprises invitées */}
-              {vue.entreprises_invitees && (
-                <div style={{ marginBottom:14 }}>
-                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:8 }}>Entreprises invitées</p>
-                  <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5 }}>
-                    {vue.entreprises_invitees.split(",").map((e:string)=>e.trim()).filter(Boolean).map((e:string)=>(
-                      <span key={e} style={{ fontSize:11, color:"#E35336", background:"rgba(227,83,54,0.06)", border:"1px solid rgba(227,83,54,0.15)", padding:"2px 10px", borderRadius:999, fontWeight:500 }}>{e}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Footer */}
-              <div style={{ display:"flex", gap:8, marginTop:20, justifyContent:"flex-end", borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
-                <button onClick={()=>{ setVue(null); openEdit(vue); }}
-                  style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 18px", borderRadius:9, border:"none", background:"#366FE3", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
+              {vue.pays_invites_noms&&<div style={{marginBottom:14}}><LBL>Pays invités</LBL><div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>{vue.pays_invites_noms.split(",").map((p:string)=>p.trim()).filter(Boolean).map((p:string)=><span key={p} style={{fontSize:11,color:"#004f91",background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.15)",padding:"2px 10px",borderRadius:999,fontWeight:500}}>{p}</span>)}</div></div>}
+              {vue.entreprises_invitees&&<div style={{marginBottom:14}}><LBL>Entreprises invitées</LBL><div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>{vue.entreprises_invitees.split(",").map((ent:string)=>ent.trim()).filter(Boolean).map((ent:string)=><span key={ent} style={{fontSize:11,color:"#ca631f",background:"rgba(202,99,31,0.06)",border:"1px solid rgba(202,99,31,0.15)",padding:"2px 10px",borderRadius:999,fontWeight:500}}>{ent}</span>)}</div></div>}
+              <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:20,borderTop:"1px solid #F2F0EF",paddingTop:18}}>
+                <button onClick={()=>{setVue(null);openEdit(vue);}}
+                  style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
                   <Pencil size={13}/> Modifier
                 </button>
-                <button onClick={()=>setVue(null)}
-                  style={{ padding:"9px 18px", borderRadius:9, border:"1px solid #C5BFBB", background:"transparent", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>
-                  Fermer
-                </button>
+                <button onClick={()=>setVue(null)} style={{padding:"9px 20px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
               </div>
             </div>
           </div>
