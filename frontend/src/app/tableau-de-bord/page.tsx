@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import * as d3 from "d3";
+import * as Plot from "@observablehq/plot";
 import {
   Activity, BarChart2, Building2, Calendar,
   DollarSign, Handshake, Layers, Loader2, MapPin, Maximize2,
@@ -154,88 +155,73 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
   );
 }
 
-// ─── Pie Chart (Entreprises par secteur) ──────────────────────────────────────
-function PieChart({ data, height }: { data: { label: string; valeur: number }[]; height: number }) {
-  const ref = useRef<SVGSVGElement>(null);
-  const cRef = useRef<HTMLDivElement>(null);
+// ─── Proportion Plot (Entreprises par secteur) ────────────────────────────────
+const PROPORTION_COLORS = ["#D2E3FC", "#FAD2CF", "#CEEAD6"];
+
+function ProportionPlot({ data, height }: { data: { label: string; valeur: number }[]; height: number }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const plotRef = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(600);
 
   useEffect(() => {
     const obs = new ResizeObserver(e => setW(e[0].contentRect.width));
-    if (cRef.current) obs.observe(cRef.current);
+    if (containerRef.current) obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, []);
 
   useEffect(() => {
-    if (!ref.current || !data.length) return;
-    const svg = d3.select(ref.current);
-    svg.selectAll("*").remove();
+    if (!plotRef.current || !data.length) return;
+    plotRef.current.innerHTML = "";
 
-    const W = w;
-    const H = height;
-    const radius = Math.min(W, H) / 2 - 1;
-    const labelRadius = radius * 0.75;
+    const total = d3.sum(data, d => d.valeur);
+    const plotData = data.map(d => ({
+      type: "secteurs",
+      value: +((d.valeur / total) * 100).toFixed(1),
+      count: d.valeur,
+      secteur: d.label,
+    }));
 
-    const color = d3.scaleOrdinal<string>()
-      .domain(data.map(d => d.label))
-      .range(d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), Math.max(data.length, 2)).reverse());
+    const stack = (opts: object) =>
+      Plot.stackY({}, { x: "type", y: "value", z: "secteur", ...opts });
 
-    const pie = d3.pie<{ label: string; valeur: number }>()
-      .sort(null)
-      .value(d => d.valeur);
+    const chart = Plot.plot({
+      width: w,
+      height,
+      x: { domain: ["secteurs"], axis: null, padding: 0 },
+      y: { axis: null, reverse: true },
+      color: {
+        domain: data.map(d => d.label),
+        range: data.map((_, i) => PROPORTION_COLORS[i % PROPORTION_COLORS.length]),
+      },
+      marginLeft: 140,
+      marginRight: 130,
+      marks: [
+        Plot.areaY(plotData, stack({ curve: "bump-x", fill: "secteur", stroke: "white", strokeWidth: 1.5 })),
+        Plot.text(plotData, stack({
+          text: (d: any) => { const t = d.secteur as string; return t.length > 18 ? t.slice(0, 17) + "…" : t; },
+          textAnchor: "end",
+          dx: -8,
+          fill: "#1a1a2e",
+          fontSize: 11,
+          fontWeight: "500",
+        })),
+        Plot.text(plotData, stack({
+          text: (d: any) => `${(d.count as number).toLocaleString("fr-FR")} · ${d.value}%`,
+          textAnchor: "start",
+          dx: 8,
+          fill: "#4a5568",
+          fontSize: 10,
+        })),
+      ],
+    });
 
-    const arc = d3.arc<d3.PieArcDatum<{ label: string; valeur: number }>>()
-      .innerRadius(0)
-      .outerRadius(radius);
-
-    const arcLabel = d3.arc<d3.PieArcDatum<{ label: string; valeur: number }>>()
-      .innerRadius(labelRadius)
-      .outerRadius(labelRadius);
-
-    const arcs = pie(data);
-
-    svg
-      .attr("viewBox", `${-W / 2} ${-H / 2} ${W} ${H}`)
-      .attr("style", "max-width:100%;height:auto;font:10px sans-serif;");
-
-    svg.append("g")
-      .attr("stroke", "white")
-      .selectAll("path")
-      .data(arcs)
-      .join("path")
-      .attr("fill", d => color(d.data.label))
-      .attr("d", arc as any)
-      .append("title")
-      .text(d => `${d.data.label}: ${d.data.valeur.toLocaleString("fr-FR")}`);
-
-    svg.append("g")
-      .attr("text-anchor", "middle")
-      .selectAll("text")
-      .data(arcs)
-      .join("text")
-      .attr("transform", d => `translate(${arcLabel.centroid(d as any)})`)
-      .call(text => text.append("tspan")
-        .attr("y", "-0.4em")
-        .attr("font-weight", "bold")
-        .attr("fill", "#1a1a2e")
-        .text(d => {
-          const angle = d.endAngle - d.startAngle;
-          if (angle < 0.25) return "";
-          const t = d.data.label;
-          return t.length > 14 ? t.slice(0, 13) + "…" : t;
-        }))
-      .call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.35).append("tspan")
-        .attr("x", 0)
-        .attr("y", "0.7em")
-        .attr("fill-opacity", 0.7)
-        .attr("fill", "#1a1a2e")
-        .text(d => d.data.valeur.toLocaleString("fr-FR")));
+    plotRef.current.appendChild(chart);
   }, [data, w, height]);
 
   if (!data.length) return <EmptyState h={height} />;
   return (
-    <div ref={cRef} style={{ width: "100%" }}>
-      <svg ref={ref} width={w} height={height} />
+    <div ref={containerRef} style={{ width: "100%" }}>
+      <div ref={plotRef} />
     </div>
   );
 }
@@ -256,7 +242,7 @@ function AutoChart({ data, chartType, height }: { data:any[]; chartType:ChartTyp
 }
 
 function VizChart({ vizId, data, height }: { vizId: string; data: any[]; height: number }) {
-  if (vizId === "entreprises-par-secteur") return <PieChart data={data} height={height} />;
+  if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} />;
   return <AutoChart data={data} chartType="auto" height={height} />;
 }
 
