@@ -21,11 +21,11 @@ const POLE_PALETTE = [
 const REGION_PALETTE: Record<string, string> = {
   "Dakar":        "#D6B588", // sable doré
   "Thiès":        "#88A9D6", // bleu acier doux
-  "Diourbel":     "#b9d9c3", // vert doux
+  "Diourbel":     "#C2D685", // vert jaune
   "Louga":        "#d4c5e8", // lavande
   "Saint-Louis":  "#b2cade", // bleu ciel
-  "Matam":        "#fadadd", // rose poudré
-  "Tambacounda":  "#e8d5c4", // sable chaud
+  "Matam":        "#EEC4C5", // rose pâle
+  "Tambacounda":  "#EED9C4", // beige clair
   "Kédougou":     "#069494", // teal profond
   "Fatick":       "#FFB070", // orange doux
   "Kaolack":      "#FF7E70", // corail
