@@ -218,9 +218,7 @@ function RegionBarPlot({ data, height, compact = false }: { data: { label: strin
       .attr("font-size",   compact ? 8 : 11)
       .attr("font-weight", "500")
       .attr("fill",        "#374151")
-      .text(d => compact
-        ? d.label.slice(0, 3).toUpperCase()
-        : d.label);
+      .text(d => compact ? regionISO(d.label) : d.label);
 
   }, [data, compact]);
 
@@ -240,7 +238,15 @@ function RegionBarPlot({ data, height, compact = false }: { data: { label: strin
   );
 }
 
-// ─── Stacked Bars (Entreprises par département) ───────────────────────────────
+const REGION_ISO: Record<string, string> = {
+  "Dakar": "DK", "Diourbel": "DB", "Fatick": "FK", "Kaffrine": "KA",
+  "Kaolack": "KL", "Kédougou": "KE", "Kolda": "KD", "Louga": "LO",
+  "Matam": "MT", "Saint-Louis": "SL", "Sédhiou": "SE",
+  "Tambacounda": "TC", "Thiès": "TH", "Ziguinchor": "ZG",
+};
+const regionISO = (nom: string) => REGION_ISO[nom] ?? nom.slice(0, 2).toUpperCase();
+
+
 type DeptRow = { region: string; departement: string; valeur: number };
 
 function DeptStackedBars({ data, height, compact = false }: { data: DeptRow[]; height: number; compact?: boolean }) {
@@ -294,7 +300,7 @@ function DeptStackedBars({ data, height, compact = false }: { data: DeptRow[]; h
         .style("font-weight", "500")
         .attr("dy", "1.1em")
         .text((d: any) => compact
-          ? String(d).slice(0, 4).toUpperCase()
+          ? regionISO(String(d))
           : (String(d).length > 10 ? String(d).slice(0, 9) + "…" : String(d))));
 
     // Stacked bars
