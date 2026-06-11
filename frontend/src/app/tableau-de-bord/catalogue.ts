@@ -5,7 +5,9 @@ export interface Visualisation {
   defaultSize: "sm" | "md" | "lg";
 }
 
-export const CATALOGUE: Visualisation[] = [];
+export const CATALOGUE: Visualisation[] = [
+  { id: "entreprises-par-secteur", titre: "Entreprises par secteur", endpoint: "/dashboard/viz/entreprises-par-secteur", defaultSize: "md" },
+];
 
 export const KPIS_DISPONIBLES = [
   { id: "entreprises_total",  label: "Total entreprises",           icon: "Building2",  color: "#ca631f" },

@@ -154,6 +154,92 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
   );
 }
 
+// ─── Pie Chart (Entreprises par secteur) ──────────────────────────────────────
+function PieChart({ data, height }: { data: { label: string; valeur: number }[]; height: number }) {
+  const ref = useRef<SVGSVGElement>(null);
+  const cRef = useRef<HTMLDivElement>(null);
+  const [w, setW] = useState(600);
+
+  useEffect(() => {
+    const obs = new ResizeObserver(e => setW(e[0].contentRect.width));
+    if (cRef.current) obs.observe(cRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!ref.current || !data.length) return;
+    const svg = d3.select(ref.current);
+    svg.selectAll("*").remove();
+
+    const W = w;
+    const H = height;
+    const radius = Math.min(W, H) / 2 - 1;
+    const labelRadius = radius * 0.75;
+
+    const color = d3.scaleOrdinal<string>()
+      .domain(data.map(d => d.label))
+      .range(d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), Math.max(data.length, 2)).reverse());
+
+    const pie = d3.pie<{ label: string; valeur: number }>()
+      .sort(null)
+      .value(d => d.valeur);
+
+    const arc = d3.arc<d3.PieArcDatum<{ label: string; valeur: number }>>()
+      .innerRadius(0)
+      .outerRadius(radius);
+
+    const arcLabel = d3.arc<d3.PieArcDatum<{ label: string; valeur: number }>>()
+      .innerRadius(labelRadius)
+      .outerRadius(labelRadius);
+
+    const arcs = pie(data);
+
+    svg
+      .attr("viewBox", `${-W / 2} ${-H / 2} ${W} ${H}`)
+      .attr("style", "max-width:100%;height:auto;font:10px sans-serif;");
+
+    svg.append("g")
+      .attr("stroke", "white")
+      .selectAll("path")
+      .data(arcs)
+      .join("path")
+      .attr("fill", d => color(d.data.label))
+      .attr("d", arc as any)
+      .append("title")
+      .text(d => `${d.data.label}: ${d.data.valeur.toLocaleString("fr-FR")}`);
+
+    svg.append("g")
+      .attr("text-anchor", "middle")
+      .selectAll("text")
+      .data(arcs)
+      .join("text")
+      .attr("transform", d => `translate(${arcLabel.centroid(d as any)})`)
+      .call(text => text.append("tspan")
+        .attr("y", "-0.4em")
+        .attr("font-weight", "bold")
+        .attr("fill", "#1a1a2e")
+        .text(d => {
+          const angle = d.endAngle - d.startAngle;
+          if (angle < 0.25) return "";
+          const t = d.data.label;
+          return t.length > 14 ? t.slice(0, 13) + "…" : t;
+        }))
+      .call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.35).append("tspan")
+        .attr("x", 0)
+        .attr("y", "0.7em")
+        .attr("fill-opacity", 0.7)
+        .attr("fill", "#1a1a2e")
+        .text(d => d.data.valeur.toLocaleString("fr-FR")));
+  }, [data, w, height]);
+
+  if (!data.length) return <EmptyState h={height} />;
+  return (
+    <div ref={cRef} style={{ width: "100%" }}>
+      <svg ref={ref} width={w} height={height} />
+    </div>
+  );
+}
+
 function EmptyState({ h=100 }: { h?:number }) {
   return (
     <div style={{height:h,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:8}}>
@@ -167,6 +253,11 @@ function AutoChart({ data, chartType, height }: { data:any[]; chartType:ChartTyp
   if(type==="donut") return <DonutChart data={data} size={Math.min(height,160)}/>;
   if(type==="bar_v") return <BarV data={data} height={height}/>;
   return <BarH data={data} height={height}/>;
+}
+
+function VizChart({ vizId, data, height }: { vizId: string; data: any[]; height: number }) {
+  if (vizId === "entreprises-par-secteur") return <PieChart data={data} height={height} />;
+  return <AutoChart data={data} chartType="auto" height={height} />;
 }
 
 function ParamSelect({ param, value, onChange, parentValue }: { param:any; value:any; onChange:(v:any)=>void; parentValue?:any }) {
@@ -275,13 +366,13 @@ function VizCard({ card, viz, onRemove }: {
           ):data.length===0?(
             <EmptyState h={200}/>
           ):(
-            <AutoChart data={data} chartType={card.chartType} height={200}/>
+            <VizChart vizId={viz.id} data={data} height={200}/>
           )}
         </div>
       </div>
 
       <VizModal open={open} onClose={()=>setOpen(false)} titre={viz.titre} vizId={viz.id}>
-        <AutoChart data={data} chartType={card.chartType} height={380}/>
+        <VizChart vizId={viz.id} data={data} height={380}/>
       </VizModal>
     </>
   );
