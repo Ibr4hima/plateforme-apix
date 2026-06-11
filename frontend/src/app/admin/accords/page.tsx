@@ -4,10 +4,12 @@ import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X 
 import { useCallback, useEffect, useState } from "react";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
+import Badge, { BadgeVariant } from "@/components/shared/Badge";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
+const STATUT_LABELS:  Record<string,string>      = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
+const STATUT_VARIANT: Record<string,BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"gray" };
 
 function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
   const today = new Date().toISOString().split("T")[0];
@@ -166,7 +168,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:820,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
-        <div style={{height:4,background:"linear-gradient(90deg,#ca631f,#004f91)",borderRadius:"20px 20px 0 0"}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)",borderRadius:"20px 20px 0 0"}}/>
         <div style={{padding:"24px 32px 32px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
             <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e"}}>{editItem?"Modifier l'accord":"Nouvel accord / traité"}</h2>
@@ -193,7 +195,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                     if (mode==="pays") { const senId=allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id; update("pays_ids",senId?[senId]:[]); update("orgs",[]); }
                     else { update("pays_ids",[]); update("orgs",[]); }
                     setSaisieOrg("");
-                  }} style={{padding:"7px 18px",border:"none",fontSize:12,fontWeight:700,cursor:"pointer",background:form.mode_signataire===mode?"#004f91":"#F2F0EF",color:form.mode_signataire===mode?"#fff":"#9aa5b4"}}>
+                  }} style={{padding:"7px 18px",border:"none",fontSize:12,fontWeight:700,cursor:"pointer",background:form.mode_signataire===mode?"#ca631f":"#F2F0EF",color:form.mode_signataire===mode?"#fff":"#9aa5b4"}}>
                     {mode==="pays"?"Pays signataires":"Organisation / Entreprise"}
                   </button>
                 ))}
@@ -264,7 +266,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                     <input value={saisieOrg} onChange={e=>setSaisieOrg(e.target.value)} placeholder="Ex : Organisation Mondiale du Commerce" style={{...IS,flex:1}}
                       onKeyDown={e=>{ if(e.key==="Enter"&&saisieOrg.trim()){ e.preventDefault(); const v=saisieOrg.trim(); if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}}/>
                     <button onClick={()=>{ const v=saisieOrg.trim(); if(!v) return; if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}
-                      style={{padding:"9px 16px",background:"#004f91",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer"}}>Ajouter</button>
+                      style={{padding:"9px 16px",background:"#ca631f",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer"}}>Ajouter</button>
                   </div>
                 </>
               )}
@@ -307,7 +309,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                   {fichiers.map((f:any)=>(
                     <div key={f.id} style={{display:"inline-flex",alignItems:"center",gap:5}}>
                       <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                        style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(0,79,145,0.06)",border:"1px solid rgba(0,79,145,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#004f91",textDecoration:"none",fontWeight:500}}>
+                        style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.06)",border:"1px solid rgba(202,99,31,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#ca631f",textDecoration:"none",fontWeight:500}}>
                         <FileText size={11}/> {f.titre||f.fichier_nom}
                       </a>
                       <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE"}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
@@ -321,11 +323,11 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
               {pdfQueue.length>0&&(
                 <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
                   {pdfQueue.map((p,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.2)",borderRadius:8,padding:"7px 12px"}}>
-                      <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.05)",border:"1px solid rgba(202,99,31,0.2)",borderRadius:8,padding:"7px 12px"}}>
+                      <FileText size={13} style={{color:"#ca631f",flexShrink:0}}/>
                       <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                         placeholder="Titre du document"
-                        style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(0,79,145,0.3)",outline:"none",fontSize:12,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
+                        style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(202,99,31,0.3)",outline:"none",fontSize:12,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
                       <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
                     </div>
                   ))}
@@ -392,7 +394,7 @@ function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>voi
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#ca631f,#FFB0A1,#004f91)"}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
             <div style={{flex:1,paddingRight:16}}>
@@ -481,7 +483,7 @@ function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>voi
             </div>
           </div>}
           <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(a);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
+            <button onClick={()=>{onClose();onEdit(a);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
               <Pencil size={13}/> Modifier
             </button>
             <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
@@ -551,7 +553,6 @@ export default function AdminAccords() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
         <div>
-          <p style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Administration</p>
           <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Accords &amp; Traités</h1>
           <p style={{color:"#9aa5b4",fontSize:13,marginTop:2}}>{total} accord{total>1?"s":""} au total</p>
         </div>
@@ -571,30 +572,32 @@ export default function AdminAccords() {
         </div>
       ) : (
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
-          {accords.map(a=>(
+          {accords.map(a=>{
+            const statut = computeStatut(a);
+            return (
             <div key={a.id} onClick={()=>setVue(a)}
-              style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:`3px solid ${a.est_publie?"#ca631f":"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderTopColor="#FFB0A1";ev.currentTarget.style.borderRightColor="#FFB0A1";ev.currentTarget.style.borderBottomColor="#FFB0A1";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
-              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?3:8}}>{a.titre.length>65?a.titre.slice(0,65)+"…":a.titre}</div>
+              style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+
+              {statut&&<div style={{position:"absolute" as const,top:12,right:12}}>
+                <Badge variant={STATUT_VARIANT[statut]||"gray"} size="xs">{STATUT_LABELS[statut]}</Badge>
+              </div>}
+
+              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?2:8,paddingRight:statut?90:0}}>{a.titre}</div>
               {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
-              {(()=>{ const st=computeStatut(a); return st&&<span style={{display:"inline-block",fontSize:10,fontWeight:700,padding:"1px 7px",borderRadius:999,marginBottom:6,
-                color:st==="en_vigueur"?"#15803d":st==="signe"?"#004f91":"#6b7280",
-                background:st==="en_vigueur"?"rgba(21,128,61,0.08)":st==="signe"?"rgba(0,79,145,0.08)":"#f3f4f6"}}>
-                {st==="en_vigueur"?"En vigueur":st==="signe"?"Signé":"Expiré"}
-              </span>; })()}
               <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                 <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#ca631f":"#C5BFBB",flexShrink:0}}/>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#188038":"#C5BFBB",flexShrink:0}}/>
                   <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4"}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
                 </div>
                 {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                  <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{getPaysNoms(a)}</span>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
+                  <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a)}</span>
                 </div>}
               </div>
               <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
-                <button onClick={()=>openEdit(a)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#004f91",fontWeight:600}}>
+                <button onClick={()=>openEdit(a)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}>
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(a)} disabled={togglingId===a.id}
@@ -607,7 +610,8 @@ export default function AdminAccords() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
       {vue&&<AccordVue accord={vue} onClose={()=>setVue(null)} onEdit={a=>{ setVue(null); openEdit(a); }}/>}
