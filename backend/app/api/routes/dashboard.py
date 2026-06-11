@@ -162,11 +162,8 @@ async def viz_region_stats(db: AsyncSession = Depends(get_db)):
                COUNT(DISTINCT CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1)) NOT IN ('A','B','C','D','E','F') THEN e.id END) as tertiaire
         FROM ref_regions r
         LEFT JOIN entreprises_installees e ON e.region_id = r.id AND e.is_deleted=FALSE
-        LEFT JOIN LATERAL (
-            SELECT s2.code FROM ref_secteurs s2
-            WHERE e.secteur_ids IS NOT NULL AND s2.id = ANY(e.secteur_ids)
-            ORDER BY s2.id LIMIT 1
-        ) s ON TRUE
+        LEFT JOIN LATERAL unnest(e.secteur_ids) sid ON TRUE
+        LEFT JOIN ref_secteurs s ON s.id = sid
         WHERE r.id IS NOT NULL
         GROUP BY r.nom
         HAVING COUNT(DISTINCT e.id) > 0

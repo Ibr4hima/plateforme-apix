@@ -338,7 +338,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
           { label: "Secteur secondaire", key: "secondaire", color: "#366FE3" },
           { label: "Secteur tertiaire",  key: "tertiaire",  color: "#E35336" },
         ] as const;
-        const sum = (stats ? stats.primaire + stats.secondaire + stats.tertiaire : 0) || 1;
+        const base = total || 1;
         return (
           <div onClick={e => { if (e.target === e.currentTarget) setActiveRegion(null); }}
             style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
@@ -371,7 +371,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
                     <div style={{ display:"flex", flexDirection:"column" as const, gap:12 }}>
                       {rows.map(r => {
                         const count = stats[r.key];
-                        const pct = Math.round(count / sum * 100);
+                        const pct = Math.round(count / base * 100);
                         return (
                           <div key={r.key}>
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5, fontSize:12 }}>
