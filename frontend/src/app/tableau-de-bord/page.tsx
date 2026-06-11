@@ -6,7 +6,7 @@ import * as Plot from "@observablehq/plot";
 import {
   Activity, BarChart2, Building2, Calendar,
   DollarSign, Handshake, Layers, Loader2, MapPin,
-  SlidersHorizontal, Table2, Target, TrendingUp
+  SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CATALOGUE, KPIS_DISPONIBLES, CATEGORIES, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
