@@ -1,35 +1,31 @@
 "use client";
 
-import {
-  ArrowLeftRight, Building2, Calendar, ChevronLeft, ChevronRight,
-  FileText, Globe, Landmark, Layers, LayoutDashboard,
-  Lightbulb, MapPin, Menu, Target, TrendingUp, BookOpen,
-} from "lucide-react";
+import { ChevronLeft, Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type NavItem =
-  | { type: "link"; label: string; href: string; icon: any; color: string }
+  | { type: "link"; label: string; href: string }
   | { type: "separator"; label?: string };
 
 const MODULES: NavItem[] = [
-  { type: "link", label: "Événements",                      href: "/admin/evenements",          icon: Calendar,        color: "#004f91" },
-  { type: "link", label: "Accords & Traités",               href: "/admin/accords",             icon: FileText,        color: "#7c3aed" },
-  { type: "link", label: "Entreprises",                     href: "/admin/entreprises",         icon: Building2,       color: "#ca631f" },
-  { type: "link", label: "Pôles & Zones d'investissement",  href: "/admin/gestion-zones",       icon: Layers,          color: "#0e7490" },
-  { type: "link", label: "Opportunités d'investissement",   href: "/admin/opportunites",        icon: Lightbulb,       color: "#d97706" },
-  { type: "link", label: "Intentions d'investissement",     href: "/admin/intentions",          icon: Target,          color: "#0891b2" },
-  { type: "link", label: "Prospects",                       href: "/admin/prospects",           icon: Globe,           color: "#65a30d" },
-  { type: "link", label: "Analyse de données",              href: "/admin/analyse",             icon: TrendingUp,      color: "#188038" },
+  { type: "link", label: "Événements",                     href: "/admin/evenements"          },
+  { type: "link", label: "Accords & Traités",              href: "/admin/accords"             },
+  { type: "link", label: "Entreprises",                    href: "/admin/entreprises"         },
+  { type: "link", label: "Pôles & Zones d'investissement", href: "/admin/gestion-zones"       },
+  { type: "link", label: "Opportunités d'investissement",  href: "/admin/opportunites"        },
+  { type: "link", label: "Intentions d'investissement",    href: "/admin/intentions"          },
+  { type: "link", label: "Prospects",                      href: "/admin/prospects"           },
+  { type: "link", label: "Analyse de données",             href: "/admin/analyse"             },
   { type: "separator" },
-  { type: "link", label: "Pays & Groupements",              href: "/admin/ref-pays",            icon: Globe,           color: "#004f91" },
-  { type: "link", label: "Découpage administratif",         href: "/admin/geo",                 icon: MapPin,          color: "#0891b2" },
-  { type: "link", label: "Classification NAEMA",            href: "/admin/naema",               icon: LayoutDashboard, color: "#6b7280" },
-  { type: "link", label: "Tableaux de correspondance",      href: "/admin/classifications",     icon: ArrowLeftRight,  color: "#0891b2" },
-  { type: "link", label: "Données IDE",                     href: "/admin/ide",                 icon: TrendingUp,      color: "#004f91" },
-  { type: "link", label: "Code des investissements",        href: "/admin/code-investissement", icon: BookOpen,        color: "#ca631f" },
+  { type: "link", label: "Pays & Groupements",             href: "/admin/ref-pays"            },
+  { type: "link", label: "Découpage administratif",        href: "/admin/geo"                 },
+  { type: "link", label: "Classification NAEMA",           href: "/admin/naema"               },
+  { type: "link", label: "Tableaux de correspondance",     href: "/admin/classifications"     },
+  { type: "link", label: "Données IDE",                    href: "/admin/ide"                 },
+  { type: "link", label: "Code des investissements",       href: "/admin/code-investissement" },
 ];
 
 const MIN_W     = 64;
@@ -119,27 +115,24 @@ export default function Sidebar() {
             if (item.type === "separator") {
               return <div key={i} style={{ margin: "8px 4px", borderTop: "1px solid rgba(255,255,255,0.12)" }} />;
             }
-            const Icon     = item.icon;
-            const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
-              <Link key={item.href} href={item.href} style={{ textDecoration: "none" }}>
+              <Link key={item.href} href={item.href} style={{ textDecoration: "none", display: "block", marginBottom: 4 }}>
                 <div
                   title={!expanded ? item.label : undefined}
-                  style={{ display: "flex", alignItems: "flex-start", gap: expanded ? 10 : 0, justifyContent: expanded ? "flex-start" : "center", padding: expanded ? "9px 10px" : "9px 0", borderRadius: 9, marginBottom: 2, background: isActive ? "rgba(202,99,31,0.25)" : "transparent", border: isActive ? "1px solid rgba(202,99,31,0.35)" : "1px solid transparent", transition: "all 0.15s", cursor: "pointer" }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                  style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: expanded ? "flex-start" : "center",
+                    width: "100%", padding: expanded ? "8px 14px" : "8px 0",
+                    borderRadius: 999, cursor: "pointer", transition: "all 0.15s",
+                    fontSize: 12.5, fontWeight: isActive ? 700 : 400,
+                    color:      isActive ? "#fff" : "rgba(255,255,255,0.55)",
+                    background: isActive ? "rgba(255,255,255,0.2)"  : "rgba(255,255,255,0.06)",
+                    outline:    isActive ? "1.5px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.12)",
+                  }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.8)"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.55)"; } }}
                 >
-                  <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, marginTop: 1, background: isActive ? "rgba(202,99,31,0.3)" : "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon size={14} style={{ color: isActive ? "#ca631f" : "rgba(255,255,255,0.7)" }} />
-                  </div>
-                  {expanded && (
-                    <>
-                      <span style={{ fontSize: 12.5, fontWeight: isActive ? 600 : 400, color: isActive ? "#fff" : "rgba(255,255,255,0.65)", flex: 1, lineHeight: 1.4, wordBreak: "break-word" }}>
-                        {item.label}
-                      </span>
-                      {isActive && <ChevronRight size={12} style={{ color: "#ca631f", flexShrink: 0, marginTop: 6 }} />}
-                    </>
-                  )}
+                  {expanded ? item.label : item.label.charAt(0)}
                 </div>
               </Link>
             );
