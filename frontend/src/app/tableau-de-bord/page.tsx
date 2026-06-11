@@ -1269,9 +1269,21 @@ export default function TableauDeBordPage() {
             <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase" as const}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
           <h1 style={{fontWeight:800,fontSize:"clamp(2rem,3.5vw,2.8rem)",color:"#fff",lineHeight:1.1,marginBottom:20}}>Tableau de bord</h1>
-          <span style={{display:"inline-flex",alignItems:"center",fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>
-            Vue consolidée · {totalItems} élément{totalItems!==1?"s":""} · {config.kpisActifs.length} KPI{config.kpisActifs.length!==1?"s":""}
-          </span>
+          <div style={{display:"flex",gap:10}}>
+            {([
+              {v:"viz",    l:"Visualisation de données"},
+              {v:"tables", l:"Tableaux analytiques"},
+            ] as const).map(o=>(
+              <button key={o.v} onClick={()=>setOnglet(o.v)}
+                style={{display:"inline-flex",alignItems:"center",fontSize:13,fontWeight:700,cursor:"pointer",border:"none",padding:"8px 18px",borderRadius:999,transition:"all 0.15s",fontFamily:"var(--font-google-sans)",
+                  color:     onglet===o.v?"#fff":"rgba(255,255,255,0.55)",
+                  background:onglet===o.v?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.06)",
+                  outline:   onglet===o.v?"1.5px solid rgba(255,255,255,0.4)":"1px solid rgba(255,255,255,0.12)",
+                }}>
+                {o.l}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
