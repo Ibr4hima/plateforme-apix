@@ -152,6 +152,27 @@ async def viz_ent_region(db: AsyncSession = Depends(get_db)):
         GROUP BY r.nom ORDER BY valeur DESC
     """)
 
+@router.get("/viz/region-stats")
+async def viz_region_stats(db: AsyncSession = Depends(get_db)):
+    return await safe(db, """
+        SELECT r.nom as region,
+               COUNT(DISTINCT e.id) as total,
+               COUNT(DISTINCT CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1))='A' THEN e.id END) as primaire,
+               COUNT(DISTINCT CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1)) IN ('B','C','D','E','F') THEN e.id END) as secondaire,
+               COUNT(DISTINCT CASE WHEN UPPER(LEFT(COALESCE(s.code,''),1)) NOT IN ('A','B','C','D','E','F') THEN e.id END) as tertiaire
+        FROM ref_regions r
+        LEFT JOIN entreprises_installees e ON e.region_id = r.id AND e.is_deleted=FALSE
+        LEFT JOIN LATERAL (
+            SELECT s2.code FROM ref_secteurs s2
+            WHERE e.secteur_ids IS NOT NULL AND s2.id = ANY(e.secteur_ids)
+            ORDER BY s2.id LIMIT 1
+        ) s ON TRUE
+        WHERE r.id IS NOT NULL
+        GROUP BY r.nom
+        HAVING COUNT(DISTINCT e.id) > 0
+        ORDER BY r.nom
+    """)
+
 @router.get("/viz/entreprises-par-departement")
 async def viz_ent_dept(db: AsyncSession = Depends(get_db)):
     return await safe(db, """

@@ -51,13 +51,24 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
   const [poles, setPoles] = useState<any[]>([]);
   const [activePole, setActivePole] = useState<any>(null);
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
+  const [regionStats, setRegionStats] = useState<Record<string, { total: number; primaire: number; secondaire: number; tertiaire: number }>>({});
   const [tooltip, setTooltip] = useState<{ nom: string; x: number; y: number } | null>(null);
   const [secteurRef, setSecteurRef] = useState<any[]>([]);
 
   useEffect(() => {
     fetch(`${API_BASE}/zones-types/poles`).then(r => r.json()).then(setPoles).catch(() => {});
     fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(setSecteurRef).catch(() => {});
-  }, []);
+    if (mode === "region") {
+      fetch(`${API_BASE}/dashboard/viz/region-stats`)
+        .then(r => r.json())
+        .then((rows: any[]) => {
+          const map: Record<string, any> = {};
+          rows.forEach(row => { map[row.region] = { total: row.total, primaire: row.primaire, secondaire: row.secondaire, tertiaire: row.tertiaire }; });
+          setRegionStats(map);
+        })
+        .catch(() => {});
+    }
+  }, [mode]);
 
   // Couleur par pole.id (1-based index dans la palette)
   const getPoleColor = (poleId: number) => POLE_PALETTE[(poleId - 1) % POLE_PALETTE.length];
@@ -316,6 +327,72 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
           </div>
         </div>
       )}
+
+      {/* Modal région */}
+      {mode === "region" && activeRegion && (() => {
+        const stats = regionStats[activeRegion];
+        const regionColor = REGION_PALETTE[activeRegion] || "#E8E5E3";
+        const total = stats?.total || 0;
+        const rows = [
+          { label: "Secteur primaire",   key: "primaire",   color: "#059669" },
+          { label: "Secteur secondaire", key: "secondaire", color: "#366FE3" },
+          { label: "Secteur tertiaire",  key: "tertiaire",  color: "#E35336" },
+        ] as const;
+        const sum = (stats ? stats.primaire + stats.secondaire + stats.tertiaire : 0) || 1;
+        return (
+          <div onClick={e => { if (e.target === e.currentTarget) setActiveRegion(null); }}
+            style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+            <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:480, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>
+              <div style={{ height:5, background:`linear-gradient(90deg,${regionColor},${regionColor}99,${regionColor}55)` }}/>
+              <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
+
+                {/* En-tête */}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
+                  <div style={{ flex:1, paddingRight:12 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                      <div style={{ width:12, height:12, borderRadius:3, background:regionColor, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
+                      <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Région</span>
+                    </div>
+                    <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:"#1a1a2e", lineHeight:1.3 }}>{activeRegion}</h2>
+                  </div>
+                  <button onClick={() => setActiveRegion(null)} style={{ background:"rgba(0,0,0,0.06)", border:"none", borderRadius:99, width:28, height:28, cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>✕</button>
+                </div>
+
+                {/* Total entreprises */}
+                <div style={{ background:"#F2F0EF", borderRadius:10, padding:"14px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:14, border:"1px solid #E8E5E3" }}>
+                  <div style={{ fontSize:38, fontWeight:800, color:"#059669", lineHeight:1 }}>{total}</div>
+                  <div style={{ fontSize:13, color:"#1a1a2e", fontWeight:600, lineHeight:1.3 }}>entreprise{total !== 1 ? "s" : ""} formalisée{total !== 1 ? "s" : ""}</div>
+                </div>
+
+                {/* Répartition sectorielle */}
+                {stats && (
+                  <div>
+                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:12 }}>Répartition sectorielle</p>
+                    <div style={{ display:"flex", flexDirection:"column" as const, gap:12 }}>
+                      {rows.map(r => {
+                        const count = stats[r.key];
+                        const pct = Math.round(count / sum * 100);
+                        return (
+                          <div key={r.key}>
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5, fontSize:12 }}>
+                              <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
+                              <span style={{ fontWeight:700, color:r.color, fontSize:12 }}>{pct}% <span style={{ fontWeight:400, color:"#9aa5b4", fontSize:11 }}>({count})</span></span>
+                            </div>
+                            <div style={{ height:6, background:"#E8E5E3", borderRadius:0, overflow:"hidden" }}>
+                              <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:0, transition:"width 0.4s ease" }}/>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </>
   );
 }
