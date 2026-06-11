@@ -18,20 +18,20 @@ const POLE_PALETTE = [
 ];
 
 const REGION_PALETTE: Record<string, string> = {
-  "Dakar":       "#6EE7F9",
-  "Thiès":       "#4ADEDE",
-  "Diourbel":    "#7EE787",
-  "Louga":       "#B8F34A",
-  "Saint-Louis": "#FFE066",
-  "Matam":       "#FFBE7A",
-  "Tambacounda": "#FF9E8F",
-  "Kédougou":    "#FF9BC2",
-  "Fatick":      "#F7A8FF",
-  "Kaolack":     "#D7B3FF",
-  "Kaffrine":    "#B8B8FF",
-  "Kolda":       "#9BC5FF",
-  "Sédhiou":     "#AEE9FF",
-  "Ziguinchor":  "#D6DCE5",
+  "Dakar":       "#FADADD",
+  "Thiès":       "#FFD9B3",
+  "Diourbel":    "#FFF4A3",
+  "Louga":       "#E8F0C0",
+  "Saint-Louis": "#C8EEC8",
+  "Matam":       "#C8E8D8",
+  "Tambacounda": "#A8DFE8",
+  "Kédougou":    "#D8E8F8",
+  "Fatick":      "#B8C8F8",
+  "Kaolack":     "#D8B8F0",
+  "Kaffrine":    "#E8D8F8",
+  "Kolda":       "#F8C8E8",
+  "Sédhiou":     "#F0D8C8",
+  "Ziguinchor":  "#F5E6C8",
 };
 
 // Parser la localisation : "Kaolack, Fatick et Kaffrine" → ["Kaolack","Fatick","Kaffrine"]
