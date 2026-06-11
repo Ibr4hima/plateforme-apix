@@ -155,6 +155,75 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
   );
 }
 
+// ─── Bar Chart Région (Entreprises par région) ────────────────────────────────
+function RegionBarPlot({ data, height, compact = false }: { data: { label: string; valeur: number }[]; height: number; compact?: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const plotRef      = useRef<HTMLDivElement>(null);
+  const [w, setW]    = useState(500);
+
+  useEffect(() => {
+    const obs = new ResizeObserver(e => setW(e[0].contentRect.width));
+    if (containerRef.current) obs.observe(containerRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!plotRef.current || !data.length) return;
+    plotRef.current.innerHTML = "";
+
+    const limit  = compact ? 6 : 14;
+    const maxVal = d3.max(data, d => d.valeur) ?? 1;
+
+    const chart = Plot.plot({
+      width: w,
+      height,
+      marginLeft:  compact ? 80 : 110,
+      marginRight: compact ? 40 : 55,
+      marginTop:   8,
+      marginBottom: 8,
+      x: { axis: null, domain: [0, maxVal * 1.08] },
+      y: { label: null, tickSize: 0, tickPadding: 6 },
+      style: {
+        fontSize:   compact ? "10px" : "12px",
+        fontFamily: "var(--font-google-sans, sans-serif)",
+        border:     "none",
+        background: "transparent",
+      },
+      marks: [
+        Plot.barX(data, {
+          x: "valeur",
+          y: "label",
+          sort: { y: "x", reverse: true, limit },
+          fill: "#598db8",
+          rx: 4,
+        }),
+        Plot.text(data, {
+          text: (d: any) => d.valeur.toLocaleString("fr-FR"),
+          y: "label",
+          x: "valeur",
+          sort: { y: "x", reverse: true, limit },
+          textAnchor: "end",
+          dx: -6,
+          fill: "white",
+          fontWeight: "bold",
+          fontSize: compact ? 9 : 11,
+        }),
+      ],
+    });
+
+    (chart as HTMLElement).style.border    = "none";
+    (chart as HTMLElement).style.outline   = "none";
+    plotRef.current.appendChild(chart);
+  }, [data, w, height, compact]);
+
+  if (!data.length) return <EmptyState h={height} />;
+  return (
+    <div ref={containerRef} style={{ width: "100%" }}>
+      <div ref={plotRef} />
+    </div>
+  );
+}
+
 // ─── Proportion Plot (Entreprises par secteur) ────────────────────────────────
 const PROPORTION_COLORS = ["#598db8", "#dc9a6d", "#69ac7d"];
 
@@ -297,6 +366,7 @@ function AutoChart({ data, chartType, height }: { data:any[]; chartType:ChartTyp
 
 function VizChart({ vizId, data, height, compact }: { vizId: string; data: any[]; height: number; compact?: boolean }) {
   if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} compact={compact} />;
+  if (vizId === "entreprises-par-region")  return <RegionBarPlot  data={data} height={height} compact={compact} />;
   return <AutoChart data={data} chartType="auto" height={height} />;
 }
 

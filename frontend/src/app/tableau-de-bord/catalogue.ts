@@ -6,7 +6,8 @@ export interface Visualisation {
 }
 
 export const CATALOGUE: Visualisation[] = [
-  { id: "entreprises-par-secteur", titre: "Entreprises par secteur", endpoint: "/dashboard/viz/entreprises-par-secteur", defaultSize: "md" },
+  { id: "entreprises-par-secteur", titre: "Entreprises par secteur",  endpoint: "/dashboard/viz/entreprises-par-secteur",  defaultSize: "md" },
+  { id: "entreprises-par-region",  titre: "Entreprises par région",   endpoint: "/dashboard/viz/entreprises-par-region",   defaultSize: "md" },
 ];
 
 export const KPIS_DISPONIBLES = [
