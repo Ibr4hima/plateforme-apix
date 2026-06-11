@@ -110,56 +110,120 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
       const projection = d3.geoMercator().fitExtent([[10, 10], [W - 10, H - 10]], geojson);
       const pathGen = d3.geoPath().projection(projection);
 
+      // Lookup géométrie topojson par nom normalisé (pour merge/mesh)
+      const geometryByName: Record<string, any> = {};
+      (topo.objects.sen.geometries || []).forEach((geom: any) => {
+        const nom = NAME_MAP[geom.properties?.name || ""] || geom.properties?.name || "";
+        geometryByName[nom] = geom;
+      });
+
+      // ID du pôle d'une géométrie (pour le mesh inter-pôles)
+      const poleIdOfGeom = (geom: any): number => {
+        const nom = NAME_MAP[geom.properties?.name || ""] || geom.properties?.name || "";
+        return poles.find(p => splitLocalisation(p.localisation).includes(nom))?.id ?? -1;
+      };
+
+      // ── Couche 1 : fills des régions (sans stroke en mode pôle) ──────────────
+      const polePathsMap = new Map<number, SVGPathElement[]>();
+
       features.forEach((feature: any) => {
         const rawNom = feature.properties?.name || "";
         const nom = NAME_MAP[rawNom] || rawNom;
-        const pole = poles.find(p =>
-          splitLocalisation(p.localisation).includes(nom)
-        );
+        const pole = poles.find(p => splitLocalisation(p.localisation).includes(nom));
         const color = mode === "region"
           ? (REGION_PALETTE[nom] || "#E8E5E3")
           : (pole ? getPoleColor(pole.id) : "#E8E5E3");
-        const baseOpacity = 0.95;
 
-        const g = svg.append("g")
-          .style("cursor", "pointer")
-          .style("transition", "transform 0.18s ease, filter 0.18s ease");
+        const g = svg.append("g").style("transition", "filter 0.15s");
 
-        g.append("path")
+        const pathEl = g.append("path")
           .attr("d", pathGen(feature))
           .attr("fill", color)
-          .attr("fill-opacity", baseOpacity)
-          .attr("stroke", "#66615E")
+          .attr("fill-opacity", 0.95)
+          .attr("stroke", mode === "region" ? "#66615E" : "none")
           .attr("stroke-width", 0.5)
           .attr("stroke-linejoin", "round")
           .style("transition", "filter 0.15s");
 
-        // Centroid pour le zoom centré sur la région
-        const centroidPt = pathGen.centroid(feature);
-        const cx = centroidPt && !isNaN(centroidPt[0]) ? centroidPt[0] : W / 2;
-        const cy = centroidPt && !isNaN(centroidPt[1]) ? centroidPt[1] : H / 2;
+        if (mode === "pole" && pole) {
+          if (!polePathsMap.has(pole.id)) polePathsMap.set(pole.id, []);
+          polePathsMap.get(pole.id)!.push(pathEl.node() as SVGPathElement);
+        }
 
-        g.on("mouseenter", function(event: MouseEvent) {
-          d3.select(this).select("path").style("filter", "brightness(0.78)");
-          const rect = container.getBoundingClientRect();
-          setTooltip({ nom, x: event.clientX - rect.left, y: event.clientY - rect.top });
-        })
-        .on("mousemove", function(event: MouseEvent) {
-          const rect = container.getBoundingClientRect();
-          setTooltip(prev => prev ? { ...prev, x: event.clientX - rect.left, y: event.clientY - rect.top } : null);
-        })
-        .on("mouseleave", function() {
-          d3.select(this).select("path").style("filter", "none");
-          setTooltip(null);
-        })
-        .on("click", function() {
-          if (mode === "region") {
-            setActiveRegion(prev => prev === nom ? null : nom);
-          } else {
-            setActivePole((prev: any) => prev?.id === pole?.id ? null : (pole || null));
-          }
-        });
+        if (mode === "region") {
+          g.style("cursor", "pointer")
+           .on("mouseenter", function(event: MouseEvent) {
+             d3.select(this).select("path").style("filter", "brightness(0.78)");
+             const rect = container.getBoundingClientRect();
+             setTooltip({ nom, x: event.clientX - rect.left, y: event.clientY - rect.top });
+           })
+           .on("mousemove", function(event: MouseEvent) {
+             const rect = container.getBoundingClientRect();
+             setTooltip(prev => prev ? { ...prev, x: event.clientX - rect.left, y: event.clientY - rect.top } : null);
+           })
+           .on("mouseleave", function() {
+             d3.select(this).select("path").style("filter", "none");
+             setTooltip(null);
+           })
+           .on("click", function() {
+             setActiveRegion(prev => prev === nom ? null : nom);
+           });
+        }
       });
+
+      if (mode === "pole") {
+        // ── Couche 2 : bordures inter-pôles uniquement ──────────────────────────
+        svg.append("path")
+          .datum(topojson.mesh(topo, topo.objects.sen,
+            (a: any, b: any) => poleIdOfGeom(a) !== poleIdOfGeom(b)
+          ))
+          .attr("d", pathGen)
+          .attr("fill", "none")
+          .attr("stroke", "#66615E")
+          .attr("stroke-width", 0.6)
+          .attr("stroke-linejoin", "round");
+
+        // Contour extérieur du Sénégal
+        svg.append("path")
+          .datum(topojson.mesh(topo, topo.objects.sen, (a: any, b: any) => a === b))
+          .attr("d", pathGen)
+          .attr("fill", "none")
+          .attr("stroke", "#66615E")
+          .attr("stroke-width", 0.9)
+          .attr("stroke-linejoin", "round");
+
+        // ── Couche 3 : overlays invisibles par pôle (hover + click groupé) ──────
+        poles.forEach(pole => {
+          const geoms = splitLocalisation(pole.localisation)
+            .map(r => geometryByName[r]).filter(Boolean);
+          if (!geoms.length) return;
+          let merged: any;
+          try { merged = topojson.merge(topo, geoms); } catch { return; }
+
+          svg.append("path")
+            .datum(merged)
+            .attr("d", pathGen)
+            .attr("fill", "transparent")
+            .attr("stroke", "none")
+            .style("cursor", "pointer")
+            .on("mouseenter", function(event: MouseEvent) {
+              polePathsMap.get(pole.id)?.forEach(p => d3.select(p).style("filter", "brightness(0.82)"));
+              const rect = container.getBoundingClientRect();
+              setTooltip({ nom: pole.pole_territoire, x: event.clientX - rect.left, y: event.clientY - rect.top });
+            })
+            .on("mousemove", function(event: MouseEvent) {
+              const rect = container.getBoundingClientRect();
+              setTooltip(prev => prev ? { ...prev, x: event.clientX - rect.left, y: event.clientY - rect.top } : null);
+            })
+            .on("mouseleave", function() {
+              polePathsMap.get(pole.id)?.forEach(p => d3.select(p).style("filter", "none"));
+              setTooltip(null);
+            })
+            .on("click", function() {
+              setActivePole((prev: any) => prev?.id === pole.id ? null : pole);
+            });
+        });
+      }
     })
     .catch(console.error);
 
