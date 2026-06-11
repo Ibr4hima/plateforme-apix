@@ -791,7 +791,6 @@ function VizChart({ vizId, data, height, compact }: { vizId: string; data: any[]
   if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} compact={compact} />;
   if (vizId === "entreprises-par-region")  return <RegionBarPlot   data={data} height={height} compact={compact} />;
   if (vizId === "entreprises-par-dept")    return <DeptStackedBars data={data} height={height} compact={compact} />;
-  if (vizId === "entreprises-par-branche") return <BrancheBarChart data={data} height={height} compact={compact} />;
   return <AutoChart data={data} chartType="auto" height={height} />;
 }
 
