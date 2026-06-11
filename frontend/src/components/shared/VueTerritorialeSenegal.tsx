@@ -19,8 +19,8 @@ const POLE_PALETTE = [
 
 // Une couleur par région — 8 reprises des pôles + 6 nouvelles dans le même registre pastel
 const REGION_PALETTE: Record<string, string> = {
-  "Dakar":        "#efd0bc", // pêche chaude
-  "Thiès":        "#c5d4ec", // bleu pervenche
+  "Dakar":        "#D6B588", // sable doré
+  "Thiès":        "#88A9D6", // bleu acier doux
   "Diourbel":     "#b9d9c3", // vert doux
   "Louga":        "#d4c5e8", // lavande
   "Saint-Louis":  "#b2cade", // bleu ciel
@@ -30,7 +30,7 @@ const REGION_PALETTE: Record<string, string> = {
   "Fatick":       "#FFB070", // orange doux
   "Kaolack":      "#FF7E70", // corail
   "Kaffrine":     "#E4D96F", // jaune vif
-  "Kolda":        "#c8e6e8", // turquoise clair
+  "Kolda":        "#99CC66", // vert lime
   "Sédhiou":      "#B38FE0", // violet moyen
   "Ziguinchor":   "#c8dde0", // ardoise teal
 };
