@@ -17,22 +17,21 @@ const POLE_PALETTE = [
   "#e8d5c4", // 8 — Pôle Sud-Est (sable chaud)
 ];
 
-// Une couleur par région — 8 reprises des pôles + 6 nouvelles dans le même registre pastel
 const REGION_PALETTE: Record<string, string> = {
-  "Dakar":        "#D6B588", // sable doré
-  "Thiès":        "#88A9D6", // bleu acier doux
-  "Diourbel":     "#C2D685", // vert jaune
-  "Louga":        "#B5BAFF", // lavande vif
-  "Saint-Louis":  "#6E7582", // gris ardoise
-  "Matam":        "#FCD1D1", // rose très doux
-  "Tambacounda":  "#EED9C4", // beige clair
-  "Kédougou":     "#069494", // teal profond
-  "Fatick":       "#FFB070", // orange doux
-  "Kaolack":      "#FF7E70", // corail
-  "Kaffrine":     "#E4D96F", // jaune vif
-  "Kolda":        "#BDD2B6", // vert sauge clair
-  "Sédhiou":      "#B7C4CF", // gris bleuté
-  "Ziguinchor":   "#4682A9", // bleu acier
+  "Dakar":       "#6EE7F9",
+  "Thiès":       "#4ADEDE",
+  "Diourbel":    "#7EE787",
+  "Louga":       "#B8F34A",
+  "Saint-Louis": "#FFE066",
+  "Matam":       "#FFBE7A",
+  "Tambacounda": "#FF9E8F",
+  "Kédougou":    "#FF9BC2",
+  "Fatick":      "#F7A8FF",
+  "Kaolack":     "#D7B3FF",
+  "Kaffrine":    "#B8B8FF",
+  "Kolda":       "#9BC5FF",
+  "Sédhiou":     "#AEE9FF",
+  "Ziguinchor":  "#D6DCE5",
 };
 
 // Parser la localisation : "Kaolack, Fatick et Kaffrine" → ["Kaolack","Fatick","Kaffrine"]
