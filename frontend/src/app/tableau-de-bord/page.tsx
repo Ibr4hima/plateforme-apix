@@ -6,7 +6,7 @@ import * as Plot from "@observablehq/plot";
 import {
   Activity, BarChart2, Building2, Calendar,
   DollarSign, Handshake, Layers, Loader2, MapPin,
-  Search, SlidersHorizontal, Table2, Target, TrendingUp, X
+  SlidersHorizontal, Table2, Target, TrendingUp
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CATALOGUE, KPIS_DISPONIBLES, CATEGORIES, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
@@ -1086,11 +1086,11 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
   sidebarWidth: number; setSidebarWidth:(v:number)=>void;
   onglet: "viz"|"tables";
 }) {
-  const [search,setSearch]             = useState("");
+
   const isResizing                     = useRef(false);
 
-  const filtered       = CATALOGUE.filter(v=>!search||v.titre.toLowerCase().includes(search.toLowerCase()));
-  const filteredTables = TABLES_ANALYTIQUES.filter(t=>!search||t.titre.toLowerCase().includes(search.toLowerCase()));
+  const filtered       = CATALOGUE;
+  const filteredTables = TABLES_ANALYTIQUES;
 
   const startResize = (e: React.MouseEvent) => {
     isResizing.current = true;
@@ -1112,7 +1112,7 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
 
       {/* En-tête */}
       <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
-        {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Personnaliser</span>}
+        {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
         <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
           <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
           {sidebarOpen&&nbActifs>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbActifs}</span>}
@@ -1121,14 +1121,6 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
 
       {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
 
-        {/* Recherche */}
-        <div style={{ position:"relative" as const, marginBottom:18 }}>
-          <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher une visualisation…"
-            style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-          {search&&<button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
-        </div>
-        <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
 
         {/* KPIs — onglet viz uniquement */}
         {onglet==="viz"&&<>
@@ -1143,11 +1135,11 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
               const disabled=!active&&config.kpisActifs.length>=5;
               return (
                 <label key={kpi.id} className="sb-item" style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1 }}>
-                  <div style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?kpi.color:"#C5BFBB"}`, background:active?kpi.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                     {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
                   <input type="checkbox" checked={active} disabled={disabled} onChange={()=>onToggleKPI(kpi.id)} style={{ display:"none" }}/>
-                  <span style={{ fontSize:12, color:active?kpi.color:"#4a5568", fontWeight:active?500:400, flex:1 }}>{kpi.label}</span>
+                  <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?500:400, flex:1 }}>{kpi.label}</span>
                 </label>
               );
             })}
@@ -1171,7 +1163,7 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
                     {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
                   <div onClick={()=>onToggleCard(viz)} style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?500:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
+                    <p style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?500:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
                   </div>
                 </label>
               );
