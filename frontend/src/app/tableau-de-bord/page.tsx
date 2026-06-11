@@ -20,7 +20,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 // ─── Persistance ──────────────────────────────────────────────────────────────
-const STORAGE_KEY = "apix_dashboard_v2";
+const STORAGE_KEY = "apix_dashboard_v3";
 interface DashConfig {
   kpisActifs: string[];
   cards: CardConfig[];
