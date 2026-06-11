@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
+import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import Badge from "@/components/shared/Badge";
 import { Building2, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -248,6 +249,7 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function EntreprisesPage() {
+  const [onglet,      setOnglet]      = useState<"liste"|"territoire">("liste");
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [selec,       setSelec]       = useState<any>(null);
@@ -373,7 +375,36 @@ export default function EntreprisesPage() {
           </span>}
         </div>
       </section>
-      <div style={{display:"flex",alignItems:"flex-start"}}>
+
+      {/* Onglets sticky */}
+      <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:0,zIndex:10}}>
+        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
+          {([
+            {key:"liste",      label:"Liste des entreprises", color:"#ca631f"},
+            {key:"territoire", label:"Vue territoriale",      color:"#ca631f"},
+          ] as const).map(t=>(
+            <button key={t.key} onClick={()=>setOnglet(t.key)}
+              style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Vue territoriale */}
+      {onglet==="territoire" && (
+        <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
+          {loading ? (
+            <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}>
+              <Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:14}}>Chargement…</span>
+            </div>
+          ) : (
+            <VueTerritorialeSenegal zones={[]}/>
+          )}
+        </section>
+      )}
+
+      {onglet==="liste" && <div style={{display:"flex",alignItems:"flex-start"}}>
           {/* Sidebar bande */}
           <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 72px)",overflowY:"auto" as const,position:"sticky" as const,top:72,display:"flex",flexDirection:"column" as const}}>
             {sidebarOpen&&<div onMouseDown={startResize} style={{position:"absolute" as const,right:0,top:0,bottom:0,width:4,cursor:"col-resize",zIndex:10,background:"transparent",transition:"background 0.15s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
@@ -447,7 +478,7 @@ export default function EntreprisesPage() {
               </div>
             )}
           </div>
-      </div>
+      </div>}
 
       {/* Modal partagé — une seule source de vérité */}
       <EntreprisePublicModal entreprise={selec} onClose={()=>setSelec(null)}/>
