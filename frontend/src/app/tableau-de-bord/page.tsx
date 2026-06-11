@@ -381,10 +381,115 @@ function DeptStackedBars({ data, height, compact = false }: { data: DeptRow[]; h
   );
 }
 
-// ─── Treemap (Entreprises par branche) ───────────────────────────────────────
+// ─── Branches par secteur (pills + HBarChart) ────────────────────────────────
 type BrancheRow = { secteur: string; branche: string; valeur: number };
 
-function BrancheTreemap({ data, height, compact = false }: { data: BrancheRow[]; height: number; compact?: boolean }) {
+const shortSecteur = (s: string) => s.replace(/^[Ss]ecteur\s+/i, "");
+
+function BrancheBarChart({ data, height, compact = false }: { data: BrancheRow[]; height: number; compact?: boolean }) {
+  const svgRef  = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const secteurs   = Array.from(new Set(data.map(d => d.secteur)));
+  const [active, setActive] = useState<string>("");
+  useEffect(() => { if (data.length && !active) setActive(secteurs[0] ?? ""); }, [data]);
+
+  const PILL_H   = 34;
+  const chartH   = compact ? height : height - PILL_H;
+  const rows     = data.filter(d => d.secteur === active).sort((a, b) => b.valeur - a.valeur);
+  const barColor = secteurColor(active, secteurs.indexOf(active));
+
+  const draw = useCallback(() => {
+    if (!svgRef.current || !wrapRef.current || !rows.length) return;
+    d3.select(svgRef.current).selectAll("*").remove();
+
+    const W    = wrapRef.current.clientWidth || 500;
+    const rowH = compact ? 18 : 36;
+    const longestName = compact ? 10 : Math.max(...rows.map(d => d.branche.length));
+    const M = compact
+      ? { top: 2, right: 8,  bottom: 2, left: 60 }
+      : { top: 6, right: 68, bottom: 6, left: Math.max(100, longestName * 6.6 + 12) };
+    const H = rows.length * rowH + M.top + M.bottom;
+
+    const maxVal   = d3.max(rows, d => d.valeur) ?? 1;
+    const x = d3.scaleLinear().domain([0, maxVal]).range([M.left, W - M.right]);
+    const y = d3.scaleBand().domain(rows.map(d => d.branche)).range([M.top, H - M.bottom]).padding(0.18);
+
+    const svg = d3.select(svgRef.current)
+      .attr("viewBox", `0 0 ${W} ${H}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    const minInside = compact ? 28 : 55;
+
+    svg.selectAll<SVGRectElement, BrancheRow>("rect.bar")
+      .data(rows).enter().append("rect")
+      .attr("class",  "bar")
+      .attr("x",      M.left)
+      .attr("y",      d => y(d.branche)!)
+      .attr("width",  d => Math.max(2, x(d.valeur) - M.left))
+      .attr("height", y.bandwidth())
+      .attr("fill",   barColor);
+
+    svg.selectAll<SVGTextElement, BrancheRow>("text.val")
+      .data(rows).enter().append("text")
+      .attr("class",       "val")
+      .attr("x",           d => (x(d.valeur) - M.left) >= minInside ? x(d.valeur) - 5 : x(d.valeur) + 5)
+      .attr("y",           d => y(d.branche)! + y.bandwidth() / 2)
+      .attr("dy",          "0.35em")
+      .attr("text-anchor", d => (x(d.valeur) - M.left) >= minInside ? "end" : "start")
+      .attr("font-size",   compact ? 8 : 11)
+      .attr("font-weight", "600")
+      .attr("fill",        d => (x(d.valeur) - M.left) >= minInside ? "white" : barColor)
+      .text(d => d.valeur.toLocaleString("fr-FR"));
+
+    svg.selectAll<SVGTextElement, BrancheRow>("text.lbl")
+      .data(rows).enter().append("text")
+      .attr("class",       "lbl")
+      .attr("x",           M.left - 6)
+      .attr("y",           d => y(d.branche)! + y.bandwidth() / 2)
+      .attr("dy",          "0.35em")
+      .attr("text-anchor", "end")
+      .attr("font-size",   compact ? 8 : 11)
+      .attr("font-weight", "500")
+      .attr("fill",        "#374151")
+      .text(d => compact
+        ? (d.branche.length > 10 ? d.branche.slice(0, 9) + "…" : d.branche)
+        : d.branche);
+
+  }, [rows, compact, barColor]);
+
+  useEffect(() => { draw(); }, [draw]);
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const obs = new ResizeObserver(() => draw());
+    obs.observe(wrapRef.current);
+    return () => obs.disconnect();
+  }, [draw]);
+
+  if (!data.length) return <EmptyState h={height} />;
+  return (
+    <div style={{ width: "100%", height }}>
+      {!compact && (
+        <div style={{ display: "flex", gap: 5, marginBottom: 8, flexWrap: "wrap" as const }}>
+          {secteurs.map(s => (
+            <button key={s} onClick={() => setActive(s)} style={{
+              padding: "4px 12px", border: "none", cursor: "pointer",
+              fontSize: 11, fontWeight: 600, borderRadius: 6,
+              background: active === s ? secteurColor(s, secteurs.indexOf(s)) : "#F2F0EF",
+              color:      active === s ? "#fff" : "#9aa5b4",
+              transition: "all 0.15s",
+            }}>{shortSecteur(s)}</button>
+          ))}
+        </div>
+      )}
+      <div ref={wrapRef} style={{ width: "100%", height: chartH, overflowY: "auto" }}>
+        <svg ref={svgRef} style={{ width: "100%", height: "auto", display: "block" }} />
+      </div>
+    </div>
+  );
+}
+
+function _BrancheTreemap_UNUSED({ data, height, compact = false }: { data: BrancheRow[]; height: number; compact?: boolean }) {
   const svgRef  = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tipRef  = useRef<HTMLDivElement>(null);
@@ -686,7 +791,7 @@ function VizChart({ vizId, data, height, compact }: { vizId: string; data: any[]
   if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} compact={compact} />;
   if (vizId === "entreprises-par-region")  return <RegionBarPlot   data={data} height={height} compact={compact} />;
   if (vizId === "entreprises-par-dept")    return <DeptStackedBars data={data} height={height} compact={compact} />;
-  if (vizId === "entreprises-par-branche") return <BrancheTreemap  data={data} height={height} compact={compact} />;
+  if (vizId === "entreprises-par-branche") return <BrancheBarChart data={data} height={height} compact={compact} />;
   return <AutoChart data={data} chartType="auto" height={height} />;
 }
 
