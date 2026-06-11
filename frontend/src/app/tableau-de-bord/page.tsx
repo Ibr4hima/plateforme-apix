@@ -242,6 +242,15 @@ function RegionBarPlot({ data, height, compact = false }: { data: { label: strin
 
 // ─── Proportion Plot (Entreprises par secteur) ────────────────────────────────
 const PROPORTION_COLORS = ["#598db8", "#dc9a6d", "#69ac7d"];
+const SECTEUR_COLOR: Record<string, string> = {
+  primaire:   "#004f91",
+  secondaire: "#D2E3FC",
+  tertiaire:  "#C8B6A6",
+};
+function secteurColor(nom: string, i: number): string {
+  const key = nom.toLowerCase().replace(/^secteur\s+/i, "").trim();
+  return SECTEUR_COLOR[key] ?? PROPORTION_COLORS[i % PROPORTION_COLORS.length];
+}
 
 function ProportionPlot({ data, height, compact = false }: { data: { label: string; valeur: number }[]; height: number; compact?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -334,7 +343,7 @@ function ProportionPlot({ data, height, compact = false }: { data: { label: stri
       y: { axis: null, reverse: true },
       color: {
         domain: secteurs,
-        range: secteurs.map((_, i) => PROPORTION_COLORS[i % PROPORTION_COLORS.length]),
+        range: secteurs.map((s, i) => secteurColor(s, i)),
       },
       marginLeft:  compact ? 0 : 50,
       marginRight: compact ? 0 : 60,
