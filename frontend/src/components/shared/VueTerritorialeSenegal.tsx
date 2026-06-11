@@ -58,16 +58,14 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
   useEffect(() => {
     fetch(`${API_BASE}/zones-types/poles`).then(r => r.json()).then(setPoles).catch(() => {});
     fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(setSecteurRef).catch(() => {});
-    if (mode === "region") {
-      fetch(`${API_BASE}/dashboard/viz/region-stats`)
-        .then(r => r.json())
-        .then((rows: any[]) => {
-          const map: Record<string, any> = {};
-          rows.forEach(row => { map[row.region] = { total: row.total, primaire: row.primaire, secondaire: row.secondaire, tertiaire: row.tertiaire }; });
-          setRegionStats(map);
-        })
-        .catch(() => {});
-    }
+    fetch(`${API_BASE}/dashboard/viz/region-stats`)
+      .then(r => r.json())
+      .then((rows: any[]) => {
+        const map: Record<string, any> = {};
+        rows.forEach(row => { map[row.region] = { total: row.total, primaire: row.primaire, secondaire: row.secondaire, tertiaire: row.tertiaire }; });
+        setRegionStats(map);
+      })
+      .catch(() => {});
   }, [mode]);
 
   // Couleur par pole.id (1-based index dans la palette)
@@ -283,18 +281,16 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
 
               {/* Répartition sectorielle */}
               {(()=>{
-                const counts:{[k:string]:number} = { primaire:0, secondaire:0, tertiaire:0 };
-                poleEnts.forEach((ze:any)=>{
-                  const secIds:number[] = ze.entreprise?.secteur_ids || ze.secteur_ids || [];
-                  secIds.forEach((sid:number)=>{
-                    const sec = secteurRef.find((s:any)=>s.id===sid);
-                    if (!sec) return;
-                    if (sec.code==="S1") counts.primaire++;
-                    else if (sec.code==="S2") counts.secondaire++;
-                    else if (sec.code==="S3") counts.tertiaire++;
-                  });
+                const regions = splitLocalisation(activePole.localisation);
+                const counts = { primaire:0, secondaire:0, tertiaire:0 };
+                regions.forEach(r => {
+                  const s = regionStats[r];
+                  if (!s) return;
+                  counts.primaire   += s.primaire;
+                  counts.secondaire += s.secondaire;
+                  counts.tertiaire  += s.tertiaire;
                 });
-                const total=counts.primaire+counts.secondaire+counts.tertiaire||1;
+                const total = counts.primaire + counts.secondaire + counts.tertiaire || 1;
                 const rows=[
                   {label:"Secteur primaire",   key:"primaire",   color:"#059669"},
                   {label:"Secteur secondaire",  key:"secondaire", color:"#366FE3"},
