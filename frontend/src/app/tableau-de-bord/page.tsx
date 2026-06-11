@@ -156,7 +156,7 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
 }
 
 // ─── Proportion Plot (Entreprises par secteur) ────────────────────────────────
-const PROPORTION_COLORS = ["#7fa7c8", "#e4b18f", "#8bbf9c"];
+const PROPORTION_COLORS = ["#598db8", "#dc9a6d", "#69ac7d"];
 
 function ProportionPlot({ data, height, compact = false }: { data: { label: string; valeur: number }[]; height: number; compact?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
