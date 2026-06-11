@@ -7,14 +7,14 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 
 // Couleurs exactes définies dans l'onglet Pôles territoires — par pole.id
 const POLE_PALETTE = [
-  "#efd0bc", // 1 — Pôle Dakar (orange clair)
-  "#b2cade", // 2 — Pôle Thiès (bleu clair)
-  "#b9d9c3", // 3 — Pôle Diourbel-Louga (vert clair)
-  "#f5e6c8", // 4 — Pôle Centre (jaune doux)
-  "#d4c5e8", // 5 — Pôle Nord (lavande)
-  "#fadadd", // 6 — Pôle Nord-Est (rose poudré)
-  "#c8e6e8", // 7 — Pôle Sud (turquoise clair)
-  "#e8d5c4", // 8 — Pôle Sud-Est (sable chaud)
+  "#FFD9B3",
+  "#FFF4A3",
+  "#C8EEC8",
+  "#A8DFE8",
+  "#B8C8F8",
+  "#D8B8F0",
+  "#FADADD",
+  "#F0D8C8",
 ];
 
 const REGION_PALETTE: Record<string, string> = {
