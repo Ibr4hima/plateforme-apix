@@ -22,8 +22,8 @@ const REGION_PALETTE: Record<string, string> = {
   "Dakar":        "#D6B588", // sable doré
   "Thiès":        "#88A9D6", // bleu acier doux
   "Diourbel":     "#C2D685", // vert jaune
-  "Louga":        "#d4c5e8", // lavande
-  "Saint-Louis":  "#b2cade", // bleu ciel
+  "Louga":        "#9290C3", // violet moyen
+  "Saint-Louis":  "#6E7582", // gris ardoise
   "Matam":        "#FCD1D1", // rose très doux
   "Tambacounda":  "#EED9C4", // beige clair
   "Kédougou":     "#069494", // teal profond
