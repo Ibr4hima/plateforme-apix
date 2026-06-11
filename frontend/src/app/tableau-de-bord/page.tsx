@@ -244,8 +244,8 @@ function RegionBarPlot({ data, height, compact = false }: { data: { label: strin
 const PROPORTION_COLORS = ["#598db8", "#dc9a6d", "#69ac7d"];
 const SECTEUR_COLOR: Record<string, string> = {
   primaire:   "#004f91",
-  secondaire: "#D2E3FC",
-  tertiaire:  "#C8B6A6",
+  secondaire: "#9195BB",
+  tertiaire:  "#BBB791",
 };
 function secteurColor(nom: string, i: number): string {
   const key = nom.toLowerCase().replace(/^secteur\s+/i, "").trim();
