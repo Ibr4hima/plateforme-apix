@@ -1913,15 +1913,16 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function IdePage() {
-  const [sousOnglet,setSousOnglet]= useState("pays");
-  const [paysDispo, setPaysDispo] = useState<any[]>([]);
-  const [showTable, setShowTable] = useState(false);
+  const [section,    setSection]    = useState<"realises"|"projetes">("realises");
+  const [sousOnglet, setSousOnglet] = useState<"pays"|"comparative"|"monde">("pays");
+  const [paysDispo,  setPaysDispo]  = useState<any[]>([]);
+  const [showTable,  setShowTable]  = useState(false);
 
   useEffect(() => {
     fetch(`${API}/ide/cnuced/pays-disponibles`).then(r=>r.json()).then(d=>setPaysDispo(d||[])).catch(()=>{});
   }, []);
 
-  useEffect(() => { setShowTable(false); }, [sousOnglet]);
+  useEffect(() => { setShowTable(false); }, [sousOnglet, section]);
 
   return (
     <div style={{ minHeight:"100vh", background:"#F2F0EF", fontFamily:"var(--font-google-sans)" }}>
@@ -1941,9 +1942,21 @@ export default function IdePage() {
             <span style={{ fontSize:11, fontWeight:700, color:"#D96D3B", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
           <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1, marginBottom:20 }}>Investissements Directs Étrangers</h1>
-          <span style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, color:"#fff", background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.2)", padding:"6px 14px", borderRadius:999 }}>
-            Données officielles — {sousOnglet==="fdi_markets"?"FDI Markets":"CNUCED"}
-          </span>
+          <div style={{ display:"flex", gap:10 }}>
+            {([
+              {v:"realises",  l:"Investissements réalisés"},
+              {v:"projetes",  l:"Investissements projetés"},
+            ] as const).map(s => (
+              <button key={s.v} onClick={() => setSection(s.v)}
+                style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, cursor:"pointer", border:"none", padding:"8px 18px", borderRadius:999, transition:"all 0.15s", fontFamily:"var(--font-google-sans)",
+                  color: section===s.v ? "#fff" : "rgba(255,255,255,0.55)",
+                  background: section===s.v ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.06)",
+                  outline: section===s.v ? "1.5px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.12)",
+                }}>
+                {s.l}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -1955,16 +1968,14 @@ export default function IdePage() {
               {v:"pays",        l:"Pays"},
               {v:"comparative", l:"Analyse comparative"},
               {v:"monde",       l:"Monde"},
-              {v:"fdi_markets", l:"FDI Markets"},
             ] as const).map(o=>(
               <button key={o.v} onClick={()=>setSousOnglet(o.v)}
                 style={{ padding:"16px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:sousOnglet===o.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
                 {o.l}
-                {o.v==="fdi_markets" && <span style={{ marginLeft:6, fontSize:10, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:999 }}>Bientôt</span>}
               </button>
             ))}
           </div>
-          {(sousOnglet==="pays"||sousOnglet==="comparative"||sousOnglet==="monde")&&(
+          {section==="realises" && (
             <button onClick={()=>setShowTable(true)}
               style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:50, border:"none", borderBottom:"2px solid transparent", background:"transparent", fontSize:13, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
               onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
@@ -1975,11 +1986,17 @@ export default function IdePage() {
         </div>
       </div>
 
-      {/* ── Contenu ──────────────────────────────────────────────────────────── */}
-      {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
-      {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
-      {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} />}
-      {sousOnglet === "fdi_markets" && (
+      {/* ── Contenu — Investissements réalisés (CNUCED) ───────────────────────── */}
+      {section === "realises" && (
+        <>
+          {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
+          {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
+          {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} />}
+        </>
+      )}
+
+      {/* ── Contenu — Investissements projetés (FDI Markets) ─────────────────── */}
+      {section === "projetes" && (
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
           <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
             <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
