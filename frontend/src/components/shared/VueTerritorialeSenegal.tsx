@@ -283,17 +283,16 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
 
               {/* Répartition sectorielle */}
               {(()=>{
-                const classif = (code:string) => {
-                  const c=(code||"").toUpperCase()[0];
-                  if(c==="A") return "primaire";
-                  if(["B","C","D","E","F"].includes(c)) return "secondaire";
-                  return "tertiaire";
-                };
                 const counts:{[k:string]:number} = { primaire:0, secondaire:0, tertiaire:0 };
                 poleEnts.forEach((ze:any)=>{
                   const secIds:number[] = ze.entreprise?.secteur_ids || ze.secteur_ids || [];
-                  const sec = secIds.length>0 ? secteurRef.find((s:any)=>s.id===secIds[0]) : null;
-                  counts[sec?classif(sec.code):"tertiaire"]++;
+                  secIds.forEach((sid:number)=>{
+                    const sec = secteurRef.find((s:any)=>s.id===sid);
+                    if (!sec) return;
+                    if (sec.code==="S1") counts.primaire++;
+                    else if (sec.code==="S2") counts.secondaire++;
+                    else if (sec.code==="S3") counts.tertiaire++;
+                  });
                 });
                 const total=counts.primaire+counts.secondaire+counts.tertiaire||1;
                 const rows=[
