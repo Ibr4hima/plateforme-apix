@@ -376,7 +376,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
                           <div key={r.key}>
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5, fontSize:12 }}>
                               <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
-                              <span style={{ fontWeight:700, color:r.color, fontSize:12 }}>{pct}% <span style={{ fontWeight:400, color:"#9aa5b4", fontSize:11 }}>({count})</span></span>
+                              <span style={{ fontWeight:700, color:r.color, fontSize:12 }}>{pct}%</span>
                             </div>
                             <div style={{ height:6, background:"#E8E5E3", borderRadius:0, overflow:"hidden" }}>
                               <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:0, transition:"width 0.4s ease" }}/>
