@@ -150,6 +150,17 @@ async def viz_ent_dept(db: AsyncSession = Depends(get_db)):
         GROUP BY d.nom ORDER BY valeur DESC LIMIT 20
     """)
 
+@router.get("/viz/entreprises-dept-par-region")
+async def viz_ent_dept_region(db: AsyncSession = Depends(get_db)):
+    return await safe(db, """
+        SELECT r.nom as region, d.nom as departement, COUNT(e.id) as valeur
+        FROM entreprises_installees e
+        JOIN ref_departements d ON d.id = e.departement_id
+        JOIN ref_regions r ON r.id = e.region_id
+        WHERE e.is_deleted=FALSE AND e.departement_id IS NOT NULL AND e.region_id IS NOT NULL
+        GROUP BY r.nom, d.nom ORDER BY r.nom, valeur DESC
+    """)
+
 @router.get("/viz/entreprises-par-forme")
 async def viz_ent_forme(db: AsyncSession = Depends(get_db)):
     return await safe(db, """

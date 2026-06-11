@@ -240,6 +240,141 @@ function RegionBarPlot({ data, height, compact = false }: { data: { label: strin
   );
 }
 
+// ─── Stacked Bars (Entreprises par département) ───────────────────────────────
+type DeptRow = { region: string; departement: string; valeur: number };
+
+function DeptStackedBars({ data, height, compact = false }: { data: DeptRow[]; height: number; compact?: boolean }) {
+  const svgRef  = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const tipRef  = useRef<HTMLDivElement>(null);
+
+  const draw = useCallback(() => {
+    if (!svgRef.current || !wrapRef.current || !data.length) return;
+    d3.select(svgRef.current).selectAll("*").remove();
+
+    // Group by region, sort regions by total desc
+    const byRegion = d3.group(data, d => d.region);
+    const regions  = Array.from(byRegion.entries())
+      .map(([r, rows]) => ({ region: r, total: d3.sum(rows, d => d.valeur), depts: rows }))
+      .sort((a, b) => b.total - a.total);
+
+    const W    = wrapRef.current.clientWidth || 600;
+    const M    = compact
+      ? { top: 4, right: 4, bottom: 28, left: 4 }
+      : { top: 8, right: 8, bottom: 52, left: 8 };
+    const innerW = W - M.left - M.right;
+    const innerH = height - M.top - M.bottom;
+
+    const x = d3.scaleBand()
+      .domain(regions.map(r => r.region))
+      .range([0, innerW])
+      .padding(0.18);
+
+    const maxTotal = d3.max(regions, r => r.total) ?? 1;
+    const y = d3.scaleLinear().domain([0, maxTotal]).range([innerH, 0]);
+
+    // Fixed color palette for departments (per region, cycling)
+    const DEPT_PALETTE = ["#004f91", "#2a6faa", "#4d8fc3", "#70afdc", "#93cff5",
+                          "#0a5c2d", "#1e7a40", "#3d9e5f", "#62bf84", "#91dba8"];
+
+    const svg = d3.select(svgRef.current)
+      .attr("viewBox", `0 0 ${W} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    const g = svg.append("g").attr("transform", `translate(${M.left},${M.top})`);
+
+    // X axis labels
+    g.append("g")
+      .attr("transform", `translate(0,${innerH})`)
+      .call(d3.axisBottom(x).tickSize(0))
+      .call(ax => ax.select(".domain").remove())
+      .call(ax => ax.selectAll(".tick text")
+        .style("font-size", compact ? "7px" : "10px")
+        .style("fill", "#4a5568")
+        .style("font-weight", "500")
+        .attr("dy", "1.1em")
+        .text((d: any) => compact
+          ? String(d).slice(0, 4).toUpperCase()
+          : (String(d).length > 10 ? String(d).slice(0, 9) + "…" : String(d))));
+
+    // Stacked bars
+    regions.forEach(({ region, depts }) => {
+      const bx    = x(region) ?? 0;
+      const bw    = x.bandwidth();
+      let   cumY  = innerH; // stack from bottom
+
+      depts.forEach((dept, di) => {
+        const barH = innerH - y(dept.valeur);
+        const barY = cumY - barH;
+        cumY = barY;
+
+        const fill = DEPT_PALETTE[di % DEPT_PALETTE.length];
+
+        g.append("rect")
+          .attr("x",      bx)
+          .attr("y",      barY)
+          .attr("width",  bw)
+          .attr("height", Math.max(0, barH))
+          .attr("fill",   fill)
+          .style("cursor", "pointer")
+          .on("mouseenter", function(event) {
+            d3.select(this).attr("opacity", 0.75);
+            if (!tipRef.current) return;
+            tipRef.current.style.opacity = "1";
+            tipRef.current.style.left    = `${event.offsetX + 12}px`;
+            tipRef.current.style.top     = `${event.offsetY - 8}px`;
+            tipRef.current.innerHTML     =
+              `<strong>${dept.departement}</strong><br/>${dept.valeur.toLocaleString("fr-FR")} entreprises`;
+          })
+          .on("mousemove", function(event) {
+            if (!tipRef.current) return;
+            tipRef.current.style.left = `${event.offsetX + 12}px`;
+            tipRef.current.style.top  = `${event.offsetY - 8}px`;
+          })
+          .on("mouseleave", function() {
+            d3.select(this).attr("opacity", 1);
+            if (tipRef.current) tipRef.current.style.opacity = "0";
+          });
+
+        // Dept label inside segment if tall enough
+        if (!compact && barH > 14) {
+          g.append("text")
+            .attr("x",           bx + bw / 2)
+            .attr("y",           barY + barH / 2)
+            .attr("dy",          "0.35em")
+            .attr("text-anchor", "middle")
+            .style("font-size",  "8px")
+            .style("fill",       "white")
+            .style("pointer-events", "none")
+            .text(dept.departement.length > 8 ? dept.departement.slice(0, 7) + "…" : dept.departement);
+        }
+      });
+    });
+
+  }, [data, height, compact]);
+
+  useEffect(() => { draw(); }, [draw]);
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const obs = new ResizeObserver(() => draw());
+    obs.observe(wrapRef.current);
+    return () => obs.disconnect();
+  }, [draw]);
+
+  if (!data.length) return <EmptyState h={height} />;
+  return (
+    <div ref={wrapRef} style={{ width: "100%", height, position: "relative" }}>
+      <svg ref={svgRef} style={{ width: "100%", height: "100%" }} />
+      <div ref={tipRef} style={{
+        position: "absolute", pointerEvents: "none", opacity: 0, transition: "opacity 0.1s",
+        background: "rgba(26,26,46,0.92)", color: "#fff", borderRadius: 8,
+        padding: "7px 11px", fontSize: 12, lineHeight: 1.5, whiteSpace: "nowrap",
+        backdropFilter: "blur(4px)", zIndex: 10,
+      }} />
+    </div>
+  );
+}
+
 // ─── Proportion Plot (Entreprises par secteur) ────────────────────────────────
 const PROPORTION_COLORS = ["#598db8", "#dc9a6d", "#69ac7d"];
 const SECTEUR_COLOR: Record<string, string> = {
@@ -391,7 +526,8 @@ function AutoChart({ data, chartType, height }: { data:any[]; chartType:ChartTyp
 
 function VizChart({ vizId, data, height, compact }: { vizId: string; data: any[]; height: number; compact?: boolean }) {
   if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} compact={compact} />;
-  if (vizId === "entreprises-par-region")  return <RegionBarPlot  data={data} height={height} compact={compact} />;
+  if (vizId === "entreprises-par-region")  return <RegionBarPlot   data={data} height={height} compact={compact} />;
+  if (vizId === "entreprises-par-dept")    return <DeptStackedBars data={data} height={height} compact={compact} />;
   return <AutoChart data={data} chartType="auto" height={height} />;
 }
 
