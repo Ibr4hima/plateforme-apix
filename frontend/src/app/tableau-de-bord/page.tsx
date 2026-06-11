@@ -1287,23 +1287,6 @@ export default function TableauDeBordPage() {
         </div>
       </section>
 
-      {/* ── Onglets ──────────────────────────────────────────────────────────── */}
-      <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:72,zIndex:10,flexShrink:0}}>
-        <div style={{maxWidth:1400,margin:"0 auto",padding:"0 40px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{display:"flex"}}>
-            {([
-              {v:"viz",    l:"Visualisation de données"},
-              {v:"tables", l:"Tableaux analytiques"},
-            ] as const).map(o=>(
-              <button key={o.v} onClick={()=>setOnglet(o.v)}
-                style={{padding:"16px 22px",border:"none",borderBottom:`2px solid ${onglet===o.v?"#ca631f":"transparent"}`,background:"transparent",fontSize:13,fontWeight:600,color:onglet===o.v?"#ca631f":"#9aa5b4",cursor:"pointer",transition:"all 0.15s",fontFamily:"var(--font-google-sans)"}}>
-                {o.l}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* ── Contenu ──────────────────────────────────────────────────────────── */}
       <div style={{display:"flex",alignItems:"flex-start"}}>
         <Sidebar config={config} onToggleCard={toggleCard} onToggleTable={toggleTable} onToggleKPI={toggleKPI}
