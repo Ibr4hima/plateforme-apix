@@ -74,7 +74,7 @@ function BarH({ data, height }: { data:any[]; height:number }) {
     const x=d3.scaleLinear().domain([0,d3.max(data,d=>d.valeur)||1]).range([0,W]);
     const y=d3.scaleBand().domain(data.map(d=>String(d.label))).range([0,H]).padding(0.28);
     g.selectAll("rect").data(data).join("rect").attr("x",0).attr("y",d=>y(String(d.label))??0)
-      .attr("height",y.bandwidth()).attr("rx",5).attr("fill",(_,i)=>COLORS[i%COLORS.length]).attr("opacity",0.85).attr("width",0)
+      .attr("height",y.bandwidth()).attr("fill",(_,i)=>COLORS[i%COLORS.length]).attr("opacity",0.85).attr("width",0)
       .transition().duration(450).delay((_,i)=>i*35).attr("width",d=>x(d.valeur));
     g.selectAll(".lbl").data(data).join("text").attr("class","lbl").attr("x",-7)
       .attr("y",d=>(y(String(d.label))??0)+y.bandwidth()/2).attr("dy","0.35em")
@@ -107,7 +107,7 @@ function BarV({ data, height, color="#004f91" }: { data:any[]; height:number; co
       .call(g=>g.select(".domain").remove()).call(g=>g.selectAll(".tick line").remove())
       .call(g=>g.selectAll(".tick text").style("font-size","10px").style("fill","#9aa5b4"));
     g.selectAll("rect").data(data).join("rect").attr("x",d=>x(String(d.label))??0).attr("y",H)
-      .attr("width",x.bandwidth()).attr("height",0).attr("rx",3).attr("fill",color).attr("opacity",0.85)
+      .attr("width",x.bandwidth()).attr("height",0).attr("fill",color).attr("opacity",0.85)
       .transition().duration(450).delay((_,i)=>i*12).attr("y",d=>y(d.valeur)).attr("height",d=>H-y(d.valeur));
   },[data,w,height,color]);
   if(!data.length) return <EmptyState h={height}/>;
@@ -189,8 +189,7 @@ function RegionBarPlot({ data, height, compact = false }: { data: { label: strin
       .attr("y",      d => y(d.label)!)
       .attr("width",  d => Math.max(2, x(d.valeur) - M.left))
       .attr("height", y.bandwidth())
-      .attr("rx",     compact ? 3 : 5)
-      .attr("fill",   "#598db8");
+      .attr("fill",   "#004f91");
 
     // Valeur (intérieur ou extérieur selon la largeur de barre)
     svg.selectAll<SVGTextElement, typeof rows[0]>("text.val")
@@ -205,7 +204,7 @@ function RegionBarPlot({ data, height, compact = false }: { data: { label: strin
       .attr("text-anchor", d => (x(d.valeur) - M.left) >= minInside ? "end" : "start")
       .attr("font-size",   compact ? 8 : 11)
       .attr("font-weight", "600")
-      .attr("fill",        d => (x(d.valeur) - M.left) >= minInside ? "white" : "#598db8")
+      .attr("fill",        d => (x(d.valeur) - M.left) >= minInside ? "white" : "#004f91")
       .text(d => d.valeur.toLocaleString("fr-FR"));
 
     // Label gauche
