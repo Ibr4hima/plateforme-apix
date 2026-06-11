@@ -26,12 +26,12 @@ const REGION_PALETTE: Record<string, string> = {
   "Saint-Louis":  "#b2cade", // bleu ciel
   "Matam":        "#fadadd", // rose poudré
   "Tambacounda":  "#e8d5c4", // sable chaud
-  "Kédougou":     "#cde8c6", // vert sauge
-  "Fatick":       "#f5e6c8", // crème dorée
-  "Kaolack":      "#f0d4c0", // terracotta clair
-  "Kaffrine":     "#e8e0b8", // olive crème
+  "Kédougou":     "#069494", // teal profond
+  "Fatick":       "#FFB070", // orange doux
+  "Kaolack":      "#FF7E70", // corail
+  "Kaffrine":     "#E4D96F", // jaune vif
   "Kolda":        "#c8e6e8", // turquoise clair
-  "Sédhiou":      "#ddc5e0", // mauve orchidée
+  "Sédhiou":      "#B38FE0", // violet moyen
   "Ziguinchor":   "#c8dde0", // ardoise teal
 };
 
