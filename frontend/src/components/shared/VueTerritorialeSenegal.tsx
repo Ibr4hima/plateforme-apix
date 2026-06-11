@@ -31,7 +31,7 @@ const REGION_PALETTE: Record<string, string> = {
   "Kaolack":      "#FF7E70", // corail
   "Kaffrine":     "#E4D96F", // jaune vif
   "Kolda":        "#99CC66", // vert lime
-  "Sédhiou":      "#B38FE0", // violet moyen
+  "Sédhiou":      "#B7C4CF", // gris bleuté
   "Ziguinchor":   "#4682A9", // bleu acier
 };
 
