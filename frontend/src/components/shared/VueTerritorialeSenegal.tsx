@@ -17,6 +17,24 @@ const POLE_PALETTE = [
   "#e8d5c4", // 8 — Pôle Sud-Est (sable chaud)
 ];
 
+// Une couleur par région — 8 reprises des pôles + 6 nouvelles dans le même registre pastel
+const REGION_PALETTE: Record<string, string> = {
+  "Dakar":        "#efd0bc", // pêche chaude
+  "Thiès":        "#c5d4ec", // bleu pervenche
+  "Diourbel":     "#b9d9c3", // vert doux
+  "Louga":        "#d4c5e8", // lavande
+  "Saint-Louis":  "#b2cade", // bleu ciel
+  "Matam":        "#fadadd", // rose poudré
+  "Tambacounda":  "#e8d5c4", // sable chaud
+  "Kédougou":     "#cde8c6", // vert sauge
+  "Fatick":       "#f5e6c8", // crème dorée
+  "Kaolack":      "#f0d4c0", // terracotta clair
+  "Kaffrine":     "#e8e0b8", // olive crème
+  "Kolda":        "#c8e6e8", // turquoise clair
+  "Sédhiou":      "#ddc5e0", // mauve orchidée
+  "Ziguinchor":   "#c8dde0", // ardoise teal
+};
+
 // Parser la localisation : "Kaolack, Fatick et Kaffrine" → ["Kaolack","Fatick","Kaffrine"]
 const splitLocalisation = (loc: string): string[] =>
   (loc || "").split(/,\s*|\s+et\s+/).map(s => s.trim()).filter(Boolean);
@@ -28,10 +46,11 @@ const NAME_MAP: Record<string, string> = {
   "Kolda":"Kolda","Sedhiou":"Sédhiou","Ziguinchor":"Ziguinchor",
 };
 
-export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
+export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones: any[]; mode?: "pole" | "region" }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [poles, setPoles] = useState<any[]>([]);
   const [activePole, setActivePole] = useState<any>(null);
+  const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<{ nom: string; x: number; y: number } | null>(null);
   const [secteurRef, setSecteurRef] = useState<any[]>([]);
 
@@ -89,7 +108,9 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
         const pole = poles.find(p =>
           splitLocalisation(p.localisation).includes(nom)
         );
-        const color = pole ? getPoleColor(pole.id) : "#E8E5E3";
+        const color = mode === "region"
+          ? (REGION_PALETTE[nom] || "#E8E5E3")
+          : (pole ? getPoleColor(pole.id) : "#E8E5E3");
         const baseOpacity = 0.95;
 
         const g = svg.append("g")
@@ -124,7 +145,11 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
           setTooltip(null);
         })
         .on("click", function() {
-          setActivePole((prev: any) => prev?.id === pole?.id ? null : (pole || null));
+          if (mode === "region") {
+            setActiveRegion(prev => prev === nom ? null : nom);
+          } else {
+            setActivePole((prev: any) => prev?.id === pole?.id ? null : (pole || null));
+          }
         });
       });
     })
@@ -134,7 +159,7 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
       cancelled = true;
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [poles, zones]);
+  }, [poles, zones, mode]);
 
   const poleZones = activePole ? zones.filter((z: any) => z.pole_id === activePole.id) : [];
   const poleEnts = poleZones.reduce((acc: any[], z: any) => {
@@ -165,16 +190,33 @@ export default function VueTerritorialeSenegal({ zones }: { zones: any[] }) {
 
       {/* Légende */}
       <div style={{ width:196, flexShrink:0, background:"#FAFAF9", border:"0.5px solid var(--color-border-tertiary)", borderRadius:14, padding:"18px 16px" }}>
-        <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Pôles territoriaux</p>
-        <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
-          {poles.map(p => (
-            <div key={p.id} onClick={() => setActivePole((prev:any) => prev?.id === p.id ? null : p)}
-              style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"5px 8px", borderRadius:8, background: activePole?.id===p.id ? getPoleColor(p.id)+"33" : "transparent", transition:"background 0.15s" }}>
-              <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgba(0,0,0,0.08)", opacity:0.95 }}/>
-              <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{p.pole_territoire}</span>
+        {mode === "region" ? (
+          <>
+            <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Régions</p>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+              {Object.entries(REGION_PALETTE).map(([nom, color]) => (
+                <div key={nom} onClick={() => setActiveRegion(prev => prev === nom ? null : nom)}
+                  style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"4px 8px", borderRadius:8, background: activeRegion===nom ? color+"55" : "transparent", transition:"background 0.15s" }}>
+                  <div style={{ width:12, height:12, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
+                  <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{nom}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        ) : (
+          <>
+            <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Pôles territoriaux</p>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+              {poles.map(p => (
+                <div key={p.id} onClick={() => setActivePole((prev:any) => prev?.id === p.id ? null : p)}
+                  style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"5px 8px", borderRadius:8, background: activePole?.id===p.id ? getPoleColor(p.id)+"33" : "transparent", transition:"background 0.15s" }}>
+                  <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgba(0,0,0,0.08)", opacity:0.95 }}/>
+                  <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{p.pole_territoire}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
     </div>

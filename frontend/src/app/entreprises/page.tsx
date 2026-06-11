@@ -399,7 +399,7 @@ export default function EntreprisesPage() {
               <Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:14}}>Chargement…</span>
             </div>
           ) : (
-            <VueTerritorialeSenegal zones={[]}/>
+            <VueTerritorialeSenegal zones={[]} mode="region"/>
           )}
         </section>
       )}
