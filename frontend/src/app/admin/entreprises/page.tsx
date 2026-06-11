@@ -153,7 +153,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:900,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
-        <div style={{height:4,background:"linear-gradient(90deg,#ca631f,#004f91)",borderRadius:"20px 20px 0 0"}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)",borderRadius:"20px 20px 0 0"}}/>
         <div style={{padding:"24px 32px 32px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
             <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e"}}>{editItem?"Modifier l'entreprise":"Nouvelle entreprise"}</h2>
@@ -384,7 +384,7 @@ function EntrepriseVue({ ent:e, onClose, onEdit }: { ent:any; onClose:()=>void; 
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div onClick={ev=>ev.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#ca631f,#FFB0A1,#004f91)"}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
             <div style={{flex:1,paddingRight:16}}>
@@ -466,7 +466,7 @@ function EntrepriseVue({ ent:e, onClose, onEdit }: { ent:any; onClose:()=>void; 
           )}
 
           <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(e);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#366FE3",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}><Pencil size={13}/> Modifier</button>
+            <button onClick={()=>{onClose();onEdit(e);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}><Pencil size={13}/> Modifier</button>
             <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
           </div>
         </div>
@@ -519,11 +519,10 @@ export default function AdminEntreprises() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
         <div>
-          <p style={{fontSize:11,fontWeight:700,color:"#E35336",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Administration</p>
           <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Entreprises installées</h1>
           <p style={{color:"#9aa5b4",fontSize:13,marginTop:2}}>{total} entreprise{total>1?"s":""} au total</p>
         </div>
-        <button onClick={()=>{setEditItem(null);setModal(true);}} style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#E35336,#c42d1a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(227,83,54,0.3)"}}>
+        <button onClick={()=>{setEditItem(null);setModal(true);}} style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
           <Plus size={15}/> Ajouter une entreprise
         </button>
       </div>
@@ -541,17 +540,17 @@ export default function AdminEntreprises() {
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
           {entreprises.map(e=>(
             <div key={e.id} onClick={()=>setVue(e)}
-              style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${e.est_publie?"#E35336":"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)"; ev.currentTarget.style.borderColor="#FFB0A1";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor=e.est_publie?"#E35336":"#C5BFBB";}}>
+              style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:"3px solid #ca631f",cursor:"pointer",transition:"all 0.15s"}}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)"; ev.currentTarget.style.borderColor="#ca631f";}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor="#ca631f";}}>
               <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.forme_juridique?2:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
               {e.forme_juridique&&<div style={{fontSize:11,color:"#9aa5b4",fontWeight:500,marginBottom:10}}>{e.forme_juridique}</div>}
               <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/><span style={{color:"#4a5568"}}>{fmtD(e.date_creation)}</span></div>}
-                {e.adresse&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.adresse}</span></div>}
+                {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/><span style={{color:"#4a5568"}}>{fmtD(e.date_creation)}</span></div>}
+                {e.adresse&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.adresse}</span></div>}
               </div>
               <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
-                <button onClick={()=>{setEditItem(e);setModal(true);}} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}><Pencil size={12}/> Modifier</button>
+                <button onClick={()=>{setEditItem(e);setModal(true);}} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}><Pencil size={12}/> Modifier</button>
                 <button onClick={()=>handleTogglePublie(e)} disabled={togglingId===e.id} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:e.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:e.est_publie?"#15803d":"#6b7280",fontWeight:600}}>
                   {togglingId===e.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:e.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                 </button>
