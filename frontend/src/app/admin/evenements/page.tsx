@@ -256,14 +256,14 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
 
   const IS: any = { width:"100%", background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const };
   const LS: any = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:4, display:"block" };
-  const SS: any = { fontSize:11, fontWeight:700, color:"#004f91", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
+  const SS: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid rgba(202,99,31,0.15)" };
 
   if (!open) return null;
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:760, maxHeight:"92vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,#004f91,#1a6ab0)", borderRadius:"20px 20px 0 0" }} />
+        <div style={{ height:5, background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)", borderRadius:"20px 20px 0 0" }} />
         <div style={{ padding:"24px 32px 32px" }}>
 
           {/* Header */}
@@ -301,7 +301,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
               <p style={SS}>Récurrence</p>
               <label style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", fontSize:13, color:"#4a5568", marginBottom:12 }}>
                 <div onClick={()=>update("est_recurrent",!form.est_recurrent)}
-                  style={{ width:36, height:20, borderRadius:999, background:form.est_recurrent?"#004f91":"#C5BFBB", position:"relative", cursor:"pointer", transition:"background 0.2s", flexShrink:0 }}>
+                  style={{ width:36, height:20, borderRadius:999, background:form.est_recurrent?"#ca631f":"#C5BFBB", position:"relative", cursor:"pointer", transition:"background 0.2s", flexShrink:0 }}>
                   <div style={{ position:"absolute", top:2, left:form.est_recurrent?18:2, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s", boxShadow:"0 1px 3px rgba(0,0,0,0.2)" }} />
                 </div>
                 <span style={{ fontWeight:form.est_recurrent?600:400 }}>Événement récurrent</span>
@@ -362,7 +362,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
 
                     {/* Indicatif */}
                     {form.frequence_valeur && parseInt(form.frequence_valeur) > 0 && (
-                      <div style={{ fontSize:12, color:"#004f91", background:"rgba(0,79,145,0.06)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:8, padding:"8px 12px" }}>
+                      <div style={{ fontSize:12, color:"#ca631f", background:"rgba(202,99,31,0.06)", border:"1px solid rgba(202,99,31,0.15)", borderRadius:8, padding:"8px 12px" }}>
                         ℹ️ Tous les <strong>{form.frequence_valeur} {form.frequence_type==="mois"?"mois":`an${parseInt(form.frequence_valeur)>1?"s":""}`}</strong>
                         {form.prochain_mois && form.prochain_annee && (
                           <span> — Prochain : <strong>
@@ -390,7 +390,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
                     {[{val:true,label:"Date unique"},{val:false,label:"Sur plusieurs jours"}].map(opt=>(
                       <button key={String(opt.val)} onClick={()=>{ update("date_unique",opt.val); if(opt.val) update("date_fin",""); }}
                         style={{ padding:"7px 16px", borderRadius:8, fontSize:13, fontWeight:600, border:"none", cursor:"pointer",
-                          background:form.date_unique===opt.val?"#004f91":"#E8E5E3",
+                          background:form.date_unique===opt.val?"#ca631f":"#E8E5E3",
                           color:form.date_unique===opt.val?"#fff":"#4a5568" }}>
                         {opt.label}
                       </button>
@@ -498,7 +498,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
                 Annuler
               </button>
               <button onClick={handleSave} disabled={saving||saveOk}
-                style={{ padding:"10px 24px", borderRadius:10, border:"none", background:saveOk?"#dcfce7":"linear-gradient(135deg,#004f91,#003a6e)", color:saveOk?"#15803d":"#fff", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:8, fontFamily:"var(--font-google-sans)" }}>
+                style={{ padding:"10px 24px", borderRadius:10, border:"none", background:saveOk?"#dcfce7":"linear-gradient(135deg,#ca631f,#a0521a)", color:saveOk?"#15803d":"#fff", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:8, fontFamily:"var(--font-google-sans)" }}>
                 <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
                 {saveOk?<><Check size={14}/> Enregistré !</>:saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/> Sauvegarde...</>:editItem?"Modifier":"Créer l'événement"}
               </button>
