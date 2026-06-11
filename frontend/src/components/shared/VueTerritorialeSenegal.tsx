@@ -32,7 +32,7 @@ const REGION_PALETTE: Record<string, string> = {
   "Kaffrine":     "#E4D96F", // jaune vif
   "Kolda":        "#99CC66", // vert lime
   "Sédhiou":      "#B38FE0", // violet moyen
-  "Ziguinchor":   "#c8dde0", // ardoise teal
+  "Ziguinchor":   "#4682A9", // bleu acier
 };
 
 // Parser la localisation : "Kaolack, Fatick et Kaffrine" → ["Kaolack","Fatick","Kaffrine"]
