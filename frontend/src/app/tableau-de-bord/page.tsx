@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import {
   Activity, BarChart2, Building2, Calendar,
   DollarSign, Handshake, Layers, Loader2, MapPin, Maximize2,
-  RotateCcw, Search, SlidersHorizontal, Table2, Target, TrendingUp, X
+  Search, SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CATALOGUE, KPIS_DISPONIBLES, CATEGORIES, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
@@ -263,7 +263,6 @@ function VizCard({ card, viz, onRemove }: {
             <p style={{fontWeight:700,fontSize:12,color:"#1a1a2e",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{viz.titre}</p>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:8}}>
-            <button onClick={e=>{e.stopPropagation();fetchData();}} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#9aa5b4"}}><RotateCcw size={11}/></button>
             <button onClick={e=>{e.stopPropagation();onRemove();}} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
             <Maximize2 size={11} style={{color:"#C5BFBB"}}/>
           </div>
