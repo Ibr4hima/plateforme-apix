@@ -26,7 +26,7 @@ const MODULES: NavItem[] = [
   { type: "link", label: "Code des investissements",       href: "/admin/code-investissement" },
 ];
 
-const W = 240;
+const W = 260;
 
 export default function Sidebar() {
   const pathname = usePathname();
