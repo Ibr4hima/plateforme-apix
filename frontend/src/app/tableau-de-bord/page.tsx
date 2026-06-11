@@ -155,6 +155,126 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
   );
 }
 
+// ─── Line Chart (Créations par année) — style IDE ────────────────────────────
+function CreationsLineChart({ data, height }: { data: { label: number; valeur: number }[]; height: number }) {
+  const svgRef  = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const draw = useCallback(() => {
+    if (!svgRef.current || !wrapRef.current || !data.length) return;
+    const el = svgRef.current;
+    d3.select(el).selectAll("*").remove();
+
+    const W = wrapRef.current.clientWidth || 600;
+    const H = height;
+    const M = { top: 12, right: 20, bottom: 34, left: 52 };
+
+    const sorted   = [...data].sort((a, b) => a.label - b.label);
+    const annees   = sorted.map(d => d.label);
+    const maxVal   = d3.max(sorted, d => d.valeur) ?? 1;
+    const minAnnee = annees[0];
+    const maxAnnee = annees[annees.length - 1];
+
+    const xLin = d3.scaleLinear().domain([minAnnee, maxAnnee]).range([M.left, W - M.right]);
+    const y    = d3.scaleLinear().domain([0, maxVal * 1.08]).nice().range([H - M.bottom, M.top]);
+
+    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+
+    // Grille horizontale
+    svg.append("g").selectAll("line").data(y.ticks(4)).enter().append("line")
+      .attr("x1", M.left).attr("x2", W - M.right)
+      .attr("y1", d => y(d)).attr("y2", d => y(d))
+      .attr("stroke", "#EBEBEB").attr("stroke-width", 1);
+
+    // Ligne y=0 pointillée
+    svg.append("line")
+      .attr("x1", M.left).attr("x2", W - M.right)
+      .attr("y1", y(0)).attr("y2", y(0))
+      .attr("stroke", "#C5BFBB").attr("stroke-width", 1.2).attr("stroke-dasharray", "4,3");
+
+    const COLOR = "#004f91";
+
+    // Gradient de remplissage
+    const defs = svg.append("defs");
+    const grad = defs.append("linearGradient").attr("id", "cpa-grad").attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
+    grad.append("stop").attr("offset", "0%").attr("stop-color", COLOR).attr("stop-opacity", 0.1);
+    grad.append("stop").attr("offset", "100%").attr("stop-color", COLOR).attr("stop-opacity", 0);
+
+    // Aire
+    svg.append("path").datum(sorted)
+      .attr("fill", "url(#cpa-grad)")
+      .attr("d", d3.area<typeof sorted[0]>()
+        .x(d => xLin(d.label))
+        .y0(y(0)).y1(d => y(d.valeur))
+        .curve(d3.curveMonotoneX));
+
+    // Courbe
+    svg.append("path").datum(sorted)
+      .attr("fill", "none").attr("stroke", COLOR).attr("stroke-width", 2.2)
+      .attr("d", d3.line<typeof sorted[0]>()
+        .x(d => xLin(d.label))
+        .y(d => y(d.valeur))
+        .curve(d3.curveMonotoneX));
+
+    // Points + tooltip
+    const rBase = sorted.length > 25 ? 0 : sorted.length > 18 ? 1.5 : 2.5;
+    const tip   = d3.select("#d3-tooltip") as any;
+    if (rBase > 0) {
+      svg.selectAll<SVGCircleElement, typeof sorted[0]>("circle.pt")
+        .data(sorted).enter().append("circle").attr("class", "pt")
+        .attr("cx", d => xLin(d.label)).attr("cy", d => y(d.valeur)).attr("r", rBase)
+        .attr("fill", "#fff").attr("stroke", COLOR).attr("stroke-width", 1.5).style("cursor", "pointer")
+        .on("mouseover", (e, d) => {
+          d3.select(e.currentTarget).attr("r", rBase + 2);
+          tip.style("opacity", 1).style("left", (e.pageX + 12) + "px").style("top", (e.pageY - 28) + "px")
+            .html(`<strong>${d.label}</strong><br/>${d.valeur.toLocaleString("fr-FR")} créations`);
+        })
+        .on("mouseout", (e) => { d3.select(e.currentTarget).attr("r", rBase); tip.style("opacity", 0); });
+    } else {
+      svg.selectAll<SVGCircleElement, typeof sorted[0]>("circle.ph")
+        .data(sorted).enter().append("circle").attr("class", "ph")
+        .attr("cx", d => xLin(d.label)).attr("cy", d => y(d.valeur)).attr("r", 6)
+        .attr("fill", "transparent").attr("stroke", "none").style("cursor", "pointer")
+        .on("mouseover", (e, d) => {
+          tip.style("opacity", 1).style("left", (e.pageX + 12) + "px").style("top", (e.pageY - 28) + "px")
+            .html(`<strong>${d.label}</strong><br/>${d.valeur.toLocaleString("fr-FR")} créations`);
+        })
+        .on("mouseout", () => tip.style("opacity", 0));
+    }
+
+    // Axe X
+    svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
+      .call(d3.axisBottom(xLin).ticks(8).tickFormat(d3.format("d")).tickSizeOuter(0))
+      .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
+      .call(g => g.selectAll("line").remove())
+      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
+
+    // Axe Y
+    const fmtY = (v: d3.NumberValue) => { const n = +v; return n >= 1000 ? `${(n/1000).toFixed(0)}k` : `${n}`; };
+    svg.append("g").attr("transform", `translate(${M.left},0)`)
+      .call(d3.axisLeft(y).ticks(4).tickFormat(fmtY))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("line").remove())
+      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
+
+  }, [data, height]);
+
+  useEffect(() => { draw(); }, [draw]);
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const obs = new ResizeObserver(() => draw());
+    obs.observe(wrapRef.current);
+    return () => obs.disconnect();
+  }, [draw]);
+
+  if (!data.length) return <EmptyState h={height} />;
+  return (
+    <div ref={wrapRef} style={{ width: "100%" }}>
+      <svg ref={svgRef} style={{ width: "100%", height, display: "block" }} />
+    </div>
+  );
+}
+
 // ─── HBarChart Région (Entreprises par région) — style IDE ───────────────────
 function RegionBarPlot({ data, height, compact = false }: { data: { label: string; valeur: number }[]; height: number; compact?: boolean }) {
   const svgRef  = useRef<SVGSVGElement>(null);
@@ -790,7 +910,8 @@ function AutoChart({ data, chartType, height }: { data:any[]; chartType:ChartTyp
 function VizChart({ vizId, data, height, compact }: { vizId: string; data: any[]; height: number; compact?: boolean }) {
   if (vizId === "entreprises-par-secteur") return <ProportionPlot data={data} height={height} compact={compact} />;
   if (vizId === "entreprises-par-region")  return <RegionBarPlot   data={data} height={height} compact={compact} />;
-  if (vizId === "entreprises-par-dept")    return <DeptStackedBars data={data} height={height} compact={compact} />;
+  if (vizId === "entreprises-par-dept")    return <DeptStackedBars   data={data} height={height} compact={compact} />;
+  if (vizId === "creations-par-annee")     return <CreationsLineChart data={data} height={height} />;
   return <AutoChart data={data} chartType="auto" height={height} />;
 }
 
@@ -1138,6 +1259,7 @@ export default function TableauDeBordPage() {
   return (
     <div style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <div id="d3-tooltip" style={{position:"fixed",pointerEvents:"none",background:"rgba(26,26,46,0.92)",color:"#fff",borderRadius:8,padding:"8px 12px",fontSize:12,lineHeight:1.5,opacity:0,zIndex:9999,backdropFilter:"blur(4px)"}}/>
       <Navbar/>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
