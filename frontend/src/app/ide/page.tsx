@@ -1032,7 +1032,6 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
   const [anneeMax,    setAnneeMax]    = useState(2024);
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
-  const [typeG,       setTypeG]       = useState<"line"|"bar">("line");
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
@@ -1078,9 +1077,9 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
   const groupedPays  = groupByContinent(filteredPays);
   const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
 
-  const hasFilter = paysSelec.length>1||paysSelec[0]!=="Sénégal"||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))||typeG!=="line";
-  const nbFiltres = (paysSelec.length>1||paysSelec[0]!=="Sénégal"?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0)+(typeG!=="line"?1:0);
-  const reinit = () => { setPaysSelec(["Sénégal"]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); setTypeG("line"); };
+  const hasFilter = paysSelec.length>1||paysSelec[0]!=="Sénégal"||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024));
+  const nbFiltres = (paysSelec.length>1||paysSelec[0]!=="Sénégal"?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0);
+  const reinit = () => { setPaysSelec(["Sénégal"]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); };
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
@@ -1186,22 +1185,6 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
                 </div>
               </div>
               <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-              {/* Type graphe */}
-              <div style={{ marginBottom:18 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:10 }}>
-                  {typeG!=="line"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-                  <span style={{ fontSize:11, fontWeight:700, color:typeG!=="line"?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Type de graphe</span>
-                </div>
-                <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3 }}>
-                  {[{v:"line",l:"Courbes"},{v:"bar",l:"Barres"}].map(t=>(
-                    <button key={t.v} onClick={()=>setTypeG(t.v as "line"|"bar")}
-                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:typeG===t.v?"#fff":"transparent", color:typeG===t.v?"#1a1a2e":"#9aa5b4", boxShadow:typeG===t.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
-                      {t.l}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
               {/* Période */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
@@ -1290,8 +1273,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
             <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
                 <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Source CNUCED" series={g.series} grapheId={g.id}
-                  fullChildren={<GrapheMultiPays series={g.series} height={340} type={typeG} titre={g.id}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type={typeG} titre={g.id}/>
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id}/>
                 </GrapheCard>
               ))}
             </div>
@@ -1583,7 +1566,6 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
   const [anneeMax,    setAnneeMax]   = useState(2024);
   const [anneesSpec,  setAnneesSpec] = useState<number[]>([]);
   const [modeAnnees,  setModeAnnees] = useState<"plage"|"specifiques">("plage");
-  const [typeG,       setTypeG]      = useState<"line"|"bar">("line");
   const [sidebarOpen, setSidebarOpen]= useState(true);
   const [sidebarWidth,setSidebarWidth]=useState(280);
   const isResizing = useRef(false);
@@ -1658,9 +1640,9 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
     if (grpSelec.includes(code)) setGrpSelec(p => p.filter(c => c !== code));
     else if (grpSelec.length < 5) setGrpSelec(p => [...p, code]);
   };
-  const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))||typeG!=="line";
-  const nbFiltres = (grpSelec.length>0?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0)+(typeG!=="line"?1:0);
-  const reinit = () => { setGrpSelec([]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); setTypeG("line"); };
+  const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024));
+  const nbFiltres = (grpSelec.length>0?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0);
+  const reinit = () => { setGrpSelec([]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); };
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
@@ -1833,21 +1815,6 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
           })()}
 
 
-          {/* Type graphe */}
-          <div style={{ marginBottom:18 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:10 }}>
-              {typeG!=="line"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:typeG!=="line"?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Type de graphe</span>
-            </div>
-            <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3 }}>
-              {[{v:"line",l:"Courbes"},{v:"bar",l:"Barres"}].map(t=>(
-                <button key={t.v} onClick={()=>setTypeG(t.v as "line"|"bar")}
-                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:typeG===t.v?"#fff":"transparent", color:typeG===t.v?"#1a1a2e":"#9aa5b4", boxShadow:typeG===t.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
-                  {t.l}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>}
       </aside>
 
@@ -1885,8 +1852,8 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
               <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Somme pays membres · CNUCED" series={g.series} grapheId={g.id}
-                fullChildren={<GrapheMultiPays series={g.series} height={340} type={typeG} titre={g.id}/>}>
-                <GrapheMultiPays series={g.series} height={145} type={typeG} titre={g.id}/>
+                fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id}/>}>
+                <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id}/>
               </GrapheCard>
             ))}
           </div>
