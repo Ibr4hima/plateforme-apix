@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
 import {
   Activity, BarChart2, Building2, Calendar,
-  DollarSign, Handshake, Layers, Loader2, MapPin, Maximize2,
+  DollarSign, Handshake, Layers, Loader2, MapPin,
   Search, SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -156,7 +156,7 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
 }
 
 // ─── Proportion Plot (Entreprises par secteur) ────────────────────────────────
-const PROPORTION_COLORS = ["#004f91", "#ca631f", "#188038"];
+const PROPORTION_COLORS = ["#7fa7c8", "#e4b18f", "#8bbf9c"];
 
 function ProportionPlot({ data, height, compact = false }: { data: { label: string; valeur: number }[]; height: number; compact?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -200,7 +200,21 @@ function ProportionPlot({ data, height, compact = false }: { data: { label: stri
       Plot.areaY(rows, stack({ curve: "bump-x", fill: "secteur", stroke: "white", strokeWidth: 0.8 })),
     ];
 
-    if (!compact) {
+    const shortLabel = (s: string) => {
+      const clean = s.replace(/^[Ss]ecteur\s+/i, "");
+      return clean.charAt(0).toUpperCase() + clean.slice(1);
+    };
+
+    if (compact) {
+      marks.push(
+        Plot.text(rows, stack({
+          filter: (d: any) => d.col === "Toutes entreprises",
+          text: (d: any) => shortLabel(d.secteur),
+          textAnchor: "start", dx: 8,
+          fill: "white", fontWeight: "bold", fontSize: 10,
+        })),
+      );
+    } else {
       marks.push(
         Plot.text(rows, stack({
           filter: (d: any) => d.col === "Toutes entreprises",
@@ -381,18 +395,17 @@ function VizCard({ card, viz, onRemove }: {
           </div>
           <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:8}}>
             <button onClick={e=>{e.stopPropagation();onRemove();}} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
-            <Maximize2 size={11} style={{color:"#C5BFBB"}}/>
           </div>
         </div>
         <div style={{pointerEvents:"none"}}>
           {loading?(
-            <div style={{height:200,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:"#9aa5b4"}}>
+            <div style={{height:160,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:"#9aa5b4"}}>
               <Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span>
             </div>
           ):data.length===0?(
-            <EmptyState h={200}/>
+            <EmptyState h={160}/>
           ):(
-            <VizChart vizId={viz.id} data={data} height={200} compact/>
+            <VizChart vizId={viz.id} data={data} height={160} compact/>
           )}
         </div>
       </div>
