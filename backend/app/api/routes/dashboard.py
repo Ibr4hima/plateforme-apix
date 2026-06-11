@@ -97,6 +97,17 @@ async def viz_ent_secteur(db: AsyncSession = Depends(get_db)):
         GROUP BY s.nom ORDER BY valeur DESC
     """)
 
+@router.get("/viz/entreprises-en-zone-par-secteur")
+async def viz_ent_zone_secteur(db: AsyncSession = Depends(get_db)):
+    return await safe(db, """
+        SELECT s.nom as label, COUNT(DISTINCT ze.entreprise_id) as valeur
+        FROM zone_entreprises ze
+        JOIN entreprises_installees e ON e.id = ze.entreprise_id AND e.is_deleted=FALSE
+        JOIN LATERAL unnest(e.secteur_ids) sid ON TRUE
+        JOIN ref_secteurs s ON s.id = sid
+        GROUP BY s.nom ORDER BY valeur DESC
+    """)
+
 @router.get("/viz/entreprises-par-branche")
 async def viz_ent_branche(db: AsyncSession = Depends(get_db)):
     return await safe(db, """

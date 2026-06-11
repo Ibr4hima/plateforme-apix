@@ -162,6 +162,7 @@ function ProportionPlot({ data, height }: { data: { label: string; valeur: numbe
   const containerRef = useRef<HTMLDivElement>(null);
   const plotRef = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(600);
+  const [dataZone, setDataZone] = useState<{ label: string; valeur: number }[]>([]);
 
   useEffect(() => {
     const obs = new ResizeObserver(e => setW(e[0].contentRect.width));
@@ -170,53 +171,87 @@ function ProportionPlot({ data, height }: { data: { label: string; valeur: numbe
   }, []);
 
   useEffect(() => {
+    fetch(`${API}/dashboard/viz/entreprises-en-zone-par-secteur`)
+      .then(r => r.json()).then(d => setDataZone(Array.isArray(d) ? d : [])).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (!plotRef.current || !data.length) return;
     plotRef.current.innerHTML = "";
 
-    const total = d3.sum(data, d => d.valeur);
-    const plotData = data.map(d => ({
-      type: "secteurs",
-      value: +((d.valeur / total) * 100).toFixed(1),
-      count: d.valeur,
-      secteur: d.label,
-    }));
+    const totalAll  = d3.sum(data, d => d.valeur);
+    const totalZone = d3.sum(dataZone, d => d.valeur) || 1;
 
+    // All sectors present in either dataset
+    const secteurs = Array.from(new Set([...data.map(d => d.label), ...dataZone.map(d => d.label)]));
+
+    const rows = secteurs.flatMap(s => {
+      const all  = data.find(d => d.label === s);
+      const zone = dataZone.find(d => d.label === s);
+      return [
+        all  ? { col: "Toutes entreprises", secteur: s, value: +((all.valeur  / totalAll)  * 100).toFixed(1), count: all.valeur  } : null,
+        zone ? { col: "Entreprises en zone", secteur: s, value: +((zone.valeur / totalZone) * 100).toFixed(1), count: zone.valeur } : null,
+      ].filter(Boolean);
+    }) as { col: string; secteur: string; value: number; count: number }[];
+
+    const columns = ["Toutes entreprises", "Entreprises en zone"];
     const stack = (opts: object) =>
-      Plot.stackY({}, { x: "type", y: "value", z: "secteur", ...opts });
+      Plot.stackY({}, { x: "col", y: "value", z: "secteur", ...opts });
 
     const chart = Plot.plot({
       width: w,
       height,
-      x: { domain: ["secteurs"], axis: null, padding: 0.4 },
+      x: {
+        domain: columns,
+        axis: "top",
+        label: null,
+        tickFormat: (d: string) => d,
+        tickSize: 0,
+        padding: 0,
+      },
       y: { axis: null, reverse: true },
       color: {
-        domain: data.map(d => d.label),
-        range: data.map((_, i) => PROPORTION_COLORS[i % PROPORTION_COLORS.length]),
+        domain: secteurs,
+        range: secteurs.map((_, i) => PROPORTION_COLORS[i % PROPORTION_COLORS.length]),
       },
-      marginLeft: 150,
-      marginRight: 140,
+      marginLeft: 50,
+      marginRight: 60,
+      style: { fontSize: "12px", fontFamily: "var(--font-google-sans, sans-serif)" },
       marks: [
-        Plot.rectY(plotData, stack({ fill: "secteur", inset: 0.8, rx: 3 })),
-        Plot.text(plotData, stack({
-          text: (d: any) => { const t = d.secteur as string; return t.length > 20 ? t.slice(0, 19) + "…" : t; },
+        Plot.areaY(rows, stack({ curve: "bump-x", fill: "secteur", stroke: "white", strokeWidth: 2 })),
+        // % gauche
+        Plot.text(rows, stack({
+          filter: (d: any) => d.col === "Toutes entreprises",
+          text: (d: any) => `${d.value}%`,
           textAnchor: "end",
-          dx: -10,
-          fill: "#1a1a2e",
-          fontSize: 11,
-          fontWeight: "500",
-        })),
-        Plot.text(plotData, stack({
-          text: (d: any) => `${(d.count as number).toLocaleString("fr-FR")} · ${d.value}%`,
-          textAnchor: "start",
-          dx: 10,
+          dx: -6,
           fill: "#4a5568",
-          fontSize: 10,
+          fontSize: 11,
+        })),
+        // % droite
+        Plot.text(rows, stack({
+          filter: (d: any) => d.col === "Entreprises en zone",
+          text: (d: any) => `${d.value}%`,
+          textAnchor: "start",
+          dx: 6,
+          fill: "#4a5568",
+          fontSize: 11,
+        })),
+        // nom du secteur dans la colonne gauche (bold white)
+        Plot.text(rows, stack({
+          filter: (d: any) => d.col === "Toutes entreprises",
+          text: (d: any) => { const t = d.secteur as string; return t.length > 16 ? t.slice(0, 15) + "…" : t; },
+          textAnchor: "start",
+          dx: 8,
+          fill: "white",
+          fontWeight: "bold",
+          fontSize: 11,
         })),
       ],
     });
 
     plotRef.current.appendChild(chart);
-  }, [data, w, height]);
+  }, [data, dataZone, w, height]);
 
   if (!data.length) return <EmptyState h={height} />;
   return (
