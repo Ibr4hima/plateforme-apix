@@ -155,71 +155,88 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
   );
 }
 
-// ─── Bar Chart Région (Entreprises par région) ────────────────────────────────
+// ─── HBarChart Région (Entreprises par région) — style IDE ───────────────────
 function RegionBarPlot({ data, height, compact = false }: { data: { label: string; valeur: number }[]; height: number; compact?: boolean }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const plotRef      = useRef<HTMLDivElement>(null);
-  const [w, setW]    = useState(500);
+  const svgRef  = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
+  const draw = useCallback(() => {
+    if (!svgRef.current || !wrapRef.current || !data.length) return;
+    const el = svgRef.current;
+    d3.select(el).selectAll("*").remove();
+
+    const rows = [...data].sort((a, b) => b.valeur - a.valeur).slice(0, compact ? 6 : 14);
+    const W    = wrapRef.current.clientWidth || 500;
+    const rowH = compact ? 20 : 38;
+    const longestName = compact ? 3 : Math.max(...rows.map(d => d.label.length));
+    const M = compact
+      ? { top: 4, right: 10, bottom: 4, left: 36 }
+      : { top: 8, right: 72, bottom: 8, left: Math.max(90, longestName * 6.8 + 12) };
+    const H = rows.length * rowH + M.top + M.bottom;
+
+    const maxVal = d3.max(rows, d => d.valeur) ?? 1;
+    const x = d3.scaleLinear().domain([0, maxVal]).range([M.left, W - M.right]);
+    const y = d3.scaleBand().domain(rows.map(d => d.label)).range([M.top, H - M.bottom]).padding(0.2);
+
+    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+    const minInside = compact ? 30 : 60;
+
+    // Barres
+    svg.selectAll<SVGRectElement, typeof rows[0]>("rect.bar")
+      .data(rows).enter().append("rect")
+      .attr("class", "bar")
+      .attr("x",      M.left)
+      .attr("y",      d => y(d.label)!)
+      .attr("width",  d => Math.max(2, x(d.valeur) - M.left))
+      .attr("height", y.bandwidth())
+      .attr("rx",     compact ? 3 : 5)
+      .attr("fill",   "#598db8");
+
+    // Valeur (intérieur ou extérieur selon la largeur de barre)
+    svg.selectAll<SVGTextElement, typeof rows[0]>("text.val")
+      .data(rows).enter().append("text")
+      .attr("class", "val")
+      .attr("x",  d => {
+        const bw = x(d.valeur) - M.left;
+        return bw >= minInside ? x(d.valeur) - 5 : x(d.valeur) + 5;
+      })
+      .attr("y",           d => y(d.label)! + y.bandwidth() / 2)
+      .attr("dy",          "0.35em")
+      .attr("text-anchor", d => (x(d.valeur) - M.left) >= minInside ? "end" : "start")
+      .attr("font-size",   compact ? 8 : 11)
+      .attr("font-weight", "600")
+      .attr("fill",        d => (x(d.valeur) - M.left) >= minInside ? "white" : "#598db8")
+      .text(d => d.valeur.toLocaleString("fr-FR"));
+
+    // Label gauche
+    svg.selectAll<SVGTextElement, typeof rows[0]>("text.lbl")
+      .data(rows).enter().append("text")
+      .attr("class",       "lbl")
+      .attr("x",           M.left - 6)
+      .attr("y",           d => y(d.label)! + y.bandwidth() / 2)
+      .attr("dy",          "0.35em")
+      .attr("text-anchor", "end")
+      .attr("font-size",   compact ? 8 : 11)
+      .attr("font-weight", "500")
+      .attr("fill",        "#374151")
+      .text(d => compact
+        ? d.label.slice(0, 3).toUpperCase()
+        : d.label);
+
+  }, [data, compact]);
+
+  useEffect(() => { draw(); }, [draw]);
   useEffect(() => {
-    const obs = new ResizeObserver(e => setW(e[0].contentRect.width));
-    if (containerRef.current) obs.observe(containerRef.current);
+    if (!wrapRef.current) return;
+    const obs = new ResizeObserver(() => draw());
+    obs.observe(wrapRef.current);
     return () => obs.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!plotRef.current || !data.length) return;
-    plotRef.current.innerHTML = "";
-
-    const limit  = compact ? 6 : 14;
-    const maxVal = d3.max(data, d => d.valeur) ?? 1;
-
-    const chart = Plot.plot({
-      width: w,
-      height,
-      marginLeft:  compact ? 80 : 110,
-      marginRight: compact ? 40 : 55,
-      marginTop:   8,
-      marginBottom: 8,
-      x: { axis: null, domain: [0, maxVal * 1.08] },
-      y: { label: null, tickSize: 0, tickPadding: 6 },
-      style: {
-        fontSize:   compact ? "10px" : "12px",
-        fontFamily: "var(--font-google-sans, sans-serif)",
-        border:     "none",
-        background: "transparent",
-      },
-      marks: [
-        Plot.barX(data, {
-          x: "valeur",
-          y: "label",
-          sort: { y: "x", reverse: true, limit },
-          fill: "#598db8",
-          rx: 4,
-        }),
-        Plot.text(data, {
-          text: (d: any) => d.valeur.toLocaleString("fr-FR"),
-          y: "label",
-          x: "valeur",
-          sort: { y: "x", reverse: true, limit },
-          textAnchor: "end",
-          dx: -6,
-          fill: "white",
-          fontWeight: "bold",
-          fontSize: compact ? 9 : 11,
-        }),
-      ],
-    });
-
-    (chart as HTMLElement).style.border    = "none";
-    (chart as HTMLElement).style.outline   = "none";
-    plotRef.current.appendChild(chart);
-  }, [data, w, height, compact]);
+  }, [draw]);
 
   if (!data.length) return <EmptyState h={height} />;
   return (
-    <div ref={containerRef} style={{ width: "100%" }}>
-      <div ref={plotRef} />
+    <div ref={wrapRef} style={{ width: "100%", height }}>
+      <svg ref={svgRef} style={{ width: "100%", height: "100%" }} />
     </div>
   );
 }
