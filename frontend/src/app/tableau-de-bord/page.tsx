@@ -187,20 +187,20 @@ function ProportionPlot({ data, height }: { data: { label: string; valeur: numbe
     const chart = Plot.plot({
       width: w,
       height,
-      x: { domain: ["secteurs"], axis: null, padding: 0 },
+      x: { domain: ["secteurs"], axis: null, padding: 0.4 },
       y: { axis: null, reverse: true },
       color: {
         domain: data.map(d => d.label),
         range: data.map((_, i) => PROPORTION_COLORS[i % PROPORTION_COLORS.length]),
       },
-      marginLeft: 140,
-      marginRight: 130,
+      marginLeft: 150,
+      marginRight: 140,
       marks: [
-        Plot.areaY(plotData, stack({ curve: "bump-x", fill: "secteur", stroke: "white", strokeWidth: 1.5 })),
+        Plot.rectY(plotData, stack({ fill: "secteur", inset: 0.8, rx: 3 })),
         Plot.text(plotData, stack({
-          text: (d: any) => { const t = d.secteur as string; return t.length > 18 ? t.slice(0, 17) + "…" : t; },
+          text: (d: any) => { const t = d.secteur as string; return t.length > 20 ? t.slice(0, 19) + "…" : t; },
           textAnchor: "end",
-          dx: -8,
+          dx: -10,
           fill: "#1a1a2e",
           fontSize: 11,
           fontWeight: "500",
@@ -208,7 +208,7 @@ function ProportionPlot({ data, height }: { data: { label: string; valeur: numbe
         Plot.text(plotData, stack({
           text: (d: any) => `${(d.count as number).toLocaleString("fr-FR")} · ${d.value}%`,
           textAnchor: "start",
-          dx: 8,
+          dx: 10,
           fill: "#4a5568",
           fontSize: 10,
         })),
