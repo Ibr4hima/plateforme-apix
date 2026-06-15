@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Search, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -704,16 +704,12 @@ export default function BanqueProjets() {
   return (
     <div>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-        <div style={{ position:"relative" as const, maxWidth:360, flex:1 }}>
-          <Search size={14} style={{ position:"absolute" as const, left:12, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
-          <input value={q} onChange={e=>{ setQ(e.target.value); setPage(1); }} placeholder="Rechercher un projet…" style={{...IS, paddingLeft:36}}/>
-        </div>
+      <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", marginBottom:20 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <span style={{ fontSize:13, color:"#9aa5b4" }}>{total} projet{total>1?"s":""}</span>
           <button onClick={()=>{ setEdit(null); setModal(true); }}
-            style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 18px", borderRadius:11, border:"none", background:"linear-gradient(135deg,#ca631f,#e07a3a)", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(202,99,31,0.25)" }}>
-            <Plus size={14}/> Nouveau projet
+            style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#ca631f,#a0521a)", color:"#fff", fontWeight:700, fontSize:13, padding:"11px 20px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:"0 4px 14px rgba(202,99,31,0.3)" }}>
+            <Plus size={15}/> Nouveau projet
           </button>
         </div>
       </div>
@@ -731,14 +727,13 @@ export default function BanqueProjets() {
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:12 }}>
           {projets.map(p=>(
             <div key={p.id} onClick={()=>setVue(p)}
-              style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", borderLeft:`3px solid ${p.est_publie?"#ca631f":"#C5BFBB"}`, cursor:"pointer", transition:"all 0.15s" }}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";ev.currentTarget.style.background="#fff";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?"#ca631f":"#C5BFBB";ev.currentTarget.style.background="#F8F7F6";}}>
-              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12, marginTop:6 }}>
-                {p.pole_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.pole_nom}</span></div>}
-                {(p.region_nom||p.departement_nom||p.arrondissement_nom)&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#E35336", flexShrink:0 }}/><span style={{ color:"#9aa5b4" }}>{[p.arrondissement_nom,p.departement_nom,p.region_nom].filter(Boolean).join(", ")}</span></div>}
-                {p.date_debut&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#059669", flexShrink:0 }}/><span style={{ color:"#9aa5b4" }}>Début : {new Date(p.date_debut+"T00:00:00").toLocaleDateString("fr-FR")}</span></div>}
+              style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", borderLeft:`3px solid ${p.est_publie?"#ca631f":"#C5BFBB"}`, cursor:"pointer", transition:"all 0.15s", position:"relative" as const }}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?"#ca631f":"#C5BFBB";}}>
+              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
+                {p.pole_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#188038", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.pole_nom}</span></div>}
+                {p.region_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#B7410E", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>Région de {p.region_nom}</span></div>}
               </div>
               <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={ev=>ev.stopPropagation()}>
                 <button onClick={()=>{ setEdit(p); setModal(true); }}

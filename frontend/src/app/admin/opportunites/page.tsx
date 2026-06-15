@@ -1021,14 +1021,14 @@ export default function OpportunitesAdminPage() {
     <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-      <div style={{marginBottom:28}}>
+      <div style={{marginBottom:12}}>
         <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Opportunités d'investissement</h1>
       </div>
 
-      <div style={{display:"flex",gap:4,marginBottom:28,borderBottom:"2px solid #E8E5E3"}}>
+      <div style={{display:"flex",gap:4,background:"#F2F0EF",borderRadius:12,padding:4,marginBottom:28,width:"fit-content"}}>
         {TABS.map(t=>(
           <button key={t.key} onClick={()=>setOnglet(t.key)}
-            style={{padding:"11px 20px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,marginBottom:-2,transition:"all 0.15s"}}>
+            style={{padding:"8px 20px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,background:onglet===t.key?"#fff":"transparent",color:onglet===t.key?"#1a1a2e":"#9aa5b4",boxShadow:onglet===t.key?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.2s"}}>
             {t.label}
           </button>
         ))}
