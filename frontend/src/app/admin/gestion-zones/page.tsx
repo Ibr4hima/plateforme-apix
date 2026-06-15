@@ -965,58 +965,49 @@ export default function GestionZonesPage() {
                     Aucune zone {t.code} — cliquez sur &quot;+ Zone&quot; ci-dessus pour en ajouter.
                   </div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(290px,1fr))", gap: 14 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 12 }}>
                     {zDuT.map(z => (
-                      <div key={z.id}
-                        onClick={() => setVueId(z.id)}
-                        style={{ background: "#fff", border: "1px solid #E8E5E3", borderLeft: `3px solid ${t.color}`, borderRadius: 12, padding: "16px 18px", cursor: "pointer", transition: "all 0.15s", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column" as const, gap: 10 }}
-                        onMouseEnter={e => { e.currentTarget.style.borderTopColor = t.color; e.currentTarget.style.borderRightColor = t.color; e.currentTarget.style.borderBottomColor = t.color; e.currentTarget.style.boxShadow = `0 4px 16px ${t.color}18`; e.currentTarget.style.transform = "translateY(-1px)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderTopColor = "#E8E5E3"; e.currentTarget.style.borderRightColor = "#E8E5E3"; e.currentTarget.style.borderBottomColor = "#E8E5E3"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; e.currentTarget.style.transform = "translateY(0)"; }}>
+                      <div key={z.id} onClick={() => setVueId(z.id)}
+                        style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 12, padding: "14px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", borderLeft: `3px solid ${t.color}`, cursor: "pointer", transition: "all 0.15s" }}
+                        onMouseEnter={ev => { ev.currentTarget.style.boxShadow = `0 4px 16px ${t.color}18`; ev.currentTarget.style.borderColor = t.color; }}
+                        onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor = "#E8E5E3"; ev.currentTarget.style.borderLeftColor = t.color; }}>
 
-                        {/* Pôle badge + action buttons */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                          {z.pole_nom
-                            ? <span style={{ fontSize: 11, fontWeight: 700, color: z.pole_id ? darken(getPoleColor(z.pole_id)) : "#9aa5b4", background: z.pole_id ? getPoleColor(z.pole_id) + "30" : "#F2F0EF", border: `1px solid ${z.pole_id ? getPoleColor(z.pole_id) + "70" : "#E8E5E3"}`, padding: "2px 9px", borderRadius: 999 }}>{z.pole_nom}</span>
-                            : <span />}
-                          <div style={{ display: "flex", gap: 4 }} onClick={e => e.stopPropagation()}>
-                            <button onClick={() => openEditZone(z)} style={{ background: "rgba(202,99,31,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}>
-                              <Pencil size={12} style={{ color: "#ca631f" }} />
-                            </button>
-                            <button onClick={() => handleDeleteZone(z.id)} disabled={deleting === z.id} style={{ background: "rgba(220,38,38,0.07)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}>
-                              {deleting === z.id ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
-                            </button>
-                          </div>
-                        </div>
+                        {/* Nom */}
+                        <div style={{ fontWeight: 700, fontSize: 13, color: "#1a1a2e", lineHeight: 1.35, marginBottom: z.pole_nom ? 2 : 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{z.nom_zone}</div>
 
-                        {/* Zone name */}
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{z.nom_zone}</div>
-                          {z.superficie && <div style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</div>}
-                        </div>
+                        {/* Pôle (comme forme juridique) */}
+                        {z.pole_nom && <div style={{ fontSize: 11, color: "#9aa5b4", fontWeight: 500, marginBottom: 10 }}>{z.pole_nom}</div>}
 
-                        {/* Bullets: localisation + entreprises */}
-                        <div style={{ display: "flex", flexDirection: "column" as const, gap: 6, fontSize: 12 }}>
+                        {/* Bullets */}
+                        <div style={{ display: "flex", flexDirection: "column" as const, gap: 3, marginBottom: 12 }}>
                           {(z.region_nom || z.departement_nom) && (
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12 }}>
                               <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#B7410E", flexShrink: 0 }} />
-                              <span style={{ color: "#4a5568" }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
+                              <span style={{ color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
                             </div>
                           )}
-                          <div style={{ display: "flex", alignItems: "center", gap: 6 }} onClick={e => e.stopPropagation()}>
-                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
-                            <span style={{ flex: 1, color: "#4a5568" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12 }} onClick={e => e.stopPropagation()}>
+                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#188038", flexShrink: 0 }} />
+                            <span style={{ color: "#4a5568", flex: 1 }}>
                               <span style={{ fontWeight: 600, color: "#1a1a2e" }}>{z.entreprises?.length || 0}</span> entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}
                             </span>
                             <button onClick={() => { setEntModalZone(z); setEntModal(true); }}
-                              style={{ display: "flex", alignItems: "center", gap: 4, background: `${t.color}10`, border: "none", cursor: "pointer", borderRadius: 6, padding: "3px 9px", fontSize: 10, fontWeight: 700, color: t.color }}>
+                              style={{ display: "flex", alignItems: "center", gap: 3, background: `${t.color}12`, border: "none", cursor: "pointer", borderRadius: 5, padding: "2px 7px", fontSize: 10, fontWeight: 700, color: t.color }}>
                               <Plus size={9} /> Ajouter
                             </button>
                           </div>
                         </div>
 
-                        {/* Card footer */}
-                        <div style={{ borderTop: "1px solid #F2F0EF", paddingTop: 10, marginTop: "auto", display: "flex", justifyContent: "flex-end" }}>
-                          <span style={{ fontSize: 11, color: t.color, fontWeight: 600 }}>Voir les détails →</span>
+                        {/* Boutons */}
+                        <div style={{ display: "flex", gap: 5, borderTop: "1px solid #F2F0EF", paddingTop: 10 }} onClick={ev => ev.stopPropagation()}>
+                          <button onClick={() => openEditZone(z)}
+                            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, background: "rgba(202,99,31,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 0", fontSize: 11, color: "#ca631f", fontWeight: 600 }}>
+                            <Pencil size={12} /> Modifier
+                          </button>
+                          <button onClick={() => handleDeleteZone(z.id)} disabled={deleting === z.id}
+                            style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(220,38,38,0.07)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 9px" }}>
+                            {deleting === z.id ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+                          </button>
                         </div>
                       </div>
                     ))}
