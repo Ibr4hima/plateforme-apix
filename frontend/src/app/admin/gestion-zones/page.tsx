@@ -418,8 +418,8 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(5px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:720,maxHeight:"90vh",display:"flex",flexDirection:"column",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.2)"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)",borderRadius:"20px 20px 0 0"}}/>
+      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:720,maxHeight:"90vh",display:"flex",flexDirection:"column",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.2)",overflow:"hidden"}}>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)",flexShrink:0}}/>
         {/* Header */}
         <div style={{padding:"18px 24px 14px",borderBottom:"1px solid #F2F0EF"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
