@@ -636,6 +636,9 @@ function OngletPoles() {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function GestionZonesPage() {
   const [zones,        setZones]        = useState<any[]>([]);
+  const [secteurs,     setSecteurs]     = useState<any[]>([]);
+  const [branches,     setBranches]     = useState<any[]>([]);
+  const [activites,    setActivites]    = useState<any[]>([]);
   const [onglet,       setOnglet]       = useState<"zones"|"poles">("zones");
   const [loading,      setLoading]      = useState(true);
   const [expandedType, setExpandedType] = useState<string | null>("ZES");
@@ -666,6 +669,14 @@ export default function GestionZonesPage() {
   }, []);
 
   useEffect(() => { charger(); }, [charger]);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
+      fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
+      fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
+    ]).then(([s, b, a]) => { setSecteurs(s || []); setBranches(b || []); setActivites(a || []); }).catch(() => {});
+  }, []);
 
   const openAjouterZone = (type: string) => { setZoneModalType(type); setEditZone(null); setZoneModal(true); };
   const openEditZone    = (z: any)        => { setZoneModalType(z.type_zone); setEditZone(z); setZoneModal(true); };
@@ -790,6 +801,57 @@ export default function GestionZonesPage() {
                                   {z.decret_creation && <span>Décret : <strong style={{ color: "#4a5568" }}>{z.decret_creation}</strong></span>}
                                 </div>
                               )}
+                              {(() => {
+                                const secIds: number[] = z.secteur_ids || [];
+                                const braIds: number[] = z.branche_ids || [];
+                                const actIds: number[] = z.activite_ids || [];
+                                if (!secIds.length && !braIds.length && !actIds.length) return null;
+                                if (!secteurs.length) return null;
+                                return (
+                                  <div style={{ marginBottom: 14 }}>
+                                    <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 8 }}>Activités autorisées</p>
+                                    <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+                                      {secIds.map((secId: number) => {
+                                        const sec = secteurs.find((s: any) => s.id === secId); if (!sec) return null;
+                                        const brasDuSec = branches.filter((b: any) => b.secteur_id === secId && braIds.includes(b.id));
+                                        return (
+                                          <div key={secId}>
+                                            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: brasDuSec.length ? 5 : 0 }}>
+                                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }}/>
+                                              <span style={{ fontSize: 12, fontWeight: 700, color: t.color }}>{sec.nom}</span>
+                                            </div>
+                                            {brasDuSec.length > 0 && (
+                                              <div style={{ paddingLeft: 20, borderLeft: `2px solid ${t.color}30`, display: "flex", flexDirection: "column" as const, gap: 5 }}>
+                                                {brasDuSec.map((bra: any) => {
+                                                  const actsDeBra = activites.filter((a: any) => a.branche_id === bra.id && actIds.includes(a.id));
+                                                  return (
+                                                    <div key={bra.id}>
+                                                      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: actsDeBra.length ? 4 : 0 }}>
+                                                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#366FE3", flexShrink: 0 }}/>
+                                                        <span style={{ fontSize: 11, fontWeight: 600, color: "#366FE3" }}>{bra.nom}</span>
+                                                      </div>
+                                                      {actsDeBra.length > 0 && (
+                                                        <div style={{ paddingLeft: 18, display: "flex", flexDirection: "column" as const, gap: 3 }}>
+                                                          {actsDeBra.map((act: any) => (
+                                                            <div key={act.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                                              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#188038", flexShrink: 0 }}/>
+                                                              <span style={{ fontSize: 11, color: "#188038", fontWeight: 500 }}>{act.nom}</span>
+                                                            </div>
+                                                          ))}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                               {!z.entreprises?.length
                                 ? <p style={{ fontSize: 12, color: "#9aa5b4", fontStyle: "italic" }}>Aucune entreprise installée.</p>
                                 : <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
