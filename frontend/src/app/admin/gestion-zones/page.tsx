@@ -17,6 +17,11 @@ const TYPE_ZONES = [
 
 const POLE_PALETTE = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
 const getPoleColor = (poleId: number) => POLE_PALETTE[(poleId - 1) % POLE_PALETTE.length];
+// Assombrit une couleur pastel pour obtenir un texte lisible de la même teinte
+const darken = (hex: string, f = 0.42) => {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${Math.round(((n >> 16) & 255) * f)},${Math.round(((n >> 8) & 255) * f)},${Math.round((n & 255) * f)})`;
+};
 
 const EMPTY_ZONE_FORM = {
   nom_zone: "", description: "",
@@ -619,7 +624,6 @@ function OngletPoles() {
   if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} /></div>;
   return (
     <div style={{ maxWidth: 720 }}>
-      <p style={{ color: "#9aa5b4", fontSize: 13, marginBottom: 20 }}>{poles.length} pôle{poles.length > 1 ? "s" : ""} territorial{poles.length > 1 ? "aux" : ""}</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {poles.map((p: any) => <PoleCard key={p.id} pole={p} />)}
         <div style={{ height: 1, background: "#F2F0EF", margin: "8px 0" }} />
@@ -690,8 +694,8 @@ export default function GestionZonesPage() {
     <div style={{ padding: "36px 40px 80px", fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Zones d'investissement</h1>
+      <div style={{ marginBottom: 16 }}>
+        <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Pôles &amp; Zones d&apos;investissement</h1>
       </div>
 
       <div style={{ display: "flex", gap: 4, background: "#F2F0EF", borderRadius: 12, padding: 4, marginBottom: 28, width: "fit-content" }}>
@@ -711,7 +715,9 @@ export default function GestionZonesPage() {
               const nbEnt = zDuT.reduce((a, z) => a + (z.entreprises?.length || 0), 0);
               return (
                 <div key={t.key} onClick={() => setExpandedType(expandedType === t.key ? null : t.key)}
-                  style={{ flex: 1, background: "#fff", borderTop: `1px solid ${expandedType === t.key ? t.color : "#E8E5E3"}`, borderRight: `1px solid ${expandedType === t.key ? t.color : "#E8E5E3"}`, borderBottom: `1px solid ${expandedType === t.key ? t.color : "#E8E5E3"}`, borderLeft: `4px solid ${t.color}`, borderRadius: 12, padding: "14px 18px", cursor: "pointer", transition: "all 0.15s", boxShadow: expandedType === t.key ? `0 4px 16px ${t.color}20` : "0 1px 4px rgba(0,0,0,0.04)" }}>
+                  style={{ flex: 1, background: "#fff", borderTop: `1px solid ${expandedType === t.key ? t.color : "#E8E5E3"}`, borderRight: `1px solid ${expandedType === t.key ? t.color : "#E8E5E3"}`, borderBottom: `1px solid ${expandedType === t.key ? t.color : "#E8E5E3"}`, borderLeft: `4px solid ${t.color}`, borderRadius: 12, padding: "14px 18px", cursor: "pointer", transition: "all 0.15s", boxShadow: expandedType === t.key ? `0 4px 16px ${t.color}20` : "0 1px 4px rgba(0,0,0,0.04)" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderTopColor = t.color; e.currentTarget.style.borderRightColor = t.color; e.currentTarget.style.borderBottomColor = t.color; e.currentTarget.style.boxShadow = `0 6px 20px ${t.color}25`; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { const act = expandedType === t.key; e.currentTarget.style.borderTopColor = act ? t.color : "#E8E5E3"; e.currentTarget.style.borderRightColor = act ? t.color : "#E8E5E3"; e.currentTarget.style.borderBottomColor = act ? t.color : "#E8E5E3"; e.currentTarget.style.boxShadow = act ? `0 4px 16px ${t.color}20` : "0 1px 4px rgba(0,0,0,0.04)"; e.currentTarget.style.transform = "translateY(0)"; }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                     <span style={{ fontSize: 11, fontWeight: 800, color: t.color, background: `${t.color}12`, padding: "3px 10px", borderRadius: 999 }}>{t.code}</span>
                     <button onClick={e => { e.stopPropagation(); openAjouterZone(t.key); }}
@@ -744,13 +750,15 @@ export default function GestionZonesPage() {
                     {zDuT.map(z => {
                       const isOpen = expandedZone === z.id;
                       return (
-                        <div key={z.id} style={{ background: "#fff", borderTop: `1px solid ${isOpen ? t.color : "#E8E5E3"}`, borderRight: `1px solid ${isOpen ? t.color : "#E8E5E3"}`, borderBottom: `1px solid ${isOpen ? t.color : "#E8E5E3"}`, borderLeft: `3px solid ${t.color}`, borderRadius: 12, overflow: "hidden" }}>
+                        <div key={z.id} style={{ background: "#fff", borderTop: `1px solid ${isOpen ? t.color : "#E8E5E3"}`, borderRight: `1px solid ${isOpen ? t.color : "#E8E5E3"}`, borderBottom: `1px solid ${isOpen ? t.color : "#E8E5E3"}`, borderLeft: `3px solid ${t.color}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s", boxShadow: isOpen ? `0 4px 16px ${t.color}18` : "0 1px 4px rgba(0,0,0,0.04)" }}
+                          onMouseEnter={e => { if (isOpen) return; e.currentTarget.style.borderTopColor = t.color; e.currentTarget.style.borderRightColor = t.color; e.currentTarget.style.borderBottomColor = t.color; e.currentTarget.style.boxShadow = `0 4px 16px ${t.color}18`; }}
+                          onMouseLeave={e => { if (isOpen) return; e.currentTarget.style.borderTopColor = "#E8E5E3"; e.currentTarget.style.borderRightColor = "#E8E5E3"; e.currentTarget.style.borderBottomColor = "#E8E5E3"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; }}>
                           <div onClick={() => setExpandedZone(isOpen ? null : z.id)}
                             style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", cursor: "pointer", background: isOpen ? `${t.color}04` : "#fff" }}>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                                 <span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{z.nom_zone}</span>
-                                {z.pole_nom && <span style={{ fontSize: 11, fontWeight: 600, color: "#1a1a2e", background: z.pole_id ? getPoleColor(z.pole_id) : "#E8E5E3", border: "1px solid rgba(0,0,0,0.07)", padding: "1px 8px", borderRadius: 999 }}>{z.pole_nom}</span>}
+                                {z.pole_nom && <span style={{ fontSize: 11, fontWeight: 700, color: z.pole_id ? darken(getPoleColor(z.pole_id)) : "#4a5568", background: z.pole_id ? getPoleColor(z.pole_id) + "40" : "#F2F0EF", border: `1px solid ${z.pole_id ? getPoleColor(z.pole_id) + "99" : "#E8E5E3"}`, padding: "1px 9px", borderRadius: 999 }}>{z.pole_nom}</span>}
                               </div>
                               <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#9aa5b4" }}>
                                 {(z.region_nom || z.departement_nom) && <span>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>}
