@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
+import { Pencil, Trash2, Loader2, X, Check, Eye, EyeOff, FileText, Upload } from "lucide-react";
+import { parsePhoneNumber } from "libphonenumber-js";
+
+function fmtPhone(raw: string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -513,7 +516,9 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
     const sym = devSymbole(p.devise_code, p.devise_symbole);
     if (!p.investissement_est_intervalle) return p.investissement ? `${Number(p.investissement).toLocaleString("fr-FR")} ${sym}` : null;
     if (!p.investissement_min) return null;
-    return `${Number(p.investissement_min).toLocaleString("fr-FR")} — ${p.investissement_max?Number(p.investissement_max).toLocaleString("fr-FR"):"…"} ${sym}`;
+    const min = Number(p.investissement_min).toLocaleString("fr-FR");
+    const max = p.investissement_max ? Number(p.investissement_max).toLocaleString("fr-FR") : "…";
+    return `${min} — ${max} ${sym}`;
   };
   const invest = fmtInvest();
   const LBL = ({children}:{children:string}) => (
@@ -530,42 +535,76 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
             <div style={{flex:1,paddingRight:16}}>
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{p.titre_projet}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
-                {p.pole_nom&&<span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{p.pole_nom}</span>}
-                {p.region_nom&&<span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>}
-                {p.departement_nom&&<span style={{fontSize:11,fontWeight:700,color:"#0891b2",background:"rgba(8,145,178,0.08)",border:"1px solid rgba(8,145,178,0.2)",padding:"2px 9px",borderRadius:999}}>Dépt. {p.departement_nom}</span>}
-                {p.arrondissement_nom&&<span style={{fontSize:11,fontWeight:700,color:"#7c3aed",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)",padding:"2px 9px",borderRadius:999}}>Arr. {p.arrondissement_nom}</span>}
-                <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"#15803d":"#9aa5b4",background:p.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Public":"Non publié"}</span>
+                {p.pole_nom   && <span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{p.pole_nom}</span>}
+                {p.region_nom && <span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>}
+                {p.departement_nom && <span style={{fontSize:11,fontWeight:700,color:"#0891b2",background:"rgba(8,145,178,0.08)",border:"1px solid rgba(8,145,178,0.2)",padding:"2px 9px",borderRadius:999}}>Département de {p.departement_nom}</span>}
+                {p.arrondissement_nom && <span style={{fontSize:11,fontWeight:700,color:"#7c3aed",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)",padding:"2px 9px",borderRadius:999}}>Arrondissement de {p.arrondissement_nom}</span>}
               </div>
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
 
-          {p.description&&<div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style><div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/></div>}
+          {p.description && (
+            <div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
+              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
+              <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
+            </div>
+          )}
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-            {invest&&<div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Investissement</LBL><p style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>{invest}</p></div>}
-            {p.date_debut&&<div style={{background:"rgba(5,150,105,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date de début</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.date_debut+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p></div>}
+            {invest && (
+              <div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
+                <LBL>Investissement</LBL>
+                <p style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>{invest}</p>
+              </div>
+            )}
+            {p.date_debut && (
+              <div style={{background:"rgba(5,150,105,0.05)",borderRadius:10,padding:"12px 14px"}}>
+                <LBL>Date de début</LBL>
+                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.date_debut+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
+              </div>
+            )}
           </div>
 
-          {/* Thématiques NAEMA */}
-          {(p.secteur_ids?.length>0||p.branche_ids?.length>0)&&(
+          {(p.secteur_ids?.length > 0 || p.branche_ids?.length > 0) && (
             <div style={{marginBottom:16}}>
-              <LBL>Thématiques NAEMA</LBL>
+              <LBL>Thématique(s) du projet</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-                {(p.secteur_ids||[]).map((secId:number)=>{
-                  const sec=secteurs.find((s:any)=>s.id===secId); if(!sec) return null;
-                  const bras=branches.filter((b:any)=>b.secteur_id===secId&&(p.branche_ids||[]).includes(b.id));
+                {(p.secteur_ids||[]).map((secId:number) => {
+                  const sec = secteurs.find((s:any) => s.id === secId);
+                  if (!sec) return null;
+                  const brasDuSec = branches.filter((b:any) => b.secteur_id === secId && (p.branche_ids||[]).includes(b.id));
                   return (
                     <div key={secId}>
-                      <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:bras.length?5:0}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/><span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec.nom}</span>
+                      <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
+                        <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec.nom}</span>
                       </div>
-                      {bras.length>0&&<div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
-                        {bras.map((bra:any)=>{
-                          const acts=activites.filter((a:any)=>a.branche_id===bra.id&&(p.activite_ids||[]).includes(a.id));
-                          return (<div key={bra.id}><div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:acts.length?3:0}}><div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/><span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span></div>{acts.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>{acts.map((act:any)=><div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/><span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span></div>)}</div>}</div>);
-                        })}
-                      </div>}
+                      {brasDuSec.length > 0 && (
+                        <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
+                          {brasDuSec.map((bra:any) => {
+                            const actsDeBra = activites.filter((a:any) => a.branche_id === bra.id && (p.activite_ids||[]).includes(a.id));
+                            return (
+                              <div key={bra.id}>
+                                <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
+                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                                  <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span>
+                                </div>
+                                {actsDeBra.length > 0 && (
+                                  <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
+                                    {actsDeBra.map((act:any) => (
+                                      <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
+                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                        <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -573,51 +612,66 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
             </div>
           )}
 
-          {/* Porteurs */}
-          {p.porteurs?.length>0&&(
+          {p.porteurs?.length>0 && (
             <div style={{marginBottom:16}}>
-              <LBL>Porteur{p.porteurs.length>1?"s":""} du projet</LBL>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-                {p.porteurs.map((porteur:any,i:number)=>(
-                  <div key={i} style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
-                    <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3}}>{porteur.nom}</p>
-                    {((porteur.telephones||[]).filter(Boolean).length>0)&&<p style={{fontSize:12,color:"#4a5568",marginBottom:2}}>📞 {(porteur.telephones||[]).filter(Boolean).join(" · ")}</p>}
-                    {((porteur.mails||[]).filter(Boolean).length>0)&&<p style={{fontSize:12,color:"#4a5568"}}>✉ {(porteur.mails||[]).filter(Boolean).join(" · ")}</p>}
-                  </div>
-                ))}
+              <LBL>Porteur du projet</LBL>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                {p.porteurs.map((por:any,pi:number)=>{
+                  const tels=(por.telephones||[]).filter(Boolean);
+                  const mails=(por.mails||[]).filter(Boolean);
+                  return (
+                    <div key={pi} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px"}}>
+                      {por.nom && <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:tels.length||mails.length?6:0}}>{por.nom}</p>}
+                      {tels.length>0 && (
+                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:mails.length?5:0}}>
+                          {tels.map((t:string,ti:number)=>(
+                            <span key={ti} style={{fontSize:11,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{fmtPhone(t)}</span>
+                          ))}
+                        </div>
+                      )}
+                      {mails.length>0 && (
+                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
+                          {mails.map((m:string,mi:number)=>(
+                            <span key={mi} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{m.trim()}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Points focaux */}
-          {p.points_focaux?.length>0&&(
+          {p.points_focaux?.length>0 && (
             <div style={{marginBottom:16}}>
               <LBL>Points focaux</LBL>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-                {p.points_focaux.map((pf:any)=>(
-                  <div key={pf.id||pf.ordre} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
-                    <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(202,99,31,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>
-                      <User size={13} style={{color:"#ca631f"}}/>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                {p.points_focaux.map((pf:any,fi:number)=>{
+                  const tels=(pf.telephones||[]).filter(Boolean);
+                  const mails=(pf.mails||[]).filter(Boolean);
+                  return (
+                    <div key={fi} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px"}}>
+                      <div>
+                        <p style={{fontWeight:600,fontSize:13,color:"#1a1a2e"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
+                        {tels.length>0 && (
+                          <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:6}}>
+                            {tels.map((t:string,ti:number)=>(
+                              <span key={ti} style={{fontSize:11,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{fmtPhone(t)}</span>
+                            ))}
+                          </div>
+                        )}
+                        {mails.length>0 && (
+                          <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:5}}>
+                            {mails.map((m:string,mi:number)=>(
+                              <span key={mi} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{m.trim()}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div style={{flex:1}}>
-                      <p style={{fontWeight:600,fontSize:13,color:"#1a1a2e",marginBottom:4}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
-                      {(pf.telephones||[]).filter(Boolean).length>0&&(
-                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:4}}>
-                          {(pf.telephones||[]).filter(Boolean).map((t:string,i:number)=>(
-                            <span key={i} style={{fontSize:11,color:"#004f91",background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.15)",padding:"2px 8px",borderRadius:999}}>📞 {t}</span>
-                          ))}
-                        </div>
-                      )}
-                      {(pf.mails||[]).filter(Boolean).length>0&&(
-                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
-                          {(pf.mails||[]).filter(Boolean).map((m:string,i:number)=>(
-                            <span key={i} style={{fontSize:11,color:"#ca631f",background:"rgba(202,99,31,0.07)",border:"1px solid rgba(202,99,31,0.15)",padding:"2px 8px",borderRadius:999}}>✉ {m}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -649,11 +703,9 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
 }
 
 // ── Composant exporté ─────────────────────────────────────────────────────────
-export default function BanqueProjets() {
+export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (fn: () => void) => void }) {
   const [projets,    setProjets]    = useState<any[]>([]);
   const [total,      setTotal]      = useState(0);
-  const [page,       setPage]       = useState(1);
-  const [q,          setQ]          = useState("");
   const [loading,    setLoading]    = useState(true);
   const [modal,      setModal]      = useState(false);
   const [edit,       setEdit]       = useState<any>(null);
@@ -676,15 +728,18 @@ export default function BanqueProjets() {
   const charger = useCallback(async()=>{
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page:String(page), per_page:"20", admin:"true" });
-      if (q) params.set("q",q);
+      const params = new URLSearchParams({ per_page:"50", admin:"true" });
       const res  = await fetch(`${API}/projets?${params}`);
       const data = await res.json();
       setProjets(data.data||[]); setTotal(data.total||0);
     } catch(e){ console.error(e); } finally { setLoading(false); }
-  },[page,q]);
+  },[]);
 
   useEffect(()=>{ charger(); },[charger]);
+
+  useEffect(()=>{
+    registerOpenNew?.(() => { setEdit(null); setModal(true); });
+  },[registerOpenNew]);
 
   const handleTogglePublie = async(p:any)=>{
     setTogglingId(p.id);
@@ -704,15 +759,6 @@ export default function BanqueProjets() {
   return (
     <div>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-      <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", marginBottom:20 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:13, color:"#9aa5b4" }}>{total} projet{total>1?"s":""}</span>
-          <button onClick={()=>{ setEdit(null); setModal(true); }}
-            style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#ca631f,#a0521a)", color:"#fff", fontWeight:700, fontSize:13, padding:"11px 20px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:"0 4px 14px rgba(202,99,31,0.3)" }}>
-            <Plus size={15}/> Nouveau projet
-          </button>
-        </div>
-      </div>
 
       {loading ? (
         <div style={{ display:"flex", justifyContent:"center", padding:60 }}>

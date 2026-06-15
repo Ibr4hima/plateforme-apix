@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
@@ -1003,6 +1003,8 @@ export default function OpportunitesAdminPage() {
     setAvgToggle(null);chargerAvgs();
   };
 
+  const openNewProjet = useRef<(() => void) | null>(null);
+
   const TABS=[
     {key:"projets",       label:"Banque de projets",      color:"#ca631f"},
     {key:"potentialites", label:"Potentialités par zone",  color:"#059669"},
@@ -1025,16 +1027,24 @@ export default function OpportunitesAdminPage() {
         <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Opportunités d'investissement</h1>
       </div>
 
-      <div style={{display:"flex",gap:4,background:"#F2F0EF",borderRadius:12,padding:4,marginBottom:28,width:"fit-content"}}>
-        {TABS.map(t=>(
-          <button key={t.key} onClick={()=>setOnglet(t.key)}
-            style={{padding:"8px 20px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,background:onglet===t.key?"#fff":"transparent",color:onglet===t.key?"#1a1a2e":"#9aa5b4",boxShadow:onglet===t.key?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.2s"}}>
-            {t.label}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:28}}>
+        <div style={{display:"flex",gap:4,background:"#F2F0EF",borderRadius:12,padding:4,width:"fit-content"}}>
+          {TABS.map(t=>(
+            <button key={t.key} onClick={()=>setOnglet(t.key)}
+              style={{padding:"8px 20px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,background:onglet===t.key?"#fff":"transparent",color:onglet===t.key?"#1a1a2e":"#9aa5b4",boxShadow:onglet===t.key?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.2s"}}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        {onglet==="projets"&&(
+          <button onClick={()=>openNewProjet.current?.()}
+            style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
+            <Plus size={15}/> Nouveau projet
           </button>
-        ))}
+        )}
       </div>
 
-      {onglet==="projets" && <BanqueProjets/>}
+      {onglet==="projets" && <BanqueProjets registerOpenNew={fn=>{ openNewProjet.current=fn; }}/>}
 
       {onglet==="potentialites" && (
         <div>
