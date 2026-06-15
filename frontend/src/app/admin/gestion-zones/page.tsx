@@ -278,7 +278,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
               </div>
               <div>
                 <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Superficie (hectares)</label>
-                <input type="number" min="0" step="0.01" value={form.superficie} onChange={e => update("superficie", e.target.value)} placeholder="Ex: 1700.50" style={IS} />
+                <input type="text" inputMode="decimal" pattern="[0-9]*[.,]?[0-9]*" value={form.superficie} onChange={e => update("superficie", e.target.value)} placeholder="Ex: 1700.50" style={IS} />
               </div>
             </div>
             <div>
@@ -289,7 +289,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
 
           {/* Classification NAEMA */}
           <div style={{ marginBottom: 14 }}>
-            <label style={LS}>Thématiques / Classification NAEMA</label>
+            <label style={LS}>Activité(s) autorisées</label>
             <NaemaSelect
               secteurIds={form.secteur_ids || []}
               brancheIds={form.branche_ids || []}
