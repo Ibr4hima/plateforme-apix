@@ -15,6 +15,9 @@ const TYPE_ZONES = [
   { key: "ZFI", label: "Zones Franches Industrielles",          code: "ZFI", color: "#188038" },
 ];
 
+const POLE_PALETTE = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
+const getPoleColor = (poleId: number) => POLE_PALETTE[(poleId - 1) % POLE_PALETTE.length];
+
 const EMPTY_ZONE_FORM = {
   nom_zone: "", description: "",
   secteur_ids: [] as number[],
@@ -190,7 +193,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(5px)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 680, maxHeight: "90vh", overflowY: "auto", border: "1px solid #C5BFBB", boxShadow: "0 24px 64px rgba(0,0,0,0.2)" }}>
-        <div style={{ height: 4, background: `linear-gradient(90deg, ${t.color}, ${t.color}aa)`, borderRadius: "20px 20px 0 0" }} />
+        <div style={{ height: 5, background: `linear-gradient(90deg,${t.color},${t.color}99)`, borderRadius: "20px 20px 0 0" }} />
         <div style={{ padding: "24px 28px" }}>
 
           {/* Header modal */}
@@ -565,12 +568,15 @@ function OngletPoles() {
     const id: number|"new" = isNew ? "new" : pole.id;
     const isOpen = expanded === id;
     const f = forms[id] || (isNew ? { pole_territoire: "", localisation: "", description: "", region_ids: [] } : {});
+    const pc = isNew ? null : getPoleColor(pole.id);
+    const accentColor = isNew ? "#059669" : pc!;
+    const initial = (!isNew && (f.pole_territoire || pole.pole_territoire)?.[0]) || "P";
     return (
-      <div style={{ background: "#fff", border: `1px solid ${isOpen ? "#ca631f" : "#C5BFBB"}`, borderLeft: `4px solid ${isNew ? "#059669" : "#ca631f"}`, borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ background: "#fff", border: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderLeft: `4px solid ${accentColor}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", cursor: "pointer" }}
           onClick={() => setExpanded(isOpen ? null : id)}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: isNew ? "rgba(5,150,105,0.1)" : "rgba(202,99,31,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            {isNew ? <Plus size={14} style={{ color: "#059669" }} /> : <span style={{ fontSize: 12, fontWeight: 800, color: "#ca631f" }}>P</span>}
+          <div style={{ width: 34, height: 34, borderRadius: 9, background: isNew ? "rgba(5,150,105,0.1)" : accentColor, border: isNew ? "none" : "1px solid rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            {isNew ? <Plus size={14} style={{ color: "#059669" }} /> : <span style={{ fontSize: 13, fontWeight: 800, color: "#1a1a2e" }}>{initial}</span>}
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{isNew ? "Ajouter un nouveau pôle" : f.pole_territoire || pole.pole_territoire}</div>
@@ -580,7 +586,7 @@ function OngletPoles() {
           {isOpen ? <ChevronDown size={15} style={{ color: "#9aa5b4" }} /> : <ChevronRight size={15} style={{ color: "#9aa5b4" }} />}
         </div>
         {isOpen && (
-          <div style={{ borderTop: "1px solid #F2F0EF", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ borderTop: `1px solid ${accentColor}30`, padding: "16px 18px", background: isNew ? "transparent" : `${accentColor}08`, display: "flex", flexDirection: "column", gap: 12 }}>
             <div><label style={LS}>Nom du pôle *</label><input value={f.pole_territoire || ""} onChange={e => updateForm(id, "pole_territoire", e.target.value)} placeholder="Ex : Pôle Dakar" style={IS} /></div>
             <div>
               <label style={LS}>Régions composant ce pôle</label>
@@ -588,7 +594,7 @@ function OngletPoles() {
                 {regions.map((r: any) => {
                   const sel = (f.region_ids || []).includes(r.id);
                   return <button key={r.id} onClick={() => toggleRegion(id, r.id)}
-                    style={{ padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${sel ? "#ca631f" : "#C5BFBB"}`, background: sel ? "rgba(202,99,31,0.1)" : "#fff", color: sel ? "#ca631f" : "#4a5568" }}>
+                    style={{ padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${sel ? accentColor : "#C5BFBB"}`, background: sel ? accentColor : "#fff", color: sel ? "#1a1a2e" : "#4a5568", transition: "all 0.12s" }}>
                     {r.nom}
                   </button>;
                 })}
@@ -600,7 +606,7 @@ function OngletPoles() {
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
               <button onClick={() => setExpanded(null)} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
               <button onClick={() => handleSave(id)} disabled={saving === id}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 18px", borderRadius: 9, border: "none", background: isNew ? "#059669" : "#ca631f", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 18px", borderRadius: 9, border: "none", background: isNew ? "#059669" : "#1a1a2e", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {saving === id ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Check size={13} /> {isNew ? "Créer" : "Enregistrer"}</>}
               </button>
             </div>
@@ -685,7 +691,6 @@ export default function GestionZonesPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       <div style={{ marginBottom: 28 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: "#E35336", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
         <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Zones d'investissement</h1>
       </div>
 
@@ -745,7 +750,7 @@ export default function GestionZonesPage() {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                                 <span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{z.nom_zone}</span>
-                                {z.pole_nom && <span style={{ fontSize: 11, fontWeight: 600, color: "#366FE3", background: "rgba(54,111,227,0.08)", border: "1px solid rgba(54,111,227,0.2)", padding: "1px 8px", borderRadius: 999 }}>{z.pole_nom}</span>}
+                                {z.pole_nom && <span style={{ fontSize: 11, fontWeight: 600, color: "#1a1a2e", background: z.pole_id ? getPoleColor(z.pole_id) : "#E8E5E3", border: "1px solid rgba(0,0,0,0.07)", padding: "1px 8px", borderRadius: 999 }}>{z.pole_nom}</span>}
                               </div>
                               <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#9aa5b4" }}>
                                 {(z.region_nom || z.departement_nom) && <span>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>}
@@ -758,8 +763,8 @@ export default function GestionZonesPage() {
                                 style={{ display: "flex", alignItems: "center", gap: 4, background: `${t.color}10`, border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: t.color }}>
                                 <Plus size={11} /> Entreprise
                               </button>
-                              <button onClick={() => openEditZone(z)} style={{ background: "rgba(54,111,227,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}>
-                                <Pencil size={12} style={{ color: "#366FE3" }} />
+                              <button onClick={() => openEditZone(z)} style={{ background: "rgba(202,99,31,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}>
+                                <Pencil size={12} style={{ color: "#ca631f" }} />
                               </button>
                               <button onClick={() => handleDeleteZone(z.id)} disabled={deleting === z.id} style={{ background: "rgba(220,38,38,0.07)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}>
                                 {deleting === z.id ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
