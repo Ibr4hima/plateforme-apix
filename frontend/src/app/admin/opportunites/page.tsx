@@ -1022,9 +1022,7 @@ export default function OpportunitesAdminPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       <div style={{marginBottom:28}}>
-        <p style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Administration</p>
         <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Opportunités d'investissement</h1>
-        <p style={{color:"#9aa5b4",fontSize:13,marginTop:4}}>Gérez les projets, potentialités territoriales et avantages fiscaux</p>
       </div>
 
       <div style={{display:"flex",gap:4,marginBottom:28,borderBottom:"2px solid #E8E5E3"}}>
