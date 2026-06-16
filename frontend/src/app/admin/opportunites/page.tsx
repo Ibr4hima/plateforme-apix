@@ -1232,8 +1232,8 @@ export default function OpportunitesAdminPage() {
                           )}
                           {branches.length>0&&(
                             <div style={{display:"flex",alignItems:"center",gap:6,fontSize:12}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
-                              <span style={{fontWeight:600,color:"#366FE3"}}>{branches.length} branche{branches.length>1?"s":""}</span>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
+                              <span style={{fontWeight:600,color:"#E35336"}}>{branches.length} branche{branches.length>1?"s":""}</span>
                               <span style={{color:"#C5BFBB"}}>›</span>
                               <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
                               <span style={{fontWeight:600,color:"#188038"}}>{actCount} activité{actCount>1?"s":""}</span>
