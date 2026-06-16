@@ -938,6 +938,7 @@ export default function OpportunitesAdminPage() {
   const [potVue,    setPotVue]    = useState<any>(null);
   const [potDel,    setPotDel]    = useState<number|null>(null);
   const [potToggle, setPotToggle] = useState<number|null>(null);
+  const [groupsOpen, setGroupsOpen] = useState<Record<string,boolean>>({pole:true,region:true,departement:true,arrondissement:true});
 
   const [avgs,      setAvgs]      = useState<any[]>([]);
   const [avgsTotal, setAvgsTotal] = useState(0);
@@ -1063,23 +1064,26 @@ export default function OpportunitesAdminPage() {
           ):(
             <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
               {([
-                {key:"pole",   label:"Pôles territoires",  color:"#ca631f"},
-                {key:"region", label:"Régions",            color:"#E35336"},
-                {key:"departement",   label:"Départements",color:"#0891b2"},
-                {key:"arrondissement",label:"Arrondissements",color:"#7c3aed"},
+                {key:"pole",            label:"Pôles territoires",  color:"#ca631f"},
+                {key:"region",          label:"Régions",            color:"#225BCC"},
+                {key:"departement",     label:"Départements",       color:"#575799"},
+                {key:"arrondissement",  label:"Arrondissements",    color:"#0D9488"},
               ] as const).map(groupe=>{
                 const items = pots.filter((p:any)=>p.niveau===groupe.key);
                 if (items.length===0) return null;
+                const isOpen = groupsOpen[groupe.key]!==false;
                 return (
                   <div key={groupe.key}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                      <div style={{width:3,height:18,borderRadius:2,background:groupe.color}}/>
+                    <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:isOpen?12:0}}>
+                      <div style={{width:3,height:18,borderRadius:2,background:groupe.color,flexShrink:0}}/>
                       <span style={{fontSize:12,fontWeight:700,color:groupe.color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{groupe.label}</span>
-                      <span style={{fontSize:11,color:"#9aa5b4"}}>({items.length})</span>
+                      <button onClick={()=>setGroupsOpen(prev=>({...prev,[groupe.key]:!prev[groupe.key]}))}
+                        style={{display:"flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:6,border:`1px solid ${groupe.color}35`,background:`${groupe.color}0f`,cursor:"pointer",flexShrink:0}}>
+                        {isOpen?<ChevronDown size={12} style={{color:groupe.color}}/>:<ChevronUp size={12} style={{color:groupe.color}}/>}
+                      </button>
                     </div>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
+                    {isOpen&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
                       {items.map((p:any)=>{
-                        const badge=niveauBadge(p);
                         return(
                           <div key={p.id} onClick={()=>setPotVue(p)}
                             style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${p.est_publie?groupe.color:"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
@@ -1103,7 +1107,7 @@ export default function OpportunitesAdminPage() {
                           </div>
                         );
                       })}
-                    </div>
+                    </div>}
                   </div>
                 );
               })}
