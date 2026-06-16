@@ -11,22 +11,32 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const devSymbole = (code?:string, sym?:string) => sym || (code ? ({XOF:"FCFA",USD:"$",EUR:"€"}[code]||code) : "");
 function fmtPhone(raw:string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
 
-function ScrollTitle({ text }: { text: string }) {
-  const outerRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLSpanElement>(null);
-  const [tx, setTx] = useState(0);
-  useEffect(() => {
-    const outer = outerRef.current;
-    const inner = innerRef.current;
-    if (!outer || !inner) return;
-    const overflow = inner.offsetWidth - outer.clientWidth;
-    setTx(overflow > 4 ? overflow : 0);
+function ScrollTitle({ text, speed=25, delay=2.5 }: { text:string; speed?:number; delay?:number }) {
+  const cRef = useRef<HTMLDivElement>(null);
+  const tRef = useRef<HTMLSpanElement>(null);
+  const [ov, setOv] = useState(0);
+
+  useEffect(()=>{
+    const measure = ()=>{
+      const c=cRef.current; const t=tRef.current;
+      if (!c||!t) return;
+      setOv(Math.max(0, t.scrollWidth - c.clientWidth));
+    };
+    measure();
+    const obs = new ResizeObserver(measure);
+    if (cRef.current) obs.observe(cRef.current);
+    return ()=>obs.disconnect();
   }, [text]);
+
+  const scrollTime = ov > 0 ? ov / speed : 0;
+  const total = delay + scrollTime;
+  const pausePct = ov > 0 ? (delay / total * 100).toFixed(1) : "0";
+  const animName = `scroll-title-${ov}`;
+
   return (
-    <div ref={outerRef} style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const}}>
-      <span ref={innerRef} style={{display:"inline-block",...(tx>0?{animation:"aptitle-scroll 6s ease-in-out infinite","--aptitle-tx":`-${tx}px`} as React.CSSProperties:{})}}>
-        {text}
-      </span>
+    <div ref={cRef} style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const}}>
+      {ov>0 && <style>{`@keyframes ${animName}{0%,${pausePct}%{transform:translateX(0)}100%{transform:translateX(-${ov}px)}}`}</style>}
+      <span ref={tRef} style={{display:"inline-block",...(ov>0?{animation:`${animName} ${total}s linear infinite`}:{})}}>{text}</span>
     </div>
   );
 }
@@ -1310,7 +1320,6 @@ export default function OpportunitesPage() {
                                 {isOpen?<ChevronDown size={12} style={{color}}/>:<ChevronUp size={12} style={{color}}/>}
                               </button>
                             </div>
-                            <style>{`@keyframes aptitle-scroll{0%,15%{transform:translateX(0)}70%,85%{transform:translateX(var(--aptitle-tx,0))}100%{transform:translateX(0)}}`}</style>
                             {showGrid&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
                               {sec.items.map((a:any)=>(
                                 <div key={a.id} onClick={()=>setAvgSel(a)}
