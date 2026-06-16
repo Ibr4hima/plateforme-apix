@@ -932,8 +932,6 @@ export default function OpportunitesAdminPage() {
   const [arrNom,      setArrNom]      = useState("");
 
   const [pots,      setPots]      = useState<any[]>([]);
-  const [potsTotal, setPotsTotal] = useState(0);
-  const [potsQ,     setPotsQ]     = useState("");
   const [potsLoad,  setPotsLoad]  = useState(true);
   const [potModal,  setPotModal]  = useState(false);
   const [potEdit,   setPotEdit]   = useState<any>(null);
@@ -958,13 +956,11 @@ export default function OpportunitesAdminPage() {
   const chargerPots = useCallback(async()=>{
     setPotsLoad(true);
     try {
-      const p=new URLSearchParams({admin:"true",per_page:"50"});
-      if(potsQ)p.set("q",potsQ);
-      const res=await fetch(`${API}/opportunites/potentialites?${p}`);
+      const res=await fetch(`${API}/opportunites/potentialites?admin=true&per_page=50`);
       const d=await res.json();
-      setPots(d.data||[]); setPotsTotal(d.total||0);
+      setPots(d.data||[]);
     } finally{setPotsLoad(false);}
-  },[potsQ]);
+  },[]);
 
   const chargerAvgs = useCallback(async()=>{
     setAvgsLoad(true);
@@ -1042,26 +1038,18 @@ export default function OpportunitesAdminPage() {
             <Plus size={15}/> Nouveau projet
           </button>
         )}
+        {onglet==="potentialites"&&(
+          <button onClick={()=>{setPotEdit(null);setPotModal(true);}}
+            style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
+            <Plus size={15}/> Nouvelle fiche
+          </button>
+        )}
       </div>
 
       {onglet==="projets" && <BanqueProjets registerOpenNew={fn=>{ openNewProjet.current=fn; }}/>}
 
       {onglet==="potentialites" && (
         <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-            <div style={{position:"relative",maxWidth:360,flex:1}}>
-              <Search size={14} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-              <input value={potsQ} onChange={e=>setPotsQ(e.target.value)} placeholder="Rechercher une potentialité…" style={{...IS,paddingLeft:36}}/>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:13,color:"#9aa5b4"}}>{potsTotal} fiche{potsTotal>1?"s":""}</span>
-              <button onClick={()=>{setPotEdit(null);setPotModal(true);}}
-                style={{display:"flex",alignItems:"center",gap:7,padding:"10px 18px",borderRadius:11,border:"none",background:"linear-gradient(135deg,#059669,#10b981)",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,boxShadow:"0 4px 14px rgba(5,150,105,0.25)"}}>
-                <Plus size={14}/> Nouvelle fiche
-              </button>
-            </div>
-          </div>
-
           {potsLoad?(
             <div style={{display:"flex",justifyContent:"center",padding:60}}><Loader2 size={28} style={{color:"#9aa5b4",animation:"spin 1s linear infinite"}}/></div>
           ):pots.length===0?(
