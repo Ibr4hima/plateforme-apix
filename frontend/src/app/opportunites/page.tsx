@@ -1297,7 +1297,7 @@ export default function OpportunitesPage() {
                       const secColor=(nom:string)=>{
                         const n=nom.toLowerCase();
                         if(n.includes("primaire"))   return "#E35336";
-                        if(n.includes("secondaire")) return "#174EA6";
+                        if(n.includes("secondaire")) return "#0F52BA";
                         if(n.includes("tertiaire"))  return "#0D652D";
                         return "#9aa5b4";
                       };

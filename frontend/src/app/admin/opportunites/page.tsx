@@ -669,7 +669,7 @@ const SECTEUR_COLORS = ["#ca631f","#004f91","#059669","#7c3aed","#0891b2","#d977
 const secColor = (nom:string) => {
   const n = nom.toLowerCase();
   if (n.includes("primaire"))   return "#E35336";
-  if (n.includes("secondaire")) return "#174EA6";
+  if (n.includes("secondaire")) return "#0F52BA";
   if (n.includes("tertiaire"))  return "#0D652D";
   return SECTEUR_COLORS[0];
 };
@@ -1205,7 +1205,7 @@ export default function OpportunitesAdminPage() {
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {([
                 {key:"primaire",   label:"Secteur Primaire",   color:"#E35336"},
-                {key:"secondaire", label:"Secteur Secondaire", color:"#174EA6"},
+                {key:"secondaire", label:"Secteur Secondaire", color:"#0F52BA"},
                 {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#0D652D"},
               ] as const).map(s=>{
                 const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
