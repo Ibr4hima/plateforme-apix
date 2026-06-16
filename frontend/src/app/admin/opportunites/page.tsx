@@ -629,6 +629,39 @@ function AvantageModal({ open, onClose, edit, onSaved }:
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// TextTicker — défilement uniquement si le texte dépasse, sans rebond
+// ══════════════════════════════════════════════════════════════════════════════
+function TextTicker({ text, speed=18, delay=2.5 }: {text:string; speed?:number; delay?:number}) {
+  const cRef = useRef<HTMLDivElement>(null);
+  const tRef = useRef<HTMLSpanElement>(null);
+  const [ov, setOv] = useState(0);
+
+  useEffect(()=>{
+    const measure = ()=>{
+      const c=cRef.current; const t=tRef.current;
+      if (!c||!t) return;
+      setOv(Math.max(0, t.scrollWidth - c.clientWidth));
+    };
+    measure();
+    const obs = new ResizeObserver(measure);
+    if (cRef.current) obs.observe(cRef.current);
+    return ()=>obs.disconnect();
+  }, [text]);
+
+  const scrollTime = ov > 0 ? ov / speed : 0;
+  const total = delay + scrollTime;
+  const pausePct = ov > 0 ? (delay / total * 100).toFixed(1) : "0";
+  const animName = `apix-ticker-${ov}`;
+
+  return (
+    <div ref={cRef} style={{overflow:"hidden",whiteSpace:"nowrap" as const}}>
+      {ov>0 && <style>{`@keyframes ${animName}{0%,${pausePct}%{transform:translateX(0)}100%{transform:translateX(-${ov}px)}}`}</style>}
+      <span ref={tRef} style={{display:"inline-block",...(ov>0?{animation:`${animName} ${total}s linear infinite`}:{})}}>{text}</span>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // Composant accordéon avantages groupés par secteur → branche → activité
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -670,7 +703,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
                   style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:`3px solid ${a.est_publie?color:"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderTopColor=`${color}50`;ev.currentTarget.style.borderRightColor=`${color}50`;ev.currentTarget.style.borderBottomColor=`${color}50`;}}
                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
-                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{a.activite_nom||"Activité non définie"}</div>
+                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,lineHeight:1.35}}><TextTicker text={a.activite_nom||"Activité non définie"}/></div>
                   <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
                     {a.secteur_nom&&<span style={{fontSize:11,color:"#9aa5b4"}}>{a.secteur_nom}</span>}
                     {a.branche_nom&&<><span style={{fontSize:10,color:"#C5BFBB"}}>›</span><span style={{fontSize:11,color:"#9aa5b4"}}>{a.branche_nom}</span></>}
