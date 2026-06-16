@@ -810,6 +810,20 @@ export default function OpportunitesPage() {
   const [refAvgTypes,   setRefAvgTypes]   = useState<any[]>([]);
   const [expandedSec, setExpandedSec] = useState<number|null>(null);
   const [expandedBranch,setExpandedBranch] = useState<number|null>(null);
+  const [selectedSecAvg, setSelectedSecAvg] = useState<string|null>(null);
+  const [secEntCounts,   setSecEntCounts]   = useState<Record<string,number>>({});
+
+  useEffect(()=>{
+    fetch(`${API}/dashboard/viz/entreprises-par-secteur`)
+      .then(r=>r.json())
+      .then((data:any[])=>{
+        const map: Record<string,number> = {};
+        data.forEach(d=>{ map[(d.label||"").toLowerCase()] = d.valeur||0; });
+        setSecEntCounts(map);
+      }).catch(()=>{});
+  },[]);
+
+  useEffect(()=>{ setSelectedSecAvg(null); },[onglet]);
 
   useEffect(()=>{
     const safe = (p:Promise<any>) => p.catch(()=>[]);
@@ -1280,20 +1294,62 @@ export default function OpportunitesPage() {
               <>
                 {avgsLoad ? (
                   <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
-                ) : avgsFiltres.length===0 ? (
-                  <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
-                    <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucune fiche trouvée</p>
+                ) : selectedSecAvg===null ? (
+                  /* ── Vue secteurs : 3 cards ── */
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+                    {([
+                      {key:"primaire",   label:"Secteur Primaire",   color:"#E35336"},
+                      {key:"secondaire", label:"Secteur Secondaire", color:"#0F52BA"},
+                      {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#0D652D"},
+                    ] as const).map(s=>{
+                      const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
+                      const count = items.length;
+                      const entCount = Object.entries(secEntCounts).find(([k])=>k.includes(s.key))?.[1] ?? null;
+                      const sec = secteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
+                      const secBranches = sec ? branches.filter((b:any)=>b.secteur_id===sec.id) : [];
+                      const branchIds = new Set(secBranches.map((b:any)=>b.id));
+                      const actCount = activites.filter((a:any)=>branchIds.has(a.branche_id)).length;
+                      return (
+                        <div key={s.key} onClick={()=>count>0&&setSelectedSecAvg(s.key)}
+                          style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${count>0?s.color:"#C5BFBB"}`,cursor:count>0?"pointer":"default",transition:"all 0.15s"}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${s.color}20`;ev.currentTarget.style.borderColor=s.color;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?s.color:"#C5BFBB";}}>
+                          <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{s.label}</div>
+                          <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:12}}>
+                            {entCount!==null&&(
+                              <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                                <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                <span style={{color:"#4a5568"}}>{entCount} entreprise{entCount!==1?"s":""} spécialisée{entCount!==1?"s":""}</span>
+                              </div>
+                            )}
+                            {secBranches.length>0&&(
+                              <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                                <div style={{width:6,height:6,borderRadius:"50%",background:"#C04000",flexShrink:0}}/>
+                                <span style={{fontWeight:600,color:"#C04000"}}>{secBranches.length} branche{secBranches.length>1?"s":""}</span>
+                                <span style={{color:"#C5BFBB"}}>›</span>
+                                <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                <span style={{fontWeight:600,color:"#188038"}}>{actCount} activité{actCount>1?"s":""}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                            <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${s.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:s.color,fontWeight:600,opacity:count>0?1:0.45}}>
+                              Voir les détails →
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
+                  /* ── Vue drill-down ── */
+                  <>
+                    <button onClick={()=>setSelectedSecAvg(null)}
+                      style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
+                      <ChevronDown size={14} style={{transform:"rotate(90deg)"}}/> Retour aux secteurs
+                    </button>
                     {(()=>{
                       const SEC_ORDER=["primaire","secondaire","tertiaire"];
-                      const secMap=new Map<number,{id:number;nom:string;items:any[]}>();
-                      avgsFiltres.forEach((a:any)=>{
-                        const sid=a.secteur_id||0;
-                        if(!secMap.has(sid))secMap.set(sid,{id:sid,nom:a.secteur_nom||"Sans secteur",items:[]});
-                        secMap.get(sid)!.items.push(a);
-                      });
                       const secColor=(nom:string)=>{
                         const n=nom.toLowerCase();
                         if(n.includes("primaire"))   return "#E35336";
@@ -1301,49 +1357,54 @@ export default function OpportunitesPage() {
                         if(n.includes("tertiaire"))  return "#0D652D";
                         return "#9aa5b4";
                       };
+                      const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg));
+                      const secMap=new Map<number,{id:number;nom:string;items:any[]}>();
+                      filtered.forEach((a:any)=>{
+                        const sid=a.secteur_id||0;
+                        if(!secMap.has(sid))secMap.set(sid,{id:sid,nom:a.secteur_nom||"Sans secteur",items:[]});
+                        secMap.get(sid)!.items.push(a);
+                      });
                       const secList=Array.from(secMap.values()).sort((a,b)=>{
                         const ai=SEC_ORDER.findIndex(o=>a.nom.toLowerCase().includes(o));
                         const bi=SEC_ORDER.findIndex(o=>b.nom.toLowerCase().includes(o));
                         return (ai===-1?99:ai)-(bi===-1?99:bi);
                       });
-                      return secList.map((sec)=>{
-                        const color=secColor(sec.nom);
-                        const isOpen=avgsOpen[sec.id]!==false;
-                        const showGrid=isOpen||hasFilterAvgs;
-                        return (
-                          <div key={sec.id}>
-                            <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:showGrid?12:0}}>
-                              <div style={{width:3,height:18,borderRadius:2,background:color,flexShrink:0}}/>
-                              <span style={{fontSize:12,fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
-                              <button onClick={()=>setAvgsOpen(prev=>({...prev,[sec.id]:!prev[sec.id]}))}
-                                style={{display:"flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:6,border:`1px solid ${color}35`,background:`${color}0f`,cursor:"pointer",flexShrink:0}}>
-                                {isOpen?<ChevronDown size={12} style={{color}}/>:<ChevronUp size={12} style={{color}}/>}
-                              </button>
-                            </div>
-                            {showGrid&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-                              {sec.items.map((a:any)=>(
-                                <div key={a.id} onClick={()=>setAvgSel(a)}
-                                  style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",minWidth:0}}
-                                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderColor=color;ev.currentTarget.style.borderLeftColor=color;}}
-                                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=color;}}>
-                                  <ScrollTitle text={a.activite_nom||""} />
-                                  {(a.secteur_nom||a.branche_nom)&&(
-                                    <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
-                                      {a.secteur_nom&&<span style={{fontSize:10,fontWeight:600,color,background:`${color}0e`,border:`1px solid ${color}28`,padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const}}>{a.secteur_nom}</span>}
-                                      {a.branche_nom&&<span style={{fontSize:10,fontWeight:600,color:"#4a5568",background:"rgba(74,85,104,0.07)",border:"1px solid rgba(74,85,104,0.18)",padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:10}}>{a.branche_nom}</span>}
-                                    </div>
-                                  )}
-                                  <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
-                                    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color,fontWeight:600}}>Voir les détails →</div>
-                                  </div>
+                      return (
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
+                          {secList.map((sec)=>{
+                            const color=secColor(sec.nom);
+                            return (
+                              <div key={sec.id}>
+                                <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:12}}>
+                                  <div style={{width:3,height:18,borderRadius:2,background:color,flexShrink:0}}/>
+                                  <span style={{fontSize:12,fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
                                 </div>
-                              ))}
-                            </div>}
-                          </div>
-                        );
-                      });
+                                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+                                  {sec.items.map((a:any)=>(
+                                    <div key={a.id} onClick={()=>setAvgSel(a)}
+                                      style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",minWidth:0}}
+                                      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderColor=color;ev.currentTarget.style.borderLeftColor=color;}}
+                                      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=color;}}>
+                                      <ScrollTitle text={a.activite_nom||""} />
+                                      {(a.secteur_nom||a.branche_nom)&&(
+                                        <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
+                                          {a.secteur_nom&&<span style={{fontSize:10,fontWeight:600,color,background:`${color}0e`,border:`1px solid ${color}28`,padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const}}>{a.secteur_nom}</span>}
+                                          {a.branche_nom&&<span style={{fontSize:10,fontWeight:600,color:"#4a5568",background:"rgba(74,85,104,0.07)",border:"1px solid rgba(74,85,104,0.18)",padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:10}}>{a.branche_nom}</span>}
+                                        </div>
+                                      )}
+                                      <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                                        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color,fontWeight:600}}>Voir les détails →</div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
                     })()}
-                  </div>
+                  </>
                 )}
               </>
             )}
