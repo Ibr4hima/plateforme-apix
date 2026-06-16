@@ -1014,6 +1014,9 @@ export default function OpportunitesAdminPage() {
     if(p.arrondissement_id)return {label:p.arrondissement_nom||"Arr.",  color:"#7c3aed"};
     return {label:"Global",color:"#6b7280"};
   };
+  const potTitle = (p:any) => (p.titre||"")
+    .replace(/^[Pp]otentialités?\s+(de\s+l[''']|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
+    .replace(/^(.)/, (_:string,c:string) => c.toUpperCase());
 
   return (
     <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
@@ -1082,7 +1085,7 @@ export default function OpportunitesAdminPage() {
                             style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${p.est_publie?groupe.color:"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
                             onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${groupe.color}20`;ev.currentTarget.style.borderColor=`${groupe.color}50`;}}
                             onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?groupe.color:"#C5BFBB";}}>
-                            <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:6,lineHeight:1.4}}>{p.titre}</div>
+                            <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:6,lineHeight:1.4}}>{potTitle(p)}</div>
                             <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
                               <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
                                 style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
