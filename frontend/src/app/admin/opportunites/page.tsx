@@ -993,6 +993,17 @@ export default function OpportunitesAdminPage() {
   const [avgDel,    setAvgDel]    = useState<number|null>(null);
   const [avgToggle, setAvgToggle] = useState<number|null>(null);
   const [selectedSec, setSelectedSec] = useState<string|null>(null);
+  const [secEntCounts, setSecEntCounts] = useState<Record<string,number>>({});
+
+  useEffect(()=>{
+    fetch(`${API}/dashboard/viz/entreprises-par-secteur`)
+      .then(r=>r.json())
+      .then((data:any[])=>{
+        const map: Record<string,number> = {};
+        data.forEach(d=>{ map[(d.label||"").toLowerCase()] = d.valeur||0; });
+        setSecEntCounts(map);
+      }).catch(()=>{});
+  },[]);
 
   useEffect(()=>{
     fetch(`${API}/zones-types/poles`).then(r=>r.json()).then(setPoles).catch(()=>{});
@@ -1197,10 +1208,15 @@ export default function OpportunitesAdminPage() {
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?s.color:"#C5BFBB";}}>
                     <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{s.label}</div>
                     <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                        <div style={{width:6,height:6,borderRadius:"50%",background:count>0?s.color:"#C5BFBB",flexShrink:0}}/>
-                        <span style={{color:"#4a5568"}}>{count} avantage{count!==1?"s":""} défini{count!==1?"s":""}</span>
-                      </div>
+                      {(()=>{
+                        const entCount = Object.entries(secEntCounts).find(([k])=>k.includes(s.key))?.[1] ?? null;
+                        return entCount!==null ? (
+                          <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                            <span style={{color:"#4a5568"}}>{entCount} entreprise{entCount!==1?"s":""} spécialisée{entCount!==1?"s":""}</span>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                     <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
                       <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${s.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:s.color,fontWeight:600,opacity:count>0?1:0.45}}>
