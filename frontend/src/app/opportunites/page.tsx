@@ -1284,14 +1284,20 @@ export default function OpportunitesPage() {
                         if(!secMap.has(sid))secMap.set(sid,{id:sid,nom:a.secteur_nom||"Sans secteur",items:[]});
                         secMap.get(sid)!.items.push(a);
                       });
-                      const SECT_COLORS=["#ca631f","#225BCC","#575799","#7c3aed","#0891b2","#d97706","#E35336","#188038"];
+                      const secColor=(nom:string)=>{
+                        const n=nom.toLowerCase();
+                        if(n.includes("primaire"))   return "#ca631f";
+                        if(n.includes("secondaire")) return "#00408C";
+                        if(n.includes("tertiaire"))  return "#008070";
+                        return "#9aa5b4";
+                      };
                       const secList=Array.from(secMap.values()).sort((a,b)=>{
                         const ai=SEC_ORDER.findIndex(o=>a.nom.toLowerCase().includes(o));
                         const bi=SEC_ORDER.findIndex(o=>b.nom.toLowerCase().includes(o));
                         return (ai===-1?99:ai)-(bi===-1?99:bi);
                       });
-                      return secList.map((sec,si)=>{
-                        const color=SECT_COLORS[si%SECT_COLORS.length];
+                      return secList.map((sec)=>{
+                        const color=secColor(sec.nom);
                         const isOpen=avgsOpen[sec.id]!==false;
                         const showGrid=isOpen||hasFilterAvgs;
                         return (

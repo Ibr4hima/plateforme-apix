@@ -666,6 +666,13 @@ function TextTicker({ text, speed=25, delay=2.5 }: {text:string; speed?:number; 
 // ══════════════════════════════════════════════════════════════════════════════
 
 const SECTEUR_COLORS = ["#ca631f","#004f91","#059669","#7c3aed","#0891b2","#d97706","#E35336","#188038"];
+const secColor = (nom:string) => {
+  const n = nom.toLowerCase();
+  if (n.includes("primaire"))   return "#ca631f";
+  if (n.includes("secondaire")) return "#00408C";
+  if (n.includes("tertiaire"))  return "#008070";
+  return SECTEUR_COLORS[0];
+};
 
 function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, avgDel }:
   { avgs:any[]; onVue:(a:any)=>void; onEdit:(a:any)=>void; onToggle:(a:any)=>void; onDelete:(id:number)=>void; avgToggle:number|null; avgDel:number|null }) {
@@ -686,15 +693,14 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
 
   return (
     <div style={{display:"flex",flexDirection:"column" as const,gap:28}}>
-      {secteurs.map((sec, si) => {
-        const color = SECTEUR_COLORS[si % SECTEUR_COLORS.length];
+      {secteurs.map((sec) => {
+        const color = secColor(sec.nom);
         return (
           <div key={sec.id}>
             {/* Header secteur */}
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
               <div style={{width:3,height:20,borderRadius:2,background:color,flexShrink:0}}/>
               <span style={{fontSize:13,fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
-              <span style={{fontSize:11,color:"#9aa5b4"}}>({sec.items.length} fiche{sec.items.length>1?"s":""})</span>
             </div>
             {/* Grille de cards */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
