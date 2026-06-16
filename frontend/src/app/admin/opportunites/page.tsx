@@ -1181,25 +1181,32 @@ export default function OpportunitesAdminPage() {
               <p style={{fontSize:13}}>Créez votre premier avantage ou incitation</p>
             </div>
           ) : selectedSec===null ? (
-            /* ── Vue secteurs : 3 cards ── */
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
+            /* ── Vue secteurs : 3 cards style BanqueProjets ── */
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {([
                 {key:"primaire",   label:"Secteur Primaire",   color:"#ca631f"},
                 {key:"secondaire", label:"Secteur Secondaire", color:"#00408C"},
                 {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#008070"},
               ] as const).map(s=>{
                 const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
-                const active = items.length > 0;
+                const count = items.length;
                 return (
-                  <div key={s.key}
-                    onClick={()=>active&&setSelectedSec(s.key)}
-                    style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",borderTop:`4px solid ${active?s.color:"#C5BFBB"}`,padding:"28px 24px",cursor:active?"pointer":"default",transition:"all 0.18s",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}
-                    onMouseEnter={ev=>{if(active){ev.currentTarget.style.boxShadow=`0 6px 24px ${s.color}1a`;ev.currentTarget.style.borderColor=`${s.color}50`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 6px rgba(0,0,0,0.05)";ev.currentTarget.style.borderColor="#E8E5E3";}}>
-                    <div style={{fontSize:"1rem",fontWeight:800,color:active?"#1a1a2e":"#9aa5b4",marginBottom:16}}>{s.label}</div>
-                    <div style={{fontSize:42,fontWeight:900,color:active?s.color:"#C5BFBB",lineHeight:1,marginBottom:6}}>{items.length}</div>
-                    <div style={{fontSize:12,color:"#9aa5b4"}}>avantage{items.length>1?"s":""} défini{items.length>1?"s":""}</div>
-                    {active&&<div style={{marginTop:18,display:"inline-flex",alignItems:"center",gap:5,fontSize:12,color:s.color,fontWeight:700,background:`${s.color}0f`,border:`1px solid ${s.color}30`,borderRadius:8,padding:"6px 12px"}}>Voir les avantages →</div>}
+                  <div key={s.key} onClick={()=>count>0&&setSelectedSec(s.key)}
+                    style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${count>0?s.color:"#C5BFBB"}`,cursor:count>0?"pointer":"default",transition:"all 0.15s"}}
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${s.color}20`;ev.currentTarget.style.borderColor=s.color;}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?s.color:"#C5BFBB";}}>
+                    <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{s.label}</div>
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
+                      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:count>0?s.color:"#C5BFBB",flexShrink:0}}/>
+                        <span style={{color:"#4a5568"}}>{count} avantage{count!==1?"s":""} défini{count!==1?"s":""}</span>
+                      </div>
+                    </div>
+                    <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                      <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${s.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:s.color,fontWeight:600,opacity:count>0?1:0.45}}>
+                        Voir les détails →
+                      </button>
+                    </div>
                   </div>
                 );
               })}
