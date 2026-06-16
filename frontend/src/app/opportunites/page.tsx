@@ -1195,7 +1195,7 @@ export default function OpportunitesPage() {
                     {([
                       {key:"pole",label:"Pôles territoires",color:"#ca631f"},
                       {key:"region",label:"Régions",color:"#00408C"},
-                      {key:"departement",label:"Départements",color:"#00C0A0"},
+                      {key:"departement",label:"Départements",color:"#008070"},
                       {key:"arrondissement",label:"Arrondissements",color:"#8A7000"},
                     ] as const).map(groupe=>{
                       const items=potsFiltres.filter((p:any)=>p.niveau===groupe.key);
