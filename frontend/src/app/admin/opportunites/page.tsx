@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -992,6 +992,7 @@ export default function OpportunitesAdminPage() {
   const [avgVue,    setAvgVue]    = useState<any>(null);
   const [avgDel,    setAvgDel]    = useState<number|null>(null);
   const [avgToggle, setAvgToggle] = useState<number|null>(null);
+  const [selectedSec, setSelectedSec] = useState<string|null>(null);
 
   useEffect(()=>{
     fetch(`${API}/zones-types/poles`).then(r=>r.json()).then(setPoles).catch(()=>{});
@@ -1019,6 +1020,7 @@ export default function OpportunitesAdminPage() {
 
   useEffect(()=>{chargerPots();},[chargerPots]);
   useEffect(()=>{chargerAvgs();},[chargerAvgs]);
+  useEffect(()=>{setSelectedSec(null);},[onglet]);
 
   const deletePot=async(id:number)=>{
     if(!confirm("Supprimer cette fiche ?"))return;
@@ -1169,8 +1171,6 @@ export default function OpportunitesAdminPage() {
 
       {onglet==="avantages" && (
         <div>
-          <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-
           {avgsLoad ? (
             <div style={{display:"flex",justifyContent:"center",padding:60}}>
               <Loader2 size={28} style={{color:"#9aa5b4",animation:"spin 1s linear infinite"}}/>
@@ -1180,16 +1180,47 @@ export default function OpportunitesAdminPage() {
               <p style={{fontSize:16,fontWeight:600}}>Aucune fiche</p>
               <p style={{fontSize:13}}>Créez votre premier avantage ou incitation</p>
             </div>
+          ) : selectedSec===null ? (
+            /* ── Vue secteurs : 3 cards ── */
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
+              {([
+                {key:"primaire",   label:"Secteur Primaire",   color:"#ca631f"},
+                {key:"secondaire", label:"Secteur Secondaire", color:"#00408C"},
+                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#008070"},
+              ] as const).map(s=>{
+                const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
+                const active = items.length > 0;
+                return (
+                  <div key={s.key}
+                    onClick={()=>active&&setSelectedSec(s.key)}
+                    style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",borderTop:`4px solid ${active?s.color:"#C5BFBB"}`,padding:"28px 24px",cursor:active?"pointer":"default",transition:"all 0.18s",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}
+                    onMouseEnter={ev=>{if(active){ev.currentTarget.style.boxShadow=`0 6px 24px ${s.color}1a`;ev.currentTarget.style.borderColor=`${s.color}50`;}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 6px rgba(0,0,0,0.05)";ev.currentTarget.style.borderColor="#E8E5E3";}}>
+                    <div style={{fontSize:"1rem",fontWeight:800,color:active?"#1a1a2e":"#9aa5b4",marginBottom:16}}>{s.label}</div>
+                    <div style={{fontSize:42,fontWeight:900,color:active?s.color:"#C5BFBB",lineHeight:1,marginBottom:6}}>{items.length}</div>
+                    <div style={{fontSize:12,color:"#9aa5b4"}}>avantage{items.length>1?"s":""} défini{items.length>1?"s":""}</div>
+                    {active&&<div style={{marginTop:18,display:"inline-flex",alignItems:"center",gap:5,fontSize:12,color:s.color,fontWeight:700,background:`${s.color}0f`,border:`1px solid ${s.color}30`,borderRadius:8,padding:"6px 12px"}}>Voir les avantages →</div>}
+                  </div>
+                );
+              })}
+            </div>
           ) : (
-            <AvantagesGroupes
-              avgs={avgs}
-              onVue={(a:any)=>setAvgVue(a)}
-              onEdit={(a:any)=>{setAvgEdit(a);setAvgModal(true);}}
-              onToggle={toggleAvg}
-              onDelete={deleteAvg}
-              avgToggle={avgToggle}
-              avgDel={avgDel}
-            />
+            /* ── Vue drill-down : avantages du secteur sélectionné ── */
+            <>
+              <button onClick={()=>setSelectedSec(null)}
+                style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
+                <ArrowLeft size={14}/> Retour aux secteurs
+              </button>
+              <AvantagesGroupes
+                avgs={avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSec))}
+                onVue={(a:any)=>setAvgVue(a)}
+                onEdit={(a:any)=>{setAvgEdit(a);setAvgModal(true);}}
+                onToggle={toggleAvg}
+                onDelete={deleteAvg}
+                avgToggle={avgToggle}
+                avgDel={avgDel}
+              />
+            </>
           )}
 
           <AvantageModal open={avgModal} onClose={()=>setAvgModal(false)} edit={avgEdit} onSaved={chargerAvgs}/>
