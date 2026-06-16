@@ -994,6 +994,9 @@ export default function OpportunitesAdminPage() {
   const [avgToggle, setAvgToggle] = useState<number|null>(null);
   const [selectedSec, setSelectedSec] = useState<string|null>(null);
   const [secEntCounts, setSecEntCounts] = useState<Record<string,number>>({});
+  const [refSecteurs,  setRefSecteurs]  = useState<any[]>([]);
+  const [refBranches,  setRefBranches]  = useState<any[]>([]);
+  const [refActivites, setRefActivites] = useState<any[]>([]);
 
   useEffect(()=>{
     fetch(`${API}/dashboard/viz/entreprises-par-secteur`)
@@ -1003,6 +1006,12 @@ export default function OpportunitesAdminPage() {
         data.forEach(d=>{ map[(d.label||"").toLowerCase()] = d.valeur||0; });
         setSecEntCounts(map);
       }).catch(()=>{});
+    const safe = (url:string) => fetch(url).then(r=>r.json()).catch(()=>[]);
+    Promise.all([
+      safe(`${API}/entreprises/ref/secteurs`),
+      safe(`${API}/entreprises/ref/branches`),
+      safe(`${API}/entreprises/ref/activites`),
+    ]).then(([s,b,a])=>{ setRefSecteurs(s||[]); setRefBranches(b||[]); setRefActivites(a||[]); });
   },[]);
 
   useEffect(()=>{
@@ -1207,17 +1216,31 @@ export default function OpportunitesAdminPage() {
                     onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${s.color}20`;ev.currentTarget.style.borderColor=s.color;}}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?s.color:"#C5BFBB";}}>
                     <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{s.label}</div>
-                    <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                      {(()=>{
-                        const entCount = Object.entries(secEntCounts).find(([k])=>k.includes(s.key))?.[1] ?? null;
-                        return entCount!==null ? (
-                          <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                            <span style={{color:"#4a5568"}}>{entCount} entreprise{entCount!==1?"s":""} spécialisée{entCount!==1?"s":""}</span>
-                          </div>
-                        ) : null;
-                      })()}
-                    </div>
+                    {(()=>{
+                      const entCount = Object.entries(secEntCounts).find(([k])=>k.includes(s.key))?.[1] ?? null;
+                      const sec = refSecteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
+                      const branches = sec ? refBranches.filter((b:any)=>b.secteur_id===sec.id) : [];
+                      const branchIds = new Set(branches.map((b:any)=>b.id));
+                      const actCount = refActivites.filter((a:any)=>branchIds.has(a.branche_id)).length;
+                      return (
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:12}}>
+                          {entCount!==null&&(
+                            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                              <span style={{color:"#4a5568"}}>{entCount} entreprise{entCount!==1?"s":""} spécialisée{entCount!==1?"s":""}</span>
+                            </div>
+                          )}
+                          {branches.length>0&&(
+                            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                              <span style={{fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.18)",borderRadius:5,padding:"1px 6px"}}>{branches.length} branche{branches.length>1?"s":""}</span>
+                              <span style={{color:"#C5BFBB",fontWeight:700}}>›</span>
+                              <span style={{fontWeight:700,color:"#7c3aed",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.18)",borderRadius:5,padding:"1px 6px"}}>{actCount} activité{actCount>1?"s":""}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
                       <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${s.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:s.color,fontWeight:600,opacity:count>0?1:0.45}}>
                         Voir les détails →
