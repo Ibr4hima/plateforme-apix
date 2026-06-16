@@ -631,7 +631,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
 // ══════════════════════════════════════════════════════════════════════════════
 // TextTicker — défilement uniquement si le texte dépasse, sans rebond
 // ══════════════════════════════════════════════════════════════════════════════
-function TextTicker({ text, speed=20, delay=2.5 }: {text:string; speed?:number; delay?:number}) {
+function TextTicker({ text, speed=25, delay=2.5 }: {text:string; speed?:number; delay?:number}) {
   const cRef = useRef<HTMLDivElement>(null);
   const tRef = useRef<HTMLSpanElement>(null);
   const [ov, setOv] = useState(0);
