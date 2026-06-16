@@ -664,7 +664,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
               <span style={{fontSize:11,color:"#9aa5b4"}}>({sec.items.length} fiche{sec.items.length>1?"s":""})</span>
             </div>
             {/* Grille de cards */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:12}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {sec.items.map((a:any) => (
                 <div key={a.id} onClick={()=>onVue(a)}
                   style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:`3px solid ${a.est_publie?color:"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
@@ -1052,6 +1052,12 @@ export default function OpportunitesAdminPage() {
             <Plus size={15}/> Nouvelle fiche
           </button>
         )}
+        {onglet==="avantages"&&(
+          <button onClick={()=>{setAvgEdit(null);setAvgModal(true);}}
+            style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
+            <Plus size={15}/> Nouvel avantage
+          </button>
+        )}
       </div>
 
       {onglet==="projets" && <BanqueProjets registerOpenNew={fn=>{ openNewProjet.current=fn; }}/>}
@@ -1125,21 +1131,6 @@ export default function OpportunitesAdminPage() {
       {onglet==="avantages" && (
         <div>
           <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-
-          {/* Barre de recherche + bouton */}
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-            <div style={{position:"relative",maxWidth:360,flex:1}}>
-              <Search size={14} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-              <input value={avgsQ} onChange={e=>setAvgsQ(e.target.value)} placeholder="Rechercher par activité ou avantage…" style={{...{background:"#F2F0EF",border:"1px solid #C5BFBB",borderRadius:8,padding:"9px 12px",fontSize:13,color:"#1a1a2e",outline:"none",width:"100%",boxSizing:"border-box" as const,fontFamily:"var(--font-google-sans)"},paddingLeft:36}}/>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:13,color:"#9aa5b4"}}>{avgsTotal} fiche{avgsTotal>1?"s":""}</span>
-              <button onClick={()=>{setAvgEdit(null);setAvgModal(true);}}
-                style={{display:"flex",alignItems:"center",gap:7,padding:"10px 18px",borderRadius:11,border:"none",background:"linear-gradient(135deg,#7c3aed,#a78bfa)",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,boxShadow:"0 4px 14px rgba(124,58,237,0.25)"}}>
-                <Plus size={14}/> Nouvel avantage
-              </button>
-            </div>
-          </div>
 
           {avgsLoad ? (
             <div style={{display:"flex",justifyContent:"center",padding:60}}>
