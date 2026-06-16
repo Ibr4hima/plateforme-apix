@@ -1231,11 +1231,12 @@ export default function OpportunitesAdminPage() {
                             </div>
                           )}
                           {branches.length>0&&(
-                            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11}}>
+                            <div style={{display:"flex",alignItems:"center",gap:6,fontSize:12}}>
                               <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
-                              <span style={{fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.18)",borderRadius:5,padding:"1px 6px"}}>{branches.length} branche{branches.length>1?"s":""}</span>
-                              <span style={{color:"#C5BFBB",fontWeight:700}}>›</span>
-                              <span style={{fontWeight:700,color:"#7c3aed",background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.18)",borderRadius:5,padding:"1px 6px"}}>{actCount} activité{actCount>1?"s":""}</span>
+                              <span style={{fontWeight:600,color:"#366FE3"}}>{branches.length} branche{branches.length>1?"s":""}</span>
+                              <span style={{color:"#C5BFBB"}}>›</span>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                              <span style={{fontWeight:600,color:"#188038"}}>{actCount} activité{actCount>1?"s":""}</span>
                             </div>
                           )}
                         </div>
