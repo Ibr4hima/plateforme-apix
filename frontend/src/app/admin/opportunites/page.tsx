@@ -668,9 +668,9 @@ function TextTicker({ text, speed=25, delay=2.5 }: {text:string; speed?:number; 
 const SECTEUR_COLORS = ["#ca631f","#004f91","#059669","#7c3aed","#0891b2","#d97706","#E35336","#188038"];
 const secColor = (nom:string) => {
   const n = nom.toLowerCase();
-  if (n.includes("primaire"))   return "#ca631f";
-  if (n.includes("secondaire")) return "#00408C";
-  if (n.includes("tertiaire"))  return "#008070";
+  if (n.includes("primaire"))   return "#E35336";
+  if (n.includes("secondaire")) return "#174EA6";
+  if (n.includes("tertiaire"))  return "#0D652D";
   return SECTEUR_COLORS[0];
 };
 
@@ -1204,9 +1204,9 @@ export default function OpportunitesAdminPage() {
             /* ── Vue secteurs : 3 cards style BanqueProjets ── */
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {([
-                {key:"primaire",   label:"Secteur Primaire",   color:"#ca631f"},
-                {key:"secondaire", label:"Secteur Secondaire", color:"#00408C"},
-                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#008070"},
+                {key:"primaire",   label:"Secteur Primaire",   color:"#E35336"},
+                {key:"secondaire", label:"Secteur Secondaire", color:"#174EA6"},
+                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#0D652D"},
               ] as const).map(s=>{
                 const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
                 const count = items.length;

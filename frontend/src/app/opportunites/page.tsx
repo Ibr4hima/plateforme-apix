@@ -1296,9 +1296,9 @@ export default function OpportunitesPage() {
                       });
                       const secColor=(nom:string)=>{
                         const n=nom.toLowerCase();
-                        if(n.includes("primaire"))   return "#ca631f";
-                        if(n.includes("secondaire")) return "#00408C";
-                        if(n.includes("tertiaire"))  return "#008070";
+                        if(n.includes("primaire"))   return "#E35336";
+                        if(n.includes("secondaire")) return "#174EA6";
+                        if(n.includes("tertiaire"))  return "#0D652D";
                         return "#9aa5b4";
                       };
                       const secList=Array.from(secMap.values()).sort((a,b)=>{
