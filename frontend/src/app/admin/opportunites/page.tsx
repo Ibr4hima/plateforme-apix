@@ -1252,21 +1252,65 @@ export default function OpportunitesAdminPage() {
               })}
             </div>
           ) : (
-            /* ── Vue drill-down : avantages du secteur sélectionné ── */
+            /* ── Vue cascade : avantages du secteur sélectionné ── */
             <>
               <button onClick={()=>setSelectedSec(null)}
                 style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
                 <ArrowLeft size={14}/> Retour aux secteurs
               </button>
-              <AvantagesGroupes
-                avgs={avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSec))}
-                onVue={(a:any)=>setAvgVue(a)}
-                onEdit={(a:any)=>{setAvgEdit(a);setAvgModal(true);}}
-                onToggle={toggleAvg}
-                onDelete={deleteAvg}
-                avgToggle={avgToggle}
-                avgDel={avgDel}
-              />
+              {(()=>{
+                const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSec!));
+                const cascadeSecColor = (nom:string) => {
+                  const n=nom.toLowerCase();
+                  if(n.includes("primaire"))   return "#E35336";
+                  if(n.includes("secondaire")) return "#0F52BA";
+                  if(n.includes("tertiaire"))  return "#0D652D";
+                  return "#9aa5b4";
+                };
+                const secMap2 = new Map<number,{id:number;nom:string;branches:Map<number,{id:number;nom:string;items:any[]}>}>();
+                filtered.forEach((a:any)=>{
+                  const sid=a.secteur_id||0; const bid=a.branche_id||0;
+                  if(!secMap2.has(sid)) secMap2.set(sid,{id:sid,nom:a.secteur_nom||"Sans secteur",branches:new Map()});
+                  const sec=secMap2.get(sid)!;
+                  if(!sec.branches.has(bid)) sec.branches.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
+                  sec.branches.get(bid)!.items.push(a);
+                });
+                const cascadeSecList=Array.from(secMap2.values());
+                return (
+                  <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
+                    {cascadeSecList.map(sec=>{
+                      const color=cascadeSecColor(sec.nom);
+                      const bras=Array.from(sec.branches.values());
+                      return (
+                        <div key={sec.id}>
+                          <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:12}}>
+                            <div style={{width:8,height:8,borderRadius:"50%",background:color,flexShrink:0}}/>
+                            <span style={{fontSize:14,fontWeight:700,color}}>{sec.nom}</span>
+                          </div>
+                          <div style={{paddingLeft:20,borderLeft:`2px solid ${color}30`,display:"flex",flexDirection:"column" as const,gap:14}}>
+                            {bras.map(bra=>(
+                              <div key={bra.id}>
+                                <div style={{display:"inline-flex",alignItems:"center",gap:7,marginBottom:8}}>
+                                  <div style={{width:7,height:7,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                                  <span style={{fontSize:13,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span>
+                                </div>
+                                <div style={{paddingLeft:18,borderLeft:"2px solid rgba(54,111,227,0.15)",display:"flex",flexDirection:"column" as const,gap:8}}>
+                                  {bra.items.map((a:any)=>(
+                                    <div key={a.id} style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>setAvgVue(a)}>
+                                      <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                      <span style={{fontSize:12,color:"#188038",fontWeight:500,textDecoration:"underline",textDecorationColor:"#18803840"}}>{a.activite_nom}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </>
           )}
 

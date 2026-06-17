@@ -1342,58 +1342,55 @@ export default function OpportunitesPage() {
                     })}
                   </div>
                 ) : (
-                  /* ── Vue drill-down ── */
+                  /* ── Vue cascade ── */
                   <>
                     <button onClick={()=>setSelectedSecAvg(null)}
                       style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
                       <ChevronDown size={14} style={{transform:"rotate(90deg)"}}/> Retour aux secteurs
                     </button>
                     {(()=>{
-                      const SEC_ORDER=["primaire","secondaire","tertiaire"];
-                      const secColor=(nom:string)=>{
+                      const cascadeSecColor=(nom:string)=>{
                         const n=nom.toLowerCase();
                         if(n.includes("primaire"))   return "#E35336";
                         if(n.includes("secondaire")) return "#0F52BA";
                         if(n.includes("tertiaire"))  return "#0D652D";
                         return "#9aa5b4";
                       };
-                      const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg));
-                      const secMap=new Map<number,{id:number;nom:string;items:any[]}>();
+                      const filtered=avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg!));
+                      const secMap2=new Map<number,{id:number;nom:string;branches:Map<number,{id:number;nom:string;items:any[]}>}>();
                       filtered.forEach((a:any)=>{
-                        const sid=a.secteur_id||0;
-                        if(!secMap.has(sid))secMap.set(sid,{id:sid,nom:a.secteur_nom||"Sans secteur",items:[]});
-                        secMap.get(sid)!.items.push(a);
+                        const sid=a.secteur_id||0; const bid=a.branche_id||0;
+                        if(!secMap2.has(sid)) secMap2.set(sid,{id:sid,nom:a.secteur_nom||"Sans secteur",branches:new Map()});
+                        const sec=secMap2.get(sid)!;
+                        if(!sec.branches.has(bid)) sec.branches.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
+                        sec.branches.get(bid)!.items.push(a);
                       });
-                      const secList=Array.from(secMap.values()).sort((a,b)=>{
-                        const ai=SEC_ORDER.findIndex(o=>a.nom.toLowerCase().includes(o));
-                        const bi=SEC_ORDER.findIndex(o=>b.nom.toLowerCase().includes(o));
-                        return (ai===-1?99:ai)-(bi===-1?99:bi);
-                      });
+                      const cascadeSecList=Array.from(secMap2.values());
                       return (
                         <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
-                          {secList.map((sec)=>{
-                            const color=secColor(sec.nom);
+                          {cascadeSecList.map(sec=>{
+                            const color=cascadeSecColor(sec.nom);
+                            const bras=Array.from(sec.branches.values());
                             return (
                               <div key={sec.id}>
-                                <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:12}}>
-                                  <div style={{width:3,height:18,borderRadius:2,background:color,flexShrink:0}}/>
-                                  <span style={{fontSize:12,fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
+                                <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:12}}>
+                                  <div style={{width:8,height:8,borderRadius:"50%",background:color,flexShrink:0}}/>
+                                  <span style={{fontSize:14,fontWeight:700,color}}>{sec.nom}</span>
                                 </div>
-                                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-                                  {sec.items.map((a:any)=>(
-                                    <div key={a.id} onClick={()=>setAvgSel(a)}
-                                      style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",minWidth:0}}
-                                      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderColor=color;ev.currentTarget.style.borderLeftColor=color;}}
-                                      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=color;}}>
-                                      <ScrollTitle text={a.activite_nom||""} />
-                                      {(a.secteur_nom||a.branche_nom)&&(
-                                        <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
-                                          {a.secteur_nom&&<span style={{fontSize:10,fontWeight:600,color,background:`${color}0e`,border:`1px solid ${color}28`,padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const}}>{a.secteur_nom}</span>}
-                                          {a.branche_nom&&<span style={{fontSize:10,fontWeight:600,color:"#4a5568",background:"rgba(74,85,104,0.07)",border:"1px solid rgba(74,85,104,0.18)",padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:10}}>{a.branche_nom}</span>}
-                                        </div>
-                                      )}
-                                      <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
-                                        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color,fontWeight:600}}>Voir les détails →</div>
+                                <div style={{paddingLeft:20,borderLeft:`2px solid ${color}30`,display:"flex",flexDirection:"column" as const,gap:14}}>
+                                  {bras.map(bra=>(
+                                    <div key={bra.id}>
+                                      <div style={{display:"inline-flex",alignItems:"center",gap:7,marginBottom:8}}>
+                                        <div style={{width:7,height:7,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
+                                        <span style={{fontSize:13,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span>
+                                      </div>
+                                      <div style={{paddingLeft:18,borderLeft:"2px solid rgba(54,111,227,0.15)",display:"flex",flexDirection:"column" as const,gap:8}}>
+                                        {bra.items.map((a:any)=>(
+                                          <div key={a.id} style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>setAvgSel(a)}>
+                                            <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                            <span style={{fontSize:12,color:"#188038",fontWeight:500,textDecoration:"underline",textDecorationColor:"#18803840"}}>{a.activite_nom}</span>
+                                          </div>
+                                        ))}
                                       </div>
                                     </div>
                                   ))}
