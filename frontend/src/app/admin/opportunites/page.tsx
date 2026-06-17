@@ -1260,13 +1260,7 @@ export default function OpportunitesAdminPage() {
               </button>
               {(()=>{
                 const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSec!));
-                const cascadeSecColor = (nom:string) => {
-                  const n=nom.toLowerCase();
-                  if(n.includes("primaire"))   return "#E35336";
-                  if(n.includes("secondaire")) return "#0F52BA";
-                  if(n.includes("tertiaire"))  return "#0D652D";
-                  return "#9aa5b4";
-                };
+                const cascadeSecColor = (_nom:string) => "#E35336";
                 const secMap2 = new Map<number,{id:number;nom:string;branches:Map<number,{id:number;nom:string;items:any[]}>}>();
                 filtered.forEach((a:any)=>{
                   const sid=a.secteur_id||0; const bid=a.branche_id||0;
@@ -1291,14 +1285,14 @@ export default function OpportunitesAdminPage() {
                             {bras.map(bra=>(
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:7,marginBottom:8}}>
-                                  <div style={{width:7,height:7,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
-                                  <span style={{fontSize:13,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span>
+                                  <div style={{width:7,height:7,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
+                                  <span style={{fontSize:13,fontWeight:600,color:"#0F52BA"}}>{bra.nom}</span>
                                 </div>
-                                <div style={{paddingLeft:18,borderLeft:"2px solid rgba(54,111,227,0.15)",display:"flex",flexDirection:"column" as const,gap:8}}>
+                                <div style={{paddingLeft:18,borderLeft:"2px solid rgba(15,82,186,0.15)",display:"flex",flexDirection:"column" as const,gap:8}}>
                                   {bra.items.map((a:any)=>(
                                     <div key={a.id} style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>setAvgVue(a)}>
-                                      <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                      <span style={{fontSize:12,color:"#188038",fontWeight:500,textDecoration:"underline",textDecorationColor:"#18803840"}}>{a.activite_nom}</span>
+                                      <div style={{width:6,height:6,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
+                                      <span style={{fontSize:12,color:"#0D652D",fontWeight:500,textDecoration:"underline",textDecorationColor:"#0D652D40"}}>{a.activite_nom}</span>
                                     </div>
                                   ))}
                                 </div>
