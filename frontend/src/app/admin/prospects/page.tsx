@@ -879,7 +879,7 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
 }
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
-function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, readOnly }: any) {
+function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, onRouvrir, readOnly }: any) {
   const LBL = ({t}:{t:string}) => <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>{t}</p>;
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
@@ -910,13 +910,12 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
     if (res.ok) { setIssueOk(true); onRefresh?.(); setTimeout(()=>{ setIssueOk(false); setShowConclusion(false); },1200); }
   };
 
+  // Correction d'une conclusion saisie par erreur : remet à zéro sans archiver de cycle.
   const handleReopen = async () => {
-    if (!confirm("Rouvrir la prospection ? La conclusion actuelle sera effacée.")) return;
-    const res = await fetch(`${API}/prospects/${p.id}/conclusion`, {
-      method:"PATCH", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ issue: null, issue_commentaire: null }),
-    });
-    if (res.ok) onRefresh?.();
+    if (!confirm("Corriger / Rouvrir cette prospection ?\n\nLa conclusion sera effacée. Le prospect reviendra dans les onglets actifs.")) return;
+    const res = await fetch(`${API}/prospects/${p.id}/rouvrir`, { method:"POST" });
+    if (res.ok) onRouvrir?.();
+    else { const d=await res.json().catch(()=>({})); alert(d.detail||"Erreur lors de la réouverture"); }
   };
 
   const handleDeleteEchange = async (id:number) => {
@@ -1253,15 +1252,17 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   <>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                       <LBL t="Conclusion de la prospection"/>
-                      {!readOnly ? (
-                        <button type="button" onClick={handleReopen}
-                          style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
-                          Rouvrir la prospection
-                        </button>
-                      ) : p.issue==="decline" && onRecontact ? (
+                      {p.issue==="decline" && onRecontact ? (
+                        // Décliné → Re-contacter (nouveau cycle, historique conservé)
                         <button type="button" onClick={onRecontact}
                           style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, padding:"4px 14px", borderRadius:999, border:"none", background:"#004f91", color:"#fff", cursor:"pointer" }}>
                           <MessageSquare size={11}/> Re-contacter
+                        </button>
+                      ) : p.issue==="installe" ? (
+                        // Installé → Corriger uniquement (pas de re-contact : ils sont installés)
+                        <button type="button" onClick={handleReopen}
+                          style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"1px solid #dc2626", background:"rgba(220,38,38,0.05)", color:"#dc2626", cursor:"pointer" }}>
+                          Corriger la conclusion
                         </button>
                       ) : null}
                     </div>
@@ -1546,6 +1547,7 @@ export default function ProspectsPage() {
         onContacter={()=>{ setEchangeEdit(null); setEchangeModal(true); }}
         onEditEchange={(e:any)=>{ setEchangeEdit(e); setEchangeModal(true); }}
         onRecontact={()=>handleRecontact(vue.id)}
+        onRouvrir={()=>{ setVue(null); charger(); setOnglet(vue.nb_echanges > 0 ? "historique" : "cibles"); }}
         onRefresh={async()=>{ await charger(); const r=await fetch(`${API}/prospects/${vue.id}`); if(r.ok) setVue(await r.json()); }}/>}
       {vue && <EchangeModal open={echangeModal} onClose={()=>{ setEchangeModal(false); setEchangeEdit(null); }} prospect={vue} edit={echangeEdit}
         onSaved={(updated)=>{ setEchangeModal(false); setEchangeEdit(null); setVue(updated); charger(); }}/>}

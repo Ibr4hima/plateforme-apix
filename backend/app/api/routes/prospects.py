@@ -42,13 +42,27 @@ async def verifier_doublons(db: AsyncSession, payload: dict, exclure_prospect_id
     hit = res.scalars().first()
     if hit:
         pr = await db.execute(
-            select(Prospect.nom, Prospect.prenom).where(Prospect.id == hit.prospect_id)
+            select(Prospect.nom, Prospect.prenom, Prospect.issue).where(Prospect.id == hit.prospect_id)
         )
         row = pr.first()
         nom = "un autre prospect"
+        is_archive = False
         if row:
             nom = f"{row[1] or ''} {row[0] or ''}".strip() or "un autre prospect"
+            is_archive = row[2] is not None
         label = LABELS.get(hit.type, "Cette coordonnée")
+        if is_archive:
+            if row[2] == "installe":
+                raise HTTPException(
+                    409,
+                    f"{label} « {hit.valeur_affichee} » appartient à « {nom} », une entreprise déjà installée au Sénégal "
+                    f"(archivée dans « Précédents contacts »).",
+                )
+            raise HTTPException(
+                409,
+                f"{label} « {hit.valeur_affichee} » appartient à « {nom} », une prospection archivée dans « Précédents contacts ». "
+                f"Pour re-démarcher cette entreprise, utilisez le bouton « Re-contacter » depuis cet onglet.",
+            )
         raise HTTPException(
             409,
             f"{label} « {hit.valeur_affichee} » est déjà enregistré pour le prospect « {nom} ». "
@@ -437,6 +451,30 @@ async def conclure_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     await db.flush()
     return {"issue": p.issue, "issue_commentaire": p.issue_commentaire,
             "issue_conclu_le": p.issue_conclu_le.isoformat() if p.issue_conclu_le else None}
+
+
+# ── POST /prospects/:id/rouvrir ───────────────────────────────────────────────
+@router.post("/{prospect_id}/rouvrir")
+async def rouvrir_prospect(prospect_id: int, db: AsyncSession = Depends(get_db)):
+    """Remet à zéro la conclusion sans archiver de cycle — correction d'erreur.
+    À utiliser pour annuler un 'Installé' ou 'Décliné' saisi par mégarde."""
+    res = await db.execute(
+        select(Prospect).options(*LOAD_OPTS)
+        .where(Prospect.id == prospect_id, Prospect.is_deleted == False)
+    )
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Prospect introuvable")
+    if p.issue is None:
+        raise HTTPException(409, "Cette prospection n'est pas archivée.")
+    p.issue             = None
+    p.issue_commentaire = None
+    p.issue_conclu_le   = None
+    await db.flush()
+    res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id))
+    p2 = res.scalar_one()
+    titre = await get_projet_titre(db, p2.objet_projet_id)
+    return prospect_to_dict(p2, titre)
 
 
 # ── POST /prospects/:id/recontact ─────────────────────────────────────────────
