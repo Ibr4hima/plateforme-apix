@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Building2, Check, ChevronDown, ChevronUp, Loader2, MessageSquare, Pencil, Plus, Trash2, User, X } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
@@ -19,13 +19,28 @@ const ETATS = [
   { value:"converti",  label:"Converti",  color:"#188038" },
 ];
 
+// Début du cycle de prospection courant : date (YYYY-MM-DD) du dernier
+// re-contact. Les échanges antérieurs appartiennent à des cycles passés.
+function cycleCourantDebut(p:any): string|null {
+  const dates = (p?.cycles||[]).map((c:any)=>c.recontacte_le).filter(Boolean).map((d:string)=>d.slice(0,10));
+  return dates.length ? dates.sort().at(-1) : null;
+}
+
 // Badge de statut d'une carte prospect.
 // L'issue de la relation (installé / décliné) prime sur l'indicateur d'activité ;
-// sinon on retombe sur le délai depuis le dernier échange.
+// sinon on retombe sur le délai depuis le dernier échange du cycle courant.
 function badgeProspect(p:any) {
   if (p?.issue === "installe") return { label:"Installé", color:"#0D652D", bg:"rgba(13,101,45,0.10)" };
   if (p?.issue === "decline")  return { label:"Décliné",  color:"#6b7280", bg:"rgba(107,114,128,0.12)" };
-  const dateDernierEchange = p?.date_dernier_echange;
+  // Après un re-contact, on ne mesure l'activité que sur le cycle courant ;
+  // les échanges des cycles passés ne doivent pas faire paraître la fiche « Inactif ».
+  const debut = cycleCourantDebut(p);
+  let dateDernierEchange = p?.date_dernier_echange;
+  if (debut) {
+    const echangesCycle = (p?.echanges||[]).filter((e:any)=>e.date_echange >= debut);
+    if (!echangesCycle.length) return { label:"Re-contacté", color:"#004f91", bg:"rgba(0,79,145,0.10)" };
+    dateDernierEchange = echangesCycle.map((e:any)=>e.date_echange).sort().at(-1);
+  }
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
   if (jours <= 30) return { label:"En cours",   color:"#059669", bg:"rgba(5,150,105,0.10)" };
@@ -1079,7 +1094,15 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                     {(()=>{
                       const maxEnregistreLe = Math.max(...p.echanges.map((ex:any)=>new Date(ex.enregistre_le).getTime()));
+                      // Cycles triés par date de conclusion pour rattacher chaque échange à son cycle.
+                      const cyclesAsc = [...(p.cycles||[])].sort((a:any,b:any)=>(a.conclu_le||"").localeCompare(b.conclu_le||""));
+                      const cycleDe = (d:string) => cyclesAsc.find((cy:any)=>cy.conclu_le && d <= cy.conclu_le.slice(0,10)) || null;
+                      let prevCycle: number|undefined;
                       return [...p.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any,i:number)=>{
+                      const cy    = cycleDe(e.date_echange);
+                      const cnum  = cy ? cy.cycle_num : 0;   // 0 = cycle courant (actif)
+                      const showSep = (p.cycles?.length>0) && cnum !== prevCycle;
+                      prevCycle = cnum;
                       const retard = e.retard_jours || 0;
                       const retardColor = retard > 30 ? "#dc2626" : retard > 7 ? "#ca631f" : "#059669";
                       const retardBg    = retard > 30 ? "#dc262615" : retard > 7 ? "#ca631f15" : "#05966915";
@@ -1089,8 +1112,20 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       const isLast    = new Date(e.enregistre_le).getTime() === maxEnregistreLe;
                       const within24h = Date.now() - new Date(e.enregistre_le).getTime() < 24*3600*1000;
                       const canAct    = !estFige(p) && isLast && within24h;
+                      const sepLabel = cy
+                        ? `Cycle ${cy.cycle_num} — ${cy.issue==="installe"?"Installé":"Décliné"}`
+                        : "Cycle actuel";
+                      const sepColor = cy ? (cy.issue==="installe"?"#0D652D":"#6b7280") : "#004f91";
                       return (
-                        <div key={e.id} style={{ paddingLeft:32, position:"relative" as const }}>
+                        <Fragment key={e.id}>
+                          {showSep && (
+                            <div style={{ paddingLeft:32, position:"relative" as const, marginTop:i>0?6:0, marginBottom:2 }}>
+                              <span style={{ fontSize:10, fontWeight:700, color:sepColor, background:`${sepColor}14`, border:`1px solid ${sepColor}33`, padding:"2px 10px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>
+                                {sepLabel}
+                              </span>
+                            </div>
+                          )}
+                        <div style={{ paddingLeft:32, position:"relative" as const }}>
                           <div style={{ position:"absolute" as const, left:10, top:12, width:10, height:10, borderRadius:"50%", background:"#004f91", border:"2px solid #fff", boxShadow:"0 0 0 2px #004f91" }}/>
                           <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px" }}>
 
@@ -1152,6 +1187,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             </div>
                           </div>
                         </div>
+                        </Fragment>
                       );
                     }); })()}
                   </div>
