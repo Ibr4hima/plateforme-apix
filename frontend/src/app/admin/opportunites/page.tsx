@@ -1211,7 +1211,7 @@ export default function OpportunitesAdminPage() {
                 if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
 
                 const potActions=(p:any,dot:string,hoverBorder:string,hoverShadow:string)=>(
-                  <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
+                  <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
                     onClick={()=>setPotVue(p)}
                     onMouseEnter={ev=>{ev.currentTarget.style.borderColor=hoverBorder;ev.currentTarget.style.boxShadow=hoverShadow;}}
                     onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
