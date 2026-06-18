@@ -993,6 +993,7 @@ export default function OpportunitesAdminPage() {
   const [avgDel,    setAvgDel]    = useState<number|null>(null);
   const [avgToggle, setAvgToggle] = useState<number|null>(null);
   const [selectedSec, setSelectedSec] = useState<string|null>(null);
+  const [selectedNiveau, setSelectedNiveau] = useState<string|null>(null);
   const [secEntCounts, setSecEntCounts] = useState<Record<string,number>>({});
   const [refSecteurs,  setRefSecteurs]  = useState<any[]>([]);
   const [refBranches,  setRefBranches]  = useState<any[]>([]);
@@ -1040,7 +1041,7 @@ export default function OpportunitesAdminPage() {
 
   useEffect(()=>{chargerPots();},[chargerPots]);
   useEffect(()=>{chargerAvgs();},[chargerAvgs]);
-  useEffect(()=>{setSelectedSec(null);},[onglet]);
+  useEffect(()=>{ setSelectedSec(null); setSelectedNiveau(null); },[onglet]);
 
   const deletePot=async(id:number)=>{
     if(!confirm("Supprimer cette fiche ?"))return;
@@ -1125,64 +1126,86 @@ export default function OpportunitesAdminPage() {
 
       {onglet==="potentialites" && (
         <div>
-          {potsLoad?(
+          {potsLoad ? (
             <div style={{display:"flex",justifyContent:"center",padding:60}}><Loader2 size={28} style={{color:"#9aa5b4",animation:"spin 1s linear infinite"}}/></div>
-          ):pots.length===0?(
-            <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}>
-              <p style={{fontSize:16,fontWeight:600}}>Aucune fiche</p>
-              <p style={{fontSize:13}}>Créez votre première fiche de potentialités</p>
-            </div>
-          ):(
-            <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
+          ) : selectedNiveau===null ? (
+            /* ── Vue 4 cards de sélection ── */
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
               {([
-                {key:"pole",            label:"Pôles territoires",  color:"#ca631f"},
-                {key:"region",          label:"Régions",            color:"#00408C"},
-                {key:"departement",     label:"Départements",       color:"#008070"},
-                {key:"arrondissement",  label:"Arrondissements",    color:"#8A7000"},
-              ] as const).map(groupe=>{
-                const items = pots.filter((p:any)=>p.niveau===groupe.key);
-                if (items.length===0) return null;
-                const isOpen = groupsOpen[groupe.key]!==false;
+                {key:"pole",           label:"Pôles territoires", color:"#E35336", textColor:"#E35336"},
+                {key:"region",         label:"Régions",           color:"#0F52BA", textColor:"#0F52BA"},
+                {key:"departement",    label:"Départements",      color:"#0D652D", textColor:"#0D652D"},
+                {key:"arrondissement", label:"Arrondissements",   color:"#FBBC04", textColor:"#8A6100"},
+              ] as const).map(n=>{
+                const items = pots.filter((p:any)=>p.niveau===n.key);
+                const count = items.length;
+                const published = items.filter((p:any)=>p.est_publie).length;
                 return (
-                  <div key={groupe.key}>
-                    <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:isOpen?12:0}}>
-                      <div style={{width:3,height:18,borderRadius:2,background:groupe.color,flexShrink:0}}/>
-                      <span style={{fontSize:12,fontWeight:700,color:groupe.color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{groupe.label}</span>
-                      <button onClick={()=>setGroupsOpen(prev=>({...prev,[groupe.key]:!prev[groupe.key]}))}
-                        style={{display:"flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:6,border:`1px solid ${groupe.color}35`,background:`${groupe.color}0f`,cursor:"pointer",flexShrink:0}}>
-                        {isOpen?<ChevronDown size={12} style={{color:groupe.color}}/>:<ChevronUp size={12} style={{color:groupe.color}}/>}
+                  <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
+                    style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${count>0?n.color:"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",cursor:count>0?"pointer":"default",transition:"all 0.15s"}}
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${n.color}20`;ev.currentTarget.style.borderColor=n.color;}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?n.color:"#C5BFBB";}}>
+                    <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{n.label}</div>
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:12}}>
+                      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:count>0?n.color:"#C5BFBB",flexShrink:0}}/>
+                        <span style={{color:"#4a5568"}}>{count} fiche{count!==1?"s":""}</span>
+                      </div>
+                      {count>0&&(
+                        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                          <div style={{width:6,height:6,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
+                          <span style={{color:"#4a5568"}}>{published} publiée{published!==1?"s":""}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                      <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${n.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:n.textColor,fontWeight:600,opacity:count>0?1:0.45}}>
+                        Voir les fiches →
                       </button>
                     </div>
-                    {isOpen&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-                      {items.map((p:any)=>{
-                        return(
-                          <div key={p.id} onClick={()=>setPotVue(p)}
-                            style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${p.est_publie?groupe.color:"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
-                            onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${groupe.color}20`;ev.currentTarget.style.borderColor=`${groupe.color}50`;}}
-                            onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?groupe.color:"#C5BFBB";}}>
-                            <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:6,lineHeight:1.4}}>{potTitle(p)}</div>
-                            <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
-                              <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
-                                style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
-                                <Pencil size={12}/> Modifier
-                              </button>
-                              <button onClick={()=>togglePot(p)} disabled={potToggle===p.id}
-                                style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>
-                                {potToggle===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Publié</>:<><Eye size={12}/> Publier</>}
-                              </button>
-                              <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
-                                style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
-                                {potDel===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>}
                   </div>
                 );
               })}
             </div>
+          ) : (
+            /* ── Vue drill-down : fiches du niveau sélectionné ── */
+            <>
+              <button onClick={()=>setSelectedNiveau(null)}
+                style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
+                <ArrowLeft size={14}/> Retour aux zones
+              </button>
+              {(()=>{
+                const nColor = ({pole:"#E35336",region:"#0F52BA",departement:"#0D652D",arrondissement:"#FBBC04"} as Record<string,string>)[selectedNiveau] || "#ca631f";
+                const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
+                if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
+                return (
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+                    {items.map((p:any)=>(
+                      <div key={p.id} onClick={()=>setPotVue(p)}
+                        style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${p.est_publie?nColor:"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${nColor}20`;ev.currentTarget.style.borderColor=`${nColor}50`;}}
+                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?nColor:"#C5BFBB";}}>
+                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:6,lineHeight:1.4}}>{potTitle(p)}</div>
+                        <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
+                          <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
+                            style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
+                            <Pencil size={12}/> Modifier
+                          </button>
+                          <button onClick={()=>togglePot(p)} disabled={potToggle===p.id}
+                            style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>
+                            {potToggle===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Publié</>:<><Eye size={12}/> Publier</>}
+                          </button>
+                          <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
+                            style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
+                            {potDel===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </>
           )}
           <PotentialiteModal open={potModal} onClose={()=>setPotModal(false)} edit={potEdit} poles={poles} onSaved={chargerPots}/>
           {potVue && <PotentialiteVueModal pot={potVue} onClose={()=>setPotVue(null)} onEdit={p=>{ setPotVue(null); setPotEdit(p); setPotModal(true); }}/>}
