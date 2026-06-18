@@ -45,8 +45,10 @@ const NAME_MAP: Record<string, string> = {
   "Kolda":"Kolda","Sedhiou":"Sédhiou","Ziguinchor":"Ziguinchor",
 };
 
-export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones: any[]; mode?: "pole" | "region" }) {
+export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleClick }: { zones: any[]; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const onPoleClickRef = useRef(onPoleClick);
+  useEffect(() => { onPoleClickRef.current = onPoleClick; }, [onPoleClick]);
   const [poles, setPoles] = useState<any[]>([]);
   const [activePole, setActivePole] = useState<any>(null);
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
@@ -220,7 +222,8 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
               setTooltip(null);
             })
             .on("click", function() {
-              setActivePole((prev: any) => prev?.id === pole.id ? null : pole);
+              if (onPoleClickRef.current) { onPoleClickRef.current(pole); }
+              else { setActivePole((prev: any) => prev?.id === pole.id ? null : pole); }
             });
         });
       }
@@ -280,7 +283,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
             <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Pôles territoriaux</p>
             <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
               {poles.map(p => (
-                <div key={p.id} onClick={() => setActivePole((prev:any) => prev?.id === p.id ? null : p)}
+                <div key={p.id} onClick={() => onPoleClickRef.current ? onPoleClickRef.current(p) : setActivePole((prev:any) => prev?.id === p.id ? null : p)}
                   style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"5px 8px", borderRadius:8, background: activePole?.id===p.id ? getPoleColor(p.id)+"33" : "transparent", transition:"background 0.15s" }}>
                   <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgba(0,0,0,0.08)", opacity:0.95 }}/>
                   <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{p.pole_territoire}</span>
@@ -294,7 +297,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole" }: { zones
     </div>
 
       {/* Modal pôle */}
-      {activePole && (
+      {!onPoleClick && activePole && (
         <div onClick={e=>{ if(e.target===e.currentTarget) setActivePole(null); }}
           style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
           <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>

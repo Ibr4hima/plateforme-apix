@@ -6,6 +6,7 @@ import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/compone
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
+import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -1158,14 +1159,24 @@ export default function OpportunitesAdminPage() {
               })}
             </div>
           ) : (
-            /* ── Vue drill-down : fiches du niveau sélectionné ── */
+            /* ── Vue drill-down ── */
             <>
               <button onClick={()=>setSelectedNiveau(null)}
                 style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
                 <ArrowLeft size={14}/> Retour aux zones
               </button>
-              {(()=>{
-                const nColor = ({pole:"#E35336",region:"#0F52BA",departement:"#0D652D",arrondissement:"#FBBC04"} as Record<string,string>)[selectedNiveau] || "#ca631f";
+              {selectedNiveau==="pole" ? (
+                /* Carte interactive pôles */
+                <VueTerritorialeSenegal
+                  zones={[]}
+                  mode="pole"
+                  onPoleClick={(pole)=>{
+                    const pot = pots.find((p:any)=>p.pole_id===pole.id);
+                    if (pot) setPotVue(pot);
+                  }}
+                />
+              ) : (()=>{
+                const nColor = ({region:"#0F52BA",departement:"#0D652D",arrondissement:"#FBBC04"} as Record<string,string>)[selectedNiveau!] || "#ca631f";
                 const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                 if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
                 return (
