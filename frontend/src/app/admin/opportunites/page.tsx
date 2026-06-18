@@ -287,7 +287,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
                 {pdfQueue.map((p,i)=>(
                   <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(124,58,237,0.05)", border:"1px solid rgba(124,58,237,0.2)", borderRadius:8, padding:"7px 12px" }}>
-                    <FileText size={13} style={{color:"#7c3aed",flexShrink:0}}/>
+                    <FileText size={13} style={{color:"#0D652D",flexShrink:0}}/>
                     <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                       placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(124,58,237,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                     <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
@@ -405,7 +405,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
     finally{setSaving(false);}
   };
 
-  const ASEC:any={fontSize:11,fontWeight:700,color:"#7c3aed",letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:12,paddingBottom:8,borderBottom:"1px solid #E8E5E3"};
+  const ASEC:any={fontSize:11,fontWeight:700,color:"#0D652D",letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:12,paddingBottom:8,borderBottom:"1px solid #E8E5E3"};
 
   // Cascade filtering
   const brasDispo = form.secteur_id ? branches.filter((b:any)=>b.secteur_id===form.secteur_id) : branches;
@@ -425,7 +425,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:740,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
-        <div style={{height:4,background:"linear-gradient(90deg,#7c3aed,#a78bfa)",borderRadius:"20px 20px 0 0"}}/>
+        <div style={{height:4,background:"linear-gradient(90deg,#0D652D,#2d9a5c)",borderRadius:"20px 20px 0 0"}}/>
         <div style={{padding:"24px 32px 32px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
             <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e"}}>{edit?"Modifier":"Nouvel avantage / incitation"}</h2>
@@ -435,11 +435,11 @@ function AvantageModal({ open, onClose, edit, onSaved }:
           {/* Choisissez une activité */}
           {edit ? (
             <div style={{marginBottom:22,padding:"14px 18px",background:"rgba(124,58,237,0.05)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:12}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#7c3aed",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
+              <div style={{fontSize:10,fontWeight:700,color:"#0D652D",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
               <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap" as const}}>
                 {edit.secteur_nom&&<span style={{fontSize:11,fontWeight:600,color:"#9aa5b4",background:"#F2F0EF",padding:"3px 10px",borderRadius:99}}>{edit.secteur_nom}</span>}
                 {edit.branche_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:11,fontWeight:600,color:"#9aa5b4",background:"#F2F0EF",padding:"3px 10px",borderRadius:99}}>{edit.branche_nom}</span></>}
-                {edit.activite_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:12,fontWeight:700,color:"#7c3aed",background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.25)",padding:"4px 12px",borderRadius:99}}>{edit.activite_nom}</span></>}
+                {edit.activite_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:12,fontWeight:700,color:"#0D652D",background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.25)",padding:"4px 12px",borderRadius:99}}>{edit.activite_nom}</span></>}
               </div>
             </div>
           ) : (
@@ -574,7 +574,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
                 {fichiers.map((f:any)=>(
                   <div key={f.id} style={{display:"inline-flex",alignItems:"center",gap:5}}>
                     <a href={`${API}/opportunites/avantages/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#7c3aed",textDecoration:"none",fontWeight:500}}>
+                      style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#0D652D",textDecoration:"none",fontWeight:500}}>
                       <FileText size={11}/> {f.titre||f.fichier_nom}
                     </a>
                     <button onClick={async()=>{
@@ -591,7 +591,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
               <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
                 {pdfQueue.map((p,i)=>(
                   <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(124,58,237,0.05)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:8,padding:"7px 12px"}}>
-                    <FileText size={13} style={{color:"#7c3aed",flexShrink:0}}/>
+                    <FileText size={13} style={{color:"#0D652D",flexShrink:0}}/>
                     <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                       placeholder="Titre du document" style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(124,58,237,0.3)",outline:"none",fontSize:12,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
                     <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}>
@@ -602,7 +602,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
               </div>
             )}
             <label style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:8,cursor:"pointer",border:"2px dashed #C5BFBB",background:"#F2F0EF"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="#7c3aed";}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor="#0D652D";}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor="#C5BFBB";}}>
               <Upload size={14} color="#9aa5b4"/>
               <span style={{fontSize:13,color:"#9aa5b4"}}>Ajouter un ou plusieurs PDF</span>
@@ -618,7 +618,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
           <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
             <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid #C5BFBB",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Annuler</button>
             <button onClick={handleSave} disabled={saving||ok}
-              style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:ok?"#059669":"#7c3aed",color:"#fff",fontWeight:700,cursor:saving?"not-allowed":"pointer",fontSize:13}}>
+              style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:ok?"#059669":"#0D652D",color:"#fff",fontWeight:700,cursor:saving?"not-allowed":"pointer",fontSize:13}}>
               {saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>Enregistrement…</>:ok?<><Check size={14}/>Enregistré!</>:<><Check size={14}/>{edit?"Modifier":"Créer"}</>}
             </button>
           </div>
@@ -665,7 +665,7 @@ function TextTicker({ text, speed=25, delay=2.5 }: {text:string; speed?:number; 
 // Composant accordéon avantages groupés par secteur → branche → activité
 // ══════════════════════════════════════════════════════════════════════════════
 
-const SECTEUR_COLORS = ["#ca631f","#004f91","#059669","#7c3aed","#0891b2","#d97706","#E35336","#188038"];
+const SECTEUR_COLORS = ["#ca631f","#004f91","#059669","#0D652D","#0891b2","#d97706","#E35336","#188038"];
 const secColor = (nom:string) => {
   const n = nom.toLowerCase();
   if (n.includes("primaire"))   return "#E35336";
@@ -893,7 +893,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#7c3aed,#a78bfa)"}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#0D652D,#2d9a5c)"}}/>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
           {/* Header */}
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
@@ -916,8 +916,8 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
                 {(data.selections||[]).map((s:any)=>(
                   <div key={s.id} style={{background:"rgba(124,58,237,0.04)",border:"1px solid rgba(124,58,237,0.15)",borderRadius:10,padding:"12px 14px"}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:s.commentaire?6:0}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:"#7c3aed",flexShrink:0}}/>
-                      <span style={{fontSize:13,fontWeight:700,color:"#7c3aed"}}>{s.type_libelle}</span>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
+                      <span style={{fontSize:13,fontWeight:700,color:"#0D652D"}}>{s.type_libelle}</span>
                     </div>
                     {s.commentaire&&<p style={{fontSize:13,color:"#4a5568",lineHeight:1.7,marginLeft:14,whiteSpace:"pre-wrap" as const}}>{s.commentaire}</p>}
                   </div>
@@ -942,7 +942,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
                 {(data.fichiers||[]).map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#7c3aed",textDecoration:"none",fontWeight:500}}>
+                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#0D652D",textDecoration:"none",fontWeight:500}}>
                     <FileText size={11}/> {f.titre||f.fichier_nom}
                   </a>
                 ))}
@@ -951,7 +951,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
           )}
 
           <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(data);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#7c3aed",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
+            <button onClick={()=>{onClose();onEdit(data);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#0D652D",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
               <Pencil size={13}/> Modifier
             </button>
             <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
@@ -1070,14 +1070,14 @@ export default function OpportunitesAdminPage() {
   const TABS=[
     {key:"projets",       label:"Banque de projets",      color:"#ca631f"},
     {key:"potentialites", label:"Potentialités par zone",  color:"#059669"},
-    {key:"avantages",     label:"Avantages & incitations", color:"#7c3aed"},
+    {key:"avantages",     label:"Avantages & incitations", color:"#0D652D"},
   ] as const;
 
   const niveauBadge=(p:any)=>{
     if(p.pole_id)          return {label:p.pole_nom||"Pôle",            color:"#ca631f"};
     if(p.region_id)        return {label:p.region_nom||"Région",        color:"#E35336"};
     if(p.departement_id)   return {label:p.departement_nom||"Dép.",     color:"#0891b2"};
-    if(p.arrondissement_id)return {label:p.arrondissement_nom||"Arr.",  color:"#7c3aed"};
+    if(p.arrondissement_id)return {label:p.arrondissement_nom||"Arr.",  color:"#0D652D"};
     return {label:"Global",color:"#6b7280"};
   };
   const potTitle = (p:any) => (p.titre||"")
