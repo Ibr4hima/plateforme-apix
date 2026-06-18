@@ -45,10 +45,12 @@ const NAME_MAP: Record<string, string> = {
   "Kolda":"Kolda","Sedhiou":"Sédhiou","Ziguinchor":"Ziguinchor",
 };
 
-export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleClick }: { zones: any[]; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void }) {
+export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onPoleClickRef = useRef(onPoleClick);
   useEffect(() => { onPoleClickRef.current = onPoleClick; }, [onPoleClick]);
+  const onRegionClickRef = useRef(onRegionClick);
+  useEffect(() => { onRegionClickRef.current = onRegionClick; }, [onRegionClick]);
   const [poles, setPoles] = useState<any[]>([]);
   const [activePole, setActivePole] = useState<any>(null);
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
@@ -168,7 +170,8 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
              setTooltip(null);
            })
            .on("click", function() {
-             setActiveRegion(prev => prev === nom ? null : nom);
+             if (onRegionClickRef.current) { onRegionClickRef.current(nom); }
+             else { setActiveRegion(prev => prev === nom ? null : nom); }
            });
         }
       });
@@ -270,7 +273,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Régions</p>
             <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
               {Object.entries(REGION_PALETTE).map(([nom, color]) => (
-                <div key={nom} onClick={() => setActiveRegion(prev => prev === nom ? null : nom)}
+                <div key={nom} onClick={() => onRegionClickRef.current ? onRegionClickRef.current(nom) : setActiveRegion(prev => prev === nom ? null : nom)}
                   style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"4px 8px", borderRadius:8, background: activeRegion===nom ? color+"55" : "transparent", transition:"background 0.15s" }}>
                   <div style={{ width:12, height:12, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
                   <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{nom}</span>
@@ -390,7 +393,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       )}
 
       {/* Modal région */}
-      {mode === "region" && activeRegion && (() => {
+      {!onRegionClick && mode === "region" && activeRegion && (() => {
         const stats = regionStats[activeRegion];
         const regionColor = REGION_PALETTE[activeRegion] || "#E8E5E3";
         const total = stats?.total || 0;

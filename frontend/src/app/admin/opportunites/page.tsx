@@ -1172,8 +1172,18 @@ export default function OpportunitesAdminPage() {
                     if (pot) setPotVue(pot);
                   }}
                 />
+              ) : selectedNiveau==="region" ? (
+                /* Carte interactive régions */
+                <VueTerritorialeSenegal
+                  zones={[]}
+                  mode="region"
+                  onRegionClick={(nom)=>{
+                    const pot = pots.find((p:any)=>p.region_nom===nom);
+                    if (pot) setPotVue(pot);
+                  }}
+                />
               ) : (()=>{
-                const nColor = ({region:"#0F52BA",departement:"#0D652D",arrondissement:"#FBBC04"} as Record<string,string>)[selectedNiveau!] || "#ca631f";
+                const nColor = ({departement:"#0D652D",arrondissement:"#FBBC04"} as Record<string,string>)[selectedNiveau!] || "#ca631f";
                 const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                 if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
                 return (
