@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Badge from "@/components/shared/Badge";
+import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import { ArrowLeft, ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1266,10 +1267,21 @@ export default function OpportunitesPage() {
                       style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
                       <ArrowLeft size={14}/> Retour aux zones
                     </button>
-                    {/* contenu drill-down (cartes / cascades) — à venir */}
-                    <div style={{textAlign:"center",padding:"60px 0",color:"#9aa5b4"}}>
-                      <p style={{fontSize:13}}>Vue en cours de construction…</p>
-                    </div>
+                    {selectedNiveau==="pole" && (
+                      <VueTerritorialeSenegal
+                        zones={[]}
+                        mode="pole"
+                        onPoleClick={(pole)=>{
+                          const pot = pots.find((p:any)=>p.pole_id===pole.id);
+                          if (pot) setPotSel(pot);
+                        }}
+                      />
+                    )}
+                    {selectedNiveau!=="pole" && (
+                      <div style={{textAlign:"center",padding:"60px 0",color:"#9aa5b4"}}>
+                        <p style={{fontSize:13}}>Vue en cours de construction…</p>
+                      </div>
+                    )}
                   </>
                 )}
               </>
