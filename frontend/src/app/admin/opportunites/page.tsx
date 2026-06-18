@@ -900,8 +900,8 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
             <div style={{flex:1,paddingRight:16}}>
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{data.activite_nom}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
-                {data.secteur_nom&&<span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",border:"1px solid #E8E5E3",padding:"2px 9px",borderRadius:999}}>{data.secteur_nom}</span>}
-                {data.branche_nom&&<span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",border:"1px solid #E8E5E3",padding:"2px 9px",borderRadius:999}}>{data.branche_nom}</span>}
+                {data.secteur_nom&&<span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>{data.secteur_nom}</span>}
+                {data.branche_nom&&<span style={{fontSize:11,fontWeight:700,color:"#0F52BA",background:"rgba(15,82,186,0.08)",border:"1px solid rgba(15,82,186,0.2)",padding:"2px 9px",borderRadius:999}}>{data.branche_nom}</span>}
                 <span style={{fontSize:11,fontWeight:700,color:data.est_publie?"#15803d":"#9aa5b4",background:data.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{data.est_publie?"Public":"Non publié"}</span>
               </div>
             </div>
