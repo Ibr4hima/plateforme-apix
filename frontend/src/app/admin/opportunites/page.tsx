@@ -162,8 +162,15 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
       };
       if (form.niveau==="pole")           payload.pole_id           = form.pole_id||null;
       if (form.niveau==="region")         payload.region_id         = form.region_id||null;
-      if (form.niveau==="departement")    payload.departement_id    = form.departement_id||null;
-      if (form.niveau==="arrondissement") payload.arrondissement_id = form.arrondissement_id||null;
+      if (form.niveau==="departement") {
+        payload.region_id      = form.region_id||null;
+        payload.departement_id = form.departement_id||null;
+      }
+      if (form.niveau==="arrondissement") {
+        payload.region_id         = form.region_id||null;
+        payload.departement_id    = form.departement_id||null;
+        payload.arrondissement_id = form.arrondissement_id||null;
+      }
 
       const url    = edit ? `${API}/opportunites/potentialites/${edit.id}` : `${API}/opportunites/potentialites`;
       const method = edit ? "PATCH" : "POST";
