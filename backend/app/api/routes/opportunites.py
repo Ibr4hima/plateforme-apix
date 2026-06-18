@@ -50,23 +50,33 @@ async def enrichir_potentialite_fichiers(potentialite_id: int, d: dict, db: Asyn
 
 async def enrichir_potentialite(p: Potentialite, db: AsyncSession) -> dict:
     d = {c.name: getattr(p, c.name) for c in p.__table__.columns}
+    # Priorité du plus spécifique au moins spécifique
     if p.pole_id:
         r = await db.execute(text("SELECT pole_territoire FROM poles_territoires WHERE id=:id"), {"id": p.pole_id})
         row = r.fetchone()
         d["pole_nom"] = row[0] if row else None
         d["niveau"] = "pole"; d["niveau_nom"] = d["pole_nom"]
-    elif p.region_id:
-        r = await db.execute(text("SELECT nom FROM ref_regions WHERE id=:id"), {"id": p.region_id})
-        row = r.fetchone(); d["region_nom"] = row[0] if row else None
-        d["niveau"] = "region"; d["niveau_nom"] = d.get("region_nom")
-    elif p.departement_id:
-        r = await db.execute(text("SELECT nom FROM ref_departements WHERE id=:id"), {"id": p.departement_id})
-        row = r.fetchone(); d["departement_nom"] = row[0] if row else None
-        d["niveau"] = "departement"; d["niveau_nom"] = d.get("departement_nom")
     elif p.arrondissement_id:
         r = await db.execute(text("SELECT nom FROM ref_arrondissements WHERE id=:id"), {"id": p.arrondissement_id})
         row = r.fetchone(); d["arrondissement_nom"] = row[0] if row else None
         d["niveau"] = "arrondissement"; d["niveau_nom"] = d.get("arrondissement_nom")
+        if p.departement_id:
+            r2 = await db.execute(text("SELECT nom FROM ref_departements WHERE id=:id"), {"id": p.departement_id})
+            row2 = r2.fetchone(); d["departement_nom"] = row2[0] if row2 else None
+        if p.region_id:
+            r3 = await db.execute(text("SELECT nom FROM ref_regions WHERE id=:id"), {"id": p.region_id})
+            row3 = r3.fetchone(); d["region_nom"] = row3[0] if row3 else None
+    elif p.departement_id:
+        r = await db.execute(text("SELECT nom FROM ref_departements WHERE id=:id"), {"id": p.departement_id})
+        row = r.fetchone(); d["departement_nom"] = row[0] if row else None
+        d["niveau"] = "departement"; d["niveau_nom"] = d.get("departement_nom")
+        if p.region_id:
+            r2 = await db.execute(text("SELECT nom FROM ref_regions WHERE id=:id"), {"id": p.region_id})
+            row2 = r2.fetchone(); d["region_nom"] = row2[0] if row2 else None
+    elif p.region_id:
+        r = await db.execute(text("SELECT nom FROM ref_regions WHERE id=:id"), {"id": p.region_id})
+        row = r.fetchone(); d["region_nom"] = row[0] if row else None
+        d["niveau"] = "region"; d["niveau_nom"] = d.get("region_nom")
     else:
         d["niveau"] = "global"; d["niveau_nom"] = "Global"
     return d
