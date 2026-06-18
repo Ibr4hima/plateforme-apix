@@ -1402,9 +1402,14 @@ export default function OpportunitesAdminPage() {
                                 </div>
                                 <div style={{paddingLeft:18,borderLeft:"2px solid rgba(15,82,186,0.15)",display:"flex",flexDirection:"column" as const,gap:8}}>
                                   {bra.items.map((a:any)=>(
-                                    <div key={a.id} style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>setAvgVue(a)}>
+                                    <div key={a.id}
+                                      onClick={()=>setAvgVue(a)}
+                                      style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
+                                      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#0D652D40";ev.currentTarget.style.boxShadow="0 3px 10px rgba(13,101,45,0.10)";}}
+                                      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
                                       <div style={{width:6,height:6,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
-                                      <span style={{fontSize:12,color:"#0D652D",fontWeight:500,textDecoration:"underline",textDecorationColor:"#0D652D40"}}>{a.activite_nom}</span>
+                                      <span style={{fontSize:12,color:"#0D652D",fontWeight:600,flex:1}}>{a.activite_nom}</span>
+                                      <span style={{fontSize:11,color:"#9aa5b4",fontWeight:600,flexShrink:0}}>Voir →</span>
                                     </div>
                                   ))}
                                 </div>
