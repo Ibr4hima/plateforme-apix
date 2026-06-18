@@ -45,12 +45,17 @@ def norm_web(val: str | None) -> str:
 
 
 def norm_linkedin(val: str | None) -> str:
-    """LinkedIn : on conserve le chemin (le profil/company identifie l'entité)."""
+    """LinkedIn : on conserve le chemin uniquement.
+    Tout sous-domaine régional (sn., fr., uk., www.) est supprimé —
+    linkedin.com identifie le réseau, /in/slug ou /company/slug identifie
+    l'entité. sn.linkedin.com/in/x == www.linkedin.com/in/x == linkedin.com/in/x.
+    """
     if not val:
         return ""
     v = val.strip().lower()
     v = re.sub(r"^https?://", "", v)
-    v = re.sub(r"^www\.", "", v)
+    # Supprime tout sous-domaine avant linkedin.com (www., sn., fr., uk., …)
+    v = re.sub(r"^[a-z-]+\.linkedin\.com", "linkedin.com", v)
     v = re.sub(r"[?#].*$", "", v)   # retire query string + fragment
     v = re.sub(r"/+$", "", v)        # retire les / de fin
     return v

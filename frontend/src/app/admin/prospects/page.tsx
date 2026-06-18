@@ -272,6 +272,15 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
   const handleSave = async () => {
     if (!form.nom.trim()) { setError("Le nom est obligatoire"); return; }
     if (form.type==="physique" && !form.prenom.trim()) { setError("Le prénom est obligatoire"); return; }
+    if (!form.telephones.filter(Boolean).length) { setError("Au moins un numéro de téléphone est obligatoire"); return; }
+    if (!form.mails.filter(Boolean).length) { setError("Au moins un email est obligatoire"); return; }
+    if (form.type==="morale" && !form.siteweb.trim()) { setError("Le site web est obligatoire pour une personne morale"); return; }
+    if (form.type==="morale") {
+      for (const pf of form.points_focaux.filter(p=>p.nom.trim())) {
+        if (!pf.telephones.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un téléphone est obligatoire`); return; }
+        if (!pf.mails.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un email est obligatoire`); return; }
+      }
+    }
     setSaving(true); setError("");
     try {
       const payload: any = {

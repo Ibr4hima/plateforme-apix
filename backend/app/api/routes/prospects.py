@@ -206,6 +206,20 @@ async def liste_prospects(
 async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
     if not payload.get("nom", "").strip():
         raise HTTPException(422, "Le nom est obligatoire")
+    # Champs contact obligatoires
+    if not [t for t in (payload.get("telephones") or []) if t]:
+        raise HTTPException(422, "Au moins un numéro de téléphone est obligatoire")
+    if not [m for m in (payload.get("mails") or []) if m]:
+        raise HTTPException(422, "Au moins un email est obligatoire")
+    if payload.get("type") == "morale" and not (payload.get("siteweb") or "").strip():
+        raise HTTPException(422, "Le site web est obligatoire pour une personne morale")
+    for pf in payload.get("points_focaux") or []:
+        if not (pf.get("nom") or "").strip():
+            continue
+        if not [t for t in (pf.get("telephones") or []) if t]:
+            raise HTTPException(422, f"Point focal « {pf['nom']} » : au moins un téléphone est obligatoire")
+        if not [m for m in (pf.get("mails") or []) if m]:
+            raise HTTPException(422, f"Point focal « {pf['nom']} » : au moins un email est obligatoire")
     # Déduplication : bloque si une coordonnée existe déjà
     contacts = await verifier_doublons(db, payload)
     p = Prospect(
@@ -269,17 +283,37 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     if not p:
         raise HTTPException(404, "Prospect introuvable")
 
-    # Déduplication : on évalue l'état effectif après mise à jour (valeurs du
-    # payload si fournies, sinon valeurs actuelles), en excluant ce prospect.
+    # État effectif après mise à jour (payload si fourni, sinon valeurs actuelles)
+    eff_tels  = payload["telephones"] if "telephones" in payload else (p.telephones or [])
+    eff_mails = payload["mails"]      if "mails"      in payload else (p.mails or [])
+    eff_site  = payload["siteweb"]    if "siteweb"    in payload else p.siteweb
+    eff_type  = payload["type"]       if "type"       in payload else p.type
+    eff_pf    = payload["points_focaux"] if "points_focaux" in payload else [
+        {"nom": pf.nom, "telephones": pf.telephones or [], "mails": pf.mails or []}
+        for pf in (p.points_focaux or [])
+    ]
+
+    # Validation champs obligatoires sur l'état final
+    if not [t for t in eff_tels if t]:
+        raise HTTPException(422, "Au moins un numéro de téléphone est obligatoire")
+    if not [m for m in eff_mails if m]:
+        raise HTTPException(422, "Au moins un email est obligatoire")
+    if eff_type == "morale" and not (eff_site or "").strip():
+        raise HTTPException(422, "Le site web est obligatoire pour une personne morale")
+    for pf in eff_pf:
+        if not (pf.get("nom") or "").strip():
+            continue
+        if not [t for t in (pf.get("telephones") or []) if t]:
+            raise HTTPException(422, f"Point focal « {pf['nom']} » : au moins un téléphone est obligatoire")
+        if not [m for m in (pf.get("mails") or []) if m]:
+            raise HTTPException(422, f"Point focal « {pf['nom']} » : au moins un email est obligatoire")
+
+    # Déduplication : bloque si une coordonnée existe déjà pour un autre prospect
     eff = {
-        "telephones": payload["telephones"] if "telephones" in payload else (p.telephones or []),
-        "mails":      payload["mails"]      if "mails"      in payload else (p.mails or []),
-        "siteweb":    payload["siteweb"]    if "siteweb"    in payload else p.siteweb,
-        "linkedin":   payload["linkedin"]   if "linkedin"   in payload else p.linkedin,
-        "points_focaux": payload["points_focaux"] if "points_focaux" in payload else [
-            {"telephones": pf.telephones or [], "mails": pf.mails or []}
-            for pf in (p.points_focaux or [])
-        ],
+        "telephones": eff_tels, "mails": eff_mails,
+        "siteweb":    eff_site,
+        "linkedin":   payload["linkedin"] if "linkedin" in payload else p.linkedin,
+        "points_focaux": eff_pf,
     }
     contacts = await verifier_doublons(db, eff, exclure_prospect_id=prospect_id)
 
