@@ -176,6 +176,7 @@ async def liste_prospects(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     contactes: Optional[bool] = Query(None),
+    conclu: Optional[bool] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     from sqlalchemy import or_, exists
@@ -189,10 +190,12 @@ async def liste_prospects(
         base = base.where(exists().where(ProspectEchange.prospect_id == Prospect.id))
     elif contactes is False:
         base = base.where(~exists().where(ProspectEchange.prospect_id == Prospect.id))
+    if conclu is True:
+        base = base.where(Prospect.issue.isnot(None))
+    elif conclu is False:
+        base = base.where(Prospect.issue.is_(None))
     base = base.order_by(Prospect.created_at.desc())
-    count_res = await db.execute(select(func.count()).select_from(
-        select(Prospect.id).where(Prospect.is_deleted == False).subquery()
-    ))
+    count_res = await db.execute(select(func.count()).select_from(base.subquery()))
     total = count_res.scalar_one()
     res = await db.execute(base.offset((page - 1) * per_page).limit(per_page))
     prospects = res.scalars().all()
@@ -300,6 +303,8 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     p = res.scalar_one_or_none()
     if not p:
         raise HTTPException(404, "Prospect introuvable")
+    if p.issue is not None:
+        raise HTTPException(403, "La prospection est conclue : les informations du prospect ne peuvent plus être modifiées.")
 
     # État effectif après mise à jour (payload si fourni, sinon valeurs actuelles)
     eff_tels  = payload["telephones"] if "telephones" in payload else (p.telephones or [])

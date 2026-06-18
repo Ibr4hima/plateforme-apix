@@ -873,7 +873,7 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
 }
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
-function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh }: any) {
+function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, readOnly }: any) {
   const LBL = ({t}:{t:string}) => <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>{t}</p>;
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
@@ -1213,10 +1213,12 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   <>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                       <LBL t="Conclusion de la prospection"/>
-                      <button type="button" onClick={handleReopen}
-                        style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
-                        Rouvrir la prospection
-                      </button>
+                      {!readOnly && (
+                        <button type="button" onClick={handleReopen}
+                          style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
+                          Rouvrir la prospection
+                        </button>
+                      )}
                     </div>
                     <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px" }}>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: p.issue_commentaire ? 10 : 0 }}>
@@ -1300,17 +1302,19 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           )}
 
           <div style={{ display:"flex", gap:8, marginTop:20, justifyContent:"space-between", borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
-            {p.issue ? <span/> : (
+            {(!readOnly && !p.issue) ? (
               <button onClick={onContacter}
                 style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
                 <MessageSquare size={13}/> Contacter
               </button>
-            )}
+            ) : <span/>}
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={onEdit}
-                style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#ca631f", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
-                <Pencil size={13}/> Modifier
-              </button>
+              {!readOnly && (
+                <button onClick={onEdit}
+                  style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#ca631f", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
+                  <Pencil size={13}/> Modifier
+                </button>
+              )}
               <button onClick={onClose} style={{ padding:"9px 16px", borderRadius:9, border:"1px solid #C5BFBB", background:"transparent", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>Fermer</button>
             </div>
           </div>
@@ -1332,7 +1336,7 @@ export default function ProspectsPage() {
   const [prospects,    setProspects]    = useState<any[]>([]);
   const [total,        setTotal]        = useState(0);
   const [loading,      setLoading]      = useState(true);
-  const [onglet,       setOnglet]       = useState<"cibles"|"historique">("cibles");
+  const [onglet,       setOnglet]       = useState<"cibles"|"historique"|"precedents">("cibles");
   const [modal,        setModal]        = useState(false);
   const [edit,         setEdit]         = useState<any>(null);
   const [vue,          setVue]          = useState<any>(null);
@@ -1346,7 +1350,12 @@ export default function ProspectsPage() {
     try {
       const params = new URLSearchParams({ page:"1", per_page:"50" });
       if (q) params.set("q", q);
-      params.set("contactes", onglet==="historique"?"true":"false");
+      if (onglet==="precedents") {
+        params.set("conclu", "true");
+      } else {
+        params.set("conclu", "false");
+        params.set("contactes", onglet==="historique"?"true":"false");
+      }
       const res  = await fetch(`${API}/prospects?${params}`);
       const data = await res.json();
       setProspects(data.data||[]); setTotal(data.total||0);
@@ -1382,17 +1391,19 @@ export default function ProspectsPage() {
       {/* Onglets */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#fff", borderBottom:"1px solid #E8E5E3", marginBottom:24 }}>
         <div style={{ display:"flex" }}>
-          {([["cibles","Investisseurs ciblés"],["historique","Historique des contacts"]] as const).map(([key,label])=>(
+          {([["cibles","Investisseurs ciblés"],["historique","Historique des contacts"],["precedents","Contacts précédents"]] as const).map(([key,label])=>(
             <button key={key} onClick={()=>setOnglet(key)}
               style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${onglet===key?"#ca631f":"transparent"}`, background:"transparent", color:onglet===key?"#ca631f":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
               {label}
             </button>
           ))}
         </div>
-        <button onClick={()=>{ setEdit(null); setModal(true); }}
-          style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#ca631f,#e07a3a)", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(202,99,31,0.3)", marginBottom:4 }}>
-          <Plus size={15}/> Nouveau prospect
-        </button>
+        {onglet!=="precedents" && (
+          <button onClick={()=>{ setEdit(null); setModal(true); }}
+            style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#ca631f,#e07a3a)", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(202,99,31,0.3)", marginBottom:4 }}>
+            <Plus size={15}/> Nouveau prospect
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -1402,7 +1413,7 @@ export default function ProspectsPage() {
       ) : prospects.length === 0 ? (
         <div style={{ textAlign:"center" as const, padding:"80px 0", color:"#9aa5b4" }}>
           <p style={{ fontSize:16, fontWeight:600 }}>Aucun prospect</p>
-          <p style={{ fontSize:13, marginTop:4 }}>{onglet==="cibles"?"Ajoutez votre premier prospect ciblé":"Aucun échange enregistré pour l'instant"}</p>
+          <p style={{ fontSize:13, marginTop:4 }}>{onglet==="cibles"?"Ajoutez votre premier prospect ciblé":onglet==="historique"?"Aucun échange enregistré pour l'instant":"Aucune prospection conclue pour l'instant"}</p>
         </div>
       ) : (
         <>
@@ -1433,22 +1444,31 @@ export default function ProspectsPage() {
                     {p.type==="morale" && p.siege_nom && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:5,height:5,borderRadius:"50%",background:accent,flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.siege_nom}</span></div>}
                     {p.nb_echanges > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
                   </div>
-                  <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
-                    <button onClick={()=>{ setEdit(p); setModal(true); }}
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.08)`, border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
-                      <Pencil size={12}/> Modifier
-                    </button>
-                    {!p.issue && (
-                      <button onClick={()=>{ setEchangeEdit(null); setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
-                        <MessageSquare size={12}/> Contacter
+                  {onglet==="precedents" ? (
+                    <div style={{ display:"flex", borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                      <button onClick={()=>setVue(p)}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#4a5568", fontWeight:600 }}>
+                        Consulter
                       </button>
-                    )}
-                    <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
-                      style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
-                      {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
-                    </button>
-                  </div>
+                    </div>
+                  ) : (
+                    <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                      <button onClick={()=>{ setEdit(p); setModal(true); }}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.08)`, border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
+                        <Pencil size={12}/> Modifier
+                      </button>
+                      {!p.issue && (
+                        <button onClick={()=>{ setEchangeEdit(null); setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
+                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                          <MessageSquare size={12}/> Contacter
+                        </button>
+                      )}
+                      <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
+                        style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
+                        {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -1457,7 +1477,7 @@ export default function ProspectsPage() {
       )}
 
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
-      {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
+      {vue && <ProspectVue p={vue} onClose={()=>setVue(null)} readOnly={onglet==="precedents"}
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
         onContacter={()=>{ setEchangeEdit(null); setEchangeModal(true); }}
         onEditEchange={(e:any)=>{ setEchangeEdit(e); setEchangeModal(true); }}
