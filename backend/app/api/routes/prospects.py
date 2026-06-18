@@ -9,6 +9,7 @@ from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.models.prospect import (
     Prospect, ProspectPointFocal, ProspectEchange, ProspectContrainte, ProspectContact,
+    ProspectCycle,
 )
 from app.models.projet import Projet
 from app.utils.dedup import collect_contacts, LABELS
@@ -74,6 +75,7 @@ LOAD_OPTS = [
     selectinload(Prospect.points_focaux),
     selectinload(Prospect.echanges),
     selectinload(Prospect.contraintes),
+    selectinload(Prospect.cycles),
 ]
 
 
@@ -93,6 +95,18 @@ def contrainte_to_dict(c: ProspectContrainte) -> dict:
         "statut":              c.statut,
         "created_at":          c.created_at.isoformat() if c.created_at else None,
         "updated_at":          c.updated_at.isoformat() if c.updated_at else None,
+    }
+
+
+def cycle_to_dict(c: ProspectCycle) -> dict:
+    return {
+        "id":                c.id,
+        "prospect_id":       c.prospect_id,
+        "cycle_num":         c.cycle_num,
+        "issue":             c.issue,
+        "issue_commentaire": c.issue_commentaire,
+        "conclu_le":         c.conclu_le.isoformat() if c.conclu_le else None,
+        "recontacte_le":     c.recontacte_le.isoformat() if c.recontacte_le else None,
     }
 
 
@@ -171,6 +185,8 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
         "dernier_contact_par":  echanges_sorted[-1].contact_par if echanges_sorted else None,
         "echanges": [echange_to_dict(e) for e in echanges_sorted],
         "contraintes": [contrainte_to_dict(c) for c in (p.contraintes or [])],
+        # cycles de prospection passés (re-contacts)
+        "cycles": [cycle_to_dict(c) for c in sorted(p.cycles or [], key=lambda c: c.cycle_num)],
     }
 
 
@@ -421,6 +437,48 @@ async def conclure_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     await db.flush()
     return {"issue": p.issue, "issue_commentaire": p.issue_commentaire,
             "issue_conclu_le": p.issue_conclu_le.isoformat() if p.issue_conclu_le else None}
+
+
+# ── POST /prospects/:id/recontact ─────────────────────────────────────────────
+@router.post("/{prospect_id}/recontact")
+async def recontacter_prospect(prospect_id: int, db: AsyncSession = Depends(get_db)):
+    """Re-ouvre une prospection « Déclinée » archivée : la conclusion courante
+    est versée dans l'historique des cycles, puis le prospect repart à zéro
+    (issue = NULL) et réapparaît dans les onglets actifs. Tout l'historique des
+    échanges et contraintes est conservé."""
+    res = await db.execute(
+        select(Prospect).options(*LOAD_OPTS)
+        .where(Prospect.id == prospect_id, Prospect.is_deleted == False)
+    )
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Prospect introuvable")
+    if p.issue is None:
+        raise HTTPException(409, "Cette prospection n'est pas archivée : rien à re-contacter.")
+    if p.issue != "decline":
+        raise HTTPException(409, "Seule une prospection « Déclinée » peut être re-contactée.")
+
+    # Numéro du prochain cycle (1 + le plus haut cycle déjà archivé)
+    next_num = 1 + max([c.cycle_num for c in (p.cycles or [])], default=0)
+
+    db.add(ProspectCycle(
+        prospect_id       = p.id,
+        cycle_num         = next_num,
+        issue             = p.issue,
+        issue_commentaire = p.issue_commentaire,
+        conclu_le         = p.issue_conclu_le,
+    ))
+
+    # Remise à zéro : le prospect redevient actif
+    p.issue             = None
+    p.issue_commentaire = None
+    p.issue_conclu_le   = None
+
+    await db.flush()
+    res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id))
+    p2 = res.scalar_one()
+    titre = await get_projet_titre(db, p2.objet_projet_id)
+    return prospect_to_dict(p2, titre)
 
 
 # ── POST /prospects/:id/echanges ──────────────────────────────────────────────

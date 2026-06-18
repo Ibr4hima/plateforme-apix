@@ -59,6 +59,8 @@ class Prospect(Base):
                                  cascade="all, delete-orphan", order_by="ProspectContrainte.created_at")
     contacts      = relationship("ProspectContact", back_populates="prospect",
                                  cascade="all, delete-orphan")
+    cycles        = relationship("ProspectCycle", back_populates="prospect",
+                                 cascade="all, delete-orphan", order_by="ProspectCycle.cycle_num")
 
 
 class ProspectContact(Base):
@@ -75,6 +77,24 @@ class ProspectContact(Base):
     created_at        = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     prospect = relationship("Prospect", back_populates="contacts")
+
+
+class ProspectCycle(Base):
+    """Conclusion archivée d'un cycle de prospection passé. Créé quand une
+    entreprise « Déclinée » est re-contactée : la conclusion courante est
+    versée ici, puis le prospect repart à zéro tout en gardant son historique."""
+    __tablename__ = "prospect_cycles"
+
+    id                = Column(Integer, primary_key=True, autoincrement=True)
+    prospect_id       = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
+    cycle_num         = Column(Integer, nullable=False)
+    issue             = Column(String(20), nullable=False)   # installe | decline
+    issue_commentaire = Column(Text, nullable=True)
+    conclu_le         = Column(TIMESTAMP(timezone=True), nullable=True)
+    recontacte_le     = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    created_at        = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    prospect = relationship("Prospect", back_populates="cycles")
 
 
 class ProspectPointFocal(Base):

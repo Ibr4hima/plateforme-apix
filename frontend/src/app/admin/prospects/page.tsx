@@ -879,7 +879,7 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
 }
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
-function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, readOnly }: any) {
+function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, readOnly }: any) {
   const LBL = ({t}:{t:string}) => <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>{t}</p>;
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
@@ -1209,6 +1209,40 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             )}
           </div>
 
+          {/* Historique des cycles de prospection passés (re-contacts) */}
+          {p.cycles?.length > 0 && (
+            <div style={{ marginBottom:16 }}>
+              <LBL t={`Cycles de prospection passés (${p.cycles.length})`}/>
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                {[...p.cycles].sort((a:any,b:any)=>b.cycle_num-a.cycle_num).map((cy:any)=>{
+                  const inst = cy.issue==="installe";
+                  const col  = inst ? "#0D652D" : "#6b7280";
+                  const bg   = inst ? "rgba(13,101,45,0.10)" : "rgba(107,114,128,0.12)";
+                  return (
+                    <div key={cy.id} style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: cy.issue_commentaire ? 8 : 0 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                          <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4" }}>Cycle {cy.cycle_num}</span>
+                          <span style={{ fontSize:11, fontWeight:700, color:col, background:bg, border:`1px solid ${col}33`, padding:"2px 9px", borderRadius:999 }}>
+                            {inst ? "Installation au Sénégal" : "Possibilité écartée"}
+                          </span>
+                        </div>
+                        <span style={{ fontSize:10, color:"#9aa5b4", fontFamily:"monospace" }}>
+                          {cy.conclu_le && `Conclu le ${new Date(cy.conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
+                          {cy.recontacte_le && ` · Re-contacté le ${new Date(cy.recontacte_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
+                        </span>
+                      </div>
+                      {cy.issue_commentaire && (
+                        <div data-rte style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}
+                          dangerouslySetInnerHTML={{ __html:cy.issue_commentaire }}/>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Conclusion de la prospection — tout en bas, visible dès qu'il y a un échange */}
           {p.echanges?.length > 0 && (
             <div style={{ marginBottom:4, borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
@@ -1219,12 +1253,17 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   <>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                       <LBL t="Conclusion de la prospection"/>
-                      {!readOnly && (
+                      {!readOnly ? (
                         <button type="button" onClick={handleReopen}
                           style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
                           Rouvrir la prospection
                         </button>
-                      )}
+                      ) : p.issue==="decline" && onRecontact ? (
+                        <button type="button" onClick={onRecontact}
+                          style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, padding:"4px 14px", borderRadius:999, border:"none", background:"#004f91", color:"#fff", cursor:"pointer" }}>
+                          <MessageSquare size={11}/> Re-contacter
+                        </button>
+                      ) : null}
                     </div>
                     <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px" }}>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: p.issue_commentaire ? 10 : 0 }}>
@@ -1378,6 +1417,14 @@ export default function ProspectsPage() {
     setDeleting(null); charger();
   };
 
+  // Re-contacter une entreprise « Déclinée » : nouvelle prospection, historique conservé.
+  const handleRecontact = async (id:number) => {
+    if (!confirm("Re-contacter cette entreprise ?\n\nUne nouvelle prospection démarre. Tout l'historique précédent (échanges, contraintes, conclusion) est conservé et consultable.")) return;
+    const res = await fetch(`${API}/prospects/${id}/recontact`, { method:"POST" });
+    if (res.ok) { setVue(null); setOnglet("historique"); }
+    else { const d=await res.json().catch(()=>({})); alert(d.detail||"Erreur lors du re-contact"); }
+  };
+
   return (
     <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
       <style>{`
@@ -1451,10 +1498,21 @@ export default function ProspectsPage() {
                     {p.nb_echanges > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
                   </div>
                   {onglet==="precedents" ? (
-                    <div style={{ display:"flex", borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                    <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>setVue(p)}
                         style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#4a5568", fontWeight:600 }}>
                         Consulter
+                      </button>
+                      {p.issue==="decline" && (
+                        <button onClick={()=>handleRecontact(p.id)}
+                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                          <MessageSquare size={12}/> Re-contacter
+                        </button>
+                      )}
+                      <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
+                        style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}
+                        title="Supprimer définitivement (test)">
+                        {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
                       </button>
                     </div>
                   ) : (
@@ -1487,6 +1545,7 @@ export default function ProspectsPage() {
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
         onContacter={()=>{ setEchangeEdit(null); setEchangeModal(true); }}
         onEditEchange={(e:any)=>{ setEchangeEdit(e); setEchangeModal(true); }}
+        onRecontact={()=>handleRecontact(vue.id)}
         onRefresh={async()=>{ await charger(); const r=await fetch(`${API}/prospects/${vue.id}`); if(r.ok) setVue(await r.json()); }}/>}
       {vue && <EchangeModal open={echangeModal} onClose={()=>{ setEchangeModal(false); setEchangeEdit(null); }} prospect={vue} edit={echangeEdit}
         onSaved={(updated)=>{ setEchangeModal(false); setEchangeEdit(null); setVue(updated); charger(); }}/>}
