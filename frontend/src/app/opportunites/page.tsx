@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import Badge from "@/components/shared/Badge";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -669,15 +670,15 @@ function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.25)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#0D652D,#2d9a5c)"}}/>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
           {/* Header */}
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
             <div style={{flex:1,paddingRight:16}}>
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{data.activite_nom}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
-                {data.secteur_nom&&<span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",border:"1px solid #E8E5E3",padding:"2px 9px",borderRadius:999}}>{data.secteur_nom}</span>}
-                {data.branche_nom&&<span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",border:"1px solid #E8E5E3",padding:"2px 9px",borderRadius:999}}>{data.branche_nom}</span>}
+                {data.secteur_nom&&<Badge variant="terracotta" size="xs">{data.secteur_nom}</Badge>}
+                {data.branche_nom&&<Badge variant="bleu" size="xs">{data.branche_nom}</Badge>}
               </div>
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
@@ -717,7 +718,7 @@ function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
               <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
                 {(data.fichiers||[]).map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#7c3aed",textDecoration:"none",fontWeight:500}}>
+                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(251,188,4,0.12)",border:"1px solid rgba(251,188,4,0.35)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#8A6100",textDecoration:"none",fontWeight:600}}>
                     <FileText size={11}/> {f.titre||f.fichier_nom}
                   </a>
                 ))}
