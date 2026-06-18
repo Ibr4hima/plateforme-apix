@@ -796,8 +796,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
                 {(p.secteur_ids||[]).map((secId:number) => {
                   const sec = secteurs.find((s:any) => s.id === secId);
                   if (!sec) return null;
-                  const n = (sec.nom||"").toLowerCase();
-                  const secC = n.includes("secondaire") ? "#0F52BA" : n.includes("tertiaire") ? "#0D652D" : "#E35336";
+                  const secC = "#E35336";
                   const brasDuSec = branches.filter((b:any) => b.secteur_id === secId && (p.branche_ids||[]).includes(b.id));
                   return (
                     <div key={secId}>
