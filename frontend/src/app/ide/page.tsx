@@ -668,7 +668,7 @@ function splitKpiLabel(label: string, dernAnnee: number): { main: string; badge:
   return { main: label, badge: null };
 }
 
-function OngletPays({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void }) {
+function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -783,6 +783,18 @@ function OngletPays({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; 
             </button>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+              {/* Sélecteur de vue */}
+              <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+                <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+                  {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
+                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
                 <X size={12}/> Effacer tous les filtres
               </button>}
@@ -1024,7 +1036,7 @@ function OngletPays({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; 
 const COMP_PALETTE = ["#004f91","#ca631f","#188038","#FF7E70","#575799"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
-function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void }) {
+function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -1095,6 +1107,18 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable }: { pays
             </button>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+              {/* Sélecteur de vue */}
+              <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+                <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+                  {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
+                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
                 <X size={12}/> Effacer tous les filtres
               </button>}
@@ -1559,7 +1583,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
   );
 }
 
-function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowTable: (v:boolean)=>void }) {
+function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
   const [loading,     setLoading]    = useState(false);
   const [anneeMin,    setAnneeMin]   = useState(1990);
@@ -1657,6 +1681,18 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
           </button>
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+          {/* Sélecteur de vue */}
+          <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+            <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+              {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
+                <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                  style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                  {o.l}
+                </button>
+              ))}
+            </div>
+          </div>
           {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
             <X size={12}/> Effacer tous les filtres
           </button>}
@@ -1946,29 +1982,6 @@ export default function IdePage() {
               ))}
             </div>
 
-            {/* Niveau 2 : Pays / Comparative / Monde (Réalisés seulement) */}
-            {section === "realises" && (
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <div style={{ display:"flex" }}>
-                  {([
-                    {v:"pays",        l:"Pays"},
-                    {v:"comparative", l:"Analyse comparative"},
-                    {v:"monde",       l:"Monde"},
-                  ] as const).map(o=>(
-                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                      style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#004f91":"transparent"}`, background:"transparent", fontSize:12, fontWeight:600, color:sousOnglet===o.v?"#004f91":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
-                      {o.l}
-                    </button>
-                  ))}
-                </div>
-                <button onClick={()=>setShowTable(true)}
-                  style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:44, border:"none", background:"transparent", fontSize:12, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
-                  onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.color="#4a5568"; }}>
-                  <Table size={14}/> Tableau de données
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -1979,9 +1992,9 @@ export default function IdePage() {
           {/* Investissements réalisés (CNUCED) */}
           {section === "realises" && (
             <>
-              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
-              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
-              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} />}
+              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
+              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
+              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
             </>
           )}
           {/* Investissements projetés (FDI Markets) */}
