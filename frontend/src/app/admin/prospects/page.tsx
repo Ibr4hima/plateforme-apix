@@ -590,7 +590,8 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
 // ── Modal Échange ─────────────────────────────────────────────────────────────
 function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onClose:()=>void; prospect:any; onSaved:(updated:any)=>void }) {
   const today = new Date().toISOString().slice(0,10);
-  const [form, setForm]     = useState({ date_echange: today, commentaire:"" });
+  const EMPTY_ECHANGE = { date_echange: today, commentaire:"", contact_par:"", interlocuteur:"", point_focal_id:"" };
+  const [form, setForm]     = useState({ ...EMPTY_ECHANGE });
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
   const [ok,     setOk]     = useState(false);
@@ -604,24 +605,39 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
     ? (() => { const d=new Date(dernierEchange.date_echange); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); })()
     : undefined;
 
+  const pointsFocaux: any[] = prospect?.points_focaux || [];
+  const estMorale = prospect?.type === "morale";
+  const nomProspect = estMorale ? prospect?.nom : `${prospect?.prenom||""} ${prospect?.nom||""}`.trim();
+
   useEffect(()=>{
     if (!open) return;
     const defaut = dateMin && dateMin <= today ? dateMin : today;
-    setForm({ date_echange: defaut, commentaire:"" });
+    const interlocDefaut = !estMorale ? nomProspect : "";
+    setForm({ ...EMPTY_ECHANGE, date_echange: defaut, interlocuteur: interlocDefaut });
     setError(""); setOk(false);
   }, [open, prospect?.id]);
-
-  const displayName = prospect?.type==="morale"
-    ? prospect?.nom
-    : `${prospect?.prenom||""} ${prospect?.nom||""}`.trim();
 
   const handleSave = async () => {
     if (!form.date_echange) { setError("La date est obligatoire"); return; }
     setSaving(true); setError("");
     try {
+      // Résoudre l'interlocuteur : si point focal sélectionné, on prend son nom
+      let interlocuteur = form.interlocuteur.trim() || null;
+      let point_focal_id: number | null = null;
+      if (form.point_focal_id && form.point_focal_id !== "__autre") {
+        point_focal_id = parseInt(form.point_focal_id);
+        const pf = pointsFocaux.find((p:any) => p.id === point_focal_id);
+        if (pf) interlocuteur = `${pf.prenom||""} ${pf.nom||""}`.trim();
+      }
       const res = await fetch(`${API}/prospects/${prospect.id}/echanges`, {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ date_echange:form.date_echange, commentaire:form.commentaire||null })
+        body:JSON.stringify({
+          date_echange:   form.date_echange,
+          commentaire:    form.commentaire || null,
+          contact_par:    form.contact_par.trim() || null,
+          interlocuteur,
+          point_focal_id,
+        })
       });
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
       setOk(true);
@@ -644,29 +660,66 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
             <div>
               <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>Enregistrer un échange</h2>
-              <p style={{ fontSize:12, color:"#9aa5b4", marginTop:3 }}>{displayName}</p>
+              <p style={{ fontSize:12, color:"#9aa5b4", marginTop:3 }}>{nomProspect}</p>
               {dernierEchange && (
                 <p style={{ fontSize:11, color:"#ca631f", marginTop:4, fontWeight:600 }}>
-                  Dernier échange : {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}
+                  Dernier échange enregistré : {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}
                 </p>
               )}
             </div>
             <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={14} color="#4a5568"/></button>
           </div>
 
-          <div style={{ display:"flex", flexDirection:"column" as const, gap:14 }}>
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:16 }}>
 
             {/* Date */}
             <div>
               <label style={LS}>{estPremier ? "Date du premier contact *" : "Date de l'échange *"}</label>
-              {estPremier && <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:5 }}>Date à laquelle le premier contact a eu lieu (≤ aujourd'hui)</p>}
-              {!estPremier && dateMin && <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:5 }}>Doit être postérieure au {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}</p>}
+              <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:6 }}>
+                {estPremier
+                  ? "Date à laquelle le premier contact a eu lieu — doit être ≤ aujourd'hui"
+                  : `Doit être postérieure au ${new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")} et ≤ aujourd'hui`}
+              </p>
               <input type="date" value={form.date_echange}
                 max={today} min={dateMin}
                 onChange={e=>upd("date_echange",e.target.value)} style={IS}/>
             </div>
 
-            {/* Commentaire */}
+            {/* Participants */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+              {/* Côté investisseur */}
+              <div>
+                <label style={LS}>Interlocuteur (côté investisseur)</label>
+                {estMorale && pointsFocaux.length > 0 ? (
+                  <>
+                    <select value={form.point_focal_id} onChange={e=>{ upd("point_focal_id",e.target.value); if(e.target.value!=="__autre") upd("interlocuteur",""); }}
+                      style={{ ...IS, cursor:"pointer" }}>
+                      <option value="">— Sélectionner —</option>
+                      {pointsFocaux.map((pf:any)=>(
+                        <option key={pf.id} value={String(pf.id)}>{`${pf.prenom||""} ${pf.nom||""}`.trim()}</option>
+                      ))}
+                      <option value="__autre">Autre (préciser)</option>
+                    </select>
+                    {form.point_focal_id === "__autre" && (
+                      <input value={form.interlocuteur} onChange={e=>upd("interlocuteur",e.target.value)}
+                        placeholder="Nom de l'interlocuteur" style={{ ...IS, marginTop:6 }}/>
+                    )}
+                  </>
+                ) : (
+                  <input value={form.interlocuteur} onChange={e=>upd("interlocuteur",e.target.value)}
+                    placeholder={estMorale ? "Nom de l'interlocuteur" : nomProspect}
+                    style={IS}/>
+                )}
+              </div>
+              {/* Côté APIX */}
+              <div>
+                <label style={LS}>Agent APIX (vous)</label>
+                <input value={form.contact_par} onChange={e=>upd("contact_par",e.target.value)}
+                  placeholder="Votre nom" style={IS}/>
+              </div>
+            </div>
+
+            {/* Compte-rendu */}
             <div>
               <label style={LS}>Compte-rendu de l'échange</label>
               <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:8 }}>Résumé de la discussion, décisions, prochaines étapes…</p>
@@ -677,9 +730,9 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
 
             {/* Note anti-fraude */}
             <div style={{ background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.12)", borderRadius:10, padding:"10px 14px", display:"flex", gap:8, alignItems:"flex-start" }}>
-              <span style={{ fontSize:16, flexShrink:0 }}>🔒</span>
+              <span style={{ fontSize:15, flexShrink:0 }}>🔒</span>
               <p style={{ fontSize:11, color:"#4a5568", lineHeight:1.6 }}>
-                Cet enregistrement est <strong>immuable</strong> — il ne pourra pas être modifié ni supprimé. La date de saisie réelle est tracée automatiquement par le système.
+                Cet enregistrement est <strong>immuable et horodaté</strong> — la date et l'heure de saisie réelles sont tracées automatiquement et ne peuvent pas être modifiées.
               </p>
             </div>
 
@@ -980,33 +1033,53 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                     {[...p.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any,i:number)=>{
                       const retard = e.retard_jours || 0;
-                      const retardLabel = retard > 30 ? `Saisi ${retard}j après` : retard > 7 ? `Saisi ${retard}j après` : null;
-                      const retardColor = retard > 30 ? "#dc2626" : "#ca631f";
+                      const retardColor = retard > 30 ? "#dc2626" : retard > 7 ? "#ca631f" : "#059669";
+                      const retardBg    = retard > 30 ? "#dc262615" : retard > 7 ? "#ca631f15" : "#05966915";
+                      const retardLabel = retard > 30
+                        ? `⚠️ Saisi ${retard}j après`
+                        : retard > 7 ? `Saisi ${retard}j après`
+                        : retard === 0 ? "Saisi le jour même" : `Saisi ${retard}j après`;
                       return (
                         <div key={e.id} style={{ paddingLeft:32, position:"relative" as const }}>
-                          {/* Point du fil */}
                           <div style={{ position:"absolute" as const, left:10, top:12, width:10, height:10, borderRadius:"50%", background:"#004f91", border:"2px solid #fff", boxShadow:"0 0 0 2px #004f91" }}/>
                           <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px" }}>
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, flexWrap:"wrap" as const, gap:6 }}>
-                              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                                <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>
-                                  {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
-                                </span>
-                                {e.contact_par && <span style={{ fontSize:11, color:"#9aa5b4" }}>· {e.contact_par}</span>}
-                              </div>
-                              {retardLabel && (
-                                <span style={{ fontSize:10, fontWeight:700, color:retardColor, background:retardColor+"15", border:`1px solid ${retardColor}33`, padding:"2px 7px", borderRadius:999 }}>
-                                  {retardLabel}
-                                </span>
-                              )}
+
+                            {/* Ligne 1 : date déclarée + badge délai */}
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginBottom:6 }}>
+                              <span style={{ fontSize:13, fontWeight:800, color:"#004f91" }}>
+                                {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
+                              </span>
+                              <span style={{ fontSize:10, fontWeight:700, color:retardColor, background:retardBg, border:`1px solid ${retardColor}33`, padding:"2px 8px", borderRadius:999 }}>
+                                {retardLabel}
+                              </span>
                             </div>
+
+                            {/* Ligne 2 : interlocuteurs */}
+                            {(e.interlocuteur || e.contact_par) && (
+                              <div style={{ display:"flex", gap:12, flexWrap:"wrap" as const, marginBottom:6 }}>
+                                {e.interlocuteur && (
+                                  <span style={{ fontSize:11, color:"#4a5568", display:"flex", alignItems:"center", gap:4 }}>
+                                    <User size={10} style={{ color:"#9aa5b4" }}/> {e.interlocuteur}
+                                  </span>
+                                )}
+                                {e.contact_par && (
+                                  <span style={{ fontSize:11, color:"#9aa5b4", display:"flex", alignItems:"center", gap:4 }}>
+                                    <Building2 size={10}/> {e.contact_par}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Compte-rendu */}
                             {e.commentaire && (
                               <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7, marginTop:4 }}
                                 dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                             )}
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:8 }}>
-                              <p style={{ fontSize:10, color:"#C5BFBB" }}>
-                                Saisi le {new Date(e.enregistre_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
+
+                            {/* Pied : horodatage serveur + suppression */}
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:10, paddingTop:8, borderTop:"1px solid #EDEBE9" }}>
+                              <p style={{ fontSize:10, color:"#9aa5b4", fontFamily:"monospace" }}>
+                                🔒 Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
                               </p>
                               <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
                                 style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", opacity:0.4 }}

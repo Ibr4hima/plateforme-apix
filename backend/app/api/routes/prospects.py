@@ -96,20 +96,21 @@ def echange_to_dict(e: ProspectEchange) -> dict:
     echange_dt  = e.date_echange
     retard_jours = None
     if enregistre and echange_dt:
-        from datetime import datetime, timezone
         if hasattr(enregistre, "date"):
             delta = enregistre.date() - echange_dt
         else:
             delta = enregistre - echange_dt
         retard_jours = delta.days if delta.days > 0 else 0
     return {
-        "id":            e.id,
-        "prospect_id":   e.prospect_id,
-        "date_echange":  e.date_echange.isoformat() if e.date_echange else None,
-        "commentaire":   e.commentaire,
-        "contact_par":   e.contact_par,
-        "enregistre_le": e.enregistre_le.isoformat() if e.enregistre_le else None,
-        "retard_jours":  retard_jours,
+        "id":              e.id,
+        "prospect_id":     e.prospect_id,
+        "date_echange":    e.date_echange.isoformat() if e.date_echange else None,
+        "commentaire":     e.commentaire,
+        "contact_par":     e.contact_par,
+        "interlocuteur":   e.interlocuteur,
+        "point_focal_id":  e.point_focal_id,
+        "enregistre_le":   e.enregistre_le.isoformat() if e.enregistre_le else None,
+        "retard_jours":    retard_jours,
     }
 
 
@@ -408,11 +409,17 @@ async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = De
         raise HTTPException(422,
             f"La date doit être postérieure au dernier échange ({last_date.isoformat()})")
 
+    # Interlocuteur côté investisseur : texte libre ou issu d'un point focal
+    interlocuteur  = (payload.get("interlocuteur") or "").strip() or None
+    point_focal_id = payload.get("point_focal_id") or None
+
     e = ProspectEchange(
-        prospect_id  = prospect_id,
-        date_echange = date_saisie,
-        commentaire  = payload.get("commentaire") or None,
-        contact_par  = contact_par,
+        prospect_id    = prospect_id,
+        date_echange   = date_saisie,
+        commentaire    = payload.get("commentaire") or None,
+        contact_par    = contact_par,
+        interlocuteur  = interlocuteur,
+        point_focal_id = point_focal_id,
     )
     db.add(e)
     await db.flush()

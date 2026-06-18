@@ -91,14 +91,17 @@ class ProspectPointFocal(Base):
 class ProspectEchange(Base):
     __tablename__ = "prospect_echanges"
 
-    id            = Column(Integer, primary_key=True, autoincrement=True)
-    prospect_id   = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
-    date_echange  = Column(Date, nullable=False)
-    commentaire   = Column(Text)
-    contact_par   = Column(String(255), nullable=True)
-    enregistre_le = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    prospect_id     = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
+    date_echange    = Column(Date, nullable=False)
+    commentaire     = Column(Text)
+    contact_par     = Column(String(255), nullable=True)   # agent APIX (manuel jusqu'à l'auth)
+    interlocuteur   = Column(Text, nullable=True)          # qui côté investisseur
+    point_focal_id  = Column(Integer, ForeignKey("prospect_points_focaux.id", ondelete="SET NULL"), nullable=True)
+    enregistre_le   = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
-    prospect = relationship("Prospect", back_populates="echanges")
+    prospect    = relationship("Prospect", back_populates="echanges")
+    point_focal = relationship("ProspectPointFocal")
 
 
 class ProspectContrainte(Base):
