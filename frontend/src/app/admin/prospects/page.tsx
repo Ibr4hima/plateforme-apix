@@ -19,6 +19,15 @@ const ETATS = [
   { value:"converti",  label:"Converti",  color:"#188038" },
 ];
 
+// Indicateur d'activité basé sur le délai depuis le dernier échange
+function activiteDepuis(dateDernierEchange?: string|null) {
+  if (!dateDernierEchange) return null;
+  const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
+  if (jours <= 30) return { label:"En cours",   color:"#059669", bg:"rgba(5,150,105,0.10)" };
+  if (jours <= 60) return { label:"En attente", color:"#ca631f", bg:"rgba(202,99,31,0.10)" };
+  return                  { label:"Inactif",    color:"#dc2626", bg:"rgba(220,38,38,0.10)" };
+}
+
 type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string[] };
 const EMPTY_FOCAL: PointFocal = { prenom:"", nom:"", telephones:[""], mails:[""] };
 
@@ -1262,6 +1271,7 @@ export default function ProspectsPage() {
             {prospects.map(p=>{
               const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
               const accent = p.type==="morale" ? "#004f91" : "#ca631f";
+              const activite = activiteDepuis(p.date_dernier_echange);
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
                   style={{ background:"#fff", borderTop:"1px solid #E8E5E3", borderRight:"1px solid #E8E5E3", borderBottom:"1px solid #E8E5E3", borderLeft:`3px solid ${accent}`, borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}
@@ -1271,7 +1281,12 @@ export default function ProspectsPage() {
                     <div style={{ width:28, height:28, borderRadius:8, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.1)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                       {p.type==="morale"?<Building2 size={13} style={{ color:accent }}/>:<User size={13} style={{ color:accent }}/>}
                     </div>
-                    <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{displayName}</div>
+                    <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", flex:1 }}>{displayName}</div>
+                    {activite && (
+                      <span style={{ flexShrink:0, fontSize:10, fontWeight:700, color:activite.color, background:activite.bg, border:`1px solid ${activite.color}33`, padding:"2px 8px", borderRadius:999 }}>
+                        {activite.label}
+                      </span>
+                    )}
                   </div>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:10 }}>
                     {p.type==="physique" && p.pays_origine_nom && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:5,height:5,borderRadius:"50%",background:accent,flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.pays_origine_nom}</span></div>}
