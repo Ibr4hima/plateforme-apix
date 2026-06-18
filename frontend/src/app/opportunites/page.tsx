@@ -1277,7 +1277,17 @@ export default function OpportunitesPage() {
                         }}
                       />
                     )}
-                    {selectedNiveau!=="pole" && (
+                    {selectedNiveau==="region" && (
+                      <VueTerritorialeSenegal
+                        zones={[]}
+                        mode="region"
+                        onRegionClick={(nom)=>{
+                          const pot = pots.find((p:any)=>p.region_nom===nom);
+                          if (pot) setPotSel(pot);
+                        }}
+                      />
+                    )}
+                    {selectedNiveau!=="pole" && selectedNiveau!=="region" && (
                       <div style={{textAlign:"center",padding:"60px 0",color:"#9aa5b4"}}>
                         <p style={{fontSize:13}}>Vue en cours de construction…</p>
                       </div>
