@@ -19,8 +19,13 @@ const ETATS = [
   { value:"converti",  label:"Converti",  color:"#188038" },
 ];
 
-// Indicateur d'activité basé sur le délai depuis le dernier échange
-function activiteDepuis(dateDernierEchange?: string|null) {
+// Badge de statut d'une carte prospect.
+// L'issue de la relation (installé / décliné) prime sur l'indicateur d'activité ;
+// sinon on retombe sur le délai depuis le dernier échange.
+function badgeProspect(p:any) {
+  if (p?.issue === "installe") return { label:"Installé", color:"#0D652D", bg:"rgba(13,101,45,0.10)" };
+  if (p?.issue === "decline")  return { label:"Décliné",  color:"#6b7280", bg:"rgba(107,114,128,0.12)" };
+  const dateDernierEchange = p?.date_dernier_echange;
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
   if (jours <= 30) return { label:"En cours",   color:"#059669", bg:"rgba(5,150,105,0.10)" };
@@ -602,7 +607,7 @@ const addDays = (iso:string, n:number) => { const d=new Date(iso); d.setDate(d.g
 function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean; onClose:()=>void; prospect:any; edit?:any; onSaved:(updated:any)=>void }) {
   const today = new Date().toISOString().slice(0,10);
   const isEdit = !!edit;
-  const EMPTY_ECHANGE = { date_echange: today, commentaire:"", contact_par:"", interlocuteur:"", point_focal_id:"" };
+  const EMPTY_ECHANGE = { date_echange: today, commentaire:"", contact_par:"", interlocuteur:"", point_focal_id:"", issue:"" };
   const [form, setForm]     = useState({ ...EMPTY_ECHANGE });
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
@@ -622,6 +627,8 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
   let dateMin: string|undefined;
   let dateMax = today;
+  // Conclure la relation n'a de sens qu'à partir du 2e contact.
+  let peutConclure = !!dernierEchange && !isEdit;
   if (isEdit) {
     const parCreation = [...(prospect?.echanges||[])].sort((a:any,b:any)=>(a.enregistre_le||"").localeCompare(b.enregistre_le||""));
     const idx  = parCreation.findIndex((x:any)=>x.id===edit.id);
@@ -629,6 +636,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     const nextN = idx>=0 && idx<parCreation.length-1 ? parCreation[idx+1] : null;
     if (prevN) dateMin = addDays(prevN.date_echange, 1);
     if (nextN) dateMax = addDays(nextN.date_echange, -1);
+    peutConclure = idx > 0;  // pas le tout premier contact
   } else if (dernierEchange) {
     dateMin = addDays(dernierEchange.date_echange, 1);
   }
@@ -642,6 +650,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         contact_par:    edit.contact_par || "",
         interlocuteur:  edit.interlocuteur || "",
         point_focal_id: edit.point_focal_id ? String(edit.point_focal_id) : (estMorale && edit.interlocuteur ? "__autre" : ""),
+        issue:          prospect?.issue || "",
       });
     } else {
       const defaut = dateMin && dateMin <= today ? dateMin : today;
@@ -668,6 +677,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         contact_par:    form.contact_par.trim() || null,
         interlocuteur,
         point_focal_id,
+        ...(peutConclure ? { issue: form.issue || null } : {}),
       });
       const res = isEdit
         ? await fetch(`${API}/prospects/echanges/${edit.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body })
@@ -761,6 +771,29 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 <RichTextEditor value={form.commentaire} onChange={v=>upd("commentaire",v)}/>
               </div>
             </div>
+
+            {/* Issue de la relation (à partir du 2e contact) */}
+            {peutConclure && (
+              <div>
+                <label style={LS}>Issue de la relation</label>
+                <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:8 }}>À renseigner si la prospection arrive à son terme.</p>
+                <div style={{ display:"flex", gap:8 }}>
+                  {([
+                    { value:"",         label:"Relation en cours", color:"#9aa5b4", bg:"rgba(154,165,180,0.10)" },
+                    { value:"installe", label:"Installé au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" },
+                    { value:"decline",  label:"Possibilité écartée",  color:"#6b7280", bg:"rgba(107,114,128,0.12)" },
+                  ] as const).map(o=>(
+                    <button key={o.value} type="button" onClick={()=>upd("issue",o.value)}
+                      style={{ flex:1, padding:"9px 6px", borderRadius:9, cursor:"pointer", fontSize:12, fontWeight:700, transition:"all .15s",
+                        border:`1px solid ${form.issue===o.value?o.color:"#E8E5E3"}`,
+                        background:form.issue===o.value?o.bg:"#fff",
+                        color:form.issue===o.value?o.color:"#9aa5b4" }}>
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Note anti-fraude */}
             <div style={{ background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.12)", borderRadius:10, padding:"10px 14px", display:"flex", gap:8, alignItems:"flex-start" }}>
@@ -918,13 +951,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               </div>
               <div>
                 <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>{displayName}</h2>
-                <span style={{ fontSize:11, fontWeight:600,
-                  color:p.type==="morale"?"#004f91":"#ca631f",
-                  background:p.type==="morale"?"rgba(0,79,145,0.08)":"rgba(202,99,31,0.08)",
-                  border:`1px solid ${p.type==="morale"?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,
-                  padding:"2px 9px", borderRadius:999 }}>
-                  {p.type==="morale"?"Personne morale":"Personne physique"}
-                </span>
+                <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const, marginTop:2 }}>
+                  <span style={{ fontSize:11, fontWeight:600,
+                    color:p.type==="morale"?"#004f91":"#ca631f",
+                    background:p.type==="morale"?"rgba(0,79,145,0.08)":"rgba(202,99,31,0.08)",
+                    border:`1px solid ${p.type==="morale"?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,
+                    padding:"2px 9px", borderRadius:999 }}>
+                    {p.type==="morale"?"Personne morale":"Personne physique"}
+                  </span>
+                  {p.issue && (()=>{ const b=badgeProspect(p); return b && (
+                    <span style={{ fontSize:11, fontWeight:700, color:b.color, background:b.bg, border:`1px solid ${b.color}33`, padding:"2px 9px", borderRadius:999 }}>{b.label}</span>
+                  ); })()}
+                </div>
               </div>
             </div>
             <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={14} color="#4a5568"/></button>
@@ -1270,7 +1308,7 @@ export default function ProspectsPage() {
             {prospects.map(p=>{
               const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
               const accent = p.type==="morale" ? "#004f91" : "#ca631f";
-              const activite = activiteDepuis(p.date_dernier_echange);
+              const activite = badgeProspect(p);
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
                   style={{ background:"#fff", borderTop:"1px solid #E8E5E3", borderRight:"1px solid #E8E5E3", borderBottom:"1px solid #E8E5E3", borderLeft:`3px solid ${accent}`, borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}

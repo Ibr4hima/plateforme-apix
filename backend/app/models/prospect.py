@@ -20,6 +20,7 @@ class Prospect(Base):
     mails            = Column(ARRAY(String), default=[])
     siteweb          = Column(Text)
     linkedin         = Column(Text)
+    issue            = Column(String(20), nullable=True)  # NULL | installe | decline
     agent_id         = Column(Integer, nullable=True)  # ownership (auth à venir)
     secteur_ids      = Column(ARRAY(Integer), default=[])
     branche_ids      = Column(ARRAY(Integer), default=[])
