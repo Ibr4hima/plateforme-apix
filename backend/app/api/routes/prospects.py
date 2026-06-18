@@ -15,26 +15,10 @@ from app.utils.dedup import collect_contacts, LABELS
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
 
-# Délai de grâce après conclusion : le prospect reste modifiable, puis bascule
-# définitivement dans « Contacts précédents » (lecture seule).
-CONCLUSION_GRACE = timedelta(hours=24)
-
-
-def _conclu_fige(issue, conclu_le) -> bool:
-    """Vrai si la prospection est conclue ET archivée (plus de 24h après la
-    conclusion). Pendant les 24h, le prospect reste modifiable."""
-    if issue is None:
-        return False
-    if conclu_le is None:
-        return True
-    cl = conclu_le if conclu_le.tzinfo else conclu_le.replace(tzinfo=timezone.utc)
-    return datetime.now(timezone.utc) - cl > CONCLUSION_GRACE
-
-
-def _touch_conclusion(prospect) -> None:
-    """Toute modification pendant le délai de grâce relance le compteur de 24h."""
-    if prospect is not None and prospect.issue is not None:
-        prospect.issue_conclu_le = datetime.now(timezone.utc)
+def _conclu_fige(issue, conclu_le=None) -> bool:
+    """Vrai dès qu'une prospection est conclue : elle est aussitôt archivée
+    dans « Précédents contacts » et passe en lecture seule."""
+    return issue is not None
 
 
 # ── Déduplication ─────────────────────────────────────────────────────────────
@@ -211,17 +195,10 @@ async def liste_prospects(
         base = base.where(exists().where(ProspectEchange.prospect_id == Prospect.id))
     elif contactes is False:
         base = base.where(~exists().where(ProspectEchange.prospect_id == Prospect.id))
-    seuil = datetime.now(timezone.utc) - CONCLUSION_GRACE
-    if conclu is True:   # archivés : conclus depuis plus de 24h
-        base = base.where(
-            Prospect.issue.isnot(None),
-            or_(Prospect.issue_conclu_le.is_(None), Prospect.issue_conclu_le < seuil),
-        )
-    elif conclu is False:  # actifs : non conclus, ou conclus depuis moins de 24h
-        base = base.where(or_(
-            Prospect.issue.is_(None),
-            and_(Prospect.issue_conclu_le.isnot(None), Prospect.issue_conclu_le >= seuil),
-        ))
+    if conclu is True:   # archivés : prospections conclues
+        base = base.where(Prospect.issue.isnot(None))
+    elif conclu is False:  # actifs : prospections non conclues
+        base = base.where(Prospect.issue.is_(None))
     base = base.order_by(Prospect.created_at.desc())
     count_res = await db.execute(select(func.count()).select_from(base.subquery()))
     total = count_res.scalar_one()
@@ -400,7 +377,6 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
                 mails       = pf_data.get("mails") or [],
             ))
     await ecrire_contacts(db, prospect_id, contacts)
-    _touch_conclusion(p)  # modif pendant le délai de grâce → relance les 24h
     try:
         await db.flush()
     except IntegrityError:
@@ -500,7 +476,6 @@ async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = De
         point_focal_id = point_focal_id,
     )
     db.add(e)
-    _touch_conclusion(prospect)  # modif pendant le délai de grâce → relance les 24h
     await db.flush()
     await db.refresh(e)
     return echange_to_dict(e)
@@ -586,7 +561,6 @@ async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = De
     if "contact_par" in payload:
         e.contact_par = (payload["contact_par"] or "").strip() or None
 
-    _touch_conclusion(prospect)  # modif pendant le délai de grâce → relance les 24h
     await db.flush()
     await db.refresh(e)
     return echange_to_dict(e)
@@ -625,7 +599,6 @@ async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db))
         raise HTTPException(403, "Cet échange ne peut plus être supprimé : un échange ultérieur a déjà été enregistré.")
 
     await db.delete(e)
-    _touch_conclusion(prospect)  # modif pendant le délai de grâce → relance les 24h
     await db.flush()
 
 
@@ -647,7 +620,6 @@ async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession =
         solution_preconisee = payload.get("solution_preconisee") or None,
     )
     db.add(c)
-    _touch_conclusion(prospect)  # modif pendant le délai de grâce → relance les 24h
     await db.flush()
     await db.refresh(c)
     return contrainte_to_dict(c)
@@ -673,7 +645,6 @@ async def modifier_contrainte(contrainte_id: int, payload: dict, db: AsyncSessio
     if "solution_preconisee" in payload:
         c.solution_preconisee = payload["solution_preconisee"] or None
     c.updated_at = datetime.now(timezone.utc)
-    _touch_conclusion(prospect)  # modif pendant le délai de grâce → relance les 24h
     await db.flush()
     await db.refresh(c)
     return contrainte_to_dict(c)
@@ -690,5 +661,4 @@ async def supprimer_contrainte(contrainte_id: int, db: AsyncSession = Depends(ge
     if prospect is not None and _conclu_fige(prospect.issue, prospect.issue_conclu_le):
         raise HTTPException(403, "La prospection est archivée : cette contrainte ne peut plus être supprimée.")
     await db.delete(c)
-    _touch_conclusion(prospect)  # modif pendant le délai de grâce → relance les 24h
     await db.flush()

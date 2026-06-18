@@ -33,12 +33,10 @@ function badgeProspect(p:any) {
   return                  { label:"Inactif",    color:"#dc2626", bg:"rgba(220,38,38,0.10)" };
 }
 
-// Une prospection conclue reste modifiable pendant 24h, puis devient figée
-// (archivée dans « Contacts précédents », lecture seule).
+// Une prospection conclue est aussitôt archivée dans « Précédents contacts »
+// et passe en lecture seule.
 function estFige(p:any) {
-  if (!p?.issue) return false;
-  if (!p.issue_conclu_le) return true;
-  return Date.now() - new Date(p.issue_conclu_le).getTime() > 24*3600*1000;
+  return !!p?.issue;
 }
 
 type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string[] };
@@ -1245,11 +1243,6 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                         <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}
                           dangerouslySetInnerHTML={{ __html:p.issue_commentaire }}/>
                       )}
-                      {!readOnly && !estFige(p) && (
-                        <p style={{ fontSize:11, color:"#ca631f", marginTop:10, fontWeight:600 }}>
-                          Modifiable encore 24h, puis le prospect sera archivé dans « Contacts précédents ».
-                        </p>
-                      )}
                     </div>
                   </>
                 );
@@ -1404,7 +1397,7 @@ export default function ProspectsPage() {
       {/* Onglets */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#fff", borderBottom:"1px solid #E8E5E3", marginBottom:24 }}>
         <div style={{ display:"flex" }}>
-          {([["cibles","Investisseurs ciblés"],["historique","Historique des contacts"],["precedents","Contacts précédents"]] as const).map(([key,label])=>(
+          {([["cibles","Investisseurs ciblés"],["historique","Historique des contacts"],["precedents","Précédents contacts"]] as const).map(([key,label])=>(
             <button key={key} onClick={()=>setOnglet(key)}
               style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${onglet===key?"#ca631f":"transparent"}`, background:"transparent", color:onglet===key?"#ca631f":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
               {label}
