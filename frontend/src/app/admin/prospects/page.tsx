@@ -1083,7 +1083,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                         : `Saisi ${retard} jour${retard>1?"s":""} après l'échange`;
                       const isLast    = new Date(e.enregistre_le).getTime() === maxEnregistreLe;
                       const within24h = Date.now() - new Date(e.enregistre_le).getTime() < 24*3600*1000;
-                      const canAct    = isLast && within24h;
+                      const canAct    = !p.issue && isLast && within24h;
                       return (
                         <div key={e.id} style={{ paddingLeft:32, position:"relative" as const }}>
                           <div style={{ position:"absolute" as const, left:10, top:12, width:10, height:10, borderRadius:"50%", background:"#004f91", border:"2px solid #fff", boxShadow:"0 0 0 2px #004f91" }}/>
@@ -1175,18 +1175,20 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, gap:8 }}>
                       <div data-rte style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.6, flex:1 }}
                         dangerouslySetInnerHTML={{ __html:c.description }}/>
-                      <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
-                        <button onClick={()=>{ setEditContrainte(c); setContrainteModal(true); }}
-                          style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
-                          <Pencil size={10} style={{ color:"#9aa5b4" }}/>
-                        </button>
-                        <button onClick={()=>handleDeleteContrainte(c.id)} disabled={deletingContrainte===c.id}
-                          style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px", opacity:0.5 }}>
-                          {deletingContrainte===c.id
-                            ? <Loader2 size={10} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
-                            : <Trash2 size={10} style={{ color:"#dc2626" }}/>}
-                        </button>
-                      </div>
+                      {!p.issue && (
+                        <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
+                          <button onClick={()=>{ setEditContrainte(c); setContrainteModal(true); }}
+                            style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
+                            <Pencil size={10} style={{ color:"#9aa5b4" }}/>
+                          </button>
+                          <button onClick={()=>handleDeleteContrainte(c.id)} disabled={deletingContrainte===c.id}
+                            style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px", opacity:0.5 }}>
+                            {deletingContrainte===c.id
+                              ? <Loader2 size={10} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
+                              : <Trash2 size={10} style={{ color:"#dc2626" }}/>}
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {c.solution_preconisee && (
                       <div style={{ background:"rgba(5,150,105,0.06)", border:"1px solid rgba(5,150,105,0.15)", borderRadius:7, padding:"7px 10px", marginTop:6 }}>

@@ -490,6 +490,11 @@ async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = De
     if not e:
         raise HTTPException(404, "Échange introuvable")
 
+    # Verrou conclusion : prospect conclu → échange figé
+    pr = (await db.execute(select(Prospect.issue).where(Prospect.id == e.prospect_id))).scalar_one_or_none()
+    if pr is not None:
+        raise HTTPException(403, "La prospection est conclue : cet échange ne peut plus être modifié.")
+
     # Fenêtre d'édition : 24h après l'enregistrement, ensuite immuable
     enr = e.enregistre_le
     if enr is not None:
@@ -559,6 +564,11 @@ async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db))
     if not e:
         raise HTTPException(404, "Échange introuvable")
 
+    # Verrou conclusion : prospect conclu → échange figé
+    pr = (await db.execute(select(Prospect.issue).where(Prospect.id == e.prospect_id))).scalar_one_or_none()
+    if pr is not None:
+        raise HTTPException(403, "La prospection est conclue : cet échange ne peut plus être supprimé.")
+
     # Fenêtre de suppression : 24h après l'enregistrement
     enr = e.enregistre_le
     if enr is not None:
@@ -613,6 +623,9 @@ async def modifier_contrainte(contrainte_id: int, payload: dict, db: AsyncSessio
     c = res.scalar_one_or_none()
     if not c:
         raise HTTPException(404, "Contrainte introuvable")
+    pr = (await db.execute(select(Prospect.issue).where(Prospect.id == c.prospect_id))).scalar_one_or_none()
+    if pr is not None:
+        raise HTTPException(403, "La prospection est conclue : cette contrainte ne peut plus être modifiée.")
     if "description" in payload:
         desc = (payload["description"] or "").strip()
         if not desc:
@@ -633,5 +646,8 @@ async def supprimer_contrainte(contrainte_id: int, db: AsyncSession = Depends(ge
     c = res.scalar_one_or_none()
     if not c:
         raise HTTPException(404, "Contrainte introuvable")
+    pr = (await db.execute(select(Prospect.issue).where(Prospect.id == c.prospect_id))).scalar_one_or_none()
+    if pr is not None:
+        raise HTTPException(403, "La prospection est conclue : cette contrainte ne peut plus être supprimée.")
     await db.delete(c)
     await db.flush()
