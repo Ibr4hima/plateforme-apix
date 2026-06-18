@@ -674,10 +674,9 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         : await fetch(`${API}/prospects/${prospect.id}/echanges`, { method:"POST", headers:{"Content-Type":"application/json"}, body });
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
       setOk(true);
-      const pr = await fetch(`${API}/prospects?page=1&per_page=200`);
-      const pdata = await pr.json();
-      const updated = (pdata.data||[]).find((p:any)=>p.id===prospect.id);
-      setTimeout(()=>{ setOk(false); onClose(); onSaved(updated||prospect); }, 700);
+      const pr = await fetch(`${API}/prospects/${prospect.id}`);
+      const updated = pr.ok ? await pr.json() : prospect;
+      setTimeout(()=>{ setOk(false); onClose(); onSaved(updated); }, 700);
     } catch(e:any) { setError(e.message); }
     finally { setSaving(false); }
   };
@@ -1319,7 +1318,7 @@ export default function ProspectsPage() {
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
         onContacter={()=>{ setEchangeEdit(null); setEchangeModal(true); }}
         onEditEchange={(e:any)=>{ setEchangeEdit(e); setEchangeModal(true); }}
-        onRefresh={async()=>{ await charger(); const r=await fetch(`${API}/prospects?page=1&per_page=200`); const d=await r.json(); const up=(d.data||[]).find((x:any)=>x.id===vue.id); if(up) setVue(up); }}/>}
+        onRefresh={async()=>{ await charger(); const r=await fetch(`${API}/prospects/${vue.id}`); if(r.ok) setVue(await r.json()); }}/>}
       {vue && <EchangeModal open={echangeModal} onClose={()=>{ setEchangeModal(false); setEchangeEdit(null); }} prospect={vue} edit={echangeEdit}
         onSaved={(updated)=>{ setEchangeModal(false); setEchangeEdit(null); setVue(updated); charger(); }}/>}
     </div>

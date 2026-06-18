@@ -202,6 +202,20 @@ async def liste_prospects(
             "total": total, "page": page, "per_page": per_page}
 
 
+# ── GET /prospects/:id ────────────────────────────────────────────────────────
+@router.get("/{prospect_id}")
+async def lire_prospect(prospect_id: int, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        select(Prospect).options(*LOAD_OPTS)
+        .where(Prospect.id == prospect_id, Prospect.is_deleted == False)
+    )
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Prospect introuvable")
+    titre = await get_projet_titre(db, p.objet_projet_id)
+    return prospect_to_dict(p, titre)
+
+
 # ── POST /prospects ───────────────────────────────────────────────────────────
 @router.post("", status_code=201)
 async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
