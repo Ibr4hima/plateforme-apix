@@ -2,12 +2,29 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Badge from "@/components/shared/Badge";
-import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Fuse from "@/lib/fuse";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+const DEPT_TO_REGION: Record<string, string> = {
+  "Dakar":"Dakar","Guédiawaye":"Dakar","Pikine":"Dakar","Rufisque":"Dakar",
+  "Mbour":"Thiès","Thiès":"Thiès","Tivaouane":"Thiès",
+  "Bambey":"Diourbel","Diourbel":"Diourbel","Mbacké":"Diourbel",
+  "Dagana":"Saint-Louis","Podor":"Saint-Louis","Saint-Louis":"Saint-Louis",
+  "Kébémer":"Louga","Linguère":"Louga","Louga":"Louga",
+  "Fatick":"Fatick","Foundiougne":"Fatick","Gossas":"Fatick",
+  "Guinguinéo":"Kaolack","Kaolack":"Kaolack","Nioro du Rip":"Kaolack",
+  "Birkilane":"Kaffrine","Kaffrine":"Kaffrine","Koungheul":"Kaffrine","Malem Hoddar":"Kaffrine",
+  "Bakel":"Tambacounda","Goudiry":"Tambacounda","Koumpentoum":"Tambacounda","Tambacounda":"Tambacounda",
+  "Kédougou":"Kédougou","Salemata":"Kédougou","Saraya":"Kédougou",
+  "Kolda":"Kolda","Médina Yoro Foulah":"Kolda","Vélingara":"Kolda",
+  "Bounkiling":"Sédhiou","Goudomp":"Sédhiou","Sédhiou":"Sédhiou",
+  "Bignona":"Ziguinchor","Oussouye":"Ziguinchor","Ziguinchor":"Ziguinchor",
+  "Kanel":"Matam","Matam":"Matam","Ranérou":"Matam",
+};
 
 const devSymbole = (code?:string, sym?:string) => sym || (code ? ({XOF:"FCFA",USD:"$",EUR:"€"}[code]||code) : "");
 function fmtPhone(raw:string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
@@ -796,7 +813,7 @@ export default function OpportunitesPage() {
   const [potsActivites,setPotsActivites]=useState<string[]>([]);
   const [potsAtouts, setPotsAtouts] = useState<string[]>([]);
   const [potsQ,      setPotsQ]      = useState("");
-  const [groupsOpen, setGroupsOpen] = useState<Record<string,boolean>>({pole:true,region:true,departement:true,arrondissement:true});
+  const [selectedNiveau, setSelectedNiveau] = useState<string|null>(null);
 
   // ── Avantages ──
   const [avgs,          setAvgs]          = useState<any[]>([]);
@@ -824,7 +841,7 @@ export default function OpportunitesPage() {
       }).catch(()=>{});
   },[]);
 
-  useEffect(()=>{ setSelectedSecAvg(null); },[onglet]);
+  useEffect(()=>{ setSelectedSecAvg(null); setSelectedNiveau(null); },[onglet]);
 
   useEffect(()=>{
     const safe = (p:Promise<any>) => p.catch(()=>[]);
@@ -1215,77 +1232,45 @@ export default function OpportunitesPage() {
               <>
                 {potsLoad ? (
                   <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
-                ) : potsFiltres.length===0 ? (
-                  <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
-                    <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucune fiche trouvée</p>
-                  </div>
-                ) : (
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
+                ) : selectedNiveau===null ? (
+                  /* ── Picker 4 cards ── */
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
                     {([
-                      {key:"pole",label:"Pôles territoires",color:"#ca631f"},
-                      {key:"region",label:"Régions",color:"#00408C"},
-                      {key:"departement",label:"Départements",color:"#008070"},
-                      {key:"arrondissement",label:"Arrondissements",color:"#8A7000"},
-                    ] as const).map(groupe=>{
-                      const items=potsFiltres.filter((p:any)=>p.niveau===groupe.key);
-                      if (items.length===0) return null;
-                      const isOpen=groupsOpen[groupe.key]!==false;
-                      const showGrid=isOpen||hasFilterPots;
+                      {key:"pole",           label:"Pôles territoires", color:"#E35336", textColor:"#E35336"},
+                      {key:"region",         label:"Régions",           color:"#0F52BA", textColor:"#0F52BA"},
+                      {key:"departement",    label:"Départements",      color:"#0D652D", textColor:"#0D652D"},
+                      {key:"arrondissement", label:"Arrondissements",   color:"#FBBC04", textColor:"#8A6100"},
+                    ] as const).map(n=>{
+                      const count=pots.filter((p:any)=>p.niveau===n.key).length;
                       return (
-                        <div key={groupe.key}>
-                          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:showGrid?12:0}}>
-                            <div style={{width:3,height:18,borderRadius:2,background:groupe.color,flexShrink:0}}/>
-                            <span style={{fontSize:12,fontWeight:700,color:groupe.color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{groupe.label}</span>
-                            <button onClick={()=>setGroupsOpen(prev=>({...prev,[groupe.key]:!prev[groupe.key]}))}
-                              style={{display:"flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:6,border:`1px solid ${groupe.color}35`,background:`${groupe.color}0f`,cursor:"pointer",flexShrink:0}}>
-                              {isOpen?<ChevronDown size={12} style={{color:groupe.color}}/>:<ChevronUp size={12} style={{color:groupe.color}}/>}
+                        <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
+                          style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${count>0?n.color:"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",cursor:count>0?"pointer":"default",transition:"all 0.15s"}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${n.color}20`;ev.currentTarget.style.borderColor=n.color;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?n.color:"#C5BFBB";}}>
+                          <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+                            <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:999,color:n.textColor,background:`${n.color}12`,border:`1px solid ${n.color}30`,whiteSpace:"nowrap" as const}}>{n.label}</span>
+                          </div>
+                          <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
+                            <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${n.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:n.textColor,fontWeight:600,opacity:count>0?1:0.45}}>
+                              Voir les détails →
                             </button>
                           </div>
-                          {showGrid&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-                            {items.map((p:any)=>{
-                              const selCount=(p.avantage_ids||[]).length;
-                              return (
-                                <div key={p.id} onClick={()=>setPotSel(p)}
-                                  style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${groupe.color}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}
-                                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${groupe.color}18`;ev.currentTarget.style.borderColor=groupe.color;ev.currentTarget.style.borderLeftColor=groupe.color;}}
-                                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=groupe.color;}}>
-                                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:6}}>{potTitle(p)}</div>
-                                  {(()=>{
-                                    const rNom = groupe.key==="departement"
-                                      ? regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.id===p.departement_id))?.nom
-                                      : groupe.key==="arrondissement"
-                                      ? regions.find((r:any)=>(r.departements||[]).some((d:any)=>(d.arrondissements||[]).some((a:any)=>a.id===p.arrondissement_id)))?.nom
-                                      : null;
-                                    const dNom = groupe.key==="arrondissement"
-                                      ? regions.flatMap((r:any)=>r.departements||[]).find((d:any)=>(d.arrondissements||[]).some((a:any)=>a.id===p.arrondissement_id))?.nom
-                                      : null;
-                                    if (!rNom&&!dNom) return null;
-                                    return (
-                                      <div style={{display:"flex",flexDirection:"column" as const,gap:4,marginBottom:8}}>
-                                        {rNom&&<span style={{fontSize:10,fontWeight:600,
-                                          color: groupe.key==="departement" ? "#575799" : "#0D9488",
-                                          background: groupe.key==="departement" ? "rgba(87,87,153,0.07)" : "rgba(13,148,136,0.07)",
-                                          border: groupe.key==="departement" ? "1px solid rgba(87,87,153,0.22)" : "1px solid rgba(13,148,136,0.2)",
-                                          padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const}}>Région de {rNom}</span>}
-                                        {dNom&&<span style={{fontSize:10,fontWeight:600,
-                                          color:"#0a6b64",background:"rgba(13,148,136,0.13)",
-                                          border:"1px solid rgba(13,148,136,0.32)",
-                                          padding:"1px 8px",borderRadius:999,alignSelf:"flex-start" as const,marginLeft:10}}>Dép. de {dNom}</span>}
-                                      </div>
-                                    );
-                                  })()}
-                                  {selCount>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{selCount} atout{selCount>1?"s":""} référencé{selCount>1?"s":""}</div>}
-                                  <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
-                                    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:`${groupe.color}12`,borderRadius:7,padding:"6px 0",fontSize:11,color:groupe.color,fontWeight:600}}>Voir les détails →</div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>}
                         </div>
                       );
                     })}
                   </div>
+                ) : (
+                  /* ── Vue drill-down ── */
+                  <>
+                    <button onClick={()=>setSelectedNiveau(null)}
+                      style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
+                      <ArrowLeft size={14}/> Retour aux zones
+                    </button>
+                    {/* contenu drill-down (cartes / cascades) — à venir */}
+                    <div style={{textAlign:"center",padding:"60px 0",color:"#9aa5b4"}}>
+                      <p style={{fontSize:13}}>Vue en cours de construction…</p>
+                    </div>
+                  </>
                 )}
               </>
             )}
