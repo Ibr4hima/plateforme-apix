@@ -455,6 +455,16 @@ async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = De
         if datetime.now(timezone.utc) - enr > timedelta(hours=24):
             raise HTTPException(403, "Cet échange n'est plus modifiable (délai de 24h dépassé).")
 
+    # Verrou chronologique : si un échange ultérieur existe, l'échange est figé
+    next_count = (await db.execute(
+        select(func.count(ProspectEchange.id)).where(
+            ProspectEchange.prospect_id == e.prospect_id,
+            ProspectEchange.enregistre_le > e.enregistre_le,
+        )
+    )).scalar()
+    if next_count > 0:
+        raise HTTPException(403, "Cet échange ne peut plus être modifié : un échange ultérieur a déjà été enregistré.")
+
     # Mise à jour de la date avec contraintes chronologiques
     if "date_echange" in payload and payload["date_echange"]:
         try:
@@ -500,10 +510,30 @@ async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = De
 # ── DELETE /prospects/echanges/:id ── (désactiver quand auth en prod)
 @router.delete("/echanges/{echange_id}", status_code=204)
 async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db)):
+    from datetime import datetime, timezone, timedelta
     res = await db.execute(select(ProspectEchange).where(ProspectEchange.id == echange_id))
     e = res.scalar_one_or_none()
     if not e:
         raise HTTPException(404, "Échange introuvable")
+
+    # Fenêtre de suppression : 24h après l'enregistrement
+    enr = e.enregistre_le
+    if enr is not None:
+        if enr.tzinfo is None:
+            enr = enr.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) - enr > timedelta(hours=24):
+            raise HTTPException(403, "Cet échange n'est plus supprimable (délai de 24h dépassé).")
+
+    # Verrou chronologique : si un échange ultérieur existe, l'échange est figé
+    next_count = (await db.execute(
+        select(func.count(ProspectEchange.id)).where(
+            ProspectEchange.prospect_id == e.prospect_id,
+            ProspectEchange.enregistre_le > e.enregistre_le,
+        )
+    )).scalar()
+    if next_count > 0:
+        raise HTTPException(403, "Cet échange ne peut plus être supprimé : un échange ultérieur a déjà été enregistré.")
+
     await db.delete(e)
     await db.flush()
 
@@ -517,14 +547,10 @@ async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession =
     description = (payload.get("description") or "").strip()
     if not description:
         raise HTTPException(422, "La description est obligatoire")
-    statut = payload.get("statut") or "en_cours"
-    if statut not in ("en_cours", "resolue", "obsolete"):
-        raise HTTPException(422, "Statut invalide")
     c = ProspectContrainte(
         prospect_id         = prospect_id,
         description         = description,
         solution_preconisee = payload.get("solution_preconisee") or None,
-        statut              = statut,
     )
     db.add(c)
     await db.flush()
@@ -548,10 +574,6 @@ async def modifier_contrainte(contrainte_id: int, payload: dict, db: AsyncSessio
         c.description = desc
     if "solution_preconisee" in payload:
         c.solution_preconisee = payload["solution_preconisee"] or None
-    if "statut" in payload:
-        if payload["statut"] not in ("en_cours", "resolue", "obsolete"):
-            raise HTTPException(422, "Statut invalide")
-        c.statut = payload["statut"]
     c.updated_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(c)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, Building2, Check, CheckCircle2, ChevronDown, ChevronUp, Clock, Loader2, MessageSquare, Pencil, Plus, Trash2, User, X, XCircle } from "lucide-react";
+import { Building2, Check, ChevronDown, ChevronUp, Loader2, MessageSquare, Pencil, Plus, Trash2, User, X } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -782,28 +782,11 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   );
 }
 
-// ── Statut badge contrainte ───────────────────────────────────────────────────
-const STATUTS_CONTRAINTE = [
-  { value:"en_cours", label:"En cours",   color:"#ca631f", bg:"rgba(202,99,31,0.08)",   icon: AlertTriangle },
-  { value:"resolue",  label:"Résolue",    color:"#059669", bg:"rgba(5,150,105,0.08)",   icon: CheckCircle2 },
-  { value:"obsolete", label:"Obsolète",   color:"#9aa5b4", bg:"rgba(154,165,180,0.08)", icon: XCircle },
-] as const;
-
-function StatutBadge({ statut }: { statut:string }) {
-  const s = STATUTS_CONTRAINTE.find(x=>x.value===statut) ?? STATUTS_CONTRAINTE[0];
-  const Icon = s.icon;
-  return (
-    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, fontWeight:700, color:s.color, background:s.bg, border:`1px solid ${s.color}33`, padding:"2px 8px", borderRadius:999 }}>
-      <Icon size={9}/>{s.label}
-    </span>
-  );
-}
-
 // ── Modal / formulaire contrainte ─────────────────────────────────────────────
 function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
   open:boolean; onClose:()=>void; prospectId:number; contrainte:any|null; onSaved:(c:any)=>void;
 }) {
-  const [form, setForm]     = useState({ description:"", solution_preconisee:"", statut:"en_cours" });
+  const [form, setForm]     = useState({ description:"", solution_preconisee:"" });
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
   const upd = (k:string, v:string) => setForm(f=>({...f,[k]:v}));
@@ -813,7 +796,6 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
     setForm({
       description:         contrainte?.description         || "",
       solution_preconisee: contrainte?.solution_preconisee || "",
-      statut:              contrainte?.statut               || "en_cours",
     });
     setError("");
   }, [open, contrainte?.id]);
@@ -827,7 +809,6 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
       const res    = await fetch(url, { method, headers:{"Content-Type":"application/json"}, body:JSON.stringify({
         description:         form.description.trim(),
         solution_preconisee: form.solution_preconisee.trim()||null,
-        statut:              form.statut,
       })});
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
       const saved = await res.json();
@@ -851,27 +832,14 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
           <div style={{ display:"flex", flexDirection:"column" as const, gap:14 }}>
             <div>
               <label style={LS}>Description de la contrainte *</label>
-              <textarea value={form.description} onChange={e=>upd("description",e.target.value)}
-                placeholder="Ex : Délais administratifs trop longs pour l'obtention de licences…"
-                rows={3} style={{ ...IS, resize:"vertical" as const, lineHeight:1.6 }}/>
+              <div style={{ minHeight:120 }}>
+                <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
+              </div>
             </div>
             <div>
               <label style={LS}>Solution préconisée</label>
-              <textarea value={form.solution_preconisee} onChange={e=>upd("solution_preconisee",e.target.value)}
-                placeholder="Ex : Orientation vers le guichet unique — procédure accélérée possible"
-                rows={2} style={{ ...IS, resize:"vertical" as const, lineHeight:1.6 }}/>
-            </div>
-            <div>
-              <label style={LS}>Statut</label>
-              <div style={{ display:"flex", gap:8 }}>
-                {STATUTS_CONTRAINTE.map(s=>(
-                  <button key={s.value} type="button" onClick={()=>upd("statut",s.value)}
-                    style={{ flex:1, padding:"8px 0", borderRadius:9, border:`1px solid ${form.statut===s.value?s.color:"#E8E5E3"}`,
-                      background:form.statut===s.value?s.bg:"#fff", color:form.statut===s.value?s.color:"#9aa5b4",
-                      fontWeight:700, fontSize:12, cursor:"pointer", transition:"all 0.15s" }}>
-                    {s.label}
-                  </button>
-                ))}
+              <div style={{ minHeight:100 }}>
+                <RichTextEditor value={form.solution_preconisee} onChange={v=>upd("solution_preconisee",v)}/>
               </div>
             </div>
           </div>
@@ -1057,13 +1025,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   {/* Ligne verticale du fil */}
                   <div style={{ position:"absolute" as const, left:15, top:8, bottom:8, width:2, background:"#E8E5E3", borderRadius:2 }}/>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
-                    {[...p.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any,i:number)=>{
+                    {(()=>{
+                      const maxEnregistreLe = Math.max(...p.echanges.map((ex:any)=>new Date(ex.enregistre_le).getTime()));
+                      return [...p.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any,i:number)=>{
                       const retard = e.retard_jours || 0;
                       const retardColor = retard > 30 ? "#dc2626" : retard > 7 ? "#ca631f" : "#059669";
                       const retardBg    = retard > 30 ? "#dc262615" : retard > 7 ? "#ca631f15" : "#05966915";
                       const retardLabel = retard === 0
                         ? "Saisi le jour de l'échange"
                         : `Saisi ${retard} jour${retard>1?"s":""} après l'échange`;
+                      const isLast    = new Date(e.enregistre_le).getTime() === maxEnregistreLe;
+                      const within24h = Date.now() - new Date(e.enregistre_le).getTime() < 24*3600*1000;
+                      const canAct    = isLast && within24h;
                       return (
                         <div key={e.id} style={{ paddingLeft:32, position:"relative" as const }}>
                           <div style={{ position:"absolute" as const, left:10, top:12, width:10, height:10, borderRadius:"50%", background:"#004f91", border:"2px solid #fff", boxShadow:"0 0 0 2px #004f91" }}/>
@@ -1107,26 +1080,28 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                 Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
                               </p>
                               <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                                {(Date.now() - new Date(e.enregistre_le).getTime() < 24*3600*1000) && (
+                                {canAct && (
                                   <button onClick={()=>onEditEchange?.(e)}
                                     style={{ display:"flex", alignItems:"center", gap:3, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"3px 8px", fontSize:10, color:"#004f91", fontWeight:600 }}
                                     title="Modifiable pendant 24h">
                                     <Pencil size={10}/> Modifier
                                   </button>
                                 )}
-                                <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
-                                  style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", opacity:0.4 }}
-                                  title="Supprimer (mode test)">
-                                  {deletingEchange===e.id
-                                    ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
-                                    : <Trash2 size={11} style={{ color:"#dc2626" }}/>}
-                                </button>
+                                {canAct && (
+                                  <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
+                                    style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", opacity:0.6 }}
+                                    title="Supprimer">
+                                    {deletingEchange===e.id
+                                      ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
+                                      : <Trash2 size={11} style={{ color:"#dc2626" }}/>}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
                         </div>
                       );
-                    })}
+                    }); })()}
                   </div>
                 </div>
               )}
@@ -1149,9 +1124,9 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 {contraintes.map((c:any)=>(
                   <div key={c.id} style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px" }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, gap:8 }}>
-                      <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.6, flex:1 }}>{c.description}</p>
+                      <div data-rte style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.6, flex:1 }}
+                        dangerouslySetInnerHTML={{ __html:c.description }}/>
                       <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
-                        <StatutBadge statut={c.statut}/>
                         <button onClick={()=>{ setEditContrainte(c); setContrainteModal(true); }}
                           style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
                           <Pencil size={10} style={{ color:"#9aa5b4" }}/>
@@ -1167,13 +1142,10 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                     {c.solution_preconisee && (
                       <div style={{ background:"rgba(5,150,105,0.06)", border:"1px solid rgba(5,150,105,0.15)", borderRadius:7, padding:"7px 10px", marginTop:6 }}>
                         <p style={{ fontSize:10, fontWeight:700, color:"#059669", marginBottom:3 }}>Solution préconisée</p>
-                        <p style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}>{c.solution_preconisee}</p>
+                        <div data-rte style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}
+                          dangerouslySetInnerHTML={{ __html:c.solution_preconisee }}/>
                       </div>
                     )}
-                    <p style={{ fontSize:10, color:"#C5BFBB", marginTop:6 }}>
-                      Ajouté le {new Date(c.created_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
-                      {c.updated_at !== c.created_at && ` · modifié le ${new Date(c.updated_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
-                    </p>
                   </div>
                 ))}
               </div>
