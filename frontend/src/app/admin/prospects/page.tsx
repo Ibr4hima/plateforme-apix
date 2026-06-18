@@ -588,8 +588,11 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
 }
 
 // ── Modal Échange ─────────────────────────────────────────────────────────────
-function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onClose:()=>void; prospect:any; onSaved:(updated:any)=>void }) {
+const addDays = (iso:string, n:number) => { const d=new Date(iso); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+
+function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean; onClose:()=>void; prospect:any; edit?:any; onSaved:(updated:any)=>void }) {
   const today = new Date().toISOString().slice(0,10);
+  const isEdit = !!edit;
   const EMPTY_ECHANGE = { date_echange: today, commentaire:"", contact_par:"", interlocuteur:"", point_focal_id:"" };
   const [form, setForm]     = useState({ ...EMPTY_ECHANGE });
   const [saving, setSaving] = useState(false);
@@ -597,25 +600,46 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
   const [ok,     setOk]     = useState(false);
   const upd = (k:string, v:string) => setForm(f=>({ ...f,[k]:v }));
 
-  const dernierEchange = prospect?.echanges?.length
-    ? [...prospect.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1)
-    : null;
-  const estPremier = !dernierEchange;
-  const dateMin = dernierEchange
-    ? (() => { const d=new Date(dernierEchange.date_echange); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); })()
-    : undefined;
-
   const pointsFocaux: any[] = prospect?.points_focaux || [];
   const estMorale = prospect?.type === "morale";
   const nomProspect = estMorale ? prospect?.nom : `${prospect?.prenom||""} ${prospect?.nom||""}`.trim();
 
+  // Bornes de date. En création : après le dernier échange. En édition : entre
+  // l'échange précédent et le suivant (ordre de création), et ≤ aujourd'hui.
+  const dernierEchange = prospect?.echanges?.length
+    ? [...prospect.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1)
+    : null;
+  const estPremier = !isEdit && !dernierEchange;
+
+  let dateMin: string|undefined;
+  let dateMax = today;
+  if (isEdit) {
+    const parCreation = [...(prospect?.echanges||[])].sort((a:any,b:any)=>(a.enregistre_le||"").localeCompare(b.enregistre_le||""));
+    const idx  = parCreation.findIndex((x:any)=>x.id===edit.id);
+    const prevN = idx>0 ? parCreation[idx-1] : null;
+    const nextN = idx>=0 && idx<parCreation.length-1 ? parCreation[idx+1] : null;
+    if (prevN) dateMin = addDays(prevN.date_echange, 1);
+    if (nextN) dateMax = addDays(nextN.date_echange, -1);
+  } else if (dernierEchange) {
+    dateMin = addDays(dernierEchange.date_echange, 1);
+  }
+
   useEffect(()=>{
     if (!open) return;
-    const defaut = dateMin && dateMin <= today ? dateMin : today;
-    const interlocDefaut = !estMorale ? nomProspect : "";
-    setForm({ ...EMPTY_ECHANGE, date_echange: defaut, interlocuteur: interlocDefaut });
+    if (isEdit) {
+      setForm({
+        date_echange:   edit.date_echange,
+        commentaire:    edit.commentaire || "",
+        contact_par:    edit.contact_par || "",
+        interlocuteur:  edit.interlocuteur || "",
+        point_focal_id: edit.point_focal_id ? String(edit.point_focal_id) : (estMorale && edit.interlocuteur ? "__autre" : ""),
+      });
+    } else {
+      const defaut = dateMin && dateMin <= today ? dateMin : today;
+      setForm({ ...EMPTY_ECHANGE, date_echange: defaut, interlocuteur: !estMorale ? nomProspect : "" });
+    }
     setError(""); setOk(false);
-  }, [open, prospect?.id]);
+  }, [open, prospect?.id, edit?.id]);
 
   const handleSave = async () => {
     if (!form.date_echange) { setError("La date est obligatoire"); return; }
@@ -629,16 +653,16 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
         const pf = pointsFocaux.find((p:any) => p.id === point_focal_id);
         if (pf) interlocuteur = `${pf.prenom||""} ${pf.nom||""}`.trim();
       }
-      const res = await fetch(`${API}/prospects/${prospect.id}/echanges`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          date_echange:   form.date_echange,
-          commentaire:    form.commentaire || null,
-          contact_par:    form.contact_par.trim() || null,
-          interlocuteur,
-          point_focal_id,
-        })
+      const body = JSON.stringify({
+        date_echange:   form.date_echange,
+        commentaire:    form.commentaire || null,
+        contact_par:    form.contact_par.trim() || null,
+        interlocuteur,
+        point_focal_id,
       });
+      const res = isEdit
+        ? await fetch(`${API}/prospects/echanges/${edit.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body })
+        : await fetch(`${API}/prospects/${prospect.id}/echanges`, { method:"POST", headers:{"Content-Type":"application/json"}, body });
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
       setOk(true);
       const pr = await fetch(`${API}/prospects?page=1&per_page=200`);
@@ -659,9 +683,9 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
 
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
             <div>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>Enregistrer un échange</h2>
+              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>{isEdit ? "Modifier l'échange" : "Enregistrer un échange"}</h2>
               <p style={{ fontSize:12, color:"#9aa5b4", marginTop:3 }}>{nomProspect}</p>
-              {dernierEchange && (
+              {!isEdit && dernierEchange && (
                 <p style={{ fontSize:11, color:"#ca631f", marginTop:4, fontWeight:600 }}>
                   Dernier échange enregistré : {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}
                 </p>
@@ -678,10 +702,12 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
               <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:6 }}>
                 {estPremier
                   ? "Date à laquelle le premier contact a eu lieu — doit être ≤ aujourd'hui"
-                  : `Doit être postérieure au ${new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")} et ≤ aujourd'hui`}
+                  : dateMin
+                    ? `Doit être ${new Date(dateMin).toLocaleDateString("fr-FR")} au plus tôt${dateMax!==today?` et ${new Date(dateMax).toLocaleDateString("fr-FR")} au plus tard`:" et ≤ aujourd'hui"}`
+                    : "Doit être ≤ aujourd'hui"}
               </p>
               <input type="date" value={form.date_echange}
-                max={today} min={dateMin}
+                max={dateMax} min={dateMin}
                 onChange={e=>upd("date_echange",e.target.value)} style={IS}/>
             </div>
 
@@ -732,7 +758,7 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
             <div style={{ background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.12)", borderRadius:10, padding:"10px 14px", display:"flex", gap:8, alignItems:"flex-start" }}>
               <span style={{ fontSize:15, flexShrink:0 }}>🔒</span>
               <p style={{ fontSize:11, color:"#4a5568", lineHeight:1.6 }}>
-                Cet enregistrement est <strong>immuable et horodaté</strong> — la date et l'heure de saisie réelles sont tracées automatiquement et ne peuvent pas être modifiées.
+                La date et l'heure de saisie réelles sont tracées automatiquement. L'échange reste <strong>modifiable pendant 24h</strong> après son enregistrement, puis devient définitivement immuable.
               </p>
             </div>
 
@@ -747,7 +773,7 @@ function EchangeModal({ open, onClose, prospect, onSaved }: { open:boolean; onCl
                 background:ok?"#059669":saving?"#ccc":"#004f91",
                 color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13 }}>
               {saving?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
-              {ok?"Enregistré !":saving?"Enregistrement…":"Enregistrer l'échange"}
+              {ok?"Enregistré !":saving?"Enregistrement…":isEdit?"Modifier l'échange":"Enregistrer l'échange"}
             </button>
           </div>
         </div>
@@ -866,7 +892,7 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
 }
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
-function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
+function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh }: any) {
   const LBL = ({t}:{t:string}) => <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>{t}</p>;
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
@@ -903,7 +929,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
   const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:700, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
         <div style={{ height:5, background:`linear-gradient(90deg,${p.type==="morale"?"#004f91,#1a6ab0":"#ca631f,#e07a3a"})` }}/>
         <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
@@ -1035,10 +1061,9 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
                       const retard = e.retard_jours || 0;
                       const retardColor = retard > 30 ? "#dc2626" : retard > 7 ? "#ca631f" : "#059669";
                       const retardBg    = retard > 30 ? "#dc262615" : retard > 7 ? "#ca631f15" : "#05966915";
-                      const retardLabel = retard > 30
-                        ? `⚠️ Saisi ${retard}j après`
-                        : retard > 7 ? `Saisi ${retard}j après`
-                        : retard === 0 ? "Saisi le jour même" : `Saisi ${retard}j après`;
+                      const retardLabel = retard === 0
+                        ? "Saisi le jour de l'échange"
+                        : `Saisi ${retard} jour${retard>1?"s":""} après l'échange`;
                       return (
                         <div key={e.id} style={{ paddingLeft:32, position:"relative" as const }}>
                           <div style={{ position:"absolute" as const, left:10, top:12, width:10, height:10, borderRadius:"50%", background:"#004f91", border:"2px solid #fff", boxShadow:"0 0 0 2px #004f91" }}/>
@@ -1076,18 +1101,27 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
                                 dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                             )}
 
-                            {/* Pied : horodatage serveur + suppression */}
+                            {/* Pied : horodatage serveur + actions */}
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:10, paddingTop:8, borderTop:"1px solid #EDEBE9" }}>
                               <p style={{ fontSize:10, color:"#9aa5b4", fontFamily:"monospace" }}>
-                                🔒 Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
+                                Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
                               </p>
-                              <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
-                                style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", opacity:0.4 }}
-                                title="Supprimer (mode test)">
-                                {deletingEchange===e.id
-                                  ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
-                                  : <Trash2 size={11} style={{ color:"#dc2626" }}/>}
-                              </button>
+                              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                                {(Date.now() - new Date(e.enregistre_le).getTime() < 24*3600*1000) && (
+                                  <button onClick={()=>onEditEchange?.(e)}
+                                    style={{ display:"flex", alignItems:"center", gap:3, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"3px 8px", fontSize:10, color:"#004f91", fontWeight:600 }}
+                                    title="Modifiable pendant 24h">
+                                    <Pencil size={10}/> Modifier
+                                  </button>
+                                )}
+                                <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
+                                  style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", opacity:0.4 }}
+                                  title="Supprimer (mode test)">
+                                  {deletingEchange===e.id
+                                    ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
+                                    : <Trash2 size={11} style={{ color:"#dc2626" }}/>}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1182,6 +1216,7 @@ export default function ProspectsPage() {
   const [edit,         setEdit]         = useState<any>(null);
   const [vue,          setVue]          = useState<any>(null);
   const [echangeModal, setEchangeModal] = useState(false);
+  const [echangeEdit,  setEchangeEdit]  = useState<any>(null);
   const [deleting,     setDeleting]     = useState<number|null>(null);
   const [q,            setQ]            = useState("");
 
@@ -1276,7 +1311,7 @@ export default function ProspectsPage() {
                       style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.08)`, border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
                       <Pencil size={12}/> Modifier
                     </button>
-                    <button onClick={()=>{ setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
+                    <button onClick={()=>{ setEchangeEdit(null); setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
                       style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
                       <MessageSquare size={12}/> Contacter
                     </button>
@@ -1295,10 +1330,11 @@ export default function ProspectsPage() {
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
       {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
-        onContacter={()=>setEchangeModal(true)}
+        onContacter={()=>{ setEchangeEdit(null); setEchangeModal(true); }}
+        onEditEchange={(e:any)=>{ setEchangeEdit(e); setEchangeModal(true); }}
         onRefresh={async()=>{ await charger(); const r=await fetch(`${API}/prospects?page=1&per_page=200`); const d=await r.json(); const up=(d.data||[]).find((x:any)=>x.id===vue.id); if(up) setVue(up); }}/>}
-      {vue && <EchangeModal open={echangeModal} onClose={()=>setEchangeModal(false)} prospect={vue}
-        onSaved={(updated)=>{ setEchangeModal(false); setVue(updated); charger(); }}/>}
+      {vue && <EchangeModal open={echangeModal} onClose={()=>{ setEchangeModal(false); setEchangeEdit(null); }} prospect={vue} edit={echangeEdit}
+        onSaved={(updated)=>{ setEchangeModal(false); setEchangeEdit(null); setVue(updated); charger(); }}/>}
     </div>
   );
 }

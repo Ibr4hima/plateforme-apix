@@ -438,6 +438,65 @@ async def liste_echanges(prospect_id: int, db: AsyncSession = Depends(get_db)):
     return [echange_to_dict(e) for e in res.scalars().all()]
 
 
+# ── PATCH /prospects/echanges/:id ── (fenêtre de 24h après enregistrement)
+@router.patch("/echanges/{echange_id}")
+async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    from datetime import datetime, timezone, timedelta
+    res = await db.execute(select(ProspectEchange).where(ProspectEchange.id == echange_id))
+    e = res.scalar_one_or_none()
+    if not e:
+        raise HTTPException(404, "Échange introuvable")
+
+    # Fenêtre d'édition : 24h après l'enregistrement, ensuite immuable
+    enr = e.enregistre_le
+    if enr is not None:
+        if enr.tzinfo is None:
+            enr = enr.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) - enr > timedelta(hours=24):
+            raise HTTPException(403, "Cet échange n'est plus modifiable (délai de 24h dépassé).")
+
+    # Mise à jour de la date avec contraintes chronologiques
+    if "date_echange" in payload and payload["date_echange"]:
+        try:
+            new_date = date_type.fromisoformat(payload["date_echange"])
+        except ValueError:
+            raise HTTPException(422, "Format de date invalide (attendu : YYYY-MM-DD)")
+        today = date_type.today()
+        if new_date > today:
+            raise HTTPException(422, f"La date ne peut pas être dans le futur (aujourd'hui : {today.isoformat()})")
+        # Voisins par ordre de création (enregistre_le)
+        prev_date = (await db.execute(
+            select(func.max(ProspectEchange.date_echange)).where(
+                ProspectEchange.prospect_id == e.prospect_id,
+                ProspectEchange.enregistre_le < e.enregistre_le,
+            )
+        )).scalar_one_or_none()
+        next_date = (await db.execute(
+            select(func.min(ProspectEchange.date_echange)).where(
+                ProspectEchange.prospect_id == e.prospect_id,
+                ProspectEchange.enregistre_le > e.enregistre_le,
+            )
+        )).scalar_one_or_none()
+        if prev_date and new_date <= prev_date:
+            raise HTTPException(422, f"La date doit être postérieure à l'échange précédent ({prev_date.isoformat()})")
+        if next_date and new_date >= next_date:
+            raise HTTPException(422, f"La date doit être antérieure à l'échange suivant ({next_date.isoformat()})")
+        e.date_echange = new_date
+
+    if "commentaire" in payload:
+        e.commentaire = payload["commentaire"] or None
+    if "interlocuteur" in payload:
+        e.interlocuteur = (payload["interlocuteur"] or "").strip() or None
+    if "point_focal_id" in payload:
+        e.point_focal_id = payload["point_focal_id"] or None
+    if "contact_par" in payload:
+        e.contact_par = (payload["contact_par"] or "").strip() or None
+
+    await db.flush()
+    await db.refresh(e)
+    return echange_to_dict(e)
+
+
 # ── DELETE /prospects/echanges/:id ── (désactiver quand auth en prod)
 @router.delete("/echanges/{echange_id}", status_code=204)
 async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db)):
