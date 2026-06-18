@@ -33,6 +33,14 @@ function badgeProspect(p:any) {
   return                  { label:"Inactif",    color:"#dc2626", bg:"rgba(220,38,38,0.10)" };
 }
 
+// Une prospection conclue reste modifiable pendant 24h, puis devient figée
+// (archivée dans « Contacts précédents », lecture seule).
+function estFige(p:any) {
+  if (!p?.issue) return false;
+  if (!p.issue_conclu_le) return true;
+  return Date.now() - new Date(p.issue_conclu_le).getTime() > 24*3600*1000;
+}
+
 type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string[] };
 const EMPTY_FOCAL: PointFocal = { prenom:"", nom:"", telephones:[""], mails:[""] };
 
@@ -1083,7 +1091,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                         : `Saisi ${retard} jour${retard>1?"s":""} après l'échange`;
                       const isLast    = new Date(e.enregistre_le).getTime() === maxEnregistreLe;
                       const within24h = Date.now() - new Date(e.enregistre_le).getTime() < 24*3600*1000;
-                      const canAct    = !p.issue && isLast && within24h;
+                      const canAct    = !estFige(p) && isLast && within24h;
                       return (
                         <div key={e.id} style={{ paddingLeft:32, position:"relative" as const }}>
                           <div style={{ position:"absolute" as const, left:10, top:12, width:10, height:10, borderRadius:"50%", background:"#004f91", border:"2px solid #fff", boxShadow:"0 0 0 2px #004f91" }}/>
@@ -1159,7 +1167,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           <div style={{ marginBottom:16 }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:contraintes.length?10:0 }}>
               <LBL t={`Contraintes exprimées (${contraintes.length})`}/>
-              {!p.issue && (
+              {!estFige(p) && (
                 <button onClick={()=>{ setEditContrainte(null); setContrainteModal(true); }}
                   style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", marginBottom:5 }}>
                   <Plus size={10}/> Ajouter
@@ -1175,7 +1183,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, gap:8 }}>
                       <div data-rte style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.6, flex:1 }}
                         dangerouslySetInnerHTML={{ __html:c.description }}/>
-                      {!p.issue && (
+                      {!estFige(p) && (
                         <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
                           <button onClick={()=>{ setEditContrainte(c); setContrainteModal(true); }}
                             style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
@@ -1236,6 +1244,11 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       {p.issue_commentaire && (
                         <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}
                           dangerouslySetInnerHTML={{ __html:p.issue_commentaire }}/>
+                      )}
+                      {!readOnly && !estFige(p) && (
+                        <p style={{ fontSize:11, color:"#ca631f", marginTop:10, fontWeight:600 }}>
+                          Modifiable encore 24h, puis le prospect sera archivé dans « Contacts précédents ».
+                        </p>
                       )}
                     </div>
                   </>
@@ -1302,7 +1315,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           )}
 
           <div style={{ display:"flex", gap:8, marginTop:20, justifyContent:"space-between", borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
-            {(!readOnly && !p.issue) ? (
+            {(!readOnly && !estFige(p)) ? (
               <button onClick={onContacter}
                 style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
                 <MessageSquare size={13}/> Contacter
@@ -1457,7 +1470,7 @@ export default function ProspectsPage() {
                         style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.08)`, border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
                         <Pencil size={12}/> Modifier
                       </button>
-                      {!p.issue && (
+                      {!estFige(p) && (
                         <button onClick={()=>{ setEchangeEdit(null); setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
                           style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
                           <MessageSquare size={12}/> Contacter
