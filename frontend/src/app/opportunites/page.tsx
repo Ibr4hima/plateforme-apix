@@ -1287,11 +1287,85 @@ export default function OpportunitesPage() {
                         }}
                       />
                     )}
-                    {selectedNiveau!=="pole" && selectedNiveau!=="region" && (
-                      <div style={{textAlign:"center",padding:"60px 0",color:"#9aa5b4"}}>
-                        <p style={{fontSize:13}}>Vue en cours de construction…</p>
-                      </div>
-                    )}
+                    {(selectedNiveau==="departement"||selectedNiveau==="arrondissement") && (()=>{
+                      const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
+                      if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
+                      const getRegion=(p:any)=>p.region_nom||DEPT_TO_REGION[p.departement_nom]||null;
+
+                      const potCard=(p:any,dot:string,hoverBorder:string,hoverShadow:string)=>(
+                        <div key={p.id} onClick={()=>setPotSel(p)}
+                          style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
+                          onMouseEnter={ev=>{ev.currentTarget.style.borderColor=hoverBorder;ev.currentTarget.style.boxShadow=hoverShadow;}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                          <div style={{width:7,height:7,borderRadius:"50%",background:dot,flexShrink:0}}/>
+                          <span style={{fontSize:13,fontWeight:600,color:dot,flex:1}}>{potTitle(p)}</span>
+                          <span style={{fontSize:11,color:"#9aa5b4",fontWeight:600,flexShrink:0}}>Voir →</span>
+                        </div>
+                      );
+
+                      /* ── Arbre Régions → Départements ── */
+                      if (selectedNiveau==="departement") {
+                        const regMap=new Map<string,any[]>();
+                        items.forEach((p:any)=>{const r=getRegion(p)||"__none";if(!regMap.has(r))regMap.set(r,[]);regMap.get(r)!.push(p);});
+                        const sortedRegs=[...[...regMap.keys()].filter(k=>k!=="__none").sort(),...(regMap.has("__none")?["__none"]:[])];
+                        return (
+                          <div style={{display:"flex",flexDirection:"column" as const,gap:20}}>
+                            {sortedRegs.map(reg=>(
+                              <div key={reg}>
+                                <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:10}}>
+                                  <div style={{width:8,height:8,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
+                                  <span style={{fontSize:14,fontWeight:700,color:"#0F52BA"}}>{reg==="__none"?"Non classés":`Région de ${reg}`}</span>
+                                </div>
+                                <div style={{paddingLeft:20,borderLeft:"2px solid rgba(15,82,186,0.18)",display:"flex",flexDirection:"column" as const,gap:8}}>
+                                  {regMap.get(reg)!.map((p:any)=>potCard(p,"#0D652D","#0D652D40","0 3px 10px rgba(13,101,45,0.10)"))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+
+                      /* ── Arbre Régions → Départements → Arrondissements ── */
+                      const regMap=new Map<string,Map<string,any[]>>();
+                      items.forEach((p:any)=>{
+                        const r=getRegion(p)||"__none";
+                        const d=p.departement_nom||"__none_dept";
+                        if(!regMap.has(r))regMap.set(r,new Map());
+                        const dm=regMap.get(r)!;
+                        if(!dm.has(d))dm.set(d,[]);
+                        dm.get(d)!.push(p);
+                      });
+                      const sortedRegs=[...[...regMap.keys()].filter(k=>k!=="__none").sort(),...(regMap.has("__none")?["__none"]:[])];
+                      return (
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
+                          {sortedRegs.map(reg=>{
+                            const deptMap=regMap.get(reg)!;
+                            const sortedDepts=[...[...deptMap.keys()].filter(k=>k!=="__none_dept").sort(),...(deptMap.has("__none_dept")?["__none_dept"]:[])];
+                            return (
+                              <div key={reg}>
+                                <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:12}}>
+                                  <div style={{width:8,height:8,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
+                                  <span style={{fontSize:14,fontWeight:700,color:"#0F52BA"}}>{reg==="__none"?"Non classés":`Région de ${reg}`}</span>
+                                </div>
+                                <div style={{paddingLeft:20,borderLeft:"2px solid rgba(15,82,186,0.18)",display:"flex",flexDirection:"column" as const,gap:14}}>
+                                  {sortedDepts.map(dept=>(
+                                    <div key={dept}>
+                                      <div style={{display:"inline-flex",alignItems:"center",gap:7,marginBottom:8}}>
+                                        <div style={{width:7,height:7,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
+                                        <span style={{fontSize:13,fontWeight:600,color:"#0D652D"}}>{dept==="__none_dept"?"Sans département":`Département de ${dept}`}</span>
+                                      </div>
+                                      <div style={{paddingLeft:18,borderLeft:"2px solid rgba(13,101,45,0.18)",display:"flex",flexDirection:"column" as const,gap:8}}>
+                                        {deptMap.get(dept)!.map((p:any)=>potCard(p,"#8A6100","#FBBC0450","0 3px 10px rgba(251,188,4,0.15)"))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </>
                 )}
               </>
