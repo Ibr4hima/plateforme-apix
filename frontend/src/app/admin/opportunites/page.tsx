@@ -9,6 +9,23 @@ import BanqueProjets from "@/components/opportunites/BanqueProjets";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+const DEPT_TO_REGION: Record<string, string> = {
+  "Dakar":"Dakar","Guédiawaye":"Dakar","Pikine":"Dakar","Rufisque":"Dakar",
+  "Mbour":"Thiès","Thiès":"Thiès","Tivaouane":"Thiès",
+  "Bambey":"Diourbel","Diourbel":"Diourbel","Mbacké":"Diourbel",
+  "Dagana":"Saint-Louis","Podor":"Saint-Louis","Saint-Louis":"Saint-Louis",
+  "Kébémer":"Louga","Linguère":"Louga","Louga":"Louga",
+  "Fatick":"Fatick","Foundiougne":"Fatick","Gossas":"Fatick",
+  "Guinguinéo":"Kaolack","Kaolack":"Kaolack","Nioro du Rip":"Kaolack",
+  "Birkilane":"Kaffrine","Kaffrine":"Kaffrine","Koungheul":"Kaffrine","Malem Hoddar":"Kaffrine",
+  "Bakel":"Tambacounda","Goudiry":"Tambacounda","Koumpentoum":"Tambacounda","Tambacounda":"Tambacounda",
+  "Kédougou":"Kédougou","Salemata":"Kédougou","Saraya":"Kédougou",
+  "Kolda":"Kolda","Médina Yoro Foulah":"Kolda","Vélingara":"Kolda",
+  "Bounkiling":"Sédhiou","Goudomp":"Sédhiou","Sédhiou":"Sédhiou",
+  "Bignona":"Ziguinchor","Oussouye":"Ziguinchor","Ziguinchor":"Ziguinchor",
+  "Kanel":"Matam","Matam":"Matam","Ranérou":"Matam",
+};
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
@@ -1191,12 +1208,13 @@ export default function OpportunitesAdminPage() {
 
                 /* ── Cascade Régions → Départements ── */
                 if (selectedNiveau==="departement") {
-                  const regions=[...new Set<string>(items.map((p:any)=>p.region_nom).filter(Boolean))].sort();
-                  const unclassified=items.filter((p:any)=>!p.region_nom);
+                  const getRegion=(p:any)=>p.region_nom||DEPT_TO_REGION[p.departement_nom]||null;
+                  const regions=[...new Set<string>(items.map(getRegion).filter(Boolean) as string[])].sort();
+                  const unclassified=items.filter((p:any)=>!getRegion(p));
                   if (!cascadeRegion) return (
                     <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                       {regions.map(reg=>{
-                        const count=items.filter((p:any)=>p.region_nom===reg).length;
+                        const count=items.filter((p:any)=>getRegion(p)===reg).length;
                         return (
                           <div key={reg} onClick={()=>setCascadeRegion(reg)}
                             style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:10,border:"1px solid #E8E5E3",background:"#fff",cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",transition:"all 0.15s"}}
@@ -1231,7 +1249,7 @@ export default function OpportunitesAdminPage() {
                       )}
                     </div>
                   );
-                  const depts=items.filter((p:any)=>p.region_nom===cascadeRegion);
+                  const depts=items.filter((p:any)=>getRegion(p)===cascadeRegion);
                   return (
                     <div>
                       <button onClick={()=>setCascadeRegion(null)}
@@ -1269,12 +1287,13 @@ export default function OpportunitesAdminPage() {
 
                 /* ── Cascade Régions → Départements → Arrondissements ── */
                 if (selectedNiveau==="arrondissement") {
-                  const regions=[...new Set<string>(items.map((p:any)=>p.region_nom).filter(Boolean))].sort();
-                  const unclassifiedArr=items.filter((p:any)=>!p.region_nom);
+                  const getRegionArr=(p:any)=>p.region_nom||DEPT_TO_REGION[p.departement_nom]||null;
+                  const regions=[...new Set<string>(items.map(getRegionArr).filter(Boolean) as string[])].sort();
+                  const unclassifiedArr=items.filter((p:any)=>!getRegionArr(p));
                   if (!cascadeRegion) return (
                     <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                       {regions.map(reg=>{
-                        const count=items.filter((p:any)=>p.region_nom===reg).length;
+                        const count=items.filter((p:any)=>getRegionArr(p)===reg).length;
                         return (
                           <div key={reg} onClick={()=>setCascadeRegion(reg)}
                             style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:10,border:"1px solid #E8E5E3",background:"#fff",cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",transition:"all 0.15s"}}
@@ -1309,7 +1328,7 @@ export default function OpportunitesAdminPage() {
                       )}
                     </div>
                   );
-                  const regItems=items.filter((p:any)=>p.region_nom===cascadeRegion);
+                  const regItems=items.filter((p:any)=>getRegionArr(p)===cascadeRegion);
                   const deptNames=[...new Set<string>(regItems.map((p:any)=>p.departement_nom).filter(Boolean))].sort();
                   const unclassifiedDept=regItems.filter((p:any)=>!p.departement_nom);
                   if (!cascadeDept) return (
