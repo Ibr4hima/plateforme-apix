@@ -1079,31 +1079,24 @@ export default function ProspectsPage() {
         [data-rte] *{font-family:var(--font-google-sans);font-size:13px}
       `}</style>
 
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
-        <div>
-          <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.15em", textTransform:"uppercase" as const, marginBottom:4 }}>Administration</p>
-          <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Prospects</h1>
-          <p style={{ color:"#9aa5b4", fontSize:13, marginTop:4 }}>Investisseurs ciblés pour la Destination Sénégal</p>
-        </div>
-        <button onClick={()=>{ setEdit(null); setModal(true); }}
-          style={{ display:"flex", alignItems:"center", gap:7, padding:"11px 20px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#ca631f,#e07a3a)", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(202,99,31,0.3)" }}>
-          <Plus size={15}/> Nouveau prospect
-        </button>
+      <div style={{ marginBottom:8 }}>
+        <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Prospects</h1>
       </div>
 
       {/* Onglets */}
-      <div style={{ display:"flex", gap:2, background:"rgba(0,0,0,0.04)", borderRadius:10, padding:3, width:"fit-content", marginBottom:24, border:"1px solid #E8E5E3" }}>
-        {([["cibles","Investisseurs ciblés"],["historique","Historique des contacts"]] as const).map(([key,label])=>(
-          <button key={key} onClick={()=>setOnglet(key)}
-            style={{ padding:"8px 20px", borderRadius:7, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, transition:"all 0.15s", background:onglet===key?"#ca631f":"transparent", color:onglet===key?"#fff":"#4a5568" }}>
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Recherche */}
-      <div style={{ position:"relative" as const, marginBottom:20, maxWidth:360 }}>
-        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Rechercher un prospect…" style={{ ...IS,paddingLeft:14 }}/>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#fff", borderBottom:"1px solid #E8E5E3", marginBottom:24 }}>
+        <div style={{ display:"flex" }}>
+          {([["cibles","Investisseurs ciblés"],["historique","Historique des contacts"]] as const).map(([key,label])=>(
+            <button key={key} onClick={()=>setOnglet(key)}
+              style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${onglet===key?"#ca631f":"transparent"}`, background:"transparent", color:onglet===key?"#ca631f":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <button onClick={()=>{ setEdit(null); setModal(true); }}
+          style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#ca631f,#e07a3a)", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(202,99,31,0.3)", marginBottom:4 }}>
+          <Plus size={15}/> Nouveau prospect
+        </button>
       </div>
 
       {loading ? (
@@ -1112,7 +1105,6 @@ export default function ProspectsPage() {
         </div>
       ) : prospects.length === 0 ? (
         <div style={{ textAlign:"center" as const, padding:"80px 0", color:"#9aa5b4" }}>
-          <User size={48} style={{ marginBottom:16, opacity:0.3 }}/>
           <p style={{ fontSize:16, fontWeight:600 }}>Aucun prospect</p>
           <p style={{ fontSize:13, marginTop:4 }}>{onglet==="cibles"?"Ajoutez votre premier prospect ciblé":"Aucun échange enregistré pour l'instant"}</p>
         </div>
