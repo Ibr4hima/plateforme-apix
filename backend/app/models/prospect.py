@@ -19,6 +19,8 @@ class Prospect(Base):
     telephones       = Column(ARRAY(String), default=[])
     mails            = Column(ARRAY(String), default=[])
     siteweb          = Column(Text)
+    linkedin         = Column(Text)
+    agent_id         = Column(Integer, nullable=True)  # ownership (auth à venir)
     secteur_ids      = Column(ARRAY(Integer), default=[])
     branche_ids      = Column(ARRAY(Integer), default=[])
     activite_ids     = Column(ARRAY(Integer), default=[])
@@ -52,6 +54,24 @@ class Prospect(Base):
                                  cascade="all, delete-orphan", order_by="ProspectEchange.date_echange")
     contraintes   = relationship("ProspectContrainte", back_populates="prospect",
                                  cascade="all, delete-orphan", order_by="ProspectContrainte.created_at")
+    contacts      = relationship("ProspectContact", back_populates="prospect",
+                                 cascade="all, delete-orphan")
+
+
+class ProspectContact(Base):
+    """Coordonnée normalisée (téléphone / mail / site / linkedin) pour la
+    déduplication. Unicité globale garantie par UNIQUE(type, valeur_normalisee)."""
+    __tablename__ = "prospect_contacts"
+
+    id                = Column(Integer, primary_key=True, autoincrement=True)
+    prospect_id       = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
+    type              = Column(String(20), nullable=False)   # telephone | email | siteweb | linkedin
+    valeur_normalisee = Column(Text, nullable=False)
+    valeur_affichee   = Column(Text, nullable=False)
+    origine           = Column(String(20), default="entreprise")
+    created_at        = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    prospect = relationship("Prospect", back_populates="contacts")
 
 
 class ProspectPointFocal(Base):

@@ -2,14 +2,66 @@ from datetime import date as date_type
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_, or_, delete as sqldel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
-from app.models.prospect import Prospect, ProspectPointFocal, ProspectEchange, ProspectContrainte
+from app.models.prospect import (
+    Prospect, ProspectPointFocal, ProspectEchange, ProspectContrainte, ProspectContact,
+)
 from app.models.projet import Projet
+from app.utils.dedup import collect_contacts, LABELS
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
+
+
+# ── Déduplication ─────────────────────────────────────────────────────────────
+async def verifier_doublons(db: AsyncSession, payload: dict, exclure_prospect_id: int | None = None) -> dict:
+    """Vérifie qu'aucune coordonnée (tel/mail/site/linkedin) de la charge utile
+    n'existe déjà pour un AUTRE prospect. Un seul match suffit à bloquer (409).
+    Retourne le dict des contacts normalisés (à réinsérer après sauvegarde)."""
+    contacts = collect_contacts(payload)
+    if not contacts:
+        return contacts
+
+    conds = [
+        and_(ProspectContact.type == t, ProspectContact.valeur_normalisee == v)
+        for (t, v) in contacts.keys()
+    ]
+    stmt = select(ProspectContact).where(or_(*conds))
+    if exclure_prospect_id is not None:
+        stmt = stmt.where(ProspectContact.prospect_id != exclure_prospect_id)
+    res = await db.execute(stmt)
+    hit = res.scalars().first()
+    if hit:
+        pr = await db.execute(
+            select(Prospect.nom, Prospect.prenom).where(Prospect.id == hit.prospect_id)
+        )
+        row = pr.first()
+        nom = "un autre prospect"
+        if row:
+            nom = f"{row[1] or ''} {row[0] or ''}".strip() or "un autre prospect"
+        label = LABELS.get(hit.type, "Cette coordonnée")
+        raise HTTPException(
+            409,
+            f"{label} « {hit.valeur_affichee} » est déjà enregistré pour le prospect « {nom} ». "
+            f"Un investisseur ne peut être démarché que par un seul agent à la fois.",
+        )
+    return contacts
+
+
+async def ecrire_contacts(db: AsyncSession, prospect_id: int, contacts: dict):
+    """Remplace les coordonnées normalisées d'un prospect."""
+    await db.execute(sqldel(ProspectContact).where(ProspectContact.prospect_id == prospect_id))
+    for c in contacts.values():
+        db.add(ProspectContact(
+            prospect_id       = prospect_id,
+            type              = c["type"],
+            valeur_normalisee = c["valeur_normalisee"],
+            valeur_affichee   = c["valeur_affichee"],
+            origine           = c["origine"],
+        ))
 
 LOAD_OPTS = [
     selectinload(Prospect.pays_origine),
@@ -82,6 +134,9 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
         ],
         "telephones":      p.telephones or [],
         "mails":           p.mails or [],
+        "siteweb":         p.siteweb,
+        "linkedin":        p.linkedin,
+        "adresse":         p.adresse,
         "details":         p.details,
         "est_publie":      p.est_publie,
         "created_at":      p.created_at.isoformat() if p.created_at else None,
@@ -151,6 +206,8 @@ async def liste_prospects(
 async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
     if not payload.get("nom", "").strip():
         raise HTTPException(422, "Le nom est obligatoire")
+    # Déduplication : bloque si une coordonnée existe déjà
+    contacts = await verifier_doublons(db, payload)
     p = Prospect(
         type            = payload.get("type") or "physique",
         nom             = payload["nom"].strip(),
@@ -162,6 +219,8 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
         activite_ids    = payload.get("activite_ids") or [],
         telephones      = payload.get("telephones") or [],
         mails           = payload.get("mails") or [],
+        siteweb         = payload.get("siteweb") or None,
+        linkedin        = payload.get("linkedin") or None,
         adresse         = payload.get("adresse") or None,
         details         = payload.get("details") or None,
         objet_projet              = payload.get("objet_projet") or False,
@@ -190,7 +249,12 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
             telephones  = pf_data.get("telephones") or [],
             mails       = pf_data.get("mails") or [],
         ))
-    await db.flush()
+    await ecrire_contacts(db, p.id, contacts)
+    try:
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(409, "Une coordonnée de ce prospect vient d'être enregistrée pour un autre prospect.")
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == p.id))
     p2 = res.scalar_one()
     titre = await get_projet_titre(db, p2.objet_projet_id)
@@ -204,7 +268,22 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     p = res.scalar_one_or_none()
     if not p:
         raise HTTPException(404, "Prospect introuvable")
-    for f in ["type", "nom", "prenom", "adresse", "details",
+
+    # Déduplication : on évalue l'état effectif après mise à jour (valeurs du
+    # payload si fournies, sinon valeurs actuelles), en excluant ce prospect.
+    eff = {
+        "telephones": payload["telephones"] if "telephones" in payload else (p.telephones or []),
+        "mails":      payload["mails"]      if "mails"      in payload else (p.mails or []),
+        "siteweb":    payload["siteweb"]    if "siteweb"    in payload else p.siteweb,
+        "linkedin":   payload["linkedin"]   if "linkedin"   in payload else p.linkedin,
+        "points_focaux": payload["points_focaux"] if "points_focaux" in payload else [
+            {"telephones": pf.telephones or [], "mails": pf.mails or []}
+            for pf in (p.points_focaux or [])
+        ],
+    }
+    contacts = await verifier_doublons(db, eff, exclure_prospect_id=prospect_id)
+
+    for f in ["type", "nom", "prenom", "adresse", "details", "siteweb", "linkedin",
               "objet_intentions_details", "objet_adequation_details", "objet_commentaires"]:
         if f in payload:
             setattr(p, f, payload[f] or None)
@@ -224,7 +303,6 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
         if f in payload:
             setattr(p, f, payload[f] or [])
     if "points_focaux" in payload:
-        from sqlalchemy import delete as sqldel
         await db.execute(sqldel(ProspectPointFocal).where(ProspectPointFocal.prospect_id == prospect_id))
         for pf_data in payload["points_focaux"] or []:
             if not (pf_data.get("nom") or "").strip():
@@ -236,7 +314,12 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
                 telephones  = pf_data.get("telephones") or [],
                 mails       = pf_data.get("mails") or [],
             ))
-    await db.flush()
+    await ecrire_contacts(db, prospect_id, contacts)
+    try:
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(409, "Une coordonnée de ce prospect vient d'être enregistrée pour un autre prospect.")
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id))
     p2 = res.scalar_one()
     titre = await get_projet_titre(db, p2.objet_projet_id)

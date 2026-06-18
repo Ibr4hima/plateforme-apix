@@ -39,6 +39,8 @@ const EMPTY_FORM = {
   // commun
   telephones:       [""] as string[],
   mails:            [""] as string[],
+  siteweb:          "",
+  linkedin:         "",
   details:          "",
   // objet du ciblage
   objet_projet:              false,
@@ -244,6 +246,8 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
           : [{ ...EMPTY_FOCAL }],
         telephones:       edit.telephones?.length ? edit.telephones : [""],
         mails:            edit.mails?.length ? edit.mails : [""],
+        siteweb:          edit.siteweb||"",
+        linkedin:         edit.linkedin||"",
         details:          edit.details||"",
         objet_projet:              edit.objet_projet||false,
         objet_projet_id:           edit.objet_projet_id||null,
@@ -275,6 +279,8 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         nom:       form.nom.trim(),
         telephones:form.telephones.filter(Boolean),
         mails:     form.mails.filter(Boolean),
+        siteweb:   form.siteweb.trim()||null,
+        linkedin:  form.linkedin.trim()||null,
         details:   form.details||null,
         // objet du ciblage
         objet_projet:              form.objet_projet,
@@ -355,6 +361,16 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
                 <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
                   <MultiPhones values={form.telephones} onChange={v=>upd("telephones",v)}/>
                   <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                    <div>
+                      <label style={LS}>Site web</label>
+                      <input value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="ex. exemple.com" style={IS}/>
+                    </div>
+                    <div>
+                      <label style={LS}>LinkedIn</label>
+                      <input value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)} placeholder="linkedin.com/company/…" style={IS}/>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div>
@@ -392,6 +408,16 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
                 <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
                   <MultiPhones values={form.telephones} onChange={v=>upd("telephones",v)}/>
                   <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                    <div>
+                      <label style={LS}>Site web</label>
+                      <input value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="ex. exemple.com" style={IS}/>
+                    </div>
+                    <div>
+                      <label style={LS}>LinkedIn</label>
+                      <input value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)} placeholder="linkedin.com/company/…" style={IS}/>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -834,6 +860,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onRefresh }: any) {
             {p.mails?.length > 0 && (
               <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Email(s)"/>
                 {p.mails.map((m:string,i:number)=><p key={i} style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{m}</p>)}
+              </div>
+            )}
+            {p.siteweb && (
+              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Site web"/>
+                <a href={/^https?:\/\//.test(p.siteweb)?p.siteweb:`https://${p.siteweb}`} target="_blank" rel="noreferrer" style={{ fontSize:13,fontWeight:600,color:"#004f91",wordBreak:"break-all" as const }}>{p.siteweb}</a>
+              </div>
+            )}
+            {p.linkedin && (
+              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="LinkedIn"/>
+                <a href={/^https?:\/\//.test(p.linkedin)?p.linkedin:`https://${p.linkedin}`} target="_blank" rel="noreferrer" style={{ fontSize:13,fontWeight:600,color:"#004f91",wordBreak:"break-all" as const }}>{p.linkedin}</a>
               </div>
             )}
           </div>
