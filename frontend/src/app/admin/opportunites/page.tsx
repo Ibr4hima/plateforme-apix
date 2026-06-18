@@ -992,6 +992,8 @@ export default function OpportunitesAdminPage() {
   const [avgToggle, setAvgToggle] = useState<number|null>(null);
   const [selectedSec, setSelectedSec] = useState<string|null>(null);
   const [selectedNiveau, setSelectedNiveau] = useState<string|null>(null);
+  const [cascadeRegion, setCascadeRegion] = useState<string|null>(null);
+  const [cascadeDept,   setCascadeDept]   = useState<string|null>(null);
   const [secEntCounts, setSecEntCounts] = useState<Record<string,number>>({});
   const [refSecteurs,  setRefSecteurs]  = useState<any[]>([]);
   const [refBranches,  setRefBranches]  = useState<any[]>([]);
@@ -1040,6 +1042,7 @@ export default function OpportunitesAdminPage() {
   useEffect(()=>{chargerPots();},[chargerPots]);
   useEffect(()=>{chargerAvgs();},[chargerAvgs]);
   useEffect(()=>{ setSelectedSec(null); setSelectedNiveau(null); },[onglet]);
+  useEffect(()=>{ setCascadeRegion(null); setCascadeDept(null); },[selectedNiveau]);
 
   const deletePot=async(id:number)=>{
     if(!confirm("Supprimer cette fiche ?"))return;
@@ -1183,35 +1186,154 @@ export default function OpportunitesAdminPage() {
                   }}
                 />
               ) : (()=>{
-                const nColor = ({departement:"#0D652D",arrondissement:"#FBBC04"} as Record<string,string>)[selectedNiveau!] || "#ca631f";
                 const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                 if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
-                return (
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-                    {items.map((p:any)=>(
-                      <div key={p.id} onClick={()=>setPotVue(p)}
-                        style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${p.est_publie?nColor:"#C5BFBB"}`,cursor:"pointer",transition:"all 0.15s"}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${nColor}20`;ev.currentTarget.style.borderColor=`${nColor}50`;}}
-                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?nColor:"#C5BFBB";}}>
-                        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:6,lineHeight:1.4}}>{potTitle(p)}</div>
-                        <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
-                          <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
-                            style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
-                            <Pencil size={12}/> Modifier
-                          </button>
-                          <button onClick={()=>togglePot(p)} disabled={potToggle===p.id}
-                            style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>
-                            {potToggle===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Publié</>:<><Eye size={12}/> Publier</>}
-                          </button>
-                          <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
-                            style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
-                            {potDel===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
-                          </button>
-                        </div>
+
+                /* ── Cascade Régions → Départements ── */
+                if (selectedNiveau==="departement") {
+                  const regions=[...new Set<string>(items.map((p:any)=>p.region_nom).filter(Boolean))].sort();
+                  if (!cascadeRegion) return (
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                      {regions.map(reg=>{
+                        const count=items.filter((p:any)=>p.region_nom===reg).length;
+                        return (
+                          <div key={reg} onClick={()=>setCascadeRegion(reg)}
+                            style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:10,border:"1px solid #E8E5E3",background:"#fff",cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",transition:"all 0.15s"}}
+                            onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#0F52BA40";ev.currentTarget.style.boxShadow="0 3px 12px rgba(15,82,186,0.10)";}}
+                            onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                            <div style={{width:8,height:8,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
+                            <span style={{fontSize:14,fontWeight:700,color:"#0F52BA",flex:1}}>{reg}</span>
+                            <span style={{fontSize:12,color:"#9aa5b4",fontWeight:600}}>{count} dép. →</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                  const depts=items.filter((p:any)=>p.region_nom===cascadeRegion);
+                  return (
+                    <div>
+                      <button onClick={()=>setCascadeRegion(null)}
+                        style={{display:"flex",alignItems:"center",gap:6,marginBottom:20,background:"none",border:"none",cursor:"pointer",color:"#0F52BA",fontSize:13,fontWeight:600,padding:0}}>
+                        <ArrowLeft size={13}/> {cascadeRegion}
+                      </button>
+                      <div style={{paddingLeft:20,borderLeft:"2px solid rgba(15,82,186,0.18)",display:"flex",flexDirection:"column" as const,gap:8}}>
+                        {depts.map((p:any)=>(
+                          <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
+                            onClick={()=>setPotVue(p)}
+                            onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#0D652D40";ev.currentTarget.style.boxShadow="0 3px 10px rgba(13,101,45,0.10)";}}
+                            onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                            <div style={{width:7,height:7,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
+                            <span style={{fontSize:13,fontWeight:600,color:"#0D652D",flex:1}}>{potTitle(p)}</span>
+                            <div style={{display:"flex",gap:5,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
+                              <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
+                                style={{display:"flex",alignItems:"center",gap:3,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:"#366FE3",fontWeight:600}}>
+                                <Pencil size={11}/> Modifier
+                              </button>
+                              <button onClick={()=>togglePot(p)} disabled={potToggle===p.id}
+                                style={{display:"flex",alignItems:"center",gap:3,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>
+                                {potToggle===p.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={11}/> Publié</>:<><Eye size={11}/> Publier</>}
+                              </button>
+                              <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
+                                style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 7px"}}>
+                                {potDel===p.id?<Loader2 size={11} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"#dc2626"}}/>}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                );
+                    </div>
+                  );
+                }
+
+                /* ── Cascade Régions → Départements → Arrondissements ── */
+                if (selectedNiveau==="arrondissement") {
+                  const regions=[...new Set<string>(items.map((p:any)=>p.region_nom).filter(Boolean))].sort();
+                  if (!cascadeRegion) return (
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                      {regions.map(reg=>{
+                        const count=items.filter((p:any)=>p.region_nom===reg).length;
+                        return (
+                          <div key={reg} onClick={()=>setCascadeRegion(reg)}
+                            style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:10,border:"1px solid #E8E5E3",background:"#fff",cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",transition:"all 0.15s"}}
+                            onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#0F52BA40";ev.currentTarget.style.boxShadow="0 3px 12px rgba(15,82,186,0.10)";}}
+                            onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                            <div style={{width:8,height:8,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
+                            <span style={{fontSize:14,fontWeight:700,color:"#0F52BA",flex:1}}>{reg}</span>
+                            <span style={{fontSize:12,color:"#9aa5b4",fontWeight:600}}>{count} arr. →</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                  const regItems=items.filter((p:any)=>p.region_nom===cascadeRegion);
+                  const deptNames=[...new Set<string>(regItems.map((p:any)=>p.departement_nom).filter(Boolean))].sort();
+                  if (!cascadeDept) return (
+                    <div>
+                      <button onClick={()=>setCascadeRegion(null)}
+                        style={{display:"flex",alignItems:"center",gap:6,marginBottom:20,background:"none",border:"none",cursor:"pointer",color:"#0F52BA",fontSize:13,fontWeight:600,padding:0}}>
+                        <ArrowLeft size={13}/> {cascadeRegion}
+                      </button>
+                      <div style={{paddingLeft:20,borderLeft:"2px solid rgba(15,82,186,0.18)",display:"flex",flexDirection:"column" as const,gap:6}}>
+                        {deptNames.map(dept=>{
+                          const count=regItems.filter((p:any)=>p.departement_nom===dept).length;
+                          return (
+                            <div key={dept} onClick={()=>setCascadeDept(dept)}
+                              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",transition:"all 0.15s"}}
+                              onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#0D652D40";ev.currentTarget.style.boxShadow="0 3px 10px rgba(13,101,45,0.10)";}}
+                              onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                              <div style={{width:7,height:7,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
+                              <span style={{fontSize:13,fontWeight:700,color:"#0D652D",flex:1}}>{dept}</span>
+                              <span style={{fontSize:12,color:"#9aa5b4",fontWeight:600}}>{count} arr. →</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                  const arrItems=regItems.filter((p:any)=>p.departement_nom===cascadeDept);
+                  return (
+                    <div>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:20}}>
+                        <button onClick={()=>{ setCascadeRegion(null); setCascadeDept(null); }}
+                          style={{display:"flex",alignItems:"center",gap:4,background:"none",border:"none",cursor:"pointer",color:"#0F52BA",fontSize:13,fontWeight:600,padding:0}}>
+                          <ArrowLeft size={13}/> {cascadeRegion}
+                        </button>
+                        <span style={{color:"#C5BFBB",fontSize:13}}>›</span>
+                        <button onClick={()=>setCascadeDept(null)}
+                          style={{background:"none",border:"none",cursor:"pointer",color:"#0D652D",fontSize:13,fontWeight:600,padding:0}}>
+                          {cascadeDept}
+                        </button>
+                      </div>
+                      <div style={{paddingLeft:20,borderLeft:"2px solid rgba(13,101,45,0.18)",display:"flex",flexDirection:"column" as const,gap:8}}>
+                        {arrItems.map((p:any)=>(
+                          <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
+                            onClick={()=>setPotVue(p)}
+                            onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#FBBC0450";ev.currentTarget.style.boxShadow="0 3px 10px rgba(251,188,4,0.15)";}}
+                            onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                            <div style={{width:7,height:7,borderRadius:"50%",background:"#8A6100",flexShrink:0}}/>
+                            <span style={{fontSize:13,fontWeight:600,color:"#8A6100",flex:1}}>{potTitle(p)}</span>
+                            <div style={{display:"flex",gap:5,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
+                              <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
+                                style={{display:"flex",alignItems:"center",gap:3,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:"#366FE3",fontWeight:600}}>
+                                <Pencil size={11}/> Modifier
+                              </button>
+                              <button onClick={()=>togglePot(p)} disabled={potToggle===p.id}
+                                style={{display:"flex",alignItems:"center",gap:3,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>
+                                {potToggle===p.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={11}/> Publié</>:<><Eye size={11}/> Publier</>}
+                              </button>
+                              <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
+                                style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 7px"}}>
+                                {potDel===p.id?<Loader2 size={11} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"#dc2626"}}/>}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return null;
               })()}
             </>
           )}
