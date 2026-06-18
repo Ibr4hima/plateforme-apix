@@ -755,10 +755,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
 function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
   pot:any; onClose:()=>void; onEdit:(p:any)=>void;
 }) {
-  const NIVEAU_COLORS: Record<string,string> = {
-    pole:"#ca631f", region:"#00408C", departement:"#008070", arrondissement:"#8A7000",
-  };
-  const bandColor = NIVEAU_COLORS[p.niveau] || "#ca631f";
+  const bandColor = "#E35336";
   const [fichiers,  setFichiers]  = useState<any[]>(p.fichiers||[]);
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
   const [branches,  setBranches]  = useState<any[]>([]);
@@ -783,12 +780,11 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:660,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
-        <div style={{height:5,background:`linear-gradient(90deg,${bandColor},${bandColor}99)`}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#E3533699)"}}/>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
             <div style={{flex:1,paddingRight:16}}>
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{p.titre}</h2>
-              <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"#15803d":"#9aa5b4",background:p.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Public":"Non publié"}</span>
             </div>
             <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
           </div>
@@ -800,29 +796,31 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
                 {(p.secteur_ids||[]).map((secId:number) => {
                   const sec = secteurs.find((s:any) => s.id === secId);
                   if (!sec) return null;
+                  const n = (sec.nom||"").toLowerCase();
+                  const secC = n.includes("secondaire") ? "#0F52BA" : n.includes("tertiaire") ? "#0D652D" : "#E35336";
                   const brasDuSec = branches.filter((b:any) => b.secteur_id === secId && (p.branche_ids||[]).includes(b.id));
                   return (
                     <div key={secId}>
                       <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
-                        <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec.nom}</span>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:secC,flexShrink:0}}/>
+                        <span style={{fontSize:12,fontWeight:700,color:secC}}>{sec.nom}</span>
                       </div>
                       {brasDuSec.length > 0 && (
-                        <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
+                        <div style={{paddingLeft:20,borderLeft:`2px solid ${secC}25`,display:"flex",flexDirection:"column" as const,gap:4}}>
                           {brasDuSec.map((bra:any) => {
                             const actsDeBra = activites.filter((a:any) => a.branche_id === bra.id && (p.activite_ids||[]).includes(a.id));
                             return (
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
-                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
-                                  <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span>
+                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
+                                  <span style={{fontSize:11,fontWeight:600,color:"#0F52BA"}}>{bra.nom}</span>
                                 </div>
                                 {actsDeBra.length > 0 && (
-                                  <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
+                                  <div style={{paddingLeft:18,borderLeft:"2px solid rgba(15,82,186,0.15)",display:"flex",flexDirection:"column" as const,gap:3}}>
                                     {actsDeBra.map((act:any) => (
                                       <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                        <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
+                                        <span style={{fontSize:11,color:"#0D652D",fontWeight:500}}>{act.nom}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -853,7 +851,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
               <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
                 {fichiers.map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(5,150,105,0.06)",border:"1px solid rgba(5,150,105,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#059669",textDecoration:"none",fontWeight:500}}>
+                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(251,188,4,0.12)",border:"1px solid rgba(251,188,4,0.35)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#8A6100",textDecoration:"none",fontWeight:600}}>
                     <FileText size={11}/> {f.titre||f.fichier_nom}
                   </a>
                 ))}
@@ -862,7 +860,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
           )}
 
           <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#059669",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
+            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#E35336",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
               <Pencil size={13}/> Modifier
             </button>
             <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
