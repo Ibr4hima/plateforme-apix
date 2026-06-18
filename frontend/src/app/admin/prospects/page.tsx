@@ -895,7 +895,6 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
 function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, onRouvrir, readOnly }: any) {
-  const LBL = ({t}:{t:string}) => <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:5 }}>{t}</p>;
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
   const [contrainteModal, setContrainteModal] = useState(false);
@@ -958,139 +957,168 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   };
   const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
 
+  // ── Système de design de la fiche : palette neutre, une seule couleur d'accent
+  //    selon le type, et des sections homogènes pour une lecture sans bruit visuel.
+  const accent = p.type==="morale" ? "#004f91" : "#ca631f";
+  const TXT="#1a1a2e", SUB="#5b6472", MUT="#98a1ad", SURF="#F6F4F2", BRD="#EAE7E4", DIV="#EFECE9";
+  const card: any = { background:SURF, border:`1px solid ${BRD}`, borderRadius:12, padding:"14px 16px" };
+  const linkStyle: any = { fontSize:13, fontWeight:600, color:"#004f91", wordBreak:"break-all" as const, textDecoration:"none" };
+  const href = (u:string) => /^https?:\/\//.test(u) ? u : `https://${u}`;
+
+  const Section = ({ title, count, action, first, children }:any) => (
+    <section style={{ marginTop:first?0:22, paddingTop:first?0:22, borderTop:first?"none":`1px solid ${DIV}` }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:12, minHeight:24 }}>
+        <h3 style={{ fontSize:11, fontWeight:700, color:MUT, letterSpacing:"0.12em", textTransform:"uppercase" as const }}>
+          {title}{typeof count==="number" ? <span style={{ color:"#C5BFBB", fontWeight:700, marginLeft:7 }}>{count}</span> : null}
+        </h3>
+        {action || null}
+      </div>
+      {children}
+    </section>
+  );
+
+  const Info = ({ label, children }:any) => (
+    <div>
+      <p style={{ fontSize:10, fontWeight:600, color:MUT, letterSpacing:"0.08em", textTransform:"uppercase" as const, marginBottom:4 }}>{label}</p>
+      <div style={{ fontSize:13, fontWeight:600, color:TXT, lineHeight:1.5 }}>{children}</div>
+    </div>
+  );
+
+  const SubLabel = ({ children, color }:any) => (
+    <p style={{ fontSize:10, fontWeight:700, color:color||MUT, letterSpacing:"0.08em", textTransform:"uppercase" as const, marginBottom:6 }}>{children}</p>
+  );
+
+  const AddBtn = ({ onClick }:any) => (
+    <button onClick={onClick}
+      style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:accent, background:"transparent", border:`1px solid ${accent}55`, borderRadius:8, padding:"4px 11px", cursor:"pointer" }}>
+      <Plus size={11}/> Ajouter
+    </button>
+  );
+
+  const issueMeta = p.issue==="installe"
+    ? { label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" }
+    : p.issue==="decline"
+    ? { label:"Possibilité écartée", color:"#6b7280", bg:"rgba(107,114,128,0.10)" }
+    : null;
+
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:700, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
         <div style={{ height:5, background:`linear-gradient(90deg,${p.type==="morale"?"#004f91,#1a6ab0":"#ca631f,#e07a3a"})` }}/>
-        <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
+        <div style={{ padding:"26px 30px 30px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
 
           {/* En-tête */}
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <div style={{ width:42, height:42, borderRadius:12, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.1)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                {p.type==="morale"?<Building2 size={18} style={{ color:"#004f91" }}/>:<User size={18} style={{ color:"#ca631f" }}/>}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, marginBottom:22 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:13, minWidth:0 }}>
+              <div style={{ width:46, height:46, borderRadius:13, background:`${accent}14`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                {p.type==="morale"?<Building2 size={20} style={{ color:accent }}/>:<User size={20} style={{ color:accent }}/>}
               </div>
-              <div>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>{displayName}</h2>
-                <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const, marginTop:2 }}>
-                  <span style={{ fontSize:11, fontWeight:600,
-                    color:p.type==="morale"?"#004f91":"#ca631f",
-                    background:p.type==="morale"?"rgba(0,79,145,0.08)":"rgba(202,99,31,0.08)",
-                    border:`1px solid ${p.type==="morale"?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,
-                    padding:"2px 9px", borderRadius:999 }}>
+              <div style={{ minWidth:0 }}>
+                <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:TXT, lineHeight:1.2, overflow:"hidden", textOverflow:"ellipsis" }}>{displayName}</h2>
+                <div style={{ display:"flex", alignItems:"center", gap:7, flexWrap:"wrap" as const, marginTop:5 }}>
+                  <span style={{ fontSize:11, fontWeight:600, color:SUB }}>
                     {p.type==="morale"?"Personne morale":"Personne physique"}
                   </span>
-                  {p.issue && (()=>{ const b=badgeProspect(p); return b && (
-                    <span style={{ fontSize:11, fontWeight:700, color:b.color, background:b.bg, border:`1px solid ${b.color}33`, padding:"2px 9px", borderRadius:999 }}>{b.label}</span>
-                  ); })()}
+                  {(()=>{ const b=badgeProspect(p); return b ? (
+                    <><span style={{ color:"#D5D0CC" }}>·</span>
+                    <span style={{ fontSize:11, fontWeight:700, color:b.color, background:b.bg, padding:"2px 10px", borderRadius:999 }}>{b.label}</span></>
+                  ) : null; })()}
                 </div>
               </div>
             </div>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={14} color="#4a5568"/></button>
+            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:9, padding:8, flexShrink:0 }}><X size={15} color="#4a5568"/></button>
           </div>
 
-          {/* Infos de base */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
-            {p.type==="physique" && p.pays_origine_nom && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Pays d'origine"/><p style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{p.pays_origine_nom}</p></div>
-            )}
-            {p.type==="morale" && p.siege_nom && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Pays du siège social"/><p style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{p.siege_nom}</p></div>
-            )}
-            {p.telephones?.length > 0 && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Téléphone(s)"/>
-                {p.telephones.map((t:string,i:number)=><p key={i} style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{t}</p>)}
-              </div>
-            )}
-            {p.mails?.length > 0 && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Email(s)"/>
-                {p.mails.map((m:string,i:number)=><p key={i} style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{m}</p>)}
-              </div>
-            )}
-            {p.siteweb && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="Site web"/>
-                <a href={/^https?:\/\//.test(p.siteweb)?p.siteweb:`https://${p.siteweb}`} target="_blank" rel="noreferrer" style={{ fontSize:13,fontWeight:600,color:"#004f91",wordBreak:"break-all" as const }}>{p.siteweb}</a>
-              </div>
-            )}
-            {p.linkedin && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}><LBL t="LinkedIn"/>
-                <a href={/^https?:\/\//.test(p.linkedin)?p.linkedin:`https://${p.linkedin}`} target="_blank" rel="noreferrer" style={{ fontSize:13,fontWeight:600,color:"#004f91",wordBreak:"break-all" as const }}>{p.linkedin}</a>
-              </div>
-            )}
-          </div>
+          {/* Identité & coordonnées */}
+          <Section title="Identité & coordonnées" first>
+            <div style={{ ...card, display:"grid", gridTemplateColumns:"1fr 1fr", gap:"16px 24px" }}>
+              {p.type==="physique" && p.pays_origine_nom && <Info label="Pays d'origine">{p.pays_origine_nom}</Info>}
+              {p.type==="morale" && p.siege_nom && <Info label="Pays du siège social">{p.siege_nom}</Info>}
+              {p.telephones?.length > 0 && (
+                <Info label="Téléphone(s)">{p.telephones.map((t:string,i:number)=><div key={i}>{t}</div>)}</Info>
+              )}
+              {p.mails?.length > 0 && (
+                <Info label="Email(s)">{p.mails.map((m:string,i:number)=><div key={i} style={{ wordBreak:"break-all" as const }}>{m}</div>)}</Info>
+              )}
+              {p.siteweb && (
+                <Info label="Site web"><a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={linkStyle}>{p.siteweb}</a></Info>
+              )}
+              {p.linkedin && (
+                <Info label="LinkedIn"><a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={linkStyle}>{p.linkedin}</a></Info>
+              )}
+            </div>
+          </Section>
 
           {/* Points focaux (morale) */}
           {p.type==="morale" && p.points_focaux?.length > 0 && (
-            <div style={{ marginBottom:16 }}>
-              <LBL t={`Points focaux (${p.points_focaux.length})`}/>
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+            <Section title="Points focaux" count={p.points_focaux.length}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
                 {p.points_focaux.map((pf:any,i:number)=>(
-                  <div key={i} style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", marginBottom:4 }}>{pf.prenom} {pf.nom}</p>
-                    <div style={{ display:"flex", gap:16, flexWrap:"wrap" as const }}>
-                      {pf.telephones?.filter(Boolean).map((t:string,j:number)=><span key={j} style={{ fontSize:12, color:"#4a5568" }}>{t}</span>)}
-                      {pf.mails?.filter(Boolean).map((m:string,j:number)=><span key={j} style={{ fontSize:12, color:"#004f91" }}>{m}</span>)}
+                  <div key={i} style={card}>
+                    <p style={{ fontWeight:700, fontSize:13, color:TXT, marginBottom:6 }}>{pf.prenom} {pf.nom}</p>
+                    <div style={{ display:"flex", flexDirection:"column" as const, gap:3 }}>
+                      {pf.telephones?.filter(Boolean).map((t:string,j:number)=><span key={j} style={{ fontSize:12, color:SUB }}>{t}</span>)}
+                      {pf.mails?.filter(Boolean).map((m:string,j:number)=><span key={`m${j}`} style={{ fontSize:12, color:"#004f91", wordBreak:"break-all" as const }}>{m}</span>)}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </Section>
           )}
 
           {/* Détails / Commentaires */}
           {p.details && (
-            <div style={{ marginBottom:16 }}>
-              <LBL t={p.type==="morale"?"Commentaires":"Détails"}/>
-              <div data-rte style={{ background:"rgba(202,99,31,0.04)", border:"1px solid rgba(202,99,31,0.12)", borderRadius:10, padding:"12px 14px", fontSize:13, color:"#4a5568", lineHeight:1.7 }}
+            <Section title={p.type==="morale"?"Commentaires":"Détails"}>
+              <div data-rte style={{ ...card, fontSize:13, color:SUB, lineHeight:1.7 }}
                 dangerouslySetInnerHTML={{ __html:p.details }}/>
-            </div>
+            </Section>
           )}
 
           {/* Objet du ciblage */}
           {(p.objet_projet || p.objet_intentions_etranger || p.objet_adequation_senegal || p.objet_commentaires) && (
-            <div style={{ marginBottom:16 }}>
-              <LBL t="Objet du ciblage"/>
+            <Section title="Objet du ciblage">
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 {p.objet_projet && (
-                  <div style={{ background:"rgba(202,99,31,0.05)", border:"1px solid rgba(202,99,31,0.15)", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:4 }}>Lié à un projet</p>
-                    <p style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{p.objet_projet_titre || `Projet #${p.objet_projet_id}`}</p>
+                  <div style={card}>
+                    <SubLabel>Lié à un projet</SubLabel>
+                    <p style={{ fontSize:13, fontWeight:600, color:TXT }}>{p.objet_projet_titre || `Projet #${p.objet_projet_id}`}</p>
                   </div>
                 )}
                 {p.objet_intentions_etranger && (
-                  <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:6 }}>Intentions d'investissement à l'étranger</p>
-                    {p.objet_intentions_details && <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_intentions_details }}/>}
+                  <div style={card}>
+                    <SubLabel>Intentions d'investissement à l'étranger</SubLabel>
+                    {p.objet_intentions_details && <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_intentions_details }}/>}
                   </div>
                 )}
                 {p.objet_adequation_senegal && (
-                  <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:6 }}>Adéquation profil / destination Sénégal</p>
-                    {p.objet_adequation_details && <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_adequation_details }}/>}
+                  <div style={card}>
+                    <SubLabel>Adéquation profil / destination Sénégal</SubLabel>
+                    {p.objet_adequation_details && <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_adequation_details }}/>}
                   </div>
                 )}
                 {p.objet_commentaires && (
-                  <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
-                    <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", marginBottom:6 }}>Commentaires</p>
-                    <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_commentaires }}/>
+                  <div style={card}>
+                    <SubLabel>Commentaires</SubLabel>
+                    <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_commentaires }}/>
                   </div>
                 )}
               </div>
-            </div>
+            </Section>
           )}
 
           {/* Fil des échanges */}
           {p.echanges?.length > 0 && (
-            <div style={{ marginBottom:16 }}>
-              <button onClick={()=>setShowEchanges(o=>!o)}
-                style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", padding:0, marginBottom:showEchanges?10:0 }}>
-                <LBL t={`Historique des échanges (${p.echanges.length})`}/>
-                {showEchanges?<ChevronUp size={12} style={{ color:"#9aa5b4",marginBottom:5 }}/>:<ChevronDown size={12} style={{ color:"#9aa5b4",marginBottom:5 }}/>}
-              </button>
+            <Section title="Historique des échanges" count={p.echanges.length}
+              action={
+                <button onClick={()=>setShowEchanges(o=>!o)}
+                  style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${BRD}`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontSize:11, fontWeight:600, color:SUB }}>
+                  {showEchanges?<>Masquer <ChevronUp size={12}/></>:<>Afficher <ChevronDown size={12}/></>}
+                </button>
+              }>
               {showEchanges && (
                 <div style={{ position:"relative" as const }}>
                   {/* Ligne verticale du fil */}
-                  <div style={{ position:"absolute" as const, left:15, top:8, bottom:8, width:2, background:"#E8E5E3", borderRadius:2 }}/>
+                  <div style={{ position:"absolute" as const, left:5, top:10, bottom:10, width:2, background:BRD, borderRadius:2 }}/>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                     {(()=>{
                       const maxEnregistreLe = Math.max(...p.echanges.map((ex:any)=>new Date(ex.enregistre_le).getTime()));
@@ -1104,52 +1132,61 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       const showSep = (p.cycles?.length>0) && cnum !== prevCycle;
                       prevCycle = cnum;
                       const retard = e.retard_jours || 0;
-                      const retardColor = retard > 30 ? "#dc2626" : retard > 7 ? "#ca631f" : "#059669";
-                      const retardBg    = retard > 30 ? "#dc262615" : retard > 7 ? "#ca631f15" : "#05966915";
-                      const retardLabel = retard === 0
-                        ? "Saisi le jour de l'échange"
-                        : `Saisi ${retard} jour${retard>1?"s":""} après l'échange`;
+                      const retardLabel = retard === 0 ? "saisi le jour même" : `saisi ${retard} j après`;
                       const isLast    = new Date(e.enregistre_le).getTime() === maxEnregistreLe;
                       const within24h = Date.now() - new Date(e.enregistre_le).getTime() < 24*3600*1000;
                       const canAct    = !estFige(p) && isLast && within24h;
                       const sepLabel = cy
                         ? `Cycle ${cy.cycle_num} — ${cy.issue==="installe"?"Installé":"Décliné"}`
                         : "Cycle actuel";
-                      const sepColor = cy ? (cy.issue==="installe"?"#0D652D":"#6b7280") : "#004f91";
+                      const sepColor = cy ? (cy.issue==="installe"?"#0D652D":"#6b7280") : accent;
                       return (
                         <Fragment key={e.id}>
                           {showSep && (
-                            <div style={{ paddingLeft:32, position:"relative" as const, marginTop:i>0?6:0, marginBottom:2 }}>
-                              <span style={{ fontSize:10, fontWeight:700, color:sepColor, background:`${sepColor}14`, border:`1px solid ${sepColor}33`, padding:"2px 10px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>
-                                {sepLabel}
-                              </span>
+                            <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:i>0?8:0, marginBottom:2 }}>
+                              <span style={{ width:10, height:10, borderRadius:"50%", background:sepColor, marginLeft:1, flexShrink:0, border:"2px solid #fff", boxShadow:`0 0 0 1.5px ${sepColor}` }}/>
+                              <span style={{ fontSize:10, fontWeight:700, color:sepColor, letterSpacing:"0.1em", textTransform:"uppercase" as const, whiteSpace:"nowrap" as const }}>{sepLabel}</span>
+                              <span style={{ flex:1, height:1, background:DIV }}/>
                             </div>
                           )}
-                        <div style={{ paddingLeft:32, position:"relative" as const }}>
-                          <div style={{ position:"absolute" as const, left:10, top:12, width:10, height:10, borderRadius:"50%", background:"#004f91", border:"2px solid #fff", boxShadow:"0 0 0 2px #004f91" }}/>
-                          <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px" }}>
+                        <div style={{ paddingLeft:22, position:"relative" as const }}>
+                          <div style={{ position:"absolute" as const, left:1, top:15, width:8, height:8, borderRadius:"50%", background:"#fff", border:`2px solid ${accent}` }}/>
+                          <div style={card}>
 
-                            {/* Ligne 1 : date déclarée + badge délai */}
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginBottom:6 }}>
-                              <span style={{ fontSize:13, fontWeight:800, color:"#004f91" }}>
+                            {/* Ligne 1 : date déclarée + actions */}
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:(e.interlocuteur||e.contact_par)?6:8 }}>
+                              <span style={{ fontSize:13, fontWeight:800, color:TXT }}>
                                 {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                               </span>
-                              <span style={{ fontSize:10, fontWeight:700, color:retardColor, background:retardBg, border:`1px solid ${retardColor}33`, padding:"2px 8px", borderRadius:999 }}>
-                                {retardLabel}
-                              </span>
+                              {canAct && (
+                                <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
+                                  <button onClick={()=>onEditEchange?.(e)}
+                                    style={{ display:"flex", alignItems:"center", gap:3, background:"transparent", border:`1px solid ${BRD}`, cursor:"pointer", borderRadius:7, padding:"3px 9px", fontSize:10, color:SUB, fontWeight:600 }}
+                                    title="Modifiable pendant 24h">
+                                    <Pencil size={10}/> Modifier
+                                  </button>
+                                  <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
+                                    style={{ background:"transparent", border:`1px solid ${BRD}`, cursor:"pointer", borderRadius:7, padding:"4px 6px" }}
+                                    title="Supprimer">
+                                    {deletingEchange===e.id
+                                      ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
+                                      : <Trash2 size={11} style={{ color:"#9aa5b4" }}/>}
+                                  </button>
+                                </div>
+                              )}
                             </div>
 
                             {/* Ligne 2 : interlocuteurs */}
                             {(e.interlocuteur || e.contact_par) && (
-                              <div style={{ display:"flex", gap:12, flexWrap:"wrap" as const, marginBottom:6 }}>
+                              <div style={{ display:"flex", gap:14, flexWrap:"wrap" as const, marginBottom:8 }}>
                                 {e.interlocuteur && (
-                                  <span style={{ fontSize:11, color:"#4a5568", display:"flex", alignItems:"center", gap:4 }}>
-                                    <User size={10} style={{ color:"#9aa5b4" }}/> {e.interlocuteur}
+                                  <span style={{ fontSize:11, color:SUB, display:"flex", alignItems:"center", gap:5 }}>
+                                    <User size={11} style={{ color:MUT }}/> {e.interlocuteur}
                                   </span>
                                 )}
                                 {e.contact_par && (
-                                  <span style={{ fontSize:11, color:"#9aa5b4", display:"flex", alignItems:"center", gap:4 }}>
-                                    <Building2 size={10}/> {e.contact_par}
+                                  <span style={{ fontSize:11, color:MUT, display:"flex", alignItems:"center", gap:5 }}>
+                                    <Building2 size={11}/> {e.contact_par}
                                   </span>
                                 )}
                               </div>
@@ -1157,34 +1194,14 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
                             {/* Compte-rendu */}
                             {e.commentaire && (
-                              <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7, marginTop:4 }}
+                              <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
                                 dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                             )}
 
-                            {/* Pied : horodatage serveur + actions */}
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:10, paddingTop:8, borderTop:"1px solid #EDEBE9" }}>
-                              <p style={{ fontSize:10, color:"#9aa5b4", fontFamily:"monospace" }}>
-                                Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
-                              </p>
-                              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                                {canAct && (
-                                  <button onClick={()=>onEditEchange?.(e)}
-                                    style={{ display:"flex", alignItems:"center", gap:3, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"3px 8px", fontSize:10, color:"#004f91", fontWeight:600 }}
-                                    title="Modifiable pendant 24h">
-                                    <Pencil size={10}/> Modifier
-                                  </button>
-                                )}
-                                {canAct && (
-                                  <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
-                                    style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", opacity:0.6 }}
-                                    title="Supprimer">
-                                    {deletingEchange===e.id
-                                      ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
-                                      : <Trash2 size={11} style={{ color:"#dc2626" }}/>}
-                                  </button>
-                                )}
-                              </div>
-                            </div>
+                            {/* Pied : horodatage serveur */}
+                            <p style={{ fontSize:10, color:MUT, fontFamily:"monospace", marginTop:10, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
+                              Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {retardLabel}
+                            </p>
                           </div>
                         </div>
                         </Fragment>
@@ -1193,48 +1210,40 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   </div>
                 </div>
               )}
-            </div>
+            </Section>
           )}
 
           {/* Contraintes investisseur */}
-          <div style={{ marginBottom:16 }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:contraintes.length?10:0 }}>
-              <LBL t={`Contraintes exprimées (${contraintes.length})`}/>
-              {!estFige(p) && (
-                <button onClick={()=>{ setEditContrainte(null); setContrainteModal(true); }}
-                  style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", marginBottom:5 }}>
-                  <Plus size={10}/> Ajouter
-                </button>
-              )}
-            </div>
+          <Section title="Contraintes exprimées" count={contraintes.length}
+            action={!estFige(p) ? <AddBtn onClick={()=>{ setEditContrainte(null); setContrainteModal(true); }}/> : null}>
             {contraintes.length === 0 ? (
-              <p style={{ fontSize:12, color:"#C5BFBB", fontStyle:"italic" }}>Aucune contrainte enregistrée</p>
+              <p style={{ fontSize:12, color:MUT, fontStyle:"italic" }}>Aucune contrainte enregistrée</p>
             ) : (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 {contraintes.map((c:any)=>(
-                  <div key={c.id} style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px" }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, gap:8 }}>
-                      <div data-rte style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.6, flex:1 }}
+                  <div key={c.id} style={card}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
+                      <div data-rte style={{ fontSize:13, color:TXT, lineHeight:1.6, flex:1 }}
                         dangerouslySetInnerHTML={{ __html:c.description }}/>
                       {!estFige(p) && (
-                        <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
                           <button onClick={()=>{ setEditContrainte(c); setContrainteModal(true); }}
                             style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
-                            <Pencil size={10} style={{ color:"#9aa5b4" }}/>
+                            <Pencil size={12} style={{ color:MUT }}/>
                           </button>
                           <button onClick={()=>handleDeleteContrainte(c.id)} disabled={deletingContrainte===c.id}
-                            style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px", opacity:0.5 }}>
+                            style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
                             {deletingContrainte===c.id
-                              ? <Loader2 size={10} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
-                              : <Trash2 size={10} style={{ color:"#dc2626" }}/>}
+                              ? <Loader2 size={12} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
+                              : <Trash2 size={12} style={{ color:MUT }}/>}
                           </button>
                         </div>
                       )}
                     </div>
                     {c.solution_preconisee && (
-                      <div style={{ background:"rgba(5,150,105,0.06)", border:"1px solid rgba(5,150,105,0.15)", borderRadius:7, padding:"7px 10px", marginTop:6 }}>
-                        <p style={{ fontSize:10, fontWeight:700, color:"#059669", marginBottom:3 }}>Solution préconisée</p>
-                        <div data-rte style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}
+                      <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
+                        <SubLabel color="#0D652D">Solution préconisée</SubLabel>
+                        <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.6 }}
                           dangerouslySetInnerHTML={{ __html:c.solution_preconisee }}/>
                       </div>
                     )}
@@ -1242,162 +1251,155 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 ))}
               </div>
             )}
-          </div>
+          </Section>
 
           {/* Historique des cycles de prospection passés (re-contacts) */}
           {p.cycles?.length > 0 && (
-            <div style={{ marginBottom:16 }}>
-              <LBL t={`Cycles de prospection passés (${p.cycles.length})`}/>
+            <Section title="Cycles de prospection passés" count={p.cycles.length}>
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 {[...p.cycles].sort((a:any,b:any)=>b.cycle_num-a.cycle_num).map((cy:any)=>{
                   const inst = cy.issue==="installe";
                   const col  = inst ? "#0D652D" : "#6b7280";
-                  const bg   = inst ? "rgba(13,101,45,0.10)" : "rgba(107,114,128,0.12)";
+                  const bg   = inst ? "rgba(13,101,45,0.10)" : "rgba(107,114,128,0.10)";
                   return (
-                    <div key={cy.id} style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:10, padding:"10px 14px" }}>
+                    <div key={cy.id} style={card}>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: cy.issue_commentaire ? 8 : 0 }}>
                         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                          <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4" }}>Cycle {cy.cycle_num}</span>
-                          <span style={{ fontSize:11, fontWeight:700, color:col, background:bg, border:`1px solid ${col}33`, padding:"2px 9px", borderRadius:999 }}>
+                          <span style={{ fontSize:10, fontWeight:700, color:MUT }}>Cycle {cy.cycle_num}</span>
+                          <span style={{ fontSize:11, fontWeight:700, color:col, background:bg, padding:"2px 10px", borderRadius:999 }}>
                             {inst ? "Installation au Sénégal" : "Possibilité écartée"}
                           </span>
                         </div>
-                        <span style={{ fontSize:10, color:"#9aa5b4", fontFamily:"monospace" }}>
+                        <span style={{ fontSize:10, color:MUT, fontFamily:"monospace" }}>
                           {cy.conclu_le && `Conclu le ${new Date(cy.conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
                           {cy.recontacte_le && ` · Re-contacté le ${new Date(cy.recontacte_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
                         </span>
                       </div>
                       {cy.issue_commentaire && (
-                        <div data-rte style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}
+                        <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.6 }}
                           dangerouslySetInnerHTML={{ __html:cy.issue_commentaire }}/>
                       )}
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </Section>
           )}
 
           {/* Conclusion de la prospection — tout en bas, visible dès qu'il y a un échange */}
           {p.echanges?.length > 0 && (
-            <div style={{ marginBottom:4, borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
-              {p.issue ? (() => {
-                // État conclu : affichage en lecture + bouton rouvrir
-                const concl = badgeProspect(p);
-                return (
-                  <>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                      <LBL t="Conclusion de la prospection"/>
-                      {p.issue==="decline" && onRecontact ? (
-                        // Décliné → Re-contacter (nouveau cycle, historique conservé)
-                        <button type="button" onClick={onRecontact}
-                          style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, padding:"4px 14px", borderRadius:999, border:"none", background:"#004f91", color:"#fff", cursor:"pointer" }}>
-                          <MessageSquare size={11}/> Re-contacter
-                        </button>
-                      ) : p.issue==="installe" ? (
-                        // Installé → Corriger uniquement (pas de re-contact : ils sont installés)
-                        <button type="button" onClick={handleReopen}
-                          style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"1px solid #dc2626", background:"rgba(220,38,38,0.05)", color:"#dc2626", cursor:"pointer" }}>
-                          Corriger la conclusion
-                        </button>
-                      ) : null}
-                    </div>
-                    <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px" }}>
-                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: p.issue_commentaire ? 10 : 0 }}>
-                        {concl && (
-                          <span style={{ fontSize:12, fontWeight:700, color:concl.color, background:concl.bg, border:`1px solid ${concl.color}33`, padding:"3px 11px", borderRadius:999 }}>
-                            {p.issue==="installe" ? "Installation au Sénégal" : "Possibilité écartée"}
-                          </span>
-                        )}
-                        {p.issue_conclu_le && (
-                          <span style={{ fontSize:10, color:"#9aa5b4", fontFamily:"monospace" }}>
-                            Conclu le {new Date(p.issue_conclu_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
-                          </span>
-                        )}
-                      </div>
-                      {p.issue_commentaire && (
-                        <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}
-                          dangerouslySetInnerHTML={{ __html:p.issue_commentaire }}/>
-                      )}
-                    </div>
-                  </>
-                );
-              })() : (
-                <>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: showConclusion ? 12 : 0 }}>
-                    <LBL t="Conclusion de la prospection"/>
-                    <button type="button" onClick={()=>{ setShowConclusion(o=>!o); setIssueForm({ issue:"", commentaire:"" }); }}
-                      style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"none", cursor:"pointer", transition:"all .15s",
-                        background: showConclusion ? "#1a1a2e" : "rgba(26,26,46,0.08)",
-                        color: showConclusion ? "#fff" : "#4a5568" }}>
-                      {showConclusion ? "Annuler" : "Clore la discussion"}
+            p.issue ? (
+              // ── État conclu : lecture seule + action contextuelle
+              <Section title="Conclusion de la prospection"
+                action={
+                  p.issue==="decline" && onRecontact ? (
+                    <button type="button" onClick={onRecontact}
+                      style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, padding:"5px 14px", borderRadius:8, border:"none", background:accent, color:"#fff", cursor:"pointer" }}>
+                      <MessageSquare size={11}/> Re-contacter
                     </button>
+                  ) : p.issue==="installe" ? (
+                    <button type="button" onClick={handleReopen}
+                      style={{ fontSize:11, fontWeight:600, padding:"5px 12px", borderRadius:8, border:`1px solid ${BRD}`, background:"transparent", color:SUB, cursor:"pointer" }}>
+                      Corriger la conclusion
+                    </button>
+                  ) : null
+                }>
+                <div style={{ ...card, borderLeft:`3px solid ${issueMeta?.color||BRD}` }}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: p.issue_commentaire ? 10 : 0 }}>
+                    {issueMeta && (
+                      <span style={{ fontSize:12, fontWeight:700, color:issueMeta.color, background:issueMeta.bg, padding:"3px 12px", borderRadius:999 }}>
+                        {issueMeta.label}
+                      </span>
+                    )}
+                    {p.issue_conclu_le && (
+                      <span style={{ fontSize:10, color:MUT, fontFamily:"monospace" }}>
+                        Conclu le {new Date(p.issue_conclu_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
+                      </span>
+                    )}
                   </div>
-                  {showConclusion && (
-                    <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", display:"flex", flexDirection:"column" as const, gap:12 }}>
-                      {/* Choix */}
-                      <div style={{ display:"flex", gap:8 }}>
-                        {([
-                          { value:"installe", label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" },
-                          { value:"decline",  label:"Possibilité écartée",      color:"#6b7280", bg:"rgba(107,114,128,0.12)" },
-                        ] as const).map(o=>(
-                          <button key={o.value} type="button"
-                            onClick={()=>setIssueForm(f=>({...f, issue: f.issue===o.value?"":o.value}))}
-                            style={{ flex:1, padding:"10px 6px", borderRadius:10, cursor:"pointer", fontSize:12, fontWeight:700, transition:"all .15s",
-                              border:`1px solid ${issueForm.issue===o.value?o.color:"#E8E5E3"}`,
-                              background:issueForm.issue===o.value?o.bg:"#fff",
-                              color:issueForm.issue===o.value?o.color:"#9aa5b4" }}>
-                            {o.label}
-                          </button>
-                        ))}
-                      </div>
-                      {/* Commentaire (obligatoire) */}
-                      {issueForm.issue && (
-                        <div>
-                          <label style={LS}>Commentaire <span style={{ color:"#dc2626" }}>*</span></label>
-                          <div style={{ minHeight:100 }}>
-                            <RichTextEditor value={issueForm.commentaire} onChange={v=>setIssueForm(f=>({...f,commentaire:v}))}/>
-                          </div>
-                        </div>
-                      )}
-                      {/* Bouton enregistrer */}
-                      {issueForm.issue && (()=>{
-                        const commentaireVide = !issueForm.commentaire.replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
-                        return (
-                        <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", gap:10 }}>
-                          {commentaireVide && <span style={{ fontSize:11, color:"#9aa5b4" }}>Le commentaire est obligatoire</span>}
-                          <button onClick={handleSaveIssue} disabled={savingIssue||commentaireVide}
-                            style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:9, border:"none",
-                              background: issueOk ? "#059669" : (savingIssue||commentaireVide) ? "#ccc" : "#1a1a2e",
-                              color:"#fff", fontWeight:700, cursor:(savingIssue||commentaireVide)?"not-allowed":"pointer", fontSize:13 }}>
-                            {savingIssue?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
-                            {issueOk ? "Conclu !" : savingIssue ? "Enregistrement…" : "Conclure la prospection"}
-                          </button>
-                        </div>
-                        );
-                      })()}
-                    </div>
+                  {p.issue_commentaire && (
+                    <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
+                      dangerouslySetInnerHTML={{ __html:p.issue_commentaire }}/>
                   )}
-                </>
-              )}
-            </div>
+                </div>
+              </Section>
+            ) : (
+              // ── Non conclu : qualification de l'issue
+              <Section title="Conclusion de la prospection"
+                action={!readOnly ?
+                  <button type="button" onClick={()=>{ setShowConclusion(o=>!o); setIssueForm({ issue:"", commentaire:"" }); }}
+                    style={{ fontSize:11, fontWeight:700, padding:"5px 14px", borderRadius:8, border:"none", cursor:"pointer",
+                      background: showConclusion ? "#1a1a2e" : "rgba(26,26,46,0.07)",
+                      color: showConclusion ? "#fff" : SUB }}>
+                    {showConclusion ? "Annuler" : "Clore la discussion"}
+                  </button> : null
+                }>
+                {!showConclusion ? (
+                  <p style={{ fontSize:12, color:MUT, fontStyle:"italic" }}>Prospection en cours — aucune conclusion enregistrée.</p>
+                ) : (
+                  <div style={{ ...card, display:"flex", flexDirection:"column" as const, gap:12 }}>
+                    {/* Choix */}
+                    <div style={{ display:"flex", gap:8 }}>
+                      {([
+                        { value:"installe", label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" },
+                        { value:"decline",  label:"Possibilité écartée",      color:"#6b7280", bg:"rgba(107,114,128,0.10)" },
+                      ] as const).map(o=>(
+                        <button key={o.value} type="button"
+                          onClick={()=>setIssueForm(f=>({...f, issue: f.issue===o.value?"":o.value}))}
+                          style={{ flex:1, padding:"11px 6px", borderRadius:10, cursor:"pointer", fontSize:12, fontWeight:700, transition:"all .15s",
+                            border:`1px solid ${issueForm.issue===o.value?o.color:BRD}`,
+                            background:issueForm.issue===o.value?o.bg:"#fff",
+                            color:issueForm.issue===o.value?o.color:MUT }}>
+                          {o.label}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Commentaire (obligatoire) */}
+                    {issueForm.issue && (
+                      <div>
+                        <label style={LS}>Commentaire <span style={{ color:"#dc2626" }}>*</span></label>
+                        <div style={{ minHeight:100 }}>
+                          <RichTextEditor value={issueForm.commentaire} onChange={v=>setIssueForm(f=>({...f,commentaire:v}))}/>
+                        </div>
+                      </div>
+                    )}
+                    {/* Bouton enregistrer */}
+                    {issueForm.issue && (()=>{
+                      const commentaireVide = !issueForm.commentaire.replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
+                      return (
+                      <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", gap:10 }}>
+                        {commentaireVide && <span style={{ fontSize:11, color:MUT }}>Le commentaire est obligatoire</span>}
+                        <button onClick={handleSaveIssue} disabled={savingIssue||commentaireVide}
+                          style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 18px", borderRadius:9, border:"none",
+                            background: issueOk ? "#059669" : (savingIssue||commentaireVide) ? "#ccc" : "#1a1a2e",
+                            color:"#fff", fontWeight:700, cursor:(savingIssue||commentaireVide)?"not-allowed":"pointer", fontSize:13 }}>
+                          {savingIssue?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
+                          {issueOk ? "Conclu !" : savingIssue ? "Enregistrement…" : "Conclure la prospection"}
+                        </button>
+                      </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </Section>
+            )
           )}
 
-          <div style={{ display:"flex", gap:8, marginTop:20, justifyContent:"space-between", borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
+          <div style={{ display:"flex", gap:8, marginTop:24, justifyContent:"space-between", borderTop:`1px solid ${DIV}`, paddingTop:18 }}>
             {(!readOnly && !estFige(p)) ? (
               <button onClick={onContacter}
-                style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
-                <MessageSquare size={13}/> Contacter
+                style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
+                <MessageSquare size={14}/> Contacter
               </button>
             ) : <span/>}
             <div style={{ display:"flex", gap:8 }}>
               {!readOnly && (
                 <button onClick={onEdit}
-                  style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#ca631f", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
-                  <Pencil size={13}/> Modifier
+                  style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:10, border:`1px solid ${BRD}`, background:"transparent", color:SUB, fontWeight:700, cursor:"pointer", fontSize:13 }}>
+                  <Pencil size={14}/> Modifier
                 </button>
               )}
-              <button onClick={onClose} style={{ padding:"9px 16px", borderRadius:9, border:"1px solid #C5BFBB", background:"transparent", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>Fermer</button>
+              <button onClick={onClose} style={{ padding:"10px 18px", borderRadius:10, border:"none", background:"#1a1a2e", color:"#fff", fontWeight:600, cursor:"pointer", fontSize:13 }}>Fermer</button>
             </div>
           </div>
         </div>
