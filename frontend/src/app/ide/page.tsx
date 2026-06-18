@@ -1880,6 +1880,7 @@ function OngletMonde({ showTable, setShowTable }: { showTable: boolean; setShowT
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function IdePage() {
+  const [ongletPrincipal, setOngletPrincipal] = useState<"ide"|"national">("ide");
   const [section,    setSection]    = useState<"realises"|"projetes">("realises");
   const [sousOnglet, setSousOnglet] = useState<"pays"|"comparative"|"monde">("pays");
   const [paysDispo,  setPaysDispo]  = useState<any[]>([]);
@@ -1908,71 +1909,112 @@ export default function IdePage() {
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(202,99,31,0.1)", border:"1px solid rgba(202,99,31,0.25)", borderRadius:999, padding:"6px 14px", marginBottom:16 }}>
             <span style={{ fontSize:11, fontWeight:700, color:"#D96D3B", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
-          <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1, marginBottom:20 }}>Investissements Directs Étrangers</h1>
-          <div style={{ display:"flex", gap:10 }}>
-            {([
-              {v:"realises",  l:"Investissements réalisés"},
-              {v:"projetes",  l:"Investissements projetés"},
-            ] as const).map(s => (
-              <button key={s.v} onClick={() => setSection(s.v)}
-                style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, cursor:"pointer", border:"none", padding:"8px 18px", borderRadius:999, transition:"all 0.15s", fontFamily:"var(--font-google-sans)",
-                  color: section===s.v ? "#fff" : "rgba(255,255,255,0.55)",
-                  background: section===s.v ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.06)",
-                  outline: section===s.v ? "1.5px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.12)",
-                }}>
-                {s.l}
-              </button>
-            ))}
-          </div>
+          <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1, marginBottom:20 }}>Investissements Privées</h1>
+          {ongletPrincipal === "ide" && (
+            <div style={{ display:"flex", gap:10 }}>
+              {([
+                {v:"realises",  l:"Investissements réalisés"},
+                {v:"projetes",  l:"Investissements projetés"},
+              ] as const).map(s => (
+                <button key={s.v} onClick={() => setSection(s.v)}
+                  style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, cursor:"pointer", border:"none", padding:"8px 18px", borderRadius:999, transition:"all 0.15s", fontFamily:"var(--font-google-sans)",
+                    color: section===s.v ? "#fff" : "rgba(255,255,255,0.55)",
+                    background: section===s.v ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.06)",
+                    outline: section===s.v ? "1.5px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.12)",
+                  }}>
+                  {s.l}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
-      <div style={{ background:"#fff", borderBottom:"1px solid #E8E5E3", position:"sticky" as const, top:0, zIndex:10, flexShrink:0 }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div style={{ display:"flex" }}>
+      <div style={{ background:"#fff", position:"sticky" as const, top:0, zIndex:10, flexShrink:0, boxShadow:"0 1px 0 #E8E5E3" }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px" }}>
+
+          {/* Niveau 1 : IDE / National */}
+          <div style={{ display:"flex", borderBottom:"1px solid #F2F0EF" }}>
             {([
-              {v:"pays",        l:"Pays"},
-              {v:"comparative", l:"Analyse comparative"},
-              {v:"monde",       l:"Monde"},
+              {v:"ide",      l:"Investissements Directs Étrangers"},
+              {v:"national", l:"Investissements nationaux"},
             ] as const).map(o=>(
-              <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                style={{ padding:"16px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:sousOnglet===o.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+              <button key={o.v} onClick={()=>setOngletPrincipal(o.v)}
+                style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${ongletPrincipal===o.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:ongletPrincipal===o.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
                 {o.l}
               </button>
             ))}
           </div>
-          {section==="realises" && (
-            <button onClick={()=>setShowTable(true)}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:50, border:"none", borderBottom:"2px solid transparent", background:"transparent", fontSize:13, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
-              onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.color="#4a5568"; }}>
-              <Table size={14}/> Tableau de données
-            </button>
+
+          {/* Niveau 2 : Pays / Comparative / Monde (IDE seulement) */}
+          {ongletPrincipal === "ide" && (
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex" }}>
+                {([
+                  {v:"pays",        l:"Pays"},
+                  {v:"comparative", l:"Analyse comparative"},
+                  {v:"monde",       l:"Monde"},
+                ] as const).map(o=>(
+                  <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                    style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#004f91":"transparent"}`, background:"transparent", fontSize:12, fontWeight:600, color:sousOnglet===o.v?"#004f91":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+              {section==="realises" && (
+                <button onClick={()=>setShowTable(true)}
+                  style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:44, border:"none", background:"transparent", fontSize:12, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
+                  onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.color="#4a5568"; }}>
+                  <Table size={14}/> Tableau de données
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      {/* ── Contenu — Investissements réalisés (CNUCED) ───────────────────────── */}
-      {section === "realises" && (
+      {/* ── Contenu — IDE ────────────────────────────────────────────────────── */}
+      {ongletPrincipal === "ide" && (
         <>
-          {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
-          {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
-          {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} />}
+          {/* Investissements réalisés (CNUCED) */}
+          {section === "realises" && (
+            <>
+              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
+              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} />}
+              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} />}
+            </>
+          )}
+          {/* Investissements projetés (FDI Markets) */}
+          {section === "projetes" && (
+            <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
+              <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
+                <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <span style={{ fontSize:32 }}>📈</span>
+                </div>
+                <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>FDI Markets</h2>
+                <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
+                <div style={{ background:"rgba(0,79,145,0.07)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:10, padding:"10px 20px" }}>
+                  <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Disponible prochainement</span>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 
-      {/* ── Contenu — Investissements projetés (FDI Markets) ─────────────────── */}
-      {section === "projetes" && (
+      {/* ── Contenu — Investissements nationaux ──────────────────────────────── */}
+      {ongletPrincipal === "national" && (
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
           <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
-            <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <span style={{ fontSize:32 }}>📈</span>
+            <div style={{ width:64, height:64, borderRadius:16, background:"rgba(202,99,31,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <span style={{ fontSize:32 }}>🏗️</span>
             </div>
-            <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>FDI Markets</h2>
-            <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
-            <div style={{ background:"rgba(0,79,145,0.07)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:10, padding:"10px 20px" }}>
-              <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Disponible prochainement</span>
+            <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>Investissements nationaux</h2>
+            <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:420, lineHeight:1.7 }}>Les données relatives aux investissements nationaux seront disponibles prochainement.</p>
+            <div style={{ background:"rgba(202,99,31,0.07)", border:"1px solid rgba(202,99,31,0.2)", borderRadius:10, padding:"10px 20px" }}>
+              <span style={{ fontSize:12, fontWeight:700, color:"#ca631f" }}>Disponible prochainement</span>
             </div>
           </div>
         </div>
