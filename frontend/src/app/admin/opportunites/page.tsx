@@ -286,10 +286,10 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
             {pdfQueue.length > 0 && (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
                 {pdfQueue.map((p,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(124,58,237,0.05)", border:"1px solid rgba(124,58,237,0.2)", borderRadius:8, padding:"7px 12px" }}>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(13,101,45,0.05)", border:"1px solid rgba(13,101,45,0.2)", borderRadius:8, padding:"7px 12px" }}>
                     <FileText size={13} style={{color:"#0D652D",flexShrink:0}}/>
                     <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                      placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(124,58,237,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                      placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(13,101,45,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                     <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
                       <X size={13} style={{color:"#dc2626"}}/>
                     </button>
@@ -434,12 +434,12 @@ function AvantageModal({ open, onClose, edit, onSaved }:
 
           {/* Choisissez une activité */}
           {edit ? (
-            <div style={{marginBottom:22,padding:"14px 18px",background:"rgba(124,58,237,0.05)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:12}}>
+            <div style={{marginBottom:22,padding:"14px 18px",background:"rgba(13,101,45,0.05)",border:"1px solid rgba(13,101,45,0.2)",borderRadius:12}}>
               <div style={{fontSize:10,fontWeight:700,color:"#0D652D",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
               <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap" as const}}>
                 {edit.secteur_nom&&<span style={{fontSize:11,fontWeight:600,color:"#9aa5b4",background:"#F2F0EF",padding:"3px 10px",borderRadius:99}}>{edit.secteur_nom}</span>}
                 {edit.branche_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:11,fontWeight:600,color:"#9aa5b4",background:"#F2F0EF",padding:"3px 10px",borderRadius:99}}>{edit.branche_nom}</span></>}
-                {edit.activite_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:12,fontWeight:700,color:"#0D652D",background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.25)",padding:"4px 12px",borderRadius:99}}>{edit.activite_nom}</span></>}
+                {edit.activite_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:12,fontWeight:700,color:"#0D652D",background:"rgba(13,101,45,0.1)",border:"1px solid rgba(13,101,45,0.25)",padding:"4px 12px",borderRadius:99}}>{edit.activite_nom}</span></>}
               </div>
             </div>
           ) : (
@@ -574,7 +574,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
                 {fichiers.map((f:any)=>(
                   <div key={f.id} style={{display:"inline-flex",alignItems:"center",gap:5}}>
                     <a href={`${API}/opportunites/avantages/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#0D652D",textDecoration:"none",fontWeight:500}}>
+                      style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(13,101,45,0.06)",border:"1px solid rgba(13,101,45,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#0D652D",textDecoration:"none",fontWeight:500}}>
                       <FileText size={11}/> {f.titre||f.fichier_nom}
                     </a>
                     <button onClick={async()=>{
@@ -590,10 +590,10 @@ function AvantageModal({ open, onClose, edit, onSaved }:
             {pdfQueue.length>0&&(
               <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
                 {pdfQueue.map((p,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(124,58,237,0.05)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:8,padding:"7px 12px"}}>
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(13,101,45,0.05)",border:"1px solid rgba(13,101,45,0.2)",borderRadius:8,padding:"7px 12px"}}>
                     <FileText size={13} style={{color:"#0D652D",flexShrink:0}}/>
                     <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                      placeholder="Titre du document" style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(124,58,237,0.3)",outline:"none",fontSize:12,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
+                      placeholder="Titre du document" style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(13,101,45,0.3)",outline:"none",fontSize:12,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
                     <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}>
                       <X size={13} style={{color:"#dc2626"}}/>
                     </button>
@@ -914,7 +914,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <LBL>Avantages & incitations</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
                 {(data.selections||[]).map((s:any)=>(
-                  <div key={s.id} style={{background:"rgba(124,58,237,0.04)",border:"1px solid rgba(124,58,237,0.15)",borderRadius:10,padding:"12px 14px"}}>
+                  <div key={s.id} style={{background:"rgba(13,101,45,0.04)",border:"1px solid rgba(13,101,45,0.15)",borderRadius:10,padding:"12px 14px"}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:s.commentaire?6:0}}>
                       <div style={{width:8,height:8,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
                       <span style={{fontSize:13,fontWeight:700,color:"#0D652D"}}>{s.type_libelle}</span>
@@ -942,7 +942,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
                 {(data.fichiers||[]).map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#0D652D",textDecoration:"none",fontWeight:500}}>
+                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(13,101,45,0.06)",border:"1px solid rgba(13,101,45,0.2)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#0D652D",textDecoration:"none",fontWeight:500}}>
                     <FileText size={11}/> {f.titre||f.fichier_nom}
                   </a>
                 ))}
