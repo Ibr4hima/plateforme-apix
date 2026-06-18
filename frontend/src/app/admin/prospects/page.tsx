@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Building2, Check, CheckCircle2, ChevronDown, ChevronUp, Clock, Loader2, MessageSquare, Pencil, Plus, Trash2, User, X, XCircle } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
@@ -58,6 +58,21 @@ const EMPTY_FORM = {
   objet_commentaires:             "",
 };
 
+// Champs propres au type (physique ↔ morale) : ne doivent pas « déborder »
+// d'un type à l'autre, mais sont conservés quand on revient au type précédent.
+const TYPE_SCOPED = [
+  "nom","prenom","pays_origine_id","pays_origine_nom",
+  "siege_id","siege_nom","secteur_ids","branche_ids","activite_ids","points_focaux",
+  "telephones","mails","siteweb","linkedin","details",
+] as const;
+
+const freshTypeScoped = () => ({
+  nom:"", prenom:"", pays_origine_id:null as number|null, pays_origine_nom:"",
+  siege_id:null as number|null, siege_nom:"", secteur_ids:[] as number[], branche_ids:[] as number[], activite_ids:[] as number[],
+  points_focaux:[{ ...EMPTY_FOCAL }] as PointFocal[],
+  telephones:[""] as string[], mails:[""] as string[], siteweb:"", linkedin:"", details:"",
+});
+
 // ── Sélecteur type ────────────────────────────────────────────────────────────
 function TypeSelector({ value, onChange }: { value:"physique"|"morale"; onChange:(v:"physique"|"morale")=>void }) {
   return (
@@ -80,7 +95,7 @@ function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-        <label style={LS}>Téléphone(s)</label>
+        <label style={LS}>Téléphone(s) *</label>
         <button type="button" onClick={()=>onChange([...values,""])}
           style={{ fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
           <Plus size={11}/> Ajouter
@@ -110,7 +125,7 @@ function MultiMails({ values, onChange }: { values:string[]; onChange:(v:string[
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-        <label style={LS}>Email(s)</label>
+        <label style={LS}>Email(s) *</label>
         <button type="button" onClick={()=>onChange([...values,""])}
           style={{ fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
           <Plus size={11}/> Ajouter
@@ -224,8 +239,23 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
   const [ok,     setOk]     = useState(false);
+  // Mémorise les champs saisis pour le type non actif (physique/morale)
+  const stash = useRef<Record<string, any>>({});
 
   const upd = (k:string, v:any) => setForm(f=>({ ...f, [k]:v }));
+
+  // Changement de type : on range les champs du type courant et on restaure
+  // ceux du nouveau type (vides s'ils n'ont jamais été saisis).
+  const changeType = (v:"physique"|"morale") => {
+    setForm(f => {
+      if (v === f.type) return f;
+      const saved:Record<string,any> = {};
+      TYPE_SCOPED.forEach(k => { saved[k] = (f as any)[k]; });
+      stash.current[f.type] = saved;
+      const restored = stash.current[v] ?? freshTypeScoped();
+      return { ...f, ...restored, type:v };
+    });
+  };
 
   useEffect(()=>{
     if (!open) return;
@@ -266,6 +296,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
     } else {
       setForm({ ...EMPTY_FORM, points_focaux:[{ ...EMPTY_FOCAL }] });
     }
+    stash.current = {};
     setError(""); setOk(false);
   }, [open, edit?.id]);
 
@@ -343,7 +374,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
             <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="#4a5568"/></button>
           </div>
 
-          <TypeSelector value={form.type} onChange={v=>upd("type",v)}/>
+          <TypeSelector value={form.type} onChange={changeType}/>
 
           {/* ── Personne physique ── */}
           {form.type === "physique" && (
@@ -370,21 +401,14 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
                 <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
                   <MultiPhones values={form.telephones} onChange={v=>upd("telephones",v)}/>
                   <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                    <div>
-                      <label style={LS}>Site web</label>
-                      <input value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="ex. exemple.com" style={IS}/>
-                    </div>
-                    <div>
-                      <label style={LS}>LinkedIn</label>
-                      <input value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)} placeholder="linkedin.com/company/…" style={IS}/>
-                    </div>
+                  <div>
+                    <label style={LS}>LinkedIn</label>
+                    <input value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)} placeholder="linkedin.com/in/…" style={IS}/>
                   </div>
                 </div>
               </div>
               <div>
                 <p style={SEC}>Détails sur l'investisseur</p>
-                <p style={{ fontSize:12, color:"#888", marginBottom:10, marginTop:-6 }}>Profil, contexte, secteurs d'intérêt, historique de relation…</p>
                 <div style={{ minHeight:160 }}>
                   <RichTextEditor value={form.details} onChange={v=>upd("details",v)}/>
                 </div>
@@ -419,7 +443,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
                   <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                     <div>
-                      <label style={LS}>Site web</label>
+                      <label style={LS}>Site web *</label>
                       <input value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="ex. exemple.com" style={IS}/>
                     </div>
                     <div>
@@ -464,7 +488,6 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
               {/* Commentaires */}
               <div>
                 <p style={SEC}>Commentaires</p>
-                <p style={{ fontSize:12, color:"#888", marginBottom:10, marginTop:-6 }}>Contexte de la relation, notes, observations…</p>
                 <div style={{ minHeight:160 }}>
                   <RichTextEditor value={form.details} onChange={v=>upd("details",v)}/>
                 </div>
@@ -534,7 +557,6 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
 
               <div>
                 <label style={LS}>Commentaires sur le ciblage</label>
-                <p style={{ fontSize:12, color:"#888", marginBottom:8 }}>Contexte général, stratégie d'approche, notes internes…</p>
                 <div style={{ minHeight:120 }}>
                   <RichTextEditor value={form.objet_commentaires} onChange={v=>upd("objet_commentaires",v)}/>
                 </div>
