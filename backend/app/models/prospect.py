@@ -132,6 +132,7 @@ class ProspectContrainte(Base):
 
     id                  = Column(Integer, primary_key=True, autoincrement=True)
     prospect_id         = Column(Integer, ForeignKey("prospects.id", ondelete="CASCADE"), nullable=False)
+    cycle_num           = Column(Integer, default=0, nullable=False)
     description         = Column(Text, nullable=False)
     solution_preconisee = Column(Text)
     statut              = Column(String(20), default="en_cours")

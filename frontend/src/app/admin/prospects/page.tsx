@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Building2, Check, ChevronDown, ChevronUp, Loader2, MessageSquare, Pencil, Plus, Trash2, User, X } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
@@ -908,6 +908,17 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   const [savingIssue,      setSavingIssue]      = useState(false);
   const [issueOk,          setIssueOk]          = useState(false);
 
+  // ─ Préservation du scroll pendant la saisie dans le formulaire de conclusion
+  const scrollContainerRef  = useRef<HTMLDivElement>(null);
+  const savedScrollRef      = useRef(0);
+  const restoreScrollRef    = useRef(false);
+  useLayoutEffect(() => {
+    if (restoreScrollRef.current && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = savedScrollRef.current;
+    }
+    restoreScrollRef.current = false;
+  });
+
   useEffect(()=>{
     setContraintes(p.contraintes||[]);
     setShowConclusion(false);
@@ -1005,7 +1016,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
         <div style={{ height:5, background:`linear-gradient(90deg,${p.type==="morale"?"#004f91,#1a6ab0":"#ca631f,#e07a3a"})` }}/>
-        <div style={{ padding:"26px 30px 30px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
+        <div ref={scrollContainerRef} style={{ padding:"26px 30px 30px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
 
           {/* En-tête */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, marginBottom:22 }}>
@@ -1213,45 +1224,115 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             </Section>
           )}
 
-          {/* Contraintes investisseur */}
-          <Section title="Contraintes exprimées" count={contraintes.length}
-            action={!estFige(p) ? <AddBtn onClick={()=>{ setEditContrainte(null); setContrainteModal(true); }}/> : null}>
-            {contraintes.length === 0 ? (
-              <p style={{ fontSize:12, color:MUT, fontStyle:"italic" }}>Aucune contrainte enregistrée</p>
-            ) : (
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                {contraintes.map((c:any)=>(
-                  <div key={c.id} style={card}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
-                      <div data-rte style={{ fontSize:13, color:TXT, lineHeight:1.6, flex:1 }}
-                        dangerouslySetInnerHTML={{ __html:c.description }}/>
-                      {!estFige(p) && (
-                        <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
-                          <button onClick={()=>{ setEditContrainte(c); setContrainteModal(true); }}
-                            style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
-                            <Pencil size={12} style={{ color:MUT }}/>
-                          </button>
-                          <button onClick={()=>handleDeleteContrainte(c.id)} disabled={deletingContrainte===c.id}
-                            style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
-                            {deletingContrainte===c.id
-                              ? <Loader2 size={12} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
-                              : <Trash2 size={12} style={{ color:MUT }}/>}
-                          </button>
+          {/* Contraintes investisseur — groupées par cycle de prospection */}
+          {(()=>{
+            // Cycle courant = nombre de cycles archivés (0 avant le 1er re-contact, 1 après, …)
+            const currentCycleNum = p.cycles?.length || 0;
+            // Regrouper par cycle_num
+            const grouped: Record<number, any[]> = {};
+            for (const c of contraintes) {
+              const cn = c.cycle_num ?? 0;
+              if (!grouped[cn]) grouped[cn] = [];
+              grouped[cn].push(c);
+            }
+            const pastNums = Object.keys(grouped).map(Number).filter(cn=>cn<currentCycleNum).sort((a,b)=>a-b);
+            const currentCs = grouped[currentCycleNum] || [];
+            const totalCount = contraintes.length;
+            // Label d'un cycle passé : on retrouve l'entrée archivée (cycle_num = cn+1)
+            const cycleInfo = (cn: number) => {
+              const arch = (p.cycles||[]).find((cy:any)=>cy.cycle_num===cn+1);
+              if (!arch) return { label:`Cycle ${cn+1}`, color:MUT };
+              const col = arch.issue==="installe" ? "#0D652D" : "#6b7280";
+              const d = arch.conclu_le ? ` · conclu le ${new Date(arch.conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}` : "";
+              return { label:`Cycle ${cn+1} — ${arch.issue==="installe"?"Installé":"Décliné"}${d}`, color:col };
+            };
+            return (
+              <Section title="Contraintes exprimées" count={totalCount}
+                action={!estFige(p) ? <AddBtn onClick={()=>{ setEditContrainte(null); setContrainteModal(true); }}/> : null}>
+                {totalCount===0 ? (
+                  <p style={{ fontSize:12, color:MUT, fontStyle:"italic" }}>Aucune contrainte enregistrée</p>
+                ) : (
+                  <>
+                    {/* Contraintes des cycles passés (lecture seule) */}
+                    {pastNums.map(cn=>{
+                      const { label, color } = cycleInfo(cn);
+                      return (
+                        <div key={cn} style={{ marginBottom:14 }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                            <span style={{ fontSize:10, fontWeight:700, color, letterSpacing:"0.1em", textTransform:"uppercase" as const, whiteSpace:"nowrap" as const }}>{label}</span>
+                            <span style={{ flex:1, height:1, background:DIV }}/>
+                            <span style={{ fontSize:9, color:MUT, fontStyle:"italic" }}>lecture seule</span>
+                          </div>
+                          <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                            {grouped[cn].map((c:any)=>(
+                              <div key={c.id} style={{ ...card, opacity:0.80 }}>
+                                <div data-rte style={{ fontSize:13, color:TXT, lineHeight:1.6 }}
+                                  dangerouslySetInnerHTML={{ __html:c.description }}/>
+                                {c.solution_preconisee && (
+                                  <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
+                                    <SubLabel color="#0D652D">Solution préconisée</SubLabel>
+                                    <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.6 }}
+                                      dangerouslySetInnerHTML={{ __html:c.solution_preconisee }}/>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    {c.solution_preconisee && (
-                      <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
-                        <SubLabel color="#0D652D">Solution préconisée</SubLabel>
-                        <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.6 }}
-                          dangerouslySetInnerHTML={{ __html:c.solution_preconisee }}/>
+                      );
+                    })}
+
+                    {/* Séparateur "Cycle courant" si des cycles passés existent */}
+                    {pastNums.length > 0 && (
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                        <span style={{ fontSize:10, fontWeight:700, color:accent, letterSpacing:"0.1em", textTransform:"uppercase" as const, whiteSpace:"nowrap" as const }}>
+                          {p.issue ? `Cycle ${currentCycleNum+1} — Conclusion` : "Cycle courant"}
+                        </span>
+                        <span style={{ flex:1, height:1, background:DIV }}/>
                       </div>
                     )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </Section>
+
+                    {/* Contraintes du cycle courant */}
+                    {currentCs.length === 0 ? (
+                      <p style={{ fontSize:12, color:MUT, fontStyle:"italic" }}>Aucune contrainte pour ce cycle</p>
+                    ) : (
+                      <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                        {currentCs.map((c:any)=>(
+                          <div key={c.id} style={card}>
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
+                              <div data-rte style={{ fontSize:13, color:TXT, lineHeight:1.6, flex:1 }}
+                                dangerouslySetInnerHTML={{ __html:c.description }}/>
+                              {!estFige(p) && (
+                                <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
+                                  <button onClick={()=>{ setEditContrainte(c); setContrainteModal(true); }}
+                                    style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
+                                    <Pencil size={12} style={{ color:MUT }}/>
+                                  </button>
+                                  <button onClick={()=>handleDeleteContrainte(c.id)} disabled={deletingContrainte===c.id}
+                                    style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 3px" }}>
+                                    {deletingContrainte===c.id
+                                      ? <Loader2 size={12} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
+                                      : <Trash2 size={12} style={{ color:MUT }}/>}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            {c.solution_preconisee && (
+                              <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
+                                <SubLabel color="#0D652D">Solution préconisée</SubLabel>
+                                <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.6 }}
+                                  dangerouslySetInnerHTML={{ __html:c.solution_preconisee }}/>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </Section>
+            );
+          })()}
 
           {/* Historique des cycles de prospection passés (re-contacts) */}
           {p.cycles?.length > 0 && (
@@ -1359,7 +1440,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       <div>
                         <label style={LS}>Commentaire <span style={{ color:"#dc2626" }}>*</span></label>
                         <div style={{ minHeight:100 }}>
-                          <RichTextEditor value={issueForm.commentaire} onChange={v=>setIssueForm(f=>({...f,commentaire:v}))}/>
+                          <RichTextEditor value={issueForm.commentaire} onChange={v=>{ savedScrollRef.current = scrollContainerRef.current?.scrollTop??0; restoreScrollRef.current=true; setIssueForm(f=>({...f,commentaire:v})); }}/>
                         </div>
                       </div>
                     )}

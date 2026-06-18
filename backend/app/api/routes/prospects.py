@@ -104,6 +104,7 @@ def contrainte_to_dict(c: ProspectContrainte) -> dict:
     return {
         "id":                  c.id,
         "prospect_id":         c.prospect_id,
+        "cycle_num":           c.cycle_num,
         "description":         c.description,
         "solution_preconisee": c.solution_preconisee,
         "statut":              c.statut,
@@ -701,7 +702,10 @@ async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db))
 # ── POST /prospects/:id/contraintes ──────────────────────────────────────────
 @router.post("/{prospect_id}/contraintes", status_code=201)
 async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
-    p_res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
+    p_res = await db.execute(
+        select(Prospect).options(selectinload(Prospect.cycles))
+        .where(Prospect.id == prospect_id, Prospect.is_deleted == False)
+    )
     prospect = p_res.scalar_one_or_none()
     if not prospect:
         raise HTTPException(404, "Prospect introuvable")
@@ -710,8 +714,10 @@ async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession =
     description = (payload.get("description") or "").strip()
     if not description:
         raise HTTPException(422, "La description est obligatoire")
+    current_cycle_num = len(prospect.cycles or [])
     c = ProspectContrainte(
         prospect_id         = prospect_id,
+        cycle_num           = current_cycle_num,
         description         = description,
         solution_preconisee = payload.get("solution_preconisee") or None,
     )
@@ -730,9 +736,16 @@ async def modifier_contrainte(contrainte_id: int, payload: dict, db: AsyncSessio
     c = res.scalar_one_or_none()
     if not c:
         raise HTTPException(404, "Contrainte introuvable")
-    prospect = (await db.execute(select(Prospect).where(Prospect.id == c.prospect_id))).scalar_one_or_none()
+    prospect = (await db.execute(
+        select(Prospect).options(selectinload(Prospect.cycles))
+        .where(Prospect.id == c.prospect_id)
+    )).scalar_one_or_none()
     if prospect is not None and _conclu_fige(prospect.issue, prospect.issue_conclu_le):
         raise HTTPException(403, "La prospection est archivée : cette contrainte ne peut plus être modifiée.")
+    if prospect is not None:
+        current_cycle_num = len(prospect.cycles or [])
+        if c.cycle_num != current_cycle_num:
+            raise HTTPException(403, "Cette contrainte appartient à un cycle terminé et ne peut plus être modifiée.")
     if "description" in payload:
         desc = (payload["description"] or "").strip()
         if not desc:
@@ -753,8 +766,15 @@ async def supprimer_contrainte(contrainte_id: int, db: AsyncSession = Depends(ge
     c = res.scalar_one_or_none()
     if not c:
         raise HTTPException(404, "Contrainte introuvable")
-    prospect = (await db.execute(select(Prospect).where(Prospect.id == c.prospect_id))).scalar_one_or_none()
+    prospect = (await db.execute(
+        select(Prospect).options(selectinload(Prospect.cycles))
+        .where(Prospect.id == c.prospect_id)
+    )).scalar_one_or_none()
     if prospect is not None and _conclu_fige(prospect.issue, prospect.issue_conclu_le):
         raise HTTPException(403, "La prospection est archivée : cette contrainte ne peut plus être supprimée.")
+    if prospect is not None:
+        current_cycle_num = len(prospect.cycles or [])
+        if c.cycle_num != current_cycle_num:
+            raise HTTPException(403, "Cette contrainte appartient à un cycle terminé et ne peut plus être supprimée.")
     await db.delete(c)
     await db.flush()
