@@ -1145,7 +1145,9 @@ export default function OpportunitesAdminPage() {
                     style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${count>0?n.color:"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",cursor:count>0?"pointer":"default",transition:"all 0.15s"}}
                     onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${n.color}20`;ev.currentTarget.style.borderColor=n.color;}}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?n.color:"#C5BFBB";}}>
-                    <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:999,color:n.textColor,background:`${n.color}12`,border:`1px solid ${n.color}30`,marginBottom:14,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{n.label}</span>
+                    <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+                      <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:999,color:n.textColor,background:`${n.color}12`,border:`1px solid ${n.color}30`,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{n.label}</span>
+                    </div>
                     <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
                       <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${n.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:n.textColor,fontWeight:600,opacity:count>0?1:0.45}}>
                         Voir les détails →
