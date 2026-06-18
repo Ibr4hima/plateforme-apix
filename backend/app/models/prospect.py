@@ -22,6 +22,7 @@ class Prospect(Base):
     linkedin         = Column(Text)
     issue            = Column(String(20), nullable=True)  # NULL | installe | decline
     issue_commentaire = Column(Text, nullable=True)
+    issue_conclu_le  = Column(TIMESTAMP(timezone=True), nullable=True)
     agent_id         = Column(Integer, nullable=True)  # ownership (auth à venir)
     secteur_ids      = Column(ARRAY(Integer), default=[])
     branche_ids      = Column(ARRAY(Integer), default=[])

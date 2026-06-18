@@ -139,6 +139,7 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
         "linkedin":        p.linkedin,
         "issue":           p.issue,
         "issue_commentaire": p.issue_commentaire,
+        "issue_conclu_le": p.issue_conclu_le.isoformat() if p.issue_conclu_le else None,
         "adresse":         p.adresse,
         "details":         p.details,
         "est_publie":      p.est_publie,
@@ -396,13 +397,19 @@ async def conclure_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     p = res.scalar_one_or_none()
     if not p:
         raise HTTPException(404, "Prospect introuvable")
+    from datetime import datetime, timezone
     issue = (payload.get("issue") or "").strip() or None
     if issue not in (None, "installe", "decline"):
         raise HTTPException(422, "Issue invalide (attendu : installe | decline | null)")
+    commentaire = (payload.get("issue_commentaire") or "").strip() or None
+    if issue is not None and not commentaire:
+        raise HTTPException(422, "Un commentaire est obligatoire pour conclure la prospection")
     p.issue              = issue
-    p.issue_commentaire  = payload.get("issue_commentaire") or None
+    p.issue_commentaire  = commentaire if issue else None
+    p.issue_conclu_le    = datetime.now(timezone.utc) if issue else None
     await db.flush()
-    return {"issue": p.issue, "issue_commentaire": p.issue_commentaire}
+    return {"issue": p.issue, "issue_commentaire": p.issue_commentaire,
+            "issue_conclu_le": p.issue_conclu_le.isoformat() if p.issue_conclu_le else None}
 
 
 # ── POST /prospects/:id/echanges ──────────────────────────────────────────────
@@ -410,8 +417,11 @@ async def conclure_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
 async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
     # Vérifier que le prospect existe
     p_res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
-    if not p_res.scalar_one_or_none():
+    prospect = p_res.scalar_one_or_none()
+    if not prospect:
         raise HTTPException(404, "Prospect introuvable")
+    if prospect.issue is not None:
+        raise HTTPException(409, "La prospection est conclue : impossible d'ajouter un nouvel échange.")
 
     # Valider les champs requis
     contact_par = (payload.get("contact_par") or "").strip() or None
@@ -575,8 +585,11 @@ async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db))
 @router.post("/{prospect_id}/contraintes", status_code=201)
 async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
     p_res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
-    if not p_res.scalar_one_or_none():
+    prospect = p_res.scalar_one_or_none()
+    if not prospect:
         raise HTTPException(404, "Prospect introuvable")
+    if prospect.issue is not None:
+        raise HTTPException(409, "La prospection est conclue : impossible d'ajouter une contrainte.")
     description = (payload.get("description") or "").strip()
     if not description:
         raise HTTPException(422, "La description est obligatoire")

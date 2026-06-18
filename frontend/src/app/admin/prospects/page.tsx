@@ -883,16 +883,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   const [deletingContrainte, setDeletingContrainte] = useState<number|null>(null);
 
   // ─ Conclusion de la prospection
-  const [showConclusion,   setShowConclusion]   = useState(!!p.issue);
-  const [issueForm,        setIssueForm]        = useState({ issue: p.issue||"", commentaire: p.issue_commentaire||"" });
+  const [showConclusion,   setShowConclusion]   = useState(false);
+  const [issueForm,        setIssueForm]        = useState({ issue:"", commentaire:"" });
   const [savingIssue,      setSavingIssue]      = useState(false);
   const [issueOk,          setIssueOk]          = useState(false);
 
   useEffect(()=>{
     setContraintes(p.contraintes||[]);
-    setShowConclusion(!!p.issue);
-    setIssueForm({ issue: p.issue||"", commentaire: p.issue_commentaire||"" });
-  }, [p.id, p.contraintes, p.issue, p.issue_commentaire]);
+    setShowConclusion(false);
+    setIssueForm({ issue:"", commentaire:"" });
+  }, [p.id, p.contraintes]);
 
   const handleSaveIssue = async () => {
     setSavingIssue(true); setIssueOk(false);
@@ -901,7 +901,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
       body: JSON.stringify({ issue: issueForm.issue||null, issue_commentaire: issueForm.commentaire||null }),
     });
     setSavingIssue(false);
-    if (res.ok) { setIssueOk(true); onRefresh?.(); setTimeout(()=>setIssueOk(false),2000); }
+    if (res.ok) { setIssueOk(true); onRefresh?.(); setTimeout(()=>{ setIssueOk(false); setShowConclusion(false); },1200); }
+  };
+
+  const handleReopen = async () => {
+    if (!confirm("Rouvrir la prospection ? La conclusion actuelle sera effacée.")) return;
+    const res = await fetch(`${API}/prospects/${p.id}/conclusion`, {
+      method:"PATCH", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ issue: null, issue_commentaire: null }),
+    });
+    if (res.ok) onRefresh?.();
   };
 
   const handleDeleteEchange = async (id:number) => {
@@ -1146,70 +1155,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             </div>
           )}
 
-          {/* Conclusion de la prospection — visible dès qu'il y a au moins un échange */}
-          {p.echanges?.length > 0 && (
-            <div style={{ marginBottom:16 }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: showConclusion ? 12 : 0 }}>
-                <LBL t="Conclusion de la prospection"/>
-                <button type="button" onClick={()=>{ setShowConclusion(o=>!o); if(showConclusion) setIssueForm({ issue:"", commentaire:"" }); }}
-                  style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"none", cursor:"pointer", transition:"all .15s",
-                    background: showConclusion ? "#1a1a2e" : "rgba(26,26,46,0.08)",
-                    color: showConclusion ? "#fff" : "#4a5568" }}>
-                  {showConclusion ? "Annuler la conclusion" : "Clore la discussion"}
-                </button>
-              </div>
-              {showConclusion && (
-                <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", display:"flex", flexDirection:"column" as const, gap:12 }}>
-                  {/* Choix */}
-                  <div style={{ display:"flex", gap:8 }}>
-                    {([
-                      { value:"installe", label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" },
-                      { value:"decline",  label:"Possibilité écartée",      color:"#6b7280", bg:"rgba(107,114,128,0.12)" },
-                    ] as const).map(o=>(
-                      <button key={o.value} type="button"
-                        onClick={()=>setIssueForm(f=>({...f, issue: f.issue===o.value?"":o.value}))}
-                        style={{ flex:1, padding:"10px 6px", borderRadius:10, cursor:"pointer", fontSize:12, fontWeight:700, transition:"all .15s",
-                          border:`1px solid ${issueForm.issue===o.value?o.color:"#E8E5E3"}`,
-                          background:issueForm.issue===o.value?o.bg:"#fff",
-                          color:issueForm.issue===o.value?o.color:"#9aa5b4" }}>
-                        {o.label}
-                      </button>
-                    ))}
-                  </div>
-                  {/* Commentaire */}
-                  {issueForm.issue && (
-                    <div>
-                      <label style={LS}>Commentaire</label>
-                      <div style={{ minHeight:100 }}>
-                        <RichTextEditor value={issueForm.commentaire} onChange={v=>setIssueForm(f=>({...f,commentaire:v}))}/>
-                      </div>
-                    </div>
-                  )}
-                  {/* Bouton enregistrer */}
-                  {issueForm.issue && (
-                    <div style={{ display:"flex", justifyContent:"flex-end" }}>
-                      <button onClick={handleSaveIssue} disabled={savingIssue}
-                        style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:9, border:"none",
-                          background: issueOk ? "#059669" : savingIssue ? "#ccc" : "#1a1a2e",
-                          color:"#fff", fontWeight:700, cursor:savingIssue?"not-allowed":"pointer", fontSize:13 }}>
-                        {savingIssue?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
-                        {issueOk ? "Enregistré !" : savingIssue ? "Enregistrement…" : "Enregistrer"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Contraintes investisseur */}
           <div style={{ marginBottom:16 }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:contraintes.length?10:0 }}>
               <LBL t={`Contraintes exprimées (${contraintes.length})`}/>
-              <button onClick={()=>{ setEditContrainte(null); setContrainteModal(true); }}
-                style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", marginBottom:5 }}>
-                <Plus size={10}/> Ajouter
-              </button>
+              {!p.issue && (
+                <button onClick={()=>{ setEditContrainte(null); setContrainteModal(true); }}
+                  style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", marginBottom:5 }}>
+                  <Plus size={10}/> Ajouter
+                </button>
+              )}
             </div>
             {contraintes.length === 0 ? (
               <p style={{ fontSize:12, color:"#C5BFBB", fontStyle:"italic" }}>Aucune contrainte enregistrée</p>
@@ -1246,11 +1201,109 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             )}
           </div>
 
+          {/* Conclusion de la prospection — tout en bas, visible dès qu'il y a un échange */}
+          {p.echanges?.length > 0 && (
+            <div style={{ marginBottom:4, borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
+              {p.issue ? (() => {
+                // État conclu : affichage en lecture + bouton rouvrir
+                const concl = badgeProspect(p);
+                return (
+                  <>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                      <LBL t="Conclusion de la prospection"/>
+                      <button type="button" onClick={handleReopen}
+                        style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
+                        Rouvrir la prospection
+                      </button>
+                    </div>
+                    <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px" }}>
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: p.issue_commentaire ? 10 : 0 }}>
+                        {concl && (
+                          <span style={{ fontSize:12, fontWeight:700, color:concl.color, background:concl.bg, border:`1px solid ${concl.color}33`, padding:"3px 11px", borderRadius:999 }}>
+                            {p.issue==="installe" ? "Installation au Sénégal" : "Possibilité écartée"}
+                          </span>
+                        )}
+                        {p.issue_conclu_le && (
+                          <span style={{ fontSize:10, color:"#9aa5b4", fontFamily:"monospace" }}>
+                            Conclu le {new Date(p.issue_conclu_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
+                          </span>
+                        )}
+                      </div>
+                      {p.issue_commentaire && (
+                        <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}
+                          dangerouslySetInnerHTML={{ __html:p.issue_commentaire }}/>
+                      )}
+                    </div>
+                  </>
+                );
+              })() : (
+                <>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: showConclusion ? 12 : 0 }}>
+                    <LBL t="Conclusion de la prospection"/>
+                    <button type="button" onClick={()=>{ setShowConclusion(o=>!o); setIssueForm({ issue:"", commentaire:"" }); }}
+                      style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"none", cursor:"pointer", transition:"all .15s",
+                        background: showConclusion ? "#1a1a2e" : "rgba(26,26,46,0.08)",
+                        color: showConclusion ? "#fff" : "#4a5568" }}>
+                      {showConclusion ? "Annuler" : "Clore la discussion"}
+                    </button>
+                  </div>
+                  {showConclusion && (
+                    <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", display:"flex", flexDirection:"column" as const, gap:12 }}>
+                      {/* Choix */}
+                      <div style={{ display:"flex", gap:8 }}>
+                        {([
+                          { value:"installe", label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" },
+                          { value:"decline",  label:"Possibilité écartée",      color:"#6b7280", bg:"rgba(107,114,128,0.12)" },
+                        ] as const).map(o=>(
+                          <button key={o.value} type="button"
+                            onClick={()=>setIssueForm(f=>({...f, issue: f.issue===o.value?"":o.value}))}
+                            style={{ flex:1, padding:"10px 6px", borderRadius:10, cursor:"pointer", fontSize:12, fontWeight:700, transition:"all .15s",
+                              border:`1px solid ${issueForm.issue===o.value?o.color:"#E8E5E3"}`,
+                              background:issueForm.issue===o.value?o.bg:"#fff",
+                              color:issueForm.issue===o.value?o.color:"#9aa5b4" }}>
+                            {o.label}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Commentaire (obligatoire) */}
+                      {issueForm.issue && (
+                        <div>
+                          <label style={LS}>Commentaire <span style={{ color:"#dc2626" }}>*</span></label>
+                          <div style={{ minHeight:100 }}>
+                            <RichTextEditor value={issueForm.commentaire} onChange={v=>setIssueForm(f=>({...f,commentaire:v}))}/>
+                          </div>
+                        </div>
+                      )}
+                      {/* Bouton enregistrer */}
+                      {issueForm.issue && (()=>{
+                        const commentaireVide = !issueForm.commentaire.replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
+                        return (
+                        <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", gap:10 }}>
+                          {commentaireVide && <span style={{ fontSize:11, color:"#9aa5b4" }}>Le commentaire est obligatoire</span>}
+                          <button onClick={handleSaveIssue} disabled={savingIssue||commentaireVide}
+                            style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:9, border:"none",
+                              background: issueOk ? "#059669" : (savingIssue||commentaireVide) ? "#ccc" : "#1a1a2e",
+                              color:"#fff", fontWeight:700, cursor:(savingIssue||commentaireVide)?"not-allowed":"pointer", fontSize:13 }}>
+                            {savingIssue?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
+                            {issueOk ? "Conclu !" : savingIssue ? "Enregistrement…" : "Conclure la prospection"}
+                          </button>
+                        </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
           <div style={{ display:"flex", gap:8, marginTop:20, justifyContent:"space-between", borderTop:"1px solid #F2F0EF", paddingTop:18 }}>
-            <button onClick={onContacter}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
-              <MessageSquare size={13}/> Contacter
-            </button>
+            {p.issue ? <span/> : (
+              <button onClick={onContacter}
+                style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
+                <MessageSquare size={13}/> Contacter
+              </button>
+            )}
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={onEdit}
                 style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:9, border:"none", background:"#ca631f", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
@@ -1383,10 +1436,12 @@ export default function ProspectsPage() {
                       style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.08)`, border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
                       <Pencil size={12}/> Modifier
                     </button>
-                    <button onClick={()=>{ setEchangeEdit(null); setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
-                      <MessageSquare size={12}/> Contacter
-                    </button>
+                    {!p.issue && (
+                      <button onClick={()=>{ setEchangeEdit(null); setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                        <MessageSquare size={12}/> Contacter
+                      </button>
+                    )}
                     <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
                       style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
                       {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
