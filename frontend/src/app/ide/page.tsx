@@ -1910,70 +1910,68 @@ export default function IdePage() {
             <span style={{ fontSize:11, fontWeight:700, color:"#D96D3B", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
           <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1, marginBottom:20 }}>Investissements Privées</h1>
-          {ongletPrincipal === "ide" && (
-            <div style={{ display:"flex", gap:10 }}>
-              {([
-                {v:"realises",  l:"Investissements réalisés"},
-                {v:"projetes",  l:"Investissements projetés"},
-              ] as const).map(s => (
-                <button key={s.v} onClick={() => setSection(s.v)}
-                  style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, cursor:"pointer", border:"none", padding:"8px 18px", borderRadius:999, transition:"all 0.15s", fontFamily:"var(--font-google-sans)",
-                    color: section===s.v ? "#fff" : "rgba(255,255,255,0.55)",
-                    background: section===s.v ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.06)",
-                    outline: section===s.v ? "1.5px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.12)",
-                  }}>
-                  {s.l}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── Onglets ──────────────────────────────────────────────────────────── */}
-      <div style={{ background:"#fff", position:"sticky" as const, top:0, zIndex:10, flexShrink:0, boxShadow:"0 1px 0 #E8E5E3" }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px" }}>
-
-          {/* Niveau 1 : IDE / National */}
-          <div style={{ display:"flex", borderBottom:"1px solid #F2F0EF" }}>
+          <div style={{ display:"flex", gap:10 }}>
             {([
               {v:"ide",      l:"Investissements Directs Étrangers"},
               {v:"national", l:"Investissements nationaux"},
             ] as const).map(o=>(
               <button key={o.v} onClick={()=>setOngletPrincipal(o.v)}
-                style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${ongletPrincipal===o.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:ongletPrincipal===o.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+                style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, cursor:"pointer", border:"none", padding:"8px 18px", borderRadius:999, transition:"all 0.15s", fontFamily:"var(--font-google-sans)",
+                  color: ongletPrincipal===o.v ? "#fff" : "rgba(255,255,255,0.55)",
+                  background: ongletPrincipal===o.v ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.06)",
+                  outline: ongletPrincipal===o.v ? "1.5px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.12)",
+                }}>
                 {o.l}
               </button>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* Niveau 2 : Pays / Comparative / Monde (IDE seulement) */}
-          {ongletPrincipal === "ide" && (
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-              <div style={{ display:"flex" }}>
-                {([
-                  {v:"pays",        l:"Pays"},
-                  {v:"comparative", l:"Analyse comparative"},
-                  {v:"monde",       l:"Monde"},
-                ] as const).map(o=>(
-                  <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                    style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#004f91":"transparent"}`, background:"transparent", fontSize:12, fontWeight:600, color:sousOnglet===o.v?"#004f91":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
-                    {o.l}
-                  </button>
-                ))}
-              </div>
-              {section==="realises" && (
+      {/* ── Onglets ──────────────────────────────────────────────────────────── */}
+      {ongletPrincipal === "ide" && (
+        <div style={{ background:"#fff", position:"sticky" as const, top:0, zIndex:10, flexShrink:0, boxShadow:"0 1px 0 #E8E5E3" }}>
+          <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px" }}>
+
+            {/* Niveau 1 : Réalisés / Projetés */}
+            <div style={{ display:"flex", borderBottom:"1px solid #F2F0EF" }}>
+              {([
+                {v:"realises", l:"Investissements réalisés"},
+                {v:"projetes", l:"Investissements projetés"},
+              ] as const).map(s=>(
+                <button key={s.v} onClick={()=>setSection(s.v)}
+                  style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${section===s.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:section===s.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+                  {s.l}
+                </button>
+              ))}
+            </div>
+
+            {/* Niveau 2 : Pays / Comparative / Monde (Réalisés seulement) */}
+            {section === "realises" && (
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                <div style={{ display:"flex" }}>
+                  {([
+                    {v:"pays",        l:"Pays"},
+                    {v:"comparative", l:"Analyse comparative"},
+                    {v:"monde",       l:"Monde"},
+                  ] as const).map(o=>(
+                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                      style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${sousOnglet===o.v?"#004f91":"transparent"}`, background:"transparent", fontSize:12, fontWeight:600, color:sousOnglet===o.v?"#004f91":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
                 <button onClick={()=>setShowTable(true)}
                   style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:44, border:"none", background:"transparent", fontSize:12, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
                   onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.color="#4a5568"; }}>
                   <Table size={14}/> Tableau de données
                 </button>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Contenu — IDE ────────────────────────────────────────────────────── */}
       {ongletPrincipal === "ide" && (
