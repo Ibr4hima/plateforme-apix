@@ -1192,6 +1192,7 @@ export default function OpportunitesAdminPage() {
                 /* ── Cascade Régions → Départements ── */
                 if (selectedNiveau==="departement") {
                   const regions=[...new Set<string>(items.map((p:any)=>p.region_nom).filter(Boolean))].sort();
+                  const unclassified=items.filter((p:any)=>!p.region_nom);
                   if (!cascadeRegion) return (
                     <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                       {regions.map(reg=>{
@@ -1207,6 +1208,27 @@ export default function OpportunitesAdminPage() {
                           </div>
                         );
                       })}
+                      {unclassified.length>0&&(
+                        <div>
+                          {regions.length>0&&<div style={{height:1,background:"#F2F0EF",margin:"6px 0"}}/>}
+                          <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                            {unclassified.map((p:any)=>(
+                              <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
+                                onClick={()=>setPotVue(p)}
+                                onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#0D652D40";ev.currentTarget.style.boxShadow="0 3px 10px rgba(13,101,45,0.10)";}}
+                                onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                                <div style={{width:7,height:7,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
+                                <span style={{fontSize:13,fontWeight:600,color:"#0D652D",flex:1}}>{potTitle(p)}</span>
+                                <div style={{display:"flex",gap:5,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
+                                  <button onClick={()=>{setPotEdit(p);setPotModal(true);}} style={{display:"flex",alignItems:"center",gap:3,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:"#366FE3",fontWeight:600}}><Pencil size={11}/> Modifier</button>
+                                  <button onClick={()=>togglePot(p)} disabled={potToggle===p.id} style={{display:"flex",alignItems:"center",gap:3,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>{potToggle===p.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={11}/> Publié</>:<><Eye size={11}/> Publier</>}</button>
+                                  <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id} style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 7px"}}>{potDel===p.id?<Loader2 size={11} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"#dc2626"}}/>}</button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                   const depts=items.filter((p:any)=>p.region_nom===cascadeRegion);
@@ -1248,6 +1270,7 @@ export default function OpportunitesAdminPage() {
                 /* ── Cascade Régions → Départements → Arrondissements ── */
                 if (selectedNiveau==="arrondissement") {
                   const regions=[...new Set<string>(items.map((p:any)=>p.region_nom).filter(Boolean))].sort();
+                  const unclassifiedArr=items.filter((p:any)=>!p.region_nom);
                   if (!cascadeRegion) return (
                     <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                       {regions.map(reg=>{
@@ -1263,10 +1286,32 @@ export default function OpportunitesAdminPage() {
                           </div>
                         );
                       })}
+                      {unclassifiedArr.length>0&&(
+                        <div>
+                          {regions.length>0&&<div style={{height:1,background:"#F2F0EF",margin:"6px 0"}}/>}
+                          <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                            {unclassifiedArr.map((p:any)=>(
+                              <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
+                                onClick={()=>setPotVue(p)}
+                                onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#FBBC0450";ev.currentTarget.style.boxShadow="0 3px 10px rgba(251,188,4,0.15)";}}
+                                onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                                <div style={{width:7,height:7,borderRadius:"50%",background:"#8A6100",flexShrink:0}}/>
+                                <span style={{fontSize:13,fontWeight:600,color:"#8A6100",flex:1}}>{potTitle(p)}</span>
+                                <div style={{display:"flex",gap:5,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
+                                  <button onClick={()=>{setPotEdit(p);setPotModal(true);}} style={{display:"flex",alignItems:"center",gap:3,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:"#366FE3",fontWeight:600}}><Pencil size={11}/> Modifier</button>
+                                  <button onClick={()=>togglePot(p)} disabled={potToggle===p.id} style={{display:"flex",alignItems:"center",gap:3,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>{potToggle===p.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={11}/> Publié</>:<><Eye size={11}/> Publier</>}</button>
+                                  <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id} style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 7px"}}>{potDel===p.id?<Loader2 size={11} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"#dc2626"}}/>}</button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                   const regItems=items.filter((p:any)=>p.region_nom===cascadeRegion);
                   const deptNames=[...new Set<string>(regItems.map((p:any)=>p.departement_nom).filter(Boolean))].sort();
+                  const unclassifiedDept=regItems.filter((p:any)=>!p.departement_nom);
                   if (!cascadeDept) return (
                     <div>
                       <button onClick={()=>setCascadeRegion(null)}
@@ -1287,6 +1332,20 @@ export default function OpportunitesAdminPage() {
                             </div>
                           );
                         })}
+                        {unclassifiedDept.length>0&&unclassifiedDept.map((p:any)=>(
+                          <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
+                            onClick={()=>setPotVue(p)}
+                            onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#FBBC0450";ev.currentTarget.style.boxShadow="0 3px 10px rgba(251,188,4,0.15)";}}
+                            onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
+                            <div style={{width:7,height:7,borderRadius:"50%",background:"#8A6100",flexShrink:0}}/>
+                            <span style={{fontSize:13,fontWeight:600,color:"#8A6100",flex:1}}>{potTitle(p)}</span>
+                            <div style={{display:"flex",gap:5,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
+                              <button onClick={()=>{setPotEdit(p);setPotModal(true);}} style={{display:"flex",alignItems:"center",gap:3,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:"#366FE3",fontWeight:600}}><Pencil size={11}/> Modifier</button>
+                              <button onClick={()=>togglePot(p)} disabled={potToggle===p.id} style={{display:"flex",alignItems:"center",gap:3,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>{potToggle===p.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={11}/> Publié</>:<><Eye size={11}/> Publier</>}</button>
+                              <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id} style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 7px"}}>{potDel===p.id?<Loader2 size={11} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"#dc2626"}}/>}</button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   );
