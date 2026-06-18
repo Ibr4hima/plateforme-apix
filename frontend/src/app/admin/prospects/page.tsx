@@ -607,7 +607,7 @@ const addDays = (iso:string, n:number) => { const d=new Date(iso); d.setDate(d.g
 function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean; onClose:()=>void; prospect:any; edit?:any; onSaved:(updated:any)=>void }) {
   const today = new Date().toISOString().slice(0,10);
   const isEdit = !!edit;
-  const EMPTY_ECHANGE = { date_echange: today, commentaire:"", contact_par:"", interlocuteur:"", point_focal_id:"", issue:"" };
+  const EMPTY_ECHANGE = { date_echange: today, commentaire:"", contact_par:"", interlocuteur:"", point_focal_id:"" };
   const [form, setForm]     = useState({ ...EMPTY_ECHANGE });
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
@@ -627,8 +627,6 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
   let dateMin: string|undefined;
   let dateMax = today;
-  // Conclure la relation n'a de sens qu'à partir du 2e contact.
-  let peutConclure = !!dernierEchange && !isEdit;
   if (isEdit) {
     const parCreation = [...(prospect?.echanges||[])].sort((a:any,b:any)=>(a.enregistre_le||"").localeCompare(b.enregistre_le||""));
     const idx  = parCreation.findIndex((x:any)=>x.id===edit.id);
@@ -636,7 +634,6 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     const nextN = idx>=0 && idx<parCreation.length-1 ? parCreation[idx+1] : null;
     if (prevN) dateMin = addDays(prevN.date_echange, 1);
     if (nextN) dateMax = addDays(nextN.date_echange, -1);
-    peutConclure = idx > 0;  // pas le tout premier contact
   } else if (dernierEchange) {
     dateMin = addDays(dernierEchange.date_echange, 1);
   }
@@ -650,7 +647,6 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         contact_par:    edit.contact_par || "",
         interlocuteur:  edit.interlocuteur || "",
         point_focal_id: edit.point_focal_id ? String(edit.point_focal_id) : (estMorale && edit.interlocuteur ? "__autre" : ""),
-        issue:          prospect?.issue || "",
       });
     } else {
       const defaut = dateMin && dateMin <= today ? dateMin : today;
@@ -677,7 +673,6 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         contact_par:    form.contact_par.trim() || null,
         interlocuteur,
         point_focal_id,
-        ...(peutConclure ? { issue: form.issue || null } : {}),
       });
       const res = isEdit
         ? await fetch(`${API}/prospects/echanges/${edit.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body })
@@ -771,29 +766,6 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 <RichTextEditor value={form.commentaire} onChange={v=>upd("commentaire",v)}/>
               </div>
             </div>
-
-            {/* Issue de la relation (à partir du 2e contact) */}
-            {peutConclure && (
-              <div>
-                <label style={LS}>Issue de la relation</label>
-                <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:8 }}>À renseigner si la prospection arrive à son terme.</p>
-                <div style={{ display:"flex", gap:8 }}>
-                  {([
-                    { value:"",         label:"Relation en cours", color:"#9aa5b4", bg:"rgba(154,165,180,0.10)" },
-                    { value:"installe", label:"Installé au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" },
-                    { value:"decline",  label:"Possibilité écartée",  color:"#6b7280", bg:"rgba(107,114,128,0.12)" },
-                  ] as const).map(o=>(
-                    <button key={o.value} type="button" onClick={()=>upd("issue",o.value)}
-                      style={{ flex:1, padding:"9px 6px", borderRadius:9, cursor:"pointer", fontSize:12, fontWeight:700, transition:"all .15s",
-                        border:`1px solid ${form.issue===o.value?o.color:"#E8E5E3"}`,
-                        background:form.issue===o.value?o.bg:"#fff",
-                        color:form.issue===o.value?o.color:"#9aa5b4" }}>
-                      {o.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Note anti-fraude */}
             <div style={{ background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.12)", borderRadius:10, padding:"10px 14px", display:"flex", gap:8, alignItems:"flex-start" }}>
@@ -910,7 +882,27 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   const [contraintes,     setContraintes]     = useState<any[]>(p.contraintes || []);
   const [deletingContrainte, setDeletingContrainte] = useState<number|null>(null);
 
-  useEffect(()=>{ setContraintes(p.contraintes||[]); }, [p.id, p.contraintes]);
+  // ─ Conclusion de la prospection
+  const [showConclusion,   setShowConclusion]   = useState(!!p.issue);
+  const [issueForm,        setIssueForm]        = useState({ issue: p.issue||"", commentaire: p.issue_commentaire||"" });
+  const [savingIssue,      setSavingIssue]      = useState(false);
+  const [issueOk,          setIssueOk]          = useState(false);
+
+  useEffect(()=>{
+    setContraintes(p.contraintes||[]);
+    setShowConclusion(!!p.issue);
+    setIssueForm({ issue: p.issue||"", commentaire: p.issue_commentaire||"" });
+  }, [p.id, p.contraintes, p.issue, p.issue_commentaire]);
+
+  const handleSaveIssue = async () => {
+    setSavingIssue(true); setIssueOk(false);
+    const res = await fetch(`${API}/prospects/${p.id}/conclusion`, {
+      method:"PATCH", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ issue: issueForm.issue||null, issue_commentaire: issueForm.commentaire||null }),
+    });
+    setSavingIssue(false);
+    if (res.ok) { setIssueOk(true); onRefresh?.(); setTimeout(()=>setIssueOk(false),2000); }
+  };
 
   const handleDeleteEchange = async (id:number) => {
     if (!confirm("Supprimer cet échange ?")) return;
@@ -1149,6 +1141,62 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       );
                     }); })()}
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Conclusion de la prospection — visible dès qu'il y a au moins un échange */}
+          {p.echanges?.length > 0 && (
+            <div style={{ marginBottom:16 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: showConclusion ? 12 : 0 }}>
+                <LBL t="Conclusion de la prospection"/>
+                <button type="button" onClick={()=>{ setShowConclusion(o=>!o); if(showConclusion) setIssueForm({ issue:"", commentaire:"" }); }}
+                  style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:999, border:"none", cursor:"pointer", transition:"all .15s",
+                    background: showConclusion ? "#1a1a2e" : "rgba(26,26,46,0.08)",
+                    color: showConclusion ? "#fff" : "#4a5568" }}>
+                  {showConclusion ? "Annuler la conclusion" : "Clore la discussion"}
+                </button>
+              </div>
+              {showConclusion && (
+                <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", display:"flex", flexDirection:"column" as const, gap:12 }}>
+                  {/* Choix */}
+                  <div style={{ display:"flex", gap:8 }}>
+                    {([
+                      { value:"installe", label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" },
+                      { value:"decline",  label:"Possibilité écartée",      color:"#6b7280", bg:"rgba(107,114,128,0.12)" },
+                    ] as const).map(o=>(
+                      <button key={o.value} type="button"
+                        onClick={()=>setIssueForm(f=>({...f, issue: f.issue===o.value?"":o.value}))}
+                        style={{ flex:1, padding:"10px 6px", borderRadius:10, cursor:"pointer", fontSize:12, fontWeight:700, transition:"all .15s",
+                          border:`1px solid ${issueForm.issue===o.value?o.color:"#E8E5E3"}`,
+                          background:issueForm.issue===o.value?o.bg:"#fff",
+                          color:issueForm.issue===o.value?o.color:"#9aa5b4" }}>
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Commentaire */}
+                  {issueForm.issue && (
+                    <div>
+                      <label style={LS}>Commentaire</label>
+                      <div style={{ minHeight:100 }}>
+                        <RichTextEditor value={issueForm.commentaire} onChange={v=>setIssueForm(f=>({...f,commentaire:v}))}/>
+                      </div>
+                    </div>
+                  )}
+                  {/* Bouton enregistrer */}
+                  {issueForm.issue && (
+                    <div style={{ display:"flex", justifyContent:"flex-end" }}>
+                      <button onClick={handleSaveIssue} disabled={savingIssue}
+                        style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:9, border:"none",
+                          background: issueOk ? "#059669" : savingIssue ? "#ccc" : "#1a1a2e",
+                          color:"#fff", fontWeight:700, cursor:savingIssue?"not-allowed":"pointer", fontSize:13 }}>
+                        {savingIssue?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
+                        {issueOk ? "Enregistré !" : savingIssue ? "Enregistrement…" : "Enregistrer"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

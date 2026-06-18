@@ -138,6 +138,7 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
         "siteweb":         p.siteweb,
         "linkedin":        p.linkedin,
         "issue":           p.issue,
+        "issue_commentaire": p.issue_commentaire,
         "adresse":         p.adresse,
         "details":         p.details,
         "est_publie":      p.est_publie,
@@ -387,13 +388,29 @@ async def supprimer_prospect(prospect_id: int, db: AsyncSession = Depends(get_db
     await db.flush()
 
 
+# ── PATCH /prospects/:id/conclusion ──────────────────────────────────────────
+@router.patch("/{prospect_id}/conclusion")
+async def conclure_prospect(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    """Met à jour l'issue de la relation (installe / decline / null) et son commentaire."""
+    res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Prospect introuvable")
+    issue = (payload.get("issue") or "").strip() or None
+    if issue not in (None, "installe", "decline"):
+        raise HTTPException(422, "Issue invalide (attendu : installe | decline | null)")
+    p.issue              = issue
+    p.issue_commentaire  = payload.get("issue_commentaire") or None
+    await db.flush()
+    return {"issue": p.issue, "issue_commentaire": p.issue_commentaire}
+
+
 # ── POST /prospects/:id/echanges ──────────────────────────────────────────────
 @router.post("/{prospect_id}/echanges", status_code=201)
 async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
     # Vérifier que le prospect existe
     p_res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
-    prospect = p_res.scalar_one_or_none()
-    if not prospect:
+    if not p_res.scalar_one_or_none():
         raise HTTPException(404, "Prospect introuvable")
 
     # Valider les champs requis
@@ -438,14 +455,6 @@ async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = De
         point_focal_id = point_focal_id,
     )
     db.add(e)
-
-    # Issue de la relation (uniquement quand ce n'est pas le tout premier contact)
-    if "issue" in payload and last_date is not None:
-        issue = (payload.get("issue") or "").strip() or None
-        if issue not in (None, "installe", "decline"):
-            raise HTTPException(422, "Issue invalide")
-        prospect.issue = issue
-
     await db.flush()
     await db.refresh(e)
     return echange_to_dict(e)
@@ -525,23 +534,6 @@ async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = De
         e.point_focal_id = payload["point_focal_id"] or None
     if "contact_par" in payload:
         e.contact_par = (payload["contact_par"] or "").strip() or None
-
-    # Issue de la relation (uniquement si ce n'est pas le tout premier contact)
-    if "issue" in payload:
-        prev_count = (await db.execute(
-            select(func.count(ProspectEchange.id)).where(
-                ProspectEchange.prospect_id == e.prospect_id,
-                ProspectEchange.enregistre_le < e.enregistre_le,
-            )
-        )).scalar()
-        if prev_count > 0:
-            issue = (payload.get("issue") or "").strip() or None
-            if issue not in (None, "installe", "decline"):
-                raise HTTPException(422, "Issue invalide")
-            p_res = await db.execute(select(Prospect).where(Prospect.id == e.prospect_id))
-            prospect = p_res.scalar_one_or_none()
-            if prospect:
-                prospect.issue = issue
 
     await db.flush()
     await db.refresh(e)
