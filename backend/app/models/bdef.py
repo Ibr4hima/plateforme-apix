@@ -74,7 +74,8 @@ class BdefIndicateur(Base):
     # Codes préfixés '_raw_' = variables intermédiaires (non affichées dans l'UI)
     mode           = Column(String(20), default="lu")
     source_tableau = Column(String(150))                    # quel tableau Excel
-    source_ref     = Column(String(50))                     # réf. colonne dans le tableau
+    source_ref     = Column(String(200))                    # réf. / libellé humain de la source
+    extraction_key = Column(String(200))                    # clé machine du parseur (ref:/lib:/ratio:)
     formule        = Column(Text)                           # expression de calcul
     formule_vars   = Column(JSONB)                          # variables nécessaires
     created_at     = Column(TIMESTAMP(timezone=True), server_default=func.now())
