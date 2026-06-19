@@ -25,12 +25,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.bdef import (
     BdefMacroSecteur, BdefGroupe, BdefSecteur, BdefIndicateur,
-    BdefValeur, BdefImport, BdefImportRevue, BdefSecteurAlias,
+    BdefValeur, BdefValeurRejetee, BdefImport, BdefImportRevue, BdefSecteurAlias,
 )
 from app.services.bdef_excel import extraire_blocs, FEUILLE_COMPTES, FEUILLE_RATIOS
 from app.services.bdef_mapping import grouper_par_secteur, IndicateurMeta
 from app.services.bdef_decision import decider_import, SecteurMatche
-from app.services.bdef_verification import comparer_fidelite
+from app.services.bdef_verification import comparer_fidelite, raison_erreur_borne
 from app.utils.bdef_matching import NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO
 
 # Niveau → colonne FK de bdef_valeurs
@@ -87,11 +87,13 @@ async def _ecrire_valeurs(
     matches: list[SecteurMatche],
     indicateur_ids: dict[str, int],
     annees: list[int],
-) -> int:
+    import_id: int,
+) -> tuple[int, int]:
     """
     Écrit les valeurs de tous les secteurs matchés dans bdef_valeurs.
-    Remplace les valeurs existantes pour les mêmes (indicateur, niveau, cible,
-    année) afin qu'un réimport soit idempotent.
+    Les valeurs qui déclenchent une erreur de borne sont rejetées (non écrites)
+    et stockées dans bdef_valeurs_rejetees pour correction manuelle.
+    Retourne (nb_ok, nb_rejetes).
     """
     # Préchargement des valeurs existantes pour les indicateurs concernés
     codes_indic = {c for m in matches for c in m.valeurs.valeurs}
@@ -108,7 +110,8 @@ async def _ecrire_valeurs(
             cible = row.macro_secteur_id or row.groupe_id or row.secteur_id
             existant[(row.indicateur_id, row.niveau, cible, row.annee)] = row
 
-    nb = 0
+    nb_ok = 0
+    nb_rej = 0
     for m in matches:
         fk = _FK_PAR_NIVEAU.get(m.niveau)
         for code_ind, vals in m.valeurs.valeurs.items():
@@ -116,6 +119,25 @@ async def _ecrire_valeurs(
             if iid is None:
                 continue
             for va in vals:
+                raison = raison_erreur_borne(code_ind, va.valeur)
+                if raison:
+                    # valeur non importée — stockée pour correction manuelle
+                    kwargs_rej: dict = {
+                        "import_id": import_id,
+                        "indicateur_id": iid,
+                        "indicateur_code": code_ind,
+                        "niveau": m.niveau,
+                        "annee": va.annee,
+                        "valeur_source": va.valeur,
+                        "raison": raison,
+                        "libelle_cible": m.libelle_brut,
+                    }
+                    if fk:
+                        kwargs_rej[fk] = m.cible_id
+                    db.add(BdefValeurRejetee(**kwargs_rej))
+                    nb_rej += 1
+                    continue
+
                 key = (iid, m.niveau, m.cible_id, va.annee)
                 row = existant.get(key)
                 if row:
@@ -128,8 +150,8 @@ async def _ecrire_valeurs(
                     if fk:
                         kwargs[fk] = m.cible_id
                     db.add(BdefValeur(**kwargs))
-                nb += 1
-    return nb
+                nb_ok += 1
+    return nb_ok, nb_rej
 
 
 # ── Point d'entrée import ─────────────────────────────────────────────────────
@@ -198,10 +220,12 @@ async def lancer_import(db: AsyncSession, contenu: bytes, filename: str,
         }
 
     indicateur_ids = await _charger_indicateur_ids(db)
-    nb = await _ecrire_valeurs(db, decision.matches, indicateur_ids, decision.annees)
+    nb_ok, nb_rej = await _ecrire_valeurs(
+        db, decision.matches, indicateur_ids, decision.annees, imp.id
+    )
     from sqlalchemy.sql import func as _func
     imp.statut = "termine"
-    imp.nb_valeurs = nb
+    imp.nb_valeurs = nb_ok
     imp.termine_le = _func.now()
     await db.flush()
 
@@ -212,7 +236,8 @@ async def lancer_import(db: AsyncSession, contenu: bytes, filename: str,
         "statut": "termine",
         "annees": decision.annees,
         "nb_secteurs": len(decision.matches),
-        "nb_valeurs": nb,
+        "nb_valeurs": nb_ok,
+        "nb_rejetes": nb_rej,
         "fidelite": fidelite,
         "revue": [],
     }
@@ -231,12 +256,13 @@ async def _controle_fidelite(
     valeurs résolues depuis le fichier. Prouve qu'aucune valeur n'a été perdue
     ou altérée entre l'extraction et l'écriture.
     """
-    # valeurs attendues (résolues depuis le fichier)
+    # valeurs attendues (résolues depuis le fichier, hors valeurs rejetées)
     attendu: dict[tuple, float] = {}
     for m in matches:
         for code, vals in m.valeurs.valeurs.items():
             for va in vals:
-                attendu[(code, m.niveau, m.cible_id, va.annee)] = va.valeur
+                if raison_erreur_borne(code, va.valeur) is None:
+                    attendu[(code, m.niveau, m.cible_id, va.annee)] = va.valeur
 
     # valeurs relues en base
     code_par_id = {iid: code for code, iid in indicateur_ids.items()}

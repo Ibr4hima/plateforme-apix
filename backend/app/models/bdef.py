@@ -140,6 +140,27 @@ class BdefSecteurAlias(Base):
     cree_le      = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
+class BdefValeurRejetee(Base):
+    """Valeurs non importées car elles déclenchent une erreur de borne.
+    Stockées ici pour correction manuelle et écriture ultérieure dans bdef_valeurs."""
+    __tablename__ = "bdef_valeurs_rejetees"
+    id               = Column(Integer, primary_key=True, autoincrement=True)
+    import_id        = Column(Integer, ForeignKey("bdef_imports.id", ondelete="SET NULL"), nullable=True)
+    indicateur_id    = Column(Integer, ForeignKey("bdef_indicateurs.id"), nullable=False)
+    indicateur_code  = Column(String(60))
+    niveau           = Column(String(20), nullable=False)
+    macro_secteur_id = Column(Integer, ForeignKey("bdef_macro_secteurs.id", ondelete="CASCADE"), nullable=True)
+    groupe_id        = Column(Integer, ForeignKey("bdef_groupes.id", ondelete="CASCADE"), nullable=True)
+    secteur_id       = Column(Integer, ForeignKey("bdef_secteurs.id", ondelete="CASCADE"), nullable=True)
+    libelle_cible    = Column(String(500))
+    annee            = Column(SmallInteger, nullable=False)
+    valeur_source    = Column(Numeric(20, 4), nullable=False)
+    raison           = Column(String(200))
+    statut           = Column(String(20), nullable=False, default="en_attente")
+    cree_le          = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    indicateur       = relationship("BdefIndicateur")
+
+
 class BdefImportRevue(Base):
     __tablename__ = "bdef_import_revue"
     id              = Column(Integer, primary_key=True, autoincrement=True)

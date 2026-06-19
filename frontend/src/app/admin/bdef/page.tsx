@@ -22,7 +22,7 @@ type ImportHist = { id: number; fichier: string; statut: string; annees: number[
 type Indic      = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 type Valeurs    = { niveau: string; cible_id: number | null; annees: number[]; indicateurs: Indic[] };
 type Couv       = { code: string; libelle: string; annees_couvertes: number; nb_present: number; nb_attendu: number; taux: number };
-type Anom       = { severite: string; categorie: string; indicateur: string; niveau: string; cible_id: number | null; libelle_cible: string; annee: number | null; message: string; valeur: number | null; attendu: number | null };
+type Anom       = { severite: string; categorie: string; indicateur: string; niveau: string; cible_id: number | null; libelle_cible: string; annee: number | null; message: string; valeur: number | null; attendu: number | null; rejetee_id: number | null };
 type Rapport    = { score: number; nb_secteurs: number; nb_valeurs: number; annees: number[]; nb_erreurs: number; nb_avertissements: number; couverture: Couv[]; anomalies: Anom[] };
 
 // ── Dropdown de secteur recherchable ──────────────────────────────────────────
@@ -124,6 +124,10 @@ export default function AdminBdefPage() {
   const [rapport, setRapport]   = useState<Rapport | null>(null);
   const [loadingR, setLoadingR] = useState(false);
 
+  // Corrections en attente (valeurs rejetées à l'import)
+  const [corrections, setCorrections]   = useState<Record<number, string>>({});  // rejetee_id → valeur saisie
+  const [correcting, setCorrecting]     = useState<Record<number, boolean>>({});
+
   async function loadRefs() {
     const [s, h] = await Promise.all([
       fetch(`${API}/bdef/secteurs`).then(r => r.json()),
@@ -132,7 +136,7 @@ export default function AdminBdefPage() {
     setSecteurs(s);
     setImports(Array.isArray(h) ? h : []);
   }
-  useEffect(() => { loadRefs(); loadVerification(); }, []);
+  useEffect(() => { loadRefs(); loadVerification(); }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   function pickFile(f: FileList | null) {
     if (f && f[0]) setFile(f[0]);
@@ -158,7 +162,7 @@ export default function AdminBdefPage() {
         setChoix(init);
       }
       await loadRefs();
-      if (r.ok && data.statut === "termine") loadVerification();
+      if (r.ok && data.statut === "termine") { loadVerification(); setCorrections({}); }
     } catch (e: any) {
       setRes({ import_id: 0, statut: "erreur", annees: [], revue: [], erreur: "Erreur réseau : " + e.message });
     }
@@ -187,6 +191,26 @@ export default function AdminBdefPage() {
     }
     setAssociating(false);
     await handleImport();          // réimport : les alias résolvent les secteurs
+  }
+
+  async function corrigerValeur(rejeteeId: number) {
+    const val = corrections[rejeteeId];
+    if (val === undefined || val === "") return;
+    setCorrecting(p => ({ ...p, [rejeteeId]: true }));
+    try {
+      const r = await fetch(`${API}/bdef/corriger`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rejetee_id: rejeteeId, valeur_corrigee: parseFloat(val) }),
+      });
+      if (r.ok) {
+        setCorrections(p => { const n = { ...p }; delete n[rejeteeId]; return n; });
+        loadVerification();
+      } else {
+        const data = await r.json();
+        alert(data.detail || "Erreur lors de la correction.");
+      }
+    } catch (e: any) { alert("Erreur réseau : " + e.message); }
+    setCorrecting(p => ({ ...p, [rejeteeId]: false }));
   }
 
   async function loadValeurs(niveau: string, cible: number | null) {
@@ -321,10 +345,6 @@ export default function AdminBdefPage() {
             <RefreshCw size={13} className={loadingR ? "animate-spin" : ""} /> Actualiser
           </button>
         </div>
-        <p style={{ fontSize: 12, color: "#888", marginTop: -6, marginBottom: 16 }}>
-          Contrôles automatiques : recalcul des indicateurs dérivés, taux de couverture, montants aberrants,
-          valeurs atypiques entre secteurs et cohérence comptable (VA ≤ CA, EBE ≤ VA).
-        </p>
 
         {loadingR ? (
           <div style={{ display: "flex", justifyContent: "center", padding: 30 }}><Loader2 size={22} color="#004f91" className="animate-spin" /></div>
@@ -340,60 +360,72 @@ export default function AdminBdefPage() {
               <Stat label="Avertissements" value={rapport.nb_avertissements} color={rapport.nb_avertissements ? "#B7661B" : "#1a7a3c"} />
             </div>
 
-            {/* Comment lire ce rapport — décharge l'admin de tout jugement comptable */}
-            <div style={{ background: "#F7FAFD", border: "1px solid #D6E4F0", borderRadius: 8, padding: "12px 16px", marginBottom: 16, fontSize: 12.5, color: "#33475b", lineHeight: 1.55 }}>
-              <strong style={{ color: "#004f91" }}>Comment lire ce rapport ?</strong> Pas besoin d'être comptable.
-              <div style={{ marginTop: 6 }}>
-                <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: "#c0392b", marginRight: 6 }} />
-                <strong>Erreurs (rouge)</strong> : valeur impossible (montant négatif, démesuré) ou indicateur introuvable — à examiner côté import.
-              </div>
-              <div style={{ marginTop: 4 }}>
-                <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: "#B7661B", marginRight: 6 }} />
-                <strong>Avertissements (orange)</strong> : valeur source <em>inhabituelle mais possible</em>. Information uniquement — n'affecte pas le score.
-              </div>
-              <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #E1ECF5" }}>
-                👉 <strong>La seule question à vous poser</strong> : la valeur signalée correspond-elle au fichier Excel ?
-                Si <strong>oui</strong>, votre import est fidèle — une particularité des données ANSD n'est pas de votre ressort.
-              </div>
-            </div>
-
-            {/* Anomalies */}
-            {rapport.anomalies.length === 0 ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, background: "#EDFBF1", border: "1px solid #B2EAC5", fontSize: 13, color: "#1a7a3c" }}>
-                <CheckCircle size={16} /> Aucune anomalie détectée — toutes les valeurs passent les contrôles.
-              </div>
-            ) : (
-              <div style={{ maxHeight: 360, overflowY: "auto", border: "1px solid #F0EEEC", borderRadius: 8 }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
-                  <thead>
-                    <tr style={{ borderBottom: "1px solid #E8E5E3", background: "#FAF9F8" }}>
-                      {["", "Type", "Indicateur", "Secteur", "Année", "Détail"].map((h, i) => (
-                        <th key={i} style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#4a5568", position: "sticky", top: 0, background: "#FAF9F8" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rapport.anomalies.map((a, i) => {
-                      const s = SEV_STYLE[a.severite] || SEV_STYLE.info;
-                      return (
-                        <tr key={i} style={{ borderBottom: "1px solid #F4F2F0" }}>
-                          <td style={{ padding: "7px 10px" }}>
-                            <span title={s.label} style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: s.color }} />
-                          </td>
-                          <td style={{ padding: "7px 10px" }}>
-                            <span style={{ background: s.bg, color: s.color, borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{CAT_LABEL[a.categorie] || a.categorie}</span>
-                          </td>
-                          <td style={{ padding: "7px 10px", color: "#1a1a2e", fontWeight: 500, whiteSpace: "nowrap" }}>{a.indicateur}</td>
-                          <td style={{ padding: "7px 10px", color: "#555" }}>{a.libelle_cible}</td>
-                          <td style={{ padding: "7px 10px", color: "#888", fontVariantNumeric: "tabular-nums" }}>{a.annee ?? "–"}</td>
-                          <td style={{ padding: "7px 10px", color: "#555" }}>{a.message}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            {/* Erreurs uniquement (avertissements filtrés) */}
+            {(() => {
+              const erreurs = rapport.anomalies.filter(a => a.severite === "erreur");
+              return erreurs.length === 0 ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, background: "#EDFBF1", border: "1px solid #B2EAC5", fontSize: 13, color: "#1a7a3c" }}>
+                  <CheckCircle size={16} /> Aucune erreur détectée — toutes les valeurs passent les contrôles.
+                </div>
+              ) : (
+                <div style={{ maxHeight: 400, overflowY: "auto", border: "1px solid #F0EEEC", borderRadius: 8 }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid #E8E5E3", background: "#FAF9F8" }}>
+                        {["", "Type", "Indicateur", "Secteur", "Année", "Détail", "Valeur source", "Corriger"].map((h, i) => (
+                          <th key={i} style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#4a5568", position: "sticky", top: 0, background: "#FAF9F8", whiteSpace: "nowrap" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {erreurs.map((a, i) => {
+                        const s = SEV_STYLE.erreur;
+                        const rid = a.rejetee_id;
+                        const corrVal = rid != null ? (corrections[rid] ?? "") : "";
+                        const isCorrecting = rid != null ? (correcting[rid] ?? false) : false;
+                        return (
+                          <tr key={i} style={{ borderBottom: "1px solid #F4F2F0" }}>
+                            <td style={{ padding: "7px 10px" }}>
+                              <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: s.color }} />
+                            </td>
+                            <td style={{ padding: "7px 10px" }}>
+                              <span style={{ background: s.bg, color: s.color, borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{CAT_LABEL[a.categorie] || a.categorie}</span>
+                            </td>
+                            <td style={{ padding: "7px 10px", color: "#1a1a2e", fontWeight: 500, whiteSpace: "nowrap" }}>{a.indicateur}</td>
+                            <td style={{ padding: "7px 10px", color: "#555", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.libelle_cible}</td>
+                            <td style={{ padding: "7px 10px", color: "#888", fontVariantNumeric: "tabular-nums" }}>{a.annee ?? "–"}</td>
+                            <td style={{ padding: "7px 10px", color: "#555", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.message}</td>
+                            <td style={{ padding: "7px 10px", color: "#c0392b", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                              {a.valeur != null ? a.valeur.toLocaleString("fr-FR") : "–"}
+                            </td>
+                            <td style={{ padding: "5px 10px", whiteSpace: "nowrap" }}>
+                              {rid != null ? (
+                                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                  <input
+                                    type="number"
+                                    value={corrVal}
+                                    onChange={e => setCorrections(p => ({ ...p, [rid]: e.target.value }))}
+                                    placeholder="Valeur corrigée"
+                                    style={{ width: 120, padding: "4px 8px", fontSize: 12, border: "1px solid #C5BFBB", borderRadius: 6, outline: "none" }}
+                                  />
+                                  <button
+                                    onClick={() => corrigerValeur(rid)}
+                                    disabled={isCorrecting || corrVal === ""}
+                                    style={{ background: isCorrecting || corrVal === "" ? "#ccc" : "#1a7a3c", color: "#fff", border: "none", borderRadius: 6, padding: "4px 10px", fontSize: 12, cursor: isCorrecting || corrVal === "" ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                    {isCorrecting ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+                                    Valider
+                                  </button>
+                                </div>
+                              ) : <span style={{ color: "#aaa", fontSize: 12 }}>–</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
 
             {/* Couverture incomplète */}
             {rapport.couverture.some(c => c.taux < 1) && (

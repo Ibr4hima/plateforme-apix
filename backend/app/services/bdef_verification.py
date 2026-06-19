@@ -144,10 +144,19 @@ _NON_DISPONIBLES = {"eff_stock_mp", "eff_stock_march", "eff_stock_pf"}
 # Montants FCFA qui ne peuvent jamais être négatifs (erreur de signe / colonne).
 # NB : la CAF (_raw_caf) en est volontairement exclue — elle peut légitimement
 # être négative pour un secteur en difficulté.
-_MONTANTS_POSITIFS = {"act_ca", "act_production",
-                      "inv_actif_immo", "inv_amortiss",
-                      "_raw_achats_ht", "_raw_ca_ht",
-                      "_raw_stocks_mp", "_raw_stocks_march", "_raw_stocks_pf"}
+MONTANTS_POSITIFS = {"act_ca", "act_production",
+                     "inv_actif_immo", "inv_amortiss",
+                     "_raw_achats_ht", "_raw_ca_ht",
+                     "_raw_stocks_mp", "_raw_stocks_march", "_raw_stocks_pf"}
+
+
+def raison_erreur_borne(code: str, val: float) -> str | None:
+    """Retourne la raison d'une erreur de borne, ou None si la valeur est acceptable."""
+    if abs(val) > 1e15:
+        return "Valeur démesurée — erreur de parsing probable."
+    if code in MONTANTS_POSITIFS and val < 0:
+        return "Montant négatif impossible pour cet indicateur."
+    return None
 
 # Tolérances de recalcul (les valeurs sont stockées en Numeric(20,4))
 _TOL_ABS = 1e-3
@@ -274,7 +283,7 @@ def _verifier_bornes(secteurs: list[SecteurValeurs]) -> list[Anomalie]:
                         annee=annee, valeur=val,
                         message="Valeur démesurée — erreur de parsing probable.",
                     ))
-                elif code in _MONTANTS_POSITIFS and val < 0:
+                elif code in MONTANTS_POSITIFS and val < 0:
                     anomalies.append(Anomalie(
                         severite="erreur", categorie="borne", indicateur=code,
                         niveau=sv.niveau, cible_id=sv.cible_id, libelle_cible=sv.libelle,

@@ -15,11 +15,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.bdef import (
     BdefMacroSecteur, BdefGroupe, BdefSecteur, BdefImport, BdefImportRevue,
-    BdefValeur, BdefIndicateur, BdefIndicateurCategorie,
+    BdefValeur, BdefValeurRejetee, BdefIndicateur, BdefIndicateurCategorie,
 )
 from app.services.bdef_import import lancer_import, associer_secteur
 from app.services.bdef_verification import (
-    verifier, SecteurValeurs, IndicateurInfo,
+    verifier, SecteurValeurs, IndicateurInfo, raison_erreur_borne,
 )
 from app.utils.bdef_matching import (
     NIVEAU_GLOBAL, NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO,
@@ -221,6 +221,27 @@ async def verification(db: AsyncSession = Depends(get_db)):
 
     rapport = verifier(list(secteurs.values()), indicateurs)
 
+    # Ajoute les valeurs rejetées à l'import comme anomalies de type "borne"
+    rejets = (await db.execute(
+        select(BdefValeurRejetee).where(BdefValeurRejetee.statut == "en_attente")
+    )).scalars().all()
+    anomalies_extra = [
+        {
+            "severite": "erreur",
+            "categorie": "borne",
+            "indicateur": r.indicateur_code or "",
+            "niveau": r.niveau,
+            "cible_id": r.macro_secteur_id or r.groupe_id or r.secteur_id,
+            "libelle_cible": r.libelle_cible or "",
+            "annee": r.annee,
+            "message": r.raison or "",
+            "valeur": float(r.valeur_source),
+            "attendu": None,
+            "rejetee_id": r.id,
+        }
+        for r in rejets
+    ]
+
     return {
         "score": rapport.score,
         "nb_secteurs": rapport.nb_secteurs,
@@ -237,7 +258,70 @@ async def verification(db: AsyncSession = Depends(get_db)):
             {"severite": a.severite, "categorie": a.categorie, "indicateur": a.indicateur,
              "niveau": a.niveau, "cible_id": a.cible_id, "libelle_cible": a.libelle_cible,
              "annee": a.annee, "message": a.message,
-             "valeur": a.valeur, "attendu": a.attendu}
+             "valeur": a.valeur, "attendu": a.attendu,
+             "rejetee_id": None}
             for a in rapport.anomalies
-        ],
+        ] + anomalies_extra,
     }
+
+
+# ── Correction manuelle d'une valeur rejetée ─────────────────────────────────
+
+_FK_PAR_NIVEAU_STR = {
+    NIVEAU_MACRO:   "macro_secteur_id",
+    NIVEAU_GROUPE:  "groupe_id",
+    NIVEAU_SECTEUR: "secteur_id",
+}
+
+
+@router.post("/corriger", status_code=200)
+async def corriger_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
+    """
+    Valide la correction d'une valeur rejetée à l'import.
+    Écrit la valeur corrigée dans bdef_valeurs et marque la ligne comme 'corrige'.
+    """
+    rejetee_id = payload.get("rejetee_id")
+    valeur_corrigee = payload.get("valeur_corrigee")
+    if rejetee_id is None or valeur_corrigee is None:
+        raise HTTPException(400, "rejetee_id et valeur_corrigee sont requis.")
+
+    res = await db.execute(
+        select(BdefValeurRejetee).where(BdefValeurRejetee.id == int(rejetee_id))
+    )
+    rej = res.scalar_one_or_none()
+    if not rej:
+        raise HTTPException(404, "Valeur rejetée introuvable.")
+
+    val = float(valeur_corrigee)
+    raison = raison_erreur_borne(rej.indicateur_code or "", val)
+    if raison:
+        raise HTTPException(400, f"Valeur toujours invalide : {raison}")
+
+    # Upsert dans bdef_valeurs
+    fk_col = _FK_PAR_NIVEAU_STR.get(rej.niveau)
+    cible_id = rej.macro_secteur_id or rej.groupe_id or rej.secteur_id
+    q = select(BdefValeur).where(
+        BdefValeur.indicateur_id == rej.indicateur_id,
+        BdefValeur.niveau == rej.niveau,
+        BdefValeur.annee == rej.annee,
+    )
+    if fk_col and cible_id is not None:
+        q = q.where(getattr(BdefValeur, fk_col) == cible_id)
+    existing = (await db.execute(q)).scalar_one_or_none()
+
+    if existing:
+        existing.valeur = val
+    else:
+        kwargs: dict = {
+            "indicateur_id": rej.indicateur_id,
+            "niveau": rej.niveau,
+            "annee": rej.annee,
+            "valeur": val,
+        }
+        if fk_col and cible_id is not None:
+            kwargs[fk_col] = cible_id
+        db.add(BdefValeur(**kwargs))
+
+    rej.statut = "corrige"
+    await db.flush()
+    return {"success": True, "rejetee_id": rejetee_id, "valeur": val}
