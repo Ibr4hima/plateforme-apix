@@ -9,7 +9,7 @@ Flux (import bloquant, cf. bdef_import.py) :
   4. (ré)POST /bdef/importer   → les alias résolvent les secteurs, valeurs écrites.
 """
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -356,3 +356,18 @@ async def corriger_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
         rej.statut = "corrige"
     await db.flush()
     return {"success": True, "rejetee_id": rejetee_id, "valeur": val}
+
+
+# ── Suppression de toutes les données BDEF ────────────────────────────────────
+
+@router.delete("/vider", status_code=200)
+async def vider_donnees(db: AsyncSession = Depends(get_db)):
+    """
+    Supprime toutes les valeurs, corrections en attente et l'historique des imports.
+    Les alias de secteurs sont conservés pour faciliter les réimports futurs.
+    """
+    await db.execute(delete(BdefValeur))
+    await db.execute(delete(BdefValeurRejetee))
+    await db.execute(delete(BdefImport))          # cascade → bdef_import_revue
+    await db.flush()
+    return {"success": True, "message": "Toutes les données BDEF ont été supprimées."}

@@ -112,6 +112,7 @@ export default function AdminBdefPage() {
   const [choix, setChoix]       = useState<Record<string, number>>({});  // "niveau|libelle_brut" → cible_id
   const [associating, setAssociating] = useState(false);
   const [imports, setImports]   = useState<ImportHist[]>([]);
+  const [viding, setViding]     = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Consultation
@@ -127,6 +128,24 @@ export default function AdminBdefPage() {
   // Corrections en attente (valeurs en erreur de borne)
   const [corrections, setCorrections]   = useState<Record<string, string>>({});   // clé anomalie → valeur saisie
   const [correcting, setCorrecting]     = useState<Record<string, boolean>>({});
+
+  async function viderDonnees() {
+    if (!window.confirm("Supprimer TOUTES les données BDEF (valeurs, imports, corrections) ?\n\nCette action est irréversible.")) return;
+    if (!window.confirm("Confirmez une seconde fois : vider définitivement toutes les données BDEF ?")) return;
+    setViding(true);
+    try {
+      const r = await fetch(`${API}/bdef/vider`, { method: "DELETE" });
+      if (r.ok) {
+        setRes(null); setRapport(null); setCorrections({}); setValeurs(null);
+        await loadRefs();
+        await loadVerification();
+      } else {
+        const d = await r.json();
+        alert(d.detail || "Erreur lors de la suppression.");
+      }
+    } catch (e: any) { alert("Erreur réseau : " + e.message); }
+    setViding(false);
+  }
 
   async function loadRefs() {
     const [s, h] = await Promise.all([
@@ -514,7 +533,14 @@ export default function AdminBdefPage() {
 
       {/* ── Historique des imports ── */}
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px" }}>
-        <div style={SEC}>Historique des imports</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 0 }}>
+          <div style={SEC}>Historique des imports</div>
+          <button onClick={viderDonnees} disabled={viding || imports.length === 0}
+            style={{ background: viding || imports.length === 0 ? "#F2F0EF" : "#FFF2F2", color: viding || imports.length === 0 ? "#aaa" : "#c0392b", border: `1px solid ${viding || imports.length === 0 ? "#E8E5E3" : "#F5C6CB"}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: viding || imports.length === 0 ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            {viding ? <Loader2 size={13} className="animate-spin" /> : <X size={13} />}
+            Vider toutes les données
+          </button>
+        </div>
         {imports.length === 0 ? (
           <div style={{ textAlign: "center", padding: 24, color: "#888", fontSize: 13 }}>Aucun import pour le moment.</div>
         ) : (
