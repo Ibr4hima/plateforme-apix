@@ -23,6 +23,7 @@ const MODULES: NavItem[] = [
   { type: "link", label: "Classification NAEMA",           href: "/admin/naema"               },
   { type: "link", label: "Tableaux de correspondance",     href: "/admin/classifications"     },
   { type: "link", label: "Données IDE",                    href: "/admin/ide"                 },
+  { type: "link", label: "Données BDEF",                   href: "/admin/bdef"                },
   { type: "link", label: "Code des investissements",       href: "/admin/code-investissement" },
 ];
 

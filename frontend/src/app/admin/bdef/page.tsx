@@ -1,0 +1,348 @@
+"use client";
+
+import { Fragment, useEffect, useRef, useState } from "react";
+import { CheckCircle, Link2, Loader2, UploadCloud, X, FileSpreadsheet } from "lucide-react";
+
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
+const IS: any  = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+
+const NIVEAU_LABEL: Record<string, string> = {
+  macro_secteur: "Macro-secteur", groupe: "Groupe", secteur: "Secteur", global: "Global",
+};
+
+type Secteur   = { id: number; code: string; libelle: string };
+type Secteurs   = { macro_secteur: Secteur[]; groupe: Secteur[]; secteur: Secteur[] };
+type Candidat   = { cible_id: number; libelle: string; score: number };
+type RevueItem  = { niveau: string; code_bdef: string; libelle_brut: string; score: number | null; candidats: Candidat[] };
+type ImportRes  = { import_id: number; statut: string; annees: number[]; nb_secteurs?: number; nb_valeurs?: number; nb_secteurs_ok?: number; revue: RevueItem[]; erreur?: string };
+type ImportHist = { id: number; fichier: string; statut: string; annees: number[] | null; nb_valeurs: number; nb_revue: number; cree_le: string | null; termine_le: string | null };
+type Indic      = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
+type Valeurs    = { niveau: string; cible_id: number | null; annees: number[]; indicateurs: Indic[] };
+
+// ── Dropdown de secteur recherchable ──────────────────────────────────────────
+function SecteurPicker({ options, value, onSelect }: { options: Secteur[]; value: number | null; onSelect: (id: number) => void }) {
+  const [search, setSearch] = useState("");
+  const [open, setOpen]     = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function close(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); }
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+  const chosen   = options.find(o => o.id === value);
+  const filtered = options.filter(o => o.libelle.toLowerCase().includes(search.toLowerCase()) || o.code.includes(search)).slice(0, 40);
+  return (
+    <div ref={ref} style={{ position: "relative", flex: 1 }}>
+      <input
+        value={open ? search : (chosen ? `${chosen.code} — ${chosen.libelle}` : search)}
+        onChange={e => { setSearch(e.target.value); setOpen(true); }}
+        onFocus={() => { setSearch(""); setOpen(true); }}
+        placeholder="Rechercher un secteur…"
+        style={{ ...IS, borderColor: chosen ? "#004f91" : undefined }}
+      />
+      {open && filtered.length > 0 && (
+        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #C5BFBB", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,.1)", maxHeight: 240, overflowY: "auto", marginTop: 2 }}>
+          {filtered.map(o => (
+            <div key={o.id} onClick={() => { onSelect(o.id); setOpen(false); }}
+              style={{ padding: "8px 12px", fontSize: 13, cursor: "pointer", background: o.id === value ? "#EEF4FB" : "" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#F0F4FF")}
+              onMouseLeave={e => (e.currentTarget.style.background = o.id === value ? "#EEF4FB" : "")}>
+              <span style={{ color: "#888", marginRight: 6 }}>{o.code}</span>{o.libelle}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Badge de score ────────────────────────────────────────────────────────────
+function ScoreBadge({ score }: { score: number | null }) {
+  if (score == null) return null;
+  const color = score >= 90 ? "#1a7a3c" : score >= 80 ? "#B7661B" : "#c0392b";
+  const bg    = score >= 90 ? "#EDFBF1" : score >= 80 ? "#FFF9F0" : "#FFF2F2";
+  return <span style={{ background: bg, color, border: `1px solid ${color}33`, borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>{score.toFixed(0)} %</span>;
+}
+
+export default function AdminBdefPage() {
+  const [file, setFile]         = useState<File | null>(null);
+  const [drag, setDrag]         = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [res, setRes]           = useState<ImportRes | null>(null);
+  const [secteurs, setSecteurs] = useState<Secteurs | null>(null);
+  const [choix, setChoix]       = useState<Record<string, number>>({});  // "niveau|libelle_brut" → cible_id
+  const [associating, setAssociating] = useState(false);
+  const [imports, setImports]   = useState<ImportHist[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Consultation
+  const [vNiveau, setVNiveau]   = useState("global");
+  const [vCible, setVCible]     = useState<number | null>(null);
+  const [valeurs, setValeurs]   = useState<Valeurs | null>(null);
+  const [loadingV, setLoadingV] = useState(false);
+
+  async function loadRefs() {
+    const [s, h] = await Promise.all([
+      fetch(`${API}/bdef/secteurs`).then(r => r.json()),
+      fetch(`${API}/bdef/imports`).then(r => r.json()),
+    ]);
+    setSecteurs(s);
+    setImports(Array.isArray(h) ? h : []);
+  }
+  useEffect(() => { loadRefs(); }, []);
+
+  function pickFile(f: FileList | null) {
+    if (f && f[0]) setFile(f[0]);
+  }
+
+  async function handleImport(theFile?: File) {
+    const f = theFile || file;
+    if (!f) return;
+    setImporting(true); setRes(null);
+    try {
+      const fd = new FormData();
+      fd.append("fichier", f);
+      const r = await fetch(`${API}/bdef/importer`, { method: "POST", body: fd });
+      const data = await r.json();
+      if (!r.ok) { setRes({ import_id: 0, statut: "erreur", annees: [], revue: [], erreur: data.detail || "Erreur inconnue" }); }
+      else {
+        setRes(data);
+        // pré-remplir les choix avec le meilleur candidat
+        const init: Record<string, number> = {};
+        (data.revue || []).forEach((ri: RevueItem) => {
+          if (ri.candidats?.[0]) init[`${ri.niveau}|${ri.libelle_brut}`] = ri.candidats[0].cible_id;
+        });
+        setChoix(init);
+      }
+      await loadRefs();
+    } catch (e: any) {
+      setRes({ import_id: 0, statut: "erreur", annees: [], revue: [], erreur: "Erreur réseau : " + e.message });
+    }
+    setImporting(false);
+  }
+
+  async function handleAssocierEtReimporter() {
+    if (!res?.revue?.length || !file) return;
+    setAssociating(true);
+    for (const ri of res.revue) {
+      const cible = choix[`${ri.niveau}|${ri.libelle_brut}`];
+      if (!cible) continue;
+      await fetch(`${API}/bdef/associer`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ niveau: ri.niveau, libelle_brut: ri.libelle_brut, cible_id: cible }),
+      });
+    }
+    setAssociating(false);
+    await handleImport();          // réimport : les alias résolvent les secteurs
+  }
+
+  async function loadValeurs(niveau: string, cible: number | null) {
+    setLoadingV(true); setValeurs(null);
+    const qs = niveau === "global" ? `niveau=global` : `niveau=${niveau}&cible_id=${cible}`;
+    try {
+      const data = await fetch(`${API}/bdef/valeurs?${qs}`).then(r => r.json());
+      setValeurs(data);
+    } catch { setValeurs(null); }
+    setLoadingV(false);
+  }
+  useEffect(() => {
+    if (vNiveau === "global") loadValeurs("global", null);
+    else if (vCible != null)  loadValeurs(vNiveau, vCible);
+    else setValeurs(null);
+  }, [vNiveau, vCible]);
+
+  const tousAssocies = res?.revue?.every(ri => choix[`${ri.niveau}|${ri.libelle_brut}`]) ?? false;
+  const optionsConsult = secteurs && vNiveau !== "global" ? (secteurs as any)[vNiveau] as Secteur[] : [];
+
+  // regrouper les indicateurs par catégorie pour l'affichage
+  const parCategorie: Record<string, Indic[]> = {};
+  (valeurs?.indicateurs || []).forEach(i => { (parCategorie[i.categorie] ||= []).push(i); });
+
+  return (
+    <div style={{ padding: "32px 40px", maxWidth: 1180, margin: "0 auto", fontFamily: "var(--font-google-sans)" }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>Données BDEF</h1>
+      <p style={{ fontSize: 13, color: "#888", marginBottom: 32 }}>
+        Importez les fichiers Excel de la Base de Données Économiques et Financières (ANSD). Les secteurs sont reconnus automatiquement ;
+        les cas incertains sont soumis à validation avant tout enregistrement.
+      </p>
+
+      {/* ── Import ── */}
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 20 }}>
+        <div style={SEC}>Importer un fichier BDEF</div>
+        <div
+          onClick={() => inputRef.current?.click()}
+          onDragOver={e => { e.preventDefault(); setDrag(true); }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={e => { e.preventDefault(); setDrag(false); pickFile(e.dataTransfer.files); }}
+          style={{ border: `2px dashed ${drag || file ? "#004f91" : "#C5BFBB"}`, borderRadius: 10, padding: "24px", textAlign: "center", cursor: "pointer", background: drag ? "#E8F0FB" : file ? "#EEF4FB" : "#F9F8F7", transition: "all .15s" }}>
+          <input ref={inputRef} type="file" accept=".xlsx,.xls" style={{ display: "none" }} onChange={e => pickFile(e.target.files)} />
+          {file ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <FileSpreadsheet size={18} color="#004f91" />
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#004f91" }}>{file.name}</span>
+              <span style={{ fontSize: 12, color: "#888" }}>({(file.size / 1024).toFixed(0)} Ko)</span>
+              <button onClick={e => { e.stopPropagation(); setFile(null); setRes(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#999" }}><X size={14} /></button>
+            </div>
+          ) : (
+            <>
+              <UploadCloud size={22} color="#AAA" style={{ marginBottom: 6 }} />
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#666" }}>Déposez le classeur .xlsx ou cliquez pour parcourir</div>
+              <div style={{ fontSize: 11, color: "#AAA", marginTop: 2 }}>Feuilles attendues : EDITIONS COMPTES, EDITIONS RATIOS</div>
+            </>
+          )}
+        </div>
+
+        {res && res.statut === "termine" && (
+          <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: "#EDFBF1", border: "1px solid #B2EAC5", fontSize: 13, color: "#1a7a3c" }}>
+            ✓ Import terminé — <strong>{res.nb_secteurs}</strong> secteurs, <strong>{res.nb_valeurs}</strong> valeurs écrites (années {res.annees?.[0]}–{res.annees?.[res.annees.length - 1]}).
+          </div>
+        )}
+        {res && res.statut === "erreur" && (
+          <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: "#FFF2F2", border: "1px solid #F5C6CB", fontSize: 13, color: "#c0392b" }}>⚠ {res.erreur}</div>
+        )}
+
+        <button onClick={() => handleImport()} disabled={importing || !file}
+          style={{ marginTop: 16, background: importing || !file ? "#ccc" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 13, fontWeight: 600, cursor: importing || !file ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+          {importing ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />}
+          {importing ? "Import en cours…" : "Importer"}
+        </button>
+      </div>
+
+      {/* ── Revue (secteurs à valider) ── */}
+      {res && res.statut === "en_revue" && res.revue.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: 12, border: "2px solid #F5A623", padding: "24px 28px", marginBottom: 20 }}>
+          <div style={{ ...SEC, color: "#B7661B", borderBottomColor: "#FAD7A0" }}>
+            {res.revue.length} secteur(s) à valider — import bloqué
+          </div>
+          <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
+            Aucune valeur n'a été enregistrée. Confirmez la correspondance de chaque secteur douteux (le meilleur candidat est pré-sélectionné),
+            puis relancez : la reconnaissance sera mémorisée pour les prochains imports.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {res.revue.map(ri => {
+              const opts = (secteurs as any)?.[ri.niveau] as Secteur[] || [];
+              const key  = `${ri.niveau}|${ri.libelle_brut}`;
+              return (
+                <div key={key} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "#FFF9F0", borderRadius: 8, border: "1px solid #FAD7A0" }}>
+                  <div style={{ flex: "0 0 300px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#B7661B" }}>{ri.libelle_brut}</span>
+                      <ScoreBadge score={ri.score} />
+                    </div>
+                    <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>{NIVEAU_LABEL[ri.niveau]} · code BDEF {ri.code_bdef}</div>
+                  </div>
+                  <SecteurPicker options={opts} value={choix[key] ?? null} onSelect={id => setChoix(p => ({ ...p, [key]: id }))} />
+                  {choix[key] && <CheckCircle size={18} color="#27ae60" style={{ flexShrink: 0 }} />}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center" }}>
+            <button onClick={handleAssocierEtReimporter} disabled={associating || !tousAssocies || !file}
+              style={{ background: associating || !tousAssocies || !file ? "#ccc" : "#B7661B", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, cursor: associating || !tousAssocies ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              {associating ? <Loader2 size={15} className="animate-spin" /> : <Link2 size={15} />}
+              {associating ? "Validation en cours…" : "Valider et réimporter"}
+            </button>
+            {!file && <span style={{ fontSize: 12, color: "#c0392b" }}>Resélectionnez le fichier pour réimporter.</span>}
+          </div>
+        </div>
+      )}
+
+      {/* ── Consultation des données ── */}
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 20 }}>
+        <div style={SEC}>Consulter les données</div>
+        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+          <select value={vNiveau} onChange={e => { setVNiveau(e.target.value); setVCible(null); }} style={{ ...IS, flex: "0 0 200px" }}>
+            <option value="global">Global des secteurs</option>
+            <option value="macro_secteur">Macro-secteur</option>
+            <option value="groupe">Groupe</option>
+            <option value="secteur">Secteur</option>
+          </select>
+          {vNiveau !== "global" && (
+            <SecteurPicker options={optionsConsult} value={vCible} onSelect={setVCible} />
+          )}
+        </div>
+
+        {loadingV ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: 30 }}><Loader2 size={22} color="#004f91" className="animate-spin" /></div>
+        ) : !valeurs || valeurs.indicateurs.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 30, color: "#888", fontSize: 13 }}>
+            {vNiveau !== "global" && vCible == null ? "Sélectionnez un secteur." : "Aucune donnée pour cette sélection."}
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: "2px solid #E8E5E3" }}>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#4a5568" }}>Indicateur</th>
+                  <th style={{ padding: "8px 8px", textAlign: "left", fontWeight: 600, color: "#4a5568" }}>Unité</th>
+                  {valeurs.annees.map(a => (
+                    <th key={a} style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#4a5568" }}>{a}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(parCategorie).map(([cat, inds]) => (
+                  <Fragment key={cat}>
+                    <tr><td colSpan={valeurs.annees.length + 2} style={{ padding: "10px 12px 4px", fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.08em", textTransform: "uppercase" }}>{cat}</td></tr>
+                    {inds.map(ind => (
+                      <tr key={ind.code} style={{ borderBottom: "1px solid #F0EEEC" }}>
+                        <td style={{ padding: "8px 12px", color: "#1a1a2e" }}>{ind.libelle}</td>
+                        <td style={{ padding: "8px 8px", color: "#888", fontSize: 12 }}>{ind.unite}</td>
+                        {valeurs.annees.map(a => {
+                          const v = ind.valeurs[a];
+                          const isRatio = ind.unite === "ratio" || ind.unite === "%";
+                          return (
+                            <td key={a} style={{ padding: "8px 12px", textAlign: "right", color: v == null ? "#DDD" : "#1a1a2e", fontVariantNumeric: "tabular-nums" }}>
+                              {v == null ? "–" : isRatio ? v.toFixed(4) : Math.round(v).toLocaleString("fr-FR")}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ── Historique des imports ── */}
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px" }}>
+        <div style={SEC}>Historique des imports</div>
+        {imports.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 24, color: "#888", fontSize: 13 }}>Aucun import pour le moment.</div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid #E8E5E3" }}>
+                {["Fichier", "Statut", "Années", "Valeurs", "En revue", "Date"].map(h => (
+                  <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#4a5568" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {imports.map(im => {
+                const c = im.statut === "termine" ? "#1a7a3c" : im.statut === "en_revue" ? "#B7661B" : "#888";
+                const bg = im.statut === "termine" ? "#EDFBF1" : im.statut === "en_revue" ? "#FFF9F0" : "#F2F0EF";
+                return (
+                  <tr key={im.id} style={{ borderBottom: "1px solid #F0EEEC" }}>
+                    <td style={{ padding: "8px 12px", color: "#1a1a2e" }}>{im.fichier}</td>
+                    <td style={{ padding: "8px 12px" }}><span style={{ background: bg, color: c, borderRadius: 20, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>{im.statut}</span></td>
+                    <td style={{ padding: "8px 12px", color: "#666" }}>{im.annees?.length ? `${im.annees[0]}–${im.annees[im.annees.length - 1]}` : "–"}</td>
+                    <td style={{ padding: "8px 12px", color: "#666" }}>{im.nb_valeurs || "–"}</td>
+                    <td style={{ padding: "8px 12px", color: "#666" }}>{im.nb_revue || "–"}</td>
+                    <td style={{ padding: "8px 12px", color: "#888", fontSize: 12 }}>{im.cree_le ? new Date(im.cree_le).toLocaleString("fr-FR") : "–"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}

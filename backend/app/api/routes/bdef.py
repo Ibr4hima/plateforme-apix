@@ -15,9 +15,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.bdef import (
     BdefMacroSecteur, BdefGroupe, BdefSecteur, BdefImport, BdefImportRevue,
+    BdefValeur, BdefIndicateur, BdefIndicateurCategorie,
 )
 from app.services.bdef_import import lancer_import, associer_secteur
-from app.utils.bdef_matching import NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO
+from app.utils.bdef_matching import (
+    NIVEAU_GLOBAL, NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO,
+)
+
+# Niveau → colonne FK de bdef_valeurs
+_FK_PAR_NIVEAU = {
+    NIVEAU_MACRO:   BdefValeur.macro_secteur_id,
+    NIVEAU_GROUPE:  BdefValeur.groupe_id,
+    NIVEAU_SECTEUR: BdefValeur.secteur_id,
+}
 
 router = APIRouter(prefix="/bdef", tags=["BDEF"])
 
@@ -108,3 +118,55 @@ async def liste_secteurs(db: AsyncSession = Depends(get_db)):
         NIVEAU_GROUPE:  [fmt(s) for s in groupes],
         NIVEAU_SECTEUR: [fmt(s) for s in secteurs],
     }
+
+
+# ── Lecture des valeurs (consultation / vérification) ─────────────────────────
+
+@router.get("/valeurs")
+async def lire_valeurs(
+    niveau: str = NIVEAU_GLOBAL,
+    cible_id: int | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Renvoie les indicateurs (hors variables _raw_) et leurs valeurs par année,
+    pour un secteur donné (ou le global), groupés par catégorie. Format pensé
+    pour un tableau indicateurs × années.
+    """
+    if niveau not in (NIVEAU_GLOBAL, NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO):
+        raise HTTPException(400, "niveau invalide.")
+
+    q = (
+        select(BdefValeur, BdefIndicateur, BdefIndicateurCategorie)
+        .join(BdefIndicateur, BdefValeur.indicateur_id == BdefIndicateur.id)
+        .join(BdefIndicateurCategorie, BdefIndicateur.categorie_id == BdefIndicateurCategorie.id)
+        .where(BdefValeur.niveau == niveau)
+        .where(~BdefIndicateur.code.like("\\_raw\\_%"))
+    )
+    if niveau == NIVEAU_GLOBAL:
+        q = q.where(
+            BdefValeur.macro_secteur_id.is_(None),
+            BdefValeur.groupe_id.is_(None),
+            BdefValeur.secteur_id.is_(None),
+        )
+    else:
+        if cible_id is None:
+            raise HTTPException(400, "cible_id requis pour ce niveau.")
+        q = q.where(_FK_PAR_NIVEAU[niveau] == cible_id)
+
+    res = await db.execute(q)
+
+    annees: set[int] = set()
+    indic: dict[str, dict] = {}
+    for val, ind, cat in res.all():
+        annees.add(val.annee)
+        d = indic.setdefault(ind.code, {
+            "code": ind.code, "libelle": ind.libelle, "unite": ind.unite,
+            "categorie": cat.libelle, "categorie_ordre": cat.ordre or 0,
+            "ordre": ind.ordre or 0, "valeurs": {},
+        })
+        d["valeurs"][val.annee] = float(val.valeur) if val.valeur is not None else None
+
+    indicateurs = sorted(indic.values(), key=lambda x: (x["categorie_ordre"], x["ordre"], x["code"]))
+    return {"niveau": niveau, "cible_id": cible_id,
+            "annees": sorted(annees), "indicateurs": indicateurs}
