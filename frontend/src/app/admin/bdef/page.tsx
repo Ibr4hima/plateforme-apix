@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { CheckCircle, Link2, Loader2, UploadCloud, X, FileSpreadsheet } from "lucide-react";
+import { CheckCircle, Link2, Loader2, UploadCloud, X, FileSpreadsheet, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -20,6 +20,9 @@ type ImportRes  = { import_id: number; statut: string; annees: number[]; nb_sect
 type ImportHist = { id: number; fichier: string; statut: string; annees: number[] | null; nb_valeurs: number; nb_revue: number; cree_le: string | null; termine_le: string | null };
 type Indic      = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 type Valeurs    = { niveau: string; cible_id: number | null; annees: number[]; indicateurs: Indic[] };
+type Couv       = { code: string; libelle: string; annees_couvertes: number; nb_present: number; nb_attendu: number; taux: number };
+type Anom       = { severite: string; categorie: string; indicateur: string; niveau: string; cible_id: number | null; libelle_cible: string; annee: number | null; message: string; valeur: number | null; attendu: number | null };
+type Rapport    = { score: number; nb_secteurs: number; nb_valeurs: number; annees: number[]; nb_erreurs: number; nb_avertissements: number; couverture: Couv[]; anomalies: Anom[] };
 
 // ── Dropdown de secteur recherchable ──────────────────────────────────────────
 function SecteurPicker({ options, value, onSelect }: { options: Secteur[]; value: number | null; onSelect: (id: number) => void }) {
@@ -66,6 +69,39 @@ function ScoreBadge({ score }: { score: number | null }) {
   return <span style={{ background: bg, color, border: `1px solid ${color}33`, borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>{score.toFixed(0)} %</span>;
 }
 
+// ── Jauge de score de qualité ─────────────────────────────────────────────────
+function ScoreGauge({ score }: { score: number }) {
+  const color = score >= 95 ? "#1a7a3c" : score >= 80 ? "#B7661B" : "#c0392b";
+  const bg    = score >= 95 ? "#EDFBF1" : score >= 80 ? "#FFF9F0" : "#FFF2F2";
+  return (
+    <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 12, background: bg, border: `1px solid ${color}33`, borderRadius: 10, padding: "12px 18px" }}>
+      <ShieldCheck size={26} color={color} />
+      <div>
+        <div style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{score.toFixed(1)} %</div>
+        <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>Valeurs sans erreur</div>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, color }: { label: string; value: number; color?: string }) {
+  return (
+    <div style={{ flex: "0 0 auto", border: "1px solid #E8E5E3", borderRadius: 10, padding: "12px 18px", minWidth: 110 }}>
+      <div style={{ fontSize: 22, fontWeight: 700, color: color || "#1a1a2e", lineHeight: 1 }}>{value.toLocaleString("fr-FR")}</div>
+      <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>{label}</div>
+    </div>
+  );
+}
+
+const SEV_STYLE: Record<string, { color: string; bg: string; label: string }> = {
+  erreur:        { color: "#c0392b", bg: "#FFF2F2", label: "Erreur" },
+  avertissement: { color: "#B7661B", bg: "#FFF9F0", label: "Avertissement" },
+  info:          { color: "#666",    bg: "#F2F0EF", label: "Info" },
+};
+const CAT_LABEL: Record<string, string> = {
+  recalcul: "Recalcul", borne: "Borne", outlier: "Valeur atypique", coherence: "Cohérence",
+};
+
 export default function AdminBdefPage() {
   const [file, setFile]         = useState<File | null>(null);
   const [drag, setDrag]         = useState(false);
@@ -83,6 +119,10 @@ export default function AdminBdefPage() {
   const [valeurs, setValeurs]   = useState<Valeurs | null>(null);
   const [loadingV, setLoadingV] = useState(false);
 
+  // Vérification
+  const [rapport, setRapport]   = useState<Rapport | null>(null);
+  const [loadingR, setLoadingR] = useState(false);
+
   async function loadRefs() {
     const [s, h] = await Promise.all([
       fetch(`${API}/bdef/secteurs`).then(r => r.json()),
@@ -91,7 +131,7 @@ export default function AdminBdefPage() {
     setSecteurs(s);
     setImports(Array.isArray(h) ? h : []);
   }
-  useEffect(() => { loadRefs(); }, []);
+  useEffect(() => { loadRefs(); loadVerification(); }, []);
 
   function pickFile(f: FileList | null) {
     if (f && f[0]) setFile(f[0]);
@@ -117,10 +157,20 @@ export default function AdminBdefPage() {
         setChoix(init);
       }
       await loadRefs();
+      if (r.ok && data.statut === "termine") loadVerification();
     } catch (e: any) {
       setRes({ import_id: 0, statut: "erreur", annees: [], revue: [], erreur: "Erreur réseau : " + e.message });
     }
     setImporting(false);
+  }
+
+  async function loadVerification() {
+    setLoadingR(true);
+    try {
+      const data = await fetch(`${API}/bdef/verification`).then(r => r.json());
+      setRapport(data && !data.detail ? data : null);
+    } catch { setRapport(null); }
+    setLoadingR(false);
   }
 
   async function handleAssocierEtReimporter() {
@@ -249,6 +299,92 @@ export default function AdminBdefPage() {
           </div>
         </div>
       )}
+
+      {/* ── Rapport de vérification ── */}
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div style={SEC}>Rapport de vérification</div>
+          <button onClick={loadVerification} disabled={loadingR}
+            style={{ background: "none", border: "1px solid #C5BFBB", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#555", cursor: loadingR ? "wait" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <RefreshCw size={13} className={loadingR ? "animate-spin" : ""} /> Actualiser
+          </button>
+        </div>
+        <p style={{ fontSize: 12, color: "#888", marginTop: -6, marginBottom: 16 }}>
+          Contrôles automatiques : recalcul des indicateurs dérivés, taux de couverture, montants aberrants,
+          valeurs atypiques entre secteurs et cohérence comptable (VA ≤ CA, EBE ≤ VA).
+        </p>
+
+        {loadingR ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: 30 }}><Loader2 size={22} color="#004f91" className="animate-spin" /></div>
+        ) : !rapport || rapport.nb_valeurs === 0 ? (
+          <div style={{ textAlign: "center", padding: 24, color: "#888", fontSize: 13 }}>Aucune donnée à vérifier — importez d'abord un fichier.</div>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
+              <ScoreGauge score={rapport.score} />
+              <Stat label="Valeurs contrôlées" value={rapport.nb_valeurs} />
+              <Stat label="Secteurs" value={rapport.nb_secteurs} />
+              <Stat label="Erreurs" value={rapport.nb_erreurs} color={rapport.nb_erreurs ? "#c0392b" : "#1a7a3c"} />
+              <Stat label="Avertissements" value={rapport.nb_avertissements} color={rapport.nb_avertissements ? "#B7661B" : "#1a7a3c"} />
+            </div>
+
+            {/* Anomalies */}
+            {rapport.anomalies.length === 0 ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, background: "#EDFBF1", border: "1px solid #B2EAC5", fontSize: 13, color: "#1a7a3c" }}>
+                <CheckCircle size={16} /> Aucune anomalie détectée — toutes les valeurs passent les contrôles.
+              </div>
+            ) : (
+              <div style={{ maxHeight: 360, overflowY: "auto", border: "1px solid #F0EEEC", borderRadius: 8 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #E8E5E3", background: "#FAF9F8" }}>
+                      {["", "Type", "Indicateur", "Secteur", "Année", "Détail"].map((h, i) => (
+                        <th key={i} style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#4a5568", position: "sticky", top: 0, background: "#FAF9F8" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rapport.anomalies.map((a, i) => {
+                      const s = SEV_STYLE[a.severite] || SEV_STYLE.info;
+                      return (
+                        <tr key={i} style={{ borderBottom: "1px solid #F4F2F0" }}>
+                          <td style={{ padding: "7px 10px" }}>
+                            <span title={s.label} style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: s.color }} />
+                          </td>
+                          <td style={{ padding: "7px 10px" }}>
+                            <span style={{ background: s.bg, color: s.color, borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{CAT_LABEL[a.categorie] || a.categorie}</span>
+                          </td>
+                          <td style={{ padding: "7px 10px", color: "#1a1a2e", fontWeight: 500, whiteSpace: "nowrap" }}>{a.indicateur}</td>
+                          <td style={{ padding: "7px 10px", color: "#555" }}>{a.libelle_cible}</td>
+                          <td style={{ padding: "7px 10px", color: "#888", fontVariantNumeric: "tabular-nums" }}>{a.annee ?? "–"}</td>
+                          <td style={{ padding: "7px 10px", color: "#555" }}>{a.message}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Couverture incomplète */}
+            {rapport.couverture.some(c => c.taux < 1) && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#B7661B", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                  <AlertTriangle size={13} /> Indicateurs à couverture incomplète
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {rapport.couverture.filter(c => c.taux < 1).map(c => (
+                    <span key={c.code} title={`${c.nb_present}/${c.nb_attendu} valeurs`}
+                      style={{ fontSize: 12, padding: "4px 10px", borderRadius: 20, border: `1px solid ${c.taux === 0 ? "#c0392b" : "#FAD7A0"}`, background: c.taux === 0 ? "#FFF2F2" : "#FFF9F0", color: c.taux === 0 ? "#c0392b" : "#B7661B" }}>
+                      {c.libelle} · {(c.taux * 100).toFixed(0)} %
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* ── Consultation des données ── */}
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 20 }}>

@@ -18,6 +18,9 @@ from app.models.bdef import (
     BdefValeur, BdefIndicateur, BdefIndicateurCategorie,
 )
 from app.services.bdef_import import lancer_import, associer_secteur
+from app.services.bdef_verification import (
+    verifier, SecteurValeurs, IndicateurInfo,
+)
 from app.utils.bdef_matching import (
     NIVEAU_GLOBAL, NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO,
 )
@@ -170,3 +173,71 @@ async def lire_valeurs(
     indicateurs = sorted(indic.values(), key=lambda x: (x["categorie_ordre"], x["ordre"], x["code"]))
     return {"niveau": niveau, "cible_id": cible_id,
             "annees": sorted(annees), "indicateurs": indicateurs}
+
+
+# ── Vérification automatisée des données ──────────────────────────────────────
+
+@router.get("/verification")
+async def verification(db: AsyncSession = Depends(get_db)):
+    """
+    Contrôle qualité de l'ensemble des valeurs enregistrées : recalcul des
+    indicateurs calculés, couverture, bornes/outliers et cohérence comptable.
+    Renvoie un rapport prêt à afficher (cf. bdef_verification.verifier).
+    """
+    # Métadonnées indicateurs (id → code) + infos pour le rapport
+    res = await db.execute(select(BdefIndicateur))
+    inds = res.scalars().all()
+    code_par_id = {i.id: i.code for i in inds}
+    indicateurs = {
+        i.code: IndicateurInfo(libelle=i.libelle, unite=i.unite, mode=i.mode or "lu")
+        for i in inds
+    }
+
+    # Libellés des cibles par niveau (pour nommer les secteurs dans le rapport)
+    macro = {s.id: f"{s.code} — {s.libelle}" for s in
+             (await db.execute(select(BdefMacroSecteur))).scalars().all()}
+    grp = {s.id: f"{s.code} — {s.libelle}" for s in
+           (await db.execute(select(BdefGroupe))).scalars().all()}
+    sec = {s.id: f"{s.code} — {s.libelle}" for s in
+           (await db.execute(select(BdefSecteur))).scalars().all()}
+    libelles = {NIVEAU_MACRO: macro, NIVEAU_GROUPE: grp, NIVEAU_SECTEUR: sec}
+
+    # Toutes les valeurs (y compris _raw_, nécessaires aux recalculs), groupées
+    # par secteur (niveau, cible_id).
+    res = await db.execute(select(BdefValeur))
+    secteurs: dict[tuple, SecteurValeurs] = {}
+    for v in res.scalars().all():
+        cible = v.macro_secteur_id or v.groupe_id or v.secteur_id  # None si global
+        key = (v.niveau, cible)
+        sv = secteurs.get(key)
+        if sv is None:
+            lib = "Global des secteurs" if v.niveau == NIVEAU_GLOBAL \
+                else libelles.get(v.niveau, {}).get(cible, f"{v.niveau} #{cible}")
+            sv = SecteurValeurs(niveau=v.niveau, cible_id=cible, libelle=lib)
+            secteurs[key] = sv
+        code = code_par_id.get(v.indicateur_id)
+        if code and v.valeur is not None:
+            sv.valeurs.setdefault(code, {})[v.annee] = float(v.valeur)
+
+    rapport = verifier(list(secteurs.values()), indicateurs)
+
+    return {
+        "score": rapport.score,
+        "nb_secteurs": rapport.nb_secteurs,
+        "nb_valeurs": rapport.nb_valeurs,
+        "annees": rapport.annees,
+        "nb_erreurs": rapport.nb_erreurs,
+        "nb_avertissements": rapport.nb_avertissements,
+        "couverture": [
+            {"code": c.code, "libelle": c.libelle, "annees_couvertes": c.annees_couvertes,
+             "nb_present": c.nb_present, "nb_attendu": c.nb_attendu, "taux": c.taux}
+            for c in rapport.couverture
+        ],
+        "anomalies": [
+            {"severite": a.severite, "categorie": a.categorie, "indicateur": a.indicateur,
+             "niveau": a.niveau, "cible_id": a.cible_id, "libelle_cible": a.libelle_cible,
+             "annee": a.annee, "message": a.message,
+             "valeur": a.valeur, "attendu": a.attendu}
+            for a in rapport.anomalies
+        ],
+    }
