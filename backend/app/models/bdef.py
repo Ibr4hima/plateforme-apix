@@ -110,3 +110,29 @@ class BdefValeur(Base):
     valeur           = Column(Numeric(20, 4))
     created_at       = Column(TIMESTAMP(timezone=True), server_default=func.now())
     indicateur       = relationship("BdefIndicateur")
+
+
+# ── Matching de secteurs BDEF ──────────────────────────────────────────────────
+
+class BdefSecteurAlias(Base):
+    __tablename__ = "bdef_secteur_alias"
+    id           = Column(Integer, primary_key=True, autoincrement=True)
+    libelle_brut = Column(Text, unique=True, nullable=False)
+    secteur_id   = Column(Integer, ForeignKey("bdef_secteurs.id", ondelete="CASCADE"), nullable=False, index=True)
+    cree_le      = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    secteur      = relationship("BdefSecteur")
+
+
+class BdefImportRevue(Base):
+    __tablename__ = "bdef_import_revue"
+    id                = Column(Integer, primary_key=True, autoincrement=True)
+    import_id         = Column(Integer, nullable=False, index=True)
+    libelle_brut      = Column(Text, nullable=False)
+    score_fuzzy       = Column(Numeric(5, 2))
+    candidats         = Column(JSONB)
+    secteur_id_valide = Column(Integer, ForeignKey("bdef_secteurs.id"), nullable=True)
+    valide_le         = Column(TIMESTAMP(timezone=True), nullable=True)
+    valide_par        = Column(String(150), nullable=True)
+    statut            = Column(String(20), nullable=False, default="en_attente")
+    cree_le           = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    secteur_valide    = relationship("BdefSecteur")
