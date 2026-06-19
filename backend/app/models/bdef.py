@@ -1,7 +1,8 @@
 from sqlalchemy import (
-    Column, String, Integer, SmallInteger, Numeric, ForeignKey,
+    Column, String, Integer, SmallInteger, Numeric, Text, ForeignKey,
     UniqueConstraint, CheckConstraint, Index,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import relationship
@@ -61,15 +62,23 @@ class BdefIndicateurCategorie(Base):
 
 class BdefIndicateur(Base):
     __tablename__ = "bdef_indicateurs"
-    id           = Column(Integer, primary_key=True, autoincrement=True)
-    code         = Column(String(60), unique=True)
-    libelle      = Column(String(300), nullable=False)
-    unite        = Column(String(20), nullable=False)   # FCFA | ratio | % | jours
-    categorie_id = Column(Integer, ForeignKey("bdef_indicateur_categories.id", ondelete="RESTRICT"),
-                          nullable=False, index=True)
-    ordre        = Column(SmallInteger)
-    created_at   = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    categorie    = relationship("BdefIndicateurCategorie", back_populates="indicateurs")
+    id             = Column(Integer, primary_key=True, autoincrement=True)
+    code           = Column(String(60), unique=True)
+    libelle        = Column(String(300), nullable=False)
+    unite          = Column(String(20), nullable=False)     # FCFA | ratio | % | jours
+    categorie_id   = Column(Integer, ForeignKey("bdef_indicateur_categories.id", ondelete="RESTRICT"),
+                            nullable=False, index=True)
+    ordre          = Column(SmallInteger)
+    # ── Métadonnées import ──────────────────────────────────────────────────
+    # mode : 'lu' | 'calcule' | 'lu_ou_calcule'
+    # Codes préfixés '_raw_' = variables intermédiaires (non affichées dans l'UI)
+    mode           = Column(String(20), default="lu")
+    source_tableau = Column(String(150))                    # quel tableau Excel
+    source_ref     = Column(String(50))                     # réf. colonne dans le tableau
+    formule        = Column(Text)                           # expression de calcul
+    formule_vars   = Column(JSONB)                          # variables nécessaires
+    created_at     = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    categorie      = relationship("BdefIndicateurCategorie", back_populates="indicateurs")
 
 
 # ── Valeurs annuelles ─────────────────────────────────────────────────────────
