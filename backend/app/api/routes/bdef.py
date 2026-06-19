@@ -188,6 +188,7 @@ async def verification(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(BdefIndicateur))
     inds = res.scalars().all()
     code_par_id = {i.id: i.code for i in inds}
+    libelle_par_code = {i.code: i.libelle for i in inds}
     indicateurs = {
         i.code: IndicateurInfo(libelle=i.libelle, unite=i.unite, mode=i.mode or "lu")
         for i in inds
@@ -230,6 +231,7 @@ async def verification(db: AsyncSession = Depends(get_db)):
             "severite": "erreur",
             "categorie": "borne",
             "indicateur": r.indicateur_code or "",
+            "indicateur_libelle": libelle_par_code.get(r.indicateur_code or "", r.indicateur_code or ""),
             "niveau": r.niveau,
             "cible_id": r.macro_secteur_id or r.groupe_id or r.secteur_id,
             "libelle_cible": r.libelle_cible or "",
@@ -256,6 +258,7 @@ async def verification(db: AsyncSession = Depends(get_db)):
         ],
         "anomalies": [
             {"severite": a.severite, "categorie": a.categorie, "indicateur": a.indicateur,
+             "indicateur_libelle": libelle_par_code.get(a.indicateur, a.indicateur),
              "niveau": a.niveau, "cible_id": a.cible_id, "libelle_cible": a.libelle_cible,
              "annee": a.annee, "message": a.message,
              "valeur": a.valeur, "attendu": a.attendu,
@@ -277,33 +280,60 @@ _FK_PAR_NIVEAU_STR = {
 @router.post("/corriger", status_code=200)
 async def corriger_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
     """
-    Valide la correction d'une valeur rejetée à l'import.
-    Écrit la valeur corrigée dans bdef_valeurs et marque la ligne comme 'corrige'.
+    Valide la correction manuelle d'une valeur en erreur de borne.
+
+    Deux modes :
+      - via `rejetee_id` : valeur non importée (table bdef_valeurs_rejetees) ;
+      - via (indicateur, niveau, cible_id, annee) : valeur déjà présente en base
+        et signalée en erreur par le rapport de vérification.
+    Dans les deux cas la valeur corrigée est écrite dans bdef_valeurs.
     """
-    rejetee_id = payload.get("rejetee_id")
     valeur_corrigee = payload.get("valeur_corrigee")
-    if rejetee_id is None or valeur_corrigee is None:
-        raise HTTPException(400, "rejetee_id et valeur_corrigee sont requis.")
-
-    res = await db.execute(
-        select(BdefValeurRejetee).where(BdefValeurRejetee.id == int(rejetee_id))
-    )
-    rej = res.scalar_one_or_none()
-    if not rej:
-        raise HTTPException(404, "Valeur rejetée introuvable.")
-
+    if valeur_corrigee is None:
+        raise HTTPException(400, "valeur_corrigee est requis.")
     val = float(valeur_corrigee)
-    raison = raison_erreur_borne(rej.indicateur_code or "", val)
+
+    rejetee_id = payload.get("rejetee_id")
+
+    if rejetee_id is not None:
+        rej = (await db.execute(
+            select(BdefValeurRejetee).where(BdefValeurRejetee.id == int(rejetee_id))
+        )).scalar_one_or_none()
+        if not rej:
+            raise HTTPException(404, "Valeur rejetée introuvable.")
+        code = rej.indicateur_code or ""
+        indicateur_id = rej.indicateur_id
+        niveau = rej.niveau
+        annee = rej.annee
+        cible_id = rej.macro_secteur_id or rej.groupe_id or rej.secteur_id
+    else:
+        # Correction d'une valeur déjà présente en base (rapport de vérification)
+        code = (payload.get("indicateur") or "").strip()
+        niveau = (payload.get("niveau") or "").strip()
+        cible_id = payload.get("cible_id")
+        annee = payload.get("annee")
+        if not code or not niveau or annee is None:
+            raise HTTPException(400, "indicateur, niveau et annee sont requis.")
+        ind = (await db.execute(
+            select(BdefIndicateur).where(BdefIndicateur.code == code)
+        )).scalar_one_or_none()
+        if not ind:
+            raise HTTPException(404, "Indicateur introuvable.")
+        indicateur_id = ind.id
+        rej = None
+        annee = int(annee)
+        cible_id = int(cible_id) if cible_id is not None else None
+
+    raison = raison_erreur_borne(code, val)
     if raison:
         raise HTTPException(400, f"Valeur toujours invalide : {raison}")
 
     # Upsert dans bdef_valeurs
-    fk_col = _FK_PAR_NIVEAU_STR.get(rej.niveau)
-    cible_id = rej.macro_secteur_id or rej.groupe_id or rej.secteur_id
+    fk_col = _FK_PAR_NIVEAU_STR.get(niveau)
     q = select(BdefValeur).where(
-        BdefValeur.indicateur_id == rej.indicateur_id,
-        BdefValeur.niveau == rej.niveau,
-        BdefValeur.annee == rej.annee,
+        BdefValeur.indicateur_id == indicateur_id,
+        BdefValeur.niveau == niveau,
+        BdefValeur.annee == annee,
     )
     if fk_col and cible_id is not None:
         q = q.where(getattr(BdefValeur, fk_col) == cible_id)
@@ -313,15 +343,16 @@ async def corriger_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
         existing.valeur = val
     else:
         kwargs: dict = {
-            "indicateur_id": rej.indicateur_id,
-            "niveau": rej.niveau,
-            "annee": rej.annee,
+            "indicateur_id": indicateur_id,
+            "niveau": niveau,
+            "annee": annee,
             "valeur": val,
         }
         if fk_col and cible_id is not None:
             kwargs[fk_col] = cible_id
         db.add(BdefValeur(**kwargs))
 
-    rej.statut = "corrige"
+    if rej is not None:
+        rej.statut = "corrige"
     await db.flush()
     return {"success": True, "rejetee_id": rejetee_id, "valeur": val}

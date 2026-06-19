@@ -22,7 +22,7 @@ type ImportHist = { id: number; fichier: string; statut: string; annees: number[
 type Indic      = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 type Valeurs    = { niveau: string; cible_id: number | null; annees: number[]; indicateurs: Indic[] };
 type Couv       = { code: string; libelle: string; annees_couvertes: number; nb_present: number; nb_attendu: number; taux: number };
-type Anom       = { severite: string; categorie: string; indicateur: string; niveau: string; cible_id: number | null; libelle_cible: string; annee: number | null; message: string; valeur: number | null; attendu: number | null; rejetee_id: number | null };
+type Anom       = { severite: string; categorie: string; indicateur: string; indicateur_libelle?: string; niveau: string; cible_id: number | null; libelle_cible: string; annee: number | null; message: string; valeur: number | null; attendu: number | null; rejetee_id: number | null };
 type Rapport    = { score: number; nb_secteurs: number; nb_valeurs: number; annees: number[]; nb_erreurs: number; nb_avertissements: number; couverture: Couv[]; anomalies: Anom[] };
 
 // ── Dropdown de secteur recherchable ──────────────────────────────────────────
@@ -124,9 +124,9 @@ export default function AdminBdefPage() {
   const [rapport, setRapport]   = useState<Rapport | null>(null);
   const [loadingR, setLoadingR] = useState(false);
 
-  // Corrections en attente (valeurs rejetées à l'import)
-  const [corrections, setCorrections]   = useState<Record<number, string>>({});  // rejetee_id → valeur saisie
-  const [correcting, setCorrecting]     = useState<Record<number, boolean>>({});
+  // Corrections en attente (valeurs en erreur de borne)
+  const [corrections, setCorrections]   = useState<Record<string, string>>({});   // clé anomalie → valeur saisie
+  const [correcting, setCorrecting]     = useState<Record<string, boolean>>({});
 
   async function loadRefs() {
     const [s, h] = await Promise.all([
@@ -193,24 +193,32 @@ export default function AdminBdefPage() {
     await handleImport();          // réimport : les alias résolvent les secteurs
   }
 
-  async function corrigerValeur(rejeteeId: number) {
-    const val = corrections[rejeteeId];
+  function anomKey(a: Anom) {
+    return a.rejetee_id != null ? `r${a.rejetee_id}` : `${a.indicateur}|${a.niveau}|${a.cible_id ?? ""}|${a.annee ?? ""}`;
+  }
+
+  async function corrigerValeur(a: Anom) {
+    const key = anomKey(a);
+    const val = corrections[key];
     if (val === undefined || val === "") return;
-    setCorrecting(p => ({ ...p, [rejeteeId]: true }));
+    setCorrecting(p => ({ ...p, [key]: true }));
     try {
+      const body = a.rejetee_id != null
+        ? { rejetee_id: a.rejetee_id, valeur_corrigee: parseFloat(val) }
+        : { indicateur: a.indicateur, niveau: a.niveau, cible_id: a.cible_id, annee: a.annee, valeur_corrigee: parseFloat(val) };
       const r = await fetch(`${API}/bdef/corriger`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rejetee_id: rejeteeId, valeur_corrigee: parseFloat(val) }),
+        body: JSON.stringify(body),
       });
       if (r.ok) {
-        setCorrections(p => { const n = { ...p }; delete n[rejeteeId]; return n; });
+        setCorrections(p => { const n = { ...p }; delete n[key]; return n; });
         loadVerification();
       } else {
         const data = await r.json();
         alert(data.detail || "Erreur lors de la correction.");
       }
     } catch (e: any) { alert("Erreur réseau : " + e.message); }
-    setCorrecting(p => ({ ...p, [rejeteeId]: false }));
+    setCorrecting(p => ({ ...p, [key]: false }));
   }
 
   async function loadValeurs(niveau: string, cible: number | null) {
@@ -354,10 +362,7 @@ export default function AdminBdefPage() {
           <>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
               <ScoreGauge score={rapport.score} />
-              <Stat label="Valeurs contrôlées" value={rapport.nb_valeurs} />
-              <Stat label="Secteurs" value={rapport.nb_secteurs} />
               <Stat label="Erreurs" value={rapport.nb_erreurs} color={rapport.nb_erreurs ? "#c0392b" : "#1a7a3c"} />
-              <Stat label="Avertissements" value={rapport.nb_avertissements} color={rapport.nb_avertissements ? "#B7661B" : "#1a7a3c"} />
             </div>
 
             {/* Erreurs uniquement (avertissements filtrés) */}
@@ -380,36 +385,36 @@ export default function AdminBdefPage() {
                     <tbody>
                       {erreurs.map((a, i) => {
                         const s = SEV_STYLE.erreur;
-                        const rid = a.rejetee_id;
-                        const corrVal = rid != null ? (corrections[rid] ?? "") : "";
-                        const isCorrecting = rid != null ? (correcting[rid] ?? false) : false;
+                        const key = anomKey(a);
+                        const corrVal = corrections[key] ?? "";
+                        const isCorrecting = correcting[key] ?? false;
                         return (
                           <tr key={i} style={{ borderBottom: "1px solid #F4F2F0" }}>
-                            <td style={{ padding: "7px 10px" }}>
+                            <td style={{ padding: "7px 10px", verticalAlign: "top" }}>
                               <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: s.color }} />
                             </td>
-                            <td style={{ padding: "7px 10px" }}>
+                            <td style={{ padding: "7px 10px", verticalAlign: "top" }}>
                               <span style={{ background: s.bg, color: s.color, borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{CAT_LABEL[a.categorie] || a.categorie}</span>
                             </td>
-                            <td style={{ padding: "7px 10px", color: "#1a1a2e", fontWeight: 500, whiteSpace: "nowrap" }}>{a.indicateur}</td>
-                            <td style={{ padding: "7px 10px", color: "#555", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.libelle_cible}</td>
-                            <td style={{ padding: "7px 10px", color: "#888", fontVariantNumeric: "tabular-nums" }}>{a.annee ?? "–"}</td>
-                            <td style={{ padding: "7px 10px", color: "#555", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.message}</td>
-                            <td style={{ padding: "7px 10px", color: "#c0392b", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                            <td style={{ padding: "7px 10px", color: "#1a1a2e", fontWeight: 500, verticalAlign: "top" }}>{a.indicateur_libelle || a.indicateur}</td>
+                            <td style={{ padding: "7px 10px", color: "#555", verticalAlign: "top" }}>{a.libelle_cible}</td>
+                            <td style={{ padding: "7px 10px", color: "#888", fontVariantNumeric: "tabular-nums", verticalAlign: "top" }}>{a.annee ?? "–"}</td>
+                            <td style={{ padding: "7px 10px", color: "#555", verticalAlign: "top" }}>{a.message}</td>
+                            <td style={{ padding: "7px 10px", color: "#c0392b", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", verticalAlign: "top" }}>
                               {a.valeur != null ? a.valeur.toLocaleString("fr-FR") : "–"}
                             </td>
-                            <td style={{ padding: "5px 10px", whiteSpace: "nowrap" }}>
-                              {rid != null ? (
+                            <td style={{ padding: "5px 10px", whiteSpace: "nowrap", verticalAlign: "top" }}>
+                              {a.annee != null ? (
                                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                                   <input
                                     type="number"
                                     value={corrVal}
-                                    onChange={e => setCorrections(p => ({ ...p, [rid]: e.target.value }))}
+                                    onChange={e => setCorrections(p => ({ ...p, [key]: e.target.value }))}
                                     placeholder="Valeur corrigée"
                                     style={{ width: 120, padding: "4px 8px", fontSize: 12, border: "1px solid #C5BFBB", borderRadius: 6, outline: "none" }}
                                   />
                                   <button
-                                    onClick={() => corrigerValeur(rid)}
+                                    onClick={() => corrigerValeur(a)}
                                     disabled={isCorrecting || corrVal === ""}
                                     style={{ background: isCorrecting || corrVal === "" ? "#ccc" : "#1a7a3c", color: "#fff", border: "none", borderRadius: 6, padding: "4px 10px", fontSize: 12, cursor: isCorrecting || corrVal === "" ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
                                     {isCorrecting ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
