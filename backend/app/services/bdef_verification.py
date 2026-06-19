@@ -86,6 +86,58 @@ class RapportVerification:
     score: float         # 0..100 — % de valeurs sans erreur détectée
 
 
+# ── Contrôle de fidélité (round-trip écriture) ────────────────────────────────
+
+@dataclass
+class Divergence:
+    indicateur: str
+    niveau: str
+    cible_id: int | None
+    annee: int
+    attendu: float
+    trouve: float | None
+
+
+@dataclass
+class RapportFidelite:
+    total: int                       # nb de valeurs attendues
+    identiques: int
+    divergences: list[Divergence]
+
+    @property
+    def taux(self) -> float:
+        return 1.0 if not self.total else round(self.identiques / self.total, 4)
+
+
+def comparer_fidelite(
+    attendu: dict[tuple, float],
+    relu: dict[tuple, float | None],
+    tol_abs: float = 1e-4,
+    tol_rel: float = 1e-9,
+) -> RapportFidelite:
+    """
+    Compare les valeurs résolues depuis le fichier (`attendu`) à celles relues
+    en base (`relu`). Clé = (code_indicateur, niveau, cible_id, annee).
+
+    Confirme qu'aucune valeur n'a été perdue ou altérée entre l'extraction et
+    l'écriture. La tolérance absorbe l'arrondi de stockage Numeric(20,4).
+    """
+    identiques = 0
+    divergences: list[Divergence] = []
+    for key, val in attendu.items():
+        trouve = relu.get(key)
+        if trouve is not None and abs(trouve - val) <= tol_abs + tol_rel * abs(val):
+            identiques += 1
+        else:
+            code, niveau, cible_id, annee = key
+            divergences.append(Divergence(
+                indicateur=code, niveau=niveau, cible_id=cible_id,
+                annee=annee, attendu=val, trouve=trouve,
+            ))
+    return RapportFidelite(total=len(attendu), identiques=identiques,
+                           divergences=divergences)
+
+
 # ── Indicateurs non disponibles dans le fichier 2024 (cf. bdef_mapping) ────────
 _NON_DISPONIBLES = {"eff_stock_mp", "eff_stock_march", "eff_stock_pf"}
 

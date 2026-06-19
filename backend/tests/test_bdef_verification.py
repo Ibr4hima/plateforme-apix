@@ -3,7 +3,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.services.bdef_verification import (
-    verifier, SecteurValeurs, IndicateurInfo,
+    verifier, SecteurValeurs, IndicateurInfo, comparer_fidelite,
 )
 
 # Référentiel d'indicateurs minimal pour les tests
@@ -179,3 +179,46 @@ class TestScore:
         secteurs[0].valeurs["act_ca"][2024] = -1.0   # 1 valeur en erreur sur 4
         r = verifier(secteurs, {"act_ca": INDS["act_ca"]})
         assert r.score == 75.0
+
+
+class TestFidelite:
+    def test_tout_identique(self):
+        attendu = {("act_ca", "secteur", 1, 2024): 100.0,
+                   ("act_va", "secteur", 1, 2024): 60.0}
+        relu = dict(attendu)
+        r = comparer_fidelite(attendu, relu)
+        assert r.total == 2
+        assert r.identiques == 2
+        assert r.divergences == []
+        assert r.taux == 1.0
+
+    def test_arrondi_stockage_tolere(self):
+        # la base stocke en Numeric(20,4) → 0.12345 devient 0.1234/0.1235
+        attendu = {("rent_eco", "secteur", 1, 2024): 0.12345}
+        relu = {("rent_eco", "secteur", 1, 2024): 0.1234}
+        r = comparer_fidelite(attendu, relu)
+        assert r.identiques == 1
+        assert r.divergences == []
+
+    def test_valeur_manquante_en_base(self):
+        attendu = {("act_ca", "secteur", 1, 2024): 100.0}
+        r = comparer_fidelite(attendu, {})
+        assert r.identiques == 0
+        assert len(r.divergences) == 1
+        assert r.divergences[0].trouve is None
+
+    def test_valeur_alteree(self):
+        attendu = {("act_ca", "secteur", 1, 2024): 100.0}
+        relu = {("act_ca", "secteur", 1, 2024): 999.0}
+        r = comparer_fidelite(attendu, relu)
+        assert len(r.divergences) == 1
+        assert r.divergences[0].attendu == 100.0
+        assert r.divergences[0].trouve == 999.0
+
+    def test_taux_partiel(self):
+        attendu = {("a", "secteur", 1, 2024): 1.0, ("b", "secteur", 1, 2024): 2.0,
+                   ("c", "secteur", 1, 2024): 3.0, ("d", "secteur", 1, 2024): 4.0}
+        relu = {("a", "secteur", 1, 2024): 1.0, ("b", "secteur", 1, 2024): 2.0,
+                ("c", "secteur", 1, 2024): 3.0, ("d", "secteur", 1, 2024): 999.0}
+        r = comparer_fidelite(attendu, relu)
+        assert r.taux == 0.75

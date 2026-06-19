@@ -30,6 +30,7 @@ from app.models.bdef import (
 from app.services.bdef_excel import extraire_blocs, FEUILLE_COMPTES, FEUILLE_RATIOS
 from app.services.bdef_mapping import grouper_par_secteur, IndicateurMeta
 from app.services.bdef_decision import decider_import, SecteurMatche
+from app.services.bdef_verification import comparer_fidelite
 from app.utils.bdef_matching import NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO
 
 # Niveau → colonne FK de bdef_valeurs
@@ -203,13 +204,69 @@ async def lancer_import(db: AsyncSession, contenu: bytes, filename: str,
     imp.nb_valeurs = nb
     imp.termine_le = _func.now()
     await db.flush()
+
+    fidelite = await _controle_fidelite(db, decision.matches, indicateur_ids, decision.annees)
+
     return {
         "import_id": imp.id,
         "statut": "termine",
         "annees": decision.annees,
         "nb_secteurs": len(decision.matches),
         "nb_valeurs": nb,
+        "fidelite": fidelite,
         "revue": [],
+    }
+
+
+# ── Contrôle de fidélité (relecture post-écriture) ────────────────────────────
+
+async def _controle_fidelite(
+    db: AsyncSession,
+    matches: list[SecteurMatche],
+    indicateur_ids: dict[str, int],
+    annees: list[int],
+) -> dict:
+    """
+    Relit en base les valeurs qui viennent d'être écrites et les compare aux
+    valeurs résolues depuis le fichier. Prouve qu'aucune valeur n'a été perdue
+    ou altérée entre l'extraction et l'écriture.
+    """
+    # valeurs attendues (résolues depuis le fichier)
+    attendu: dict[tuple, float] = {}
+    for m in matches:
+        for code, vals in m.valeurs.valeurs.items():
+            for va in vals:
+                attendu[(code, m.niveau, m.cible_id, va.annee)] = va.valeur
+
+    # valeurs relues en base
+    code_par_id = {iid: code for code, iid in indicateur_ids.items()}
+    ids = [indicateur_ids[c] for c in {k[0] for k in attendu} if c in indicateur_ids]
+    relu: dict[tuple, float | None] = {}
+    if ids and annees:
+        res = await db.execute(
+            select(BdefValeur).where(
+                BdefValeur.indicateur_id.in_(ids),
+                BdefValeur.annee.in_(annees),
+            )
+        )
+        for row in res.scalars().all():
+            cible = row.macro_secteur_id or row.groupe_id or row.secteur_id
+            code = code_par_id.get(row.indicateur_id)
+            if code:
+                relu[(code, row.niveau, cible, row.annee)] = (
+                    float(row.valeur) if row.valeur is not None else None
+                )
+
+    rapport = comparer_fidelite(attendu, relu)
+    return {
+        "total": rapport.total,
+        "identiques": rapport.identiques,
+        "taux": rapport.taux,
+        "divergences": [
+            {"indicateur": d.indicateur, "niveau": d.niveau, "cible_id": d.cible_id,
+             "annee": d.annee, "attendu": d.attendu, "trouve": d.trouve}
+            for d in rapport.divergences[:50]   # borne de sécurité
+        ],
     }
 
 

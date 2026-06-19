@@ -16,7 +16,8 @@ type Secteur   = { id: number; code: string; libelle: string };
 type Secteurs   = { macro_secteur: Secteur[]; groupe: Secteur[]; secteur: Secteur[] };
 type Candidat   = { cible_id: number; libelle: string; score: number };
 type RevueItem  = { niveau: string; code_bdef: string; libelle_brut: string; score: number | null; candidats: Candidat[] };
-type ImportRes  = { import_id: number; statut: string; annees: number[]; nb_secteurs?: number; nb_valeurs?: number; nb_secteurs_ok?: number; revue: RevueItem[]; erreur?: string };
+type Fidelite   = { total: number; identiques: number; taux: number; divergences: { indicateur: string; niveau: string; cible_id: number | null; annee: number; attendu: number; trouve: number | null }[] };
+type ImportRes  = { import_id: number; statut: string; annees: number[]; nb_secteurs?: number; nb_valeurs?: number; nb_secteurs_ok?: number; fidelite?: Fidelite; revue: RevueItem[]; erreur?: string };
 type ImportHist = { id: number; fichier: string; statut: string; annees: number[] | null; nb_valeurs: number; nb_revue: number; cree_le: string | null; termine_le: string | null };
 type Indic      = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 type Valeurs    = { niveau: string; cible_id: number | null; annees: number[]; indicateurs: Indic[] };
@@ -247,6 +248,17 @@ export default function AdminBdefPage() {
         {res && res.statut === "termine" && (
           <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: "#EDFBF1", border: "1px solid #B2EAC5", fontSize: 13, color: "#1a7a3c" }}>
             ✓ Import terminé — <strong>{res.nb_secteurs}</strong> secteurs, <strong>{res.nb_valeurs}</strong> valeurs écrites (années {res.annees?.[0]}–{res.annees?.[res.annees.length - 1]}).
+            {res.fidelite && (
+              res.fidelite.divergences.length === 0 ? (
+                <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6, fontWeight: 600 }}>
+                  <ShieldCheck size={15} /> Fidélité confirmée : {res.fidelite.identiques}/{res.fidelite.total} valeurs relues identiques à la source.
+                </div>
+              ) : (
+                <div style={{ marginTop: 6, color: "#c0392b", fontWeight: 600 }}>
+                  ⚠ {res.fidelite.divergences.length} valeur(s) divergente(s) entre le fichier et la base — à examiner.
+                </div>
+              )
+            )}
           </div>
         )}
         {res && res.statut === "erreur" && (
