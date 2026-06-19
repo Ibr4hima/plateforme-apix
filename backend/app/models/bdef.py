@@ -113,26 +113,43 @@ class BdefValeur(Base):
 
 
 # ── Matching de secteurs BDEF ──────────────────────────────────────────────────
+# Alias et revue sont polymorphes : (niveau, cible_id) où cible_id est l'id dans
+# la table du niveau (bdef_secteurs / bdef_groupes / bdef_macro_secteurs).
+
+class BdefImport(Base):
+    __tablename__ = "bdef_imports"
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    fichier    = Column(Text, nullable=False)
+    statut     = Column(String(20), nullable=False, default="en_cours")  # en_cours|en_revue|termine|annule
+    annees     = Column(JSONB)
+    nb_valeurs = Column(Integer, nullable=False, default=0)
+    nb_revue   = Column(Integer, nullable=False, default=0)
+    cree_par   = Column(Text)
+    cree_le    = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    termine_le = Column(TIMESTAMP(timezone=True))
+
 
 class BdefSecteurAlias(Base):
     __tablename__ = "bdef_secteur_alias"
+    __table_args__ = (UniqueConstraint("niveau", "libelle_brut", name="uq_bdef_alias"),)
     id           = Column(Integer, primary_key=True, autoincrement=True)
-    libelle_brut = Column(Text, unique=True, nullable=False)
-    secteur_id   = Column(Integer, ForeignKey("bdef_secteurs.id", ondelete="CASCADE"), nullable=False, index=True)
+    niveau       = Column(String(15), nullable=False)   # secteur|groupe|macro_secteur
+    libelle_brut = Column(Text, nullable=False)
+    cible_id     = Column(Integer, nullable=False)
     cree_le      = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    secteur      = relationship("BdefSecteur")
 
 
 class BdefImportRevue(Base):
     __tablename__ = "bdef_import_revue"
-    id                = Column(Integer, primary_key=True, autoincrement=True)
-    import_id         = Column(Integer, nullable=False, index=True)
-    libelle_brut      = Column(Text, nullable=False)
-    score_fuzzy       = Column(Numeric(5, 2))
-    candidats         = Column(JSONB)
-    secteur_id_valide = Column(Integer, ForeignKey("bdef_secteurs.id"), nullable=True)
-    valide_le         = Column(TIMESTAMP(timezone=True), nullable=True)
-    valide_par        = Column(String(150), nullable=True)
-    statut            = Column(String(20), nullable=False, default="en_attente")
-    cree_le           = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    secteur_valide    = relationship("BdefSecteur")
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    import_id       = Column(Integer, ForeignKey("bdef_imports.id", ondelete="CASCADE"), nullable=False, index=True)
+    niveau          = Column(String(15), nullable=False)
+    code_bdef       = Column(String(10))
+    libelle_brut    = Column(Text, nullable=False)
+    score_fuzzy     = Column(Numeric(5, 2))
+    candidats       = Column(JSONB)
+    cible_id_valide = Column(Integer, nullable=True)
+    statut          = Column(String(20), nullable=False, default="en_attente")
+    valide_le       = Column(TIMESTAMP(timezone=True), nullable=True)
+    valide_par      = Column(String(150), nullable=True)
+    cree_le         = Column(TIMESTAMP(timezone=True), server_default=func.now())
