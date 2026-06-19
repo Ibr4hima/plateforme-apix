@@ -89,10 +89,12 @@ class RapportVerification:
 # ── Indicateurs non disponibles dans le fichier 2024 (cf. bdef_mapping) ────────
 _NON_DISPONIBLES = {"eff_stock_mp", "eff_stock_march", "eff_stock_pf"}
 
-# Montants FCFA qui ne peuvent jamais être négatifs (erreur de signe / colonne)
+# Montants FCFA qui ne peuvent jamais être négatifs (erreur de signe / colonne).
+# NB : la CAF (_raw_caf) en est volontairement exclue — elle peut légitimement
+# être négative pour un secteur en difficulté.
 _MONTANTS_POSITIFS = {"act_ca", "act_production",
                       "inv_actif_immo", "inv_amortiss",
-                      "_raw_caf", "_raw_achats_ht", "_raw_ca_ht",
+                      "_raw_achats_ht", "_raw_ca_ht",
                       "_raw_stocks_mp", "_raw_stocks_march", "_raw_stocks_pf"}
 
 # Tolérances de recalcul (les valeurs sont stockées en Numeric(20,4))
