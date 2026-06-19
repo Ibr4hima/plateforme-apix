@@ -236,18 +236,19 @@ def _verifier_outliers(
     seuil: float = 5.0,
     min_echantillon: int = 8,
 ) -> list[Anomalie]:
-    """Écart robuste à la médiane (MAD) par (indicateur, année), inter-secteurs."""
+    """Écart robuste à la médiane (MAD) par (indicateur, année, niveau).
+    La comparaison se fait UNIQUEMENT au sein du même niveau : on ne mélange
+    pas le global (agréat de tous) avec les secteurs individuels."""
     anomalies: list[Anomalie] = []
-    # regroupe les valeurs par (code, année) avec leur secteur d'origine
-    groupes: dict[tuple[str, int], list[tuple[float, SecteurValeurs]]] = {}
+    groupes: dict[tuple[str, str, int], list[tuple[float, SecteurValeurs]]] = {}
     for sv in secteurs:
         for code, par_annee in sv.valeurs.items():
             if code.startswith("_raw_"):
                 continue
             for annee, val in par_annee.items():
-                groupes.setdefault((code, annee), []).append((val, sv))
+                groupes.setdefault((code, sv.niveau, annee), []).append((val, sv))
 
-    for (code, annee), items in groupes.items():
+    for (code, _niveau, annee), items in groupes.items():
         if len(items) < min_echantillon:
             continue
         vals = [v for v, _ in items]
