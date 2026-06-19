@@ -328,6 +328,23 @@ export default function AdminBdefPage() {
               <Stat label="Avertissements" value={rapport.nb_avertissements} color={rapport.nb_avertissements ? "#B7661B" : "#1a7a3c"} />
             </div>
 
+            {/* Comment lire ce rapport — décharge l'admin de tout jugement comptable */}
+            <div style={{ background: "#F7FAFD", border: "1px solid #D6E4F0", borderRadius: 8, padding: "12px 16px", marginBottom: 16, fontSize: 12.5, color: "#33475b", lineHeight: 1.55 }}>
+              <strong style={{ color: "#004f91" }}>Comment lire ce rapport ?</strong> Pas besoin d'être comptable.
+              <div style={{ marginTop: 6 }}>
+                <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: "#c0392b", marginRight: 6 }} />
+                <strong>Erreurs (rouge)</strong> : valeur impossible (montant négatif, démesuré) ou indicateur introuvable — à examiner côté import.
+              </div>
+              <div style={{ marginTop: 4 }}>
+                <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 99, background: "#B7661B", marginRight: 6 }} />
+                <strong>Avertissements (orange)</strong> : valeur source <em>inhabituelle mais possible</em>. Information uniquement — n'affecte pas le score.
+              </div>
+              <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #E1ECF5" }}>
+                👉 <strong>La seule question à vous poser</strong> : la valeur signalée correspond-elle au fichier Excel ?
+                Si <strong>oui</strong>, votre import est fidèle — une particularité des données ANSD n'est pas de votre ressort.
+              </div>
+            </div>
+
             {/* Anomalies */}
             {rapport.anomalies.length === 0 ? (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, background: "#EDFBF1", border: "1px solid #B2EAC5", fontSize: 13, color: "#1a7a3c" }}>
