@@ -3,8 +3,8 @@ Matching de secteurs BDEF entre un libellé brut (fichier Excel)
 et nos secteurs en base.
 
 Cascade à 4 niveaux (s'arrête au premier match certain) :
-  1. Match exact normalisé
-  2. Alias connus (mémoire persistante)
+  1. Alias connus (mémoire persistante)
+  2. Match exact normalisé
   3. Fuzzy matching (token_sort_ratio)
   4. → File de revue si aucun match certain
 
@@ -17,8 +17,14 @@ Normalisation :
     ex. "012 Industries extractives" → "industries extractives"
     ex. "3 industries extractives"   → "industries extractives"
 
-Le code numérique (si présent) est conservé comme signal de confirmation
-quand deux candidats fuzzy ont des scores proches (écart < 5 pts).
+IMPORTANT — le code numérique du BDEF n'est PAS un signal d'identité.
+Les numérotations divergent entre sources : dans le BDEF officiel 2024,
+le code 3 = « Industries extractives », alors que dans notre base le même
+secteur porte le code 012. Utiliser le code pour confirmer l'identité
+pousserait donc vers le MAUVAIS secteur. Le code sert uniquement à
+déterminer le NIVEAU de lecture (global / secteur / groupe / macro-secteur)
+via `detecter_niveau`. L'appelant filtre alors les candidats sur ce niveau
+et le matching d'identité se fait sur le libellé seul.
 """
 import re
 import unicodedata
@@ -33,13 +39,19 @@ SEUIL_SUGGER = 78   # >= → match suggéré (à valider par un humain)
 
 TOP_N = 5           # nombre de candidats conservés dans la file de revue
 
+# Niveaux de lecture (alignés sur bdef_valeurs.niveau)
+NIVEAU_GLOBAL  = "global"
+NIVEAU_SECTEUR = "secteur"
+NIVEAU_GROUPE  = "groupe"
+NIVEAU_MACRO   = "macro_secteur"
+
 
 @dataclass
 class Candidat:
     secteur_id: int
     libelle_norm: str   # libellé normalisé du secteur en base
     libelle_raw: str    # libellé original du secteur en base
-    code: str | None    # code numérique du secteur (ex: "012")
+    code: str | None    # code du secteur en base (ex: "012") — informatif
     score: float        # 0-100
 
 
@@ -78,29 +90,58 @@ def _extraire_code(texte: str) -> str | None:
     return m.group(1) if m else None
 
 
+def detecter_niveau(code: str | int | None) -> str | None:
+    """
+    Déduit le niveau de lecture à partir du code BDEF du tableau.
+
+    Convention observée dans le BDEF officiel :
+        0          → global (« GLOBAL DES SECTEURS »)
+        1   – 99   → secteur d'activité détaillé (1-35)
+        100 – 199  → groupe (101-109)
+        200 – 299  → macro-secteur (201-204)
+
+    Retourne None si le code est absent ou hors plage connue.
+    """
+    if code is None or str(code).strip() == "":
+        return None
+    s = str(code).strip()
+    if not s.lstrip("0").isdigit() and not s.isdigit():
+        return None
+    n = int(s)
+    if n == 0:
+        return NIVEAU_GLOBAL
+    if 1 <= n <= 99:
+        return NIVEAU_SECTEUR
+    if 100 <= n <= 199:
+        return NIVEAU_GROUPE
+    if 200 <= n <= 299:
+        return NIVEAU_MACRO
+    return None
+
+
 def matcher_secteur(
     libelle_brut: str,
     secteurs: list[dict],     # [{"id": int, "libelle": str, "code": str|None}, ...]
     alias: dict[str, int],    # {libelle_brut: secteur_id} — chargé depuis bdef_secteur_alias
 ) -> ResultatMatching:
     """
-    Trouve le secteur correspondant à un libellé brut.
+    Trouve le secteur correspondant à un libellé brut, par le LIBELLÉ seul.
 
-    `secteurs` : tous les secteurs de la base, avec leurs libellés et codes.
+    `secteurs` : les candidats à comparer. L'appelant doit les avoir filtrés
+                 sur le bon niveau (cf. `detecter_niveau`) — c'est ce qui lève
+                 l'ambiguïté entre, p. ex., le groupe « Commerce » (105) et le
+                 macro-secteur « Commerce » (203).
     `alias`    : table d'alias {libellé_brut_exact → secteur_id}.
     """
-    # Niveau 2 : alias exact (avant normalisation — on stocke le brut)
+    # Niveau 1 : alias exact (sur le brut, avant normalisation)
     if libelle_brut in alias:
-        sid = alias[libelle_brut]
         return ResultatMatching(
-            secteur_id=sid, confiance="certain", score=100.0,
+            secteur_id=alias[libelle_brut], confiance="certain", score=100.0,
             candidats=[], source="alias",
         )
 
     norme = normaliser(libelle_brut)
-    code_brut = _extraire_code(libelle_brut)
 
-    # Préparer les candidats normalisés
     candidats_norm = [
         Candidat(
             secteur_id=s["id"],
@@ -112,31 +153,25 @@ def matcher_secteur(
         for s in secteurs
     ]
 
-    # Niveau 1 : match exact normalisé
+    # Niveau 2 : match exact normalisé
     for c in candidats_norm:
-        if c.libelle_norm == norme:
+        if c.libelle_norm == norme and norme:
             return ResultatMatching(
                 secteur_id=c.secteur_id, confiance="certain", score=100.0,
                 candidats=[], source="exact",
             )
 
-    # Niveau 3 : fuzzy
+    # Niveau 3 : fuzzy sur le libellé
     for c in candidats_norm:
         c.score = fuzz.token_sort_ratio(norme, c.libelle_norm)
-
-    # Si un code numérique est présent dans le brut, bonus pour les secteurs
-    # dont le code correspond — départage les candidats proches
-    if code_brut:
-        for c in candidats_norm:
-            if c.code and (c.code.lstrip("0") == code_brut.lstrip("0")):
-                c.score = min(100.0, c.score + 5.0)
 
     top = sorted(candidats_norm, key=lambda c: c.score, reverse=True)[:TOP_N]
     meilleur = top[0] if top else None
 
     if meilleur is None or meilleur.score < SEUIL_SUGGER:
         return ResultatMatching(
-            secteur_id=None, confiance="aucun", score=meilleur.score if meilleur else None,
+            secteur_id=None, confiance="aucun",
+            score=meilleur.score if meilleur else None,
             candidats=top, source="aucun",
         )
 

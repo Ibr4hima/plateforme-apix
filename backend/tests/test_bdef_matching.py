@@ -9,8 +9,13 @@ import pytest
 from app.utils.bdef_matching import (
     normaliser,
     matcher_secteur,
+    detecter_niveau,
     SEUIL_AUTO,
     SEUIL_SUGGER,
+    NIVEAU_GLOBAL,
+    NIVEAU_SECTEUR,
+    NIVEAU_GROUPE,
+    NIVEAU_MACRO,
 )
 
 
@@ -181,41 +186,46 @@ class TestFuzzyAucun:
         assert res.secteur_id is None
 
 
-# ── Bonus code numérique ──────────────────────────────────────────────────────
+# ── Détection de niveau (le code sert au niveau, pas à l'identité) ──────────────
 
-class TestBonusCode:
-    def test_code_departage_deux_candidats_proches(self):
-        # Deux secteurs au score fuzzy identique (86.7) sans le code.
-        # "3 industries manufacturieres" → code_brut="3".
-        # Secteur_id=2 a code "003" → lstrip("0")="3" → reçoit +5 → passe devant.
-        secteurs_proches = [
-            {"id": 1, "libelle": "Industries manufacturieres lourdes", "code": "010"},
-            {"id": 2, "libelle": "Industries manufacturieres legeres", "code": "003"},
-        ]
-        res = matcher_secteur(
-            "3 industries manufacturieres", secteurs_proches, ALIAS_VIDES
-        )
-        assert res.secteur_id == 2
+class TestDetecterNiveau:
+    def test_global(self):
+        assert detecter_niveau("0") == NIVEAU_GLOBAL
+        assert detecter_niveau(0) == NIVEAU_GLOBAL
 
-    def test_code_long_vs_court_lstrip(self):
-        # "012" lstrip("0") == "12", "12" lstrip("0") == "12" → match
-        secteurs = [
-            {"id": 1, "libelle": "commerce de detail", "code": "012"},
-            {"id": 2, "libelle": "commerce de detail", "code": "099"},
-        ]
-        res = matcher_secteur("12 commerce de detail", secteurs, ALIAS_VIDES)
+    def test_secteur(self):
+        assert detecter_niveau("1") == NIVEAU_SECTEUR
+        assert detecter_niveau("3") == NIVEAU_SECTEUR
+        assert detecter_niveau("35") == NIVEAU_SECTEUR
+
+    def test_groupe(self):
+        assert detecter_niveau("101") == NIVEAU_GROUPE
+        assert detecter_niveau("109") == NIVEAU_GROUPE
+
+    def test_macro(self):
+        assert detecter_niveau("201") == NIVEAU_MACRO
+        assert detecter_niveau("204") == NIVEAU_MACRO
+
+    def test_absent_ou_hors_plage(self):
+        assert detecter_niveau(None) is None
+        assert detecter_niveau("") is None
+        assert detecter_niveau("999") is None
+
+
+# ── Cas réel BDEF : le code ne doit JAMAIS servir à l'identité ──────────────────
+
+class TestCodeNonUtilisePourIdentite:
+    def test_code_bdef_divergent_matche_par_libelle(self):
+        # Cas réel du BDEF officiel 2024 : « Industries extractives » porte le
+        # code 3 dans le fichier, mais le code 012 dans notre base. Le matching
+        # doit suivre le LIBELLÉ (→ id 1), jamais le code (qui pointerait vers
+        # un secteur sans rapport).
+        res = matcher_secteur("3 INDUSTRIES EXTRACTIVES", SECTEURS_BASE, ALIAS_VIDES)
         assert res.secteur_id == 1
-
-    def test_sans_code_pas_de_bonus(self):
-        # Libellé sans code numérique → aucun bonus appliqué
-        secteurs_proches = [
-            {"id": 1, "libelle": "Industries manufacturieres legeres", "code": "010"},
-            {"id": 2, "libelle": "Industries manufacturieres legeres", "code": "003"},
-        ]
-        res = matcher_secteur(
-            "Industries manufacturieres legeres", secteurs_proches, ALIAS_VIDES
-        )
-        # Sans bonus, les scores sont égaux → premier dans la liste trié
-        # On vérifie simplement que le résultat est certain (exact match après normalisation)
         assert res.confiance == "certain"
-        assert res.source == "exact"
+
+    def test_code_trompeur_ignore(self):
+        # Le brut porte le code "001" (qui chez nous = Agriculture), mais le
+        # libellé dit clairement « Industries extractives » → on suit le libellé.
+        res = matcher_secteur("001 Industries extractives", SECTEURS_BASE, ALIAS_VIDES)
+        assert res.secteur_id == 1
