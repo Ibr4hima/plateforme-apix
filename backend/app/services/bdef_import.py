@@ -133,14 +133,9 @@ async def _ecrire_valeurs(
 
 # ── Point d'entrée import ─────────────────────────────────────────────────────
 
-async def lancer_import(db: AsyncSession, contenu: bytes, filename: str,
-                        cree_par: str | None = None) -> dict:
-    """
-    Parse un classeur BDEF et l'importe. Bloquant : si des secteurs sont
-    incertains, rien n'est écrit et l'import passe en 'en_revue'.
-    """
+def _parse_excel_sync(contenu: bytes) -> tuple[list, list]:
+    """Parsing Excel synchrone — exécuté dans un thread pool."""
     import io, openpyxl
-
     wb = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True, read_only=True)
     blocs_comptes, blocs_ratios = [], []
     if "EDITIONS COMPTES" in wb.sheetnames:
@@ -150,6 +145,20 @@ async def lancer_import(db: AsyncSession, contenu: bytes, filename: str,
         rows = list(wb["EDITIONS RATIOS"].iter_rows(values_only=True))
         blocs_ratios = extraire_blocs(rows, FEUILLE_RATIOS)
     wb.close()
+    return blocs_comptes, blocs_ratios
+
+
+async def lancer_import(db: AsyncSession, contenu: bytes, filename: str,
+                        cree_par: str | None = None) -> dict:
+    """
+    Parse un classeur BDEF et l'importe. Bloquant : si des secteurs sont
+    incertains, rien n'est écrit et l'import passe en 'en_revue'.
+    """
+    import asyncio
+
+    # openpyxl est synchrone et CPU-intensif — on le déporte dans un thread
+    # pour ne pas bloquer l'event loop asyncio (et donc les requêtes DB).
+    blocs_comptes, blocs_ratios = await asyncio.to_thread(_parse_excel_sync, contenu)
 
     if not blocs_comptes and not blocs_ratios:
         return {"erreur": "Aucune feuille EDITIONS COMPTES/RATIOS reconnue."}
