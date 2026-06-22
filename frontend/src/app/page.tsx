@@ -57,20 +57,17 @@ export default function HomePage() {
   const [stats, setStats] = useState({ entreprises:0, accords_en_vigueur:0, evenements_a_venir:0, zones:0 });
 
   useEffect(()=>{
-    const safe=(p:Promise<any>,fb:any)=>p.catch(()=>fb);
-    Promise.all([
-      safe(fetch(`${API_BASE}/evenements/stats`).then(r=>r.json()), {}),
-      safe(fetch(`${API_BASE}/accords?statut=en_vigueur&per_page=1`).then(r=>r.json()), {}),
-      safe(fetch(`${API_BASE}/entreprises?per_page=1`).then(r=>r.json()), {}),
-      safe(fetch(`${API_BASE}/zones/count`).then(r=>r.json()), {}),
-    ]).then(([evStats,accData,entData,zonesData])=>{
-      setStats({
-        evenements_a_venir: evStats?.a_venir||0,
-        accords_en_vigueur: accData?.total||0,
-        entreprises:        entData?.total||0,
-        zones:              zonesData?.total||0,
-      });
-    });
+    // Source unique et fiable : /dashboard/stats agrège déjà les comptes sur
+    // les bonnes tables (entreprises_installees, accords_traites, evenements, zones).
+    fetch(`${API_BASE}/dashboard/stats`)
+      .then(r=>r.json())
+      .then(k=>setStats({
+        entreprises:        k?.entreprises_total||0,
+        accords_en_vigueur: k?.accords_vigueur||0,
+        evenements_a_venir: k?.evenements_a_venir||0,
+        zones:              k?.zones_total||0,
+      }))
+      .catch(()=>{});
   },[]);
 
   return (

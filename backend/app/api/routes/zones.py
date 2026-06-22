@@ -94,7 +94,7 @@ async def liste_zones(
     type_zone: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    filters = [ZoneInvestissement.is_deleted.isnot(True)]
+    filters = [ZoneInvestissement.is_deleted == False]
     if type_zone:
         filters.append(ZoneInvestissement.type_zone == type_zone)
     result = await db.execute(
@@ -105,20 +105,6 @@ async def liste_zones(
     zones = result.scalars().all()
     geo_noms = await get_geo_noms(zones, db)
     return [zone_to_dict(z, geo_noms) for z in zones]
-
-
-# ── GET /zones/count ─────────────────────────────────────────────────────────
-@router.get("/count")
-async def compter_zones(db: AsyncSession = Depends(get_db)):
-    """Nombre d'id distincts dans la table zones_investissement (hors supprimées)."""
-    # is_deleted IS NOT TRUE → compte aussi les lignes où is_deleted est NULL
-    # (valeur non renseignée à l'insertion : le default ORM ne s'applique pas
-    #  aux lignes créées directement en SQL).
-    total = (await db.execute(
-        select(func.count(func.distinct(ZoneInvestissement.id)))
-        .where(ZoneInvestissement.is_deleted.isnot(True))
-    )).scalar()
-    return {"total": total or 0}
 
 
 # ── POST /zones ────────────────────────────────────────────────────────────────
@@ -163,7 +149,7 @@ async def modifier_zone(
     est_publie:       Optional[bool]= Form(None),
     db:           AsyncSession  = Depends(get_db),
 ):
-    result = await db.execute(select(ZoneInvestissement).where(ZoneInvestissement.id == zone_id, ZoneInvestissement.is_deleted.isnot(True)))
+    result = await db.execute(select(ZoneInvestissement).where(ZoneInvestissement.id == zone_id, ZoneInvestissement.is_deleted == False))
     z = result.scalar_one_or_none()
     if not z: raise HTTPException(404, "Zone introuvable")
     if denomination       is not None: z.denomination       = denomination
