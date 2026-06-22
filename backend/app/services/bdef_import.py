@@ -30,7 +30,7 @@ from app.models.bdef import (
 from app.services.bdef_excel import extraire_blocs, FEUILLE_COMPTES, FEUILLE_RATIOS
 from app.services.bdef_mapping import grouper_par_secteur, IndicateurMeta
 from app.services.bdef_decision import decider_import, SecteurMatche
-from app.services.bdef_verification import comparer_fidelite, raison_erreur_borne
+from app.services.bdef_verification import comparer_fidelite, raison_erreur_borne, valeur_stockee
 from app.utils.bdef_matching import NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO
 
 # Niveau → colonne FK de bdef_valeurs
@@ -80,17 +80,25 @@ async def _charger_indicateur_ids(db: AsyncSession) -> dict[str, int]:
     return {code: iid for code, iid in res.all()}
 
 
+async def _charger_indicateur_unites(db: AsyncSession) -> dict[str, str]:
+    res = await db.execute(select(BdefIndicateur.code, BdefIndicateur.unite))
+    return {code: unite for code, unite in res.all()}
+
+
 # ── Persistance des valeurs ───────────────────────────────────────────────────
 
 async def _ecrire_valeurs(
     db: AsyncSession,
     matches: list[SecteurMatche],
     indicateur_ids: dict[str, int],
+    indicateur_unites: dict[str, str],
     annees: list[int],
     import_id: int,
 ) -> tuple[int, int]:
     """
     Écrit les valeurs de tous les secteurs matchés dans bdef_valeurs.
+    Les montants FCFA (exprimés en millions dans le fichier source) sont
+    convertis en FCFA réels avant stockage.
     Les valeurs qui déclenchent une erreur de borne sont rejetées (non écrites)
     et stockées dans bdef_valeurs_rejetees pour correction manuelle.
     Retourne (nb_ok, nb_rejetes).
@@ -118,8 +126,10 @@ async def _ecrire_valeurs(
             iid = indicateur_ids.get(code_ind)
             if iid is None:
                 continue
+            unite = indicateur_unites.get(code_ind)
             for va in vals:
-                raison = raison_erreur_borne(code_ind, va.valeur)
+                valeur = valeur_stockee(unite, va.valeur)
+                raison = raison_erreur_borne(code_ind, valeur)
                 if raison:
                     # valeur non importée — stockée pour correction manuelle
                     kwargs_rej: dict = {
@@ -128,7 +138,7 @@ async def _ecrire_valeurs(
                         "indicateur_code": code_ind,
                         "niveau": m.niveau,
                         "annee": va.annee,
-                        "valeur_source": va.valeur,
+                        "valeur_source": valeur,
                         "raison": raison,
                         "libelle_cible": m.libelle_brut,
                     }
@@ -141,11 +151,11 @@ async def _ecrire_valeurs(
                 key = (iid, m.niveau, m.cible_id, va.annee)
                 row = existant.get(key)
                 if row:
-                    row.valeur = va.valeur
+                    row.valeur = valeur
                 else:
                     kwargs = {
                         "indicateur_id": iid, "niveau": m.niveau,
-                        "annee": va.annee, "valeur": va.valeur,
+                        "annee": va.annee, "valeur": valeur,
                     }
                     if fk:
                         kwargs[fk] = m.cible_id
@@ -220,8 +230,9 @@ async def lancer_import(db: AsyncSession, contenu: bytes, filename: str,
         }
 
     indicateur_ids = await _charger_indicateur_ids(db)
+    indicateur_unites = await _charger_indicateur_unites(db)
     nb_ok, nb_rej = await _ecrire_valeurs(
-        db, decision.matches, indicateur_ids, decision.annees, imp.id
+        db, decision.matches, indicateur_ids, indicateur_unites, decision.annees, imp.id
     )
     from sqlalchemy.sql import func as _func
     imp.statut = "termine"
@@ -229,7 +240,9 @@ async def lancer_import(db: AsyncSession, contenu: bytes, filename: str,
     imp.termine_le = _func.now()
     await db.flush()
 
-    fidelite = await _controle_fidelite(db, decision.matches, indicateur_ids, decision.annees)
+    fidelite = await _controle_fidelite(
+        db, decision.matches, indicateur_ids, indicateur_unites, decision.annees
+    )
 
     return {
         "import_id": imp.id,
@@ -249,20 +262,23 @@ async def _controle_fidelite(
     db: AsyncSession,
     matches: list[SecteurMatche],
     indicateur_ids: dict[str, int],
+    indicateur_unites: dict[str, str],
     annees: list[int],
 ) -> dict:
     """
     Relit en base les valeurs qui viennent d'être écrites et les compare aux
-    valeurs résolues depuis le fichier. Prouve qu'aucune valeur n'a été perdue
-    ou altérée entre l'extraction et l'écriture.
+    valeurs résolues depuis le fichier (mises à l'échelle FCFA). Prouve
+    qu'aucune valeur n'a été perdue ou altérée entre l'extraction et l'écriture.
     """
     # valeurs attendues (résolues depuis le fichier, hors valeurs rejetées)
     attendu: dict[tuple, float] = {}
     for m in matches:
         for code, vals in m.valeurs.valeurs.items():
+            unite = indicateur_unites.get(code)
             for va in vals:
-                if raison_erreur_borne(code, va.valeur) is None:
-                    attendu[(code, m.niveau, m.cible_id, va.annee)] = va.valeur
+                valeur = valeur_stockee(unite, va.valeur)
+                if raison_erreur_borne(code, valeur) is None:
+                    attendu[(code, m.niveau, m.cible_id, va.annee)] = valeur
 
     # valeurs relues en base
     code_par_id = {iid: code for code, iid in indicateur_ids.items()}

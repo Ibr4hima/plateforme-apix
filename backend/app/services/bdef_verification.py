@@ -158,6 +158,20 @@ def raison_erreur_borne(code: str, val: float) -> str | None:
         return "Montant négatif impossible pour cet indicateur."
     return None
 
+
+# Le fichier source BDEF exprime tous les montants en MILLIONS de FCFA.
+# On stocke en base la valeur réelle en FCFA pour une cohérence d'affichage.
+FACTEUR_FCFA = 1_000_000
+
+
+def valeur_stockee(unite: str | None, val: float) -> float:
+    """Convertit une valeur source (millions de FCFA) en valeur réelle stockée.
+
+    Seuls les montants en FCFA sont mis à l'échelle ; les ratios, %, jours
+    restent inchangés.
+    """
+    return val * FACTEUR_FCFA if unite == "FCFA" else val
+
 # Tolérances de recalcul (les valeurs sont stockées en Numeric(20,4))
 _TOL_ABS = 1e-3
 _TOL_REL = 1e-3

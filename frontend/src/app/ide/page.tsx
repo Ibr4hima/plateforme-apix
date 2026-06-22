@@ -206,8 +206,19 @@ function GrapheMultiPays({ series, height=280, type="line", titre="", fmt }: {
         }
       });
 
+      // Ticks = années entières uniquement (évite les doublons type "2020 2020"
+      // produits par d3.ticks sur une plage courte) et plafonnées pour ne pas
+      // s'entasser : au plus ~7 dans une carte, réparties entre min et max.
+      const maxTicksLine = Math.max(2, Math.min(7, Math.floor((W - M.left - M.right) / 42)));
+      let tickAnnees = allAnnees;
+      if (allAnnees.length > maxTicksLine) {
+        const stepA = Math.ceil((allAnnees.length - 1) / (maxTicksLine - 1));
+        tickAnnees = allAnnees.filter((_,i)=>i%stepA===0);
+        const last = allAnnees[allAnnees.length-1];
+        if (tickAnnees[tickAnnees.length-1] !== last) tickAnnees.push(last);
+      }
       svg.append("g").attr("transform",`translate(0,${H-M.bottom})`)
-        .call(d3.axisBottom(xLin).ticks(8).tickFormat(d3.format("d")).tickSizeOuter(0))
+        .call(d3.axisBottom(xLin).tickValues(tickAnnees).tickFormat(d3.format("d")).tickSizeOuter(0))
         .call(g=>g.select(".domain").attr("stroke","#E8E5E3"))
         .call(g=>g.selectAll("line").remove())
         .call(g=>g.selectAll("text").style("fill","#9aa5b4").style("font-size","10px"));
@@ -1924,11 +1935,12 @@ function fmtBdef(v: number|null, unite: string): string {
   if (unite === "%")     return `${v.toFixed(2)} %`;
   if (unite === "ratio") return v.toFixed(3);
   if (unite === "jours") return `${v.toFixed(0)} j`;
+  // Montants en FCFA réels (le fichier source était en millions de FCFA).
   const a = Math.abs(v);
-  if (a >= 1e9) return `${(v/1e9).toFixed(2)} Md`;
-  if (a >= 1e6) return `${(v/1e6).toFixed(1)} M`;
-  if (a >= 1e3) return `${(v/1e3).toFixed(0)} k`;
-  return v.toFixed(0);
+  if (a >= 1e9) return `${(v/1e9).toFixed(2)} Md FCFA`;
+  if (a >= 1e6) return `${(v/1e6).toFixed(1)} M FCFA`;
+  if (a >= 1e3) return `${(v/1e3).toFixed(0)} k FCFA`;
+  return `${v.toFixed(0)} FCFA`;
 }
 
 type BdefNode = { id:number; code:string; libelle:string; macro_secteur_id?:number; groupe_id?:number };
@@ -2275,17 +2287,14 @@ function OngletNational() {
                     <h3 style={{ fontSize:13, fontWeight:800, color:"#1a1a2e", margin:0, letterSpacing:"0.02em" }}>{cat}</h3>
                   </div>
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-                    {inds.map((ind,idx)=>{
+                    {inds.map((ind)=>{
                       const series = [{ nom:ind.libelle, couleur:col, data: anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
                       const fmt = (v:number|null)=>fmtBdef(v,ind.unite);
-                      const isLastOdd = inds.length%2===1 && idx===inds.length-1;
                       return (
-                        <div key={ind.code} style={isLastOdd ? { gridColumn:"1 / -1", maxWidth:"50%", margin:"0 auto", width:"100%" } : {}}>
-                          <GrapheCard titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
-                            fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
-                            <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
-                          </GrapheCard>
-                        </div>
+                        <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
+                          fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
+                          <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
+                        </GrapheCard>
                       );
                     })}
                   </div>
