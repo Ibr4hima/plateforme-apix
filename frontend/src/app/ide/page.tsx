@@ -305,7 +305,7 @@ function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, seri
 }
 
 // ── Card graphe miniature ─────────────────────────────────────────────────────
-function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series, grapheId }: any) {
+function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre }: any) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -320,7 +320,7 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series
             <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
               <h3 style={{ fontWeight:700, fontSize:12, color:"#1a1a2e", margin:0 }}>{titre}</h3>
               {/* Légende inline */}
-              {series?.length > 0 && (
+              {!hideLegend && series?.length > 0 && (
                 <div style={{ display:"flex", gap:8, flexWrap:"wrap" as const }}>
                   {series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
                     <div key={s.nom} style={{ display:"flex", alignItems:"center", gap:4 }}>
@@ -331,7 +331,7 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series
                 </div>
               )}
             </div>
-            {sous_titre && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:3 }}>{sous_titre}</p>}
+            {!hideSousTitre && sous_titre && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:3 }}>{sous_titre}</p>}
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0, marginLeft:8 }}>
             {analyse && <span style={{ fontSize:9, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"2px 6px", borderRadius:999, letterSpacing:"0.05em" }}>ANALYSE</span>}
@@ -2247,7 +2247,6 @@ function OngletNational() {
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
             <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>{sel.libelle}</h2>
-            <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 10px", borderRadius:999, background:"#F2F0EF", fontSize:11, fontWeight:700, color:"#6b7280", flexShrink:0 }}>{NIVEAU_LABEL_BDEF[sel.niveau]}</span>
             {anneesAffichees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", flexShrink:0 }}>
               {anneesAffichees[0]} — {anneesAffichees[anneesAffichees.length-1]}
             </span>}
@@ -2274,17 +2273,19 @@ function OngletNational() {
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
                     <div style={{ width:4, height:16, borderRadius:2, background:col }}/>
                     <h3 style={{ fontSize:13, fontWeight:800, color:"#1a1a2e", margin:0, letterSpacing:"0.02em" }}>{cat}</h3>
-                    <span style={{ fontSize:11, color:"#9aa5b4" }}>{inds.length} indicateur{inds.length>1?"s":""}</span>
                   </div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
-                    {inds.map(ind=>{
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+                    {inds.map((ind,idx)=>{
                       const series = [{ nom:ind.libelle, couleur:col, data: anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
                       const fmt = (v:number|null)=>fmtBdef(v,ind.unite);
+                      const isLastOdd = inds.length%2===1 && idx===inds.length-1;
                       return (
-                        <GrapheCard key={ind.code} titre={ind.libelle} sous_titre={`${ind.unite} · BDEF`} series={series} grapheId={ind.code}
-                          fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
-                          <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
-                        </GrapheCard>
+                        <div key={ind.code} style={isLastOdd ? { gridColumn:"1 / -1", maxWidth:"50%", margin:"0 auto", width:"100%" } : {}}>
+                          <GrapheCard titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
+                            fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
+                            <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
+                          </GrapheCard>
+                        </div>
                       );
                     })}
                   </div>
