@@ -3,7 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
-import { X, Maximize2, Table, ChevronDown, ChevronUp, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
+import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 
@@ -2047,6 +2047,106 @@ function ModalBdefTable({ open, onClose, libelle, indicateurs, annees }: {
   );
 }
 
+// ── Interprétation d'un KPI BDEF ─────────────────────────────────────────────
+function interpreterBdefKpi(ind: BdefIndic, annees: number[], libelle: string): string {
+  if (!annees.length) return "Aucune donnée disponible pour la période sélectionnée.";
+  const vals = annees.map(a => ({ a, v: ind.valeurs[a] ?? null })).filter(x => x.v !== null) as {a:number;v:number}[];
+  if (!vals.length) return "Données insuffisantes pour interpréter cet indicateur.";
+
+  const last  = vals[vals.length - 1];
+  const fmt   = fmtBdef(last.v, ind.unite);
+
+  // Taux de variation N vs N-1
+  let evol: string | null = null;
+  if (vals.length >= 2) {
+    const prev = vals[vals.length - 2];
+    if (prev.v !== 0) {
+      const pct = ((last.v - prev.v) / Math.abs(prev.v)) * 100;
+      evol = `${pct >= 0 ? "+" : ""}${pct.toFixed(1)} % par rapport à ${prev.a}`;
+    }
+  }
+
+  const evolPart = evol ? ` (${evol})` : "";
+
+  if (ind.unite === "%") {
+    const sign = last.v > 0 ? "positive" : last.v < 0 ? "négative" : "nulle";
+    return `En ${last.a}, ${ind.libelle} est de ${fmt}${evolPart}. Cette évolution ${sign} traduit ${last.v > 0 ? "une dynamique favorable du secteur" : last.v < 0 ? "une contraction de l'activité" : "une stagnation"}.`;
+  }
+
+  if (ind.unite === "ratio") {
+    return `En ${last.a}, le ratio est de ${fmt}${evolPart}. ${last.v >= 1 ? "Un ratio ≥ 1 indique que le secteur dispose de ressources suffisantes pour couvrir ses engagements." : "Un ratio < 1 signale un déséquilibre structurel à surveiller."}`;
+  }
+
+  if (ind.unite === "jours") {
+    return `En ${last.a}, cet indicateur s'établit à ${fmt}${evolPart}. ${last.v > 60 ? "Ce délai relativement long peut pénaliser la trésorerie des entreprises du secteur." : "Ce délai court est le signe d'une gestion efficiente des créances ou stocks."}`;
+  }
+
+  // Montants FCFA
+  const trend = vals.length >= 3 ? (() => {
+    const first = vals[0];
+    const cagr = (Math.pow(Math.abs(last.v / first.v), 1 / (last.a - first.a)) - 1) * 100 * Math.sign(last.v / first.v);
+    return `Sur ${last.a - first.a} ans, la tendance annuelle moyenne est de ${cagr >= 0 ? "+" : ""}${cagr.toFixed(1)} % (${first.a}–${last.a}).`;
+  })() : "";
+
+  return `En ${last.a}, ${ind.libelle} pour ${libelle} s'élève à ${fmt}${evolPart}. ${trend}`;
+}
+
+// ── Mini-modal KPI BDEF ───────────────────────────────────────────────────────
+function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
+  ind: BdefIndic | null; annees: number[]; libelle: string; onClose: ()=>void;
+}) {
+  if (!ind) return null;
+  const lastA  = annees.length ? annees[annees.length - 1] : null;
+  const v      = lastA !== null ? (ind.valeurs[lastA] ?? null) : null;
+  const isTaux = ind.unite === "%" || ind.unite === "ratio";
+  const isPos  = v !== null && v > 0;
+  const isNeg  = v !== null && v < 0;
+  const signalColor  = isTaux ? (isPos ? "#188038" : isNeg ? "#dc2626" : "#9aa5b4") : "#004f91";
+  const signalBg     = isTaux ? (isPos ? "rgba(24,128,56,0.07)" : isNeg ? "rgba(220,38,38,0.07)" : "rgba(0,0,0,0.04)") : "rgba(0,79,145,0.06)";
+  const interp = interpreterBdefKpi(ind, annees, libelle);
+
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:540, border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
+        <div style={{ height:5, background:"linear-gradient(90deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)" }}/>
+        <div style={{ padding:"22px 24px 20px", background:"linear-gradient(180deg,rgba(0,79,145,0.04) 0%,transparent 100%)", borderBottom:"1px solid #F2F0EF" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+            <div style={{ flex:1, paddingRight:12 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+                <div style={{ width:7, height:7, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/>
+                <span style={{ fontSize:11, fontWeight:700, color:"#004f91" }}>{libelle}</span>
+                <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 8px", borderRadius:999 }}>{ind.categorie}</span>
+              </div>
+              <p style={{ fontSize:11, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>{ind.libelle}</p>
+              <div style={{ display:"flex", alignItems:"baseline", gap:10 }}>
+                <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtBdef(v, ind.unite)}</span>
+                {lastA && <span style={{ fontSize:13, color:"#9aa5b4", fontWeight:500 }}>en {lastA}</span>}
+              </div>
+            </div>
+            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:9, padding:"7px 8px", display:"flex", alignItems:"center", flexShrink:0 }}>
+              <X size={14} color="#4a5568"/>
+            </button>
+          </div>
+        </div>
+        <div style={{ padding:"20px 24px 24px" }}>
+          <div style={{ background:signalBg, borderRadius:12, padding:"14px 16px", marginBottom:16 }}>
+            <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.75, margin:0 }}>{interp}</p>
+          </div>
+          <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" as const }}>
+            {annees.filter(a=>ind.valeurs[a]!=null).slice(-5).map(a=>(
+              <div key={a} style={{ background:"#F2F0EF", borderRadius:8, padding:"6px 10px", textAlign:"center" as const }}>
+                <p style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, margin:0 }}>{a}</p>
+                <p style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", margin:0 }}>{fmtBdef(ind.valeurs[a]??null, ind.unite)}</p>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize:11, color:"#C5BFBB", lineHeight:1.65, margin:0 }}>Unité : {ind.unite} · Source BDEF</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function OngletNational() {
   const [refs, setRefs]               = useState<BdefRefs|null>(null);
   const [sel, setSel]                 = useState<BdefSel>({ niveau:"global", cible_id:null, libelle:"Global des secteurs" });
@@ -2070,6 +2170,11 @@ function OngletNational() {
   const [sidebarWidth, setSidebarWidth] = useState(310);
   const isResizing = useRef(false);
   const [showTable, setShowTable]     = useState(false);
+
+  // KPIs
+  const [kpisEpingles, setKpisEpingles] = useState<string[]>([]);
+  const [kpiActif, setKpiActif]         = useState<BdefIndic | null>(null);
+  const [catKpiOuverts, setCatKpiOuverts] = useState<Set<string>>(new Set());
 
   const couleur = "#004f91";
 
@@ -2250,6 +2355,56 @@ function OngletNational() {
               </div>
             )}
           </div>
+
+          <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+
+          {/* KPI */}
+          <div style={{ marginBottom:8 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
+              <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#004f91":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
+            </div>
+            {parCategorie.length===0 && !loading && (
+              <p style={{ fontSize:12, color:"#C5BFBB", textAlign:"center" as const, padding:"8px 0", lineHeight:1.5 }}>Importez des données BDEF<br/>pour voir les indicateurs.</p>
+            )}
+            {parCategorie.map(({cat,inds},ci)=>{
+              const col = BDEF_CAT_COULEURS[ci%BDEF_CAT_COULEURS.length];
+              const ouvert = catKpiOuverts.has(cat);
+              const nbEpCat = inds.filter(i=>kpisEpingles.includes(i.code)).length;
+              return (
+                <div key={cat} style={{ marginBottom:3 }}>
+                  <button onClick={()=>setCatKpiOuverts(p=>{const n=new Set(p);n.has(cat)?n.delete(cat):n.add(cat);return n;})}
+                    style={{ display:"flex", alignItems:"center", gap:7, width:"100%", background:ouvert?"rgba(0,79,145,0.04)":"transparent", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 8px", textAlign:"left" as const }}>
+                    <div style={{ width:8, height:8, borderRadius:2, background:col, flexShrink:0 }}/>
+                    <span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", flex:1 }}>{cat}</span>
+                    {nbEpCat>0&&<span style={{ fontSize:9, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.1)", padding:"1px 5px", borderRadius:4 }}>{nbEpCat}</span>}
+                    <ChevronRight size={11} style={{ color:"#9aa5b4", transform:ouvert?"rotate(90deg)":"none", transition:"transform 0.15s", flexShrink:0 }}/>
+                  </button>
+                  {ouvert&&(
+                    <div style={{ paddingLeft:8, display:"flex", flexDirection:"column" as const, gap:1, marginTop:2 }}>
+                      {inds.map(ind=>{
+                        const epingle = kpisEpingles.includes(ind.code);
+                        const disabled = !epingle && kpisEpingles.length>=5;
+                        return (
+                          <div key={ind.code}
+                            style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:epingle?"rgba(0,79,145,0.04)":"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
+                            onClick={()=>{ if(!disabled) setKpisEpingles(p=>epingle?p.filter(c=>c!==ind.code):[...p,ind.code]); }}
+                            onMouseEnter={ev=>{ if(!disabled) ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.07)":"#F8F7F6"; }}
+                            onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.04)":"transparent"; }}>
+                            <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                              {epingle&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                            </div>
+                            <span style={{ fontSize:12, color:epingle?"#1a1a2e":"#4a5568", flex:1, lineHeight:1.3, fontWeight:epingle?600:400, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{ind.libelle}</span>
+                            <span style={{ fontSize:9, color:"#9aa5b4", fontWeight:500, flexShrink:0 }}>{ind.unite}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>}
       </aside>
 
@@ -2267,6 +2422,33 @@ function OngletNational() {
             <Table size={14}/> Tableau de données
           </button>}
         </div>
+
+        {/* KPI cards */}
+        {kpisEpingles.length>0&&(
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+            {kpisEpingles.map(code=>{
+              const ind = indicateurs.find(i=>i.code===code);
+              const lastA = anneesAffichees.length ? anneesAffichees[anneesAffichees.length-1] : null;
+              const v = ind&&lastA!==null ? (ind.valeurs[lastA]??null) : null;
+              return (
+                <div key={code} onClick={()=>ind&&setKpiActif(ind)}
+                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:"3px solid #004f91", cursor:"pointer", transition:"all 0.15s" }}
+                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";}}>
+                  <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{ind?.libelle??code}</p>
+                  <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#004f91", lineHeight:1 }}>{ind?fmtBdef(v,ind.unite):"—"}</p>
+                  {lastA&&<p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>en {lastA}</p>}
+                </div>
+              );
+            })}
+            {Array.from({length:Math.max(0,5-kpisEpingles.length)}).map((_,i)=>(
+              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
+                <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
+                <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {loading ? (
           <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
@@ -2306,6 +2488,7 @@ function OngletNational() {
       </div>
 
       <ModalBdefTable open={showTable} onClose={()=>setShowTable(false)} libelle={sel.libelle} indicateurs={indicateurs} annees={anneesAffichees} />
+      <MiniModalBdefKpi ind={kpiActif} annees={anneesAffichees} libelle={sel.libelle} onClose={()=>setKpiActif(null)} />
     </div>
   );
 }
