@@ -1310,13 +1310,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             )
           )}
 
-          <div style={{ display:"flex", gap:8, marginTop:24, justifyContent:"space-between", borderTop:`1px solid ${DIV}`, paddingTop:18 }}>
-            {(!readOnly && !estFige(p)) ? (
-              <button onClick={onContacter}
-                style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
-                <MessageSquare size={14}/> Contacter
-              </button>
-            ) : <span/>}
+          <div style={{ display:"flex", gap:8, marginTop:24, justifyContent:"flex-end", borderTop:`1px solid ${DIV}`, paddingTop:18 }}>
             <div style={{ display:"flex", gap:8 }}>
               {!readOnly && (
                 <button onClick={onEdit}
