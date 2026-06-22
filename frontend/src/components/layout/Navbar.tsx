@@ -8,14 +8,14 @@ import { useEffect, useRef, useState } from "react";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const modules = [
-  { label: "Investissements privés",        href: "/ide"          },
-  { label: "Intentions d'investissement",   href: "/intentions"   },
-  { label: "Prospects",                     href: "/prospects"    },
-  { label: "Entreprises installées",        href: "/entreprises"  },
-  { label: "Zones d'investissement",        href: "/zones"        },
-  { label: "Opportunités d'investissement", href: "/opportunites" },
-  { label: "Accords & Traités",             href: "/accords"      },
-  { label: "Événements",                    href: "/evenements"   },
+  { label: "Investissements privés",        href: "/ide",          icon: "payments",               color: "#ca631f" },
+  { label: "Intentions d'investissement",   href: "/intentions",   icon: "universal_currency_alt", color: "#366FE3" },
+  { label: "Prospects",                     href: "/prospects",    icon: "frame_inspect",          color: "#ca631f" },
+  { label: "Entreprises installées",        href: "/entreprises",  icon: "enterprise",             color: "#366FE3" },
+  { label: "Zones d'investissement",        href: "/zones",        icon: "real_estate_agent",      color: "#ca631f" },
+  { label: "Opportunités d'investissement", href: "/opportunites", icon: "bookmark_stacks",        color: "#366FE3" },
+  { label: "Accords & Traités",             href: "/accords",      icon: "signature",              color: "#ca631f" },
+  { label: "Événements",                    href: "/evenements",   icon: "event",                  color: "#366FE3" },
 ];
 
 // ── Numérotation ──────────────────────────────────────────────────────────────
@@ -358,9 +358,12 @@ export default function Navbar() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
                     {modules.map(m => (
                       <Link key={m.href} href={m.href} onClick={() => setModulesOpen(false)}
-                        style={{ display: "flex", alignItems: "center", padding: "11px 14px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s", background: "transparent" }}
+                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s", background: "transparent" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                        <span style={{ width: 30, height: 30, borderRadius: 8, background: `${m.color}10`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 17, color: m.color, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
+                        </span>
                         <span style={{ color: "#1a1a2e", fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>{m.label}</span>
                       </Link>
                     ))}
@@ -409,7 +412,10 @@ export default function Navbar() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 12 }}>
               {modules.map(m => (
                 <Link key={m.href} href={m.href} onClick={() => setMenuOpen(false)}
-                  style={{ display: "flex", alignItems: "center", padding: "10px 12px", borderRadius: 10, color: "#1a1a2e", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
+                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, color: "#1a1a2e", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
+                  <span style={{ width: 26, height: 26, borderRadius: 7, background: `${m.color}10`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 15, color: m.color, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
+                  </span>
                   {m.label}
                 </Link>
               ))}
