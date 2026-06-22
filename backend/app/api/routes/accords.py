@@ -52,7 +52,17 @@ async def liste_accords(
     filters = [] if admin else [Accord.est_publie == True, Accord.is_deleted == False]
 
     if statut:
-        filters.append(Accord.statut == statut)
+        # Le statut « expire » est calculé à la volée (cf. get_statut_calcule) :
+        # un accord dont la date_expiration est passée est expiré, quel que soit
+        # le statut stocké. On reflète exactement cette logique dans le filtre.
+        today = date_type.today()
+        if statut == "expire":
+            filters.append(Accord.date_expiration < today)
+        else:
+            filters.append(and_(
+                Accord.statut == statut,
+                or_(Accord.date_expiration == None, Accord.date_expiration >= today),
+            ))
     if reference:
         filters.append(Accord.reference.ilike(f"%{reference}%"))
     if parties_signataires:
