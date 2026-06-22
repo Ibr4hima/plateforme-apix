@@ -1356,7 +1356,8 @@ export default function ProspectsPage() {
         params.set("conclu", "true");
       } else {
         params.set("conclu", "false");
-        params.set("contactes", onglet==="historique"?"true":"false");
+        if (onglet==="historique") params.set("contactes", "true");
+        // "cibles" : pas de filtre contactes — on affiche tous les non-conclus
       }
       const res  = await fetch(`${API}/prospects?${params}`);
       const data = await res.json();
@@ -1440,11 +1441,13 @@ export default function ProspectsPage() {
                   onMouseLeave={ev=>{ ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:p.siege_nom?2:10 }}>
                     <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", flex:1 }}>{displayName}</div>
-                    {activite && (
+                    {onglet==="cibles" && p.nb_echanges > 0 ? (
+                      <span style={{ flexShrink:0, fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.10)", border:"1px solid rgba(0,79,145,0.2)", padding:"2px 8px", borderRadius:999 }}>Contacté</span>
+                    ) : activite ? (
                       <span style={{ flexShrink:0, fontSize:10, fontWeight:700, color:activite.color, background:activite.bg, border:`1px solid ${activite.color}33`, padding:"2px 8px", borderRadius:999 }}>
                         {activite.label}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                   {p.siege_nom && <div style={{ fontSize:11, color:"#9aa5b4", fontWeight:500, marginBottom:10 }}>{p.siege_nom}</div>}
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
@@ -1468,6 +1471,14 @@ export default function ProspectsPage() {
                         style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}
                         title="Supprimer définitivement (test)">
                         {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
+                      </button>
+                    </div>
+                  ) : onglet==="cibles" && p.nb_echanges > 0 ? (
+                    // Prospect déjà contacté dans "Investisseurs ciblés" : lecture seule
+                    <div style={{ borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                      <button onClick={()=>setVue(p)}
+                        style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#4a5568", fontWeight:600 }}>
+                        Consulter
                       </button>
                     </div>
                   ) : (
