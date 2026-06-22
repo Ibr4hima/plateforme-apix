@@ -23,8 +23,29 @@ async def _scheduled_ide_refresh():
     await _do_rafraichir(AsyncSessionLocal)
 
 
+async def _scheduled_expire_accords():
+    """Tâche quotidienne : bascule en « expire » les accords dont la date
+    d'expiration est passée, pour que la colonne statut reflète la réalité."""
+    from sqlalchemy import text
+    from app.core.database import AsyncSessionLocal
+    async with AsyncSessionLocal() as session:
+        await session.execute(text("""
+            UPDATE accords_traites
+            SET statut = 'expire', updated_at = NOW()
+            WHERE date_expiration IS NOT NULL
+              AND date_expiration < CURRENT_DATE
+              AND statut IS DISTINCT FROM 'expire'
+        """))
+        await session.commit()
+
+
 @asynccontextmanager
 async def lifespan(application: FastAPI):
+    # Rattrapage au démarrage : indépendant d'apscheduler.
+    try:
+        await _scheduled_expire_accords()
+    except Exception:
+        pass
     try:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
         from apscheduler.triggers.cron import CronTrigger
@@ -33,6 +54,12 @@ async def lifespan(application: FastAPI):
             _scheduled_ide_refresh,
             CronTrigger(day_of_week="sun", hour=2, minute=0),
             id="ide_weekly_refresh",
+            replace_existing=True,
+        )
+        scheduler.add_job(
+            _scheduled_expire_accords,
+            CronTrigger(hour=0, minute=5),
+            id="accords_daily_expire",
             replace_existing=True,
         )
         scheduler.start()
