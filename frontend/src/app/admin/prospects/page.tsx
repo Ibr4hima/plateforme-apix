@@ -1474,11 +1474,11 @@ export default function ProspectsPage() {
                       </button>
                     </div>
                   ) : onglet==="cibles" && p.nb_echanges > 0 ? (
-                    // Prospect déjà contacté dans "Investisseurs ciblés" : lecture seule
-                    <div style={{ borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
-                      <button onClick={()=>setVue(p)}
-                        style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#4a5568", fontWeight:600 }}>
-                        Consulter
+                    // Prospect déjà contacté dans "Investisseurs ciblés" : Modifier uniquement, pas Contacter ni Delete
+                    <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                      <button onClick={()=>{ setEdit(p); setModal(true); }}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
+                        <Pencil size={12}/> Modifier
                       </button>
                     </div>
                   ) : (
@@ -1508,7 +1508,7 @@ export default function ProspectsPage() {
 
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
       {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
-        readOnly={onglet==="precedents" || (onglet==="cibles" && vue.nb_echanges > 0)}
+        readOnly={onglet==="precedents"}
         hideHistorique={onglet==="cibles" && vue.nb_echanges > 0}
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
         onContacter={()=>{ setEchangeEdit(null); setEchangeModal(true); }}
