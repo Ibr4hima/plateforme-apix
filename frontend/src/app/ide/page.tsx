@@ -1952,6 +1952,39 @@ const NIVEAU_LABEL_BDEF: Record<string,string> = {
   global:"Global", macro_secteur:"Macro-secteur", groupe:"Groupe", secteur:"Secteur",
 };
 
+// ── Définitions simples des indicateurs BDEF (affichées au survol) ────────────
+const BDEF_DEFINITIONS: Record<string,string> = {
+  act_ca:           "Le chiffre d'affaires, c'est le total des ventes réalisées par les entreprises du secteur sur l'année. Autrement dit : combien d'argent le secteur a généré en vendant ses produits et services.",
+  act_tx_ca:        "Mesure l'évolution du chiffre d'affaires d'une année à l'autre, en pourcentage. Un taux positif signifie que les ventes du secteur progressent ; négatif, qu'elles reculent.",
+  act_production:   "Valeur de tout ce que le secteur a produit sur l'année (vendu ou mis en stock). Elle reflète l'activité réelle, au-delà des seules ventes.",
+  act_tx_prod:      "Évolution de la production d'une année sur l'autre, en pourcentage. Indique si l'activité du secteur s'accélère ou ralentit.",
+  act_va:           "Richesse réellement créée par le secteur : ce qui reste de la production une fois retranchés les achats de matières et de services extérieurs. C'est sa contribution à l'économie.",
+  act_tx_va:        "Part de la production qui se transforme en valeur ajoutée. Plus il est élevé, plus le secteur crée de richesse par rapport à ce qu'il consomme.",
+  rent_ebe:         "Ce que le secteur gagne grâce à son activité courante, avant de payer les intérêts, les impôts et l'usure du matériel. Un bon indicateur de la rentabilité « brute ».",
+  rent_rex:         "Bénéfice tiré de l'activité principale, une fois prise en compte l'usure des équipements (amortissements). Il montre si le métier de base est rentable.",
+  rent_eco:         "Mesure ce que rapporte l'activité par rapport aux moyens investis (l'actif). Autrement dit : l'argent mobilisé travaille-t-il efficacement ?",
+  rent_fin:         "Mesure ce que l'entreprise rapporte à ses propriétaires par rapport à leur mise de départ. Répond à : « mon argent investi rapporte-t-il bien ? »",
+  sf_pression_fisc: "Part de la richesse créée par le secteur qui part en impôts et taxes. Plus il est élevé, plus la charge fiscale pèse sur les entreprises.",
+  sf_autonomie:     "Indique dans quelle mesure le secteur se finance par ses propres fonds plutôt que par l'endettement. Plus elle est élevée, plus les entreprises sont indépendantes des banques.",
+  sf_solvabilite:   "Mesure si les entreprises sont capables de rembourser l'ensemble de leurs dettes sur le long terme. Autrement dit : « l'entreprise survivrait-elle si elle devait tout rembourser aujourd'hui ? »",
+  sf_dettes_fin:    "Importance des dettes contractées auprès des banques par rapport aux ressources du secteur. Plus il est élevé, plus le secteur est endetté.",
+  sf_cap_rembours:  "Indique combien d'années il faudrait au secteur pour rembourser ses dettes avec ce qu'il dégage chaque année. Plus c'est court, plus la situation est saine.",
+  liq_fdr:          "Marge de sécurité financière : les ressources stables qui restent disponibles une fois les investissements financés. Un fonds de roulement positif protège contre les imprévus.",
+  liq_bfr:          "Argent dont le secteur a besoin en permanence pour financer son cycle d'exploitation (stocks et délais de paiement). Plus il est élevé, plus il faut de trésorerie pour fonctionner.",
+  eff_prod_travail: "Richesse créée en moyenne par chaque travailleur. Mesure l'efficacité de la main-d'œuvre du secteur.",
+  eff_prod_capital: "Richesse créée pour chaque franc de capital investi dans les équipements. Mesure si les machines et installations sont bien exploitées.",
+  eff_vetuste:      "Degré d'usure des équipements du secteur. Plus il est élevé, plus le matériel est ancien et proche de devoir être renouvelé.",
+  eff_stock_mp:     "Nombre de jours pendant lesquels les matières premières restent en stock avant d'être utilisées. Plus c'est court, plus la gestion est efficace.",
+  eff_stock_march:  "Nombre de jours pendant lesquels les marchandises restent en stock avant d'être vendues. Un délai court signale un bon écoulement.",
+  eff_stock_pf:     "Nombre de jours pendant lesquels les produits finis attendent en stock avant d'être vendus. Plus c'est court, mieux le secteur écoule sa production.",
+  inv_actif_immo:   "Valeur de tout ce que le secteur possède durablement pour produire : terrains, bâtiments, machines, équipements. Reflète l'effort d'investissement accumulé.",
+  inv_amortiss:     "Constatation comptable de l'usure des équipements sur l'année. Représente la part de valeur que les biens perdent à force d'être utilisés.",
+  inv_tx_autofin:   "Capacité du secteur à financer ses investissements par ses propres ressources, sans emprunter. Plus il est élevé, plus le secteur est autonome pour investir.",
+  _raw_caf:         "Capacité d'autofinancement : l'argent que le secteur dégage réellement par son activité et qu'il peut consacrer à investir ou à rembourser ses dettes.",
+};
+const defBdef = (code:string, libelle:string) =>
+  BDEF_DEFINITIONS[code] || `${libelle} — indicateur issu de la Banque de Données Économiques et Financières (BDEF).`;
+
 // ── Case à cocher (sélection unique) ──────────────────────────────────────────
 function BdefRow({ label, code, selected, depth, onSelect, expandable, expanded, onToggle }: {
   label:string; code?:string; selected:boolean; depth:number;
@@ -2047,50 +2080,6 @@ function ModalBdefTable({ open, onClose, libelle, indicateurs, annees }: {
   );
 }
 
-// ── Interprétation d'un KPI BDEF ─────────────────────────────────────────────
-function interpreterBdefKpi(ind: BdefIndic, annees: number[], libelle: string): string {
-  if (!annees.length) return "Aucune donnée disponible pour la période sélectionnée.";
-  const vals = annees.map(a => ({ a, v: ind.valeurs[a] ?? null })).filter(x => x.v !== null) as {a:number;v:number}[];
-  if (!vals.length) return "Données insuffisantes pour interpréter cet indicateur.";
-
-  const last  = vals[vals.length - 1];
-  const fmt   = fmtBdef(last.v, ind.unite);
-
-  // Taux de variation N vs N-1
-  let evol: string | null = null;
-  if (vals.length >= 2) {
-    const prev = vals[vals.length - 2];
-    if (prev.v !== 0) {
-      const pct = ((last.v - prev.v) / Math.abs(prev.v)) * 100;
-      evol = `${pct >= 0 ? "+" : ""}${pct.toFixed(1)} % par rapport à ${prev.a}`;
-    }
-  }
-
-  const evolPart = evol ? ` (${evol})` : "";
-
-  if (ind.unite === "%") {
-    const sign = last.v > 0 ? "positive" : last.v < 0 ? "négative" : "nulle";
-    return `En ${last.a}, ${ind.libelle} est de ${fmt}${evolPart}. Cette évolution ${sign} traduit ${last.v > 0 ? "une dynamique favorable du secteur" : last.v < 0 ? "une contraction de l'activité" : "une stagnation"}.`;
-  }
-
-  if (ind.unite === "ratio") {
-    return `En ${last.a}, le ratio est de ${fmt}${evolPart}. ${last.v >= 1 ? "Un ratio ≥ 1 indique que le secteur dispose de ressources suffisantes pour couvrir ses engagements." : "Un ratio < 1 signale un déséquilibre structurel à surveiller."}`;
-  }
-
-  if (ind.unite === "jours") {
-    return `En ${last.a}, cet indicateur s'établit à ${fmt}${evolPart}. ${last.v > 60 ? "Ce délai relativement long peut pénaliser la trésorerie des entreprises du secteur." : "Ce délai court est le signe d'une gestion efficiente des créances ou stocks."}`;
-  }
-
-  // Montants FCFA
-  const trend = vals.length >= 3 ? (() => {
-    const first = vals[0];
-    const cagr = (Math.pow(Math.abs(last.v / first.v), 1 / (last.a - first.a)) - 1) * 100 * Math.sign(last.v / first.v);
-    return `Sur ${last.a - first.a} ans, la tendance annuelle moyenne est de ${cagr >= 0 ? "+" : ""}${cagr.toFixed(1)} % (${first.a}–${last.a}).`;
-  })() : "";
-
-  return `En ${last.a}, ${ind.libelle} pour ${libelle} s'élève à ${fmt}${evolPart}. ${trend}`;
-}
-
 // ── Mini-modal KPI BDEF ───────────────────────────────────────────────────────
 function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   ind: BdefIndic | null; annees: number[]; libelle: string; onClose: ()=>void;
@@ -2102,8 +2091,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   const isPos  = v !== null && v > 0;
   const isNeg  = v !== null && v < 0;
   const signalColor  = isTaux ? (isPos ? "#188038" : isNeg ? "#dc2626" : "#9aa5b4") : "#004f91";
-  const signalBg     = isTaux ? (isPos ? "rgba(24,128,56,0.07)" : isNeg ? "rgba(220,38,38,0.07)" : "rgba(0,0,0,0.04)") : "rgba(0,79,145,0.06)";
-  const interp = interpreterBdefKpi(ind, annees, libelle);
+  const definition = defBdef(ind.code, ind.libelle);
 
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
@@ -2129,8 +2117,9 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
           </div>
         </div>
         <div style={{ padding:"20px 24px 24px" }}>
-          <div style={{ background:signalBg, borderRadius:12, padding:"14px 16px", marginBottom:16 }}>
-            <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.75, margin:0 }}>{interp}</p>
+          <div style={{ background:"rgba(0,79,145,0.05)", borderRadius:12, padding:"14px 16px", marginBottom:16 }}>
+            <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.08em", margin:"0 0 6px" }}>Définition</p>
+            <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.75, margin:0 }}>{definition}</p>
           </div>
           <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" as const }}>
             {annees.filter(a=>ind.valeurs[a]!=null).slice(-5).map(a=>(
@@ -2175,6 +2164,8 @@ function OngletNational() {
   const [kpisEpingles, setKpisEpingles] = useState<string[]>([]);
   const [kpiActif, setKpiActif]         = useState<BdefIndic | null>(null);
   const [catKpiOuverts, setCatKpiOuverts] = useState<Set<string>>(new Set());
+  const [tip, setTip] = useState<{text:string;x:number;y:number}|null>(null);
+  const montrerTip = (e:React.MouseEvent, text:string) => setTip({ text, x:e.clientX, y:e.clientY });
 
   const couleur = "#004f91";
 
@@ -2389,8 +2380,9 @@ function OngletNational() {
                           <div key={ind.code}
                             style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:epingle?"rgba(0,79,145,0.04)":"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
                             onClick={()=>{ if(!disabled) setKpisEpingles(p=>epingle?p.filter(c=>c!==ind.code):[...p,ind.code]); }}
-                            onMouseEnter={ev=>{ if(!disabled) ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.07)":"#F8F7F6"; }}
-                            onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.04)":"transparent"; }}>
+                            onMouseEnter={ev=>{ if(!disabled) ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.07)":"#F8F7F6"; montrerTip(ev, defBdef(ind.code, ind.libelle)); }}
+                            onMouseMove={ev=>montrerTip(ev, defBdef(ind.code, ind.libelle))}
+                            onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.04)":"transparent"; setTip(null); }}>
                             <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                               {epingle&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                             </div>
@@ -2432,11 +2424,12 @@ function OngletNational() {
               const v = ind&&lastA!==null ? (ind.valeurs[lastA]??null) : null;
               return (
                 <div key={code} onClick={()=>ind&&setKpiActif(ind)}
-                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:"3px solid #004f91", cursor:"pointer", transition:"all 0.15s" }}
-                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";}}>
+                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:"3px solid #004f91", cursor:"pointer", transition:"box-shadow 0.15s, transform 0.15s", minWidth:0, overflow:"hidden" }}
+                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)"; if(ind) montrerTip(e, defBdef(ind.code, ind.libelle));}}
+                  onMouseMove={e=>{ if(ind) montrerTip(e, defBdef(ind.code, ind.libelle)); }}
+                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)"; setTip(null);}}>
                   <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{ind?.libelle??code}</p>
-                  <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#004f91", lineHeight:1 }}>{ind?fmtBdef(v,ind.unite):"—"}</p>
+                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"#004f91", lineHeight:1.15, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{ind?fmtBdef(v,ind.unite):"—"}</p>
                   {lastA&&<p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>en {lastA}</p>}
                 </div>
               );
@@ -2489,6 +2482,13 @@ function OngletNational() {
 
       <ModalBdefTable open={showTable} onClose={()=>setShowTable(false)} libelle={sel.libelle} indicateurs={indicateurs} annees={anneesAffichees} />
       <MiniModalBdefKpi ind={kpiActif} annees={anneesAffichees} libelle={sel.libelle} onClose={()=>setKpiActif(null)} />
+
+      {/* Tooltip de définition au survol */}
+      {tip && (
+        <div style={{ position:"fixed", left:Math.min(tip.x+14, (typeof window!=="undefined"?window.innerWidth:1200)-300), top:tip.y+16, zIndex:800, maxWidth:280, background:"#1a1a2e", color:"#fff", fontSize:12, lineHeight:1.6, padding:"10px 12px", borderRadius:10, boxShadow:"0 8px 28px rgba(0,0,0,0.25)", pointerEvents:"none" as const }}>
+          {tip.text}
+        </div>
+      )}
     </div>
   );
 }
