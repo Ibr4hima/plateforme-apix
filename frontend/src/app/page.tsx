@@ -8,13 +8,9 @@ import {
   Building2,
   Calendar,
   ChevronRight,
-  Globe,
   Handshake,
   Lock,
-  MapPin,
   Shield,
-  Target,
-  TrendingUp,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,14 +43,14 @@ function AnimatedCounter({ target, suffix="", decimals=0 }: { target:number; suf
 }
 
 const MODULES = [
-  { num:"01", icon:TrendingUp, label:"IDE",                href:"/ide",          color:"#ca631f", desc:"Flux d'investissements directs entrants et sortants" },
-  { num:"02", icon:Target,     label:"Intentions",         href:"/intentions",   color:"#366FE3", desc:"Projets d'investissement déclarés à court et moyen terme" },
-  { num:"03", icon:Globe,      label:"Prospects",          href:"/prospects",    color:"#ca631f", desc:"Portefeuille d'entreprises internationales ciblées" },
-  { num:"04", icon:Building2,  label:"Entreprises",        href:"/entreprises",  color:"#366FE3", desc:"Cartographie des entreprises formalisées installées" },
-  { num:"05", icon:MapPin,     label:"Zones",              href:"/zones",        color:"#ca631f", desc:"ZES, ZAI, ZFI et pôles territoriaux d'investissement" },
-  { num:"06", icon:ArrowRight, label:"Opportunités",       href:"/opportunites", color:"#366FE3", desc:"Potentialités sectorielles à promouvoir auprès des investisseurs" },
-  { num:"07", icon:Handshake,  label:"Accords & Traités",  href:"/accords",      color:"#ca631f", desc:"Traités bilatéraux et accords de coopération économique" },
-  { num:"08", icon:Calendar,   label:"Événements",         href:"/evenements",   color:"#366FE3", desc:"Forums, salons, missions de prospection et rencontres B2B" },
+  { num:"01", icon:"payments",               label:"Investissements privés",        href:"/ide",          color:"#ca631f", desc:"Flux d'investissements directs entrants et sortants" },
+  { num:"02", icon:"universal_currency_alt", label:"Intentions d'investissement",   href:"/intentions",   color:"#366FE3", desc:"Projets d'investissement déclarés à court et moyen terme" },
+  { num:"03", icon:"frame_inspect",          label:"Prospects",                     href:"/prospects",    color:"#ca631f", desc:"Portefeuille d'entreprises internationales ciblées" },
+  { num:"04", icon:"enterprise",             label:"Entreprises installées",        href:"/entreprises",  color:"#366FE3", desc:"Cartographie des entreprises formalisées installées" },
+  { num:"05", icon:"real_estate_agent",      label:"Zones d'investissement",        href:"/zones",        color:"#ca631f", desc:"ZES, ZAI, ZFI et pôles territoriaux d'investissement" },
+  { num:"06", icon:"bookmark_stacks",        label:"Opportunités d'investissement", href:"/opportunites", color:"#366FE3", desc:"Potentialités sectorielles à promouvoir auprès des investisseurs" },
+  { num:"07", icon:"signature",              label:"Accords & Traités",             href:"/accords",      color:"#ca631f", desc:"Traités bilatéraux et accords de coopération économique" },
+  { num:"08", icon:"event",                  label:"Événements",                    href:"/evenements",   color:"#366FE3", desc:"Forums, salons, missions de prospection et rencontres B2B" },
 ];
 
 export default function HomePage() {
@@ -210,15 +206,13 @@ export default function HomePage() {
             </p>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#E8E5E3",border:"1px solid #E8E5E3",borderRadius:16,overflow:"hidden"}}>
-            {MODULES.map((m,i)=>{
-              const Icon=m.icon;
-              return (
+            {MODULES.map((m,i)=>(
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,transition:"background 0.15s",position:"relative" as const}}
                   onMouseEnter={e=>{e.currentTarget.style.background="#FAFAF9";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="1";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="#fff";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="0";}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                     <div style={{width:40,height:40,borderRadius:10,background:`${m.color}10`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <Icon size={18} style={{color:m.color}}/>
+                      <span className="material-symbols-outlined" style={{fontSize:20,color:m.color,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{m.icon}</span>
                     </div>
                     <span className="mod-num" style={{fontSize:11,fontWeight:700,color:"#C5BFBB",letterSpacing:"0.05em",transition:"color 0.15s"}}>{m.num}</span>
                   </div>
@@ -230,8 +224,7 @@ export default function HomePage() {
                     Accéder <ChevronRight size={13}/>
                   </div>
                 </Link>
-              );
-            })}
+            ))}
           </div>
         </div>
       </section>

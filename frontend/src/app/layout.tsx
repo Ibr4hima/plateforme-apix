@@ -25,6 +25,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={googleSans.variable}>
+      <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=payments,frame_inspect,real_estate_agent,universal_currency_alt,enterprise,bookmark_stacks,signature,event" />
+      </head>
       <body style={{ fontFamily: "var(--font-google-sans), sans-serif" }}>
         {children}
       </body>
