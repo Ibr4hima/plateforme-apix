@@ -2,15 +2,12 @@
 
 import Navbar from "@/components/layout/Navbar";
 import {
-  Activity,
   ArrowRight,
   BarChart2,
   Building2,
   Calendar,
   ChevronRight,
   Handshake,
-  Lock,
-  Shield,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -287,18 +284,15 @@ export default function HomePage() {
           </div>
           <div style={{display:"flex",gap:16,flexWrap:"wrap" as const}}>
             {[
-              {icon:Shield, label:"Plateforme souveraine"},
-              {icon:Lock,   label:"Données sécurisées"},
-              {icon:Activity, label:"Mise à jour continue"},
-            ].map((item,i)=>{
-              const Icon=item.icon;
-              return (
+              {icon:"all_inclusive", label:"Plateforme souveraine"},
+              {icon:"security",      label:"Données sécurisées"},
+              {icon:"show_chart",    label:"Mise à jour continue"},
+            ].map((item,i)=>(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:"rgba(255,255,255,0.7)",border:"1px solid #C5BFBB",borderRadius:999}}>
-                  <Icon size={13} style={{color:"#ca631f"}}/>
+                  <span className="material-symbols-outlined" style={{fontSize:15,color:"#ca631f",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
                   <span style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>{item.label}</span>
                 </div>
-              );
-            })}
+            ))}
           </div>
         </div>
       </section>
