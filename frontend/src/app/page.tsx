@@ -54,19 +54,21 @@ const MODULES = [
 ];
 
 export default function HomePage() {
-  const [stats, setStats] = useState({ entreprises:0, evenements:0, accords:0 });
+  const [stats, setStats] = useState({ entreprises:0, accords_en_vigueur:0, evenements_a_venir:0, zones:0 });
 
   useEffect(()=>{
     const safe=(p:Promise<any>,fb:any)=>p.catch(()=>fb);
     Promise.all([
       safe(fetch(`${API_BASE}/evenements/stats`).then(r=>r.json()), {}),
-      safe(fetch(`${API_BASE}/accords?per_page=1`).then(r=>r.json()), {}),
+      safe(fetch(`${API_BASE}/accords?statut=en_vigueur&per_page=1`).then(r=>r.json()), {}),
       safe(fetch(`${API_BASE}/entreprises?per_page=1`).then(r=>r.json()), {}),
-    ]).then(([evStats,accData,entData])=>{
+      safe(fetch(`${API_BASE}/zones`).then(r=>r.json()), []),
+    ]).then(([evStats,accData,entData,zonesData])=>{
       setStats({
-        evenements: evStats?.total||0,
-        accords:    accData?.total||0,
-        entreprises:entData?.total||0,
+        evenements_a_venir: evStats?.a_venir||0,
+        accords_en_vigueur: accData?.total||0,
+        entreprises:        entData?.total||0,
+        zones:              Array.isArray(zonesData) ? zonesData.length : 0,
       });
     });
   },[]);
@@ -243,7 +245,7 @@ export default function HomePage() {
               KPIs, visualisations<br/>et analyses en temps réel
             </h2>
             <p style={{color:"rgba(255,255,255,0.45)",fontSize:14,lineHeight:1.75,marginBottom:32,maxWidth:460}}>
-              Vue consolidée de l'activité d'investissement au Sénégal. Indicateurs clés, tendances sectorielles, flux d'IDE, répartition géographique et analyses comparatives.
+              Vue consolidée de l'attractivité de la Destination Sénégal — Tendances sectorielles, répartition géographique, taux d'occupation des zones d'investissement et flux d'IDE
             </p>
             <div style={{display:"flex",gap:10}}>
               <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#ca631f)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.35)",transition:"all 0.2s"}}
@@ -256,24 +258,21 @@ export default function HomePage() {
           {/* Aperçu KPIs */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             {[
-              {label:"Entreprises installées",    val:stats.entreprises, color:"#ca631f", icon:Building2},
-              {label:"Accords actifs",             val:stats.accords,    color:"#366FE3", icon:Handshake},
-              {label:"Événements enregistrés",    val:stats.evenements,  color:"#188038", icon:Calendar},
-              {label:"Modules de données",         val:8,                color:"#FFB0A1", icon:Activity},
-            ].map((k,i)=>{
-              const Icon=k.icon;
-              return (
+              {label:"Entreprises installées",  val:stats.entreprises,        icon:"enterprise"},
+              {label:"Accords en vigueur",       val:stats.accords_en_vigueur, icon:"signature"},
+              {label:"Événements à venir",       val:stats.evenements_a_venir, icon:"event"},
+              {label:"Zones d'investissement",   val:stats.zones,              icon:"real_estate_agent"},
+            ].map((k,i)=>(
                 <div key={i} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:"20px",backdropFilter:"blur(12px)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                    <Icon size={16} style={{color:k.color,opacity:0.8}}/>
+                    <span className="material-symbols-outlined" style={{fontSize:16,color:"#ca631f",opacity:0.8,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{k.icon}</span>
                   </div>
                   <div style={{fontWeight:800,fontSize:"1.8rem",color:"#fff",lineHeight:1,marginBottom:6}}>
                     <AnimatedCounter target={k.val}/>
                   </div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,0.3)"}}>{k.label}</div>
                 </div>
-              );
-            })}
+            ))}
           </div>
         </div>
       </section>
