@@ -60,12 +60,14 @@ function downloadPNG(svgEl: SVGSVGElement, filename: string) {
 }
 
 // ── Graphe D3 multi-pays ──────────────────────────────────────────────────────
-function GrapheMultiPays({ series, height=280, type="line", titre="", fmt }: {
+function GrapheMultiPays({ series, height=280, type="line", titre="", fmt, showDots=true, lineWidth }: {
   series: {nom:string; couleur:string; data:{annee:number;valeur:number|null}[]}[];
   height?: number;
   type?:   "line"|"bar";
   titre?:  string;
   fmt?:    (v:number|null)=>string;
+  showDots?: boolean;
+  lineWidth?: number;
 }) {
   const ref    = useRef<SVGSVGElement>(null);
   const wrapRef= useRef<HTMLDivElement>(null);
@@ -184,12 +186,12 @@ function GrapheMultiPays({ series, height=280, type="line", titre="", fmt }: {
         svg.append("path").datum(valid).attr("fill",`url(#${gid})`)
           .attr("d",d3.area<{annee:number;valeur:number}>().x(d=>xLin(d.annee)).y0(areaBase).y1(d=>ys(d.valeur)).curve(d3.curveMonotoneX));
 
-        svg.append("path").datum(valid).attr("fill","none").attr("stroke",s.couleur).attr("stroke-width",2.2)
+        svg.append("path").datum(valid).attr("fill","none").attr("stroke",s.couleur).attr("stroke-width",lineWidth ?? 2.2)
           .attr("d",d3.line<{annee:number;valeur:number}>().x(d=>xLin(d.annee)).y(d=>ys(d.valeur)).curve(d3.curveMonotoneX));
 
         const nb = valid.length;
         const rBase = nb > 25 ? 0 : nb > 18 ? 1.5 : nb > 10 ? 2 : 2.5;
-        if (rBase > 0) {
+        if (showDots && rBase > 0) {
           svg.selectAll(`.p${s.nom.replace(/\W/g,"")}`)
             .data(valid).enter().append("circle")
             .attr("cx",d=>xLin(d.annee)).attr("cy",d=>ys(d.valeur)).attr("r",rBase)
@@ -2486,25 +2488,21 @@ function OngletNational() {
               .filter((i):i is BdefIndic=>!!i)
               .map((ind)=>{
                 const fmt = (v:number|null)=>fmtBdef(v,ind.unite);
-                const isGlobal = sel.niveau==="global";
+                const isGlobal = sel.niveau==="global" && macroIndicateurs.length>0;
                 let series;
-                if (isGlobal && macroIndicateurs.length>0) {
-                  // Global (bleu) + chaque macro-secteur (couleur distincte)
-                  series = [
-                    { nom:"Global", couleur:BDEF_MACRO_COULEURS[0], data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) },
-                    ...macroIndicateurs.map((m,mi)=>{
-                      const mInd = m.inds.find(i=>i.code===ind.code);
-                      return { nom:m.libelle, couleur:BDEF_MACRO_COULEURS[1+mi], data:anneesAffichees.map(a=>({ annee:a, valeur:(mInd?.valeurs[a]??null) as number|null })) };
-                    }),
-                  ];
+                if (isGlobal) {
+                  // Comparaison des 4 macro-secteurs (Industries en bleu)
+                  series = macroIndicateurs.map((m,mi)=>{
+                    const mInd = m.inds.find(i=>i.code===ind.code);
+                    return { nom:m.libelle, couleur:BDEF_MACRO_COULEURS[mi%BDEF_MACRO_COULEURS.length], data:anneesAffichees.map(a=>({ annee:a, valeur:(mInd?.valeurs[a]??null) as number|null })) };
+                  });
                 } else {
                   series = [{ nom:ind.libelle, couleur:BDEF_BLEU, data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
                 }
-                const hideLeg = !isGlobal || macroIndicateurs.length===0;
                 return (
-                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend={hideLeg} hideSousTitre
-                    fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
-                    <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
+                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend={!isGlobal} hideSousTitre
+                    fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt} lineWidth={isGlobal?1.6:undefined}/>}>
+                    <GrapheMultiPays series={series} height={130} type="line" fmt={fmt} showDots={false} lineWidth={isGlobal?1.4:undefined}/>
                   </GrapheCard>
                 );
               })}
