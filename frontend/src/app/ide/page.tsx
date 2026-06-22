@@ -1052,7 +1052,7 @@ const COMP_PALETTE = ["#004f91","#ca631f","#188038","#FF7E70","#575799"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
 function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
-  const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
+  const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal","Maroc","Côte d'Ivoire","Nigéria"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [anneeMin,    setAnneeMin]    = useState(1990);
@@ -1151,13 +1151,13 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                     {(paysSelec.length>1||paysSelec[0]!=="Sénégal")&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
                     <span style={{ fontSize:11, fontWeight:700, color:(paysSelec.length>1||paysSelec[0]!=="Sénégal")?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
                   </div>
-                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec.length>=5?"#ca631f":"#9aa5b4", background:paysSelec.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{paysSelec.length}/5</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec.length>=4?"#ca631f":"#9aa5b4", background:paysSelec.length>=4?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{paysSelec.length}/4</span>
                 </div>
                 {/* Sénégal épinglé */}
                 {(()=>{
                   const sel = paysSelec.includes("Sénégal");
                   const col = COMP_PALETTE[paysSelec.indexOf("Sénégal")] ?? COMP_PALETTE[0];
-                  const canAdd = !sel && paysSelec.length < 5;
+                  const canAdd = !sel && paysSelec.length < 4;
                   return (
                     <div style={{ marginBottom:8 }}>
                       <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
@@ -1192,7 +1192,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                             {(paysInZone as any[]).map((p:any) => {
                               const sel = paysSelec.includes(p.nom);
                               const col = sel ? COMP_PALETTE[paysSelec.indexOf(p.nom)] : "#C5BFBB";
-                              const canAdd = !sel && paysSelec.length < 5;
+                              const canAdd = !sel && paysSelec.length < 4;
                               const disabled = !sel && !canAdd;
                               if (p.nom==="Sénégal") return (
                                 <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
@@ -1285,23 +1285,17 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
 
         {/* Zone graphes */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-          <div style={{ display:"flex", flexDirection:"column" as const, gap:8, marginBottom:20 }}>
-            {/* Badge période */}
-            <div>
-              <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em" }}>
-                {modeAnnees==="specifiques"&&anneesSpec.length>0
-                  ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                  : `${anneeMin} — ${anneeMax}`}
-              </span>
-            </div>
-            {/* Badges pays */}
-            <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
-              {paysAvecCouleur.map(p=>(
-                <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:6, background:`${p.couleur}12`, border:`1.5px solid ${p.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
-                  <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
-                </div>
-              ))}
-            </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"wrap" as const }}>
+            <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em", flexShrink:0 }}>
+              {modeAnnees==="specifiques"&&anneesSpec.length>0
+                ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                : `${anneeMin} — ${anneeMax}`}
+            </span>
+            {paysAvecCouleur.map(p=>(
+              <div key={p.nom} style={{ display:"inline-flex", alignItems:"center", background:`${p.couleur}12`, border:`1.5px solid ${p.couleur}35`, borderRadius:999, padding:"4px 12px" }}>
+                <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
+              </div>
+            ))}
           </div>
 
           {loading ? (
@@ -1311,9 +1305,9 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
           ) : (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
-                <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Source CNUCED" series={g.series} grapheId={g.id}
-                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id}/>
+                <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Source CNUCED" series={g.series} grapheId={g.id} hideLegend
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} showDots={false} lineWidth={1.4}/>
                 </GrapheCard>
               ))}
             </div>
@@ -1620,10 +1614,21 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
   const [grpSelec,    setGrpSelec]    = useState<string[]>([]);
   const [searchGrp,   setSearchGrp]   = useState("");
   const [contExpanded,setContExpanded]= useState<Record<string,boolean>>({});
+  const mondeInit = useRef(false);
 
   useEffect(() => {
     fetch(`${API}/ide/monde/groupements`).then(r=>r.json()).then(d=>setGroupements(d||[])).catch(()=>{});
   }, []);
+
+  useEffect(() => {
+    if (mondeInit.current || !groupements.length) return;
+    const defaultNames = ["Afrique","Amérique","Asie","Europe"];
+    const codes = groupements
+      .filter(g => g.categorie === "continent" && defaultNames.includes(g.nom_fr))
+      .slice(0, 4)
+      .map(g => g.code);
+    if (codes.length > 0) { mondeInit.current = true; setGrpSelec(codes); }
+  }, [groupements]);
 
   const grpAvecCouleur = grpSelec.map((code, i) => {
     const g = groupements.find(x => x.code === code);
@@ -1677,7 +1682,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
   const regionsDe  = (cont: string) => groupements.filter(g => g.categorie === cont);
   const toggle = (code: string) => {
     if (grpSelec.includes(code)) setGrpSelec(p => p.filter(c => c !== code));
-    else if (grpSelec.length < 5) setGrpSelec(p => [...p, code]);
+    else if (grpSelec.length < 4) setGrpSelec(p => [...p, code]);
   };
   const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024));
   const nbFiltres = (grpSelec.length>0?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0);
@@ -1775,7 +1780,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
 
           {/* compteur global */}
           <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:10 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=5?"#ca631f":"#9aa5b4", background:grpSelec.length>=5?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/5</span>
+            <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=4?"#ca631f":"#9aa5b4", background:grpSelec.length>=4?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/4</span>
           </div>
 
           {groupements.length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Chargement…</p>}
@@ -1785,7 +1790,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
             const Item = ({ g }: { g: {code:string; nom_fr:string}; }) => {
               const sel = grpSelec.includes(g.code);
               const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "#C5BFBB";
-              const disabled = !sel && grpSelec.length >= 5;
+              const disabled = !sel && grpSelec.length >= 4;
               return (
                 <button key={g.code} onClick={()=>toggle(g.code)}
                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:1 }}
@@ -1871,21 +1876,17 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
 
       {/* Zone graphes */}
       <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-        <div style={{ display:"flex", flexDirection:"column" as const, gap:8, marginBottom:20 }}>
-          <div>
-            <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em" }}>
-              {modeAnnees==="specifiques"&&anneesSpec.length>0
-                ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                : `${anneeMin} — ${anneeMax}`}
-            </span>
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
-            {grpAvecCouleur.map(g=>(
-              <div key={g.nom} style={{ display:"flex", alignItems:"center", gap:6, background:`${g.couleur}12`, border:`1.5px solid ${g.couleur}35`, borderRadius:999, padding:"4px 14px" }}>
-                <span style={{ fontSize:12, fontWeight:700, color:g.couleur }}>{g.nom}</span>
-              </div>
-            ))}
-          </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"wrap" as const }}>
+          <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em", flexShrink:0 }}>
+            {modeAnnees==="specifiques"&&anneesSpec.length>0
+              ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+              : `${anneeMin} — ${anneeMax}`}
+          </span>
+          {grpAvecCouleur.map(g=>(
+            <div key={g.nom} style={{ display:"inline-flex", alignItems:"center", background:`${g.couleur}12`, border:`1.5px solid ${g.couleur}35`, borderRadius:999, padding:"4px 12px" }}>
+              <span style={{ fontSize:12, fontWeight:700, color:g.couleur }}>{g.label}</span>
+            </div>
+          ))}
         </div>
 
         {grpSelec.length===0 ? (
@@ -1902,9 +1903,9 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
           <>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
-              <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Somme pays membres · CNUCED" series={g.series} grapheId={g.id}
-                fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id}/>}>
-                <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id}/>
+              <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Somme pays membres · CNUCED" series={g.series} grapheId={g.id} hideLegend
+                fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6}/>}>
+                <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} showDots={false} lineWidth={1.4}/>
               </GrapheCard>
             ))}
           </div>
