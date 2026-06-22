@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Building2, Calendar, ChevronDown, ChevronRight, Download, Globe, MapPin, Menu, Search, Target, TrendingUp, Users, X, Zap } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -8,13 +8,14 @@ import { useEffect, useRef, useState } from "react";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const modules = [
-  { label: "Investissements privés",        href: "/ide",          Icon: TrendingUp, color: "#004f91", bg: "rgba(0,79,145,0.1)"    },
-  { label: "Intentions d'investissement",   href: "/intentions",   Icon: Target,     color: "#7c3aed", bg: "rgba(124,58,237,0.1)"  },
-  { label: "Prospects",                     href: "/prospects",    Icon: Globe,      color: "#047857", bg: "rgba(4,120,87,0.1)"    },
-  { label: "Entreprises installées",        href: "/entreprises",  Icon: Building2,  color: "#0e7490", bg: "rgba(14,116,144,0.1)"  },
-  { label: "Zones d'investissement",        href: "/zones",        Icon: MapPin,     color: "#b45309", bg: "rgba(180,83,9,0.1)"    },
-  { label: "Opportunités d'investissement", href: "/opportunites", Icon: Zap,        color: "#be123c", bg: "rgba(190,18,60,0.1)"   },
-  { label: "Événements",                    href: "/evenements",   Icon: Calendar,   color: "#ca631f", bg: "rgba(202,99,31,0.1)"   },
+  { label: "Investissements privés",        href: "/ide"          },
+  { label: "Intentions d'investissement",   href: "/intentions"   },
+  { label: "Prospects",                     href: "/prospects"    },
+  { label: "Entreprises installées",        href: "/entreprises"  },
+  { label: "Zones d'investissement",        href: "/zones"        },
+  { label: "Opportunités d'investissement", href: "/opportunites" },
+  { label: "Accords & Traités",             href: "/accords"      },
+  { label: "Événements",                    href: "/evenements"   },
 ];
 
 // ── Numérotation ──────────────────────────────────────────────────────────────
@@ -286,16 +287,25 @@ export default function Navbar() {
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [modulesOpen, setModulesOpen] = useState(false);
   const [codeOpen,    setCodeOpen]    = useState(false);
+  const [isDark,      setIsDark]      = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 10);
+    const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn);
+    setIsDark(document.querySelector("main")?.style.background?.includes("0e0e1a") || false);
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
   const openModules  = () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); setModulesOpen(true); };
   const closeModules = () => { timeoutRef.current = setTimeout(() => setModulesOpen(false), 120); };
+
+  const textColor = scrolled ? "#4a5568" : (isDark ? "rgba(255,255,255,0.85)" : "#4a5568");
+  const textHover = scrolled ? "#004f91" : (isDark ? "#fff" : "#004f91");
+  const bg = scrolled
+    ? "rgba(255,255,255,0.96)"
+    : isDark ? "rgba(14,14,26,0.7)" : "rgba(242,240,239,0.7)";
+  const border = scrolled ? "1px solid #C5BFBB" : isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent";
 
   return (
     <>
@@ -304,10 +314,9 @@ export default function Navbar() {
         height: 64,
         display: "flex", alignItems: "center",
         transition: "background 0.3s, box-shadow 0.3s, border-color 0.3s",
-        background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.0)",
-        backdropFilter: scrolled ? "blur(24px)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(24px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(0,0,0,0.07)" : "1px solid transparent",
+        background: bg,
+        backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+        borderBottom: border,
         boxShadow: scrolled ? "0 2px 24px rgba(0,0,0,0.06)" : "none",
       }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -327,9 +336,9 @@ export default function Navbar() {
               onMouseLeave={closeModules}>
 
               <button
-                style={{ display: "flex", alignItems: "center", gap: 5, height: 36, padding: "0 14px", borderRadius: 10, background: modulesOpen ? "rgba(0,79,145,0.07)" : "transparent", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: scrolled ? "#1a1a2e" : "#fff", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = scrolled ? "#004f91" : "#fff"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = modulesOpen ? "rgba(0,79,145,0.07)" : "transparent"; e.currentTarget.style.color = scrolled ? "#1a1a2e" : "#fff"; }}>
+                style={{ display: "flex", alignItems: "center", gap: 5, height: 36, padding: "0 14px", borderRadius: 10, background: modulesOpen ? "rgba(0,79,145,0.07)" : "transparent", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: modulesOpen ? textHover : textColor, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
+                onMouseLeave={e => { e.currentTarget.style.background = modulesOpen ? "rgba(0,79,145,0.07)" : "transparent"; e.currentTarget.style.color = modulesOpen ? textHover : textColor; }}>
                 Modules
                 <ChevronDown size={13} style={{ transition: "transform 0.2s", transform: modulesOpen ? "rotate(180deg)" : "rotate(0)", opacity: 0.7 }} />
               </button>
@@ -349,12 +358,9 @@ export default function Navbar() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
                     {modules.map(m => (
                       <Link key={m.href} href={m.href} onClick={() => setModulesOpen(false)}
-                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s", background: "transparent" }}
+                        style={{ display: "flex", alignItems: "center", padding: "11px 14px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s", background: "transparent" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                        <div style={{ width: 30, height: 30, borderRadius: 8, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <m.Icon size={14} style={{ color: m.color }} />
-                        </div>
                         <span style={{ color: "#1a1a2e", fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>{m.label}</span>
                       </Link>
                     ))}
@@ -365,17 +371,17 @@ export default function Navbar() {
 
             {/* Tableau de bord */}
             <Link href="/tableau-de-bord"
-              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: scrolled ? "#1a1a2e" : "#fff", textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = scrolled ? "#004f91" : "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = scrolled ? "#1a1a2e" : "#fff"; }}>
+              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
               Tableau de bord
             </Link>
 
             {/* Code des investissements */}
             <button onClick={() => setCodeOpen(true)}
-              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: scrolled ? "#1a1a2e" : "#fff", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = scrolled ? "#004f91" : "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = scrolled ? "#1a1a2e" : "#fff"; }}>
+              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
               Code des investissements
             </button>
           </nav>
@@ -392,7 +398,7 @@ export default function Navbar() {
 
           {/* ── Burger mobile ── */}
           <button onClick={() => setMenuOpen(!menuOpen)}
-            style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: scrolled ? "#1a1a2e" : "#fff", padding: 8 }}>
+            style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: textColor, padding: 8 }}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
@@ -403,10 +409,7 @@ export default function Navbar() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 12 }}>
               {modules.map(m => (
                 <Link key={m.href} href={m.href} onClick={() => setMenuOpen(false)}
-                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, color: "#1a1a2e", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 7, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <m.Icon size={12} style={{ color: m.color }} />
-                  </div>
+                  style={{ display: "flex", alignItems: "center", padding: "10px 12px", borderRadius: 10, color: "#1a1a2e", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
                   {m.label}
                 </Link>
               ))}
