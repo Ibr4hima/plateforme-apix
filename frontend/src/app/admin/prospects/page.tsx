@@ -6,8 +6,14 @@ import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import { parsePhoneNumber } from "libphonenumber-js";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+function fmtPhone(raw: string): string {
+  if (!raw) return raw;
+  try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
+}
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
@@ -786,6 +792,17 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
 function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, onRouvrir, readOnly }: any) {
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
+  const [secteurs, setSecteurs]   = useState<any[]>([]);
+  const [branches, setBranches]   = useState<any[]>([]);
+  const [activites, setActivites] = useState<any[]>([]);
+
+  useEffect(()=>{
+    Promise.all([
+      fetch(`${API}/entreprises/ref/secteurs`).then(r=>r.json()),
+      fetch(`${API}/entreprises/ref/branches`).then(r=>r.json()),
+      fetch(`${API}/entreprises/ref/activites`).then(r=>r.json()),
+    ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); }).catch(()=>{});
+  },[p.id]);
 
   // ─ Conclusion de la prospection
   const [showConclusion,   setShowConclusion]   = useState(false);
@@ -870,6 +887,42 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
     ? { label:"Possibilité écartée", color:"#6b7280", bg:"rgba(107,114,128,0.10)" }
     : null;
 
+  // Affichage en cascade Secteur → Branche → Activité (style entreprises)
+  const NaemaCascade = ({ secIds, braIds, actIds }:{ secIds:number[]; braIds:number[]; actIds:number[] }) => (
+    <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+      {secIds.map((secId:number)=>{
+        const sec = secteurs.find(s=>s.id===secId); if (!sec) return null;
+        const brasDuSec = branches.filter(b=>b.secteur_id===secId && braIds.includes(b.id));
+        return (
+          <div key={secId}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:brasDuSec.length?5:0 }}>
+              <div style={{ width:8, height:8, borderRadius:"50%", background:"#ca631f", flexShrink:0 }}/><span style={{ fontSize:12, fontWeight:700, color:"#ca631f" }}>{sec.nom}</span>
+            </div>
+            {brasDuSec.length>0 && <div style={{ paddingLeft:20, borderLeft:"2px solid rgba(202,99,31,0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
+              {brasDuSec.map((bra:any)=>{
+                const actsDeBra = activites.filter(a=>a.branche_id===bra.id && actIds.includes(a.id));
+                return (
+                  <div key={bra.id}>
+                    <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:actsDeBra.length?4:0 }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/><span style={{ fontSize:11, fontWeight:600, color:"#004f91" }}>{bra.nom}</span>
+                    </div>
+                    {actsDeBra.length>0 && <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3 }}>
+                      {actsDeBra.map((act:any)=>(
+                        <div key={act.id} style={{ display:"flex", alignItems:"center", gap:6 }}>
+                          <div style={{ width:5, height:5, borderRadius:"50%", background:"#188038", flexShrink:0 }}/><span style={{ fontSize:11, color:"#188038", fontWeight:500 }}>{act.nom}</span>
+                        </div>
+                      ))}
+                    </div>}
+                  </div>
+                );
+              })}
+            </div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>
@@ -902,21 +955,17 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             {p.telephones?.length > 0 && (
               <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
                 <LBL>Téléphone(s)</LBL>
-                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:2 }}>
-                  {p.telephones.map((t:string,i:number)=>(
-                    <span key={i} style={{ fontSize:11, fontWeight:600, color:"#366FE3", background:"rgba(54,111,227,0.08)", border:"1px solid rgba(54,111,227,0.2)", padding:"2px 9px", borderRadius:999 }}>{t}</span>
-                  ))}
-                </div>
+                {p.telephones.map((t:string,i:number)=>(
+                  <p key={i} style={{ fontSize:13, fontWeight:600, color:TXT }}>{fmtPhone(t)}</p>
+                ))}
               </div>
             )}
             {p.mails?.length > 0 && (
               <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
                 <LBL>Email(s)</LBL>
-                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:2 }}>
-                  {p.mails.map((m:string,i:number)=>(
-                    <span key={i} style={{ fontSize:11, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.08)", border:"1px solid rgba(24,128,56,0.2)", padding:"2px 9px", borderRadius:999 }}>{m}</span>
-                  ))}
-                </div>
+                {p.mails.map((m:string,i:number)=>(
+                  <p key={i} style={{ fontSize:13, fontWeight:600, color:TXT, wordBreak:"break-all" as const }}>{m}</p>
+                ))}
               </div>
             )}
             {p.siteweb && (
@@ -947,7 +996,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                     {pf.telephones?.filter(Boolean).length > 0 && (
                       <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:6 }}>
                         {pf.telephones.filter(Boolean).map((t:string,j:number)=>(
-                          <span key={j} style={{ fontSize:11, fontWeight:600, color:"#366FE3", background:"rgba(54,111,227,0.08)", border:"1px solid rgba(54,111,227,0.2)", padding:"2px 9px", borderRadius:999 }}>{t}</span>
+                          <span key={j} style={{ fontSize:11, fontWeight:600, color:"#366FE3", background:"rgba(54,111,227,0.08)", border:"1px solid rgba(54,111,227,0.2)", padding:"2px 9px", borderRadius:999 }}>{fmtPhone(t)}</span>
                         ))}
                       </div>
                     )}
@@ -961,6 +1010,14 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Activités spécialisées (Secteur → Branche → Activité) */}
+          {(p.secteur_ids?.length>0 || p.branche_ids?.length>0 || p.activite_ids?.length>0) && (
+            <div style={{ marginBottom:16 }}>
+              <LBL>Activités spécialisées</LBL>
+              <NaemaCascade secIds={p.secteur_ids||[]} braIds={p.branche_ids||[]} actIds={p.activite_ids||[]}/>
             </div>
           )}
 
@@ -986,12 +1043,22 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   <div style={card}>
                     <SubLabel>Intentions d'investissement à l'étranger</SubLabel>
                     {p.objet_intentions_details && <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_intentions_details }}/>}
+                    {(p.objet_intentions_secteur_ids?.length>0 || p.objet_intentions_branche_ids?.length>0 || p.objet_intentions_activite_ids?.length>0) && (
+                      <div style={{ marginTop:p.objet_intentions_details?10:0 }}>
+                        <NaemaCascade secIds={p.objet_intentions_secteur_ids||[]} braIds={p.objet_intentions_branche_ids||[]} actIds={p.objet_intentions_activite_ids||[]}/>
+                      </div>
+                    )}
                   </div>
                 )}
                 {p.objet_adequation_senegal && (
                   <div style={card}>
-                    <SubLabel>Adéquation profil / destination Sénégal</SubLabel>
+                    <SubLabel>Activités prioritaires pour le Sénégal en phase avec le profil de l'entreprise</SubLabel>
                     {p.objet_adequation_details && <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_adequation_details }}/>}
+                    {(p.objet_adequation_secteur_ids?.length>0 || p.objet_adequation_branche_ids?.length>0 || p.objet_adequation_activite_ids?.length>0) && (
+                      <div style={{ marginTop:p.objet_adequation_details?10:0 }}>
+                        <NaemaCascade secIds={p.objet_adequation_secteur_ids||[]} braIds={p.objet_adequation_branche_ids||[]} actIds={p.objet_adequation_activite_ids||[]}/>
+                      </div>
+                    )}
                   </div>
                 )}
                 {p.objet_commentaires && (
