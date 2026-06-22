@@ -1993,6 +1993,10 @@ const BDEF_GRAPHES_DEFAUT = [
   "act_ca", "eff_vetuste", "inv_actif_immo", "inv_tx_autofin",
   "liq_fdr", "sf_pression_fisc", "sf_autonomie", "rent_ebe",
 ];
+// Couleur unique pour les graphes (secteur/groupe/macro-secteur)
+const BDEF_BLEU = "#004f91";
+// Couleurs distinctes pour la comparaison macro-secteurs sur la vue globale
+const BDEF_MACRO_COULEURS = ["#004f91", "#e07b39", "#2a9d8f", "#c0392b", "#8e44ad"];
 
 // ── Case à cocher (sélection unique) ──────────────────────────────────────────
 function BdefRow({ label, code, selected, depth, onSelect, expandable, expanded, onToggle }: {
@@ -2173,6 +2177,8 @@ function OngletNational() {
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(BDEF_KPI_DEFAUT);
   const [kpiActif, setKpiActif]         = useState<BdefIndic | null>(null);
   const [catKpiOuverts, setCatKpiOuverts] = useState<Set<string>>(new Set());
+  // Données des macro-secteurs (uniquement chargées pour la vue globale)
+  const [macroIndicateurs, setMacroIndicateurs] = useState<{id:number;libelle:string;inds:BdefIndic[]}[]>([]);
   const [tip, setTip] = useState<{text:string;x:number;y:number}|null>(null);
   const montrerTip = (e:React.MouseEvent, text:string) => setTip({ text, x:e.clientX, y:e.clientY });
 
@@ -2195,9 +2201,22 @@ function OngletNational() {
       const d = await fetch(`${API}/bdef/valeurs?${qs}`).then(r=>r.json());
       setIndicateurs(d?.indicateurs||[]);
       setAnneesData(d?.annees||[]);
-    } catch(e){ console.error(e); setIndicateurs([]); setAnneesData([]); }
+      if (sel.niveau==="global" && refs) {
+        const macros = await Promise.all(
+          refs.macro_secteur.map(m=>
+            fetch(`${API}/bdef/valeurs?niveau=macro_secteur&cible_id=${m.id}`)
+              .then(r=>r.json())
+              .then((md:any)=>({ id:m.id, libelle:m.libelle, inds:(md?.indicateurs||[]) as BdefIndic[] }))
+              .catch(()=>({ id:m.id, libelle:m.libelle, inds:[] as BdefIndic[] }))
+          )
+        );
+        setMacroIndicateurs(macros);
+      } else {
+        setMacroIndicateurs([]);
+      }
+    } catch(e){ console.error(e); setIndicateurs([]); setAnneesData([]); setMacroIndicateurs([]); }
     finally { setLoading(false); }
-  }, [sel]);
+  }, [sel, refs]);
   useEffect(()=>{ charger(); }, [charger]);
 
   // Initialiser les bornes années au 1er chargement contenant des données
@@ -2466,12 +2485,24 @@ function OngletNational() {
               .map(code=>indicateurs.find(i=>i.code===code))
               .filter((i):i is BdefIndic=>!!i)
               .map((ind)=>{
-                const ci  = parCategorie.findIndex(p=>p.cat===ind.categorie);
-                const col = BDEF_CAT_COULEURS[(ci<0?0:ci)%BDEF_CAT_COULEURS.length];
-                const series = [{ nom:ind.libelle, couleur:col, data: anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
                 const fmt = (v:number|null)=>fmtBdef(v,ind.unite);
+                const isGlobal = sel.niveau==="global";
+                let series;
+                if (isGlobal && macroIndicateurs.length>0) {
+                  // Global (bleu) + chaque macro-secteur (couleur distincte)
+                  series = [
+                    { nom:"Global", couleur:BDEF_MACRO_COULEURS[0], data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) },
+                    ...macroIndicateurs.map((m,mi)=>{
+                      const mInd = m.inds.find(i=>i.code===ind.code);
+                      return { nom:m.libelle, couleur:BDEF_MACRO_COULEURS[1+mi], data:anneesAffichees.map(a=>({ annee:a, valeur:(mInd?.valeurs[a]??null) as number|null })) };
+                    }),
+                  ];
+                } else {
+                  series = [{ nom:ind.libelle, couleur:BDEF_BLEU, data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
+                }
+                const hideLeg = !isGlobal || macroIndicateurs.length===0;
                 return (
-                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
+                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend={hideLeg} hideSousTitre
                     fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
                     <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
                   </GrapheCard>
