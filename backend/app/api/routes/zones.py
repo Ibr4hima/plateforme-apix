@@ -107,6 +107,17 @@ async def liste_zones(
     return [zone_to_dict(z, geo_noms) for z in zones]
 
 
+# ── GET /zones/count ─────────────────────────────────────────────────────────
+@router.get("/count")
+async def compter_zones(db: AsyncSession = Depends(get_db)):
+    """Nombre d'id distincts dans la table zones_investissement (hors supprimées)."""
+    total = (await db.execute(
+        select(func.count(func.distinct(ZoneInvestissement.id)))
+        .where(ZoneInvestissement.is_deleted == False)
+    )).scalar()
+    return {"total": total or 0}
+
+
 # ── POST /zones ────────────────────────────────────────────────────────────────
 @router.post("", status_code=201)
 async def creer_zone(

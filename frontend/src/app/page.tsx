@@ -62,13 +62,13 @@ export default function HomePage() {
       safe(fetch(`${API_BASE}/evenements/stats`).then(r=>r.json()), {}),
       safe(fetch(`${API_BASE}/accords?statut=en_vigueur&per_page=1`).then(r=>r.json()), {}),
       safe(fetch(`${API_BASE}/entreprises?per_page=1`).then(r=>r.json()), {}),
-      safe(fetch(`${API_BASE}/zones`).then(r=>r.json()), []),
+      safe(fetch(`${API_BASE}/zones/count`).then(r=>r.json()), {}),
     ]).then(([evStats,accData,entData,zonesData])=>{
       setStats({
         evenements_a_venir: evStats?.a_venir||0,
         accords_en_vigueur: accData?.total||0,
         entreprises:        entData?.total||0,
-        zones:              Array.isArray(zonesData) ? zonesData.length : 0,
+        zones:              zonesData?.total||0,
       });
     });
   },[]);
