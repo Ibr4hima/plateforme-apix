@@ -1485,10 +1485,7 @@ export default function ProspectsPage() {
                   style={{ background:"#fff", borderTop:"1px solid #E8E5E3", borderRight:"1px solid #E8E5E3", borderBottom:"1px solid #E8E5E3", borderLeft:`3px solid ${accent}`, borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}
                   onMouseEnter={ev=>{ ev.currentTarget.style.boxShadow=`0 4px 16px ${accent}22`; }}
                   onMouseLeave={ev=>{ ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                    <div style={{ width:28, height:28, borderRadius:8, background:"rgba(0,79,145,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <Building2 size={13} style={{ color:accent }}/>
-                    </div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:p.siege_nom?2:10 }}>
                     <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", flex:1 }}>{displayName}</div>
                     {activite && (
                       <span style={{ flexShrink:0, fontSize:10, fontWeight:700, color:activite.color, background:activite.bg, border:`1px solid ${activite.color}33`, padding:"2px 8px", borderRadius:999 }}>
@@ -1496,8 +1493,10 @@ export default function ProspectsPage() {
                       </span>
                     )}
                   </div>
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:10 }}>
-                    {p.siege_nom && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:5,height:5,borderRadius:"50%",background:accent,flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.siege_nom}</span></div>}
+                  {p.siege_nom && <div style={{ fontSize:11, color:"#9aa5b4", fontWeight:500, marginBottom:10 }}>{p.siege_nom}</div>}
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
+                    {p.mails?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Mail : {p.mails[0]}</span></div>}
+                    {p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>}
                     {p.nb_echanges > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
                   </div>
                   {onglet==="precedents" ? (
