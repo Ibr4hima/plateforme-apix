@@ -1986,6 +1986,14 @@ const BDEF_DEFINITIONS: Record<string,string> = {
 const defBdef = (code:string, libelle:string) =>
   BDEF_DEFINITIONS[code] || `${libelle} — indicateur issu de la Banque de Données Économiques et Financières (BDEF).`;
 
+// KPIs affichés par défaut (onglet national)
+const BDEF_KPI_DEFAUT = ["act_ca", "inv_tx_autofin", "sf_pression_fisc", "sf_autonomie", "rent_ebe"];
+// Graphes affichés par défaut (onglet national), dans cet ordre
+const BDEF_GRAPHES_DEFAUT = [
+  "act_ca", "eff_vetuste", "inv_actif_immo", "inv_tx_autofin",
+  "liq_fdr", "sf_pression_fisc", "sf_autonomie", "rent_ebe",
+];
+
 // ── Case à cocher (sélection unique) ──────────────────────────────────────────
 function BdefRow({ label, code, selected, depth, onSelect, expandable, expanded, onToggle }: {
   label:string; code?:string; selected:boolean; depth:number;
@@ -2162,7 +2170,7 @@ function OngletNational() {
   const [showTable, setShowTable]     = useState(false);
 
   // KPIs
-  const [kpisEpingles, setKpisEpingles] = useState<string[]>([]);
+  const [kpisEpingles, setKpisEpingles] = useState<string[]>(BDEF_KPI_DEFAUT);
   const [kpiActif, setKpiActif]         = useState<BdefIndic | null>(null);
   const [catKpiOuverts, setCatKpiOuverts] = useState<Set<string>>(new Set());
   const [tip, setTip] = useState<{text:string;x:number;y:number}|null>(null);
@@ -2453,31 +2461,23 @@ function OngletNational() {
             <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>
           </div>
         ) : (
-          <>
-            {parCategorie.map(({cat,inds},ci)=>{
-              const col = BDEF_CAT_COULEURS[ci%BDEF_CAT_COULEURS.length];
-              return (
-                <div key={cat} style={{ marginBottom:28 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-                    <div style={{ width:4, height:16, borderRadius:2, background:col }}/>
-                    <h3 style={{ fontSize:13, fontWeight:800, color:"#1a1a2e", margin:0, letterSpacing:"0.02em" }}>{cat}</h3>
-                  </div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-                    {inds.map((ind)=>{
-                      const series = [{ nom:ind.libelle, couleur:col, data: anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
-                      const fmt = (v:number|null)=>fmtBdef(v,ind.unite);
-                      return (
-                        <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
-                          fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
-                          <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
-                        </GrapheCard>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+            {BDEF_GRAPHES_DEFAUT
+              .map(code=>indicateurs.find(i=>i.code===code))
+              .filter((i):i is BdefIndic=>!!i)
+              .map((ind)=>{
+                const ci  = parCategorie.findIndex(p=>p.cat===ind.categorie);
+                const col = BDEF_CAT_COULEURS[(ci<0?0:ci)%BDEF_CAT_COULEURS.length];
+                const series = [{ nom:ind.libelle, couleur:col, data: anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
+                const fmt = (v:number|null)=>fmtBdef(v,ind.unite);
+                return (
+                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
+                    fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
+                    <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
+                  </GrapheCard>
+                );
+              })}
+          </div>
         )}
       </div>
 
