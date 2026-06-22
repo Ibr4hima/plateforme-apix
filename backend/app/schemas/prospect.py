@@ -68,10 +68,7 @@ class ContactResponse(BaseModel):
 
 # ── Prospect ──────────────────────────────────────────────────────────────────
 class ProspectCreate(BaseModel):
-    type:            str           = "physique"   # physique | morale
     nom:             str
-    prenom:          Optional[str] = None
-    pays_origine_id: Optional[int] = None
     telephone:       Optional[str] = None
     mail:            Optional[str] = None
     siteweb:         Optional[str] = None
@@ -80,10 +77,7 @@ class ProspectCreate(BaseModel):
     est_publie:      bool          = True
 
 class ProspectUpdate(BaseModel):
-    type:            Optional[str] = None
     nom:             Optional[str] = None
-    prenom:          Optional[str] = None
-    pays_origine_id: Optional[int] = None
     telephone:       Optional[str] = None
     mail:            Optional[str] = None
     siteweb:         Optional[str] = None
@@ -96,9 +90,6 @@ class ProspectResponse(BaseModel):
     id:              int
     type:            Optional[str]
     nom:             str
-    prenom:          Optional[str]     = None
-    pays_origine_id: Optional[int]     = None
-    pays_origine_nom:Optional[str]     = None
     telephone:       Optional[str]     = None
     mail:            Optional[str]     = None
     siteweb:         Optional[str]     = None

@@ -42,17 +42,17 @@ async def verifier_doublons(db: AsyncSession, payload: dict, exclure_prospect_id
     hit = res.scalars().first()
     if hit:
         pr = await db.execute(
-            select(Prospect.nom, Prospect.prenom, Prospect.issue).where(Prospect.id == hit.prospect_id)
+            select(Prospect.nom, Prospect.issue).where(Prospect.id == hit.prospect_id)
         )
         row = pr.first()
         nom = "un autre prospect"
         is_archive = False
         if row:
-            nom = f"{row[1] or ''} {row[0] or ''}".strip() or "un autre prospect"
-            is_archive = row[2] is not None
+            nom = row[0] or "un autre prospect"
+            is_archive = row[1] is not None
         label = LABELS.get(hit.type, "Cette coordonnée")
         if is_archive:
-            if row[2] == "installe":
+            if row[1] == "installe":
                 raise HTTPException(
                     409,
                     f"{label} « {hit.valeur_affichee} » appartient à « {nom} », une entreprise déjà installée au Sénégal "
@@ -84,7 +84,6 @@ async def ecrire_contacts(db: AsyncSession, prospect_id: int, contacts: dict):
         ))
 
 LOAD_OPTS = [
-    selectinload(Prospect.pays_origine),
     selectinload(Prospect.siege),
     selectinload(Prospect.points_focaux),
     selectinload(Prospect.echanges),
@@ -152,11 +151,8 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
     echanges_sorted = sorted(p.echanges or [], key=lambda e: e.date_echange)
     return {
         "id":              p.id,
-        "type":            p.type or "physique",
+        "type":            "morale",
         "nom":             p.nom,
-        "prenom":          p.prenom,
-        "pays_origine_id": p.pays_origine_id,
-        "pays_origine_nom":p.pays_origine.nom_fr if p.pays_origine else None,
         "siege_id":        p.siege_id,
         "siege_nom":       p.siege.nom_fr if p.siege else None,
         "secteur_ids":     p.secteur_ids or [],
@@ -218,10 +214,7 @@ async def liste_prospects(
     from sqlalchemy import or_, exists
     base = select(Prospect).options(*LOAD_OPTS).where(Prospect.is_deleted == False)
     if q:
-        base = base.where(or_(
-            Prospect.nom.ilike(f"%{q}%"),
-            Prospect.prenom.ilike(f"%{q}%"),
-        ))
+        base = base.where(Prospect.nom.ilike(f"%{q}%"))
     if contactes is True:
         base = base.where(exists().where(ProspectEchange.prospect_id == Prospect.id))
     elif contactes is False:
@@ -268,7 +261,7 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
         raise HTTPException(422, "Au moins un numéro de téléphone est obligatoire")
     if not [m for m in (payload.get("mails") or []) if m]:
         raise HTTPException(422, "Au moins un email est obligatoire")
-    if payload.get("type") == "morale" and not (payload.get("siteweb") or "").strip():
+    if not (payload.get("siteweb") or "").strip():
         raise HTTPException(422, "Le site web est obligatoire pour une personne morale")
     for pf in payload.get("points_focaux") or []:
         if not (pf.get("nom") or "").strip():
@@ -280,10 +273,8 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
     # Déduplication : bloque si une coordonnée existe déjà
     contacts = await verifier_doublons(db, payload)
     p = Prospect(
-        type            = payload.get("type") or "physique",
+        type            = "morale",
         nom             = payload["nom"].strip(),
-        prenom          = payload.get("prenom") or None,
-        pays_origine_id = payload.get("pays_origine_id") or None,
         siege_id        = payload.get("siege_id") or None,
         secteur_ids     = payload.get("secteur_ids") or [],
         branche_ids     = payload.get("branche_ids") or [],
@@ -346,7 +337,6 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     eff_tels  = payload["telephones"] if "telephones" in payload else (p.telephones or [])
     eff_mails = payload["mails"]      if "mails"      in payload else (p.mails or [])
     eff_site  = payload["siteweb"]    if "siteweb"    in payload else p.siteweb
-    eff_type  = payload["type"]       if "type"       in payload else p.type
     eff_pf    = payload["points_focaux"] if "points_focaux" in payload else [
         {"nom": pf.nom, "telephones": pf.telephones or [], "mails": pf.mails or []}
         for pf in (p.points_focaux or [])
@@ -357,7 +347,7 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
         raise HTTPException(422, "Au moins un numéro de téléphone est obligatoire")
     if not [m for m in eff_mails if m]:
         raise HTTPException(422, "Au moins un email est obligatoire")
-    if eff_type == "morale" and not (eff_site or "").strip():
+    if not (eff_site or "").strip():
         raise HTTPException(422, "Le site web est obligatoire pour une personne morale")
     for pf in eff_pf:
         if not (pf.get("nom") or "").strip():
@@ -376,7 +366,7 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
     }
     contacts = await verifier_doublons(db, eff, exclure_prospect_id=prospect_id)
 
-    for f in ["type", "nom", "prenom", "adresse", "details", "siteweb", "linkedin",
+    for f in ["nom", "adresse", "details", "siteweb", "linkedin",
               "objet_intentions_details", "objet_adequation_details", "objet_commentaires"]:
         if f in payload:
             setattr(p, f, payload[f] or None)
@@ -385,7 +375,6 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
             setattr(p, f, payload[f])
     if "telephones"      in payload: p.telephones      = payload["telephones"] or []
     if "mails"           in payload: p.mails           = payload["mails"] or []
-    if "pays_origine_id" in payload: p.pays_origine_id = payload["pays_origine_id"] or None
     if "siege_id"        in payload: p.siege_id        = payload["siege_id"] or None
     if "objet_projet_id" in payload: p.objet_projet_id = payload["objet_projet_id"] or None
     if "secteur_ids"     in payload: p.secteur_ids     = payload["secteur_ids"] or []

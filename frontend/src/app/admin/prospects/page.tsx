@@ -58,13 +58,8 @@ type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string
 const EMPTY_FOCAL: PointFocal = { prenom:"", nom:"", telephones:[""], mails:[""] };
 
 const EMPTY_FORM = {
-  type:             "physique" as "physique"|"morale",
-  // physique
-  prenom:           "",
-  nom:              "",
-  pays_origine_id:  null as number|null,
-  pays_origine_nom: "",
   // morale
+  nom:              "",
   siege_id:         null as number|null,
   siege_nom:        "",
   secteur_ids:      [] as number[],
@@ -92,38 +87,6 @@ const EMPTY_FORM = {
   objet_adequation_details:       "",
   objet_commentaires:             "",
 };
-
-// Champs propres au type (physique ↔ morale) : ne doivent pas « déborder »
-// d'un type à l'autre, mais sont conservés quand on revient au type précédent.
-const TYPE_SCOPED = [
-  "nom","prenom","pays_origine_id","pays_origine_nom",
-  "siege_id","siege_nom","secteur_ids","branche_ids","activite_ids","points_focaux",
-  "telephones","mails","siteweb","linkedin","details",
-] as const;
-
-const freshTypeScoped = () => ({
-  nom:"", prenom:"", pays_origine_id:null as number|null, pays_origine_nom:"",
-  siege_id:null as number|null, siege_nom:"", secteur_ids:[] as number[], branche_ids:[] as number[], activite_ids:[] as number[],
-  points_focaux:[{ ...EMPTY_FOCAL }] as PointFocal[],
-  telephones:[""] as string[], mails:[""] as string[], siteweb:"", linkedin:"", details:"",
-});
-
-// ── Sélecteur type ────────────────────────────────────────────────────────────
-function TypeSelector({ value, onChange }: { value:"physique"|"morale"; onChange:(v:"physique"|"morale")=>void }) {
-  return (
-    <div style={{ display:"flex", gap:0, borderRadius:12, overflow:"hidden", border:"1px solid #C5BFBB", marginBottom:24 }}>
-      {([["physique","Personne physique"],["morale","Personne morale"]] as const).map(([key,label]) => (
-        <button key={key} onClick={()=>onChange(key)} type="button"
-          style={{ flex:1, padding:"14px 0", border:"none", cursor:"pointer", fontSize:13, fontWeight:700, transition:"all .15s",
-            background: value===key ? (key==="physique"?"#ca631f":"#004f91") : "#F8F7F6",
-            color: value===key ? "#fff" : "#9aa5b4",
-            borderRight: key==="physique" ? "1px solid #C5BFBB" : "none" }}>
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 // ── Multi-téléphones ──────────────────────────────────────────────────────────
 function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string[])=>void }) {
@@ -274,33 +237,14 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
   const [ok,     setOk]     = useState(false);
-  // Mémorise les champs saisis pour le type non actif (physique/morale)
-  const stash = useRef<Record<string, any>>({});
 
   const upd = (k:string, v:any) => setForm(f=>({ ...f, [k]:v }));
-
-  // Changement de type : on range les champs du type courant et on restaure
-  // ceux du nouveau type (vides s'ils n'ont jamais été saisis).
-  const changeType = (v:"physique"|"morale") => {
-    setForm(f => {
-      if (v === f.type) return f;
-      const saved:Record<string,any> = {};
-      TYPE_SCOPED.forEach(k => { saved[k] = (f as any)[k]; });
-      stash.current[f.type] = saved;
-      const restored = stash.current[v] ?? freshTypeScoped();
-      return { ...f, ...restored, type:v };
-    });
-  };
 
   useEffect(()=>{
     if (!open) return;
     if (edit) {
       setForm({
-        type:             edit.type||"physique",
-        prenom:           edit.prenom||"",
         nom:              edit.nom||"",
-        pays_origine_id:  edit.pays_origine_id||null,
-        pays_origine_nom: edit.pays_origine_nom||"",
         siege_id:         edit.siege_id||null,
         siege_nom:        edit.siege_nom||"",
         secteur_ids:      edit.secteur_ids||[],
@@ -331,32 +275,34 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
     } else {
       setForm({ ...EMPTY_FORM, points_focaux:[{ ...EMPTY_FOCAL }] });
     }
-    stash.current = {};
     setError(""); setOk(false);
   }, [open, edit?.id]);
 
   const handleSave = async () => {
     if (!form.nom.trim()) { setError("Le nom est obligatoire"); return; }
-    if (form.type==="physique" && !form.prenom.trim()) { setError("Le prénom est obligatoire"); return; }
     if (!form.telephones.filter(Boolean).length) { setError("Au moins un numéro de téléphone est obligatoire"); return; }
     if (!form.mails.filter(Boolean).length) { setError("Au moins un email est obligatoire"); return; }
-    if (form.type==="morale" && !form.siteweb.trim()) { setError("Le site web est obligatoire pour une personne morale"); return; }
-    if (form.type==="morale") {
-      for (const pf of form.points_focaux.filter(p=>p.nom.trim())) {
-        if (!pf.telephones.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un téléphone est obligatoire`); return; }
-        if (!pf.mails.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un email est obligatoire`); return; }
-      }
+    if (!form.siteweb.trim()) { setError("Le site web est obligatoire pour une personne morale"); return; }
+    for (const pf of form.points_focaux.filter(p=>p.nom.trim())) {
+      if (!pf.telephones.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un téléphone est obligatoire`); return; }
+      if (!pf.mails.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un email est obligatoire`); return; }
     }
     setSaving(true); setError("");
     try {
       const payload: any = {
-        type:      form.type,
         nom:       form.nom.trim(),
         telephones:form.telephones.filter(Boolean),
         mails:     form.mails.filter(Boolean),
         siteweb:   form.siteweb.trim()||null,
         linkedin:  form.linkedin.trim()||null,
         details:   form.details||null,
+        siege_id:     form.siege_id||null,
+        secteur_ids:  form.secteur_ids,
+        branche_ids:  form.branche_ids,
+        activite_ids: form.activite_ids,
+        points_focaux: form.points_focaux
+          .filter(pf=>pf.nom.trim())
+          .map(pf=>({ prenom:pf.prenom.trim()||null, nom:pf.nom.trim(), telephones:pf.telephones.filter(Boolean), mails:pf.mails.filter(Boolean) })),
         // objet du ciblage
         objet_projet:              form.objet_projet,
         objet_projet_id:           form.objet_projet && form.objet_projet_id ? form.objet_projet_id : null,
@@ -372,18 +318,6 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         objet_adequation_details:       form.objet_adequation_senegal ? (form.objet_adequation_details||null) : null,
         objet_commentaires:             form.objet_commentaires||null,
       };
-      if (form.type==="physique") {
-        payload.prenom          = form.prenom.trim()||null;
-        payload.pays_origine_id = form.pays_origine_id||null;
-      } else {
-        payload.siege_id     = form.siege_id||null;
-        payload.secteur_ids  = form.secteur_ids;
-        payload.branche_ids  = form.branche_ids;
-        payload.activite_ids = form.activite_ids;
-        payload.points_focaux= form.points_focaux
-          .filter(pf=>pf.nom.trim())
-          .map(pf=>({ prenom:pf.prenom.trim()||null, nom:pf.nom.trim(), telephones:pf.telephones.filter(Boolean), mails:pf.mails.filter(Boolean) }));
-      }
       const url    = edit ? `${API}/prospects/${edit.id}` : `${API}/prospects`;
       const method = edit ? "PATCH" : "POST";
       const res = await fetch(url, { method, headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
@@ -409,51 +343,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
             <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="#4a5568"/></button>
           </div>
 
-          <TypeSelector value={form.type} onChange={changeType}/>
-
-          {/* ── Personne physique ── */}
-          {form.type === "physique" && (
-            <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
-              <div>
-                <p style={SEC}>Identification de l'investisseur</p>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
-                  <div>
-                    <label style={LS}>Prénom *</label>
-                    <input value={form.prenom} onChange={e=>upd("prenom",e.target.value)} placeholder="Prénom" style={IS}/>
-                  </div>
-                  <div>
-                    <label style={LS}>Nom *</label>
-                    <input value={form.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom de famille" style={IS}/>
-                  </div>
-                </div>
-                <div>
-                  <label style={LS}>Pays d'origine</label>
-                  <PaysSelect value={form.pays_origine_nom} onChange={nom=>upd("pays_origine_nom",nom)} onChangeId={id=>upd("pays_origine_id",id)} placeholder="Sélectionner le pays d'origine"/>
-                </div>
-              </div>
-              <div>
-                <p style={SEC}>Contact</p>
-                <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-                  <MultiPhones values={form.telephones} onChange={v=>upd("telephones",v)}/>
-                  <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
-                  <div>
-                    <label style={LS}>LinkedIn</label>
-                    <input value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)} placeholder="linkedin.com/in/…" style={IS}/>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p style={SEC}>Détails sur l'investisseur</p>
-                <div style={{ minHeight:160 }}>
-                  <RichTextEditor value={form.details} onChange={v=>upd("details",v)}/>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Personne morale ── */}
-          {form.type === "morale" && (
-            <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
 
               {/* Identification */}
               <div>
@@ -529,9 +419,8 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
               </div>
 
             </div>
-          )}
 
-          {/* ── Objet du ciblage (commun physique + morale) ── */}
+          {/* ── Objet du ciblage ── */}
           <div style={{ marginTop:24, paddingTop:24, borderTop:"1px solid #E8E5E3" }}>
             <p style={SEC}>Objet du ciblage</p>
             <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
@@ -637,7 +526,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
   const pointsFocaux: any[] = prospect?.points_focaux || [];
   const estMorale = prospect?.type === "morale";
-  const nomProspect = estMorale ? prospect?.nom : `${prospect?.prenom||""} ${prospect?.nom||""}`.trim();
+  const nomProspect = prospect?.nom || "";
 
   // Bornes de date. En création : après le dernier échange. En édition : entre
   // l'échange précédent et le suivant (ordre de création), et ≤ aujourd'hui.
@@ -966,11 +855,10 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
       return [...prev, saved];
     });
   };
-  const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
+  const displayName = p.nom;
 
-  // ── Système de design de la fiche : palette neutre, une seule couleur d'accent
-  //    selon le type, et des sections homogènes pour une lecture sans bruit visuel.
-  const accent = p.type==="morale" ? "#004f91" : "#ca631f";
+  // ── Système de design de la fiche : palette neutre
+  const accent = "#004f91";
   const TXT="#1a1a2e", SUB="#5b6472", MUT="#98a1ad", SURF="#F6F4F2", BRD="#EAE7E4", DIV="#EFECE9";
   const card: any = { background:SURF, border:`1px solid ${BRD}`, borderRadius:12, padding:"14px 16px" };
   const linkStyle: any = { fontSize:13, fontWeight:600, color:"#004f91", wordBreak:"break-all" as const, textDecoration:"none" };
@@ -1015,21 +903,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
-        <div style={{ height:5, background:`linear-gradient(90deg,${p.type==="morale"?"#004f91,#1a6ab0":"#ca631f,#e07a3a"})` }}/>
+        <div style={{ height:5, background:"linear-gradient(90deg,#004f91,#1a6ab0)" }}/>
         <div ref={scrollContainerRef} style={{ padding:"26px 30px 30px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
 
           {/* En-tête */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, marginBottom:22 }}>
             <div style={{ display:"flex", alignItems:"center", gap:13, minWidth:0 }}>
               <div style={{ width:46, height:46, borderRadius:13, background:`${accent}14`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                {p.type==="morale"?<Building2 size={20} style={{ color:accent }}/>:<User size={20} style={{ color:accent }}/>}
+                <Building2 size={20} style={{ color:accent }}/>
               </div>
               <div style={{ minWidth:0 }}>
                 <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:TXT, lineHeight:1.2, overflow:"hidden", textOverflow:"ellipsis" }}>{displayName}</h2>
                 <div style={{ display:"flex", alignItems:"center", gap:7, flexWrap:"wrap" as const, marginTop:5 }}>
-                  <span style={{ fontSize:11, fontWeight:600, color:SUB }}>
-                    {p.type==="morale"?"Personne morale":"Personne physique"}
-                  </span>
                   {(()=>{ const b=badgeProspect(p); return b ? (
                     <><span style={{ color:"#D5D0CC" }}>·</span>
                     <span style={{ fontSize:11, fontWeight:700, color:b.color, background:b.bg, padding:"2px 10px", borderRadius:999 }}>{b.label}</span></>
@@ -1043,8 +928,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           {/* Identité & coordonnées */}
           <Section title="Identité & coordonnées" first>
             <div style={{ ...card, display:"grid", gridTemplateColumns:"1fr 1fr", gap:"16px 24px" }}>
-              {p.type==="physique" && p.pays_origine_nom && <Info label="Pays d'origine">{p.pays_origine_nom}</Info>}
-              {p.type==="morale" && p.siege_nom && <Info label="Pays du siège social">{p.siege_nom}</Info>}
+              {p.siege_nom && <Info label="Pays du siège social">{p.siege_nom}</Info>}
               {p.telephones?.length > 0 && (
                 <Info label="Téléphone(s)">{p.telephones.map((t:string,i:number)=><div key={i}>{t}</div>)}</Info>
               )}
@@ -1061,7 +945,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           </Section>
 
           {/* Points focaux (morale) */}
-          {p.type==="morale" && p.points_focaux?.length > 0 && (
+          {p.points_focaux?.length > 0 && (
             <Section title="Points focaux" count={p.points_focaux.length}>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
                 {p.points_focaux.map((pf:any,i:number)=>(
@@ -1079,7 +963,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
           {/* Détails / Commentaires */}
           {p.details && (
-            <Section title={p.type==="morale"?"Commentaires":"Détails"}>
+            <Section title="Commentaires">
               <div data-rte style={{ ...card, fontSize:13, color:SUB, lineHeight:1.7 }}
                 dangerouslySetInnerHTML={{ __html:p.details }}/>
             </Section>
@@ -1593,8 +1477,8 @@ export default function ProspectsPage() {
           <p style={{ fontSize:13, color:"#9aa5b4", marginBottom:16 }}>{total} prospect{total>1?"s":""}</p>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
             {prospects.map(p=>{
-              const displayName = p.type==="morale" ? p.nom : `${p.prenom||""} ${p.nom||""}`.trim();
-              const accent = p.type==="morale" ? "#004f91" : "#ca631f";
+              const displayName = p.nom;
+              const accent = "#004f91";
               const activite = badgeProspect(p);
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
@@ -1602,8 +1486,8 @@ export default function ProspectsPage() {
                   onMouseEnter={ev=>{ ev.currentTarget.style.boxShadow=`0 4px 16px ${accent}22`; }}
                   onMouseLeave={ev=>{ ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                    <div style={{ width:28, height:28, borderRadius:8, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.1)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      {p.type==="morale"?<Building2 size={13} style={{ color:accent }}/>:<User size={13} style={{ color:accent }}/>}
+                    <div style={{ width:28, height:28, borderRadius:8, background:"rgba(0,79,145,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <Building2 size={13} style={{ color:accent }}/>
                     </div>
                     <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", flex:1 }}>{displayName}</div>
                     {activite && (
@@ -1613,8 +1497,7 @@ export default function ProspectsPage() {
                     )}
                   </div>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:10 }}>
-                    {p.type==="physique" && p.pays_origine_nom && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:5,height:5,borderRadius:"50%",background:accent,flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.pays_origine_nom}</span></div>}
-                    {p.type==="morale" && p.siege_nom && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:5,height:5,borderRadius:"50%",background:accent,flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.siege_nom}</span></div>}
+                    {p.siege_nom && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:5,height:5,borderRadius:"50%",background:accent,flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.siege_nom}</span></div>}
                     {p.nb_echanges > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
                   </div>
                   {onglet==="precedents" ? (
@@ -1638,7 +1521,7 @@ export default function ProspectsPage() {
                   ) : (
                     <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:`rgba(${p.type==="morale"?"0,79,145":"202,99,31"},0.08)`, border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
                         <Pencil size={12}/> Modifier
                       </button>
                       {!estFige(p) && (

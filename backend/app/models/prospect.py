@@ -10,10 +10,8 @@ class Prospect(Base):
     __tablename__ = "prospects"
 
     id               = Column(Integer, primary_key=True, autoincrement=True)
-    type             = Column(String(10), default="physique")
+    type             = Column(String(10), default="morale")
     nom              = Column(String(255), nullable=False)
-    prenom           = Column(String(150), nullable=True)
-    pays_origine_id  = Column(Integer, ForeignKey("ref_pays.id"), nullable=True)
     siege_id         = Column(Integer, ForeignKey("ref_pays.id"), nullable=True)
     adresse          = Column(Text)
     telephones       = Column(ARRAY(String), default=[])
@@ -49,7 +47,6 @@ class Prospect(Base):
     objet_adequation_details  = Column(Text)
     objet_commentaires        = Column(Text)
 
-    pays_origine  = relationship("RefPays", foreign_keys=[pays_origine_id], lazy="joined")
     siege         = relationship("RefPays", foreign_keys=[siege_id], lazy="joined")
     points_focaux = relationship("ProspectPointFocal", back_populates="prospect",
                                  cascade="all, delete-orphan", order_by="ProspectPointFocal.id")
