@@ -115,11 +115,12 @@ async def liste_secteurs(db: AsyncSession = Depends(get_db)):
     macro = (await db.execute(select(BdefMacroSecteur).order_by(BdefMacroSecteur.ordre))).scalars().all()
     groupes = (await db.execute(select(BdefGroupe).order_by(BdefGroupe.ordre))).scalars().all()
     secteurs = (await db.execute(select(BdefSecteur).order_by(BdefSecteur.ordre))).scalars().all()
-    fmt = lambda s: {"id": s.id, "code": s.code, "libelle": s.libelle}
     return {
-        NIVEAU_MACRO:   [fmt(s) for s in macro],
-        NIVEAU_GROUPE:  [fmt(s) for s in groupes],
-        NIVEAU_SECTEUR: [fmt(s) for s in secteurs],
+        NIVEAU_MACRO:   [{"id": s.id, "code": s.code, "libelle": s.libelle} for s in macro],
+        NIVEAU_GROUPE:  [{"id": s.id, "code": s.code, "libelle": s.libelle,
+                          "macro_secteur_id": s.macro_secteur_id} for s in groupes],
+        NIVEAU_SECTEUR: [{"id": s.id, "code": s.code, "libelle": s.libelle,
+                          "groupe_id": s.groupe_id} for s in secteurs],
     }
 
 

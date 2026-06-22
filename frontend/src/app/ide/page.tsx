@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -60,14 +60,16 @@ function downloadPNG(svgEl: SVGSVGElement, filename: string) {
 }
 
 // ── Graphe D3 multi-pays ──────────────────────────────────────────────────────
-function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
+function GrapheMultiPays({ series, height=280, type="line", titre="", fmt }: {
   series: {nom:string; couleur:string; data:{annee:number;valeur:number|null}[]}[];
   height?: number;
   type?:   "line"|"bar";
   titre?:  string;
+  fmt?:    (v:number|null)=>string;
 }) {
   const ref    = useRef<SVGSVGElement>(null);
   const wrapRef= useRef<HTMLDivElement>(null);
+  const fmtV   = fmt || fmtVal;
 
   const draw = useCallback(() => {
     if (!ref.current) return;
@@ -151,7 +153,7 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
           .on("mouseover",(e,d)=>{
             d3.select(e.currentTarget as SVGRectElement).attr("opacity",0.75);
             tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px")
-              .html(`<strong>${d.annee}${nbSeries>1?" — "+s.nom:""}</strong><br/>${fmtVal(d.valeur)}`);
+              .html(`<strong>${d.annee}${nbSeries>1?" — "+s.nom:""}</strong><br/>${fmtV(d.valeur)}`);
           })
           .on("mouseout",(e)=>{ d3.select(e.currentTarget as SVGRectElement).attr("opacity",1); tooltip.style("opacity",0); });
       });
@@ -192,14 +194,14 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
             .data(valid).enter().append("circle")
             .attr("cx",d=>xLin(d.annee)).attr("cy",d=>ys(d.valeur)).attr("r",rBase)
             .attr("fill","#fff").attr("stroke",s.couleur).attr("stroke-width",1.5).style("cursor","pointer")
-            .on("mouseover",(e,d)=>{ d3.select(e.currentTarget as any).attr("r",rBase+2); tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px").html(`<strong>${d.annee} — ${s.nom}</strong><br/>${fmtVal(d.valeur)}`); })
+            .on("mouseover",(e,d)=>{ d3.select(e.currentTarget as any).attr("r",rBase+2); tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px").html(`<strong>${d.annee} — ${s.nom}</strong><br/>${fmtV(d.valeur)}`); })
             .on("mouseout",(e)=>{ d3.select(e.currentTarget as any).attr("r",rBase); tooltip.style("opacity",0); });
         } else {
           svg.selectAll(`.ph${s.nom.replace(/\W/g,"")}`)
             .data(valid).enter().append("circle")
             .attr("cx",d=>xLin(d.annee)).attr("cy",d=>ys(d.valeur)).attr("r",6)
             .attr("fill","transparent").attr("stroke","none").style("cursor","pointer")
-            .on("mouseover",(e,d)=>{ tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px").html(`<strong>${d.annee} — ${s.nom}</strong><br/>${fmtVal(d.valeur)}`); })
+            .on("mouseover",(e,d)=>{ tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px").html(`<strong>${d.annee} — ${s.nom}</strong><br/>${fmtV(d.valeur)}`); })
             .on("mouseout",()=>{ tooltip.style("opacity",0); });
         }
       });
@@ -227,7 +229,7 @@ function GrapheMultiPays({ series, height=280, type="line", titre="" }: {
         .call(g=>g.selectAll("text").style("fill", series[1].couleur).style("font-size","10px").style("font-weight","600"));
     }
 
-  }, [series, type, height]);
+  }, [series, type, height, fmtV]);
 
   // ResizeObserver — redessine quand la largeur change (sidebar pliée/dépliée)
   useEffect(() => {
@@ -1914,6 +1916,390 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
   );
 }
 
+// ── BDEF (Investissements nationaux) ──────────────────────────────────────────
+const BDEF_CAT_COULEURS = ["#004f91","#ca631f","#188038","#7c3aed","#0891b2","#dc2626","#d97706","#059669"];
+
+function fmtBdef(v: number|null, unite: string): string {
+  if (v === null || v === undefined || isNaN(v)) return "N/A";
+  if (unite === "%")     return `${v.toFixed(2)} %`;
+  if (unite === "ratio") return v.toFixed(3);
+  if (unite === "jours") return `${v.toFixed(0)} j`;
+  const a = Math.abs(v);
+  if (a >= 1e9) return `${(v/1e9).toFixed(2)} Md`;
+  if (a >= 1e6) return `${(v/1e6).toFixed(1)} M`;
+  if (a >= 1e3) return `${(v/1e3).toFixed(0)} k`;
+  return v.toFixed(0);
+}
+
+type BdefNode = { id:number; code:string; libelle:string; macro_secteur_id?:number; groupe_id?:number };
+type BdefRefs = { macro_secteur:BdefNode[]; groupe:BdefNode[]; secteur:BdefNode[] };
+type BdefIndic = { code:string; libelle:string; unite:string; categorie:string; valeurs:Record<string,number|null> };
+type BdefSel = { niveau:"global"|"macro_secteur"|"groupe"|"secteur"; cible_id:number|null; libelle:string };
+
+const NIVEAU_LABEL_BDEF: Record<string,string> = {
+  global:"Global", macro_secteur:"Macro-secteur", groupe:"Groupe", secteur:"Secteur",
+};
+
+// ── Case à cocher (sélection unique) ──────────────────────────────────────────
+function BdefRow({ label, code, selected, depth, onSelect, expandable, expanded, onToggle }: {
+  label:string; code?:string; selected:boolean; depth:number;
+  onSelect:()=>void; expandable?:boolean; expanded?:boolean; onToggle?:()=>void;
+}) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:4, marginLeft:depth*10 }}>
+      {expandable ? (
+        <button onClick={onToggle} style={{ background:"none", border:"none", cursor:"pointer", padding:2, display:"flex", flexShrink:0 }}>
+          <ChevronDown size={11} style={{ color:"#9aa5b4", transform:expanded?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+        </button>
+      ) : <span style={{ width:15, flexShrink:0 }}/>}
+      <button onClick={onSelect}
+        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:selected?"#004f9112":"transparent", textAlign:"left" as const, width:"100%" }}
+        onMouseEnter={e=>{if(!selected)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=selected?"#004f9112":"transparent";}}>
+        <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${selected?"#004f91":"#C5BFBB"}`, background:selected?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          {selected&&<div style={{ width:5, height:5, borderRadius:"50%", background:"#fff" }}/>}
+        </div>
+        {code&&<span style={{ fontSize:10, color:"#C5BFBB", fontWeight:600, flexShrink:0 }}>{code}</span>}
+        <span style={{ fontSize:12, color:selected?"#004f91":"#4a5568", fontWeight:selected?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{label}</span>
+      </button>
+    </div>
+  );
+}
+
+// ── Modal tableau BDEF ────────────────────────────────────────────────────────
+function ModalBdefTable({ open, onClose, libelle, indicateurs, annees }: {
+  open:boolean; onClose:()=>void; libelle:string; indicateurs:BdefIndic[]; annees:number[];
+}) {
+  if (!open) return null;
+  const parCat: {cat:string; inds:BdefIndic[]}[] = [];
+  indicateurs.forEach(ind=>{ let g=parCat.find(x=>x.cat===ind.categorie); if(!g){g={cat:ind.categorie,inds:[]};parCat.push(g);} g.inds.push(ind); });
+
+  const exporter = () => {
+    const header = ["Catégorie","Indicateur","Unité",...annees.map(String)];
+    const rows:(string|number|null)[][] = [header];
+    parCat.forEach(({cat,inds})=>inds.forEach(ind=>{
+      rows.push([cat, ind.libelle, ind.unite, ...annees.map(a=>{ const v=ind.valeurs[a]; return v!==null&&v!==undefined?Number(v):null; })]);
+    }));
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = header.map((_,ci)=>({ wch: Math.min(Math.max(...rows.map(r=>String(r[ci]??"").length))+2,50) }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "BDEF");
+    XLSX.writeFile(wb, `BDEF_${libelle.replace(/[^\w]/g,"_").slice(0,40)}.xlsx`);
+  };
+
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, border:"1px solid #E8E5E3", boxShadow:"0 40px 100px rgba(0,0,0,0.25)", overflow:"hidden" }}>
+        <div style={{ height:5, background:"linear-gradient(90deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)", flexShrink:0 }} />
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"18px 26px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+          <span style={{ fontSize:"1rem", fontWeight:800, color:"#1a1a2e" }}>{libelle}</span>
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <button onClick={exporter} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
+              <FileSpreadsheet size={13}/> Excel
+            </button>
+            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 8px", display:"flex" }}><X size={14} color="#4a5568"/></button>
+          </div>
+        </div>
+        <div style={{ overflowY:"auto" as const, flex:1, overflowX:"auto" as const }}>
+          <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
+            <thead style={{ position:"sticky" as const, top:0, zIndex:1 }}>
+              <tr style={{ background:"#F8F7F6" }}>
+                <th style={{ padding:"10px 16px", textAlign:"left" as const, fontSize:11, fontWeight:700, color:"#9aa5b4", position:"sticky" as const, left:0, background:"#F8F7F6", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const, minWidth:200 }}>Indicateur</th>
+                {annees.map(a=><th key={a} style={{ padding:"10px 12px", fontSize:11, fontWeight:700, color:"#9aa5b4", textAlign:"right" as const, minWidth:80 }}>{a}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {parCat.map(({cat,inds})=>(
+                <Fragment key={cat}>
+                  <tr><td colSpan={annees.length+1} style={{ padding:"10px 16px 4px", fontSize:11, fontWeight:700, color:"#004f91", letterSpacing:"0.06em", textTransform:"uppercase" as const, background:"#fff" }}>{cat}</td></tr>
+                  {inds.map(ind=>(
+                    <tr key={ind.code} style={{ borderBottom:"1px solid #F2F0EF", background:"#fff" }}>
+                      <td style={{ padding:"9px 16px", position:"sticky" as const, left:0, background:"#fff", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const, color:"#4a5568" }}>
+                        {ind.libelle} <span style={{ fontSize:10, color:"#C5BFBB" }}>· {ind.unite}</span>
+                      </td>
+                      {annees.map(a=>{ const v=ind.valeurs[a]; const display=v!==null&&v!==undefined?fmtBdef(v,ind.unite):"—"; return (
+                        <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color:v===null||v===undefined?"#C5BFBB":"#1a1a2e", fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums" as const, whiteSpace:"nowrap" as const }}>{display}</td>
+                      ); })}
+                    </tr>
+                  ))}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ padding:"11px 26px", borderTop:"1px solid #F2F0EF", flexShrink:0, background:"#FAFAF9" }}>
+          <p style={{ fontSize:11, color:"#9aa5b4" }}>{indicateurs.length} indicateurs · {annees.length} année{annees.length>1?"s":""} · Source BDEF (ANSD)</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OngletNational() {
+  const [refs, setRefs]               = useState<BdefRefs|null>(null);
+  const [sel, setSel]                 = useState<BdefSel>({ niveau:"global", cible_id:null, libelle:"Global des secteurs" });
+  const [indicateurs, setIndicateurs] = useState<BdefIndic[]>([]);
+  const [anneesData, setAnneesData]   = useState<number[]>([]);
+  const [loading, setLoading]         = useState(true);
+
+  // Période (bornes dérivées des données)
+  const [bornes, setBornes]           = useState<[number,number]>([2019,2024]);
+  const [anneeMin, setAnneeMin]       = useState(2019);
+  const [anneeMax, setAnneeMax]       = useState(2024);
+  const [modeAnnees, setModeAnnees]   = useState<"plage"|"specifiques">("plage");
+  const [anneesSpec, setAnneesSpec]   = useState<number[]>([]);
+  const initBornes = useRef(false);
+
+  // Sidebar
+  const [search, setSearch]           = useState("");
+  const [openMacros, setOpenMacros]   = useState<Set<number>>(new Set());
+  const [openGroupes, setOpenGroupes] = useState<Set<number>>(new Set());
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(310);
+  const isResizing = useRef(false);
+  const [showTable, setShowTable]     = useState(false);
+
+  const couleur = "#004f91";
+
+  const startResize = (e: React.MouseEvent) => {
+    isResizing.current = true;
+    const startX = e.clientX, startW = sidebarWidth;
+    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(220, Math.min(540, startW + ev.clientX - startX))); };
+    const onUp = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+  };
+
+  useEffect(()=>{ fetch(`${API}/bdef/secteurs`).then(r=>r.json()).then((d:BdefRefs)=>setRefs(d)).catch(()=>{}); }, []);
+
+  const charger = useCallback(async()=>{
+    setLoading(true);
+    try {
+      const qs = sel.niveau==="global" ? `niveau=global` : `niveau=${sel.niveau}&cible_id=${sel.cible_id}`;
+      const d = await fetch(`${API}/bdef/valeurs?${qs}`).then(r=>r.json());
+      setIndicateurs(d?.indicateurs||[]);
+      setAnneesData(d?.annees||[]);
+    } catch(e){ console.error(e); setIndicateurs([]); setAnneesData([]); }
+    finally { setLoading(false); }
+  }, [sel]);
+  useEffect(()=>{ charger(); }, [charger]);
+
+  // Initialiser les bornes années au 1er chargement contenant des données
+  useEffect(()=>{
+    if (!initBornes.current && anneesData.length) {
+      initBornes.current = true;
+      const mn=anneesData[0], mx=anneesData[anneesData.length-1];
+      setBornes([mn,mx]); setAnneeMin(mn); setAnneeMax(mx);
+    }
+  }, [anneesData]);
+
+  const anneesAffichees = (modeAnnees==="specifiques" && anneesSpec.length>0)
+    ? anneesSpec.filter(a=>anneesData.includes(a))
+    : anneesData.filter(a=>a>=anneeMin && a<=anneeMax);
+
+  // Regroupement des indicateurs par catégorie (ordre conservé)
+  const parCategorie: {cat:string; inds:BdefIndic[]}[] = [];
+  indicateurs.forEach(ind=>{ let g=parCategorie.find(x=>x.cat===ind.categorie); if(!g){g={cat:ind.categorie,inds:[]};parCategorie.push(g);} g.inds.push(ind); });
+
+  // Cascade
+  const groupesDe  = (mid:number) => refs?.groupe.filter(g=>g.macro_secteur_id===mid) || [];
+  const secteursDe = (gid:number) => refs?.secteur.filter(s=>s.groupe_id===gid) || [];
+  const toggleMacro  = (id:number) => setOpenMacros(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
+  const toggleGroupe = (id:number) => setOpenGroupes(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
+
+  const choisir = (niveau:BdefSel["niveau"], node:BdefNode|null) =>
+    setSel({ niveau, cible_id: node?node.id:null, libelle: node?`${node.code} — ${node.libelle}`:"Global des secteurs" });
+  const estSel = (niveau:string, id:number|null) => sel.niveau===niveau && sel.cible_id===id;
+
+  // Recherche : résultats à plat tous niveaux confondus
+  const q = search.trim().toLowerCase();
+  const resultats = q && refs ? [
+    ...refs.macro_secteur.filter(m=>m.libelle.toLowerCase().includes(q)||m.code.includes(q)).map(n=>({niveau:"macro_secteur" as const,node:n})),
+    ...refs.groupe.filter(g=>g.libelle.toLowerCase().includes(q)||g.code.includes(q)).map(n=>({niveau:"groupe" as const,node:n})),
+    ...refs.secteur.filter(s=>s.libelle.toLowerCase().includes(q)||s.code.includes(q)).map(n=>({niveau:"secteur" as const,node:n})),
+  ] : [];
+
+  const hasFilter = sel.niveau!=="global" || (modeAnnees==="specifiques"&&anneesSpec.length>0) || (modeAnnees==="plage"&&(anneeMin!==bornes[0]||anneeMax!==bornes[1]));
+  const reinit = () => { choisir("global",null); setModeAnnees("plage"); setAnneeMin(bornes[0]); setAnneeMax(bornes[1]); setAnneesSpec([]); setSearch(""); };
+  const span = Math.max(1, bornes[1]-bornes[0]);
+
+  return (
+    <div style={{ display:"flex", alignItems:"flex-start" }}>
+      {/* Sidebar */}
+      <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 72px)", overflowY:"auto" as const, position:"sticky" as const, top:72, display:"flex", flexDirection:"column" as const }}>
+        {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+        <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
+          {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+          <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
+            <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
+          </button>
+        </div>
+
+        {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+          {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
+            <X size={12}/> Effacer tous les filtres
+          </button>}
+
+          {/* Recherche */}
+          <div style={{ position:"relative" as const, marginBottom:16 }}>
+            <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
+              style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+            {search&&<button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+          </div>
+
+          {/* Activités */}
+          <div style={{ marginBottom:18 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+              {sel.niveau!=="global"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
+              <span style={{ fontSize:11, fontWeight:700, color:sel.niveau!=="global"?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Activités</span>
+            </div>
+
+            {/* Global */}
+            <BdefRow label="Global des secteurs" selected={sel.niveau==="global"} depth={0} onSelect={()=>choisir("global",null)} />
+            <div style={{ height:1, background:"#F2F0EF", margin:"8px 0" }}/>
+
+            {/* Recherche → résultats à plat */}
+            {q ? (
+              <div style={{ maxHeight:360, overflowY:"auto" as const }}>
+                {resultats.length===0 && <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
+                {resultats.map(({niveau,node})=>(
+                  <div key={`${niveau}-${node.id}`} style={{ marginBottom:2 }}>
+                    <BdefRow label={node.libelle} code={node.code} selected={estSel(niveau,node.id)} depth={0} onSelect={()=>choisir(niveau,node)} />
+                    <span style={{ fontSize:9, color:"#C5BFBB", marginLeft:38, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>{NIVEAU_LABEL_BDEF[niveau]}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Cascade Macro → Groupe → Secteur */
+              <div style={{ maxHeight:420, overflowY:"auto" as const }}>
+                {(refs?.macro_secteur||[]).map(macro=>{
+                  const mOpen = openMacros.has(macro.id);
+                  return (
+                    <div key={macro.id} style={{ marginBottom:2 }}>
+                      <BdefRow label={macro.libelle} code={macro.code} selected={estSel("macro_secteur",macro.id)} depth={0}
+                        onSelect={()=>choisir("macro_secteur",macro)} expandable expanded={mOpen} onToggle={()=>toggleMacro(macro.id)} />
+                      {mOpen && groupesDe(macro.id).map(groupe=>{
+                        const gOpen = openGroupes.has(groupe.id);
+                        return (
+                          <div key={groupe.id}>
+                            <BdefRow label={groupe.libelle} code={groupe.code} selected={estSel("groupe",groupe.id)} depth={1}
+                              onSelect={()=>choisir("groupe",groupe)} expandable expanded={gOpen} onToggle={()=>toggleGroupe(groupe.id)} />
+                            {gOpen && secteursDe(groupe.id).map(secteur=>(
+                              <BdefRow key={secteur.id} label={secteur.libelle} code={secteur.code} selected={estSel("secteur",secteur.id)} depth={2}
+                                onSelect={()=>choisir("secteur",secteur)} />
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+
+          {/* Période */}
+          <div style={{ marginBottom:8 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
+              {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==bornes[0]||anneeMax!==bornes[1])))&&
+                <span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
+              <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+            </div>
+            <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
+              {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
+                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
+                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none" }}>
+                  {m.l}
+                </button>
+              ))}
+            </div>
+            {modeAnnees==="plage" ? (
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
+                  <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
+                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-bornes[0])/span)*100}%`, width:`${Math.max(0,((anneeMax-bornes[0])/span)*100-((anneeMin-bornes[0])/span)*100)}%`, height:4, background:"#ca631f", borderRadius:2, transform:"translateY(-50%)" }}/>
+                  <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax?4:2} as React.CSSProperties}/>
+                  <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                  <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:3 }}>
+                {anneesData.map(a=>{ const s=anneesSpec.includes(a); return (
+                  <button key={a} onClick={()=>setAnneesSpec(prev=>s?prev.filter(x=>x!==a):[...prev,a].sort())}
+                    style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${s?"#ca631f":"#E8E5E3"}`, cursor:"pointer", fontSize:11, fontWeight:s?700:400, textAlign:"center" as const, background:s?"#ca631f":"#F8F7F6", color:s?"#fff":"#4a5568" }}>{a}</button>
+                ); })}
+              </div>
+            )}
+          </div>
+        </div>}
+      </aside>
+
+      {/* Zone principale */}
+      <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, flexWrap:"wrap" as const, gap:12 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
+            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>{sel.libelle}</h2>
+            <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 10px", borderRadius:999, background:"#F2F0EF", fontSize:11, fontWeight:700, color:"#6b7280", flexShrink:0 }}>{NIVEAU_LABEL_BDEF[sel.niveau]}</span>
+            {anneesAffichees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", flexShrink:0 }}>
+              {anneesAffichees[0]} — {anneesAffichees[anneesAffichees.length-1]}
+            </span>}
+          </div>
+          {indicateurs.length>0&&<button onClick={()=>setShowTable(true)} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
+            <Table size={14}/> Tableau de données
+          </button>}
+        </div>
+
+        {loading ? (
+          <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
+            <div style={{ width:28, height:28, border:"2.5px solid #004f91", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+          </div>
+        ) : indicateurs.length===0 ? (
+          <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"#9aa5b4" }}>
+            <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>
+          </div>
+        ) : (
+          <>
+            {parCategorie.map(({cat,inds},ci)=>{
+              const col = BDEF_CAT_COULEURS[ci%BDEF_CAT_COULEURS.length];
+              return (
+                <div key={cat} style={{ marginBottom:28 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+                    <div style={{ width:4, height:16, borderRadius:2, background:col }}/>
+                    <h3 style={{ fontSize:13, fontWeight:800, color:"#1a1a2e", margin:0, letterSpacing:"0.02em" }}>{cat}</h3>
+                    <span style={{ fontSize:11, color:"#9aa5b4" }}>{inds.length} indicateur{inds.length>1?"s":""}</span>
+                  </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
+                    {inds.map(ind=>{
+                      const series = [{ nom:ind.libelle, couleur:col, data: anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
+                      const fmt = (v:number|null)=>fmtBdef(v,ind.unite);
+                      return (
+                        <GrapheCard key={ind.code} titre={ind.libelle} sous_titre={`${ind.unite} · BDEF`} series={series} grapheId={ind.code}
+                          fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt}/>}>
+                          <GrapheMultiPays series={series} height={130} type="line" fmt={fmt}/>
+                        </GrapheCard>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+      </div>
+
+      <ModalBdefTable open={showTable} onClose={()=>setShowTable(false)} libelle={sel.libelle} indicateurs={indicateurs} annees={anneesAffichees} />
+    </div>
+  );
+}
+
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function IdePage() {
   const [ongletPrincipal, setOngletPrincipal] = useState<"ide"|"national">("ide");
@@ -2016,20 +2402,7 @@ export default function IdePage() {
       )}
 
       {/* ── Contenu — Investissements nationaux ──────────────────────────────── */}
-      {ongletPrincipal === "national" && (
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
-          <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
-            <div style={{ width:64, height:64, borderRadius:16, background:"rgba(202,99,31,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <span style={{ fontSize:32 }}>🏗️</span>
-            </div>
-            <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>Investissements nationaux</h2>
-            <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:420, lineHeight:1.7 }}>Les données relatives aux investissements nationaux seront disponibles prochainement.</p>
-            <div style={{ background:"rgba(202,99,31,0.07)", border:"1px solid rgba(202,99,31,0.2)", borderRadius:10, padding:"10px 20px" }}>
-              <span style={{ fontSize:12, fontWeight:700, color:"#ca631f" }}>Disponible prochainement</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {ongletPrincipal === "national" && <OngletNational />}
     </div>
   );
 }
