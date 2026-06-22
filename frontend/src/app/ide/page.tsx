@@ -1930,16 +1930,17 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
 // ── BDEF (Investissements nationaux) ──────────────────────────────────────────
 const BDEF_CAT_COULEURS = ["#004f91","#ca631f","#188038","#7c3aed","#0891b2","#dc2626","#d97706","#059669"];
 
-function fmtBdef(v: number|null, unite: string): string {
+function fmtBdef(v: number|null, unite: string, short = false): string {
   if (v === null || v === undefined || isNaN(v)) return "N/A";
   if (unite === "%")     return `${v.toFixed(2)} %`;
   if (unite === "ratio") return v.toFixed(3);
   if (unite === "jours") return `${v.toFixed(0)} j`;
   // Montants en FCFA réels (le fichier source était en millions de FCFA).
+  const suf = short ? "" : " FCFA";
   const a = Math.abs(v);
-  if (a >= 1e9) return `${(v/1e9).toFixed(2)} Md FCFA`;
-  if (a >= 1e6) return `${(v/1e6).toFixed(1)} M FCFA`;
-  if (a >= 1e3) return `${(v/1e3).toFixed(0)} k FCFA`;
+  if (a >= 1e9) return `${(v/1e9).toFixed(2)} Md${suf}`;
+  if (a >= 1e6) return `${(v/1e6).toFixed(1)} M${suf}`;
+  if (a >= 1e3) return `${(v/1e3).toFixed(0)} k${suf}`;
   return `${v.toFixed(0)} FCFA`;
 }
 
@@ -2428,8 +2429,8 @@ function OngletNational() {
                   onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)"; if(ind) montrerTip(e, defBdef(ind.code, ind.libelle));}}
                   onMouseMove={e=>{ if(ind) montrerTip(e, defBdef(ind.code, ind.libelle)); }}
                   onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)"; setTip(null);}}>
-                  <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{ind?.libelle??code}</p>
-                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"#004f91", lineHeight:1.15, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{ind?fmtBdef(v,ind.unite):"—"}</p>
+                  <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{ind?.libelle??code}</p>
+                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"#004f91", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
                   {lastA&&<p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>en {lastA}</p>}
                 </div>
               );
@@ -2484,11 +2485,18 @@ function OngletNational() {
       <MiniModalBdefKpi ind={kpiActif} annees={anneesAffichees} libelle={sel.libelle} onClose={()=>setKpiActif(null)} />
 
       {/* Tooltip de définition au survol */}
-      {tip && (
-        <div style={{ position:"fixed", left:Math.min(tip.x+14, (typeof window!=="undefined"?window.innerWidth:1200)-300), top:tip.y+16, zIndex:800, maxWidth:280, background:"#1a1a2e", color:"#fff", fontSize:12, lineHeight:1.6, padding:"10px 12px", borderRadius:10, boxShadow:"0 8px 28px rgba(0,0,0,0.25)", pointerEvents:"none" as const }}>
-          {tip.text}
-        </div>
-      )}
+      {tip && (()=>{
+        const vw = typeof window!=="undefined"?window.innerWidth:1200;
+        const vh = typeof window!=="undefined"?window.innerHeight:800;
+        const tipW = 280, tipH = 120;
+        const left = Math.min(tip.x+14, vw-tipW-8);
+        const below = tip.y+16+tipH < vh;
+        return (
+          <div style={{ position:"fixed", left, top:below?tip.y+16:tip.y-tipH-8, zIndex:800, maxWidth:tipW, background:"#1a1a2e", color:"#fff", fontSize:12, lineHeight:1.6, padding:"10px 12px", borderRadius:10, boxShadow:"0 8px 28px rgba(0,0,0,0.25)", pointerEvents:"none" as const }}>
+            {tip.text}
+          </div>
+        );
+      })()}
     </div>
   );
 }
