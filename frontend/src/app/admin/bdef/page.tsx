@@ -8,6 +8,18 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
 const IS: any  = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
 
+function fmtAdmin(v: number | null | undefined, unite: string): string {
+  if (v == null) return "–";
+  if (unite === "%")     return `${v.toFixed(2)} %`;
+  if (unite === "ratio") return v.toFixed(4);
+  if (unite === "jours") return `${v.toFixed(0)} j`;
+  const a = Math.abs(v);
+  if (a >= 1e9) return `${(v / 1e9).toFixed(2)} Md`;
+  if (a >= 1e6) return `${(v / 1e6).toFixed(1)} M`;
+  if (a >= 1e3) return `${(v / 1e3).toFixed(0)} k`;
+  return v.toFixed(0);
+}
+
 const NIVEAU_LABEL: Record<string, string> = {
   macro_secteur: "Macro-secteur", groupe: "Groupe", secteur: "Secteur", global: "Global",
 };
@@ -261,7 +273,8 @@ export default function AdminBdefPage() {
 
   function ouvrirEdition(ind: Indic, annee: number) {
     const v = ind.valeurs[annee];
-    setEditVal(v == null ? "" : String(v));
+    const isRatio = ind.unite === "ratio" || ind.unite === "%";
+    setEditVal(v == null ? "" : isRatio ? String(v) : Math.round(v).toLocaleString("fr-FR"));
     setEditCell({ ind, annee });
   }
 
@@ -269,14 +282,15 @@ export default function AdminBdefPage() {
     if (!editCell) return;
     const { ind, annee } = editCell;
     const reset = opts?.reset === true;
-    if (!reset && (editVal === "" || isNaN(parseFloat(editVal)))) return;
+    const parsedVal = parseFloat(editVal.replace(/\s/g, "").replace(",", "."));
+    if (!reset && (editVal === "" || isNaN(parsedVal))) return;
     setSavingEdit(true);
     try {
       const body: any = {
         indicateur: ind.code, niveau: vNiveau,
         cible_id: vNiveau === "global" ? null : vCible, annee,
       };
-      if (reset) body.reset = true; else body.valeur = parseFloat(editVal);
+      if (reset) body.reset = true; else body.valeur = parsedVal;
       const r = await fetch(`${API}/bdef/modifier`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -564,11 +578,11 @@ export default function AdminBdefPage() {
                           const modifie = v != null && vi != null && Math.abs(v - vi) > 1e-9;
                           return (
                             <td key={a} onClick={() => ouvrirEdition(ind, a)}
-                              title={modifie ? `Valeur initiale : ${isRatio ? (vi as number).toFixed(4) : Math.round(vi as number).toLocaleString("fr-FR")}` : "Cliquer pour modifier"}
+                              title={modifie ? `Valeur initiale : ${fmtAdmin(vi, ind.unite)}` : "Cliquer pour modifier"}
                               style={{ padding: "8px 12px", textAlign: "right", color: v == null ? "#DDD" : modifie ? "#B7661B" : "#1a1a2e", fontVariantNumeric: "tabular-nums", cursor: "pointer", background: modifie ? "#FFF6E9" : undefined, fontWeight: modifie ? 700 : 400, position: "relative" }}
                               onMouseEnter={e => { if (!modifie) e.currentTarget.style.background = "#F5F8FD"; }}
                               onMouseLeave={e => { if (!modifie) e.currentTarget.style.background = ""; }}>
-                              {v == null ? "–" : isRatio ? v.toFixed(4) : Math.round(v).toLocaleString("fr-FR")}
+                              {fmtAdmin(v, ind.unite)}
                             </td>
                           );
                         })}
@@ -628,8 +642,7 @@ export default function AdminBdefPage() {
         const { ind, annee } = editCell;
         const v = ind.valeurs[annee];
         const vi = ind.initiales?.[annee];
-        const isRatio = ind.unite === "ratio" || ind.unite === "%";
-        const fmt = (x: number | null | undefined) => x == null ? "–" : isRatio ? x.toFixed(4) : Math.round(x).toLocaleString("fr-FR");
+        const fmt = (x: number | null | undefined) => fmtAdmin(x, ind.unite);
         const modifie = v != null && vi != null && Math.abs(v - vi) > 1e-9;
         return (
           <div onClick={() => !savingEdit && setEditCell(null)}
@@ -651,7 +664,7 @@ export default function AdminBdefPage() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
                   <label style={{ fontSize: 11, fontWeight: 700, color: "#004f91", textTransform: "uppercase", letterSpacing: "0.06em" }}>Nouvelle valeur</label>
-                  <input type="number" step="any" value={editVal} autoFocus
+                  <input type="text" value={editVal} autoFocus
                     onChange={e => setEditVal(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") enregistrerEdition(); }}
                     style={{ ...IS, borderColor: "#004f91" }} />
@@ -668,8 +681,8 @@ export default function AdminBdefPage() {
                 <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                   <button onClick={() => setEditCell(null)} disabled={savingEdit}
                     style={{ background: "#F2F0EF", color: "#4a5568", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
-                  <button onClick={() => enregistrerEdition()} disabled={savingEdit || editVal === "" || isNaN(parseFloat(editVal))}
-                    style={{ background: savingEdit || editVal === "" || isNaN(parseFloat(editVal)) ? "#9bb8d6" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: savingEdit ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <button onClick={() => enregistrerEdition()} disabled={savingEdit || editVal === "" || isNaN(parseFloat(editVal.replace(/\s/g, "").replace(",", ".")))}
+                    style={{ background: savingEdit || editVal === "" || isNaN(parseFloat(editVal.replace(/\s/g, "").replace(",", "."))) ? "#9bb8d6" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: savingEdit ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
                     {savingEdit && <Loader2 size={13} className="animate-spin" />} Valider
                   </button>
                 </div>

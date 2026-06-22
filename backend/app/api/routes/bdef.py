@@ -411,9 +411,6 @@ async def modifier_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
         if valeur is None or valeur == "":
             raise HTTPException(400, "valeur est requise.")
         val = float(valeur)
-        raison = raison_erreur_borne(code, val)
-        if raison:
-            raise HTTPException(400, f"Valeur invalide : {raison}")
         if row:
             if row.valeur_initiale is None:
                 row.valeur_initiale = row.valeur if row.valeur is not None else val
