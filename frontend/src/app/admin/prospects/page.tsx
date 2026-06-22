@@ -789,7 +789,7 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
 }
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
-function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, onRouvrir, readOnly }: any) {
+function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, onRouvrir, readOnly, hideHistorique }: any) {
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
   const [secteurs, setSecteurs]   = useState<any[]>([]);
@@ -1072,7 +1072,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           )}
 
           {/* Fil des échanges */}
-          {p.echanges?.length > 0 && (
+          {!hideHistorique && p.echanges?.length > 0 && (
             <Section title="Historique des échanges" count={p.echanges.length}
               action={
                 <button onClick={()=>setShowEchanges(o=>!o)}
@@ -1212,7 +1212,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           )}
 
           {/* Conclusion de la prospection — tout en bas, visible dès qu'il y a un échange */}
-          {p.echanges?.length > 0 && (
+          {!hideHistorique && p.echanges?.length > 0 && (
             p.issue ? (
               // ── État conclu : lecture seule + action contextuelle
               <Section title="Conclusion de la prospection"
@@ -1453,7 +1453,7 @@ export default function ProspectsPage() {
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
                     {p.mails?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Mail : {p.mails[0]}</span></div>}
                     {p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>}
-                    {p.nb_echanges > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
+                    {p.nb_echanges > 0 && onglet !== "cibles" && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
                   </div>
                   {onglet==="precedents" ? (
                     <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
@@ -1507,7 +1507,9 @@ export default function ProspectsPage() {
       )}
 
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
-      {vue && <ProspectVue p={vue} onClose={()=>setVue(null)} readOnly={onglet==="precedents"}
+      {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
+        readOnly={onglet==="precedents" || (onglet==="cibles" && vue.nb_echanges > 0)}
+        hideHistorique={onglet==="cibles" && vue.nb_echanges > 0}
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
         onContacter={()=>{ setEchangeEdit(null); setEchangeModal(true); }}
         onEditEchange={(e:any)=>{ setEchangeEdit(e); setEchangeModal(true); }}
