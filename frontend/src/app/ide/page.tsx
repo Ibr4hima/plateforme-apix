@@ -2158,6 +2158,16 @@ function OngletNational() {
   const [anneesData, setAnneesData]   = useState<number[]>([]);
   const [loading, setLoading]         = useState(true);
 
+  // Vue : sectorielle | comparative
+  const [sousVue, setSousVue]         = useState<"sectorielle"|"comparative">("sectorielle");
+  // Analyse comparative
+  const [compType, setCompType]       = useState<"groupe"|"secteur">("groupe");
+  const [compSelec, setCompSelec]     = useState<number[]>([]);
+  const [compData, setCompData]       = useState<Record<number,BdefIndic[]>>({});
+  const [compAnneesData, setCompAnneesData] = useState<number[]>([]);
+  const [compSearch, setCompSearch]   = useState("");
+  const [loadingComp, setLoadingComp] = useState(false);
+
   // Période (bornes dérivées des données)
   const [bornes, setBornes]           = useState<[number,number]>([2019,2024]);
   const [anneeMin, setAnneeMin]       = useState(2019);
@@ -2221,6 +2231,32 @@ function OngletNational() {
   }, [sel, refs]);
   useEffect(()=>{ charger(); }, [charger]);
 
+  // Chargement comparatif : quand compSelec ou compType change
+  useEffect(()=>{
+    if (sousVue!=="comparative" || compSelec.length===0) return;
+    let cancelled = false;
+    (async()=>{
+      setLoadingComp(true);
+      const results = await Promise.all(
+        compSelec.map(id=>
+          fetch(`${API}/bdef/valeurs?niveau=${compType}&cible_id=${id}`)
+            .then(r=>r.json())
+            .then((d:any)=>({ id, inds:(d?.indicateurs||[]) as BdefIndic[], annees:(d?.annees||[]) as number[] }))
+            .catch(()=>({ id, inds:[] as BdefIndic[], annees:[] as number[] }))
+        )
+      );
+      if (!cancelled) {
+        const newData: Record<number,BdefIndic[]> = {};
+        let allAnnees: number[] = [];
+        results.forEach(r=>{ newData[r.id]=r.inds; allAnnees=[...new Set([...allAnnees,...r.annees])].sort(); });
+        setCompData(newData);
+        setCompAnneesData(allAnnees);
+      }
+      setLoadingComp(false);
+    })();
+    return ()=>{ cancelled=true; };
+  }, [compSelec, compType, sousVue]);
+
   // Initialiser les bornes années au 1er chargement contenant des données
   useEffect(()=>{
     if (!initBornes.current && anneesData.length) {
@@ -2243,6 +2279,7 @@ function OngletNational() {
   const secteursDe = (gid:number) => refs?.secteur.filter(s=>s.groupe_id===gid) || [];
   const toggleMacro  = (id:number) => setOpenMacros(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
   const toggleGroupe = (id:number) => setOpenGroupes(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
+  const toggleComp   = (id:number) => setCompSelec(p=>p.includes(id)?p.filter(x=>x!==id):p.length<4?[...p,id]:p);
 
   const choisir = (niveau:BdefSel["niveau"], node:BdefNode|null) =>
     setSel({ niveau, cible_id: node?node.id:null, libelle: node?`${node.code} — ${node.libelle}`:"Global des secteurs" });
@@ -2273,6 +2310,76 @@ function OngletNational() {
         </div>
 
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+          {/* Sélecteur de vue */}
+          <div style={{ marginBottom:14, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+            <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+              {([{v:"sectorielle",l:"Analyse sectorielle"},{v:"comparative",l:"Analyse comparative"}] as const).map(o=>(
+                <button key={o.v} onClick={()=>setSousVue(o.v)}
+                  style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousVue===o.v?700:500, background:sousVue===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousVue===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                  {o.l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {sousVue==="comparative" ? (
+            <>
+              {/* Sélecteur de type */}
+              <div style={{ marginBottom:14 }}>
+                <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Comparer par</p>
+                <div style={{ display:"flex", gap:6 }}>
+                  {([{v:"groupe",l:"Groupes"},{v:"secteur",l:"Secteurs"}] as const).map(o=>(
+                    <button key={o.v} onClick={()=>{ setCompType(o.v); setCompSelec([]); setCompData({}); }}
+                      style={{ flex:1, padding:"7px 0", borderRadius:8, border:`1px solid ${compType===o.v?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:12, fontWeight:compType===o.v?700:500, background:compType===o.v?"rgba(0,79,145,0.08)":"#F8F7F6", color:compType===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Compteur sélection */}
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Sélection</span>
+                <span style={{ fontSize:11, fontWeight:600, color:compSelec.length>=4?"#004f91":"#9aa5b4", background:compSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{compSelec.length}/4</span>
+              </div>
+
+              {/* Recherche */}
+              <div style={{ position:"relative" as const, marginBottom:12 }}>
+                <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
+                <input value={compSearch} onChange={e=>setCompSearch(e.target.value)} placeholder={`Rechercher un ${compType==="groupe"?"groupe":"secteur"}…`}
+                  style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+                {compSearch&&<button onClick={()=>setCompSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+              </div>
+
+              {/* Liste */}
+              <div style={{ maxHeight:400, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:1 }}>
+                {(compType==="groupe" ? (refs?.groupe||[]) : (refs?.secteur||[]))
+                  .filter(n=>!compSearch||n.libelle.toLowerCase().includes(compSearch.toLowerCase())||n.code.includes(compSearch))
+                  .map((n,ni)=>{
+                    const sel = compSelec.includes(n.id);
+                    const disabled = !sel && compSelec.length>=4;
+                    const colIdx = compSelec.indexOf(n.id);
+                    const col = colIdx>=0 ? BDEF_MACRO_COULEURS[colIdx%BDEF_MACRO_COULEURS.length] : "#004f91";
+                    return (
+                      <div key={n.id} onClick={()=>{ if(!disabled) toggleComp(n.id); }}
+                        style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"6px 8px", borderRadius:6, background:sel?"rgba(0,79,145,0.04)":"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
+                        onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background=sel?"rgba(0,79,145,0.07)":"#F8F7F6"; }}
+                        onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background=sel?"rgba(0,79,145,0.04)":"transparent"; }}>
+                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1 }}>
+                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <span style={{ fontSize:11, color:"#9aa5b4", marginRight:4 }}>{n.code}</span>
+                          <span style={{ fontSize:12, color:sel?"#1a1a2e":"#4a5568", fontWeight:sel?600:400, lineHeight:1.3 }}>{n.libelle}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </>
+          ) : (
+            <>
           {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
             <X size={12}/> Effacer tous les filtres
           </button>}
@@ -2427,11 +2534,70 @@ function OngletNational() {
               );
             })}
           </div>
+          </>)}
         </div>}
       </aside>
 
       {/* Zone principale */}
       <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
+        {sousVue==="comparative" ? (
+          /* ── Analyse comparative ── */
+          <div>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
+              <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative</h2>
+              <span style={{ fontSize:12, color:"#9aa5b4" }}>{compType==="groupe"?"Groupes":"Secteurs d'activités"}</span>
+            </div>
+
+            {compSelec.length===0 ? (
+              <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"#9aa5b4" }}>
+                <p style={{ fontSize:14, lineHeight:1.7 }}>Sélectionnez jusqu'à 4 {compType==="groupe"?"groupes":"secteurs"} dans le filtre pour comparer leurs données.</p>
+              </div>
+            ) : loadingComp ? (
+              <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
+                <div style={{ width:28, height:28, border:"2.5px solid #004f91", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+              </div>
+            ) : (
+              <>
+                {/* Légende des entités sélectionnées */}
+                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:10, marginBottom:20 }}>
+                  {compSelec.map((id,ci)=>{
+                    const node = compType==="groupe" ? refs?.groupe.find(g=>g.id===id) : refs?.secteur.find(s=>s.id===id);
+                    const col = BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length];
+                    return (
+                      <div key={id} style={{ display:"flex", alignItems:"center", gap:7, background:"#fff", border:`1.5px solid ${col}33`, borderLeft:`3px solid ${col}`, borderRadius:8, padding:"7px 12px", fontSize:12 }}>
+                        <div style={{ width:8, height:8, borderRadius:"50%", background:col, flexShrink:0 }}/>
+                        <span style={{ fontWeight:600, color:"#1a1a2e" }}>{node?.code}</span>
+                        <span style={{ color:"#4a5568" }}>{node?.libelle}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+                  {BDEF_GRAPHES_DEFAUT.map(code=>{
+                    const fmt = (v:number|null)=>fmtBdef(v, (compData[compSelec[0]]||[]).find(i=>i.code===code)?.unite||"FCFA");
+                    const compAffichees = (modeAnnees==="specifiques"&&anneesSpec.length>0)
+                      ? anneesSpec.filter(a=>compAnneesData.includes(a))
+                      : compAnneesData.filter(a=>a>=anneeMin && a<=anneeMax);
+                    const series = compSelec.map((id,ci)=>{
+                      const inds = compData[id]||[];
+                      const ind = inds.find(i=>i.code===code);
+                      const node = compType==="groupe" ? refs?.groupe.find(g=>g.id===id) : refs?.secteur.find(s=>s.id===id);
+                      return { nom:node?.libelle||String(id), couleur:BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length], data:compAffichees.map(a=>({ annee:a, valeur:(ind?.valeurs[a]??null) as number|null })) };
+                    }).filter(s=>s.data.some(d=>d.valeur!==null));
+                    if (!series.length) return null;
+                    return (
+                      <GrapheCard key={code} titre={(compData[compSelec[0]]||[]).find(i=>i.code===code)?.libelle||code} series={series} grapheId={code} hideLegend={false} hideSousTitre
+                        fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt} lineWidth={1.6}/>}>
+                        <GrapheMultiPays series={series} height={130} type="line" fmt={fmt} showDots={false} lineWidth={1.4}/>
+                      </GrapheCard>
+                    );
+                  }).filter(Boolean)}
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+        <>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, flexWrap:"wrap" as const, gap:12 }}>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
@@ -2507,6 +2673,8 @@ function OngletNational() {
                 );
               })}
           </div>
+        )}
+        </>
         )}
       </div>
 
