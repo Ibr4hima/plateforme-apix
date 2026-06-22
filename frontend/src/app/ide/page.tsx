@@ -2161,8 +2161,9 @@ function OngletNational() {
   // Vue : sectorielle | comparative
   const [sousVue, setSousVue]         = useState<"sectorielle"|"comparative">("sectorielle");
   // Analyse comparative
-  const [compType, setCompType]       = useState<"macro_secteur"|"groupe"|"secteur">("groupe");
+  const [compType, setCompType]       = useState<"macro_secteur"|"groupe"|"secteur">("macro_secteur");
   const [compSelec, setCompSelec]     = useState<number[]>([]);
+  const compInit = useRef(false);
   const [compData, setCompData]       = useState<Record<number,BdefIndic[]>>({});
   const [compAnneesData, setCompAnneesData] = useState<number[]>([]);
   const [compSearch, setCompSearch]   = useState("");
@@ -2256,6 +2257,14 @@ function OngletNational() {
     })();
     return ()=>{ cancelled=true; };
   }, [compSelec, compType, sousVue]);
+
+  // Sélection par défaut : les 4 macro-secteurs (une seule fois, dès que refs est chargé)
+  useEffect(()=>{
+    if (!compInit.current && refs?.macro_secteur?.length) {
+      compInit.current = true;
+      setCompSelec(refs.macro_secteur.slice(0,4).map(m=>m.id));
+    }
+  }, [refs]);
 
   // Initialiser les bornes années au 1er chargement contenant des données
   useEffect(()=>{
@@ -2566,12 +2575,23 @@ function OngletNational() {
           const nodeDe = (id:number)=>compNodes.find(n=>n.id===id);
           const typeLabel = compType==="groupe" ? "par groupe" : compType==="secteur" ? "par secteur d'activité" : "par macro-secteur";
           const typePluriel = compType==="groupe" ? "groupes" : compType==="secteur" ? "secteurs" : "macro-secteurs";
-          const codes = compSelec.map(id=>nodeDe(id)?.code).filter(Boolean).join("  ");
           return (
           <div>
-            <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:20, flexWrap:"wrap" as const }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, flexWrap:"wrap" as const }}>
               <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative {typeLabel}</h2>
-              {codes&&<span style={{ fontSize:14, fontWeight:700, color:"#004f91" }}>: {codes}</span>}
+              {compSelec.length>0&&<span style={{ fontSize:14, fontWeight:700, color:"#9aa5b4" }}>:</span>}
+              <div style={{ display:"flex", flexWrap:"wrap" as const, gap:8 }}>
+                {compSelec.map((id,ci)=>{
+                  const node = nodeDe(id);
+                  const col = BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length];
+                  return (
+                    <div key={id} title={node?.libelle} style={{ display:"flex", alignItems:"center", gap:7, background:"#fff", border:`1.5px solid ${col}33`, borderLeft:`3px solid ${col}`, borderRadius:8, padding:"5px 11px", fontSize:13 }}>
+                      <div style={{ width:8, height:8, borderRadius:"50%", background:col, flexShrink:0 }}/>
+                      <span style={{ fontWeight:700, color:"#1a1a2e" }}>{node?.code}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {compSelec.length===0 ? (
@@ -2584,20 +2604,6 @@ function OngletNational() {
               </div>
             ) : (
               <>
-                {/* Légende des entités sélectionnées */}
-                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:10, marginBottom:20 }}>
-                  {compSelec.map((id,ci)=>{
-                    const node = nodeDe(id);
-                    const col = BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length];
-                    return (
-                      <div key={id} style={{ display:"flex", alignItems:"center", gap:7, background:"#fff", border:`1.5px solid ${col}33`, borderLeft:`3px solid ${col}`, borderRadius:8, padding:"7px 12px", fontSize:12 }}>
-                        <div style={{ width:8, height:8, borderRadius:"50%", background:col, flexShrink:0 }}/>
-                        <span style={{ fontWeight:600, color:"#1a1a2e" }}>{node?.code}</span>
-                        <span style={{ color:"#4a5568" }}>{node?.libelle}</span>
-                      </div>
-                    );
-                  })}
-                </div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
                   {BDEF_GRAPHES_DEFAUT.map(code=>{
                     const fmt = (v:number|null)=>fmtBdef(v, (compData[compSelec[0]]||[]).find(i=>i.code===code)?.unite||"FCFA");
