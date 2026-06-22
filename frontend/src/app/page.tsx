@@ -81,7 +81,6 @@ export default function HomePage() {
         .hero-p{animation:fadeUp 0.7s 0.2s ease both}
         .hero-cta{animation:fadeUp 0.7s 0.3s ease both}
         .hero-stats{animation:fadeUp 0.7s 0.45s ease both}
-        .mod-card:hover .mod-num{color:#ca631f!important}
       `}</style>
 
       <Navbar/>
@@ -208,8 +207,8 @@ export default function HomePage() {
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#E8E5E3",border:"1px solid #E8E5E3",borderRadius:16,overflow:"hidden"}}>
             {MODULES.map((m,i)=>(
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,transition:"background 0.15s",position:"relative" as const}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="#FAFAF9";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="1";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="#fff";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="0";}}>
+                  onMouseEnter={e=>{e.currentTarget.style.background="#FAFAF9";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="1";(e.currentTarget.querySelector(".mod-num") as HTMLElement)!.style.color=m.color;}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="#fff";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="0";(e.currentTarget.querySelector(".mod-num") as HTMLElement)!.style.color="#C5BFBB";}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                     <div style={{width:40,height:40,borderRadius:10,background:`${m.color}10`,display:"flex",alignItems:"center",justifyContent:"center"}}>
                       <span className="material-symbols-outlined" style={{fontSize:20,color:m.color,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{m.icon}</span>
