@@ -109,6 +109,7 @@ class BdefValeur(Base):
     secteur_id       = Column(Integer, ForeignKey("bdef_secteurs.id", ondelete="CASCADE"))
     annee            = Column(SmallInteger, nullable=False)
     valeur           = Column(Numeric(20, 4))
+    valeur_initiale  = Column(Numeric(20, 4))   # valeur d'origine (import) pour révision
     created_at       = Column(TIMESTAMP(timezone=True), server_default=func.now())
     indicateur       = relationship("BdefIndicateur")
 

@@ -152,10 +152,12 @@ async def _ecrire_valeurs(
                 row = existant.get(key)
                 if row:
                     row.valeur = valeur
+                    row.valeur_initiale = valeur   # l'import (ré)établit la base
                 else:
                     kwargs = {
                         "indicateur_id": iid, "niveau": m.niveau,
                         "annee": va.annee, "valeur": valeur,
+                        "valeur_initiale": valeur,
                     }
                     if fk:
                         kwargs[fk] = m.cible_id

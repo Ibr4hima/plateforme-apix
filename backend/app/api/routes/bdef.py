@@ -167,9 +167,13 @@ async def lire_valeurs(
         d = indic.setdefault(ind.code, {
             "code": ind.code, "libelle": ind.libelle, "unite": ind.unite,
             "categorie": cat.libelle, "categorie_ordre": cat.ordre or 0,
-            "ordre": ind.ordre or 0, "valeurs": {},
+            "ordre": ind.ordre or 0, "valeurs": {}, "initiales": {},
         })
         d["valeurs"][val.annee] = float(val.valeur) if val.valeur is not None else None
+        d["initiales"][val.annee] = (
+            float(val.valeur_initiale) if val.valeur_initiale is not None
+            else (float(val.valeur) if val.valeur is not None else None)
+        )
 
     indicateurs = sorted(indic.values(), key=lambda x: (x["categorie_ordre"], x["ordre"], x["code"]))
     return {"niveau": niveau, "cible_id": cible_id,
@@ -357,6 +361,78 @@ async def corriger_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
         rej.statut = "corrige"
     await db.flush()
     return {"success": True, "rejetee_id": rejetee_id, "valeur": val}
+
+
+# ── Modification manuelle d'une valeur (édition directe en admin) ─────────────
+
+@router.post("/modifier", status_code=200)
+async def modifier_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
+    """
+    Modifie directement une valeur en base depuis l'admin.
+
+    payload : { indicateur, niveau, cible_id, annee, valeur } pour fixer une
+    nouvelle valeur, ou { ..., reset: true } pour revenir à la valeur initiale
+    (celle issue de l'import). La `valeur_initiale` n'est jamais altérée par une
+    modification, ce qui permet de toujours restaurer l'état d'origine.
+    """
+    code = (payload.get("indicateur") or "").strip()
+    niveau = (payload.get("niveau") or "").strip()
+    cible_id = payload.get("cible_id")
+    annee = payload.get("annee")
+    reset = bool(payload.get("reset"))
+    if not code or not niveau or annee is None:
+        raise HTTPException(400, "indicateur, niveau et annee sont requis.")
+
+    ind = (await db.execute(
+        select(BdefIndicateur).where(BdefIndicateur.code == code)
+    )).scalar_one_or_none()
+    if not ind:
+        raise HTTPException(404, "Indicateur introuvable.")
+
+    annee = int(annee)
+    cible_id = int(cible_id) if cible_id is not None else None
+    fk_col = _FK_PAR_NIVEAU_STR.get(niveau)
+
+    q = select(BdefValeur).where(
+        BdefValeur.indicateur_id == ind.id,
+        BdefValeur.niveau == niveau,
+        BdefValeur.annee == annee,
+    )
+    if fk_col and cible_id is not None:
+        q = q.where(getattr(BdefValeur, fk_col) == cible_id)
+    row = (await db.execute(q)).scalar_one_or_none()
+
+    if reset:
+        if not row or row.valeur_initiale is None:
+            raise HTTPException(404, "Aucune valeur initiale à restaurer.")
+        row.valeur = row.valeur_initiale
+    else:
+        valeur = payload.get("valeur")
+        if valeur is None or valeur == "":
+            raise HTTPException(400, "valeur est requise.")
+        val = float(valeur)
+        raison = raison_erreur_borne(code, val)
+        if raison:
+            raise HTTPException(400, f"Valeur invalide : {raison}")
+        if row:
+            if row.valeur_initiale is None:
+                row.valeur_initiale = row.valeur if row.valeur is not None else val
+            row.valeur = val
+        else:
+            kwargs: dict = {
+                "indicateur_id": ind.id, "niveau": niveau,
+                "annee": annee, "valeur": val, "valeur_initiale": val,
+            }
+            if fk_col and cible_id is not None:
+                kwargs[fk_col] = cible_id
+            row = BdefValeur(**kwargs)
+            db.add(row)
+
+    await db.flush()
+    vi = float(row.valeur_initiale) if row.valeur_initiale is not None else None
+    vc = float(row.valeur) if row.valeur is not None else None
+    return {"success": True, "valeur": vc, "valeur_initiale": vi,
+            "modifie": vi is not None and vc is not None and abs(vc - vi) > 1e-9}
 
 
 # ── Suppression de toutes les données BDEF ────────────────────────────────────

@@ -19,7 +19,7 @@ type RevueItem  = { niveau: string; code_bdef: string; libelle_brut: string; sco
 type Fidelite   = { total: number; identiques: number; taux: number; divergences: { indicateur: string; niveau: string; cible_id: number | null; annee: number; attendu: number; trouve: number | null }[] };
 type ImportRes  = { import_id: number; statut: string; annees: number[]; nb_secteurs?: number; nb_valeurs?: number; nb_secteurs_ok?: number; fidelite?: Fidelite; revue: RevueItem[]; erreur?: string };
 type ImportHist = { id: number; fichier: string; statut: string; annees: number[] | null; nb_valeurs: number; nb_revue: number; cree_le: string | null; termine_le: string | null };
-type Indic      = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
+type Indic      = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null>; initiales?: Record<string, number | null> };
 type Valeurs    = { niveau: string; cible_id: number | null; annees: number[]; indicateurs: Indic[] };
 type Couv       = { code: string; libelle: string; annees_couvertes: number; nb_present: number; nb_attendu: number; taux: number };
 type Anom       = { severite: string; categorie: string; indicateur: string; indicateur_libelle?: string; niveau: string; cible_id: number | null; libelle_cible: string; annee: number | null; message: string; valeur: number | null; attendu: number | null; rejetee_id: number | null };
@@ -120,6 +120,10 @@ export default function AdminBdefPage() {
   const [vCible, setVCible]     = useState<number | null>(null);
   const [valeurs, setValeurs]   = useState<Valeurs | null>(null);
   const [loadingV, setLoadingV] = useState(false);
+  // Édition directe d'une valeur en base
+  const [editCell, setEditCell] = useState<{ ind: Indic; annee: number } | null>(null);
+  const [editVal, setEditVal]   = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Vérification
   const [rapport, setRapport]   = useState<Rapport | null>(null);
@@ -254,6 +258,47 @@ export default function AdminBdefPage() {
     else if (vCible != null)  loadValeurs(vNiveau, vCible);
     else setValeurs(null);
   }, [vNiveau, vCible]);
+
+  function ouvrirEdition(ind: Indic, annee: number) {
+    const v = ind.valeurs[annee];
+    setEditVal(v == null ? "" : String(v));
+    setEditCell({ ind, annee });
+  }
+
+  async function enregistrerEdition(opts?: { reset?: boolean }) {
+    if (!editCell) return;
+    const { ind, annee } = editCell;
+    const reset = opts?.reset === true;
+    if (!reset && (editVal === "" || isNaN(parseFloat(editVal)))) return;
+    setSavingEdit(true);
+    try {
+      const body: any = {
+        indicateur: ind.code, niveau: vNiveau,
+        cible_id: vNiveau === "global" ? null : vCible, annee,
+      };
+      if (reset) body.reset = true; else body.valeur = parseFloat(editVal);
+      const r = await fetch(`${API}/bdef/modifier`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (r.ok) {
+        // mise à jour locale immédiate
+        setValeurs(prev => {
+          if (!prev) return prev;
+          const inds = prev.indicateurs.map(i => i.code === ind.code
+            ? { ...i, valeurs: { ...i.valeurs, [annee]: d.valeur }, initiales: { ...(i.initiales || {}), [annee]: d.valeur_initiale } }
+            : i);
+          return { ...prev, indicateurs: inds };
+        });
+        setEditCell(null);
+        loadVerification();
+      } else {
+        alert(d.detail || "Erreur lors de la modification.");
+      }
+    } catch (e: any) { alert("Erreur réseau : " + e.message); }
+    setSavingEdit(false);
+  }
 
   const tousAssocies = res?.revue?.every(ri => choix[`${ri.niveau}|${ri.libelle_brut}`]) ?? false;
   const optionsConsult = secteurs && vNiveau !== "global" ? (secteurs as any)[vNiveau] as Secteur[] : [];
@@ -514,9 +559,15 @@ export default function AdminBdefPage() {
                         <td style={{ padding: "8px 8px", color: "#888", fontSize: 12 }}>{ind.unite}</td>
                         {valeurs.annees.map(a => {
                           const v = ind.valeurs[a];
+                          const vi = ind.initiales?.[a];
                           const isRatio = ind.unite === "ratio" || ind.unite === "%";
+                          const modifie = v != null && vi != null && Math.abs(v - vi) > 1e-9;
                           return (
-                            <td key={a} style={{ padding: "8px 12px", textAlign: "right", color: v == null ? "#DDD" : "#1a1a2e", fontVariantNumeric: "tabular-nums" }}>
+                            <td key={a} onClick={() => ouvrirEdition(ind, a)}
+                              title={modifie ? `Valeur initiale : ${isRatio ? (vi as number).toFixed(4) : Math.round(vi as number).toLocaleString("fr-FR")}` : "Cliquer pour modifier"}
+                              style={{ padding: "8px 12px", textAlign: "right", color: v == null ? "#DDD" : modifie ? "#B7661B" : "#1a1a2e", fontVariantNumeric: "tabular-nums", cursor: "pointer", background: modifie ? "#FFF6E9" : undefined, fontWeight: modifie ? 700 : 400, position: "relative" }}
+                              onMouseEnter={e => { if (!modifie) e.currentTarget.style.background = "#F5F8FD"; }}
+                              onMouseLeave={e => { if (!modifie) e.currentTarget.style.background = ""; }}>
                               {v == null ? "–" : isRatio ? v.toFixed(4) : Math.round(v).toLocaleString("fr-FR")}
                             </td>
                           );
@@ -571,6 +622,62 @@ export default function AdminBdefPage() {
           </table>
         )}
       </div>
+
+      {/* ── Éditeur de valeur ── */}
+      {editCell && (() => {
+        const { ind, annee } = editCell;
+        const v = ind.valeurs[annee];
+        const vi = ind.initiales?.[annee];
+        const isRatio = ind.unite === "ratio" || ind.unite === "%";
+        const fmt = (x: number | null | undefined) => x == null ? "–" : isRatio ? x.toFixed(4) : Math.round(x).toLocaleString("fr-FR");
+        const modifie = v != null && vi != null && Math.abs(v - vi) > 1e-9;
+        return (
+          <div onClick={() => !savingEdit && setEditCell(null)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", zIndex: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.25)", overflow: "hidden" }}>
+              <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid #F0EEEC" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>{ind.libelle}</div>
+                    <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>Année {annee} · {ind.unite}</div>
+                  </div>
+                  <button onClick={() => setEditCell(null)} style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 7px", display: "flex" }}><X size={14} color="#4a5568" /></button>
+                </div>
+              </div>
+              <div style={{ padding: "18px 22px 22px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 14 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.06em" }}>Valeur actuelle</label>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: modifie ? "#B7661B" : "#1a1a2e", background: "#F8F7F6", borderRadius: 8, padding: "9px 12px", fontVariantNumeric: "tabular-nums" }}>{fmt(v)}</div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#004f91", textTransform: "uppercase", letterSpacing: "0.06em" }}>Nouvelle valeur</label>
+                  <input type="number" step="any" value={editVal} autoFocus
+                    onChange={e => setEditVal(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") enregistrerEdition(); }}
+                    style={{ ...IS, borderColor: "#004f91" }} />
+                </div>
+                {modifie && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FFF6E9", border: "1px solid #F2D9B0", borderRadius: 8, padding: "9px 12px", marginBottom: 16 }}>
+                    <span style={{ fontSize: 12, color: "#8a5a1a" }}>Valeur initiale (import) : <strong>{fmt(vi)}</strong></span>
+                    <button onClick={() => enregistrerEdition({ reset: true })} disabled={savingEdit}
+                      style={{ background: "#fff", color: "#B7661B", border: "1px solid #E2B873", borderRadius: 7, padding: "5px 10px", fontSize: 12, fontWeight: 600, cursor: savingEdit ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
+                      <RefreshCw size={12} /> Réinitialiser
+                    </button>
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                  <button onClick={() => setEditCell(null)} disabled={savingEdit}
+                    style={{ background: "#F2F0EF", color: "#4a5568", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+                  <button onClick={() => enregistrerEdition()} disabled={savingEdit || editVal === "" || isNaN(parseFloat(editVal))}
+                    style={{ background: savingEdit || editVal === "" || isNaN(parseFloat(editVal)) ? "#9bb8d6" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: savingEdit ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    {savingEdit && <Loader2 size={13} className="animate-spin" />} Valider
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
