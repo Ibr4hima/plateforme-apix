@@ -289,7 +289,7 @@ export default function HomePage() {
               {icon:"show_chart",    label:"Mise à jour continue"},
             ].map((item,i)=>(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:"rgba(255,255,255,0.7)",border:"1px solid #C5BFBB",borderRadius:999}}>
-                  <span className="material-symbols-outlined" style={{fontSize:15,color:"#ca631f",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
+                  <span className="material-symbols-outlined" style={{fontSize:15,color:"#4a5568",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
                   <span style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>{item.label}</span>
                 </div>
             ))}
