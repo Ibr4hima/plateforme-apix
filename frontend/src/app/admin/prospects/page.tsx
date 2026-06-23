@@ -146,7 +146,7 @@ function badgeProspect(p:any) {
   let dateDernierEchange = p?.date_dernier_echange;
   if (debut) {
     const echangesCycle = (p?.echanges||[]).filter((e:any)=>e.date_echange >= debut);
-    if (!echangesCycle.length) return { label:"Re-contacté", color:"#004f91", bg:"rgba(0,79,145,0.10)" };
+    if (!echangesCycle.length) return { label:"À recontacter", color:"#004f91", bg:"rgba(0,79,145,0.10)" };
     dateDernierEchange = echangesCycle.map((e:any)=>e.date_echange).sort().at(-1);
   }
   if (!dateDernierEchange) return null;
@@ -1647,16 +1647,23 @@ export default function ProspectsPage() {
                     </div>
                   ) : onglet==="historique" ? (
                     <div onClick={e=>e.stopPropagation()}>
-                      <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
+                      {(()=>{
+                        const nbEchangesCourants = echangesDuCycle(p, null).length;
+                        const terminerDisabled = nbEchangesCourants === 0;
+                        return (
+                        <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
                         <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
                           style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
                           <MessageSquare size={12}/> Contacter
                         </button>
-                        <button onClick={()=>{ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); }}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#ca631f", fontWeight:600 }}>
+                        <button disabled={terminerDisabled} onClick={()=>{ if(!terminerDisabled){ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); } }}
+                          title={terminerDisabled?"Au moins un échange est requis pour terminer ce cycle":undefined}
+                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:terminerDisabled?"#F2F0EF":"rgba(202,99,31,0.08)", border:"none", cursor:terminerDisabled?"not-allowed":"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:terminerDisabled?"#9aa5b4":"#ca631f", fontWeight:600 }}>
                           <Check size={12}/> Terminer
                         </button>
-                      </div>
+                        </div>
+                        );
+                      })()}
                       {terminerOpenId===p.id && (
                         <div style={{ marginTop:10, padding:"12px 14px", background:"#F8F7F6", borderRadius:10, border:"1px solid #E8E5E3" }}>
                           <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
