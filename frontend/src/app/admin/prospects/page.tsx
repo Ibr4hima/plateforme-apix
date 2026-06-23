@@ -578,6 +578,9 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   const [error,  setError]  = useState("");
   const [ok,     setOk]     = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [localContraintes, setLocalContraintes] = useState<any[]>([]);
+  const [showContrainteModal, setShowContrainteModal] = useState(false);
+  const [editContrainte, setEditContrainte] = useState<any|null>(null);
   const upd = (k:string, v:string) => setForm(f=>({ ...f,[k]:v }));
 
   const pointsFocaux: any[] = prospect?.points_focaux || [];
@@ -619,6 +622,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     } else {
       setForm({ ...EMPTY_ECHANGE, interlocuteur: !estMorale ? nomProspect : "" });
     }
+    setLocalContraintes(prospect?.contraintes || []);
     setError(""); setOk(false); setEmailError("");
   }, [open, prospect?.id, edit?.id]);
 
@@ -660,6 +664,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
   if (!open) return null;
   return (
+    <>
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(6px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:620, maxHeight:"90vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.2)" }}>
@@ -766,6 +771,32 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               </div>
             </div>
 
+            {/* Contraintes exprimées */}
+            <div>
+              <label style={LS}>Contraintes exprimées</label>
+              {localContraintes.length > 0 && (
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:6, marginBottom:8 }}>
+                  {localContraintes.map((c:any) => (
+                    <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(220,38,38,0.04)", border:"1px solid rgba(220,38,38,0.15)", borderRadius:8, padding:"9px 12px" }}>
+                      <div style={{ flex:1, fontSize:12, color:"#1a1a2e", lineHeight:1.5 }}>
+                        {c.description.replace(/<[^>]+>/g,"").trim() || "—"}
+                      </div>
+                      <button type="button" onClick={()=>{ setEditContrainte(c); setShowContrainteModal(true); }}
+                        style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
+                        <Pencil size={12} style={{ color:"#9aa5b4" }}/>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button type="button" onClick={()=>{ setEditContrainte(null); setShowContrainteModal(true); }}
+                style={{ width:"100%", border:"2px dashed #C5BFBB", background:"transparent", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"#9aa5b4", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s" }}
+                onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#ca631f"; (e.currentTarget as HTMLButtonElement).style.color="#ca631f"; }}
+                onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#C5BFBB"; (e.currentTarget as HTMLButtonElement).style.color="#9aa5b4"; }}>
+                <Plus size={14}/> Ajouter une contrainte
+              </button>
+            </div>
+
             {/* Note anti-fraude */}
             <div style={{ background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.12)", borderRadius:10, padding:"10px 14px", display:"flex", gap:8, alignItems:"flex-start" }}>
               <span style={{ fontSize:15, flexShrink:0 }}>🔒</span>
@@ -791,6 +822,18 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         </div>
       </div>
     </div>
+    <ContrainteModal
+      open={showContrainteModal}
+      onClose={()=>setShowContrainteModal(false)}
+      prospectId={prospect?.id}
+      contrainte={editContrainte}
+      onSaved={(saved:any)=>{
+        setLocalContraintes(prev =>
+          editContrainte ? prev.map((x:any)=>x.id===saved.id ? saved : x) : [...prev, saved]
+        );
+      }}
+    />
+    </>
   );
 }
 
