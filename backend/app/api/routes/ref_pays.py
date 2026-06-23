@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.shared import RefPays, RefGroupement, RefPaysGroupement
 
 router = APIRouter(prefix="/ref-pays", tags=["Référentiel Pays"])
@@ -49,7 +50,7 @@ async def membres_groupement(grp_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/groupements", status_code=201)
-async def creer_groupement(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_groupement(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     if not payload.get("code") or not payload.get("nom_fr"):
         raise HTTPException(422, "code et nom_fr obligatoires")
     res = await db.execute(select(RefGroupement).where(RefGroupement.code == payload["code"].upper()))
@@ -62,7 +63,7 @@ async def creer_groupement(payload: dict, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/groupements/{grp_id}")
-async def modifier_groupement(grp_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_groupement(grp_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(RefGroupement).where(RefGroupement.id == grp_id))
     g   = res.scalar_one_or_none()
     if not g: raise HTTPException(404, "Groupement introuvable")
@@ -73,7 +74,7 @@ async def modifier_groupement(grp_id: int, payload: dict, db: AsyncSession = Dep
 
 
 @router.delete("/groupements/{grp_id}")
-async def supprimer_groupement(grp_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_groupement(grp_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(RefGroupement).where(RefGroupement.id == grp_id))
     g   = res.scalar_one_or_none()
     if not g: raise HTTPException(404, "Groupement introuvable")
@@ -82,7 +83,7 @@ async def supprimer_groupement(grp_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/groupements/{grp_id}/membres")
-async def ajouter_membre(grp_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def ajouter_membre(grp_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     pays_id = payload.get("pays_id")
     if not pays_id: raise HTTPException(422, "pays_id obligatoire")
     lien = RefPaysGroupement(pays_id=pays_id, groupement_id=grp_id)
@@ -93,7 +94,7 @@ async def ajouter_membre(grp_id: int, payload: dict, db: AsyncSession = Depends(
 
 
 @router.delete("/groupements/{grp_id}/membres/{pays_id}")
-async def retirer_membre(grp_id: int, pays_id: int, db: AsyncSession = Depends(get_db)):
+async def retirer_membre(grp_id: int, pays_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(RefPaysGroupement).where(
         RefPaysGroupement.groupement_id == grp_id, RefPaysGroupement.pays_id == pays_id))
     lien = res.scalar_one_or_none()
@@ -116,7 +117,7 @@ async def liste_pays(q: Optional[str]=Query(None), continent: Optional[str]=Quer
 
 
 @router.post("", status_code=201)
-async def creer_pays(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_pays(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     if not payload.get("nom_fr") or not payload.get("code_iso3"):
         raise HTTPException(422, "nom_fr et code_iso3 obligatoires")
     res = await db.execute(select(RefPays).where(RefPays.code_iso3 == payload["code_iso3"].upper()))
@@ -143,7 +144,7 @@ async def groupements_du_pays(pays_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/{pays_id}")
-async def modifier_pays(pays_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_pays(pays_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(RefPays).where(RefPays.id == pays_id))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Pays introuvable")
@@ -156,7 +157,7 @@ async def modifier_pays(pays_id: int, payload: dict, db: AsyncSession = Depends(
 
 
 @router.delete("/{pays_id}")
-async def supprimer_pays(pays_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_pays(pays_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(RefPays).where(RefPays.id == pays_id))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Pays introuvable")

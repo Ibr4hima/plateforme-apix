@@ -9,6 +9,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.projet import Projet, PorteurProjet, ProjetPointFocal, ProjetFichier, RefDevise
 from app.models.entreprise import RefRegion, RefDepartement, RefArrondissement, RefSecteur, RefBranche, RefActivite
 from app.models.zone_types import PoleTerritoire
@@ -228,7 +229,7 @@ async def liste_projets(
 
 # ── POST /projets ─────────────────────────────────────────────────────────────
 @router.post("", status_code=201)
-async def creer_projet(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_projet(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     if not payload.get("titre_projet", "").strip():
         raise HTTPException(422, "L'intitulé est obligatoire")
     inv_min = payload.get("investissement_min") or None
@@ -270,7 +271,7 @@ async def creer_projet(payload: dict, db: AsyncSession = Depends(get_db)):
 
 # ── PATCH /projets/:id ────────────────────────────────────────────────────────
 @router.patch("/{projet_id}")
-async def modifier_projet(projet_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_projet(projet_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(Projet).options(*LOAD_OPTS).where(Projet.id == projet_id, Projet.is_deleted == False))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Projet introuvable")
@@ -308,7 +309,7 @@ async def modifier_projet(projet_id: int, payload: dict, db: AsyncSession = Depe
 
 # ── DELETE /projets/:id ───────────────────────────────────────────────────────
 @router.delete("/{projet_id}", status_code=204)
-async def supprimer_projet(projet_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_projet(projet_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(Projet).where(Projet.id == projet_id))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Projet introuvable")
@@ -323,6 +324,7 @@ async def ajouter_fichier(
     titre:     str        = Form(""),
     fichier:   UploadFile = File(...),
     db:        AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     if not fichier.filename.lower().endswith(".pdf"):
         raise HTTPException(422, "PDF uniquement")
@@ -339,7 +341,7 @@ async def ajouter_fichier(
 
 # ── DELETE /projets/:id/fichiers/:fid ─────────────────────────────────────────
 @router.delete("/{projet_id}/fichiers/{fichier_id}", status_code=204)
-async def supprimer_fichier(projet_id: int, fichier_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_fichier(projet_id: int, fichier_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(ProjetFichier).where(ProjetFichier.id == fichier_id, ProjetFichier.projet_id == projet_id))
     pf  = res.scalar_one_or_none()
     if not pf: raise HTTPException(404, "Fichier introuvable")

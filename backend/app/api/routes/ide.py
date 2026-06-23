@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, distinct
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.ide import IdeCnuced, IdeAnalyse, IdeKpiConfig
 from app.models.shared import IdeCnucedMonde, RefGroupement, RefPays
 
@@ -268,7 +269,7 @@ async def get_kpis_actifs(db: AsyncSession = Depends(get_db)):
 
 # ── PATCH /ide/kpis-config/:id ────────────────────────────────────────────────
 @router.patch("/kpis-config/{kpi_id}")
-async def modifier_kpi_config(kpi_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_kpi_config(kpi_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from fastapi import HTTPException
     res = await db.execute(select(IdeKpiConfig).where(IdeKpiConfig.id==kpi_id))
     k   = res.scalar_one_or_none()
@@ -303,7 +304,7 @@ def analyse_to_dict(a: IdeAnalyse) -> dict:
 
 # ── POST /ide/analyses ────────────────────────────────────────────────────────
 @router.post("/analyses", status_code=201)
-async def creer_analyse(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_analyse(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from fastapi import HTTPException
     if not payload.get("titre") or not payload.get("commentaire"):
         raise HTTPException(422, "Titre et commentaire obligatoires")
@@ -323,7 +324,7 @@ async def creer_analyse(payload: dict, db: AsyncSession = Depends(get_db)):
 
 # ── PATCH /ide/analyses/:id ───────────────────────────────────────────────────
 @router.patch("/analyses/{analyse_id}")
-async def modifier_analyse(analyse_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_analyse(analyse_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from fastapi import HTTPException
     res = await db.execute(select(IdeAnalyse).where(IdeAnalyse.id==analyse_id))
     a   = res.scalar_one_or_none()
@@ -340,7 +341,7 @@ async def modifier_analyse(analyse_id: int, payload: dict, db: AsyncSession = De
 
 # ── DELETE /ide/analyses/:id ──────────────────────────────────────────────────
 @router.delete("/analyses/{analyse_id}", status_code=204)
-async def supprimer_analyse(analyse_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_analyse(analyse_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from fastapi import HTTPException
     res = await db.execute(select(IdeAnalyse).where(IdeAnalyse.id==analyse_id))
     a   = res.scalar_one_or_none()
@@ -491,6 +492,7 @@ async def importer_ide(
     stock_entrant: List[UploadFile] = File(default=[]),
     stock_sortant: List[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     from fastapi import HTTPException
 
@@ -553,7 +555,7 @@ async def importer_ide(
 # Permet de résoudre manuellement les pays non reconnus lors d'un import.
 
 @router.post("/associer-pays", status_code=200)
-async def associer_pays(payload: dict, db: AsyncSession = Depends(get_db)):
+async def associer_pays(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from fastapi import HTTPException
     from app.models.shared import RefPays
 
@@ -681,7 +683,7 @@ async def _do_rafraichir(db_factory) -> dict:
 
 
 @router.post("/rafraichir", status_code=200)
-async def rafraichir_ide(db: AsyncSession = Depends(get_db)):
+async def rafraichir_ide(db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from app.core.database import AsyncSessionLocal
     return await _do_rafraichir(AsyncSessionLocal)
 
@@ -752,7 +754,7 @@ async def get_cnuced_stats(db: AsyncSession = Depends(get_db)):
 
 # ── DELETE /ide/cnuced/pays/:ref_pays_id ─────────────────────────────────────
 @router.delete("/cnuced/pays/{ref_pays_id}", status_code=200)
-async def supprimer_pays_ide(ref_pays_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_pays_ide(ref_pays_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from fastapi import HTTPException
     from sqlalchemy import delete as sqldel
     res = await db.execute(

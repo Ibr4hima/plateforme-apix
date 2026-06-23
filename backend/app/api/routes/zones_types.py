@@ -9,6 +9,7 @@ import json as json_mod
 from datetime import date as date_type
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.entreprise import (
     EntrepriseIntallee, RefSecteur, RefBranche, RefActivite,
     RefRegion, RefDepartement, RefArrondissement
@@ -210,7 +211,7 @@ async def liste_poles(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/poles", status_code=201)
-async def creer_pole(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_pole(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from app.models.zone_types import PoleTerritoire
     nom = payload.get("pole_territoire", "").strip()
     if not nom: raise HTTPException(422, "Le nom du pôle est obligatoire")
@@ -230,7 +231,7 @@ async def creer_pole(payload: dict, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/poles/{pole_id}")
-async def modifier_pole(pole_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_pole(pole_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from app.models.zone_types import PoleTerritoire
     res = await db.execute(select(PoleTerritoire).where(PoleTerritoire.id == pole_id))
     p = res.scalar_one_or_none()
@@ -254,7 +255,7 @@ async def modifier_pole(pole_id: int, payload: dict, db: AsyncSession = Depends(
 
 
 @router.delete("/poles/{pole_id}", status_code=204)
-async def supprimer_pole(pole_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_pole(pole_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from app.models.zone_types import PoleTerritoire
     res = await db.execute(select(PoleTerritoire).where(PoleTerritoire.id == pole_id))
     p = res.scalar_one_or_none()
@@ -322,6 +323,7 @@ async def creer_zone(
     branche_ids:       Optional[str] = Form(None),
     activite_ids:      Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     if type_zone not in TYPES_VALIDES:
         raise HTTPException(400, f"Type inconnu: {type_zone}")
@@ -375,7 +377,7 @@ class ZonePatchPayload(PydanticBaseModel):
 
 
 @router.patch("/{zone_id}")
-async def modifier_zone(zone_id: str, payload: ZonePatchPayload, db: AsyncSession = Depends(get_db)):
+async def modifier_zone(zone_id: str, payload: ZonePatchPayload, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text("SELECT * FROM zones WHERE id = :id AND is_deleted = FALSE"), {"id": zone_id})
     row = res.fetchone()
     if not row: raise HTTPException(404, "Zone introuvable")
@@ -424,7 +426,7 @@ async def modifier_zone(zone_id: str, payload: ZonePatchPayload, db: AsyncSessio
 
 
 @router.delete("/{zone_id}", status_code=204)
-async def supprimer_zone(zone_id: str, db: AsyncSession = Depends(get_db)):
+async def supprimer_zone(zone_id: str, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     # Supprimer les fichiers physiques
     fres = await db.execute(text("SELECT url FROM zone_fichiers WHERE zone_id = :id"), {"id": zone_id})
     for f in fres.fetchall():
@@ -505,6 +507,7 @@ async def ajouter_entreprise(
     entreprise_id:int,
     statut:       str = "installee",
     db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     if statut not in ("eligible", "installee"):
         raise HTTPException(400, "Statut invalide")
@@ -534,6 +537,7 @@ async def modifier_statut_entreprise(
     entreprise_id:int,
     payload:      dict,
     db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     statut = payload.get("statut")
     if statut not in ("eligible", "installee"):
@@ -557,7 +561,7 @@ async def modifier_statut_entreprise(
 
 
 @router.delete("/{zone_id}/entreprises/{entreprise_id}", status_code=204)
-async def retirer_entreprise(zone_id: str, entreprise_id: int, db: AsyncSession = Depends(get_db)):
+async def retirer_entreprise(zone_id: str, entreprise_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     await db.execute(text("""
         DELETE FROM zone_entreprises WHERE zone_id = :zid AND entreprise_id = :eid
     """), {"zid": zone_id, "eid": entreprise_id})
@@ -578,6 +582,7 @@ async def ajouter_fichier(
     titre:   str        = Form(""),
     fichier: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     ext = os.path.splitext(fichier.filename)[1].lower()
     if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
@@ -596,7 +601,7 @@ async def ajouter_fichier(
 
 
 @router.delete("/{zone_id}/fichiers/{fichier_id}", status_code=204)
-async def supprimer_fichier(zone_id: str, fichier_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_fichier(zone_id: str, fichier_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text(
         "SELECT url FROM zone_fichiers WHERE id = :id AND zone_id = :zone_id"
     ), {"id": fichier_id, "zone_id": zone_id})

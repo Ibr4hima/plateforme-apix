@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.classification import RefClassification, RefClassificationItem, RefCorrespondanceNaema
 from app.models.entreprise import RefSecteur, RefBranche, RefActivite
 
@@ -155,7 +156,7 @@ async def liste_correspondances(db: AsyncSession = Depends(get_db)):
 
 # ── POST /classifications/correspondances ─────────────────────────────────────
 @router.post("/correspondances", status_code=201)
-async def ajouter_correspondance(payload: dict, db: AsyncSession = Depends(get_db)):
+async def ajouter_correspondance(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from app.models.classification import RefCorrespondanceNaema as CN
     c = CN(
         naema_type             = payload["naema_type"],
@@ -171,7 +172,7 @@ async def ajouter_correspondance(payload: dict, db: AsyncSession = Depends(get_d
 
 # ── DELETE /classifications/correspondances/:id ───────────────────────────────
 @router.delete("/correspondances/{corresp_id}", status_code=204)
-async def supprimer_correspondance(corresp_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_correspondance(corresp_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from fastapi import HTTPException
     res = await db.execute(select(RefCorrespondanceNaema).where(RefCorrespondanceNaema.id == corresp_id))
     c   = res.scalar_one_or_none()

@@ -4,6 +4,7 @@ from sqlalchemy import text
 from typing import Optional, List
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.auth import require_admin
 
 router = APIRouter(prefix="/classifications", tags=["classifications"])
 
@@ -86,7 +87,7 @@ async def set_correspondances_citi(classe_id: int, body: LierIn, db: AsyncSessio
     return await get_correspondances_citi(classe_id, db)
 
 @router.delete("/citi/classes/{classe_id}/correspondances/{corr_id}")
-async def delete_correspondance_citi(classe_id: int, corr_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_correspondance_citi(classe_id: int, corr_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     await db.execute(text(
         "DELETE FROM citi_naema_correspondances WHERE id=:id AND citi_classe_id=:cid"
     ), {"id": corr_id, "cid": classe_id})
@@ -214,7 +215,7 @@ async def set_correspondances_nace(classe_id: int, body: LierIn, db: AsyncSessio
     return await get_correspondances_nace(classe_id, db)
 
 @router.delete("/nace/classes/{classe_id}/correspondances/{corr_id}")
-async def delete_correspondance_nace(classe_id: int, corr_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_correspondance_nace(classe_id: int, corr_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     await db.execute(text(
         "DELETE FROM nace_naema_correspondances WHERE id=:id AND nace_classe_id=:cid"
     ), {"id": corr_id, "cid": classe_id})

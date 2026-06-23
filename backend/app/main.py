@@ -75,13 +75,13 @@ app = FastAPI(
     lifespan=lifespan,
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    docs_url=f"{settings.API_PREFIX}/docs",
-    redoc_url=f"{settings.API_PREFIX}/redoc",
+    docs_url=f"{settings.API_PREFIX}/docs" if settings.DEBUG else None,
+    redoc_url=f"{settings.API_PREFIX}/redoc" if settings.DEBUG else None,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

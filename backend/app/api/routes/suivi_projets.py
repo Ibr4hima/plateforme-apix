@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.suivi_projet import ProjetPhase
 from app.models.projet import Projet
 
@@ -86,7 +87,7 @@ async def get_suivi(projet_id: int, db: AsyncSession = Depends(get_db)):
 
 # ── POST /suivi-projets/:projet_id/phases ─────────────────────────────────────
 @router.post("/{projet_id}/phases", status_code=201)
-async def ajouter_phase(projet_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def ajouter_phase(projet_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from datetime import date as date_type
 
     if not payload.get("titre", "").strip():
@@ -128,7 +129,7 @@ async def ajouter_phase(projet_id: int, payload: dict, db: AsyncSession = Depend
 # ── PATCH /suivi-projets/phases/:phase_id ────────────────────────────────────
 # Le coordinateur NE PEUT modifier que la note — titre et dates sont verrouillés
 @router.patch("/phases/{phase_id}")
-async def modifier_phase(phase_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_phase(phase_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(ProjetPhase).where(ProjetPhase.id == phase_id))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Phase introuvable")
@@ -140,7 +141,7 @@ async def modifier_phase(phase_id: int, payload: dict, db: AsyncSession = Depend
 
 # ── DELETE /suivi-projets/phases/:phase_id — interdit ────────────────────────
 @router.delete("/phases/{phase_id}", status_code=204)
-async def supprimer_phase(phase_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_phase(phase_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(ProjetPhase).where(ProjetPhase.id == phase_id))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Phase introuvable")

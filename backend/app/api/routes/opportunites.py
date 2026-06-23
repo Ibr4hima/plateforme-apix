@@ -5,6 +5,7 @@ from sqlalchemy import select, text
 from typing import Optional, List
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.opportunites_model import Potentialite, AvantageIncitation
 import os, shutil, uuid
 
@@ -179,13 +180,13 @@ async def get_potentialite(id: int, db: AsyncSession = Depends(get_db)):
     return await enrichir_potentialite_fichiers(id, d, db)
 
 @router.post("/potentialites")
-async def create_potentialite(body: PotentialiteIn, db: AsyncSession = Depends(get_db)):
+async def create_potentialite(body: PotentialiteIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     p = Potentialite(**body.dict())
     db.add(p); await db.commit(); await db.refresh(p)
     return await enrichir_potentialite(p, db)
 
 @router.patch("/potentialites/{id}")
-async def update_potentialite(id: int, body: PotentialiteIn, db: AsyncSession = Depends(get_db)):
+async def update_potentialite(id: int, body: PotentialiteIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(Potentialite).where(Potentialite.id == id, Potentialite.is_deleted == False))
     p = res.scalar_one_or_none()
     if not p: raise HTTPException(404)
@@ -194,7 +195,7 @@ async def update_potentialite(id: int, body: PotentialiteIn, db: AsyncSession = 
     return await enrichir_potentialite(p, db)
 
 @router.patch("/potentialites/{id}/toggle")
-async def toggle_potentialite(id: int, body: ToggleIn, db: AsyncSession = Depends(get_db)):
+async def toggle_potentialite(id: int, body: ToggleIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(Potentialite).where(Potentialite.id == id, Potentialite.is_deleted == False))
     p = res.scalar_one_or_none()
     if not p: raise HTTPException(404)
@@ -203,7 +204,7 @@ async def toggle_potentialite(id: int, body: ToggleIn, db: AsyncSession = Depend
     return await enrichir_potentialite(p, db)
 
 @router.delete("/potentialites/{id}", status_code=204)
-async def delete_potentialite(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_potentialite(id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(Potentialite).where(Potentialite.id == id))
     p = res.scalar_one_or_none()
     if not p: raise HTTPException(404)
@@ -214,7 +215,7 @@ async def delete_potentialite(id: int, db: AsyncSession = Depends(get_db)):
 # ─── Fichiers potentialités ──────────────────────────────────────────────────
 
 @router.post("/potentialites/{id}/fichiers")
-async def upload_fichier_pot(id: int, fichier: UploadFile = File(...), titre: str = Form(""), db: AsyncSession = Depends(get_db)):
+async def upload_fichier_pot(id: int, fichier: UploadFile = File(...), titre: str = Form(""), db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     ext = os.path.splitext(fichier.filename or "")[1]
     nom = f"{uuid.uuid4()}{ext}"
     path = os.path.join(UPLOAD_DIR_POT, nom)
@@ -242,7 +243,7 @@ async def download_fichier_pot(id: int, fid: int, db: AsyncSession = Depends(get
     return FileResponse(path, filename=row[1] or row[0])
 
 @router.delete("/potentialites/{id}/fichiers/{fid}")
-async def delete_fichier_pot(id: int, fid: int, db: AsyncSession = Depends(get_db)):
+async def delete_fichier_pot(id: int, fid: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text(
         "SELECT fichier_nom FROM potentialites_fichiers WHERE id=:fid AND potentialite_id=:id"
     ), {"fid": fid, "id": id})
@@ -290,7 +291,7 @@ async def get_avantage(id: int, db: AsyncSession = Depends(get_db)):
     return d
 
 @router.post("/avantages")
-async def create_avantage(body: AvantageIn, db: AsyncSession = Depends(get_db)):
+async def create_avantage(body: AvantageIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text("""
         INSERT INTO avantages_incitations (secteur_id, branche_id, activite_id, avantages, est_publie)
         VALUES (:secteur_id, :branche_id, :activite_id, :description, :est_publie)
@@ -302,7 +303,7 @@ async def create_avantage(body: AvantageIn, db: AsyncSession = Depends(get_db)):
     return await enrichir_avantage(new_id, db)
 
 @router.patch("/avantages/{id}")
-async def update_avantage(id: int, body: AvantageIn, db: AsyncSession = Depends(get_db)):
+async def update_avantage(id: int, body: AvantageIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     await db.execute(text("""
         UPDATE avantages_incitations
         SET secteur_id=:secteur_id, branche_id=:branche_id, activite_id=:activite_id,
@@ -314,7 +315,7 @@ async def update_avantage(id: int, body: AvantageIn, db: AsyncSession = Depends(
     return await enrichir_avantage(id, db)
 
 @router.patch("/avantages/{id}/toggle")
-async def toggle_avantage(id: int, body: ToggleIn, db: AsyncSession = Depends(get_db)):
+async def toggle_avantage(id: int, body: ToggleIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     await db.execute(text(
         "UPDATE avantages_incitations SET est_publie=:v, updated_at=NOW() WHERE id=:id"
     ), {"v": body.est_publie, "id": id})
@@ -322,7 +323,7 @@ async def toggle_avantage(id: int, body: ToggleIn, db: AsyncSession = Depends(ge
     return await enrichir_avantage(id, db)
 
 @router.delete("/avantages/{id}", status_code=204)
-async def delete_avantage(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_avantage(id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     await db.execute(text("DELETE FROM avantages_incitations_selections WHERE avantage_id=:id"), {"id": id})
     await db.execute(text("DELETE FROM avantages_incitations_fichiers WHERE avantage_id=:id"), {"id": id})
     await db.execute(text("DELETE FROM avantages_incitations WHERE id=:id"), {"id": id})
@@ -331,7 +332,7 @@ async def delete_avantage(id: int, db: AsyncSession = Depends(get_db)):
 # ─── Fichiers avantages ───────────────────────────────────────────────────────
 
 @router.post("/avantages/{id}/fichiers")
-async def upload_fichier(id: int, fichier: UploadFile = File(...), titre: str = Form(""), db: AsyncSession = Depends(get_db)):
+async def upload_fichier(id: int, fichier: UploadFile = File(...), titre: str = Form(""), db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     ext = os.path.splitext(fichier.filename or "")[1]
     nom = f"{uuid.uuid4()}{ext}"
     path = os.path.join(UPLOAD_DIR_AVG, nom)
@@ -355,7 +356,7 @@ async def download_fichier(id: int, fid: int, db: AsyncSession = Depends(get_db)
     return FileResponse(path, filename=row[1] or row[0])
 
 @router.delete("/avantages/{id}/fichiers/{fid}")
-async def delete_fichier(id: int, fid: int, db: AsyncSession = Depends(get_db)):
+async def delete_fichier(id: int, fid: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text(
         "SELECT fichier_nom FROM avantages_incitations_fichiers WHERE id=:fid AND avantage_id=:id"
     ), {"fid": fid, "id": id})

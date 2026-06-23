@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.prospect import (
     Prospect, ProspectPointFocal, ProspectEchange, ProspectContrainte, ProspectContact,
     ProspectCycle,
@@ -255,7 +256,7 @@ async def lire_prospect(prospect_id: int, db: AsyncSession = Depends(get_db)):
 
 # ── POST /prospects ───────────────────────────────────────────────────────────
 @router.post("", status_code=201)
-async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     if not payload.get("nom", "").strip():
         raise HTTPException(422, "Le nom est obligatoire")
     # Champs contact obligatoires
@@ -327,7 +328,7 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db)):
 
 # ── PATCH /prospects/:id ──────────────────────────────────────────────────────
 @router.patch("/{prospect_id}")
-async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(Prospect).options(*LOAD_OPTS).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
     p = res.scalar_one_or_none()
     if not p:
@@ -412,7 +413,7 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
 
 # ── DELETE /prospects/:id ─────────────────────────────────────────────────────
 @router.delete("/{prospect_id}", status_code=204)
-async def supprimer_prospect(prospect_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_prospect(prospect_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(Prospect).where(Prospect.id == prospect_id))
     p = res.scalar_one_or_none()
     if not p:
@@ -423,7 +424,7 @@ async def supprimer_prospect(prospect_id: int, db: AsyncSession = Depends(get_db
 
 # ── PATCH /prospects/:id/conclusion ──────────────────────────────────────────
 @router.patch("/{prospect_id}/conclusion")
-async def conclure_prospect(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def conclure_prospect(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     """Met à jour l'issue de la relation (installe / decline / null) et son commentaire."""
     res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
     p = res.scalar_one_or_none()
@@ -447,7 +448,7 @@ async def conclure_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
 
 # ── POST /prospects/:id/rouvrir ───────────────────────────────────────────────
 @router.post("/{prospect_id}/rouvrir")
-async def rouvrir_prospect(prospect_id: int, db: AsyncSession = Depends(get_db)):
+async def rouvrir_prospect(prospect_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     """Remet à zéro la conclusion sans archiver de cycle — correction d'erreur.
     À utiliser pour annuler un 'Installé' ou 'Décliné' saisi par mégarde."""
     res = await db.execute(
@@ -471,7 +472,7 @@ async def rouvrir_prospect(prospect_id: int, db: AsyncSession = Depends(get_db))
 
 # ── POST /prospects/:id/recontact ─────────────────────────────────────────────
 @router.post("/{prospect_id}/recontact")
-async def recontacter_prospect(prospect_id: int, db: AsyncSession = Depends(get_db)):
+async def recontacter_prospect(prospect_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     """Re-ouvre une prospection « Déclinée » archivée : la conclusion courante
     est versée dans l'historique des cycles, puis le prospect repart à zéro
     (issue = NULL) et réapparaît dans les onglets actifs. Tout l'historique des
@@ -513,7 +514,7 @@ async def recontacter_prospect(prospect_id: int, db: AsyncSession = Depends(get_
 
 # ── POST /prospects/:id/echanges ──────────────────────────────────────────────
 @router.post("/{prospect_id}/echanges", status_code=201)
-async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     # Vérifier que le prospect existe
     p_res = await db.execute(select(Prospect).where(Prospect.id == prospect_id, Prospect.is_deleted == False))
     prospect = p_res.scalar_one_or_none()
@@ -586,7 +587,7 @@ async def liste_echanges(prospect_id: int, db: AsyncSession = Depends(get_db)):
 
 # ── PATCH /prospects/echanges/:id ── (fenêtre de 24h après enregistrement)
 @router.patch("/echanges/{echange_id}")
-async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from datetime import datetime, timezone, timedelta
     res = await db.execute(select(ProspectEchange).where(ProspectEchange.id == echange_id))
     e = res.scalar_one_or_none()
@@ -664,7 +665,7 @@ async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = De
 
 # ── DELETE /prospects/echanges/:id ── (désactiver quand auth en prod)
 @router.delete("/echanges/{echange_id}", status_code=204)
-async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from datetime import datetime, timezone, timedelta
     res = await db.execute(select(ProspectEchange).where(ProspectEchange.id == echange_id))
     e = res.scalar_one_or_none()
@@ -700,7 +701,7 @@ async def supprimer_echange(echange_id: int, db: AsyncSession = Depends(get_db))
 
 # ── POST /prospects/:id/contraintes ──────────────────────────────────────────
 @router.post("/{prospect_id}/contraintes", status_code=201)
-async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     p_res = await db.execute(
         select(Prospect).options(selectinload(Prospect.cycles))
         .where(Prospect.id == prospect_id, Prospect.is_deleted == False)
@@ -728,7 +729,7 @@ async def ajouter_contrainte(prospect_id: int, payload: dict, db: AsyncSession =
 
 # ── PATCH /prospects/contraintes/:id ─────────────────────────────────────────
 @router.patch("/contraintes/{contrainte_id}")
-async def modifier_contrainte(contrainte_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_contrainte(contrainte_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from sqlalchemy import update as sqlupdate
     from datetime import datetime, timezone
     res = await db.execute(select(ProspectContrainte).where(ProspectContrainte.id == contrainte_id))
@@ -760,7 +761,7 @@ async def modifier_contrainte(contrainte_id: int, payload: dict, db: AsyncSessio
 
 # ── DELETE /prospects/contraintes/:id ────────────────────────────────────────
 @router.delete("/contraintes/{contrainte_id}", status_code=204)
-async def supprimer_contrainte(contrainte_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_contrainte(contrainte_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(ProspectContrainte).where(ProspectContrainte.id == contrainte_id))
     c = res.scalar_one_or_none()
     if not c:

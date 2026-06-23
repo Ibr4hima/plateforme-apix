@@ -7,6 +7,7 @@ import shutil, os, uuid as uuid_lib
 import json
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from datetime import date as date_type
 from app.models.accord import Accord, AccordFichier
 from app.schemas.accord import (
@@ -139,6 +140,7 @@ async def creer_accord(
     created_by:          Optional[str]  = Form(None),
     fichier:             Optional[UploadFile] = File(None),
     db:                  AsyncSession   = Depends(get_db),
+    current_user:        dict           = Depends(require_admin),
 ):
     fichier_nom, fichier_path = None, None
     if fichier and fichier.filename:
@@ -174,7 +176,7 @@ async def creer_accord(
 
 # ── PATCH /accords/:id ────────────────────────────────────────────────────────
 @router.patch("/{accord_id}", response_model=AccordResponse)
-async def modifier_accord(accord_id: int, payload: AccordUpdate, db: AsyncSession = Depends(get_db)):
+async def modifier_accord(accord_id: int, payload: AccordUpdate, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(Accord).where(Accord.id == accord_id))
     accord = result.scalar_one_or_none()
     if not accord: raise HTTPException(status_code=404, detail="Accord introuvable")
@@ -187,7 +189,7 @@ async def modifier_accord(accord_id: int, payload: AccordUpdate, db: AsyncSessio
 
 # ── DELETE /accords/:id ───────────────────────────────────────────────────────
 @router.delete("/{accord_id}", status_code=204)
-async def supprimer_accord(accord_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_accord(accord_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(Accord).where(Accord.id == accord_id))
     accord = result.scalar_one_or_none()
     if not accord: raise HTTPException(status_code=404, detail="Accord introuvable")
@@ -212,6 +214,7 @@ async def ajouter_fichier(
     titre:     str        = Form(...),
     fichier:   UploadFile = File(...),
     db:        AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     result = await db.execute(select(Accord).where(Accord.id == accord_id))
     if not result.scalar_one_or_none():
@@ -241,7 +244,7 @@ async def telecharger_fichier(accord_id: int, fichier_id: int, db: AsyncSession 
 
 
 @router.delete("/{accord_id}/fichiers/{fichier_id}", status_code=204)
-async def supprimer_fichier(accord_id: int, fichier_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_fichier(accord_id: int, fichier_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(
         select(AccordFichier).where(AccordFichier.id == fichier_id, AccordFichier.accord_id == accord_id)
     )

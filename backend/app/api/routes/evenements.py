@@ -5,6 +5,7 @@ from typing import Optional, List
 from datetime import date as date_type
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.evenement import Evenement
 from app.models.shared import RefPays as RefPaysEvenement
 from app.schemas.evenement import (
@@ -189,7 +190,7 @@ async def detail_evenement(evenement_id: int, db: AsyncSession = Depends(get_db)
 
 # ── POST /evenements ───────────────────────────────────────────────────────────
 @router.post("", response_model=EvenementResponse, status_code=201)
-async def creer_evenement(payload: EvenementCreate, db: AsyncSession = Depends(get_db)):
+async def creer_evenement(payload: EvenementCreate, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from datetime import date as date_type
     data = payload.model_dump(exclude_none=True)
     # Validation : date_debut >= aujourd'hui
@@ -205,7 +206,7 @@ async def creer_evenement(payload: EvenementCreate, db: AsyncSession = Depends(g
 
 # ── PATCH /evenements/:id ──────────────────────────────────────────────────────
 @router.patch("/{evenement_id}", response_model=EvenementResponse)
-async def modifier_evenement(evenement_id: int, payload: EvenementUpdate, db: AsyncSession = Depends(get_db)):
+async def modifier_evenement(evenement_id: int, payload: EvenementUpdate, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(Evenement).where(Evenement.id == evenement_id))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")
@@ -224,7 +225,7 @@ async def modifier_evenement(evenement_id: int, payload: EvenementUpdate, db: As
 
 # ── DELETE /evenements/:id ─────────────────────────────────────────────────────
 @router.delete("/{evenement_id}", status_code=204)
-async def supprimer_evenement(evenement_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_evenement(evenement_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(Evenement).where(Evenement.id == evenement_id))
     e = result.scalar_one_or_none()
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")

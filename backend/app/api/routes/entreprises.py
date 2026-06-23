@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from typing import Optional, List, Any
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.entreprise import (
     EntrepriseIntallee, EntreprisePointFocal,
     RefSecteur, RefBranche, RefActivite,
@@ -104,7 +105,7 @@ async def noms_entreprises(db: AsyncSession = Depends(get_db)):
     return [row[0] for row in result.fetchall() if row[0]]
 
 @router.patch("/ref/branches/{branche_id}", response_model=RefBrancheResponse)
-async def modifier_branche(branche_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_branche(branche_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(RefBranche).where(RefBranche.id == branche_id))
     branche = result.scalar_one_or_none()
     if not branche:
@@ -116,7 +117,7 @@ async def modifier_branche(branche_id: int, payload: dict, db: AsyncSession = De
     return RefBrancheResponse.model_validate(branche)
 
 @router.delete("/ref/branches/{branche_id}", status_code=204)
-async def supprimer_branche(branche_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_branche(branche_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(RefBranche).where(RefBranche.id == branche_id))
     branche = result.scalar_one_or_none()
     if not branche:
@@ -128,7 +129,7 @@ async def supprimer_branche(branche_id: int, db: AsyncSession = Depends(get_db))
 # ── CRUD Activités ────────────────────────────────────────────────────────────
 
 @router.patch("/ref/activites/{activite_id}", response_model=RefActiviteResponse)
-async def modifier_activite(activite_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_activite(activite_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(RefActivite).where(RefActivite.id == activite_id))
     activite = result.scalar_one_or_none()
     if not activite:
@@ -140,7 +141,7 @@ async def modifier_activite(activite_id: int, payload: dict, db: AsyncSession = 
     return RefActiviteResponse.model_validate(activite)
 
 @router.delete("/ref/activites/{activite_id}", status_code=204)
-async def supprimer_activite(activite_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_activite(activite_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(RefActivite).where(RefActivite.id == activite_id))
     activite = result.scalar_one_or_none()
     if not activite:
@@ -211,7 +212,7 @@ async def liste_poles(db: AsyncSession = Depends(get_db)):
     return [{"id": p.id, "nom": p.pole_territoire} for p in result.scalars().all()]
 
 @router.post("/ref/branches", response_model=RefBrancheResponse, status_code=201)
-async def creer_branche(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_branche(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     branche = RefBranche(**payload)
     db.add(branche)
     await db.flush()
@@ -219,7 +220,7 @@ async def creer_branche(payload: dict, db: AsyncSession = Depends(get_db)):
     return RefBrancheResponse.model_validate(branche)
 
 @router.post("/ref/activites", response_model=RefActiviteResponse, status_code=201)
-async def creer_activite(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_activite(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     activite = RefActivite(**payload)
     db.add(activite)
     await db.flush()
@@ -283,6 +284,7 @@ async def liste_entreprises(
 async def creer_entreprise(
     payload: EntrepriseCreate,
     db:      AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     points_focaux_data = payload.points_focaux or []
     data = payload.model_dump(exclude={"points_focaux"})
@@ -308,6 +310,7 @@ async def ajouter_point_focal(
     entreprise_id: UUID,
     payload:       PointFocalCreate,
     db:            AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     result = await db.execute(
         select(EntrepriseIntallee).where(
@@ -327,6 +330,7 @@ async def supprimer_point_focal(
     entreprise_id: int,
     focal_id:      int,
     db:            AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     result = await db.execute(
         select(EntreprisePointFocal).where(
@@ -363,6 +367,7 @@ async def modifier_entreprise(
     entreprise_id: int,
     payload:       EntrepriseUpdate,
     db:            AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     result = await db.execute(
         select(EntrepriseIntallee).where(
@@ -389,6 +394,7 @@ async def modifier_entreprise(
 async def supprimer_entreprise(
     entreprise_id: int,
     db:            AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     result = await db.execute(
         select(EntrepriseIntallee).where(
@@ -408,7 +414,7 @@ async def supprimer_entreprise(
 # ── CRUD Géographie ───────────────────────────────────────────────────────────
 
 @router.post("/ref/regions", status_code=201)
-async def creer_region(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_region(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from sqlalchemy import select
     region = RefRegion(nom=payload["nom"])
     db.add(region)
@@ -417,7 +423,7 @@ async def creer_region(payload: dict, db: AsyncSession = Depends(get_db)):
     return {"id": region.id, "nom": region.nom}
 
 @router.patch("/ref/regions/{region_id}")
-async def modifier_region(region_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_region(region_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from sqlalchemy import select
     result = await db.execute(select(RefRegion).where(RefRegion.id == region_id))
     r = result.scalar_one_or_none()
@@ -427,7 +433,7 @@ async def modifier_region(region_id: int, payload: dict, db: AsyncSession = Depe
     return {"id": r.id, "nom": r.nom}
 
 @router.delete("/ref/regions/{region_id}", status_code=204)
-async def supprimer_region(region_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_region(region_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from sqlalchemy import select
     result = await db.execute(select(RefRegion).where(RefRegion.id == region_id))
     r = result.scalar_one_or_none()
@@ -436,7 +442,7 @@ async def supprimer_region(region_id: int, db: AsyncSession = Depends(get_db)):
     await db.flush()
 
 @router.post("/ref/departements", status_code=201)
-async def creer_departement(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_departement(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     dep = RefDepartement(nom=payload["nom"], region_id=payload["region_id"])
     db.add(dep)
     await db.flush()
@@ -444,7 +450,7 @@ async def creer_departement(payload: dict, db: AsyncSession = Depends(get_db)):
     return {"id": dep.id, "nom": dep.nom, "region_id": dep.region_id}
 
 @router.patch("/ref/departements/{dep_id}")
-async def modifier_departement(dep_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_departement(dep_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from sqlalchemy import select
     result = await db.execute(select(RefDepartement).where(RefDepartement.id == dep_id))
     d = result.scalar_one_or_none()
@@ -454,7 +460,7 @@ async def modifier_departement(dep_id: int, payload: dict, db: AsyncSession = De
     return {"id": d.id, "nom": d.nom, "region_id": d.region_id}
 
 @router.delete("/ref/departements/{dep_id}", status_code=204)
-async def supprimer_departement(dep_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_departement(dep_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from sqlalchemy import select
     result = await db.execute(select(RefDepartement).where(RefDepartement.id == dep_id))
     d = result.scalar_one_or_none()
@@ -463,7 +469,7 @@ async def supprimer_departement(dep_id: int, db: AsyncSession = Depends(get_db))
     await db.flush()
 
 @router.post("/ref/arrondissements", status_code=201)
-async def creer_arrondissement(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_arrondissement(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     arr = RefArrondissement(nom=payload["nom"], departement_id=payload["departement_id"])
     db.add(arr)
     await db.flush()
@@ -471,7 +477,7 @@ async def creer_arrondissement(payload: dict, db: AsyncSession = Depends(get_db)
     return {"id": arr.id, "nom": arr.nom, "departement_id": arr.departement_id}
 
 @router.post("/ref/arrondissements/bulk", status_code=201)
-async def importer_arrondissements_bulk(payload: List[Any], db: AsyncSession = Depends(get_db)):
+async def importer_arrondissements_bulk(payload: List[Any], db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     """
     payload: [{ departement_id: int, noms: [str] }, ...]
     Insère tous les arrondissements listés pour chaque département.
@@ -497,7 +503,7 @@ async def importer_arrondissements_bulk(payload: List[Any], db: AsyncSession = D
     return {"created": total}
 
 @router.patch("/ref/arrondissements/{arr_id}")
-async def modifier_arrondissement(arr_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_arrondissement(arr_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from sqlalchemy import select
     result = await db.execute(select(RefArrondissement).where(RefArrondissement.id == arr_id))
     a = result.scalar_one_or_none()
@@ -507,7 +513,7 @@ async def modifier_arrondissement(arr_id: int, payload: dict, db: AsyncSession =
     return {"id": a.id, "nom": a.nom, "departement_id": a.departement_id}
 
 @router.delete("/ref/arrondissements/{arr_id}", status_code=204)
-async def supprimer_arrondissement(arr_id: int, db: AsyncSession = Depends(get_db)):
+async def supprimer_arrondissement(arr_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     from sqlalchemy import select
     result = await db.execute(select(RefArrondissement).where(RefArrondissement.id == arr_id))
     a = result.scalar_one_or_none()

@@ -6,6 +6,7 @@ from typing import Optional, List
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.zone import ZoneInvestissement, ZoneEntreprise, ZoneFichier
 from app.models.entreprise import EntrepriseIntallee
 
@@ -119,6 +120,7 @@ async def creer_zone(
     arrondissement_id:Optional[int] = Form(None),
     est_publie:       bool          = Form(True),
     db:               AsyncSession  = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     z = ZoneInvestissement(
         denomination=denomination, type_zone=type_zone,
@@ -148,6 +150,7 @@ async def modifier_zone(
     arrondissement_id:Optional[int] = Form(None),
     est_publie:       Optional[bool]= Form(None),
     db:           AsyncSession  = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     result = await db.execute(select(ZoneInvestissement).where(ZoneInvestissement.id == zone_id, ZoneInvestissement.is_deleted == False))
     z = result.scalar_one_or_none()
@@ -169,7 +172,7 @@ async def modifier_zone(
 
 # ── DELETE /zones/:id ──────────────────────────────────────────────────────────
 @router.delete("/{zone_id}", status_code=204)
-async def supprimer_zone(zone_id: UUID, db: AsyncSession = Depends(get_db)):
+async def supprimer_zone(zone_id: UUID, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(
         select(ZoneInvestissement).options(*LOAD_OPTS).where(ZoneInvestissement.id == zone_id)
     )
@@ -186,6 +189,7 @@ async def ajouter_entreprise(
     entreprise_id:int,
     date_installation: Optional[str] = None,
     db:           AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     from datetime import date as date_type
     ze = ZoneEntreprise(
@@ -200,7 +204,7 @@ async def ajouter_entreprise(
 
 # ── DELETE /zones/:id/entreprises/:ze_id ──────────────────────────────────────
 @router.delete("/{zone_id}/entreprises/{ze_id}", status_code=204)
-async def retirer_entreprise(zone_id: UUID, ze_id: UUID, db: AsyncSession = Depends(get_db)):
+async def retirer_entreprise(zone_id: UUID, ze_id: UUID, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(ZoneEntreprise).where(ZoneEntreprise.id == ze_id, ZoneEntreprise.zone_id == zone_id))
     ze = result.scalar_one_or_none()
     if not ze: raise HTTPException(404, "Association introuvable")
@@ -215,6 +219,7 @@ async def ajouter_fichier(
     titre:   str        = Form(""),
     fichier: UploadFile = File(...),
     db:      AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     ext = os.path.splitext(fichier.filename)[1].lower()
     if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
@@ -230,7 +235,7 @@ async def ajouter_fichier(
 
 # ── DELETE /zones/:id/fichiers/:fid ───────────────────────────────────────────
 @router.delete("/{zone_id}/fichiers/{fichier_id}", status_code=204)
-async def supprimer_fichier(zone_id: UUID, fichier_id: UUID, db: AsyncSession = Depends(get_db)):
+async def supprimer_fichier(zone_id: UUID, fichier_id: UUID, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     result = await db.execute(select(ZoneFichier).where(ZoneFichier.id == fichier_id, ZoneFichier.zone_id == zone_id))
     zf = result.scalar_one_or_none()
     if not zf: raise HTTPException(404, "Fichier introuvable")

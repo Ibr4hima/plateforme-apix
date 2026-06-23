@@ -4,6 +4,7 @@ from sqlalchemy import select, text
 from typing import Optional
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.ref_potentialites_model import RefPotentialiteAvantage
 
 router = APIRouter(prefix="/ref-potentialites", tags=["ref-potentialites"])
@@ -35,7 +36,7 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
     return [{"id":r[0],"libelle":r[1],"ordre":r[2],"actif":r[3]} for r in res.fetchall()]
 
 @router.post("/categories")
-async def create_categorie(body: CategorieIn, db: AsyncSession = Depends(get_db)):
+async def create_categorie(body: CategorieIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text("""
         INSERT INTO ref_potentialites_categories (libelle, ordre, actif)
         VALUES (:libelle, :ordre, :actif)
@@ -46,7 +47,7 @@ async def create_categorie(body: CategorieIn, db: AsyncSession = Depends(get_db)
     return {"id":r[0],"libelle":r[1],"ordre":r[2],"actif":r[3]}
 
 @router.patch("/categories/{id}")
-async def update_categorie(id: int, body: CategorieIn, db: AsyncSession = Depends(get_db)):
+async def update_categorie(id: int, body: CategorieIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text("""
         UPDATE ref_potentialites_categories
         SET libelle=:libelle, ordre=:ordre, actif=:actif, updated_at=NOW()
@@ -59,7 +60,7 @@ async def update_categorie(id: int, body: CategorieIn, db: AsyncSession = Depend
     return {"id":r[0],"libelle":r[1],"ordre":r[2],"actif":r[3]}
 
 @router.delete("/categories/{id}")
-async def delete_categorie(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_categorie(id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     # Vérifier qu'il n'y a pas d'avantages liés
     res = await db.execute(text(
         "SELECT COUNT(*) FROM ref_potentialites_avantages WHERE categorie_id=:id"
@@ -72,7 +73,7 @@ async def delete_categorie(id: int, db: AsyncSession = Depends(get_db)):
     return {"ok": True}
 
 @router.patch("/categories/{id}/toggle")
-async def toggle_categorie(id: int, db: AsyncSession = Depends(get_db)):
+async def toggle_categorie(id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text("""
         UPDATE ref_potentialites_categories
         SET actif = NOT actif, updated_at=NOW()
@@ -122,7 +123,7 @@ async def list_flat(actif_only: bool = True, db: AsyncSession = Depends(get_db))
             for r in res.fetchall()]
 
 @router.post("")
-async def create_avantage(body: AvantageIn, db: AsyncSession = Depends(get_db)):
+async def create_avantage(body: AvantageIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text("""
         INSERT INTO ref_potentialites_avantages (categorie_id, libelle, ordre, actif)
         VALUES (:categorie_id, :libelle, :ordre, :actif)
@@ -133,7 +134,7 @@ async def create_avantage(body: AvantageIn, db: AsyncSession = Depends(get_db)):
     return {"id":r[0],"categorie_id":r[1],"libelle":r[2],"ordre":r[3],"actif":r[4]}
 
 @router.patch("/{id}")
-async def update_avantage(id: int, body: AvantageIn, db: AsyncSession = Depends(get_db)):
+async def update_avantage(id: int, body: AvantageIn, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text("""
         UPDATE ref_potentialites_avantages
         SET categorie_id=:categorie_id, libelle=:libelle, ordre=:ordre, actif=:actif, updated_at=NOW()
@@ -146,13 +147,13 @@ async def update_avantage(id: int, body: AvantageIn, db: AsyncSession = Depends(
     return {"id":r[0],"categorie_id":r[1],"libelle":r[2],"ordre":r[3],"actif":r[4]}
 
 @router.delete("/{id}")
-async def delete_avantage(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_avantage(id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     await db.execute(text("DELETE FROM ref_potentialites_avantages WHERE id=:id"), {"id": id})
     await db.commit()
     return {"ok": True}
 
 @router.patch("/{id}/toggle")
-async def toggle_avantage(id: int, db: AsyncSession = Depends(get_db)):
+async def toggle_avantage(id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(text("""
         UPDATE ref_potentialites_avantages
         SET actif = NOT actif, updated_at=NOW()

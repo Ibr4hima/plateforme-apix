@@ -9,6 +9,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.code_investissement import CodePdf, CodeChapitre, CodeSection, CodeArticle
 
 router = APIRouter(prefix="/code-investissement", tags=["Code des investissements"])
@@ -91,6 +92,7 @@ async def upload_pdf(
     version: str        = Form(""),
     fichier: UploadFile = File(...),
     db:      AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     ext = os.path.splitext(fichier.filename)[1].lower()
     if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
@@ -109,7 +111,7 @@ async def upload_pdf(
     return {"id": str(pdf.id), "titre": pdf.titre, "version": pdf.version, "fichier_nom": pdf.fichier_nom}
 
 @router.patch("/pdf/{pdf_id}")
-async def renommer_pdf(pdf_id: UUID, payload: dict, db: AsyncSession = Depends(get_db)):
+async def renommer_pdf(pdf_id: UUID, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(CodePdf).where(CodePdf.id == pdf_id))
     p   = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "PDF introuvable")
@@ -157,14 +159,14 @@ async def search_code(q: str, db: AsyncSession = Depends(get_db)):
 
 # ── CRUD Chapitres ────────────────────────────────────────────────────────────
 @router.post("/chapitres", status_code=201)
-async def creer_chapitre(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_chapitre(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     c = CodeChapitre(numero=payload["numero"], titre=payload["titre"])
     db.add(c); await db.flush()
     res = await db.execute(select(CodeChapitre).options(*LOAD_OPTS).where(CodeChapitre.id == c.id))
     return chapitre_to_dict(res.scalar_one())
 
 @router.patch("/chapitres/{chap_id}")
-async def modifier_chapitre(chap_id: UUID, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_chapitre(chap_id: UUID, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(CodeChapitre).where(CodeChapitre.id == chap_id))
     c   = res.scalar_one_or_none()
     if not c: raise HTTPException(404)
@@ -176,7 +178,7 @@ async def modifier_chapitre(chap_id: UUID, payload: dict, db: AsyncSession = Dep
     return chapitre_to_dict(res.scalar_one())
 
 @router.delete("/chapitres/{chap_id}", status_code=204)
-async def supprimer_chapitre(chap_id: UUID, db: AsyncSession = Depends(get_db)):
+async def supprimer_chapitre(chap_id: UUID, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(CodeChapitre).where(CodeChapitre.id == chap_id))
     c   = res.scalar_one_or_none()
     if not c: raise HTTPException(404)
@@ -185,13 +187,13 @@ async def supprimer_chapitre(chap_id: UUID, db: AsyncSession = Depends(get_db)):
 
 # ── CRUD Sections ─────────────────────────────────────────────────────────────
 @router.post("/chapitres/{chap_id}/sections", status_code=201)
-async def creer_section(chap_id: UUID, payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_section(chap_id: UUID, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     s = CodeSection(chapitre_id=chap_id, numero=payload["numero"], titre=payload["titre"])
     db.add(s); await db.flush()
     return {"id": str(s.id), "numero": s.numero, "num_display": num_section(s.numero), "titre": s.titre, "chapitre_id": str(chap_id), "articles": []}
 
 @router.patch("/sections/{sec_id}")
-async def modifier_section(sec_id: UUID, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_section(sec_id: UUID, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(CodeSection).where(CodeSection.id == sec_id))
     s   = res.scalar_one_or_none()
     if not s: raise HTTPException(404)
@@ -202,7 +204,7 @@ async def modifier_section(sec_id: UUID, payload: dict, db: AsyncSession = Depen
     return {"id": str(s.id), "numero": s.numero, "num_display": num_section(s.numero), "titre": s.titre, "contenu": s.contenu or ""}
 
 @router.delete("/sections/{sec_id}", status_code=204)
-async def supprimer_section(sec_id: UUID, db: AsyncSession = Depends(get_db)):
+async def supprimer_section(sec_id: UUID, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(CodeSection).where(CodeSection.id == sec_id))
     s   = res.scalar_one_or_none()
     if not s: raise HTTPException(404)
@@ -211,7 +213,7 @@ async def supprimer_section(sec_id: UUID, db: AsyncSession = Depends(get_db)):
 
 # ── CRUD Articles ─────────────────────────────────────────────────────────────
 @router.post("/articles", status_code=201)
-async def creer_article(payload: dict, db: AsyncSession = Depends(get_db)):
+async def creer_article(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     a = CodeArticle(
         chapitre_id = payload["chapitre_id"],
         section_id  = payload.get("section_id") or None,
@@ -223,7 +225,7 @@ async def creer_article(payload: dict, db: AsyncSession = Depends(get_db)):
     return article_to_dict(a)
 
 @router.patch("/articles/{art_id}")
-async def modifier_article(art_id: UUID, payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_article(art_id: UUID, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(CodeArticle).where(CodeArticle.id == art_id))
     a   = res.scalar_one_or_none()
     if not a: raise HTTPException(404)
@@ -233,7 +235,7 @@ async def modifier_article(art_id: UUID, payload: dict, db: AsyncSession = Depen
     return article_to_dict(a)
 
 @router.delete("/articles/{art_id}", status_code=204)
-async def supprimer_article(art_id: UUID, db: AsyncSession = Depends(get_db)):
+async def supprimer_article(art_id: UUID, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     res = await db.execute(select(CodeArticle).where(CodeArticle.id == art_id))
     a   = res.scalar_one_or_none()
     if not a: raise HTTPException(404)

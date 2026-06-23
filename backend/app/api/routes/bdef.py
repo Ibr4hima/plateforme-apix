@@ -13,6 +13,7 @@ from sqlalchemy import select, desc, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.auth import require_admin
 from app.models.bdef import (
     BdefMacroSecteur, BdefGroupe, BdefSecteur, BdefImport, BdefImportRevue,
     BdefValeur, BdefValeurRejetee, BdefIndicateur, BdefIndicateurCategorie,
@@ -41,6 +42,7 @@ router = APIRouter(prefix="/bdef", tags=["BDEF"])
 async def importer_bdef(
     fichier: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
 ):
     contenu = await fichier.read()
     if not contenu:
@@ -96,7 +98,7 @@ async def liste_revue(
 # ── Association d'un secteur douteux (création d'alias) ───────────────────────
 
 @router.post("/associer", status_code=200)
-async def associer(payload: dict, db: AsyncSession = Depends(get_db)):
+async def associer(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     niveau   = (payload.get("niveau") or "").strip()
     libelle  = (payload.get("libelle_brut") or "").strip()
     cible_id = payload.get("cible_id")
@@ -283,7 +285,7 @@ _FK_PAR_NIVEAU_STR = {
 
 
 @router.post("/corriger", status_code=200)
-async def corriger_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
+async def corriger_valeur(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     """
     Valide la correction manuelle d'une valeur en erreur de borne.
 
@@ -366,7 +368,7 @@ async def corriger_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
 # ── Modification manuelle d'une valeur (édition directe en admin) ─────────────
 
 @router.post("/modifier", status_code=200)
-async def modifier_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
+async def modifier_valeur(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     """
     Modifie directement une valeur en base depuis l'admin.
 
@@ -435,7 +437,7 @@ async def modifier_valeur(payload: dict, db: AsyncSession = Depends(get_db)):
 # ── Suppression de toutes les données BDEF ────────────────────────────────────
 
 @router.delete("/vider", status_code=200)
-async def vider_donnees(db: AsyncSession = Depends(get_db)):
+async def vider_donnees(db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     """
     Supprime toutes les valeurs, corrections en attente et l'historique des imports.
     Les alias de secteurs sont conservés pour faciliter les réimports futurs.
