@@ -649,6 +649,11 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   const dernierEchange = prospect?.echanges?.length
     ? [...prospect.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1)
     : null;
+  // Dernier échange du cycle courant uniquement (pour l'affichage du rappel).
+  const echangesCourant = echangesDuCycle(prospect, null);
+  const dernierEchangeCourant = echangesCourant.length
+    ? [...echangesCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1)
+    : null;
   const estPremier = !isEdit && !dernierEchange;
 
   let dateMin: string|undefined;
@@ -791,9 +796,9 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             <div>
               <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>{isEdit ? "Modifier l'échange" : "Enregistrer un échange"}</h2>
               <p style={{ fontSize:12, color:"#9aa5b4", marginTop:3 }}>{nomProspect}</p>
-              {!isEdit && dernierEchange && (
+              {!isEdit && dernierEchangeCourant && (
                 <p style={{ fontSize:11, color:"#ca631f", marginTop:4, fontWeight:600 }}>
-                  Dernier échange enregistré : {new Date(dernierEchange.date_echange).toLocaleDateString("fr-FR")}
+                  Dernier échange enregistré : {new Date(dernierEchangeCourant.date_echange).toLocaleDateString("fr-FR")}
                 </p>
               )}
             </div>
