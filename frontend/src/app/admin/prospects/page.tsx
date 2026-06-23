@@ -1551,6 +1551,9 @@ export default function ProspectsPage() {
   const [echangeEdit,  setEchangeEdit]  = useState<any>(null);
   const [deleting,     setDeleting]     = useState<number|null>(null);
   const [q,            setQ]            = useState("");
+  const [terminerOpenId,  setTerminerOpenId]  = useState<number|null>(null);
+  const [terminerForm,    setTerminerForm]    = useState<{ issue:string; commentaire:string }>({ issue:"", commentaire:"" });
+  const [savingTerminer,  setSavingTerminer]  = useState(false);
 
   const charger = useCallback(async()=>{
     setLoading(true);
@@ -1578,6 +1581,21 @@ export default function ProspectsPage() {
     setDeleting(id);
     await fetch(`${API}/prospects/${id}`, { method:"DELETE" });
     setDeleting(null); charger();
+  };
+
+  const handleTerminer = async (id:number) => {
+    if (!terminerForm.issue || !terminerForm.commentaire) return;
+    setSavingTerminer(true);
+    try {
+      const res = await fetch(`${API}/prospects/${id}/conclusion`, {
+        method:"PATCH", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ issue:terminerForm.issue, issue_commentaire:terminerForm.commentaire }),
+      });
+      if (!res.ok) { const d=await res.json().catch(()=>({})); alert(d.detail||"Erreur"); return; }
+      setTerminerOpenId(null);
+      setTerminerForm({ issue:"", commentaire:"" });
+      charger();
+    } finally { setSavingTerminer(false); }
   };
 
   // Re-contacter une entreprise « Déclinée » : nouvelle prospection, historique conservé.
@@ -1679,12 +1697,40 @@ export default function ProspectsPage() {
                       </button>
                     </div>
                   ) : onglet==="historique" ? (
-                    // Historique des contacts : lecture seule, modifications dans Investisseurs ciblés
-                    <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
-                      <button onClick={()=>setVue(p)}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#4a5568", fontWeight:600 }}>
-                        Consulter
-                      </button>
+                    <div onClick={e=>e.stopPropagation()}>
+                      <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
+                        <button onClick={()=>{ setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
+                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                          <MessageSquare size={12}/> Contacter
+                        </button>
+                        <button onClick={()=>{ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); }}
+                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#ca631f", fontWeight:600 }}>
+                          <Check size={12}/> Terminer
+                        </button>
+                      </div>
+                      {terminerOpenId===p.id && (
+                        <div style={{ marginTop:10, padding:"12px 14px", background:"#F8F7F6", borderRadius:10, border:"1px solid #E8E5E3" }}>
+                          <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
+                          <div style={{ display:"flex", gap:6, marginBottom:10 }}>
+                            {[{val:"installe",lbl:"Installation au Sénégal",col:"#0D652D"},{val:"decline",lbl:"Possibilité écartée",col:"#6b7280"}].map(({val,lbl,col})=>(
+                              <button key={val} type="button" onClick={()=>setTerminerForm(f=>({ ...f, issue:val }))}
+                                style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"#E8E5E3"}`, background:terminerForm.issue===val?`${col}18`:"transparent", color:terminerForm.issue===val?col:"#9aa5b4", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
+                                {lbl}
+                              </button>
+                            ))}
+                          </div>
+                          <div style={{ marginBottom:10 }}>
+                            <p style={{ fontSize:11, fontWeight:600, color:"#4a5568", marginBottom:5 }}>Commentaire *</p>
+                            <RichTextEditor value={terminerForm.commentaire} onChange={(v:string)=>setTerminerForm(f=>({ ...f, commentaire:v }))}/>
+                          </div>
+                          <button disabled={!terminerForm.issue||!terminerForm.commentaire||savingTerminer}
+                            onClick={()=>handleTerminer(p.id)}
+                            style={{ width:"100%", padding:"9px 0", borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"#E8E5E3":"#ca631f", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"#9aa5b4":"#fff", fontWeight:700, fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                            {savingTerminer?<Loader2 size={12} style={{ animation:"spin 1s linear infinite" }}/>:<Check size={12}/>}
+                            Conclure la prospection
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : onglet==="cibles" && p.nb_echanges > 0 ? (
                     // Prospect déjà contacté dans "Investisseurs ciblés" : Modifier uniquement, pas Contacter ni Delete
