@@ -1210,8 +1210,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           </>}
 
           {/* Fil des échanges */}
-          {!hideHistorique && p.echanges?.length > 0 && (
-            <Section title="Historique des échanges" count={p.echanges.length}
+          {!hideHistorique && (p.echanges?.length > 0 || p.contraintes?.length > 0) && (
+            <Section title="Historique des échanges" count={p.echanges?.length||0}
               action={
                 <button onClick={()=>setShowEchanges(o=>!o)}
                   style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${BRD}`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontSize:11, fontWeight:600, color:SUB }}>
@@ -1281,18 +1281,9 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
                             {/* Ligne 2 : interlocuteurs */}
                             {(e.interlocuteur || e.contact_par) && (
-                              <div style={{ display:"flex", gap:14, flexWrap:"wrap" as const, marginBottom:(e.canal||e.canal_contact)?6:8 }}>
-                                {e.interlocuteur && (
-                                  <span style={{ fontSize:11, color:SUB, display:"flex", alignItems:"center", gap:5 }}>
-                                    <User size={11} style={{ color:MUT }}/> {e.interlocuteur}
-                                  </span>
-                                )}
-                                {e.contact_par && (
-                                  <span style={{ fontSize:11, color:MUT, display:"flex", alignItems:"center", gap:5 }}>
-                                    <Building2 size={11}/> {e.contact_par}
-                                  </span>
-                                )}
-                              </div>
+                              <p style={{ fontSize:11, color:MUT, marginBottom:(e.canal||e.canal_contact)?6:8 }}>
+                                {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
+                              </p>
                             )}
 
                             {/* Ligne 3 : canal de contact */}
@@ -1319,6 +1310,23 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                         </Fragment>
                       );
                     }); })()}
+                  </div>
+                </div>
+              )}
+
+              {/* Contraintes exprimées */}
+              {p.contraintes?.length > 0 && (
+                <div style={{ marginTop:14, paddingTop:14, borderTop:`1px solid ${DIV}` }}>
+                  <p style={{ fontSize:10, fontWeight:700, color:MUT, letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:8 }}>
+                    {p.contraintes.length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
+                  </p>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
+                    {p.contraintes.map((c:any) => (
+                      <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
+                        <span style={{ color:"#ca631f", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
+                        <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
