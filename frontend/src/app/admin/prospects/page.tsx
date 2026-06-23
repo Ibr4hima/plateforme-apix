@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Building2, Check, ChevronDown, ChevronUp, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, User, Video, X } from "lucide-react";
+import { Building2, Check, ChevronDown, ChevronUp, Clock, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, User, Video, X } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -1041,6 +1041,17 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
     <p style={{ fontSize:10, fontWeight:700, color:color||MUT, letterSpacing:"0.08em", textTransform:"uppercase" as const, marginBottom:6 }}>{children}</p>
   );
 
+  // Carte d'information à en-tête icône (téléphone, mail, site, …).
+  const InfoCard = ({ icon:Icon, label, children }:any) => (
+    <div style={{ background:"#F8F7F6", border:`1px solid ${BRD}`, borderRadius:12, padding:"11px 14px" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:8 }}>
+        <Icon size={13} style={{ color:accent, flexShrink:0 }}/>
+        <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
+      </div>
+      {children}
+    </div>
+  );
+
   const issueMeta = p.issue==="installe"
     ? { label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" }
     : p.issue==="decline"
@@ -1113,32 +1124,32 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           {/* Identité, contacts, activités, commentaires — masqués en mode historiqueOnly */}
           {!historiqueOnly && <><div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
             {p.telephones?.length > 0 && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
-                <LBL>Téléphone(s)</LBL>
-                {p.telephones.map((t:string,i:number)=>(
-                  <p key={i} style={{ fontSize:13, fontWeight:600, color:TXT }}>{fmtPhone(t)}</p>
-                ))}
-              </div>
+              <InfoCard icon={Phone} label="Téléphone">
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:3 }}>
+                  {p.telephones.map((t:string,i:number)=>(
+                    <p key={i} style={{ fontSize:13, fontWeight:600, color:TXT }}>{fmtPhone(t)}</p>
+                  ))}
+                </div>
+              </InfoCard>
             )}
             {p.mails?.length > 0 && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
-                <LBL>Email(s)</LBL>
-                {p.mails.map((m:string,i:number)=>(
-                  <p key={i} style={{ fontSize:13, fontWeight:600, color:TXT, wordBreak:"break-all" as const }}>{m}</p>
-                ))}
-              </div>
+              <InfoCard icon={Mail} label="Email">
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:3 }}>
+                  {p.mails.map((m:string,i:number)=>(
+                    <a key={i} href={`mailto:${m}`} style={{ fontSize:13, fontWeight:600, color:TXT, wordBreak:"break-all" as const, textDecoration:"none" }}>{m}</a>
+                  ))}
+                </div>
+              </InfoCard>
             )}
             {p.siteweb && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
-                <LBL>Site web</LBL>
+              <InfoCard icon={Globe} label="Site web">
                 <a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:accent, wordBreak:"break-all" as const, textDecoration:"none" }}>{p.siteweb}</a>
-              </div>
+              </InfoCard>
             )}
             {p.linkedin && (
-              <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
-                <LBL>LinkedIn</LBL>
+              <InfoCard icon={Link2} label="LinkedIn">
                 <a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:accent, wordBreak:"break-all" as const, textDecoration:"none" }}>{p.linkedin}</a>
-              </div>
+              </InfoCard>
             )}
           </div>
 
@@ -1147,28 +1158,39 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             <div style={{ marginBottom:16 }}>
               <LBL>Points focaux</LBL>
               <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-                {p.points_focaux.map((pf:any,i:number)=>(
-                  <div key={i} style={{ background:"#F8F7F6", borderRadius:10, padding:"10px 14px", fontSize:12 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3, flexWrap:"wrap" as const }}>
-                      <span style={{ fontWeight:700, color:TXT }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
-                      {pf.poste && <span style={{ color:"#9aa5b4" }}>— {pf.poste}</span>}
+                {p.points_focaux.map((pf:any,i:number)=>{
+                  const tels  = pf.telephones?.filter(Boolean) || [];
+                  const mails = pf.mails?.filter(Boolean) || [];
+                  return (
+                    <div key={i} style={{ background:"#F8F7F6", border:`1px solid ${BRD}`, borderRadius:12, padding:"12px 14px", display:"flex", gap:11 }}>
+                      <div style={{ width:32, height:32, borderRadius:"50%", background:`${accent}12`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <User size={15} style={{ color:accent }}/>
+                      </div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ display:"flex", alignItems:"baseline", gap:8, flexWrap:"wrap" as const, marginBottom:(tels.length||mails.length)?7:0 }}>
+                          <span style={{ fontSize:13, fontWeight:700, color:TXT }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
+                          {pf.poste && <span style={{ fontSize:11, color:MUT }}>{pf.poste}</span>}
+                        </div>
+                        {(tels.length>0 || mails.length>0) && (
+                          <div style={{ display:"flex", flexDirection:"column" as const, gap:4 }}>
+                            {tels.map((t:string,j:number)=>(
+                              <div key={`t${j}`} style={{ display:"flex", alignItems:"center", gap:7 }}>
+                                <Phone size={12} style={{ color:MUT, flexShrink:0 }}/>
+                                <span style={{ fontSize:12, color:SUB, fontWeight:500 }}>{fmtPhone(t)}</span>
+                              </div>
+                            ))}
+                            {mails.map((m:string,j:number)=>(
+                              <div key={`m${j}`} style={{ display:"flex", alignItems:"center", gap:7 }}>
+                                <Mail size={12} style={{ color:MUT, flexShrink:0 }}/>
+                                <a href={`mailto:${m}`} style={{ fontSize:12, color:SUB, fontWeight:500, wordBreak:"break-all" as const, textDecoration:"none" }}>{m}</a>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {pf.telephones?.filter(Boolean).length > 0 && (
-                      <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:6 }}>
-                        {pf.telephones.filter(Boolean).map((t:string,j:number)=>(
-                          <span key={j} style={{ fontSize:11, fontWeight:600, color:"#366FE3", background:"rgba(54,111,227,0.08)", border:"1px solid rgba(54,111,227,0.2)", padding:"2px 9px", borderRadius:999 }}>{fmtPhone(t)}</span>
-                        ))}
-                      </div>
-                    )}
-                    {pf.mails?.filter(Boolean).length > 0 && (
-                      <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:5 }}>
-                        {pf.mails.filter(Boolean).map((m:string,j:number)=>(
-                          <span key={j} style={{ fontSize:11, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.08)", border:"1px solid rgba(24,128,56,0.2)", padding:"2px 9px", borderRadius:999 }}>{m}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1329,9 +1351,10 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             )}
 
                             {/* Pied : horodatage serveur */}
-                            <p style={{ fontSize:10, color:MUT, fontFamily:"monospace", marginTop:10, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
-                              Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {retardLabel}
-                            </p>
+                            <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
+                              <Clock size={11} style={{ flexShrink:0 }}/>
+                              <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {retardLabel}</span>
+                            </div>
                           </div>
                         </div>
                         </Fragment>
@@ -1377,7 +1400,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {inst ? "Installation au Sénégal" : "Possibilité écartée"}
                           </span>
                         </div>
-                        <span style={{ fontSize:10, color:MUT, fontFamily:"monospace" }}>
+                        <span style={{ fontSize:10.5, color:MUT }}>
                           {cy.conclu_le && `Conclu le ${new Date(cy.conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
                           {cy.recontacte_le && ` · Re-contacté le ${new Date(cy.recontacte_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
                         </span>
@@ -1419,8 +1442,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       </span>
                     )}
                     {p.issue_conclu_le && (
-                      <span style={{ fontSize:10, color:MUT, fontFamily:"monospace" }}>
-                        Conclu le {new Date(p.issue_conclu_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
+                      <span style={{ fontSize:10.5, color:MUT, display:"flex", alignItems:"center", gap:5 }}>
+                        <Clock size={11}/> Conclu le {new Date(p.issue_conclu_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
                       </span>
                     )}
                   </div>
