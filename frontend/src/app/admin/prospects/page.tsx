@@ -645,6 +645,15 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     setBulletContraintes([""]); setContrainteError("");
   };
 
+  const supprimerContrainte = async (id:number) => {
+    try {
+      const res = await fetch(`${API}/prospects/contraintes/${id}`, { method:"DELETE" });
+      if (!res.ok && res.status!==204) { const d=await res.json().catch(()=>({})); throw new Error(d.detail||"Erreur"); }
+      setLocalContraintes(prev => prev.filter((x:any)=>x.id!==id));
+      if (editContrainteId===id) annulerContrainte();
+    } catch(e:any) { setContrainteError(e.message); }
+  };
+
   const enregistrerContrainte = async () => {
     const lines = bulletContraintes.map(b=>b.trim()).filter(Boolean);
     if (!lines.length) { setContrainteError("Au moins une contrainte est requise"); return; }
@@ -829,6 +838,10 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                       <button type="button" onClick={()=>ouvrirContrainte(c)}
                         style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
                         <Pencil size={12} style={{ color:"#9aa5b4" }}/>
+                      </button>
+                      <button type="button" onClick={()=>supprimerContrainte(c.id)}
+                        style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
+                        <Trash2 size={12} style={{ color:"#dc2626" }}/>
                       </button>
                     </div>
                   ))}
