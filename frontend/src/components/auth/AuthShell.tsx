@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { ReactNode } from "react"
+import { Infinity as InfinityIcon, ShieldCheck, TrendingUp, Lock } from "lucide-react"
 
 /**
  * Coquille visuelle des pages d'authentification (login / register).
@@ -130,23 +131,20 @@ export default function AuthShell({
         >
           <div
             style={{
-              display: "inline-flex",
+              display: "flex",
               alignItems: "center",
-              gap: 8,
-              background: "rgba(202,99,31,0.1)",
-              border: "1px solid rgba(202,99,31,0.25)",
-              borderRadius: 999,
-              padding: "6px 14px",
-              marginBottom: 30,
+              gap: 12,
+              marginBottom: 26,
+              maxWidth: 460,
             }}
           >
-            <div
+            <span
               style={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
+                width: 28,
+                height: 2,
                 background: "#ca631f",
-                animation: "authPulse 2s infinite",
+                borderRadius: 2,
+                flexShrink: 0,
               }}
             />
             <span
@@ -154,8 +152,9 @@ export default function AuthShell({
                 fontSize: 11,
                 fontWeight: 700,
                 color: "#D96D3B",
-                letterSpacing: "0.14em",
+                letterSpacing: "0.16em",
                 textTransform: "uppercase",
+                lineHeight: 1.5,
               }}
             >
               Plateforme de Gestion des Investissements et des Investisseurs
@@ -212,10 +211,10 @@ export default function AuthShell({
           }}
         >
           {[
-            { icon: "all_inclusive", label: "Plateforme souveraine" },
-            { icon: "security", label: "Données sécurisées" },
-            { icon: "show_chart", label: "Mise à jour continue" },
-          ].map((item, i) => (
+            { Icon: InfinityIcon, label: "Plateforme souveraine" },
+            { Icon: ShieldCheck, label: "Données sécurisées" },
+            { Icon: TrendingUp, label: "Mise à jour continue" },
+          ].map(({ Icon, label }, i) => (
             <div
               key={i}
               style={{
@@ -229,18 +228,7 @@ export default function AuthShell({
                 backdropFilter: "blur(12px)",
               }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontSize: 15,
-                  color: "#ca631f",
-                  fontVariationSettings:
-                    "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",
-                  lineHeight: 1,
-                }}
-              >
-                {item.icon}
-              </span>
+              <Icon size={14} style={{ color: "#ca631f", flexShrink: 0 }} />
               <span
                 style={{
                   fontSize: 12,
@@ -248,7 +236,7 @@ export default function AuthShell({
                   color: "rgba(255,255,255,0.85)",
                 }}
               >
-                {item.label}
+                {label}
               </span>
             </div>
           ))}
@@ -343,18 +331,7 @@ export default function AuthShell({
               gap: 7,
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 14,
-                color: "#c5bfbb",
-                fontVariationSettings:
-                  "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",
-                lineHeight: 1,
-              }}
-            >
-              lock
-            </span>
+            <Lock size={13} style={{ color: "#c5bfbb", flexShrink: 0 }} />
             <span
               style={{
                 fontSize: 11.5,
@@ -376,12 +353,12 @@ export default function AuthShell({
 // ── Styles partagés des champs / boutons ───────────────────────────────────
 export const authInputStyle: React.CSSProperties = {
   width: "100%",
-  padding: "13px 16px",
-  border: "1px solid #E2DDD9",
+  padding: "14px 16px",
+  border: "1.5px solid #E5E0DC",
   borderRadius: 12,
-  fontSize: 14,
+  fontSize: 14.5,
   color: "#1a1a2e",
-  background: "#F6F4F2",
+  background: "#fff",
   fontFamily: "var(--font-google-sans)",
 }
 
