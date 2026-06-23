@@ -579,8 +579,11 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   const [ok,     setOk]     = useState(false);
   const [emailError, setEmailError] = useState("");
   const [localContraintes, setLocalContraintes] = useState<any[]>([]);
-  const [showContrainteModal, setShowContrainteModal] = useState(false);
-  const [editContrainte, setEditContrainte] = useState<any|null>(null);
+  const [showContrainteForm, setShowContrainteForm] = useState(false);
+  const [editContrainteId, setEditContrainteId] = useState<number|null>(null);
+  const [contrainteForm, setContrainteForm] = useState({ description:"", solution_preconisee:"" });
+  const [savingContrainte, setSavingContrainte] = useState(false);
+  const [contrainteError, setContrainteError] = useState("");
   const upd = (k:string, v:string) => setForm(f=>({ ...f,[k]:v }));
 
   const pointsFocaux: any[] = prospect?.points_focaux || [];
@@ -623,8 +626,40 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
       setForm({ ...EMPTY_ECHANGE, interlocuteur: !estMorale ? nomProspect : "" });
     }
     setLocalContraintes(prospect?.contraintes || []);
+    setShowContrainteForm(false); setEditContrainteId(null);
+    setContrainteForm({ description:"", solution_preconisee:"" }); setContrainteError("");
     setError(""); setOk(false); setEmailError("");
   }, [open, prospect?.id, edit?.id]);
+
+  const ouvrirContrainte = (c:any|null) => {
+    setEditContrainteId(c?.id ?? null);
+    setContrainteForm({ description: c?.description || "", solution_preconisee: c?.solution_preconisee || "" });
+    setContrainteError("");
+    setShowContrainteForm(true);
+  };
+
+  const annulerContrainte = () => {
+    setShowContrainteForm(false); setEditContrainteId(null);
+    setContrainteForm({ description:"", solution_preconisee:"" }); setContrainteError("");
+  };
+
+  const enregistrerContrainte = async () => {
+    if (!contrainteForm.description.trim()) { setContrainteError("La description est obligatoire"); return; }
+    setSavingContrainte(true); setContrainteError("");
+    try {
+      const url    = editContrainteId ? `${API}/prospects/contraintes/${editContrainteId}` : `${API}/prospects/${prospect.id}/contraintes`;
+      const method = editContrainteId ? "PATCH" : "POST";
+      const res    = await fetch(url, { method, headers:{"Content-Type":"application/json"}, body:JSON.stringify({
+        description:         contrainteForm.description.trim(),
+        solution_preconisee: contrainteForm.solution_preconisee.trim()||null,
+      })});
+      if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
+      const saved = await res.json();
+      setLocalContraintes(prev => editContrainteId ? prev.map((x:any)=>x.id===saved.id ? saved : x) : [...prev, saved]);
+      annulerContrainte();
+    } catch(e:any) { setContrainteError(e.message); }
+    finally { setSavingContrainte(false); }
+  };
 
   const handleSave = async () => {
     if (!form.date_echange) { setError("La date est obligatoire"); return; }
@@ -664,7 +699,6 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
   if (!open) return null;
   return (
-    <>
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(6px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:620, maxHeight:"90vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.2)" }}>
@@ -781,7 +815,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                       <div style={{ flex:1, fontSize:12, color:"#1a1a2e", lineHeight:1.5 }}>
                         {c.description.replace(/<[^>]+>/g,"").trim() || "—"}
                       </div>
-                      <button type="button" onClick={()=>{ setEditContrainte(c); setShowContrainteModal(true); }}
+                      <button type="button" onClick={()=>ouvrirContrainte(c)}
                         style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
                         <Pencil size={12} style={{ color:"#9aa5b4" }}/>
                       </button>
@@ -789,12 +823,40 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                   ))}
                 </div>
               )}
-              <button type="button" onClick={()=>{ setEditContrainte(null); setShowContrainteModal(true); }}
-                style={{ width:"100%", border:"2px dashed #C5BFBB", background:"transparent", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"#9aa5b4", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s" }}
-                onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#ca631f"; (e.currentTarget as HTMLButtonElement).style.color="#ca631f"; }}
-                onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#C5BFBB"; (e.currentTarget as HTMLButtonElement).style.color="#9aa5b4"; }}>
-                <Plus size={14}/> Ajouter une contrainte
-              </button>
+              {showContrainteForm ? (
+                <div style={{ border:"1px solid #E8E5E3", borderRadius:10, padding:"14px 16px", background:"#F8F7F6", display:"flex", flexDirection:"column" as const, gap:12 }}>
+                  <div>
+                    <label style={LS}>Description de la contrainte *</label>
+                    <div style={{ minHeight:100 }}>
+                      <RichTextEditor value={contrainteForm.description} onChange={v=>setContrainteForm(f=>({ ...f, description:v }))}/>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={LS}>Solution préconisée</label>
+                    <div style={{ minHeight:90 }}>
+                      <RichTextEditor value={contrainteForm.solution_preconisee} onChange={v=>setContrainteForm(f=>({ ...f, solution_preconisee:v }))}/>
+                    </div>
+                  </div>
+                  {contrainteError && <p style={{ fontSize:12, color:"#dc2626" }}>{contrainteError}</p>}
+                  <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
+                    <button type="button" onClick={annulerContrainte}
+                      style={{ padding:"7px 14px", borderRadius:8, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12 }}>Annuler</button>
+                    <button type="button" onClick={enregistrerContrainte} disabled={savingContrainte}
+                      style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:8, border:"none",
+                        background:savingContrainte?"#ccc":"#ca631f", color:"#fff", fontWeight:700, cursor:savingContrainte?"not-allowed":"pointer", fontSize:12 }}>
+                      {savingContrainte?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:<Check size={12}/>}
+                      {savingContrainte?"Enregistrement…":editContrainteId?"Modifier":"Ajouter"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button type="button" onClick={()=>ouvrirContrainte(null)}
+                  style={{ width:"100%", border:"2px dashed #C5BFBB", background:"transparent", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"#9aa5b4", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s" }}
+                  onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#ca631f"; (e.currentTarget as HTMLButtonElement).style.color="#ca631f"; }}
+                  onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#C5BFBB"; (e.currentTarget as HTMLButtonElement).style.color="#9aa5b4"; }}>
+                  <Plus size={14}/> Ajouter
+                </button>
+              )}
             </div>
 
             {/* Note anti-fraude */}
@@ -817,95 +879,6 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13 }}>
               {saving?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
               {ok?"Enregistré !":saving?"Enregistrement…":isEdit?"Modifier l'échange":"Enregistrer l'échange"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <ContrainteModal
-      open={showContrainteModal}
-      onClose={()=>setShowContrainteModal(false)}
-      prospectId={prospect?.id}
-      contrainte={editContrainte}
-      onSaved={(saved:any)=>{
-        setLocalContraintes(prev =>
-          editContrainte ? prev.map((x:any)=>x.id===saved.id ? saved : x) : [...prev, saved]
-        );
-      }}
-    />
-    </>
-  );
-}
-
-// ── Modal / formulaire contrainte ─────────────────────────────────────────────
-function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
-  open:boolean; onClose:()=>void; prospectId:number; contrainte:any|null; onSaved:(c:any)=>void;
-}) {
-  const [form, setForm]     = useState({ description:"", solution_preconisee:"" });
-  const [saving, setSaving] = useState(false);
-  const [error,  setError]  = useState("");
-  const upd = (k:string, v:string) => setForm(f=>({...f,[k]:v}));
-
-  useEffect(()=>{
-    if (!open) return;
-    setForm({
-      description:         contrainte?.description         || "",
-      solution_preconisee: contrainte?.solution_preconisee || "",
-    });
-    setError("");
-  }, [open, contrainte?.id]);
-
-  const handleSave = async () => {
-    if (!form.description.trim()) { setError("La description est obligatoire"); return; }
-    setSaving(true); setError("");
-    try {
-      const url    = contrainte ? `${API}/prospects/contraintes/${contrainte.id}` : `${API}/prospects/${prospectId}/contraintes`;
-      const method = contrainte ? "PATCH" : "POST";
-      const res    = await fetch(url, { method, headers:{"Content-Type":"application/json"}, body:JSON.stringify({
-        description:         form.description.trim(),
-        solution_preconisee: form.solution_preconisee.trim()||null,
-      })});
-      if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
-      const saved = await res.json();
-      onSaved(saved);
-      onClose();
-    } catch(e:any) { setError(e.message); }
-    finally { setSaving(false); }
-  };
-
-  if (!open) return null;
-  return (
-    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(6px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:560, border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.2)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,#ca631f,#e07a3a)", borderRadius:"20px 20px 0 0" }}/>
-        <div style={{ padding:"22px 26px 26px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
-            <h3 style={{ fontWeight:800, fontSize:"1rem", color:"#1a1a2e" }}>{contrainte?"Modifier la contrainte":"Nouvelle contrainte"}</h3>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={14} color="#4a5568"/></button>
-          </div>
-          <div style={{ display:"flex", flexDirection:"column" as const, gap:14 }}>
-            <div>
-              <label style={LS}>Description de la contrainte *</label>
-              <div style={{ minHeight:120 }}>
-                <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
-              </div>
-            </div>
-            <div>
-              <label style={LS}>Solution préconisée</label>
-              <div style={{ minHeight:100 }}>
-                <RichTextEditor value={form.solution_preconisee} onChange={v=>upd("solution_preconisee",v)}/>
-              </div>
-            </div>
-          </div>
-          {error && <p style={{ fontSize:12, color:"#dc2626", marginTop:12 }}>{error}</p>}
-          <div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:18 }}>
-            <button onClick={onClose} style={{ padding:"9px 16px", borderRadius:9, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>Annuler</button>
-            <button onClick={handleSave} disabled={saving}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 18px", borderRadius:9, border:"none",
-                background:saving?"#ccc":"#ca631f", color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13 }}>
-              {saving?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
-              {saving?"Enregistrement…":contrainte?"Modifier":"Ajouter"}
             </button>
           </div>
         </div>
