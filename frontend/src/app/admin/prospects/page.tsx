@@ -105,6 +105,19 @@ function cycleCourantDebut(p:any): string|null {
   return dates.length ? dates.sort().at(-1) : null;
 }
 
+// Numéro du cycle de prospection courant (= nombre de cycles déjà archivés).
+// Les contraintes nouvellement saisies portent ce numéro côté backend.
+function cycleCourantNum(p:any): number {
+  return p?.cycles?.length || 0;
+}
+
+// Contraintes exprimées lors du cycle de prospection courant uniquement.
+// Chaque re-contact démarre un nouveau cycle avec ses propres contraintes.
+function contraintesCycleCourant(p:any): any[] {
+  const n = cycleCourantNum(p);
+  return (p?.contraintes || []).filter((c:any)=> (c.cycle_num ?? 0) === n);
+}
+
 // Badge de statut d'une carte prospect.
 // L'issue de la relation (installé / décliné) prime sur l'indicateur d'activité ;
 // sinon on retombe sur le délai depuis le dernier échange du cycle courant.
@@ -650,7 +663,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     } else {
       setForm({ ...EMPTY_ECHANGE, interlocuteur: !estMorale ? nomProspect : "" });
     }
-    setLocalContraintes(prospect?.contraintes || []);
+    setLocalContraintes(contraintesCycleCourant(prospect));
     setShowContrainteForm(false); setEditContrainteId(null);
     setBulletContraintes([""]); setContrainteError("");
     setError(""); setOk(false); setEmailError("");
@@ -1211,16 +1224,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
           </>}
 
-          {/* Fil des échanges */}
-          {!hideHistorique && (p.echanges?.length > 0 || p.contraintes?.length > 0) && (
-            <Section title="Historique des échanges" count={p.echanges?.length||0}
+          {/* Compte rendu des échanges : Historique + Contraintes exprimées (cycle courant) */}
+          {!hideHistorique && (p.echanges?.length > 0 || contraintesCycleCourant(p).length > 0) && (
+            <Section title="Compte rendu des échanges" count={p.echanges?.length||0}
               action={
                 <button onClick={()=>setShowEchanges(o=>!o)}
                   style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${BRD}`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontSize:11, fontWeight:600, color:SUB }}>
                   {showEchanges?<>Masquer <ChevronUp size={12}/></>:<>Afficher <ChevronDown size={12}/></>}
                 </button>
               }>
-              {showEchanges && (
+              {showEchanges && p.echanges?.length > 0 && (
+                <>
+                <SubLabel>Historique</SubLabel>
                 <div style={{ position:"relative" as const }}>
                   {/* Ligne verticale du fil */}
                   <div style={{ position:"absolute" as const, left:5, top:10, bottom:10, width:2, background:BRD, borderRadius:2 }}/>
@@ -1318,16 +1333,17 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                     }); })()}
                   </div>
                 </div>
+                </>
               )}
 
-              {/* Contraintes exprimées */}
-              {p.contraintes?.length > 0 && (
-                <div style={{ marginTop:14, paddingTop:14, borderTop:`1px solid ${DIV}` }}>
-                  <p style={{ fontSize:10, fontWeight:700, color:MUT, letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:8 }}>
-                    {p.contraintes.length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
-                  </p>
+              {/* Contraintes exprimées — cycle de prospection courant uniquement */}
+              {showEchanges && contraintesCycleCourant(p).length > 0 && (
+                <div style={{ marginTop: p.echanges?.length>0 ? 18 : 0, paddingTop: p.echanges?.length>0 ? 16 : 0, borderTop: p.echanges?.length>0 ? `1px solid ${DIV}` : "none" }}>
+                  <SubLabel color="#ca631f">
+                    {contraintesCycleCourant(p).length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
+                  </SubLabel>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
-                    {p.contraintes.map((c:any) => (
+                    {contraintesCycleCourant(p).map((c:any) => (
                       <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
                         <span style={{ color:"#ca631f", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
                         <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
