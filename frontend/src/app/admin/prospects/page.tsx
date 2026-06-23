@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Building2, Check, ChevronDown, ChevronUp, Linkedin, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, User, Video, X } from "lucide-react";
+import { Building2, Check, ChevronDown, ChevronUp, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, User, Video, X } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -65,7 +65,7 @@ function canalIcon(canal: string): any {
     case "Telegram":           return Send;
     case "Visioconférence":    return Video;
     case "Réunion physique":   return MapPin;
-    case "LinkedIn":           return Linkedin;
+    case "LinkedIn":           return User;
     case "Courrier postal":    return Send;
     default:                   return MessageSquare;
   }
