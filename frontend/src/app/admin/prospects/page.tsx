@@ -1242,16 +1242,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
           </>}
 
-          {/* Compte rendu des échanges : Historique + Contraintes exprimées (cycle courant) */}
-          {!hideHistorique && (p.echanges?.length > 0 || contraintesCycleCourant(p).length > 0) && (
-            <Section title="Compte rendu des échanges" count={p.echanges?.length||0}
+          {/* Compte rendu des échanges du cycle courant : Historique + Contraintes exprimées */}
+          {!hideHistorique && (echangesDuCycle(p,null).length > 0 || contraintesCycleCourant(p).length > 0) && (
+            <Section title="Compte rendu des échanges" count={echangesDuCycle(p,null).length}
               action={
                 <button onClick={()=>setShowEchanges(o=>!o)}
                   style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${BRD}`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontSize:11, fontWeight:600, color:SUB }}>
                   {showEchanges?<>Masquer <ChevronUp size={12}/></>:<>Afficher <ChevronDown size={12}/></>}
                 </button>
               }>
-              {showEchanges && p.echanges?.length > 0 && (
+              {showEchanges && echangesDuCycle(p,null).length > 0 && (
                 <>
                 <SubLabel>Historique</SubLabel>
                 <div style={{ position:"relative" as const }}>
@@ -1259,34 +1259,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   <div style={{ position:"absolute" as const, left:5, top:10, bottom:10, width:2, background:BRD, borderRadius:2 }}/>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                     {(()=>{
-                      const maxEnregistreLe = Math.max(...p.echanges.map((ex:any)=>new Date(ex.enregistre_le).getTime()));
-                      // Cycles triés par date de conclusion pour rattacher chaque échange à son cycle.
-                      const cyclesAsc = [...(p.cycles||[])].sort((a:any,b:any)=>(a.conclu_le||"").localeCompare(b.conclu_le||""));
-                      const cycleDe = (d:string) => cyclesAsc.find((cy:any)=>cy.conclu_le && d <= cy.conclu_le.slice(0,10)) || null;
-                      let prevCycle: number|undefined;
-                      return [...p.echanges].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any,i:number)=>{
-                      const cy    = cycleDe(e.date_echange);
-                      const cnum  = cy ? cy.cycle_num : 0;   // 0 = cycle courant (actif)
-                      const showSep = (p.cycles?.length>0) && cnum !== prevCycle;
-                      prevCycle = cnum;
+                      const echsCourant = echangesDuCycle(p, null);
+                      const maxEnregistreLe = Math.max(...echsCourant.map((ex:any)=>new Date(ex.enregistre_le).getTime()));
+                      return [...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>{
                       const retard = e.retard_jours || 0;
                       const retardLabel = retard === 0 ? "saisi le jour même" : `saisi ${retard} j après`;
                       const isLast    = new Date(e.enregistre_le).getTime() === maxEnregistreLe;
                       const within24h = Date.now() - new Date(e.enregistre_le).getTime() < 24*3600*1000;
                       const canAct    = !estFige(p) && isLast && within24h;
-                      const sepLabel = cy
-                        ? `Cycle ${cy.cycle_num} — ${cy.issue==="installe"?"Installé":"Décliné"}`
-                        : "Cycle actuel";
-                      const sepColor = cy ? (cy.issue==="installe"?"#0D652D":"#6b7280") : accent;
                       return (
                         <Fragment key={e.id}>
-                          {showSep && (
-                            <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:i>0?8:0, marginBottom:2 }}>
-                              <span style={{ width:10, height:10, borderRadius:"50%", background:sepColor, marginLeft:1, flexShrink:0, border:"2px solid #fff", boxShadow:`0 0 0 1.5px ${sepColor}` }}/>
-                              <span style={{ fontSize:10, fontWeight:700, color:sepColor, letterSpacing:"0.1em", textTransform:"uppercase" as const, whiteSpace:"nowrap" as const }}>{sepLabel}</span>
-                              <span style={{ flex:1, height:1, background:DIV }}/>
-                            </div>
-                          )}
                         <div style={{ paddingLeft:22, position:"relative" as const }}>
                           <div style={{ position:"absolute" as const, left:1, top:15, width:8, height:8, borderRadius:"50%", background:"#fff", border:`2px solid ${accent}` }}/>
                           <div style={card}>
@@ -1355,8 +1337,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               )}
 
               {/* Contraintes exprimées — cycle de prospection courant uniquement */}
-              {showEchanges && contraintesCycleCourant(p).length > 0 && (
-                <div style={{ marginTop: p.echanges?.length>0 ? 18 : 0, paddingTop: p.echanges?.length>0 ? 16 : 0, borderTop: p.echanges?.length>0 ? `1px solid ${DIV}` : "none" }}>
+              {showEchanges && contraintesCycleCourant(p).length > 0 && (()=>{ const hasEch = echangesDuCycle(p,null).length>0; return (
+                <div style={{ marginTop: hasEch ? 18 : 0, paddingTop: hasEch ? 16 : 0, borderTop: hasEch ? `1px solid ${DIV}` : "none" }}>
                   <SubLabel color="#ca631f">
                     {contraintesCycleCourant(p).length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
                   </SubLabel>
@@ -1369,7 +1351,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                     ))}
                   </div>
                 </div>
-              )}
+              ); })()}
             </Section>
           )}
 
@@ -1407,7 +1389,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                         {/* Échanges du cycle */}
                         {echangesCy.length > 0 && (
                           <div>
-                            <SubLabel>Compte rendu des échanges</SubLabel>
+                            <SubLabel>Historique</SubLabel>
                             <div style={{ position:"relative" as const }}>
                               <div style={{ position:"absolute" as const, left:5, top:10, bottom:10, width:2, background:BRD, borderRadius:2 }}/>
                               <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
