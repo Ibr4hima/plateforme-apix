@@ -1404,8 +1404,9 @@ export default function ProspectsPage() {
   const [modal,        setModal]        = useState(false);
   const [edit,         setEdit]         = useState<any>(null);
   const [vue,          setVue]          = useState<any>(null);
-  const [echangeModal, setEchangeModal] = useState(false);
-  const [echangeEdit,  setEchangeEdit]  = useState<any>(null);
+  const [echangeModal,    setEchangeModal]    = useState(false);
+  const [echangeEdit,     setEchangeEdit]     = useState<any>(null);
+  const [echangeProspect, setEchangeProspect] = useState<any>(null);
   const [deleting,     setDeleting]     = useState<number|null>(null);
   const [q,            setQ]            = useState("");
   const [terminerOpenId,  setTerminerOpenId]  = useState<number|null>(null);
@@ -1556,7 +1557,7 @@ export default function ProspectsPage() {
                   ) : onglet==="historique" ? (
                     <div onClick={e=>e.stopPropagation()}>
                       <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
-                        <button onClick={()=>{ setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
+                        <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
                           style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
                           <MessageSquare size={12}/> Contacter
                         </button>
@@ -1604,7 +1605,7 @@ export default function ProspectsPage() {
                         <Pencil size={12}/> Modifier
                       </button>
                       {!estFige(p) && (
-                        <button onClick={()=>{ setEchangeEdit(null); setVue(p); setTimeout(()=>setEchangeModal(true),50); }}
+                        <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
                           style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
                           <MessageSquare size={12}/> Contacter
                         </button>
@@ -1633,8 +1634,8 @@ export default function ProspectsPage() {
         onRecontact={()=>handleRecontact(vue.id)}
         onRouvrir={()=>{ setVue(null); charger(); setOnglet(vue.nb_echanges > 0 ? "historique" : "cibles"); }}
         onRefresh={async()=>{ await charger(); const r=await fetch(`${API}/prospects/${vue.id}`); if(r.ok) setVue(await r.json()); }}/>}
-      {vue && <EchangeModal open={echangeModal} onClose={()=>{ setEchangeModal(false); setEchangeEdit(null); }} prospect={vue} edit={echangeEdit}
-        onSaved={(updated)=>{ setEchangeModal(false); setEchangeEdit(null); setVue(updated); charger(); }}/>}
+      {(echangeProspect || vue) && <EchangeModal open={echangeModal} onClose={()=>{ setEchangeModal(false); setEchangeEdit(null); setEchangeProspect(null); }} prospect={echangeProspect || vue} edit={echangeEdit}
+        onSaved={(updated)=>{ setEchangeModal(false); setEchangeEdit(null); setEchangeProspect(null); if (vue) setVue(updated); charger(); }}/>}
     </div>
   );
 }
