@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Building2, Check, ChevronDown, ChevronUp, Loader2, MessageSquare, Pencil, Plus, Trash2, User, X } from "lucide-react";
+import { Building2, Check, ChevronDown, ChevronUp, Linkedin, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, User, Video, X } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -52,6 +52,30 @@ function canalContactMeta(canal: string): { label: string; placeholder: string }
     case "Autre":              return { label: "Coordonnée / précision",  placeholder: "Préciser le moyen de contact" };
     default: return null;
   }
+}
+
+// Icône lucide associée à chaque canal de contact.
+function canalIcon(canal: string): any {
+  switch (canal) {
+    case "Mail":               return Mail;
+    case "Appel téléphonique": return Phone;
+    case "SMS":                return MessageSquare;
+    case "WhatsApp":           return MessageCircle;
+    case "Signal":             return MessageCircle;
+    case "Telegram":           return Send;
+    case "Visioconférence":    return Video;
+    case "Réunion physique":   return MapPin;
+    case "LinkedIn":           return Linkedin;
+    case "Courrier postal":    return Send;
+    default:                   return MessageSquare;
+  }
+}
+
+// Affichage propre de la coordonnée (numéro formaté avec espaces, reste tel quel).
+function canalContactDisplay(canal: string, contact: string): string {
+  if (!contact) return "";
+  if (PHONE_CANAUX.includes(canal)) return fmtPhone(contact);
+  return contact;
 }
 
 function isValidEmail(email: string): boolean {
@@ -1287,13 +1311,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             )}
 
                             {/* Ligne 3 : canal de contact */}
-                            {e.canal && (
-                              <div style={{ marginBottom:8 }}>
-                                <span style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"1px solid rgba(0,79,145,0.18)", padding:"2px 9px", borderRadius:999 }}>
-                                  {e.canal}{e.canal_contact ? ` · ${e.canal_contact}` : ""}
-                                </span>
+                            {e.canal && (()=>{ const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
+                              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                                <CIcon size={13} style={{ color:accent, flexShrink:0 }}/>
+                                <span style={{ fontSize:12, fontWeight:600, color:TXT }}>{e.canal}</span>
+                                {coord && <>
+                                  <span style={{ width:3, height:3, borderRadius:"50%", background:MUT, flexShrink:0 }}/>
+                                  <span style={{ fontSize:12, color:SUB }}>{coord}</span>
+                                </>}
                               </div>
-                            )}
+                            ); })()}
 
                             {/* Compte-rendu */}
                             {e.commentaire && (
