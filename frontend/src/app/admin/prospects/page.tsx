@@ -105,17 +105,18 @@ function cycleCourantDebut(p:any): string|null {
   return dates.length ? dates.sort().at(-1) : null;
 }
 
-// Contraintes rattachées à un cycle de prospection donné, suivant la même
-// logique de fenêtre temporelle que les échanges (created_at vs conclu_le).
+// Contraintes rattachées à un cycle de prospection donné.
 // cy === null → cycle courant (actif) ; sinon → cycle archivé.
-// Une contrainte ne peut être saisie que pendant un cycle actif, donc sa date
-// de création identifie sans ambiguïté son cycle.
+// Les contraintes portent un `cycle_num` fixé à la création (= nombre de cycles
+// déjà archivés à ce moment). Une contrainte de cycle_num = k correspond donc
+// au cycle archivé portant cycle_num = k+1 ; les contraintes du cycle courant
+// ont cycle_num = nombre de cycles archivés. On s'appuie sur cette numérotation
+// (et non sur les dates) car une contrainte et la conclusion d'un cycle peuvent
+// tomber le même jour, ce qui rendait une comparaison de dates ambiguë.
 function contraintesDuCycle(p:any, cy:any): any[] {
-  const cyclesAsc = [...(p?.cycles||[])].sort((a:any,b:any)=>(a.conclu_le||"").localeCompare(b.conclu_le||""));
-  const cycleDe = (d:string) => cyclesAsc.find((c:any)=>c.conclu_le && d < c.conclu_le.slice(0,10)) || null;
+  const nbCycles = (p?.cycles || []).length;
   return (p?.contraintes || []).filter((c:any)=>{
-    const found = cycleDe((c.created_at||"").slice(0,10));
-    return cy ? (found && found.id===cy.id) : !found;
+    return cy ? (c.cycle_num === cy.cycle_num - 1) : (c.cycle_num === nbCycles);
   });
 }
 
@@ -125,11 +126,21 @@ function contraintesCycleCourant(p:any): any[] {
 }
 
 // Échanges rattachés à un cycle donné (null = cycle courant).
+// Les échanges n'ont pas de cycle_num : on les rattache via leur timestamp
+// d'enregistrement (`enregistre_le`) comparé aux dates de conclusion des cycles.
+// Un échange enregistré avant (ou au moment de) la conclusion d'un cycle lui
+// appartient ; ceux postérieurs à toutes les conclusions sont du cycle courant.
+// On compare des timestamps complets (et non des dates) pour lever l'ambiguïté
+// d'un échange et d'une conclusion survenus le même jour.
 function echangesDuCycle(p:any, cy:any): any[] {
   const cyclesAsc = [...(p?.cycles||[])].sort((a:any,b:any)=>(a.conclu_le||"").localeCompare(b.conclu_le||""));
-  const cycleDe = (d:string) => cyclesAsc.find((c:any)=>c.conclu_le && d < c.conclu_le.slice(0,10)) || null;
+  const cycleDe = (iso:string) => {
+    if (!iso) return null;
+    const t = new Date(iso).getTime();
+    return cyclesAsc.find((c:any)=>c.conclu_le && t <= new Date(c.conclu_le).getTime()) || null;
+  };
   return (p?.echanges||[]).filter((e:any)=>{
-    const found = cycleDe(e.date_echange);
+    const found = cycleDe(e.enregistre_le);
     return cy ? (found && found.id===cy.id) : !found;
   });
 }
