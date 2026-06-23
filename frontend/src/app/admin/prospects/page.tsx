@@ -18,6 +18,39 @@ const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadiu
 const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
 
+// Canaux de contact possibles lors d'un échange.
+const CANAUX = [
+  "Mail",
+  "Appel téléphonique",
+  "SMS",
+  "WhatsApp",
+  "Signal",
+  "Telegram",
+  "Visioconférence",
+  "Réunion physique",
+  "LinkedIn",
+  "Courrier postal",
+  "Autre",
+];
+
+// Libellé et placeholder du champ coordonnée selon le canal choisi.
+function canalContactMeta(canal: string): { label: string; placeholder: string } | null {
+  switch (canal) {
+    case "Mail":               return { label: "Adresse e-mail utilisée", placeholder: "ex. contact@entreprise.com" };
+    case "Appel téléphonique":
+    case "SMS":
+    case "WhatsApp":
+    case "Signal":
+    case "Telegram":           return { label: "Numéro utilisé",          placeholder: "ex. +221 77 123 45 67" };
+    case "Visioconférence":    return { label: "Plateforme / lien",       placeholder: "ex. Zoom, Teams, Google Meet…" };
+    case "Réunion physique":   return { label: "Lieu de la rencontre",    placeholder: "ex. Siège APIX, Dakar" };
+    case "LinkedIn":           return { label: "Profil LinkedIn",         placeholder: "ex. linkedin.com/in/…" };
+    case "Courrier postal":    return { label: "Adresse postale",         placeholder: "Adresse d'envoi" };
+    case "Autre":              return { label: "Coordonnée / précision",  placeholder: "Préciser le moyen de contact" };
+    default: return null;
+  }
+}
+
 const ETATS = [
   { value:"en_cours",  label:"En cours",  color:"#ca631f" },
   { value:"interesse", label:"Intéressé", color:"#004f91" },
@@ -523,7 +556,7 @@ const addDays = (iso:string, n:number) => { const d=new Date(iso); d.setDate(d.g
 function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean; onClose:()=>void; prospect:any; edit?:any; onSaved:(updated:any)=>void }) {
   const today = new Date().toISOString().slice(0,10);
   const isEdit = !!edit;
-  const EMPTY_ECHANGE = { date_echange: today, commentaire:"", contact_par:"", interlocuteur:"", point_focal_id:"" };
+  const EMPTY_ECHANGE = { date_echange: "", commentaire:"", contact_par:"", interlocuteur:"", point_focal_id:"", canal:"", canal_contact:"" };
   const [form, setForm]     = useState({ ...EMPTY_ECHANGE });
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
@@ -563,10 +596,11 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         contact_par:    edit.contact_par || "",
         interlocuteur:  edit.interlocuteur || "",
         point_focal_id: edit.point_focal_id ? String(edit.point_focal_id) : (estMorale && edit.interlocuteur ? "__autre" : ""),
+        canal:          edit.canal || "",
+        canal_contact:  edit.canal_contact || "",
       });
     } else {
-      const defaut = dateMin && dateMin <= today ? dateMin : today;
-      setForm({ ...EMPTY_ECHANGE, date_echange: defaut, interlocuteur: !estMorale ? nomProspect : "" });
+      setForm({ ...EMPTY_ECHANGE, interlocuteur: !estMorale ? nomProspect : "" });
     }
     setError(""); setOk(false);
   }, [open, prospect?.id, edit?.id]);
@@ -589,6 +623,8 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         contact_par:    form.contact_par.trim() || null,
         interlocuteur,
         point_focal_id,
+        canal:          form.canal || null,
+        canal_contact:  form.canal_contact.trim() || null,
       });
       const res = isEdit
         ? await fetch(`${API}/prospects/echanges/${edit.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body })
@@ -628,13 +664,6 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             {/* Date */}
             <div>
               <label style={LS}>{estPremier ? "Date du premier contact *" : "Date de l'échange *"}</label>
-              <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:6 }}>
-                {estPremier
-                  ? "Date à laquelle le premier contact a eu lieu — doit être ≤ aujourd'hui"
-                  : dateMin
-                    ? `Doit être ${new Date(dateMin).toLocaleDateString("fr-FR")} au plus tôt${dateMax!==today?` et ${new Date(dateMax).toLocaleDateString("fr-FR")} au plus tard`:" et ≤ aujourd'hui"}`
-                    : "Doit être ≤ aujourd'hui"}
-              </p>
               <input type="date" value={form.date_echange}
                 max={dateMax} min={dateMin}
                 onChange={e=>upd("date_echange",e.target.value)} style={IS}/>
@@ -644,7 +673,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
               {/* Côté investisseur */}
               <div>
-                <label style={LS}>Interlocuteur (côté investisseur)</label>
+                <label style={LS}>Interlocuteur</label>
                 {estMorale && pointsFocaux.length > 0 ? (
                   <>
                     <select value={form.point_focal_id} onChange={e=>{ upd("point_focal_id",e.target.value); if(e.target.value!=="__autre") upd("interlocuteur",""); }}
@@ -668,16 +697,37 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               </div>
               {/* Côté APIX */}
               <div>
-                <label style={LS}>Agent APIX (vous)</label>
+                <label style={LS}>Agent de l'APIX</label>
                 <input value={form.contact_par} onChange={e=>upd("contact_par",e.target.value)}
                   placeholder="Votre nom" style={IS}/>
               </div>
             </div>
 
+            {/* Canal de contact + coordonnée associée */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+              <div>
+                <label style={LS}>Canal utilisé</label>
+                <select value={form.canal} onChange={e=>{ upd("canal",e.target.value); upd("canal_contact",""); }}
+                  style={{ ...IS, cursor:"pointer" }}>
+                  <option value="">— Sélectionner —</option>
+                  {CANAUX.map(c=>(<option key={c} value={c}>{c}</option>))}
+                </select>
+              </div>
+              {form.canal && (()=>{
+                const meta = canalContactMeta(form.canal);
+                return (
+                  <div>
+                    <label style={LS}>{meta?.label || "Coordonnée"}</label>
+                    <input value={form.canal_contact} onChange={e=>upd("canal_contact",e.target.value)}
+                      placeholder={meta?.placeholder || ""} style={IS}/>
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Compte-rendu */}
             <div>
               <label style={LS}>Compte-rendu de l'échange</label>
-              <p style={{ fontSize:11, color:"#9aa5b4", marginBottom:8 }}>Résumé de la discussion, décisions, prochaines étapes…</p>
               <div style={{ minHeight:160 }}>
                 <RichTextEditor value={form.commentaire} onChange={v=>upd("commentaire",v)}/>
               </div>
@@ -1145,7 +1195,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
                             {/* Ligne 2 : interlocuteurs */}
                             {(e.interlocuteur || e.contact_par) && (
-                              <div style={{ display:"flex", gap:14, flexWrap:"wrap" as const, marginBottom:8 }}>
+                              <div style={{ display:"flex", gap:14, flexWrap:"wrap" as const, marginBottom:(e.canal||e.canal_contact)?6:8 }}>
                                 {e.interlocuteur && (
                                   <span style={{ fontSize:11, color:SUB, display:"flex", alignItems:"center", gap:5 }}>
                                     <User size={11} style={{ color:MUT }}/> {e.interlocuteur}
@@ -1156,6 +1206,15 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                     <Building2 size={11}/> {e.contact_par}
                                   </span>
                                 )}
+                              </div>
+                            )}
+
+                            {/* Ligne 3 : canal de contact */}
+                            {e.canal && (
+                              <div style={{ marginBottom:8 }}>
+                                <span style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"1px solid rgba(0,79,145,0.18)", padding:"2px 9px", borderRadius:999 }}>
+                                  {e.canal}{e.canal_contact ? ` · ${e.canal_contact}` : ""}
+                                </span>
                               </div>
                             )}
 

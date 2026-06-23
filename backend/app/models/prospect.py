@@ -117,6 +117,8 @@ class ProspectEchange(Base):
     commentaire     = Column(Text)
     contact_par     = Column(String(255), nullable=True)   # agent APIX (manuel jusqu'à l'auth)
     interlocuteur   = Column(Text, nullable=True)          # qui côté investisseur
+    canal           = Column(String(50), nullable=True)    # Mail, Appel téléphonique, WhatsApp, …
+    canal_contact   = Column(String(255), nullable=True)   # coordonnée associée au canal
     point_focal_id  = Column(Integer, ForeignKey("prospect_points_focaux.id", ondelete="SET NULL"), nullable=True)
     enregistre_le   = Column(TIMESTAMP(timezone=True), server_default=func.now())
 

@@ -141,6 +141,8 @@ def echange_to_dict(e: ProspectEchange) -> dict:
         "commentaire":     e.commentaire,
         "contact_par":     e.contact_par,
         "interlocuteur":   e.interlocuteur,
+        "canal":           e.canal,
+        "canal_contact":   e.canal_contact,
         "point_focal_id":  e.point_focal_id,
         "enregistre_le":   e.enregistre_le.isoformat() if e.enregistre_le else None,
         "retard_jours":    retard_jours,
@@ -552,6 +554,8 @@ async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = De
     # Interlocuteur côté investisseur : texte libre ou issu d'un point focal
     interlocuteur  = (payload.get("interlocuteur") or "").strip() or None
     point_focal_id = payload.get("point_focal_id") or None
+    canal          = (payload.get("canal") or "").strip() or None
+    canal_contact  = (payload.get("canal_contact") or "").strip() or None
 
     e = ProspectEchange(
         prospect_id    = prospect_id,
@@ -559,6 +563,8 @@ async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = De
         commentaire    = payload.get("commentaire") or None,
         contact_par    = contact_par,
         interlocuteur  = interlocuteur,
+        canal          = canal,
+        canal_contact  = canal_contact,
         point_focal_id = point_focal_id,
     )
     db.add(e)
@@ -646,6 +652,10 @@ async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = De
         e.point_focal_id = payload["point_focal_id"] or None
     if "contact_par" in payload:
         e.contact_par = (payload["contact_par"] or "").strip() or None
+    if "canal" in payload:
+        e.canal = (payload["canal"] or "").strip() or None
+    if "canal_contact" in payload:
+        e.canal_contact = (payload["canal_contact"] or "").strip() or None
 
     await db.flush()
     await db.refresh(e)
