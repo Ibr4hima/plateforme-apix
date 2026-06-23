@@ -789,7 +789,7 @@ function ContrainteModal({ open, onClose, prospectId, contrainte, onSaved }: {
 }
 
 // ── Vue fiche prospect ────────────────────────────────────────────────────────
-function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, onRouvrir, readOnly, hideHistorique }: any) {
+function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, onRouvrir, readOnly, hideHistorique, historiqueOnly }: any) {
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
   const [secteurs, setSecteurs]   = useState<any[]>([]);
@@ -950,8 +950,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7, flexShrink:0 }}><X size={14} color="#4a5568"/></button>
           </div>
 
-          {/* Identité & coordonnées */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
+          {/* Identité, contacts, activités, commentaires — masqués en mode historiqueOnly */}
+          {!historiqueOnly && <><div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
             {p.telephones?.length > 0 && (
               <div style={{ background:"#F8F7F6", borderRadius:10, padding:"12px 14px" }}>
                 <LBL>Téléphone(s)</LBL>
@@ -1070,6 +1070,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               </div>
             </Section>
           )}
+
+          </>}
 
           {/* Fil des échanges */}
           {!hideHistorique && p.echanges?.length > 0 && (
@@ -1447,7 +1449,7 @@ export default function ProspectsPage() {
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
                     {p.mails?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Mail : {p.mails[0]}</span></div>}
                     {p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>}
-                    {p.nb_echanges > 0 && onglet !== "cibles" && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
+                    {p.nb_echanges > 0 && onglet === "precedents" && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
                   </div>
                   {onglet==="precedents" ? (
                     <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
@@ -1465,6 +1467,14 @@ export default function ProspectsPage() {
                         style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}
                         title="Supprimer définitivement (test)">
                         {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
+                      </button>
+                    </div>
+                  ) : onglet==="historique" ? (
+                    // Historique des contacts : lecture seule, modifications dans Investisseurs ciblés
+                    <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                      <button onClick={()=>setVue(p)}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#4a5568", fontWeight:600 }}>
+                        Consulter
                       </button>
                     </div>
                   ) : onglet==="cibles" && p.nb_echanges > 0 ? (
@@ -1502,8 +1512,9 @@ export default function ProspectsPage() {
 
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
       {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
-        readOnly={onglet==="precedents"}
+        readOnly={onglet==="precedents" || onglet==="historique"}
         hideHistorique={onglet==="cibles" && vue.nb_echanges > 0}
+        historiqueOnly={onglet==="historique"}
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
         onContacter={()=>{ setEchangeEdit(null); setEchangeModal(true); }}
         onEditEchange={(e:any)=>{ setEchangeEdit(e); setEchangeModal(true); }}
