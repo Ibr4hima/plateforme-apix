@@ -4,6 +4,8 @@ import { signIn } from "next-auth/react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Loader2 } from "lucide-react"
+import AuthShell, { authInputStyle, authButtonStyle, authLabelStyle } from "@/components/auth/AuthShell"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
@@ -46,7 +48,6 @@ export default function RegisterPage() {
       return
     }
 
-    // Compte créé → connexion automatique
     const login = await signIn("credentials", { email, password, redirect: false })
     setLoading(false)
     if (login?.error) {
@@ -58,61 +59,85 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <div className="w-full max-w-sm flex flex-col items-center gap-8 p-8">
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-3xl font-bold tracking-tight text-gray-900">APIX</span>
-          <span className="text-sm text-gray-500 text-center">
-            Création de compte agent
-          </span>
-        </div>
-
-        <div className="w-full border-t border-gray-100" />
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
+    <AuthShell
+      title="Créer un compte"
+      subtitle="Réservé aux agents disposant d'une adresse @apix.sn"
+      footer={
+        <>
+          Déjà un compte ?{" "}
+          <Link href="/login" style={{ color: "#ca631f", fontWeight: 700, textDecoration: "none" }}>
+            Se connecter
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div>
+          <label style={authLabelStyle}>Adresse email</label>
           <input
+            className="auth-input"
             type="email"
             required
             placeholder="prenom.nom@apix.sn"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004f91]"
+            style={authInputStyle}
           />
+        </div>
+
+        <div>
+          <label style={authLabelStyle}>Mot de passe</label>
           <input
+            className="auth-input"
             type="password"
             required
-            placeholder="Mot de passe (8 caractères min.)"
+            placeholder="8 caractères minimum"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004f91]"
+            style={authInputStyle}
           />
+        </div>
+
+        <div>
+          <label style={authLabelStyle}>Confirmer le mot de passe</label>
           <input
+            className="auth-input"
             type="password"
             required
-            placeholder="Confirmer le mot de passe"
+            placeholder="••••••••"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004f91]"
+            style={authInputStyle}
           />
+        </div>
 
-          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full px-4 py-3 bg-[#004f91] hover:bg-[#003a6b] disabled:opacity-60 text-white font-medium rounded-lg transition-colors"
+        {error && (
+          <div
+            style={{
+              background: "rgba(220,38,38,0.07)",
+              border: "1px solid rgba(220,38,38,0.2)",
+              color: "#dc2626",
+              fontSize: 13,
+              fontWeight: 500,
+              padding: "10px 14px",
+              borderRadius: 10,
+              textAlign: "center",
+            }}
           >
-            {loading ? "Création…" : "Créer mon compte"}
-          </button>
-        </form>
+            {error}
+          </div>
+        )}
 
-        <p className="text-sm text-gray-500 text-center">
-          Déjà un compte ?{" "}
-          <Link href="/login" className="text-[#004f91] font-medium hover:underline">
-            Se connecter
-          </Link>
-        </p>
-      </div>
-    </div>
+        <button type="submit" disabled={loading} className="auth-cta" style={authButtonStyle}>
+          {loading ? (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+              <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Création…
+            </span>
+          ) : (
+            "Créer mon compte"
+          )}
+        </button>
+      </form>
+    </AuthShell>
   )
 }

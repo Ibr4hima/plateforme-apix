@@ -4,6 +4,8 @@ import { signIn } from "next-auth/react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Loader2 } from "lucide-react"
+import AuthShell, { authInputStyle, authButtonStyle, authLabelStyle } from "@/components/auth/AuthShell"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -16,11 +18,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError("")
     setLoading(true)
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    })
+    const res = await signIn("credentials", { email, password, redirect: false })
     setLoading(false)
     if (res?.error) {
       setError("Email ou mot de passe incorrect.")
@@ -31,62 +29,72 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <div className="w-full max-w-sm flex flex-col items-center gap-8 p-8">
-        {/* Logo APIX */}
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-3xl font-bold tracking-tight text-gray-900">APIX</span>
-          <span className="text-sm text-gray-500 text-center">
-            Agence de Promotion des Investissements et Grands Travaux
-          </span>
-        </div>
-
-        <div className="w-full border-t border-gray-100" />
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
-          <p className="text-gray-600 text-center text-sm">
-            Connectez-vous avec votre compte @apix.sn
-          </p>
-
+    <AuthShell
+      title="Connexion"
+      subtitle="Accédez à votre espace avec votre compte @apix.sn"
+      footer={
+        <>
+          Pas encore de compte ?{" "}
+          <Link href="/register" style={{ color: "#ca631f", fontWeight: 700, textDecoration: "none" }}>
+            Créer un compte
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div>
+          <label style={authLabelStyle}>Adresse email</label>
           <input
+            className="auth-input"
             type="email"
             required
             placeholder="prenom.nom@apix.sn"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004f91]"
+            style={authInputStyle}
           />
+        </div>
+
+        <div>
+          <label style={authLabelStyle}>Mot de passe</label>
           <input
+            className="auth-input"
             type="password"
             required
-            placeholder="Mot de passe"
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#004f91]"
+            style={authInputStyle}
           />
+        </div>
 
-          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full px-4 py-3 bg-[#004f91] hover:bg-[#003a6b] disabled:opacity-60 text-white font-medium rounded-lg transition-colors"
+        {error && (
+          <div
+            style={{
+              background: "rgba(220,38,38,0.07)",
+              border: "1px solid rgba(220,38,38,0.2)",
+              color: "#dc2626",
+              fontSize: 13,
+              fontWeight: 500,
+              padding: "10px 14px",
+              borderRadius: 10,
+              textAlign: "center",
+            }}
           >
-            {loading ? "Connexion…" : "Se connecter"}
-          </button>
-        </form>
+            {error}
+          </div>
+        )}
 
-        <p className="text-sm text-gray-500 text-center">
-          Pas encore de compte ?{" "}
-          <Link href="/register" className="text-[#004f91] font-medium hover:underline">
-            Créer un compte
-          </Link>
-        </p>
-
-        <p className="text-xs text-gray-400 text-center">
-          Accès réservé aux agents APIX disposant d&apos;un compte @apix.sn
-        </p>
-      </div>
-    </div>
+        <button type="submit" disabled={loading} className="auth-cta" style={authButtonStyle}>
+          {loading ? (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+              <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Connexion…
+            </span>
+          ) : (
+            "Se connecter"
+          )}
+        </button>
+      </form>
+    </AuthShell>
   )
 }
