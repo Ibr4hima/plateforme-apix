@@ -1312,9 +1312,15 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             )
           )}
 
-          <div style={{ display:"flex", gap:8, marginTop:24, justifyContent:"flex-end", borderTop:`1px solid ${DIV}`, paddingTop:18 }}>
+          <div style={{ display:"flex", gap:8, marginTop:24, justifyContent:"space-between", borderTop:`1px solid ${DIV}`, paddingTop:18 }}>
+            {(!readOnly && !estFige(p)) ? (
+              <button onClick={onContacter}
+                style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
+                <MessageSquare size={14}/> Contacter
+              </button>
+            ) : <span/>}
             <div style={{ display:"flex", gap:8 }}>
-              {!readOnly && (
+              {!readOnly && !historiqueOnly && (
                 <button onClick={onEdit}
                   style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:10, border:`1px solid ${BRD}`, background:"transparent", color:SUB, fontWeight:700, cursor:"pointer", fontSize:13 }}>
                   <Pencil size={14}/> Modifier
@@ -1512,7 +1518,7 @@ export default function ProspectsPage() {
 
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
       {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
-        readOnly={onglet==="precedents" || onglet==="historique"}
+        readOnly={onglet==="precedents"}
         hideHistorique={onglet==="cibles" && vue.nb_echanges > 0}
         historiqueOnly={onglet==="historique"}
         onEdit={()=>{ setEdit(vue); setVue(null); setModal(true); }}
