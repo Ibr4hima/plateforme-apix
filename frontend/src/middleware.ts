@@ -1,8 +1,7 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
 
-export default auth((req: NextRequest & { auth: Record<string, unknown> | null }) => {
+export default auth((req) => {
   const { nextUrl } = req
   const session = req.auth
 
@@ -19,8 +18,7 @@ export default auth((req: NextRequest & { auth: Record<string, unknown> | null }
     if (!session) {
       return NextResponse.redirect(new URL("/login", nextUrl))
     }
-    const user = session.user as Record<string, unknown> | undefined
-    if (!user || user.role !== "admin") {
+    if (session.user?.role !== "admin") {
       return NextResponse.redirect(new URL("/unauthorized", nextUrl))
     }
   }

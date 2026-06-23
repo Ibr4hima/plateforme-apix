@@ -8,12 +8,34 @@ Le backend le revalide avec ce même secret ; aucun appel à Azure AD n'est requ
 from typing import Optional
 from fastapi import Depends, HTTPException, Request
 from jose import JWTError, jwt
+from passlib.context import CryptContext
 
 from app.core.config import get_settings
 
 settings = get_settings()
 
 _ALGORITHM = "HS256"
+
+# Hachage des mots de passe (bcrypt).
+_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(password: str) -> str:
+    """Retourne le hash bcrypt d'un mot de passe en clair."""
+    return _pwd_context.hash(password)
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    """Vérifie qu'un mot de passe en clair correspond à son hash."""
+    try:
+        return _pwd_context.verify(plain, hashed)
+    except Exception:
+        return False
+
+
+def role_for_email(email: str) -> str:
+    """Détermine le rôle d'un email : 'admin' s'il est dans ADMIN_EMAILS, sinon 'viewer'."""
+    return "admin" if (email or "").strip().lower() in settings.admin_emails_list else "viewer"
 
 
 def verify_nextauth_token(token: str) -> dict:
