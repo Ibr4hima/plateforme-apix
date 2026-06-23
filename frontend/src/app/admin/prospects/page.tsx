@@ -33,15 +33,18 @@ const CANAUX = [
   "Autre",
 ];
 
+// Canaux dont la coordonnée est un numéro de téléphone (→ PhoneInput).
+const PHONE_CANAUX = ["Appel téléphonique", "SMS", "WhatsApp", "Signal", "Telegram"];
+
 // Libellé et placeholder du champ coordonnée selon le canal choisi.
 function canalContactMeta(canal: string): { label: string; placeholder: string } | null {
   switch (canal) {
-    case "Mail":               return { label: "Adresse e-mail utilisée", placeholder: "ex. contact@entreprise.com" };
+    case "Mail":               return { label: "Adresse e-mail de l'interlocuteur",        placeholder: "ex. contact@entreprise.com" };
     case "Appel téléphonique":
     case "SMS":
     case "WhatsApp":
     case "Signal":
-    case "Telegram":           return { label: "Numéro utilisé",          placeholder: "ex. +221 77 123 45 67" };
+    case "Telegram":           return { label: "Numéro de téléphone de l'interlocuteur",   placeholder: "" };
     case "Visioconférence":    return { label: "Plateforme / lien",       placeholder: "ex. Zoom, Teams, Google Meet…" };
     case "Réunion physique":   return { label: "Lieu de la rencontre",    placeholder: "ex. Siège APIX, Dakar" };
     case "LinkedIn":           return { label: "Profil LinkedIn",         placeholder: "ex. linkedin.com/in/…" };
@@ -49,6 +52,19 @@ function canalContactMeta(canal: string): { label: string; placeholder: string }
     case "Autre":              return { label: "Coordonnée / précision",  placeholder: "Préciser le moyen de contact" };
     default: return null;
   }
+}
+
+function isValidEmail(email: string): boolean {
+  if (!email) return true;
+  if (/\s/.test(email)) return false;
+  const atIdx = email.indexOf("@");
+  if (atIdx <= 0) return false;
+  if ((email.match(/@/g)||[]).length !== 1) return false;
+  const domain = email.slice(atIdx + 1);
+  if (!domain || !domain.includes(".")) return false;
+  if (email.endsWith("@") || email.endsWith(".")) return false;
+  const tld = domain.split(".").at(-1)!;
+  return tld.length >= 2;
 }
 
 const ETATS = [
@@ -561,6 +577,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
   const [ok,     setOk]     = useState(false);
+  const [emailError, setEmailError] = useState("");
   const upd = (k:string, v:string) => setForm(f=>({ ...f,[k]:v }));
 
   const pointsFocaux: any[] = prospect?.points_focaux || [];
@@ -602,11 +619,14 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     } else {
       setForm({ ...EMPTY_ECHANGE, interlocuteur: !estMorale ? nomProspect : "" });
     }
-    setError(""); setOk(false);
+    setError(""); setOk(false); setEmailError("");
   }, [open, prospect?.id, edit?.id]);
 
   const handleSave = async () => {
     if (!form.date_echange) { setError("La date est obligatoire"); return; }
+    if (form.canal === "Mail" && form.canal_contact && !isValidEmail(form.canal_contact)) {
+      setEmailError("Adresse e-mail invalide"); return;
+    }
     setSaving(true); setError("");
     try {
       // Résoudre l'interlocuteur : si point focal sélectionné, on prend son nom
@@ -707,7 +727,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
               <div>
                 <label style={LS}>Canal utilisé</label>
-                <select value={form.canal} onChange={e=>{ upd("canal",e.target.value); upd("canal_contact",""); }}
+                <select value={form.canal} onChange={e=>{ upd("canal",e.target.value); upd("canal_contact",""); setEmailError(""); }}
                   style={{ ...IS, cursor:"pointer" }}>
                   <option value="">— Sélectionner —</option>
                   {CANAUX.map(c=>(<option key={c} value={c}>{c}</option>))}
@@ -715,11 +735,24 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               </div>
               {form.canal && (()=>{
                 const meta = canalContactMeta(form.canal);
+                const isPhone = PHONE_CANAUX.includes(form.canal);
                 return (
                   <div>
                     <label style={LS}>{meta?.label || "Coordonnée"}</label>
-                    <input value={form.canal_contact} onChange={e=>upd("canal_contact",e.target.value)}
-                      placeholder={meta?.placeholder || ""} style={IS}/>
+                    {isPhone ? (
+                      <PhoneInput value={form.canal_contact} onChange={v=>upd("canal_contact",v)}/>
+                    ) : form.canal === "Mail" ? (
+                      <>
+                        <input type="email" value={form.canal_contact}
+                          onChange={e=>{ upd("canal_contact",e.target.value); if(emailError) setEmailError(""); }}
+                          onBlur={()=>{ if(form.canal_contact && !isValidEmail(form.canal_contact)) setEmailError("Adresse e-mail invalide"); }}
+                          placeholder={meta?.placeholder || ""} style={{ ...IS, borderColor: emailError?"#dc2626":undefined }}/>
+                        {emailError && <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>{emailError}</p>}
+                      </>
+                    ) : (
+                      <input value={form.canal_contact} onChange={e=>upd("canal_contact",e.target.value)}
+                        placeholder={meta?.placeholder || ""} style={IS}/>
+                    )}
                   </div>
                 );
               })()}
