@@ -581,9 +581,10 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   const [localContraintes, setLocalContraintes] = useState<any[]>([]);
   const [showContrainteForm, setShowContrainteForm] = useState(false);
   const [editContrainteId, setEditContrainteId] = useState<number|null>(null);
-  const [contrainteForm, setContrainteForm] = useState({ description:"", solution_preconisee:"" });
+  const [bulletContraintes, setBulletContraintes] = useState<string[]>([""]);
   const [savingContrainte, setSavingContrainte] = useState(false);
   const [contrainteError, setContrainteError] = useState("");
+  const bulletRefs = useRef<(HTMLInputElement|null)[]>([]);
   const upd = (k:string, v:string) => setForm(f=>({ ...f,[k]:v }));
 
   const pointsFocaux: any[] = prospect?.points_focaux || [];
@@ -627,35 +628,45 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     }
     setLocalContraintes(prospect?.contraintes || []);
     setShowContrainteForm(false); setEditContrainteId(null);
-    setContrainteForm({ description:"", solution_preconisee:"" }); setContrainteError("");
+    setBulletContraintes([""]); setContrainteError("");
     setError(""); setOk(false); setEmailError("");
   }, [open, prospect?.id, edit?.id]);
 
   const ouvrirContrainte = (c:any|null) => {
     setEditContrainteId(c?.id ?? null);
-    setContrainteForm({ description: c?.description || "", solution_preconisee: c?.solution_preconisee || "" });
+    setBulletContraintes(c ? [c.description.replace(/<[^>]+>/g,"").trim()] : [""]);
     setContrainteError("");
     setShowContrainteForm(true);
+    setTimeout(()=>bulletRefs.current[0]?.focus(), 50);
   };
 
   const annulerContrainte = () => {
     setShowContrainteForm(false); setEditContrainteId(null);
-    setContrainteForm({ description:"", solution_preconisee:"" }); setContrainteError("");
+    setBulletContraintes([""]); setContrainteError("");
   };
 
   const enregistrerContrainte = async () => {
-    if (!contrainteForm.description.trim()) { setContrainteError("La description est obligatoire"); return; }
+    const lines = bulletContraintes.map(b=>b.trim()).filter(Boolean);
+    if (!lines.length) { setContrainteError("Au moins une contrainte est requise"); return; }
     setSavingContrainte(true); setContrainteError("");
     try {
-      const url    = editContrainteId ? `${API}/prospects/contraintes/${editContrainteId}` : `${API}/prospects/${prospect.id}/contraintes`;
-      const method = editContrainteId ? "PATCH" : "POST";
-      const res    = await fetch(url, { method, headers:{"Content-Type":"application/json"}, body:JSON.stringify({
-        description:         contrainteForm.description.trim(),
-        solution_preconisee: contrainteForm.solution_preconisee.trim()||null,
-      })});
-      if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
-      const saved = await res.json();
-      setLocalContraintes(prev => editContrainteId ? prev.map((x:any)=>x.id===saved.id ? saved : x) : [...prev, saved]);
+      if (editContrainteId) {
+        const res = await fetch(`${API}/prospects/contraintes/${editContrainteId}`, {
+          method:"PATCH", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ description: lines[0] }),
+        });
+        if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
+        const saved = await res.json();
+        setLocalContraintes(prev => prev.map((x:any)=>x.id===saved.id ? saved : x));
+      } else {
+        const savedAll = await Promise.all(lines.map(line =>
+          fetch(`${API}/prospects/${prospect.id}/contraintes`, {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ description: line }),
+          }).then(async r => { if (!r.ok) { const d=await r.json(); throw new Error(d.detail||"Erreur"); } return r.json(); })
+        ));
+        setLocalContraintes(prev => [...prev, ...savedAll]);
+      }
       annulerContrainte();
     } catch(e:any) { setContrainteError(e.message); }
     finally { setSavingContrainte(false); }
@@ -824,18 +835,31 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 </div>
               )}
               {showContrainteForm ? (
-                <div style={{ border:"1px solid #E8E5E3", borderRadius:10, padding:"14px 16px", background:"#F8F7F6", display:"flex", flexDirection:"column" as const, gap:12 }}>
-                  <div>
-                    <label style={LS}>Description de la contrainte *</label>
-                    <div style={{ minHeight:100 }}>
-                      <RichTextEditor value={contrainteForm.description} onChange={v=>setContrainteForm(f=>({ ...f, description:v }))}/>
-                    </div>
-                  </div>
-                  <div>
-                    <label style={LS}>Solution préconisée</label>
-                    <div style={{ minHeight:90 }}>
-                      <RichTextEditor value={contrainteForm.solution_preconisee} onChange={v=>setContrainteForm(f=>({ ...f, solution_preconisee:v }))}/>
-                    </div>
+                <div style={{ border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px", background:"#F8F7F6", display:"flex", flexDirection:"column" as const, gap:10 }}>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
+                    {bulletContraintes.map((b,i) => (
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ color:"#ca631f", fontWeight:900, fontSize:18, flexShrink:0, lineHeight:1, userSelect:"none" as const }}>•</span>
+                        <input
+                          ref={el=>{ bulletRefs.current[i]=el; }}
+                          value={b}
+                          onChange={e=>{ const arr=[...bulletContraintes]; arr[i]=e.target.value; setBulletContraintes(arr); }}
+                          onKeyDown={e=>{
+                            if (e.key==="Enter") {
+                              e.preventDefault();
+                              const arr=[...bulletContraintes]; arr.splice(i+1,0,""); setBulletContraintes(arr);
+                              setTimeout(()=>bulletRefs.current[i+1]?.focus(),0);
+                            } else if (e.key==="Backspace" && b==="" && bulletContraintes.length>1) {
+                              e.preventDefault();
+                              const arr=bulletContraintes.filter((_,j)=>j!==i); setBulletContraintes(arr);
+                              setTimeout(()=>bulletRefs.current[Math.max(0,i-1)]?.focus(),0);
+                            }
+                          }}
+                          placeholder={i===0 ? "Décrire la contrainte…" : ""}
+                          style={{ ...IS, flex:1 }}
+                        />
+                      </div>
+                    ))}
                   </div>
                   {contrainteError && <p style={{ fontSize:12, color:"#dc2626" }}>{contrainteError}</p>}
                   <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
