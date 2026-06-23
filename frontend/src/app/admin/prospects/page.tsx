@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Building2, Check, ChevronDown, ChevronUp, Clock, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, User, Video, X } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
@@ -964,45 +964,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
     ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); }).catch(()=>{});
   },[p.id]);
 
-  // ─ Conclusion de la prospection
-  const [showConclusion,   setShowConclusion]   = useState(false);
-  const [issueForm,        setIssueForm]        = useState({ issue:"", commentaire:"" });
-  const [savingIssue,      setSavingIssue]      = useState(false);
-  const [issueOk,          setIssueOk]          = useState(false);
-
-  // ─ Préservation du scroll pendant la saisie dans le formulaire de conclusion
-  const scrollContainerRef  = useRef<HTMLDivElement>(null);
-  const savedScrollRef      = useRef(0);
-  const restoreScrollRef    = useRef(false);
-  useLayoutEffect(() => {
-    if (restoreScrollRef.current && scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = savedScrollRef.current;
-    }
-    restoreScrollRef.current = false;
-  });
-
-  useEffect(()=>{
-    setShowConclusion(false);
-    setIssueForm({ issue:"", commentaire:"" });
-  }, [p.id]);
-
-  const handleSaveIssue = async () => {
-    setSavingIssue(true); setIssueOk(false);
-    const res = await fetch(`${API}/prospects/${p.id}/conclusion`, {
-      method:"PATCH", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ issue: issueForm.issue||null, issue_commentaire: issueForm.commentaire||null }),
-    });
-    setSavingIssue(false);
-    if (res.ok) { setIssueOk(true); onRefresh?.(); setTimeout(()=>{ setIssueOk(false); setShowConclusion(false); },1200); }
-  };
-
-  // Correction d'une conclusion saisie par erreur : remet à zéro sans archiver de cycle.
-  const handleReopen = async () => {
-    if (!confirm("Corriger / Rouvrir cette prospection ?\n\nLa conclusion sera effacée. Le prospect reviendra dans les onglets actifs.")) return;
-    const res = await fetch(`${API}/prospects/${p.id}/rouvrir`, { method:"POST" });
-    if (res.ok) onRouvrir?.();
-    else { const d=await res.json().catch(()=>({})); alert(d.detail||"Erreur lors de la réouverture"); }
-  };
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleDeleteEchange = async (id:number) => {
     if (!confirm("Supprimer cet échange ?")) return;
@@ -1051,12 +1013,6 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
       {children}
     </div>
   );
-
-  const issueMeta = p.issue==="installe"
-    ? { label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" }
-    : p.issue==="decline"
-    ? { label:"Possibilité écartée", color:"#6b7280", bg:"rgba(107,114,128,0.10)" }
-    : null;
 
   // Affichage en cascade Secteur → Branche → Activité (style entreprises)
   const NaemaCascade = ({ secIds, braIds, actIds }:{ secIds:number[]; braIds:number[]; actIds:number[] }) => (
@@ -1414,105 +1370,6 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 })}
               </div>
             </Section>
-          )}
-
-          {/* Conclusion de la prospection — tout en bas, visible dès qu'il y a un échange */}
-          {!hideHistorique && p.echanges?.length > 0 && (
-            p.issue ? (
-              // ── État conclu : lecture seule + action contextuelle
-              <Section title="Conclusion de la prospection"
-                action={
-                  p.issue==="decline" && onRecontact ? (
-                    <button type="button" onClick={onRecontact}
-                      style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, padding:"5px 14px", borderRadius:8, border:"none", background:accent, color:"#fff", cursor:"pointer" }}>
-                      <MessageSquare size={11}/> Re-contacter
-                    </button>
-                  ) : p.issue==="installe" ? (
-                    <button type="button" onClick={handleReopen}
-                      style={{ fontSize:11, fontWeight:600, padding:"5px 12px", borderRadius:8, border:`1px solid ${BRD}`, background:"transparent", color:SUB, cursor:"pointer" }}>
-                      Corriger la conclusion
-                    </button>
-                  ) : null
-                }>
-                <div style={{ ...card, borderLeft:`3px solid ${issueMeta?.color||BRD}` }}>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: p.issue_commentaire ? 10 : 0 }}>
-                    {issueMeta && (
-                      <span style={{ fontSize:12, fontWeight:700, color:issueMeta.color, background:issueMeta.bg, padding:"3px 12px", borderRadius:999 }}>
-                        {issueMeta.label}
-                      </span>
-                    )}
-                    {p.issue_conclu_le && (
-                      <span style={{ fontSize:10.5, color:MUT, display:"flex", alignItems:"center", gap:5 }}>
-                        <Clock size={11}/> Conclu le {new Date(p.issue_conclu_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
-                      </span>
-                    )}
-                  </div>
-                  {p.issue_commentaire && (
-                    <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
-                      dangerouslySetInnerHTML={{ __html:p.issue_commentaire }}/>
-                  )}
-                </div>
-              </Section>
-            ) : (
-              // ── Non conclu : qualification de l'issue
-              <Section title="Conclusion de la prospection"
-                action={!readOnly ?
-                  <button type="button" onClick={()=>{ setShowConclusion(o=>!o); setIssueForm({ issue:"", commentaire:"" }); }}
-                    style={{ fontSize:11, fontWeight:700, padding:"5px 14px", borderRadius:8, border:"none", cursor:"pointer",
-                      background: showConclusion ? "#1a1a2e" : "rgba(26,26,46,0.07)",
-                      color: showConclusion ? "#fff" : SUB }}>
-                    {showConclusion ? "Annuler" : "Clore la discussion"}
-                  </button> : null
-                }>
-                {!showConclusion ? (
-                  <p style={{ fontSize:12, color:MUT, fontStyle:"italic" }}>Prospection en cours — aucune conclusion enregistrée.</p>
-                ) : (
-                  <div style={{ ...card, display:"flex", flexDirection:"column" as const, gap:12 }}>
-                    {/* Choix */}
-                    <div style={{ display:"flex", gap:8 }}>
-                      {([
-                        { value:"installe", label:"Installation au Sénégal", color:"#0D652D", bg:"rgba(13,101,45,0.10)" },
-                        { value:"decline",  label:"Possibilité écartée",      color:"#6b7280", bg:"rgba(107,114,128,0.10)" },
-                      ] as const).map(o=>(
-                        <button key={o.value} type="button"
-                          onClick={()=>setIssueForm(f=>({...f, issue: f.issue===o.value?"":o.value}))}
-                          style={{ flex:1, padding:"11px 6px", borderRadius:10, cursor:"pointer", fontSize:12, fontWeight:700, transition:"all .15s",
-                            border:`1px solid ${issueForm.issue===o.value?o.color:BRD}`,
-                            background:issueForm.issue===o.value?o.bg:"#fff",
-                            color:issueForm.issue===o.value?o.color:MUT }}>
-                          {o.label}
-                        </button>
-                      ))}
-                    </div>
-                    {/* Commentaire (obligatoire) */}
-                    {issueForm.issue && (
-                      <div>
-                        <label style={LS}>Commentaire <span style={{ color:"#dc2626" }}>*</span></label>
-                        <div style={{ minHeight:100 }}>
-                          <RichTextEditor value={issueForm.commentaire} onChange={v=>{ savedScrollRef.current = scrollContainerRef.current?.scrollTop??0; restoreScrollRef.current=true; setIssueForm(f=>({...f,commentaire:v})); }}/>
-                        </div>
-                      </div>
-                    )}
-                    {/* Bouton enregistrer */}
-                    {issueForm.issue && (()=>{
-                      const commentaireVide = !issueForm.commentaire.replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
-                      return (
-                      <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", gap:10 }}>
-                        {commentaireVide && <span style={{ fontSize:11, color:MUT }}>Le commentaire est obligatoire</span>}
-                        <button onClick={handleSaveIssue} disabled={savingIssue||commentaireVide}
-                          style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 18px", borderRadius:9, border:"none",
-                            background: issueOk ? "#059669" : (savingIssue||commentaireVide) ? "#ccc" : "#1a1a2e",
-                            color:"#fff", fontWeight:700, cursor:(savingIssue||commentaireVide)?"not-allowed":"pointer", fontSize:13 }}>
-                          {savingIssue?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
-                          {issueOk ? "Conclu !" : savingIssue ? "Enregistrement…" : "Conclure la prospection"}
-                        </button>
-                      </div>
-                      );
-                    })()}
-                  </div>
-                )}
-              </Section>
-            )
           )}
 
           <div style={{ display:"flex", gap:8, marginTop:24, justifyContent:"space-between", borderTop:`1px solid ${DIV}`, paddingTop:18 }}>
