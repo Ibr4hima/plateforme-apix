@@ -660,8 +660,17 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     const nextN = idx>=0 && idx<parCreation.length-1 ? parCreation[idx+1] : null;
     if (prevN) dateMin = addDays(prevN.date_echange, 1);
     if (nextN) dateMax = addDays(nextN.date_echange, -1);
-  } else if (dernierEchange) {
-    dateMin = addDays(dernierEchange.date_echange, 1);
+  } else {
+    const lastCycle = (prospect?.cycles||[]).length > 0
+      ? [...prospect.cycles].sort((a:any,b:any)=>b.cycle_num-a.cycle_num)[0]
+      : null;
+    const cycleConcluDate = lastCycle?.conclu_le ? lastCycle.conclu_le.slice(0,10) : null;
+    const dernierEchangeDate = dernierEchange ? dernierEchange.date_echange : null;
+    if (cycleConcluDate && (!dernierEchangeDate || cycleConcluDate > dernierEchangeDate)) {
+      dateMin = cycleConcluDate;
+    } else if (dernierEchangeDate) {
+      dateMin = addDays(dernierEchangeDate, 1);
+    }
   }
 
   useEffect(()=>{
