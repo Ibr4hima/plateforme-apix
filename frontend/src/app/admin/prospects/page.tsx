@@ -149,7 +149,7 @@ function echangesDuCycle(p:any, cy:any): any[] {
 // L'issue de la relation (installé / décliné) prime sur l'indicateur d'activité ;
 // sinon on retombe sur le délai depuis le dernier échange du cycle courant.
 function badgeProspect(p:any) {
-  if (p?.issue === "installe") return { label:"Installé", color:"#0D652D", bg:"rgba(13,101,45,0.10)" };
+  if (p?.issue === "installe") return { label:"Installation à venir", color:"#0D652D", bg:"rgba(13,101,45,0.10)" };
   if (p?.issue === "decline")  return { label:"Décliné",  color:"#6b7280", bg:"rgba(107,114,128,0.12)" };
   // Après un re-contact, on ne mesure l'activité que sur le cycle courant ;
   // les échanges des cycles passés ne doivent pas faire paraître la fiche « Inactif ».
@@ -1133,8 +1133,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7, flexShrink:0 }}><X size={14} color="#4a5568"/></button>
           </div>
 
-          {/* Identité, contacts, activités, commentaires — masqués en mode historiqueOnly */}
-          {!historiqueOnly && <><div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
+          {/* Identité, contacts, activités, commentaires — masqués en readOnly et historiqueOnly */}
+          {!historiqueOnly && !readOnly && <><div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
             {p.telephones?.length > 0 && (
               <InfoCard icon={Phone} label="Téléphone">
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:3 }}>
@@ -1267,8 +1267,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
           </>}
 
-          {/* Compte rendu des échanges du cycle courant : Historique + Contraintes exprimées */}
-          {!hideHistorique && (echangesDuCycle(p,null).length > 0 || contraintesCycleCourant(p).length > 0) && (
+          {/* Compte rendu des échanges du cycle courant : Historique + Contraintes exprimées (masqué en readOnly) */}
+          {!hideHistorique && !readOnly && (echangesDuCycle(p,null).length > 0 || contraintesCycleCourant(p).length > 0) && (
             <Section title="Compte rendu des échanges" count={echangesDuCycle(p,null).length}
               action={
                 <button onClick={()=>setShowEchanges(o=>!o)}
@@ -1380,9 +1380,91 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             </Section>
           )}
 
-          {/* Cycles de prospection passés — un bloc repliable par cycle */}
-          {p.cycles?.length > 0 && (
+          {/* Cycles de prospection — un bloc repliable par cycle.
+              En readOnly (onglet précédents), le cycle courant figé est aussi affiché en tête. */}
+          {(p.cycles?.length > 0 || (readOnly && estFige(p))) && (
             <div style={{ marginTop:22, display:"flex", flexDirection:"column" as const, gap:8 }}>
+              {/* Cycle courant figé : synthétique, affiché uniquement en readOnly */}
+              {readOnly && estFige(p) && (()=>{
+                const currentNum = (p.cycles?.length || 0) + 1;
+                const inst = p.issue === "installe";
+                const col  = inst ? "#0D652D" : "#6b7280";
+                const synId = -1;
+                const isOpen = openCycles.has(synId);
+                const echsCourant = echangesDuCycle(p, null);
+                const contrCourant = contraintesCycleCourant(p);
+                return (
+                  <div style={{ border:`1px solid ${BRD}`, borderRadius:12, overflow:"hidden" as const }}>
+                    <button onClick={()=>toggleCycle(synId)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "#fff", border:"none", cursor:"pointer", textAlign:"left" as const }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, flex:1, flexWrap:"wrap" as const }}>
+                        <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {currentNum}</span>
+                        <span style={{ fontSize:11, fontWeight:700, color:col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
+                        {p.issue_conclu_le && <span style={{ fontSize:11, color:MUT }}>· Conclu le {new Date(p.issue_conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}</span>}
+                      </div>
+                      {isOpen ? <ChevronUp size={14} style={{ color:MUT, flexShrink:0 }}/> : <ChevronDown size={14} style={{ color:MUT, flexShrink:0 }}/>}
+                    </button>
+                    {isOpen && (
+                      <div style={{ borderTop:`1px solid ${BRD}`, padding:"16px 16px", background:SURF, display:"flex", flexDirection:"column" as const, gap:14 }}>
+                        {p.issue_commentaire && (
+                          <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7, fontStyle:"italic" }}
+                            dangerouslySetInnerHTML={{ __html:p.issue_commentaire }}/>
+                        )}
+                        {echsCourant.length > 0 && (
+                          <div>
+                            <SubLabel>Historique</SubLabel>
+                            <div style={{ position:"relative" as const }}>
+                              <div style={{ position:"absolute" as const, left:5, top:10, bottom:10, width:2, background:BRD, borderRadius:2 }}/>
+                              <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+                                {[...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>(
+                                  <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
+                                    <div style={{ position:"absolute" as const, left:1, top:15, width:8, height:8, borderRadius:"50%", background:"#fff", border:`2px solid ${accent}` }}/>
+                                    <div style={{ background:"#fff", border:`1px solid ${BRD}`, borderRadius:10, padding:"12px 14px" }}>
+                                      <div style={{ fontSize:13, fontWeight:800, color:TXT, marginBottom:(e.interlocuteur||e.contact_par)?4:0 }}>
+                                        {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
+                                      </div>
+                                      {(e.interlocuteur||e.contact_par) && (
+                                        <p style={{ fontSize:11, color:MUT, marginBottom:e.canal?4:0 }}>
+                                          {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
+                                        </p>
+                                      )}
+                                      {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
+                                        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:e.commentaire?6:0 }}>
+                                          <CIcon size={13} style={{ color:accent, flexShrink:0 }}/>
+                                          <span style={{ fontSize:12, fontWeight:600, color:TXT }}>{e.canal}</span>
+                                          {coord && <><span style={{ width:3,height:3,borderRadius:"50%",background:MUT,flexShrink:0 }}/><span style={{ fontSize:12,color:SUB }}>{coord}</span></>}
+                                        </div>
+                                      );})()}
+                                      {e.commentaire && (
+                                        <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
+                                          dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {contrCourant.length > 0 && (
+                          <div>
+                            <SubLabel color="#ca631f">
+                              {contrCourant.length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
+                            </SubLabel>
+                            <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
+                              {contrCourant.map((c:any) => (
+                                <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
+                                  <span style={{ color:"#ca631f", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
+                                  <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               {[...p.cycles].sort((a:any,b:any)=>b.cycle_num-a.cycle_num).map((cy:any)=>{
                 const inst = cy.issue==="installe";
                 const col  = inst ? "#0D652D" : "#6b7280";
@@ -1636,7 +1718,6 @@ export default function ProspectsPage() {
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
                     {p.mails?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Mail : {p.mails[0]}</span></div>}
                     {p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>}
-                    {p.nb_echanges > 0 && onglet === "precedents" && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><MessageSquare size={10} style={{ color:accent,flexShrink:0 }}/><span style={{ color:accent, fontWeight:600 }}>{p.nb_echanges} échange{p.nb_echanges>1?"s":""} · {p.dernier_contact_par}</span></div>}
                   </div>
                   {onglet==="precedents" ? (
                     <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
