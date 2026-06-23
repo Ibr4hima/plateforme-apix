@@ -112,7 +112,7 @@ function cycleCourantDebut(p:any): string|null {
 // de création identifie sans ambiguïté son cycle.
 function contraintesDuCycle(p:any, cy:any): any[] {
   const cyclesAsc = [...(p?.cycles||[])].sort((a:any,b:any)=>(a.conclu_le||"").localeCompare(b.conclu_le||""));
-  const cycleDe = (d:string) => cyclesAsc.find((c:any)=>c.conclu_le && d <= c.conclu_le.slice(0,10)) || null;
+  const cycleDe = (d:string) => cyclesAsc.find((c:any)=>c.conclu_le && d < c.conclu_le.slice(0,10)) || null;
   return (p?.contraintes || []).filter((c:any)=>{
     const found = cycleDe((c.created_at||"").slice(0,10));
     return cy ? (found && found.id===cy.id) : !found;
@@ -127,7 +127,7 @@ function contraintesCycleCourant(p:any): any[] {
 // Échanges rattachés à un cycle donné (null = cycle courant).
 function echangesDuCycle(p:any, cy:any): any[] {
   const cyclesAsc = [...(p?.cycles||[])].sort((a:any,b:any)=>(a.conclu_le||"").localeCompare(b.conclu_le||""));
-  const cycleDe = (d:string) => cyclesAsc.find((c:any)=>c.conclu_le && d <= c.conclu_le.slice(0,10)) || null;
+  const cycleDe = (d:string) => cyclesAsc.find((c:any)=>c.conclu_le && d < c.conclu_le.slice(0,10)) || null;
   return (p?.echanges||[]).filter((e:any)=>{
     const found = cycleDe(e.date_echange);
     return cy ? (found && found.id===cy.id) : !found;
