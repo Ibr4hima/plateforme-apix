@@ -105,17 +105,23 @@ function cycleCourantDebut(p:any): string|null {
   return dates.length ? dates.sort().at(-1) : null;
 }
 
-// Numéro du cycle de prospection courant (= nombre de cycles déjà archivés).
-// Les contraintes nouvellement saisies portent ce numéro côté backend.
-function cycleCourantNum(p:any): number {
-  return p?.cycles?.length || 0;
+// Contraintes rattachées à un cycle de prospection donné, suivant la même
+// logique de fenêtre temporelle que les échanges (created_at vs conclu_le).
+// cy === null → cycle courant (actif) ; sinon → cycle archivé.
+// Une contrainte ne peut être saisie que pendant un cycle actif, donc sa date
+// de création identifie sans ambiguïté son cycle.
+function contraintesDuCycle(p:any, cy:any): any[] {
+  const cyclesAsc = [...(p?.cycles||[])].sort((a:any,b:any)=>(a.conclu_le||"").localeCompare(b.conclu_le||""));
+  const cycleDe = (d:string) => cyclesAsc.find((c:any)=>c.conclu_le && d <= c.conclu_le.slice(0,10)) || null;
+  return (p?.contraintes || []).filter((c:any)=>{
+    const found = cycleDe((c.created_at||"").slice(0,10));
+    return cy ? (found && found.id===cy.id) : !found;
+  });
 }
 
-// Contraintes exprimées lors du cycle de prospection courant uniquement.
-// Chaque re-contact démarre un nouveau cycle avec ses propres contraintes.
+// Contraintes exprimées lors du cycle de prospection courant (actif).
 function contraintesCycleCourant(p:any): any[] {
-  const n = cycleCourantNum(p);
-  return (p?.contraintes || []).filter((c:any)=> (c.cycle_num ?? 0) === n);
+  return contraintesDuCycle(p, null);
 }
 
 // Badge de statut d'une carte prospect.
@@ -1363,6 +1369,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   const inst = cy.issue==="installe";
                   const col  = inst ? "#0D652D" : "#6b7280";
                   const bg   = inst ? "rgba(13,101,45,0.10)" : "rgba(107,114,128,0.10)";
+                  const contraintesCy = contraintesDuCycle(p, cy);
                   return (
                     <div key={cy.id} style={card}>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: cy.issue_commentaire ? 8 : 0 }}>
@@ -1380,6 +1387,21 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       {cy.issue_commentaire && (
                         <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.6 }}
                           dangerouslySetInnerHTML={{ __html:cy.issue_commentaire }}/>
+                      )}
+                      {contraintesCy.length > 0 && (
+                        <div style={{ marginTop:10, paddingTop:10, borderTop:`1px solid ${DIV}` }}>
+                          <SubLabel color="#ca631f">
+                            {contraintesCy.length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
+                          </SubLabel>
+                          <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
+                            {contraintesCy.map((c:any) => (
+                              <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
+                                <span style={{ color:"#ca631f", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
+                                <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   );
