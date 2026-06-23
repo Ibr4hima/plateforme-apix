@@ -36,11 +36,16 @@ export default function AuthShell({
         .auth-brand{animation:authFadeUp .7s ease both}
         .auth-card{animation:authFadeUp .7s .15s ease both}
         .auth-input{transition:border-color .15s,box-shadow .15s,background .15s}
+        .auth-input::placeholder{color:#b8b2ad}
         .auth-input:focus{outline:none;border-color:#ca631f;box-shadow:0 0 0 3px rgba(202,99,31,.15);background:#fff}
-        .auth-cta{transition:transform .2s,box-shadow .2s}
-        .auth-cta:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(202,99,31,.45)}
-        .auth-cta:disabled{opacity:.6;transform:none;box-shadow:0 4px 20px rgba(202,99,31,.3);cursor:not-allowed}
-        @media (max-width:920px){.auth-brand-panel{display:none!important}}
+        .auth-cta{transition:transform .2s,box-shadow .2s,filter .2s}
+        .auth-cta:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(202,99,31,.45);filter:brightness(1.03)}
+        .auth-cta:disabled{opacity:.65;transform:none;box-shadow:0 4px 20px rgba(202,99,31,.3);cursor:not-allowed}
+        .auth-mobile-logo{display:none}
+        @media (max-width:920px){
+          .auth-brand-panel{display:none!important}
+          .auth-mobile-logo{display:flex!important}
+        }
       `}</style>
 
       {/* ── Panneau de marque (gauche) ─────────────────────────────────────── */}
@@ -48,13 +53,12 @@ export default function AuthShell({
         className="auth-brand-panel"
         style={{
           position: "relative",
-          flex: "1 1 56%",
+          flex: "1 1 54%",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "56px 64px",
+          padding: "60px 72px",
           background:
-            "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",
+            "linear-gradient(160deg,#003a6e 0%,#004f91 58%,#1a6ab0 100%)",
           overflow: "hidden",
         }}
       >
@@ -77,11 +81,11 @@ export default function AuthShell({
               position: "absolute",
               bottom: "-22%",
               left: "-10%",
-              width: 460,
-              height: 460,
+              width: 480,
+              height: 480,
               borderRadius: "50%",
               background:
-                "radial-gradient(circle,rgba(202,99,31,0.12) 0%,transparent 65%)",
+                "radial-gradient(circle,rgba(202,99,31,0.14) 0%,transparent 65%)",
             }}
           />
           <div
@@ -96,20 +100,34 @@ export default function AuthShell({
           />
         </div>
 
-        {/* Logo */}
+        {/* Logo (haut) */}
         <div className="auth-brand" style={{ position: "relative", zIndex: 1 }}>
           <Image
             src="/logo_apix.png"
             alt="APIX Sénégal"
-            width={120}
-            height={52}
-            style={{ height: 46, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }}
+            width={150}
+            height={64}
+            style={{
+              height: 56,
+              width: "auto",
+              objectFit: "contain",
+              filter: "brightness(0) invert(1)",
+            }}
             priority
           />
         </div>
 
-        {/* Accroche */}
-        <div className="auth-brand" style={{ position: "relative", zIndex: 1 }}>
+        {/* Accroche (centre) */}
+        <div
+          className="auth-brand"
+          style={{
+            position: "relative",
+            zIndex: 1,
+            margin: "auto 0",
+            paddingTop: 32,
+            paddingBottom: 32,
+          }}
+        >
           <div
             style={{
               display: "inline-flex",
@@ -119,7 +137,7 @@ export default function AuthShell({
               border: "1px solid rgba(202,99,31,0.25)",
               borderRadius: 999,
               padding: "6px 14px",
-              marginBottom: 28,
+              marginBottom: 30,
             }}
           >
             <div
@@ -136,26 +154,25 @@ export default function AuthShell({
                 fontSize: 11,
                 fontWeight: 700,
                 color: "#D96D3B",
-                letterSpacing: "0.15em",
+                letterSpacing: "0.14em",
                 textTransform: "uppercase",
               }}
             >
-              Plateforme de Gestion des Investissements
+              Plateforme de Gestion des Investissements et des Investisseurs
             </span>
           </div>
 
           <h1
             style={{
               fontWeight: 800,
-              fontSize: "clamp(2.4rem,3.6vw,3.6rem)",
-              lineHeight: 1.05,
-              letterSpacing: "-0.025em",
+              fontSize: "clamp(2.6rem,4vw,4rem)",
+              lineHeight: 1.04,
+              letterSpacing: "-0.03em",
               color: "#fff",
               margin: 0,
-              maxWidth: 520,
             }}
           >
-            Intelligence{" "}
+            Invest In{" "}
             <span
               style={{
                 background: "linear-gradient(135deg,#ca631f,#FFB0A1)",
@@ -164,9 +181,8 @@ export default function AuthShell({
                 backgroundClip: "text",
               }}
             >
-              Investissement
-            </span>{" "}
-            Sénégal
+              Senegal
+            </span>
           </h1>
 
           <p
@@ -176,6 +192,7 @@ export default function AuthShell({
               maxWidth: 440,
               lineHeight: 1.75,
               marginTop: 22,
+              marginBottom: 0,
             }}
           >
             Plateforme de suivi, d'analyse et de gestion des investissements au
@@ -183,7 +200,7 @@ export default function AuthShell({
           </p>
         </div>
 
-        {/* Badges de confiance */}
+        {/* Badges de confiance (bas) */}
         <div
           className="auth-brand"
           style={{
@@ -205,7 +222,7 @@ export default function AuthShell({
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                padding: "8px 14px",
+                padding: "9px 15px",
                 background: "rgba(255,255,255,0.06)",
                 border: "1px solid rgba(255,255,255,0.12)",
                 borderRadius: 999,
@@ -225,7 +242,11 @@ export default function AuthShell({
                 {item.icon}
               </span>
               <span
-                style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.85)",
+                }}
               >
                 {item.label}
               </span>
@@ -237,64 +258,115 @@ export default function AuthShell({
       {/* ── Zone formulaire (droite) ───────────────────────────────────────── */}
       <section
         style={{
-          flex: "1 1 44%",
+          flex: "1 1 46%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "48px 32px",
+          padding: "48px 40px",
         }}
       >
         <div
           className="auth-card"
-          style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", gap: 28 }}
+          style={{
+            width: "100%",
+            maxWidth: 384,
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
-          {/* Logo (mobile uniquement, panneau de marque caché) */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
+          {/* Logo mobile (panneau de marque masqué) */}
+          <div
+            className="auth-mobile-logo"
+            style={{ justifyContent: "center", marginBottom: 32 }}
+          >
             <Image
               src="/logo_apix.png"
               alt="APIX"
-              width={100}
-              height={44}
-              style={{ height: 40, width: "auto", objectFit: "contain" }}
+              width={120}
+              height={52}
+              style={{ height: 46, width: "auto", objectFit: "contain" }}
             />
           </div>
 
-          <div>
+          {/* En-tête */}
+          <div style={{ marginBottom: 28 }}>
             <h2
               style={{
                 fontWeight: 800,
-                fontSize: "1.75rem",
+                fontSize: "1.9rem",
                 color: "#1a1a2e",
-                letterSpacing: "-0.02em",
+                letterSpacing: "-0.025em",
                 margin: 0,
               }}
             >
               {title}
             </h2>
-            <p style={{ color: "#9aa5b4", fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>
+            <p
+              style={{
+                color: "#9aa5b4",
+                fontSize: 14.5,
+                marginTop: 10,
+                marginBottom: 0,
+                lineHeight: 1.6,
+              }}
+            >
               {subtitle}
             </p>
           </div>
 
+          {/* Formulaire */}
           {children}
 
+          {/* Lien secondaire */}
           {footer && (
-            <div style={{ textAlign: "center", fontSize: 14, color: "#6b7280" }}>
+            <div
+              style={{
+                textAlign: "center",
+                fontSize: 14,
+                color: "#6b7280",
+                marginTop: 24,
+              }}
+            >
               {footer}
             </div>
           )}
 
-          <p
+          {/* Mention d'accès */}
+          <div
             style={{
-              textAlign: "center",
-              fontSize: 11,
-              color: "#c5bfbb",
-              lineHeight: 1.6,
-              marginTop: 4,
+              marginTop: 28,
+              paddingTop: 20,
+              borderTop: "1px solid #EFEBE8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 7,
             }}
           >
-            Accès réservé aux agents APIX disposant d&apos;un compte @apix.sn
-          </p>
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 14,
+                color: "#c5bfbb",
+                fontVariationSettings:
+                  "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",
+                lineHeight: 1,
+              }}
+            >
+              lock
+            </span>
+            <span
+              style={{
+                fontSize: 11.5,
+                color: "#b0a9a3",
+                lineHeight: 1.5,
+                textAlign: "center",
+              }}
+            >
+              Accès réservé aux agents de l&apos;APIX disposant d&apos;un compte
+              professionnel
+            </span>
+          </div>
         </div>
       </section>
     </main>
@@ -328,9 +400,9 @@ export const authButtonStyle: React.CSSProperties = {
 }
 
 export const authLabelStyle: React.CSSProperties = {
-  fontSize: 12,
+  fontSize: 12.5,
   fontWeight: 600,
   color: "#4a5568",
-  marginBottom: 6,
+  marginBottom: 7,
   display: "block",
 }

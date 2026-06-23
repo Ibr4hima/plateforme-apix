@@ -48,6 +48,7 @@ export default function LoginPage() {
             className="auth-input"
             type="email"
             required
+            autoComplete="email"
             placeholder="prenom.nom@apix.sn"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -61,6 +62,7 @@ export default function LoginPage() {
             className="auth-input"
             type="password"
             required
+            autoComplete="current-password"
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

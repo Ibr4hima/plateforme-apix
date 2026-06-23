@@ -78,6 +78,7 @@ export default function RegisterPage() {
             className="auth-input"
             type="email"
             required
+            autoComplete="email"
             placeholder="prenom.nom@apix.sn"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -91,6 +92,7 @@ export default function RegisterPage() {
             className="auth-input"
             type="password"
             required
+            autoComplete="new-password"
             placeholder="8 caractères minimum"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -104,6 +106,7 @@ export default function RegisterPage() {
             className="auth-input"
             type="password"
             required
+            autoComplete="new-password"
             placeholder="••••••••"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
