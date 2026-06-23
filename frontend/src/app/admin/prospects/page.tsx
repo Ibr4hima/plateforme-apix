@@ -124,6 +124,16 @@ function contraintesCycleCourant(p:any): any[] {
   return contraintesDuCycle(p, null);
 }
 
+// Échanges rattachés à un cycle donné (null = cycle courant).
+function echangesDuCycle(p:any, cy:any): any[] {
+  const cyclesAsc = [...(p?.cycles||[])].sort((a:any,b:any)=>(a.conclu_le||"").localeCompare(b.conclu_le||""));
+  const cycleDe = (d:string) => cyclesAsc.find((c:any)=>c.conclu_le && d <= c.conclu_le.slice(0,10)) || null;
+  return (p?.echanges||[]).filter((e:any)=>{
+    const found = cycleDe(e.date_echange);
+    return cy ? (found && found.id===cy.id) : !found;
+  });
+}
+
 // Badge de statut d'une carte prospect.
 // L'issue de la relation (installé / décliné) prime sur l'indicateur d'activité ;
 // sinon on retombe sur le délai depuis le dernier échange du cycle courant.
@@ -971,6 +981,8 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh, onRecontact, onRouvrir, readOnly, hideHistorique, historiqueOnly }: any) {
   const [showEchanges,    setShowEchanges]    = useState(true);
   const [deletingEchange, setDeletingEchange] = useState<number|null>(null);
+  const [openCycles,      setOpenCycles]      = useState<Set<number>>(new Set());
+  const toggleCycle = (id:number) => setOpenCycles(prev=>{ const s=new Set(prev); s.has(id)?s.delete(id):s.add(id); return s; });
   const [secteurs, setSecteurs]   = useState<any[]>([]);
   const [branches, setBranches]   = useState<any[]>([]);
   const [activites, setActivites] = useState<any[]>([]);
@@ -1361,53 +1373,98 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             </Section>
           )}
 
-          {/* Historique des cycles de prospection passés (re-contacts) */}
+          {/* Cycles de prospection passés — un bloc repliable par cycle */}
           {p.cycles?.length > 0 && (
-            <Section title="Cycles de prospection passés" count={p.cycles.length}>
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                {[...p.cycles].sort((a:any,b:any)=>b.cycle_num-a.cycle_num).map((cy:any)=>{
-                  const inst = cy.issue==="installe";
-                  const col  = inst ? "#0D652D" : "#6b7280";
-                  const bg   = inst ? "rgba(13,101,45,0.10)" : "rgba(107,114,128,0.10)";
-                  const contraintesCy = contraintesDuCycle(p, cy);
-                  return (
-                    <div key={cy.id} style={card}>
-                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" as const, gap:8, marginBottom: cy.issue_commentaire ? 8 : 0 }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                          <span style={{ fontSize:10, fontWeight:700, color:MUT }}>Cycle {cy.cycle_num}</span>
-                          <span style={{ fontSize:11, fontWeight:700, color:col, background:bg, padding:"2px 10px", borderRadius:999 }}>
-                            {inst ? "Installation au Sénégal" : "Possibilité écartée"}
-                          </span>
-                        </div>
-                        <span style={{ fontSize:10.5, color:MUT }}>
-                          {cy.conclu_le && `Conclu le ${new Date(cy.conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
-                          {cy.recontacte_le && ` · Re-contacté le ${new Date(cy.recontacte_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}`}
-                        </span>
+            <div style={{ marginTop:22, display:"flex", flexDirection:"column" as const, gap:8 }}>
+              {[...p.cycles].sort((a:any,b:any)=>b.cycle_num-a.cycle_num).map((cy:any)=>{
+                const inst = cy.issue==="installe";
+                const col  = inst ? "#0D652D" : "#6b7280";
+                const isOpen = openCycles.has(cy.id);
+                const echangesCy    = echangesDuCycle(p, cy);
+                const contraintesCy = contraintesDuCycle(p, cy);
+                return (
+                  <div key={cy.id} style={{ border:`1px solid ${BRD}`, borderRadius:12, overflow:"hidden" as const }}>
+                    {/* En-tête cliquable */}
+                    <button onClick={()=>toggleCycle(cy.id)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "#fff", border:"none", cursor:"pointer", textAlign:"left" as const }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, flex:1, flexWrap:"wrap" as const }}>
+                        <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {cy.cycle_num}</span>
+                        <span style={{ fontSize:11, fontWeight:700, color:col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
+                        {cy.conclu_le && <span style={{ fontSize:11, color:MUT }}>· Conclu le {new Date(cy.conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}</span>}
                       </div>
-                      {cy.issue_commentaire && (
-                        <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.6 }}
-                          dangerouslySetInnerHTML={{ __html:cy.issue_commentaire }}/>
-                      )}
-                      {contraintesCy.length > 0 && (
-                        <div style={{ marginTop:10, paddingTop:10, borderTop:`1px solid ${DIV}` }}>
-                          <SubLabel color="#ca631f">
-                            {contraintesCy.length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
-                          </SubLabel>
-                          <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
-                            {contraintesCy.map((c:any) => (
-                              <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
-                                <span style={{ color:"#ca631f", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
-                                <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
+                      {isOpen ? <ChevronUp size={14} style={{ color:MUT, flexShrink:0 }}/> : <ChevronDown size={14} style={{ color:MUT, flexShrink:0 }}/>}
+                    </button>
+
+                    {/* Contenu déplié */}
+                    {isOpen && (
+                      <div style={{ borderTop:`1px solid ${BRD}`, padding:"16px 16px", background:SURF, display:"flex", flexDirection:"column" as const, gap:14 }}>
+
+                        {/* Commentaire de conclusion */}
+                        {cy.issue_commentaire && (
+                          <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7, fontStyle:"italic" }}
+                            dangerouslySetInnerHTML={{ __html:cy.issue_commentaire }}/>
+                        )}
+
+                        {/* Échanges du cycle */}
+                        {echangesCy.length > 0 && (
+                          <div>
+                            <SubLabel>Compte rendu des échanges</SubLabel>
+                            <div style={{ position:"relative" as const }}>
+                              <div style={{ position:"absolute" as const, left:5, top:10, bottom:10, width:2, background:BRD, borderRadius:2 }}/>
+                              <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+                                {[...echangesCy].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>(
+                                  <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
+                                    <div style={{ position:"absolute" as const, left:1, top:15, width:8, height:8, borderRadius:"50%", background:"#fff", border:`2px solid ${accent}` }}/>
+                                    <div style={{ background:"#fff", border:`1px solid ${BRD}`, borderRadius:10, padding:"12px 14px" }}>
+                                      <div style={{ fontSize:13, fontWeight:800, color:TXT, marginBottom:(e.interlocuteur||e.contact_par)?4:0 }}>
+                                        {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
+                                      </div>
+                                      {(e.interlocuteur||e.contact_par) && (
+                                        <p style={{ fontSize:11, color:MUT, marginBottom:e.canal?4:0 }}>
+                                          {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
+                                        </p>
+                                      )}
+                                      {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
+                                        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:e.commentaire?6:0 }}>
+                                          <CIcon size={13} style={{ color:accent, flexShrink:0 }}/>
+                                          <span style={{ fontSize:12, fontWeight:600, color:TXT }}>{e.canal}</span>
+                                          {coord && <><span style={{ width:3,height:3,borderRadius:"50%",background:MUT,flexShrink:0 }}/><span style={{ fontSize:12,color:SUB }}>{coord}</span></>}
+                                        </div>
+                                      );})()}
+                                      {e.commentaire && (
+                                        <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
+                                          dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </Section>
+                        )}
+
+                        {/* Contraintes du cycle */}
+                        {contraintesCy.length > 0 && (
+                          <div>
+                            <SubLabel color="#ca631f">
+                              {contraintesCy.length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
+                            </SubLabel>
+                            <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
+                              {contraintesCy.map((c:any) => (
+                                <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
+                                  <span style={{ color:"#ca631f", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
+                                  <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
 
           <div style={{ display:"flex", gap:8, marginTop:24, justifyContent:"space-between", borderTop:`1px solid ${DIV}`, paddingTop:18 }}>
