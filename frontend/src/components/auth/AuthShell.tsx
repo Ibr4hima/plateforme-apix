@@ -145,7 +145,7 @@ export default function AuthShell({
           <h1
             style={{
               fontWeight: 800,
-              fontSize: "clamp(2.6rem,4vw,4rem)",
+              fontSize: "clamp(3rem,4.5vw,4.6rem)",
               lineHeight: 1.04,
               letterSpacing: "-0.03em",
               color: "#fff",
@@ -165,6 +165,13 @@ export default function AuthShell({
             </span>
             <br />Sénégal
           </h1>
+
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginTop: 22 }}>
+            <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "1.4rem", lineHeight: 1.6, flexShrink: 0 }}>|</span>
+            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.95rem", lineHeight: 1.75, margin: 0 }}>
+              KPIs, visualisations et analyses en temps réel des tendances d&apos;investissement dans tout le territoire national
+            </p>
+          </div>
         </div>
 
         {/* Badges de confiance */}
@@ -194,6 +201,12 @@ export default function AuthShell({
         </div>
 
         </div>{/* fin contenu groupé */}
+
+        {/* Footer */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.1)", padding: "16px 72px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>© 2026 APIX S.A</span>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Plateforme à usage institutionnel</span>
+        </div>
       </section>
 
       {/* ── Zone formulaire (droite) ───────────────────────────────────────── */}
