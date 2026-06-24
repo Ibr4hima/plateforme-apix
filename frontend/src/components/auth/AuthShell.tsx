@@ -58,7 +58,7 @@ export default function AuthShell({
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: "48px 72px",
+          padding: "48px 72px 124px",
           background:
             "linear-gradient(160deg,#003a6e 0%,#004f91 58%,#1a6ab0 100%)",
           overflow: "hidden",
@@ -105,21 +105,27 @@ export default function AuthShell({
         {/* Contenu groupé */}
         <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
 
-        {/* Logo */}
-        <div className="auth-brand" style={{ marginBottom: 40 }}>
+        {/* Identité DIPE */}
+        <div className="auth-brand" style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 40 }}>
           <Image
             src="/logo_apix.png"
             alt="APIX Sénégal"
-            width={150}
-            height={64}
+            width={120}
+            height={56}
             style={{
-              height: 56,
+              height: 48,
               width: "auto",
               objectFit: "contain",
               filter: "brightness(0) invert(1)",
+              flexShrink: 0,
             }}
             priority
           />
+          <div style={{ width: 1, height: 40, background: "rgba(255,255,255,0.2)", flexShrink: 0 }} />
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", lineHeight: 1.35 }}>DIPE — Direction de l&apos;Intelligence et des Perspectives Économiques</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 3, lineHeight: 1.4 }}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
+          </div>
         </div>
 
         {/* Accroche */}
@@ -234,22 +240,6 @@ export default function AuthShell({
               height={52}
               style={{ height: 46, width: "auto", objectFit: "contain" }}
             />
-          </div>
-
-          {/* Identité DIPE */}
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28, paddingBottom: 24, borderBottom: "1px solid #EFEBE8" }}>
-            <Image
-              src="/logo_apix.png"
-              alt="APIX Sénégal"
-              width={72}
-              height={36}
-              style={{ height: 36, width: "auto", objectFit: "contain", flexShrink: 0 }}
-            />
-            <div style={{ width: 1, height: 32, background: "#C5BFBB", flexShrink: 0 }} />
-            <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.35 }}>DIPE — Direction de l&apos;Intelligence et des Perspectives Économiques</div>
-              <div style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 2, lineHeight: 1.4 }}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
-            </div>
           </div>
 
           {/* En-tête */}
