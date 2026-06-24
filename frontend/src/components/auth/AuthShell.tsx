@@ -54,7 +54,7 @@ export default function AuthShell({
         className="auth-brand-panel"
         style={{
           position: "relative",
-          flex: "1 1 54%",
+          flex: "1 1 60%",
           display: "flex",
           flexDirection: "column",
           padding: "60px 72px",
@@ -131,7 +131,7 @@ export default function AuthShell({
         >
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(202,99,31,0.1)", border: "1px solid rgba(202,99,31,0.25)", borderRadius: 999, padding: "6px 14px", marginBottom: 28 }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ca631f", animation: "authPulse 2s infinite" }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#D96D3B", letterSpacing: "0.15em", textTransform: "uppercase" }}>Plateforme de Gestion des Investissements et des Investisseurs</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#D96D3B", letterSpacing: "0.15em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           <h1
@@ -189,6 +189,7 @@ export default function AuthShell({
                 background: "rgba(255,255,255,0.06)",
                 border: "1px solid rgba(255,255,255,0.12)",
                 borderRadius: 999,
+                whiteSpace: "nowrap",
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 15, color: "#ca631f", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{item.icon}</span>
