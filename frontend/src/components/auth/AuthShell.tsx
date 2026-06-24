@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { ReactNode } from "react"
-import { Infinity as InfinityIcon, ShieldCheck, TrendingUp, Lock } from "lucide-react"
+import { Lock } from "lucide-react"
 
 /**
  * Coquille visuelle des pages d'authentification (login / register).
@@ -129,36 +129,9 @@ export default function AuthShell({
             paddingBottom: 32,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: 26,
-              maxWidth: 460,
-            }}
-          >
-            <span
-              style={{
-                width: 28,
-                height: 2,
-                background: "#ca631f",
-                borderRadius: 2,
-                flexShrink: 0,
-              }}
-            />
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#D96D3B",
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                lineHeight: 1.5,
-              }}
-            >
-              Plateforme de Gestion des Investissements et des Investisseurs
-            </span>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(202,99,31,0.1)", border: "1px solid rgba(202,99,31,0.25)", borderRadius: 999, padding: "6px 14px", marginBottom: 28 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ca631f", animation: "authPulse 2s infinite" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#D96D3B", letterSpacing: "0.15em", textTransform: "uppercase" }}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           <h1
@@ -200,44 +173,26 @@ export default function AuthShell({
         </div>
 
         {/* Badges de confiance (bas) */}
-        <div
-          className="auth-brand"
-          style={{
-            position: "relative",
-            zIndex: 1,
-            display: "flex",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="auth-brand" style={{ position: "relative", zIndex: 1, display: "flex", gap: 12 }}>
           {[
-            { Icon: InfinityIcon, label: "Plateforme souveraine" },
-            { Icon: ShieldCheck, label: "Données sécurisées" },
-            { Icon: TrendingUp, label: "Mise à jour continue" },
-          ].map(({ Icon, label }, i) => (
+            { icon: "all_inclusive", label: "Plateforme souveraine" },
+            { icon: "security",      label: "Données sécurisées" },
+            { icon: "show_chart",    label: "Mise à jour continue" },
+          ].map((item, i) => (
             <div
               key={i}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                padding: "9px 15px",
+                padding: "8px 14px",
                 background: "rgba(255,255,255,0.06)",
                 border: "1px solid rgba(255,255,255,0.12)",
                 borderRadius: 999,
-                backdropFilter: "blur(12px)",
               }}
             >
-              <Icon size={14} style={{ color: "#ca631f", flexShrink: 0 }} />
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.85)",
-                }}
-              >
-                {label}
-              </span>
+              <span className="material-symbols-outlined" style={{ fontSize: 15, color: "#ca631f", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{item.icon}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{item.label}</span>
             </div>
           ))}
         </div>
