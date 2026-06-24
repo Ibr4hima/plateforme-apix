@@ -106,7 +106,7 @@ export default function AuthShell({
         <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 0, flex: 1 }}>
 
         {/* Identité DIPE */}
-        <div className="auth-brand" style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 40 }}>
+        <div className="auth-brand" style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
           <Image
             src="/logo_apix.png"
             alt="APIX Sénégal"
@@ -134,8 +134,7 @@ export default function AuthShell({
           style={{
             position: "relative",
             zIndex: 1,
-            margin: "auto 0",
-            paddingBottom: 36,
+            marginBottom: 32,
           }}
         >
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(202,99,31,0.1)", border: "1px solid rgba(202,99,31,0.25)", borderRadius: 999, padding: "6px 14px", marginBottom: 28 }}>
