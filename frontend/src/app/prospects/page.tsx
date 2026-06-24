@@ -122,12 +122,13 @@ function CarteProspect({ p }: { p: any }) {
 // ── Page principale ───────────────────────────────────────────────────────────
 
 export default function ProspectsPage() {
-  const [onglet, setOnglet] = useState<"cibles" | "historique">("cibles");
+  const [onglet, setOnglet] = useState<"cibles" | "historique" | "termines">("cibles");
 
   // Données
-  const [cibles,     setCibles]     = useState<any[]>([]);
-  const [historique, setHistorique] = useState<any[]>([]);
-  const [loading,    setLoading]    = useState(true);
+  const [cibles,    setCibles]    = useState<any[]>([]);
+  const [enContact, setEnContact] = useState<any[]>([]);
+  const [termines,  setTermines]  = useState<any[]>([]);
+  const [loading,   setLoading]   = useState(true);
 
   // Filtres
   const [recherche,   setRecherche]   = useState("");
@@ -151,18 +152,21 @@ export default function ProspectsPage() {
   const charger = useCallback(async () => {
     setLoading(true);
     try {
-      const [rCibles, rHisto] = await Promise.all([
-        fetch(`${API_BASE}/prospects?conclu=false&per_page=100`).then(r => r.json()),
+      const [rCibles, rContact, rTermines] = await Promise.all([
+        fetch(`${API_BASE}/prospects?conclu=false&contactes=false&per_page=100`).then(r => r.json()),
+        fetch(`${API_BASE}/prospects?conclu=false&contactes=true&per_page=100`).then(r => r.json()),
         fetch(`${API_BASE}/prospects?conclu=true&per_page=100`).then(r => r.json()),
       ]);
-      const c = rCibles.data || [];
-      const h = rHisto.data  || [];
+      const c = rCibles.data   || [];
+      const e = rContact.data  || [];
+      const t = rTermines.data || [];
       setCibles(c);
-      setHistorique(h);
+      setEnContact(e);
+      setTermines(t);
 
-      // Construire les options de filtre à partir des données
-      const pays = [...new Set([...c, ...h].map((p: any) => p.siege_nom).filter(Boolean))] as string[];
-      const secs = [...new Set([...c, ...h].flatMap((p: any) => p.secteur_noms || []).filter(Boolean))] as string[];
+      const tous = [...c, ...e, ...t];
+      const pays = [...new Set(tous.map((p: any) => p.siege_nom).filter(Boolean))] as string[];
+      const secs = [...new Set(tous.flatMap((p: any) => p.secteur_noms || []).filter(Boolean))] as string[];
       setPaysOpts(pays.sort());
       setSecteurOpts(secs.sort());
     } catch (e) { console.error(e); }
@@ -189,8 +193,8 @@ export default function ProspectsPage() {
   const reinit = () => { setRecherche(""); setPaysSel([]); setSecteursSel([]); };
   const nbFiltres = (recherche ? 1 : 0) + paysSel.length + secteursSel.length;
 
-  const listeCourante = filtrer(onglet === "cibles" ? cibles : historique);
-  const total = cibles.length + historique.length;
+  const listeCourante = filtrer(onglet === "cibles" ? cibles : onglet === "historique" ? enContact : termines);
+  const total = cibles.length + enContact.length + termines.length;
 
   return (
     <main style={{ minHeight: "100vh", background: "#F2F0EF", fontFamily: "var(--font-google-sans)" }}>
@@ -204,7 +208,6 @@ export default function ProspectsPage() {
             <span style={{ fontSize: 11, fontWeight: 700, color: "#D96D3B", letterSpacing: "0.15em", textTransform: "uppercase" }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
           <h1 style={{ fontWeight: 800, fontSize: "clamp(2.2rem,4vw,3.2rem)", color: "#fff", lineHeight: 1.1, marginBottom: 16 }}>Prospects</h1>
-          <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15, maxWidth: 540, lineHeight: 1.7, marginBottom: 24 }}>Portefeuille d'entreprises internationales ciblées dans le cadre des missions de prospection.</p>
           {total > 0 && <span style={{ display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", padding: "6px 14px", borderRadius: 999 }}>
             {total} prospect{total > 1 ? "s" : ""}
           </span>}
@@ -215,17 +218,15 @@ export default function ProspectsPage() {
       <div style={{ background: "#fff", borderBottom: "1px solid #E8E5E3", position: "sticky" as const, top: 0, zIndex: 10 }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", display: "flex", gap: 0 }}>
           {([
-            { key: "cibles",     label: "Investisseurs ciblés",    color: "#004f91" },
-            { key: "historique", label: "Historique des contacts",  color: "#004f91" },
+            { key: "cibles",     label: "Investisseurs ciblés",   count: cibles.length    },
+            { key: "historique", label: "En contact",              count: enContact.length },
+            { key: "termines",   label: "Terminés",                count: termines.length  },
           ] as const).map(t => (
             <button key={t.key} onClick={() => setOnglet(t.key)}
-              style={{ padding: "16px 22px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", fontSize: 13, fontWeight: 600, color: onglet === t.key ? t.color : "#9aa5b4", borderBottom: `2px solid ${onglet === t.key ? t.color : "transparent"}`, transition: "all 0.15s" }}>
+              style={{ padding: "16px 22px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", fontSize: 13, fontWeight: 600, color: onglet === t.key ? "#004f91" : "#9aa5b4", borderBottom: `2px solid ${onglet === t.key ? "#004f91" : "transparent"}`, transition: "all 0.15s" }}>
               {t.label}
-              {t.key === "cibles" && cibles.length > 0 && (
-                <span style={{ marginLeft: 7, fontSize: 11, fontWeight: 700, color: onglet === t.key ? t.color : "#9aa5b4", background: onglet === t.key ? "rgba(0,79,145,0.1)" : "#F2F0EF", padding: "1px 7px", borderRadius: 999 }}>{cibles.length}</span>
-              )}
-              {t.key === "historique" && historique.length > 0 && (
-                <span style={{ marginLeft: 7, fontSize: 11, fontWeight: 700, color: onglet === t.key ? t.color : "#9aa5b4", background: onglet === t.key ? "rgba(0,79,145,0.1)" : "#F2F0EF", padding: "1px 7px", borderRadius: 999 }}>{historique.length}</span>
+              {t.count > 0 && (
+                <span style={{ marginLeft: 7, fontSize: 11, fontWeight: 700, color: onglet === t.key ? "#004f91" : "#9aa5b4", background: onglet === t.key ? "rgba(0,79,145,0.1)" : "#F2F0EF", padding: "1px 7px", borderRadius: 999 }}>{t.count}</span>
               )}
             </button>
           ))}
