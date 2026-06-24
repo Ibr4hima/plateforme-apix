@@ -1667,7 +1667,7 @@ export default function ProspectsPage() {
       {/* Onglets */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#fff", borderBottom:"1px solid #E8E5E3", marginBottom:24 }}>
         <div style={{ display:"flex" }}>
-          {([["cibles","Investisseurs ciblés"],["historique","Historique des contacts"],["precedents","Précédents contacts"]] as const).map(([key,label])=>(
+          {([["cibles","Investisseurs ciblés"],["historique","En contact"],["precedents","Terminés"]] as const).map(([key,label])=>(
             <button key={key} onClick={()=>setOnglet(key)}
               style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${onglet===key?"#ca631f":"transparent"}`, background:"transparent", color:onglet===key?"#ca631f":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
               {label}
