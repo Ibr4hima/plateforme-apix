@@ -57,7 +57,8 @@ export default function AuthShell({
           flex: "1 1 60%",
           display: "flex",
           flexDirection: "column",
-          padding: "60px 72px",
+          justifyContent: "center",
+          padding: "48px 72px",
           background:
             "linear-gradient(160deg,#003a6e 0%,#004f91 58%,#1a6ab0 100%)",
           overflow: "hidden",
@@ -101,8 +102,11 @@ export default function AuthShell({
           />
         </div>
 
-        {/* Logo (haut) */}
-        <div className="auth-brand" style={{ position: "relative", zIndex: 1 }}>
+        {/* Contenu groupé */}
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
+
+        {/* Logo */}
+        <div className="auth-brand" style={{ marginBottom: 40 }}>
           <Image
             src="/logo_apix.png"
             alt="APIX Sénégal"
@@ -118,15 +122,13 @@ export default function AuthShell({
           />
         </div>
 
-        {/* Accroche (centre) */}
+        {/* Accroche */}
         <div
           className="auth-brand"
           style={{
             position: "relative",
             zIndex: 1,
-            margin: "auto 0",
-            paddingTop: 32,
-            paddingBottom: 32,
+            marginBottom: 36,
           }}
         >
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(202,99,31,0.1)", border: "1px solid rgba(202,99,31,0.25)", borderRadius: 999, padding: "6px 14px", marginBottom: 28 }}>
@@ -172,8 +174,8 @@ export default function AuthShell({
           </p>
         </div>
 
-        {/* Badges de confiance (bas) */}
-        <div className="auth-brand" style={{ position: "relative", zIndex: 1, display: "flex", gap: 12 }}>
+        {/* Badges de confiance */}
+        <div className="auth-brand" style={{ display: "flex", gap: 12 }}>
           {[
             { icon: "all_inclusive", label: "Plateforme souveraine" },
             { icon: "security",      label: "Données sécurisées" },
@@ -197,6 +199,8 @@ export default function AuthShell({
             </div>
           ))}
         </div>
+
+        </div>{/* fin contenu groupé */}
       </section>
 
       {/* ── Zone formulaire (droite) ───────────────────────────────────────── */}
