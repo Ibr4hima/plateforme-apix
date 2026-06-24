@@ -54,7 +54,7 @@ export default function AuthShell({
         className="auth-brand-panel"
         style={{
           position: "relative",
-          flex: "1 1 60%",
+          flex: "1 1 64%",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -165,20 +165,6 @@ export default function AuthShell({
             </span>
             <br />Sénégal
           </h1>
-
-          <p
-            style={{
-              color: "rgba(255,255,255,0.55)",
-              fontSize: "1.05rem",
-              maxWidth: 440,
-              lineHeight: 1.75,
-              marginTop: 22,
-              marginBottom: 0,
-            }}
-          >
-            Plateforme de suivi, d'analyse et de gestion des investissements au
-            Sénégal.
-          </p>
         </div>
 
         {/* Badges de confiance */}
@@ -201,7 +187,7 @@ export default function AuthShell({
                 whiteSpace: "nowrap",
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 15, color: "#ca631f", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{item.icon}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 15, color: "rgba(255,255,255,0.85)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{item.icon}</span>
               <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{item.label}</span>
             </div>
           ))}
