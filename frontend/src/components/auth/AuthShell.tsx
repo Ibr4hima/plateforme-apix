@@ -152,7 +152,7 @@ export default function AuthShell({
               margin: 0,
             }}
           >
-            Invest In{" "}
+            Intelligence<br />
             <span
               style={{
                 background: "linear-gradient(135deg,#ca631f,#FFB0A1)",
@@ -161,8 +161,9 @@ export default function AuthShell({
                 backgroundClip: "text",
               }}
             >
-              Senegal
+              Investissement
             </span>
+            <br />Sénégal
           </h1>
 
           <p
