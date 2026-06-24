@@ -57,8 +57,8 @@ export default function AuthShell({
           flex: "1 1 64%",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          padding: "48px 72px 124px",
+          justifyContent: "flex-start",
+          padding: "52px 72px 72px",
           background:
             "linear-gradient(160deg,#003a6e 0%,#004f91 58%,#1a6ab0 100%)",
           overflow: "hidden",
@@ -103,7 +103,7 @@ export default function AuthShell({
         </div>
 
         {/* Contenu groupé */}
-        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 0, flex: 1 }}>
 
         {/* Identité DIPE */}
         <div className="auth-brand" style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 40 }}>
@@ -134,7 +134,8 @@ export default function AuthShell({
           style={{
             position: "relative",
             zIndex: 1,
-            marginBottom: 36,
+            margin: "auto 0",
+            paddingBottom: 36,
           }}
         >
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(202,99,31,0.1)", border: "1px solid rgba(202,99,31,0.25)", borderRadius: 999, padding: "6px 14px", marginBottom: 28 }}>
@@ -166,12 +167,9 @@ export default function AuthShell({
             <br />Sénégal
           </h1>
 
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginTop: 22 }}>
-            <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "1.4rem", lineHeight: 1.6, flexShrink: 0 }}>|</span>
-            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.95rem", lineHeight: 1.75, margin: 0 }}>
-              KPIs, visualisations et analyses en temps réel des tendances d&apos;investissement dans tout le territoire national
-            </p>
-          </div>
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.95rem", lineHeight: 1.75, margin: "22px 0 0", maxWidth: 460 }}>
+            KPIs, visualisations et analyses en temps réel des tendances d&apos;investissement dans tout le territoire national
+          </p>
         </div>
 
         {/* Badges de confiance */}
