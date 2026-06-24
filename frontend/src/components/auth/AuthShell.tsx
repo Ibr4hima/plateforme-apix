@@ -57,8 +57,8 @@ export default function AuthShell({
           flex: "1 1 64%",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "flex-start",
-          padding: "52px 72px 72px",
+          justifyContent: "center",
+          padding: "52px 72px 96px",
           background:
             "linear-gradient(160deg,#003a6e 0%,#004f91 58%,#1a6ab0 100%)",
           overflow: "hidden",
@@ -103,7 +103,7 @@ export default function AuthShell({
         </div>
 
         {/* Contenu groupé */}
-        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 0, flex: 1 }}>
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
 
         {/* Identité DIPE */}
         <div className="auth-brand" style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
