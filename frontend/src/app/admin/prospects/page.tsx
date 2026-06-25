@@ -1400,6 +1400,20 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                 dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                             )}
 
+                            {/* Documents attachés */}
+                            {e.fichiers?.length > 0 && (
+                              <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:e.commentaire?6:0 }}>
+                                {e.fichiers.map((f:any) => (
+                                  <a key={f.id}
+                                    href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
+                                    target="_blank" rel="noopener noreferrer"
+                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"3px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:11, color:"#4a5568", fontWeight:500 }}>
+                                    <FileText size={11} style={{ color:"#ca631f", flexShrink:0 }}/>{f.titre}
+                                  </a>
+                                ))}
+                              </div>
+                            )}
+
                             {/* Pied : horodatage serveur */}
                             <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
                               <Clock size={11} style={{ flexShrink:0 }}/>
@@ -1492,6 +1506,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                         <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
                                           dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                       )}
+                                      {e.fichiers?.length > 0 && (
+                                        <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:e.commentaire?6:0 }}>
+                                          {e.fichiers.map((f:any) => (
+                                            <a key={f.id}
+                                              href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
+                                              target="_blank" rel="noopener noreferrer"
+                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"3px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:11, color:"#4a5568", fontWeight:500 }}>
+                                              <FileText size={11} style={{ color:"#ca631f", flexShrink:0 }}/>{f.titre}
+                                            </a>
+                                          ))}
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 ))}
@@ -1576,6 +1602,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {e.commentaire && (
                                         <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
                                           dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
+                                      )}
+                                      {e.fichiers?.length > 0 && (
+                                        <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:e.commentaire?6:0 }}>
+                                          {e.fichiers.map((f:any) => (
+                                            <a key={f.id}
+                                              href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
+                                              target="_blank" rel="noopener noreferrer"
+                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"3px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:11, color:"#4a5568", fontWeight:500 }}>
+                                              <FileText size={11} style={{ color:"#ca631f", flexShrink:0 }}/>{f.titre}
+                                            </a>
+                                          ))}
+                                        </div>
                                       )}
                                     </div>
                                   </div>

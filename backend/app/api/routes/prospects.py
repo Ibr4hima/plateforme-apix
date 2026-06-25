@@ -94,7 +94,7 @@ async def ecrire_contacts(db: AsyncSession, prospect_id: int, contacts: dict):
 LOAD_OPTS = [
     selectinload(Prospect.siege),
     selectinload(Prospect.points_focaux),
-    selectinload(Prospect.echanges),
+    selectinload(Prospect.echanges).selectinload(ProspectEchange.fichiers),
     selectinload(Prospect.contraintes),
     selectinload(Prospect.cycles),
 ]
@@ -154,6 +154,10 @@ def echange_to_dict(e: ProspectEchange) -> dict:
         "point_focal_id":  e.point_focal_id,
         "enregistre_le":   e.enregistre_le.isoformat() if e.enregistre_le else None,
         "retard_jours":    retard_jours,
+        "fichiers": [
+            {"id": f.id, "titre": f.titre, "nom_fichier": f.nom_fichier}
+            for f in (e.fichiers or [])
+        ],
     }
 
 
