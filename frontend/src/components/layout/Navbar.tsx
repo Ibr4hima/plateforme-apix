@@ -71,186 +71,152 @@ function CodeModal({ onClose }: { onClose: () => void }) {
     ? [...activeChap.articles, ...activeChap.sections.flatMap((s: any) => s.articles)].sort((a: any, b: any) => a.numero - b.numero)
     : [];
   const articlesFiltres = activeSecId ? articlesActifs.filter((a: any) => a.section_id === activeSecId) : articlesActifs;
-  const totalArticles = chapitres.reduce((s, c) => s + (c.articles?.length || 0) + (c.sections?.reduce((s2: number, sec: any) => s2 + (sec.articles?.length || 0), 0) || 0), 0);
-
-  const NAV: any = { width: "100%", textAlign: "left" as const, border: "none", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "all 0.15s" };
 
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(6,10,20,0.82)", backdropFilter:"blur(16px)", WebkitBackdropFilter:"blur(16px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+      style={{ position:"fixed", inset:0, background:"rgba(20,22,28,0.5)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
 
-      <div style={{ background:"#F5F3F0", borderRadius:22, width:"100%", maxWidth:1200, height:"94vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 60px 160px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)" }}>
-
-        {/* ── Bandeau accent ── */}
-        <div style={{ height:3, background:"linear-gradient(90deg, #ca631f 0%, #e8884a 35%, #004f91 100%)", flexShrink:0 }} />
+      <div style={{ background:"#fff", borderRadius:18, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 40px 100px rgba(0,0,0,0.3)" }}>
 
         {/* ── Header ── */}
-        <div style={{ background:"linear-gradient(160deg, #081020 0%, #0f2040 100%)", padding:"18px 28px", display:"flex", alignItems:"center", gap:18, flexShrink:0 }}>
-          {/* Identité */}
-          <div style={{ width:48, height:48, borderRadius:13, background:"rgba(202,99,31,0.12)", border:"1px solid rgba(202,99,31,0.28)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-            <BookOpen size={21} style={{ color:"#ca631f" }} />
+        <div style={{ padding:"20px 28px", borderBottom:"1px solid #EDEAE6", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>
+          <div style={{ width:42, height:42, borderRadius:11, background:"rgba(0,79,145,0.07)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <BookOpen size={19} style={{ color:"#004f91" }} />
           </div>
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.3)", letterSpacing:"0.24em", textTransform:"uppercase" as const, marginBottom:4 }}>
-              République du Sénégal · APIX — Direction de l'Intelligence et des Perspectives Économiques
-            </div>
-            <h2 style={{ fontWeight:900, fontSize:"1.05rem", color:"#fff", margin:0, letterSpacing:"-0.01em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-              {pdfInfo?.titre || "Code des Investissements du Sénégal"}
+            <h2 style={{ fontWeight:800, fontSize:"1.05rem", color:"#1a1a2e", margin:0, letterSpacing:"-0.01em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+              {pdfInfo?.titre || "Code des investissements"}
             </h2>
+            <p style={{ fontSize:11.5, color:"#9aa5b4", margin:"2px 0 0", fontWeight:500 }}>République du Sénégal</p>
           </div>
 
-          {/* Badges stats */}
-          <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.45)", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.09)", borderRadius:8, padding:"4px 11px", whiteSpace:"nowrap" as const }}>
-              {chapitres.length} chapitres
-            </span>
-            <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.45)", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.09)", borderRadius:8, padding:"4px 11px", whiteSpace:"nowrap" as const }}>
-              {totalArticles} articles
-            </span>
+          <div style={{ position:"relative", width:280, flexShrink:0 }}>
+            <Search size={13} style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }} />
+            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher dans le code…"
+              style={{ width:"100%", background:"#F5F3F0", border:"1px solid transparent", borderRadius:10, padding:"9px 12px 9px 34px", fontSize:12.5, color:"#1a1a2e", outline:"none", boxSizing:"border-box" as const, fontFamily:"var(--font-google-sans)", transition:"border-color 0.15s" }}
+              onFocus={e => { e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="#fff"; }}
+              onBlur={e => { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.background="#F5F3F0"; }} />
           </div>
 
-          {/* Barre de recherche */}
-          <div style={{ position:"relative", width:300, flexShrink:0 }}>
-            <Search size={13} style={{ position:"absolute", left:13, top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.3)", flexShrink:0 }} />
-            <input value={q} onChange={e => setQ(e.target.value)}
-              placeholder="Rechercher un article, un mot clé…"
-              style={{ width:"100%", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.11)", borderRadius:11, padding:"9px 14px 9px 36px", fontSize:12.5, color:"#fff", outline:"none", boxSizing:"border-box" as const, fontFamily:"var(--font-google-sans)", caretColor:"#ca631f" }} />
-          </div>
-
-          {/* PDF */}
           {pdfInfo && (
             <a href={`${API}/code-investissement/pdf/download`} target="_blank" rel="noopener noreferrer"
-              style={{ display:"flex", alignItems:"center", gap:7, background:"rgba(202,99,31,0.14)", border:"1px solid rgba(202,99,31,0.32)", borderRadius:10, padding:"9px 17px", fontSize:12, color:"#e8885a", fontWeight:700, textDecoration:"none", flexShrink:0, transition:"background 0.15s", whiteSpace:"nowrap" as const }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background="rgba(202,99,31,0.24)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background="rgba(202,99,31,0.14)"; }}>
-              <Download size={13} /> Télécharger PDF
+              title="Télécharger le PDF"
+              style={{ display:"flex", alignItems:"center", gap:7, background:"#F5F3F0", border:"1px solid #EDEAE6", borderRadius:10, padding:"9px 15px", fontSize:12, color:"#4a5568", fontWeight:600, textDecoration:"none", flexShrink:0, transition:"all 0.15s", whiteSpace:"nowrap" as const }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor="#ca631f"; (e.currentTarget as HTMLElement).style.color="#ca631f"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor="#EDEAE6"; (e.currentTarget as HTMLElement).style.color="#4a5568"; }}>
+              <Download size={13} /> PDF
             </a>
           )}
 
-          {/* Close */}
           <button onClick={onClose}
-            style={{ width:38, height:38, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-            onMouseEnter={e => { e.currentTarget.style.background="rgba(255,255,255,0.13)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.06)"; }}>
-            <X size={15} color="rgba(255,255,255,0.65)" />
+            style={{ width:38, height:38, background:"#F5F3F0", border:"none", borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.background="#EDEAE6"; }}
+            onMouseLeave={e => { e.currentTarget.style.background="#F5F3F0"; }}>
+            <X size={16} color="#4a5568" />
           </button>
         </div>
 
         {/* ── Body ── */}
         <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
 
-          {/* ── Sidebar Table des matières ── */}
-          <div style={{ width:272, background:"#fff", borderRight:"1px solid #E8E4DF", overflowY:"auto", flexShrink:0, display:"flex", flexDirection:"column" }}>
-            <div style={{ padding:"14px 18px 12px", borderBottom:"1px solid #EEE9E3", flexShrink:0 }}>
-              <span style={{ fontSize:9, fontWeight:900, color:"#9aa5b4", letterSpacing:"0.24em", textTransform:"uppercase" as const }}>Table des matières</span>
-            </div>
-            <div style={{ flex:1, overflowY:"auto", padding:"6px 0 16px" }}>
-              {loading ? (
-                <div style={{ padding:"24px 18px", color:"#9aa5b4", fontSize:12 }}>Chargement…</div>
-              ) : chapitres.length === 0 ? (
-                <div style={{ padding:"24px 18px", color:"#9aa5b4", fontSize:12 }}>Aucun contenu disponible.</div>
-              ) : chapitres.map(c => {
-                const isChapActive = activeChapId === c.id;
-                return (
-                  <div key={c.id}>
-                    <button onClick={() => goChap(c.id)}
-                      style={{ ...NAV, display:"flex", alignItems:"flex-start", gap:10, padding:"10px 16px 10px 14px", background: isChapActive && !activeSecId ? "rgba(202,99,31,0.06)" : "transparent", borderLeft:`3px solid ${isChapActive && !activeSecId ? "#ca631f" : "transparent"}` }}
-                      onMouseEnter={e => { if (!(isChapActive && !activeSecId)) e.currentTarget.style.background="#F7F4F1"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = isChapActive && !activeSecId ? "rgba(202,99,31,0.06)" : "transparent"; }}>
-                      <span style={{ fontSize:9.5, fontWeight:900, color: isChapActive ? "#ca631f" : "#9aa5b4", background: isChapActive ? "rgba(202,99,31,0.1)" : "#F2F0EF", padding:"2px 8px", borderRadius:5, flexShrink:0, lineHeight:1.7, marginTop:1, letterSpacing:"0.06em", display:"inline-block" }}>
-                        {c.numero === 1 ? "I" : toRomanNum(c.numero)}
-                      </span>
-                      <span style={{ fontSize:12.5, fontWeight: isChapActive ? 700 : 500, color: isChapActive ? "#ca631f" : "#3d4554", lineHeight:1.45, wordBreak:"break-word" as const, textAlign:"left" as const }}>
-                        {c.titre}
-                      </span>
-                    </button>
+          {/* ── Sidebar ── */}
+          <div style={{ width:258, borderRight:"1px solid #EDEAE6", overflowY:"auto", flexShrink:0, padding:"14px 0" }}>
+            {loading ? (
+              <div style={{ padding:"20px 20px", color:"#9aa5b4", fontSize:12.5 }}>Chargement…</div>
+            ) : chapitres.length === 0 ? (
+              <div style={{ padding:"20px 20px", color:"#9aa5b4", fontSize:12.5 }}>Aucun contenu.</div>
+            ) : chapitres.map(c => {
+              const isChapActive = activeChapId === c.id;
+              return (
+                <div key={c.id} style={{ marginBottom:1 }}>
+                  <button onClick={() => goChap(c.id)}
+                    style={{ width:"100%", textAlign:"left" as const, display:"flex", alignItems:"baseline", gap:9, padding:"9px 20px", background:"transparent", border:"none", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"color 0.12s" }}>
+                    <span style={{ fontSize:10, fontWeight:700, color: isChapActive ? "#ca631f" : "#C5BFBB", flexShrink:0, fontVariantNumeric:"tabular-nums", minWidth:18 }}>
+                      {c.numero === 1 ? "I" : toRomanNum(c.numero)}
+                    </span>
+                    <span style={{ fontSize:12.5, fontWeight: isChapActive ? 700 : 500, color: isChapActive ? "#1a1a2e" : "#6b7280", lineHeight:1.45, wordBreak:"break-word" as const }}>
+                      {c.titre}
+                    </span>
+                  </button>
 
-                    {/* Sections du chapitre actif */}
-                    {isChapActive && c.sections.map((s: any) => {
-                      const isSecActive = activeSecId === s.id;
-                      return (
-                        <button key={s.id} onClick={() => goSec(c.id, isSecActive ? null : s.id)}
-                          style={{ ...NAV, display:"flex", alignItems:"flex-start", gap:7, padding:"6px 14px 6px 44px", background: isSecActive ? "rgba(0,79,145,0.05)" : "transparent", borderLeft:`3px solid ${isSecActive ? "#004f91" : "transparent"}` }}
-                          onMouseEnter={e => { if (!isSecActive) e.currentTarget.style.background="#F7F4F1"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = isSecActive ? "rgba(0,79,145,0.05)" : "transparent"; }}>
-                          <span style={{ fontSize:11, color: isSecActive ? "#004f91" : "#BDB8B2", flexShrink:0, marginTop:2, lineHeight:1 }}>§</span>
-                          <span style={{ fontSize:11.5, color: isSecActive ? "#004f91" : "#6b7280", fontWeight: isSecActive ? 600 : 400, lineHeight:1.4, textAlign:"left" as const }}>
-                            {s.titre}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+                  {isChapActive && c.sections.length > 0 && (
+                    <div style={{ marginLeft:27, borderLeft:"1px solid #EDEAE6", paddingLeft:0 }}>
+                      {c.sections.map((s: any) => {
+                        const isSecActive = activeSecId === s.id;
+                        return (
+                          <button key={s.id} onClick={() => goSec(c.id, isSecActive ? null : s.id)}
+                            style={{ width:"100%", textAlign:"left" as const, padding:"6px 20px 6px 14px", background:"transparent", border:"none", borderLeft:`2px solid ${isSecActive ? "#004f91" : "transparent"}`, marginLeft:-1, cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.12s" }}>
+                            <span style={{ fontSize:11.5, color: isSecActive ? "#004f91" : "#9aa5b4", fontWeight: isSecActive ? 600 : 400, lineHeight:1.4, display:"block" }}>
+                              {s.titre}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {/* ── Zone de lecture ── */}
-          <div ref={contentRef} style={{ flex:1, overflowY:"auto", background:"#F5F3F0" }}>
+          <div ref={contentRef} style={{ flex:1, overflowY:"auto", background:"#fff" }}>
             {q.length >= 2 ? (
               /* Résultats de recherche */
-              <div style={{ padding:"36px 56px 60px" }}>
-                <p style={{ fontSize:10.5, fontWeight:800, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.18em", marginBottom:24 }}>
-                  {searching ? "Recherche en cours…" : `${results?.length || 0} résultat${(results?.length||0)>1?"s":""} pour « ${q} »`}
+              <div style={{ maxWidth:720, margin:"0 auto", padding:"36px 48px 60px" }}>
+                <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.14em", marginBottom:22 }}>
+                  {searching ? "Recherche…" : `${results?.length || 0} résultat${(results?.length||0)>1?"s":""} pour « ${q} »`}
                 </p>
                 {results?.map(r => (
                   <div key={r.id}
                     onClick={() => { const chap = chapitres.find(c => c.id === r.chapitre_id); if (chap) goChap(chap.id); }}
-                    style={{ background:"#fff", border:"1px solid #E8E4DF", borderRadius:14, padding:"20px 24px", marginBottom:10, cursor:"pointer", transition:"border-color 0.15s, box-shadow 0.15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.boxShadow="0 6px 24px rgba(202,99,31,0.1)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor="#E8E4DF"; e.currentTarget.style.boxShadow="none"; }}>
-                    <div style={{ fontSize:12, fontWeight:800, color:"#ca631f", marginBottom:8, letterSpacing:"0.01em" }}>
+                    style={{ borderBottom:"1px solid #F2F0EF", padding:"16px 0", cursor:"pointer", transition:"opacity 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.opacity="0.6"; }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity="1"; }}>
+                    <div style={{ fontSize:12.5, fontWeight:700, color:"#ca631f", marginBottom:6 }}>
                       Article {numArt(r.numero)}{r.titre ? ` — ${r.titre}` : ""}
                     </div>
-                    <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}
+                    <div data-rte style={{ fontSize:13, color:"#6b7280", lineHeight:1.7 }}
                       dangerouslySetInnerHTML={{ __html: r.extrait || "" }} />
                   </div>
                 ))}
               </div>
             ) : (
               /* Vue chapitre / articles */
-              <div style={{ padding:"44px 60px 72px" }}>
+              <div style={{ maxWidth:720, margin:"0 auto", padding:"44px 48px 72px" }}>
                 {activeChap && (
                   <>
                     {/* ── En-tête du chapitre ── */}
-                    <div style={{ marginBottom:36 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
-                        <div style={{ height:1, width:28, background:"#ca631f", flexShrink:0 }} />
-                        <span style={{ fontSize:9.5, fontWeight:900, color:"#ca631f", letterSpacing:"0.25em", textTransform:"uppercase" as const, whiteSpace:"nowrap" as const }}>
-                          Chapitre {activeChap.numero === 1 ? "Premier" : toRomanNum(activeChap.numero)}
-                        </span>
-                        <div style={{ height:1, flex:1, background:"linear-gradient(90deg, rgba(202,99,31,0.35), transparent)" }} />
-                      </div>
-                      <h3 style={{ fontWeight:900, fontSize:"clamp(1.3rem,2.2vw,1.65rem)", color:"#081020", margin:"0 0 6px", lineHeight:1.2, letterSpacing:"-0.025em" }}>
+                    <div style={{ marginBottom:40, textAlign:"center" as const }}>
+                      <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.2em", textTransform:"uppercase" as const, margin:"0 0 12px" }}>
+                        Chapitre {activeChap.numero === 1 ? "Premier" : toRomanNum(activeChap.numero)}
+                      </p>
+                      <h3 style={{ fontWeight:800, fontSize:"1.7rem", color:"#1a1a2e", margin:0, lineHeight:1.25, letterSpacing:"-0.02em" }}>
                         {activeChap.titre}
                       </h3>
+                      <div style={{ width:40, height:3, background:"#ca631f", borderRadius:2, margin:"18px auto 0" }} />
                       {activeChap.contenu && !activeSecId && (
-                        <div data-rte style={{ fontSize:14, color:"#4a5568", lineHeight:1.85, marginTop:16, paddingLeft:18, borderLeft:"3px solid rgba(202,99,31,0.2)" }}
+                        <div data-rte style={{ fontSize:14, color:"#6b7280", lineHeight:1.8, marginTop:20, textAlign:"left" as const }}
                           dangerouslySetInnerHTML={{ __html: activeChap.contenu }} />
                       )}
-
-                      {/* Section active : bandeau descriptif */}
                       {activeSecId && (() => {
                         const sec = activeChap.sections.find((s: any) => s.id === activeSecId);
                         return sec ? (
-                          <div style={{ marginTop:18, padding:"16px 22px", background:"rgba(0,79,145,0.04)", borderRadius:12, borderLeft:"3px solid #004f91" }}>
-                            <p style={{ fontSize:9.5, fontWeight:900, color:"rgba(0,79,145,0.5)", margin:"0 0 5px", textTransform:"uppercase" as const, letterSpacing:"0.18em" }}>Section {sec.num_display}</p>
-                            <p style={{ fontSize:16, fontWeight:800, color:"#081020", margin:"0 0 8px", lineHeight:1.3 }}>{sec.titre}</p>
+                          <div style={{ marginTop:24, textAlign:"left" as const }}>
+                            <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", margin:"0 0 4px", textTransform:"uppercase" as const, letterSpacing:"0.14em" }}>Section {sec.num_display}</p>
+                            <p style={{ fontSize:17, fontWeight:700, color:"#1a1a2e", margin:0, lineHeight:1.3 }}>{sec.titre}</p>
                             {sec.contenu && (
-                              <div data-rte style={{ fontSize:13.5, color:"#4a5568", lineHeight:1.8 }}
+                              <div data-rte style={{ fontSize:13.5, color:"#6b7280", lineHeight:1.8, marginTop:8 }}
                                 dangerouslySetInnerHTML={{ __html: sec.contenu }} />
                             )}
                           </div>
                         ) : null;
                       })()}
-
-                      <div style={{ width:48, height:3, background:"linear-gradient(90deg,#ca631f,#004f91)", borderRadius:2, marginTop:20 }} />
                     </div>
 
                     {/* ── Articles ── */}
                     {articlesFiltres.length === 0 ? (
-                      <p style={{ color:"#9aa5b4", fontSize:14 }}>Aucun article dans cette section.</p>
+                      <p style={{ color:"#9aa5b4", fontSize:14, textAlign:"center" as const }}>Aucun article dans cette section.</p>
                     ) : articlesFiltres.map((a: any, ai: number) => {
                       const prevArt = ai > 0 ? articlesFiltres[ai - 1] : null;
                       const showSecHeader = !activeSecId && a.section_id && (!prevArt || prevArt.section_id !== a.section_id);
@@ -258,76 +224,53 @@ function CodeModal({ onClose }: { onClose: () => void }) {
 
                       return (
                         <div key={a.id}>
-                          {/* Sous-titre de section entre les articles */}
+                          {/* Sous-titre de section */}
                           {sec && (
-                            <div style={{ margin:"36px 0 24px", padding:"16px 22px", background:"rgba(0,79,145,0.04)", borderRadius:12, borderLeft:"3px solid rgba(0,79,145,0.35)" }}>
-                              <p style={{ fontSize:9.5, fontWeight:900, color:"rgba(0,79,145,0.5)", margin:"0 0 4px", textTransform:"uppercase" as const, letterSpacing:"0.18em" }}>Section {sec.num_display}</p>
-                              <p style={{ fontSize:15, fontWeight:800, color:"#004f91", margin:"0 0 6px" }}>{sec.titre}</p>
+                            <div style={{ margin:"40px 0 28px", paddingBottom:12, borderBottom:"1px solid #EDEAE6" }}>
+                              <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", margin:"0 0 4px", textTransform:"uppercase" as const, letterSpacing:"0.14em" }}>Section {sec.num_display}</p>
+                              <p style={{ fontSize:16, fontWeight:700, color:"#1a1a2e", margin:0 }}>{sec.titre}</p>
                               {sec.contenu && (
-                                <div data-rte style={{ fontSize:13, color:"#4a5568", lineHeight:1.75 }}
+                                <div data-rte style={{ fontSize:13, color:"#6b7280", lineHeight:1.75, marginTop:8 }}
                                   dangerouslySetInnerHTML={{ __html: sec.contenu }} />
                               )}
                             </div>
                           )}
 
                           {/* Article */}
-                          <div style={{ display:"flex", gap:32, paddingBottom:36, borderBottom:"1px solid #E8E4DF", marginBottom:36 }}>
-                            {/* Numéro en marge */}
-                            <div style={{ flexShrink:0, width:64, paddingTop:3 }}>
-                              <div style={{ fontSize:9, fontWeight:900, color:"rgba(202,99,31,0.45)", letterSpacing:"0.2em", textTransform:"uppercase" as const, marginBottom:2 }}>Art.</div>
-                              <div style={{ fontSize:30, fontWeight:900, color:"#ca631f", lineHeight:1, letterSpacing:"-0.04em" }}>{a.num_display}</div>
-                            </div>
-                            {/* Contenu */}
-                            <div style={{ flex:1, minWidth:0 }}>
-                              {a.titre && (
-                                <h4 style={{ fontWeight:800, fontSize:17, color:"#081020", margin:"0 0 14px", lineHeight:1.3, letterSpacing:"-0.015em" }}>{a.titre}</h4>
-                              )}
-                              {a.contenu ? (
-                                <div data-rte style={{ fontSize:14.5, color:"#2d3748", lineHeight:1.9 }}
-                                  dangerouslySetInnerHTML={{ __html: a.contenu }} />
-                              ) : (
-                                <p style={{ color:"#9aa5b4", fontSize:13 }}>Contenu non renseigné.</p>
-                              )}
-                            </div>
+                          <div style={{ marginBottom:30 }}>
+                            <p style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", margin:"0 0 10px", lineHeight:1.4 }}>
+                              <span style={{ color:"#ca631f" }}>Article {a.num_display}</span>
+                              {a.titre && <span style={{ fontWeight:600, color:"#4a5568" }}> — {a.titre}</span>}
+                            </p>
+                            {a.contenu ? (
+                              <div data-rte style={{ fontSize:14.5, color:"#2d3748", lineHeight:1.85 }}
+                                dangerouslySetInnerHTML={{ __html: a.contenu }} />
+                            ) : (
+                              <p style={{ color:"#9aa5b4", fontSize:13 }}>Contenu non renseigné.</p>
+                            )}
                           </div>
                         </div>
                       );
                     })}
 
-                    {/* ── Navigation chapitre précédent / suivant ── */}
+                    {/* ── Navigation chapitre suivant ── */}
                     {!activeSecId && (() => {
                       const idx  = chapitres.findIndex(c => c.id === activeChapId);
-                      const prev = chapitres[idx - 1];
                       const next = chapitres[idx + 1];
-                      if (!prev && !next) return null;
-                      const chapLabel = (c: any) => `${c.numero === 1 ? "Chapitre Premier" : `Chapitre ${toRomanNum(c.numero)}`} — ${c.titre}`;
-                      const btnBase: any = { display:"flex", alignItems:"center", gap:12, background:"#fff", border:"1px solid #E8E4DF", borderRadius:14, padding:"14px 22px", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)", flex:1 };
-                      return (
-                        <div style={{ display:"flex", gap:12, marginTop:8 }}>
-                          {prev ? (
-                            <button onClick={() => goChap(prev.id)} style={btnBase}
-                              onMouseEnter={e => { e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.boxShadow="0 4px 16px rgba(0,79,145,0.08)"; }}
-                              onMouseLeave={e => { e.currentTarget.style.borderColor="#E8E4DF"; e.currentTarget.style.boxShadow="none"; }}>
-                              <ChevronRight size={15} style={{ color:"#004f91", transform:"rotate(180deg)", flexShrink:0 }} />
-                              <div style={{ textAlign:"left" as const, minWidth:0 }}>
-                                <div style={{ fontSize:9.5, color:"#9aa5b4", fontWeight:700, textTransform:"uppercase" as const, letterSpacing:"0.14em", marginBottom:3 }}>Précédent</div>
-                                <div style={{ fontSize:13, fontWeight:700, color:"#004f91", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{chapLabel(prev)}</div>
-                              </div>
-                            </button>
-                          ) : <div style={{ flex:1 }} />}
-                          {next ? (
-                            <button onClick={() => goChap(next.id)} style={{ ...btnBase, justifyContent:"space-between", background:"rgba(0,79,145,0.04)", borderColor:"rgba(0,79,145,0.16)" }}
-                              onMouseEnter={e => { e.currentTarget.style.background="rgba(0,79,145,0.09)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.28)"; }}
-                              onMouseLeave={e => { e.currentTarget.style.background="rgba(0,79,145,0.04)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.16)"; }}>
-                              <div style={{ textAlign:"left" as const, minWidth:0 }}>
-                                <div style={{ fontSize:9.5, color:"#9aa5b4", fontWeight:700, textTransform:"uppercase" as const, letterSpacing:"0.14em", marginBottom:3 }}>Suivant</div>
-                                <div style={{ fontSize:13, fontWeight:700, color:"#004f91", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{chapLabel(next)}</div>
-                              </div>
-                              <ChevronRight size={15} style={{ color:"#004f91", flexShrink:0 }} />
-                            </button>
-                          ) : <div style={{ flex:1 }} />}
-                        </div>
-                      );
+                      return next ? (
+                        <button onClick={() => goChap(next.id)}
+                          style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, width:"100%", marginTop:24, background:"transparent", border:"1px solid #EDEAE6", borderRadius:12, padding:"16px 20px", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.background="#FBF8F5"; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor="#EDEAE6"; e.currentTarget.style.background="transparent"; }}>
+                          <div style={{ textAlign:"left" as const, minWidth:0 }}>
+                            <div style={{ fontSize:10, color:"#9aa5b4", fontWeight:700, textTransform:"uppercase" as const, letterSpacing:"0.14em", marginBottom:3 }}>Chapitre suivant</div>
+                            <div style={{ fontSize:13.5, fontWeight:700, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
+                              {next.numero === 1 ? "Chapitre Premier" : `Chapitre ${toRomanNum(next.numero)}`} — {next.titre}
+                            </div>
+                          </div>
+                          <ChevronRight size={17} style={{ color:"#ca631f", flexShrink:0 }} />
+                        </button>
+                      ) : null;
                     })()}
                   </>
                 )}
