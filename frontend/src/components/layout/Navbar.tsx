@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -80,14 +80,14 @@ function CodeModal({ onClose }: { onClose: () => void }) {
 
         {/* ── Header ── */}
         <div style={{ padding:"20px 28px", borderBottom:"1px solid #EDEAE6", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>
-          <div style={{ width:42, height:42, borderRadius:11, background:"rgba(0,79,145,0.07)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-            <BookOpen size={19} style={{ color:"#004f91" }} />
+          <div style={{ width:42, height:42, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <Image src="/armoiries_senegal.svg" alt="Armoiries du Sénégal" width={36} height={42}
+              style={{ height:42, width:"auto", objectFit:"contain" }} />
           </div>
           <div style={{ flex:1, minWidth:0 }}>
             <h2 style={{ fontWeight:800, fontSize:"1.05rem", color:"#1a1a2e", margin:0, letterSpacing:"-0.01em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
               {pdfInfo?.titre || "Code des investissements"}
             </h2>
-            <p style={{ fontSize:11.5, color:"#9aa5b4", margin:"2px 0 0", fontWeight:500 }}>République du Sénégal</p>
           </div>
 
           <div style={{ position:"relative", width:280, flexShrink:0 }}>
