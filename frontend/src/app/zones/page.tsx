@@ -165,6 +165,96 @@ function SunburstZones({ zones }: { zones:any[] }) {
   );
 }
 
+// ── Vue types de zones (cards + liste) ───────────────────────────────────────
+function ZonesParType({ zones }: { zones: any[] }) {
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+
+  // Group zones by type_zone, preserving insertion order
+  const byType: Record<string, any[]> = {};
+  zones.forEach(z => {
+    if (!byType[z.type_zone]) byType[z.type_zone] = [];
+    byType[z.type_zone].push(z);
+  });
+
+  const types = Object.entries(byType).map(([type, zs]) => ({
+    type,
+    meta: TYPE_META[type] || { label: type, color: "#9aa5b4", bg: "rgba(154,165,180,0.06)", border: "rgba(154,165,180,0.2)" },
+    zones: zs,
+    installed: zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length, 0),
+    eligible:  zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "eligible").length, 0),
+  }));
+
+  const selectedInfo = selectedType ? types.find(t => t.type === selectedType) : null;
+
+  return (
+    <div>
+      {/* ── Cards types ── */}
+      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(types.length, 3)},1fr)`, gap:12, marginBottom: selectedType ? 28 : 0 }}>
+        {types.map(t => {
+          const active = selectedType === t.type;
+          return (
+            <div key={t.type} onClick={() => setSelectedType(active ? null : t.type)}
+              style={{ background:"#fff", border:`1px solid ${active ? t.meta.color : "#E8E5E3"}`, borderRadius:12, padding:"14px 16px",
+                boxShadow: active ? `0 4px 20px ${t.meta.color}20` : "0 1px 4px rgba(0,0,0,0.04)",
+                borderLeft:`3px solid ${t.meta.color}`, cursor:"pointer", transition:"all 0.15s" }}
+              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 4px 16px ${t.meta.color}20`; ev.currentTarget.style.borderColor=t.meta.color; } }}
+              onMouseLeave={ev => { ev.currentTarget.style.boxShadow=active?`0 4px 20px ${t.meta.color}20`:"0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor=active?t.meta.color:"#E8E5E3"; ev.currentTarget.style.borderLeftColor=t.meta.color; }}>
+
+              <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", marginBottom:10 }}>{t.meta.label}</div>
+
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:6, marginBottom:12 }}>
+                {/* Zone count */}
+                <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12 }}>
+                  <div style={{ width:6, height:6, borderRadius:"50%", background:t.meta.color, flexShrink:0 }}/>
+                  <span style={{ fontWeight:600, color:t.meta.color }}>{t.zones.length} zone{t.zones.length > 1 ? "s" : ""}</span>
+                </div>
+                {/* Installed enterprises */}
+                {t.installed > 0 && (
+                  <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12 }}>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
+                    <span style={{ color:"#4a5568" }}>{t.installed} entreprise{t.installed > 1 ? "s" : ""} installée{t.installed > 1 ? "s" : ""}</span>
+                  </div>
+                )}
+                {/* Eligible enterprises */}
+                {t.eligible > 0 && (
+                  <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12 }}>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#b45309", flexShrink:0 }}/>
+                    <span style={{ color:"#4a5568" }}>{t.eligible} entreprise{t.eligible > 1 ? "s" : ""} éligible{t.eligible > 1 ? "s" : ""}</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
+                <button style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:4,
+                  background: active ? t.meta.color : `${t.meta.color}14`,
+                  border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0",
+                  fontSize:11, color: active ? "#fff" : t.meta.color, fontWeight:700, transition:"all 0.15s" }}>
+                  {active ? "Sélectionné ✓" : `Voir les zones →`}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Liste des zones du type sélectionné ── */}
+      {selectedInfo && (
+        <div>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, padding:"12px 16px",
+            background:`${selectedInfo.meta.color}08`, border:`1px solid ${selectedInfo.meta.color}25`, borderRadius:12 }}>
+            <div style={{ width:10, height:10, borderRadius:"50%", background:selectedInfo.meta.color, flexShrink:0 }}/>
+            <span style={{ fontWeight:700, fontSize:14, color:selectedInfo.meta.color }}>{selectedInfo.meta.label}</span>
+            <span style={{ fontSize:12, color:"#9aa5b4", marginLeft:"auto" }}>{selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}</span>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+            {selectedInfo.zones.map((z: any) => <ZoneCard key={z.id} zone={z} />)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Sunburst par pôle ─────────────────────────────────────────────────────────
 function SunburstPoles({ zones }: { zones:any[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -902,7 +992,7 @@ export default function ZonesPage() {
       {onglet !== "liste" && (
         <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
           {onglet==="zones" && (
-            loading ? <Loader/> : <SunburstZones zones={zones}/>
+            loading ? <Loader/> : <ZonesParType zones={zones}/>
           )}
           {onglet==="poles" && (
             loading ? <Loader/> : <SunburstPoles zones={zones}/>
