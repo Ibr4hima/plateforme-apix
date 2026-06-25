@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Upload, FileText, ChevronRight, ChevronDown, BookOpen, Bold, Italic, List } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, Upload, FileText, ChevronRight, ChevronDown, BookOpen } from "lucide-react";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -44,68 +45,7 @@ function TitreContenuForm({ label, initialTitre, initialContenu, onSave, onCance
         </button>
         <button onClick={onCancel} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:"8px 10px" }}><X size={14} color="#4a5568" /></button>
       </div>
-      <textarea value={contenu} onChange={e=>setContenu(e.target.value)} rows={2}
-        placeholder="Texte introductif (optionnel)…"
-        style={{...IS, resize:"vertical" as const, lineHeight:1.6}} />
-    </div>
-  );
-}
-
-// ── Éditeur de texte riche custom ────────────────────────────────────────────
-function RichEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const taRef = useRef<HTMLTextAreaElement>(null);
-
-  const insert = (before: string, after: string = "", placeholder: string = "") => {
-    const ta = taRef.current; if (!ta) return;
-    const start = ta.selectionStart;
-    const end   = ta.selectionEnd;
-    const sel   = ta.value.slice(start, end) || placeholder;
-    const newVal = ta.value.slice(0, start) + before + sel + after + ta.value.slice(end);
-    onChange(newVal);
-    setTimeout(() => {
-      ta.focus();
-      ta.setSelectionRange(start + before.length, start + before.length + sel.length);
-    }, 0);
-  };
-
-  const insertLine = (prefix: string) => {
-    const ta = taRef.current; if (!ta) return;
-    const start = ta.selectionStart;
-    // Trouver le début de la ligne courante
-    const lineStart = ta.value.lastIndexOf("\n", start - 1) + 1;
-    const newVal = ta.value.slice(0, lineStart) + prefix + ta.value.slice(lineStart);
-    onChange(newVal);
-    setTimeout(() => { ta.focus(); ta.setSelectionRange(start + prefix.length, start + prefix.length); }, 0);
-  };
-
-  const tools = [
-    { label: "G", title: "Gras", action: () => insert("**", "**", "texte"), style: { fontWeight: 900 } },
-    { label: "I", title: "Italique", action: () => insert("_", "_", "texte"), style: { fontStyle: "italic" } },
-    { label: "•", title: "Puce •", action: () => insertLine("• "), style: {} },
-    { label: "→", title: "Flèche →", action: () => insertLine("→ "), style: {} },
-    { label: "–", title: "Tiret –", action: () => insertLine("– "), style: {} },
-    { label: "►", title: "Puce pleine ►", action: () => insertLine("► "), style: {} },
-  ];
-
-  return (
-    <div style={{ border: "1px solid #C5BFBB", borderRadius: 8, overflow: "hidden", background: "#F2F0EF" }}>
-      {/* Barre d'outils */}
-      <div style={{ display: "flex", alignItems: "center", gap: 2, padding: "6px 8px", borderBottom: "1px solid #C5BFBB", background: "#fff", flexWrap: "wrap" }}>
-        {tools.map((t, i) => (
-          <button key={i} type="button" title={t.title} onClick={t.action}
-            style={{ ...t.style, minWidth: 28, height: 28, borderRadius: 5, border: "1px solid #E8E5E3", background: "#F8F7F6", cursor: "pointer", fontSize: 13, color: "#1a1a2e", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.1s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.1)"; e.currentTarget.style.borderColor = "#ca631f"; e.currentTarget.style.color = "#ca631f"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#F8F7F6"; e.currentTarget.style.borderColor = "#E8E5E3"; e.currentTarget.style.color = "#1a1a2e"; }}>
-            {t.label}
-          </button>
-        ))}
-        <div style={{ width: 1, height: 20, background: "#E8E5E3", margin: "0 4px" }} />
-        <span style={{ fontSize: 11, color: "#9aa5b4" }}>Sélectionner du texte puis cliquer pour formater</span>
-      </div>
-      {/* Zone de texte */}
-      <textarea ref={taRef} value={value} onChange={e => onChange(e.target.value)} rows={8}
-        placeholder={"Texte de l'article…\n\nUtiliser la barre ci-dessus pour formater :\n• puce, → flèche, – tiret, **gras**, _italique_"}
-        style={{ width: "100%", background: "#F2F0EF", border: "none", outline: "none", padding: "12px", fontSize: 13, color: "#1a1a2e", lineHeight: 1.7, resize: "vertical", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+      <RichTextEditor value={contenu} onChange={setContenu} />
     </div>
   );
 }
@@ -133,7 +73,7 @@ function ArticleEditor({ art, sections, onSave, onCancel, saving }: any) {
       </div>
       <div style={{ marginBottom:10 }}>
         <label style={LS}>Contenu de l'article</label>
-        <RichEditor value={contenu} onChange={setContenu} />
+        <RichTextEditor value={contenu} onChange={setContenu} />
       </div>
       <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
         <button onClick={onCancel} style={{ padding:"8px 16px", borderRadius:9, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>Annuler</button>
