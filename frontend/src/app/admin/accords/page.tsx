@@ -510,13 +510,17 @@ export default function AdminAccords() {
     fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()).then(setAllPays).catch(()=>{});
   },[]);
 
-  const getPaysNoms = (a:any) => {
+  const getPaysNoms = (a:any, max=2) => {
+    let noms: string[] = [];
     if (a.parties_pays_ids?.length>0) {
-      return (a.parties_pays_ids as number[])
+      noms = (a.parties_pays_ids as number[])
         .map((id:number)=>{ const p=allPays.find((r:any)=>r.id===id); return p?.nom_fr||null; })
-        .filter(Boolean).join(", ");
+        .filter(Boolean) as string[];
+    } else if (a.parties_signataires) {
+      noms = a.parties_signataires.split(", ").filter(Boolean);
     }
-    return a.parties_signataires||"";
+    if (max && noms.length > max) return noms.slice(0, max).join(", ") + `, +${noms.length - max}`;
+    return noms.join(", ");
   };
 
   const charger = useCallback(async()=>{
