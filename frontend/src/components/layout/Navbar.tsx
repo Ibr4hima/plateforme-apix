@@ -27,49 +27,6 @@ function toRomanNum(n: number): string {
 }
 const numArt = (n: number) => String(n);
 
-// ── Rendu texte article (bullets •) ──────────────────────────────────────────
-function ArticleContenu({ contenu }: { contenu: string }) {
-  const renderInline = (text: string) => {
-    const parts = text.split(/(\*\*[^*]+\*\*|_[^_]+_)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith("**") && part.endsWith("**"))
-        return <strong key={i}>{part.slice(2,-2)}</strong>;
-      if (part.startsWith("_") && part.endsWith("_"))
-        return <em key={i}>{part.slice(1,-1)}</em>;
-      return part;
-    });
-  };
-
-  return (
-    <div style={{ fontSize: 14, color: "#2d3748", lineHeight: 1.8 }}>
-      {contenu.split("\n").map((line, i) => {
-        if (line.trim() === "") return <br key={i} />;
-        if (line.startsWith("• ") || line.startsWith("•"))
-          return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
-            <span style={{ color:"#1a1a2e", flexShrink:0 }}>•</span>
-            <span>{renderInline(line.replace(/^•\s*/,""))}</span>
-          </div>;
-        if (line.startsWith("→ ") || line.startsWith("→"))
-          return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
-            <span style={{ color:"#1a1a2e", flexShrink:0 }}>→</span>
-            <span>{renderInline(line.replace(/^→\s*/,""))}</span>
-          </div>;
-        if (line.startsWith("► ") || line.startsWith("►"))
-          return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
-            <span style={{ color:"#1a1a2e", flexShrink:0 }}>►</span>
-            <span>{renderInline(line.replace(/^►\s*/,""))}</span>
-          </div>;
-        if (line.startsWith("– ") || line.startsWith("–"))
-          return <div key={i} style={{ display:"flex", gap:8, marginBottom:4 }}>
-            <span style={{ color:"#9aa5b4", flexShrink:0 }}>–</span>
-            <span>{renderInline(line.replace(/^–\s*/,""))}</span>
-          </div>;
-        return <p key={i} style={{ margin:"4px 0" }}>{renderInline(line)}</p>;
-      })}
-    </div>
-  );
-}
-
 // ── Modal Code des investissements ────────────────────────────────────────────
 function CodeModal({ onClose }: { onClose: () => void }) {
   const [chapitres,     setChapitres]    = useState<any[]>([]);
@@ -207,7 +164,8 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                     </div>
                     <h3 style={{ fontWeight: 800, fontSize: "1.2rem", color: "#1a1a2e", margin: 0, lineHeight: 1.3 }}>{activeChap.titre}</h3>
                     {activeChap.contenu && !activeSecId && (
-                      <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 10 }}>{activeChap.contenu}</p>
+                      <div data-rte style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 10 }}
+                        dangerouslySetInnerHTML={{ __html: activeChap.contenu }} />
                     )}
                     {activeSecId && (() => {
                       const sec = activeChap.sections.find((s:any)=>s.id===activeSecId);
@@ -217,7 +175,8 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                             Section {sec.num_display} — {sec.titre}
                           </p>
                           {sec.contenu && (
-                            <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 6, paddingLeft: 12, borderLeft: "3px solid rgba(0,79,145,0.2)" }}>{sec.contenu}</p>
+                            <div data-rte style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 6, paddingLeft: 12, borderLeft: "3px solid rgba(0,79,145,0.2)" }}
+                              dangerouslySetInnerHTML={{ __html: sec.contenu }} />
                           )}
                         </>
                       ) : null;
@@ -239,7 +198,8 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                             Section {sec.num_display} — {sec.titre}
                           </div>
                           {sec.contenu && (
-                            <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 8, paddingLeft: 12, borderLeft: "3px solid rgba(0,79,145,0.2)" }}>{sec.contenu}</p>
+                            <div data-rte style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.7, marginTop: 8, paddingLeft: 12, borderLeft: "3px solid rgba(0,79,145,0.2)" }}
+                              dangerouslySetInnerHTML={{ __html: sec.contenu }} />
                           )}
                         </div>
                       ) : null;
@@ -249,7 +209,10 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                         Article {a.num_display}
                         {a.titre && <span style={{ fontWeight: 600, color: "#4a5568" }}> — {a.titre}</span>}
                       </p>
-                      {a.contenu && <ArticleContenu contenu={a.contenu} />}
+                      {a.contenu && (
+                        <div data-rte style={{ fontSize: 14, color: "#2d3748", lineHeight: 1.8 }}
+                          dangerouslySetInnerHTML={{ __html: a.contenu }} />
+                      )}
                     </div>
                     <div style={{ borderBottom: "1px solid #F2F0EF", marginTop: 20 }} />
                   </div>
@@ -441,7 +404,14 @@ export default function Navbar() {
       {/* Modal Code des investissements */}
       {codeOpen && <CodeModal onClose={() => setCodeOpen(false)} />}
 
-      <style>{`mark { background: rgba(202,99,31,0.2); color: #ca631f; border-radius: 3px; padding: 0 2px; }`}</style>
+      <style>{`
+        mark { background: rgba(202,99,31,0.2); color: #ca631f; border-radius: 3px; padding: 0 2px; }
+        [data-rte] ul{padding-left:20px;list-style-type:disc}
+        [data-rte] ul.dash-list{list-style-type:"— ";padding-left:22px}
+        [data-rte] ol{padding-left:20px;list-style-type:decimal}
+        [data-rte] li{margin-bottom:2px}
+        [data-rte] p{margin:3px 0}
+      `}</style>
     </>
   );
 }
