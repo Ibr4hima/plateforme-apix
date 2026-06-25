@@ -194,11 +194,16 @@ function ZonesParType({ zones }: { zones: any[] }) {
           const active = selectedType === t.type;
           return (
             <div key={t.type} onClick={() => setSelectedType(active ? null : t.type)}
-              style={{ background:"#fff", border:`1px solid ${active ? t.meta.color : "#E8E5E3"}`, borderRadius:12, padding:"14px 16px",
+              style={{ background:"#fff",
+                borderTop:`1px solid ${active ? t.meta.color : "#E8E5E3"}`,
+                borderRight:`1px solid ${active ? t.meta.color : "#E8E5E3"}`,
+                borderBottom:`1px solid ${active ? t.meta.color : "#E8E5E3"}`,
+                borderLeft:`3px solid ${t.meta.color}`,
+                borderRadius:12, padding:"14px 16px",
                 boxShadow: active ? `0 4px 20px ${t.meta.color}20` : "0 1px 4px rgba(0,0,0,0.04)",
-                borderLeft:`3px solid ${t.meta.color}`, cursor:"pointer", transition:"all 0.15s" }}
-              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 4px 16px ${t.meta.color}20`; ev.currentTarget.style.borderColor=t.meta.color; } }}
-              onMouseLeave={ev => { ev.currentTarget.style.boxShadow=active?`0 4px 20px ${t.meta.color}20`:"0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor=active?t.meta.color:"#E8E5E3"; ev.currentTarget.style.borderLeftColor=t.meta.color; }}>
+                cursor:"pointer", transition:"all 0.15s" }}
+              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 4px 16px ${t.meta.color}20`; ev.currentTarget.style.borderTopColor=t.meta.color; ev.currentTarget.style.borderRightColor=t.meta.color; ev.currentTarget.style.borderBottomColor=t.meta.color; } }}
+              onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderTopColor="#E8E5E3"; ev.currentTarget.style.borderRightColor="#E8E5E3"; ev.currentTarget.style.borderBottomColor="#E8E5E3"; } }}>
 
               <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", marginBottom:10 }}>{t.meta.label}</div>
 
