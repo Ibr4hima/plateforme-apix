@@ -124,6 +124,21 @@ class ProspectEchange(Base):
 
     prospect    = relationship("Prospect", back_populates="echanges")
     point_focal = relationship("ProspectPointFocal")
+    fichiers    = relationship("ProspectEchangeFichier", back_populates="echange",
+                               cascade="all, delete-orphan", order_by="ProspectEchangeFichier.created_at")
+
+
+class ProspectEchangeFichier(Base):
+    __tablename__ = "prospect_echange_fichiers"
+
+    id          = Column(Integer, primary_key=True, autoincrement=True)
+    echange_id  = Column(Integer, ForeignKey("prospect_echanges.id", ondelete="CASCADE"), nullable=False)
+    titre       = Column(String(255), nullable=False)
+    nom_fichier = Column(String(255), nullable=False)
+    chemin      = Column(Text, nullable=False)
+    created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    echange = relationship("ProspectEchange", back_populates="fichiers")
 
 
 class ProspectContrainte(Base):

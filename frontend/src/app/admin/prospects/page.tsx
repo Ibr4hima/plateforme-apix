@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Building2, Check, ChevronDown, ChevronUp, Clock, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, User, Video, X } from "lucide-react";
+import { Building2, Check, ChevronDown, ChevronUp, Clock, FileText, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, Upload, User, Video, X } from "lucide-react";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -642,6 +642,8 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   const [error,  setError]  = useState("");
   const [ok,     setOk]     = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [pdfQueue, setPdfQueue] = useState<{file:File;titre:string}[]>([]);
+  const [fichiersExistants, setFichiersExistants] = useState<any[]>([]);
   const [localContraintes, setLocalContraintes] = useState<any[]>([]);
   const [showContrainteForm, setShowContrainteForm] = useState(false);
   const [editContrainteId, setEditContrainteId] = useState<number|null>(null);
@@ -707,7 +709,12 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     setLocalContraintes(contraintesCycleCourant(prospect));
     setShowContrainteForm(false); setEditContrainteId(null);
     setBulletContraintes([""]); setContrainteError("");
-    setError(""); setOk(false); setEmailError("");
+    setError(""); setOk(false); setEmailError(""); setPdfQueue([]);
+    if (isEdit && edit?.id) {
+      fetch(`${API}/prospects/echanges/${edit.id}/fichiers`).then(r=>r.json()).then(setFichiersExistants).catch(()=>{});
+    } else {
+      setFichiersExistants([]);
+    }
   }, [open, prospect?.id, edit?.id]);
 
   const ouvrirContrainte = (c:any|null) => {
@@ -787,6 +794,14 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         ? await fetch(`${API}/prospects/echanges/${edit.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body })
         : await fetch(`${API}/prospects/${prospect.id}/echanges`, { method:"POST", headers:{"Content-Type":"application/json"}, body });
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
+      const savedEchange = await res.json();
+      const echangeId = savedEchange.id ?? edit?.id;
+      for (const p of pdfQueue) {
+        const fd = new FormData();
+        fd.append("titre", p.titre || p.file.name);
+        fd.append("fichier", p.file);
+        await fetch(`${API}/prospects/echanges/${echangeId}/fichiers`, { method:"POST", body:fd });
+      }
       setOk(true);
       const pr = await fetch(`${API}/prospects/${prospect.id}`);
       const updated = pr.ok ? await pr.json() : prospect;
@@ -895,12 +910,51 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               })()}
             </div>
 
-            {/* Compte-rendu */}
+            {/* Commentaires */}
             <div>
-              <label style={LS}>Compte-rendu de l'échange</label>
+              <label style={LS}>Commentaires</label>
               <div style={{ minHeight:160 }}>
                 <RichTextEditor value={form.commentaire} onChange={v=>upd("commentaire",v)}/>
               </div>
+            </div>
+
+            {/* Compte rendu & autres documents */}
+            <div>
+              <label style={LS}>Compte rendu &amp; autres documents</label>
+              {fichiersExistants.length > 0 && (
+                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, marginBottom:10 }}>
+                  {fichiersExistants.map((f:any) => (
+                    <a key={f.id} href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                      style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:12, color:"#4a5568" }}>
+                      <FileText size={12} style={{ color:"#ca631f" }}/>{f.titre}
+                    </a>
+                  ))}
+                </div>
+              )}
+              {pdfQueue.length > 0 && (
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
+                  {pdfQueue.map((p,i) => (
+                    <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:8, padding:"7px 12px" }}>
+                      <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+                      <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
+                        placeholder="Titre du document"
+                        style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(0,79,145,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                      <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed #C5BFBB", background:"#F2F0EF" }}
+                onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+                onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
+                <Upload size={14} color="#9aa5b4"/>
+                <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+                <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
+                  const files = Array.from(e.target.files||[]);
+                  setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
+                  e.target.value="";
+                }}/>
+              </label>
             </div>
 
             {/* Contraintes exprimées */}

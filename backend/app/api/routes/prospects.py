@@ -1,6 +1,10 @@
+import os
+import shutil
+import uuid as uuid_lib
 from datetime import date as date_type, datetime, timezone, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, delete as sqldel
 from sqlalchemy.exc import IntegrityError
@@ -10,12 +14,15 @@ from app.core.database import get_db
 from app.core.auth import require_admin
 from app.models.prospect import (
     Prospect, ProspectPointFocal, ProspectEchange, ProspectContrainte, ProspectContact,
-    ProspectCycle,
+    ProspectCycle, ProspectEchangeFichier,
 )
 from app.models.projet import Projet
 from app.utils.dedup import collect_contacts, LABELS
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
+
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "../../../uploads/prospect_echanges")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def _conclu_fige(issue, conclu_le=None) -> bool:
     """Vrai dès qu'une prospection est conclue : elle est aussitôt archivée
@@ -777,4 +784,80 @@ async def supprimer_contrainte(contrainte_id: int, db: AsyncSession = Depends(ge
         if c.cycle_num != current_cycle_num:
             raise HTTPException(403, "Cette contrainte appartient à un cycle terminé et ne peut plus être supprimée.")
     await db.delete(c)
+    await db.flush()
+
+
+# ── Fichiers PDF attachés à un échange ───────────────────────────────────────
+
+@router.get("/echanges/{echange_id}/fichiers")
+async def liste_fichiers_echange(echange_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(ProspectEchangeFichier)
+        .where(ProspectEchangeFichier.echange_id == echange_id)
+        .order_by(ProspectEchangeFichier.created_at.asc())
+    )
+    return [{"id": f.id, "titre": f.titre, "fichier_nom": f.nom_fichier, "chemin": f.chemin}
+            for f in result.scalars().all()]
+
+
+@router.post("/echanges/{echange_id}/fichiers", status_code=201)
+async def ajouter_fichier_echange(
+    echange_id: int,
+    titre:    str        = Form(...),
+    fichier:  UploadFile = File(...),
+    db:       AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    result = await db.execute(select(ProspectEchange).where(ProspectEchange.id == echange_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Échange introuvable")
+    ext = os.path.splitext(fichier.filename)[1]
+    nom_fichier = f"{uuid_lib.uuid4()}{ext}"
+    chemin_disque = os.path.join(UPLOAD_DIR, nom_fichier)
+    with open(chemin_disque, "wb") as f:
+        shutil.copyfileobj(fichier.file, f)
+    pef = ProspectEchangeFichier(
+        echange_id=echange_id,
+        titre=titre,
+        nom_fichier=fichier.filename,
+        chemin=f"/uploads/prospect_echanges/{nom_fichier}",
+    )
+    db.add(pef)
+    await db.flush()
+    await db.refresh(pef)
+    return {"id": pef.id, "titre": pef.titre, "fichier_nom": pef.nom_fichier, "chemin": pef.chemin}
+
+
+@router.get("/echanges/{echange_id}/fichiers/{fichier_id}/download")
+async def telecharger_fichier_echange(echange_id: int, fichier_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(ProspectEchangeFichier)
+        .where(ProspectEchangeFichier.id == fichier_id, ProspectEchangeFichier.echange_id == echange_id)
+    )
+    pef = result.scalar_one_or_none()
+    if not pef:
+        raise HTTPException(status_code=404, detail="Fichier introuvable")
+    chemin_physique = os.path.join(os.path.dirname(__file__), "../../../", pef.chemin.lstrip("/"))
+    if not os.path.exists(chemin_physique):
+        raise HTTPException(status_code=404, detail="Fichier introuvable sur le serveur")
+    return FileResponse(chemin_physique, media_type="application/pdf", filename=pef.nom_fichier or "document.pdf")
+
+
+@router.delete("/echanges/{echange_id}/fichiers/{fichier_id}", status_code=204)
+async def supprimer_fichier_echange(
+    echange_id: int, fichier_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    result = await db.execute(
+        select(ProspectEchangeFichier)
+        .where(ProspectEchangeFichier.id == fichier_id, ProspectEchangeFichier.echange_id == echange_id)
+    )
+    pef = result.scalar_one_or_none()
+    if not pef:
+        raise HTTPException(status_code=404, detail="Fichier introuvable")
+    chemin_physique = os.path.join(os.path.dirname(__file__), "../../../", pef.chemin.lstrip("/"))
+    if os.path.exists(chemin_physique):
+        os.remove(chemin_physique)
+    await db.delete(pef)
     await db.flush()
