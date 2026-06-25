@@ -236,19 +236,8 @@ export default function CodeInvestissementPage() {
               {a.titre && <span> — {a.titre}</span>}
             </div>
             {a.contenu && (
-              <div style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}>
-                {a.contenu.split("\n").map((line:string, i:number) => {
-                  if (!line.trim()) return <br key={i}/>;
-                  const ri = (t:string) => t.split(/(\*\*[^*]+\*\*|_[^_]+_)/g).map((p:string,j:number)=>
-                    p.startsWith("**")&&p.endsWith("**")?<strong key={j}>{p.slice(2,-2)}</strong>:
-                    p.startsWith("_")&&p.endsWith("_")?<em key={j}>{p.slice(1,-1)}</em>:p);
-                  for (const [sym] of [["•"],["→"],["►"],["–"]]) {
-                    if (line.startsWith(sym))
-                      return <div key={i} style={{display:"flex",gap:6,marginBottom:2}}><span style={{color:"#ca631f",flexShrink:0}}>{sym}</span><span>{ri(line.replace(new RegExp(`^\\${sym}\\s*`),""))}</span></div>;
-                  }
-                  return <p key={i} style={{margin:"2px 0"}}>{ri(line)}</p>;
-                })}
-              </div>
+              <div data-rte style={{ fontSize:12, color:"#4a5568", lineHeight:1.6 }}
+                dangerouslySetInnerHTML={{ __html: a.contenu }} />
             )}
           </div>
           <div style={{ display:"flex", gap:4, flexShrink:0 }}>
@@ -262,7 +251,15 @@ export default function CodeInvestissementPage() {
 
   return (
     <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        [data-rte] ul{padding-left:20px;list-style-type:disc}
+        [data-rte] ul.dash-list{list-style-type:"— ";padding-left:22px}
+        [data-rte] ol{padding-left:20px;list-style-type:decimal}
+        [data-rte] li{margin-bottom:2px}
+        [data-rte] p{margin:2px 0}
+        [data-rte] *{font-family:var(--font-google-sans)!important;font-size:12px!important}
+      `}</style>
 
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
@@ -377,9 +374,8 @@ export default function CodeInvestissementPage() {
                         </div>
                         {/* Texte introductif de la section */}
                         {s.contenu && (
-                          <div style={{ fontSize:12, color:"#4a5568", lineHeight:1.7, marginBottom:8, padding:"8px 12px", background:"rgba(0,79,145,0.03)", borderLeft:"3px solid rgba(0,79,145,0.2)", borderRadius:"0 6px 6px 0" }}>
-                            {s.contenu}
-                          </div>
+                          <div data-rte style={{ fontSize:12, color:"#4a5568", lineHeight:1.7, marginBottom:8, padding:"8px 12px", background:"rgba(0,79,145,0.03)", borderLeft:"3px solid rgba(0,79,145,0.2)", borderRadius:"0 6px 6px 0" }}
+                            dangerouslySetInnerHTML={{ __html: s.contenu }} />
                         )}
                         {s.articles.map((a:any) => renderArticle(a, c.sections))}
                       </div>
