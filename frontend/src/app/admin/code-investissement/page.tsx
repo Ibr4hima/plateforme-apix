@@ -89,6 +89,11 @@ function ArticleEditor({ art, sections, onSave, onCancel, saving }: any) {
 
 // ── Page principale ────────────────────────────────────────────────────────────
 export default function CodeInvestissementPage() {
+  const [onglet, setOnglet] = useState<"code"|"modalites">("code");
+  const base = onglet === "code"
+    ? `${API}/code-investissement`
+    : `${API}/modalites-application`;
+
   const [chapitres,   setChapitres]   = useState<any[]>([]);
   const [pdfInfo,     setPdfInfo]     = useState<any>(null);
   const [loading,     setLoading]     = useState(true);
@@ -107,16 +112,27 @@ export default function CodeInvestissementPage() {
     setLoading(true);
     try {
       const [code, pdf] = await Promise.all([
-        fetch(`${API}/code-investissement`).then(r=>r.json()),
-        fetch(`${API}/code-investissement/pdf/info`).then(r=>r.json()),
+        fetch(`${base}`).then(r=>r.json()),
+        fetch(`${base}/pdf/info`).then(r=>r.json()),
       ]);
       setChapitres(Array.isArray(code) ? code : []);
       setPdfInfo(pdf);
     } catch(e){ console.error(e); }
     finally { setLoading(false); }
-  }, []);
+  }, [base]);
 
   useEffect(() => { charger(); }, [charger]);
+
+  useEffect(() => {
+    setExpandedChap(null);
+    setNewChapForm(false);
+    setEditChap(null);
+    setNewSecForm(null);
+    setEditSec(null);
+    setNewArtChap(null);
+    setEditArt(null);
+    setPdfTitreEdit(false);
+  }, [onglet]);
 
   // Prochain numéro auto
   const nextChapNum = () => Math.max(0, ...chapitres.map(c=>c.numero)) + 1;
@@ -134,10 +150,10 @@ export default function CodeInvestissementPage() {
     setSaving(true);
     try {
       if (chapId) {
-        await fetch(`${API}/code-investissement/chapitres/${chapId}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({titre, contenu}) });
+        await fetch(`${base}/chapitres/${chapId}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({titre, contenu}) });
         setEditChap(null);
       } else {
-        await fetch(`${API}/code-investissement/chapitres`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({numero:nextChapNum(), titre, contenu}) });
+        await fetch(`${base}/chapitres`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({numero:nextChapNum(), titre, contenu}) });
         setNewChapForm(false);
       }
       charger();
@@ -146,7 +162,7 @@ export default function CodeInvestissementPage() {
 
   const delChap = async (chapId:string) => {
     if (!confirm("Supprimer ce chapitre et tous ses contenus ?")) return;
-    await fetch(`${API}/code-investissement/chapitres/${chapId}`, {method:"DELETE"});
+    await fetch(`${base}/chapitres/${chapId}`, {method:"DELETE"});
     charger();
   };
 
@@ -157,10 +173,10 @@ export default function CodeInvestissementPage() {
     setSaving(true);
     try {
       if (secId) {
-        await fetch(`${API}/code-investissement/sections/${secId}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({titre, contenu}) });
+        await fetch(`${base}/sections/${secId}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({titre, contenu}) });
         setEditSec(null);
       } else {
-        await fetch(`${API}/code-investissement/chapitres/${chapId}/sections`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({numero:nextSecNum(chapId), titre, contenu}) });
+        await fetch(`${base}/chapitres/${chapId}/sections`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({numero:nextSecNum(chapId), titre, contenu}) });
         setNewSecForm(null);
       }
       charger();
@@ -169,7 +185,7 @@ export default function CodeInvestissementPage() {
 
   const delSec = async (secId:string) => {
     if (!confirm("Supprimer cette section ?")) return;
-    await fetch(`${API}/code-investissement/sections/${secId}`, {method:"DELETE"});
+    await fetch(`${base}/sections/${secId}`, {method:"DELETE"});
     charger();
   };
 
@@ -177,10 +193,10 @@ export default function CodeInvestissementPage() {
     setSaving(true);
     try {
       if (artId) {
-        await fetch(`${API}/code-investissement/articles/${artId}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data) });
+        await fetch(`${base}/articles/${artId}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data) });
         setEditArt(null);
       } else {
-        await fetch(`${API}/code-investissement/articles`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({...data, chapitre_id:chapId, numero:nextArtNum()}) });
+        await fetch(`${base}/articles`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({...data, chapitre_id:chapId, numero:nextArtNum()}) });
         setNewArtChap(null);
       }
       charger();
@@ -189,9 +205,10 @@ export default function CodeInvestissementPage() {
 
   const delArt = async (artId:string) => {
     if (!confirm("Supprimer cet article ?")) return;
-    await fetch(`${API}/code-investissement/articles/${artId}`, {method:"DELETE"});
+    await fetch(`${base}/articles/${artId}`, {method:"DELETE"});
     charger();
   };
+
 
   const [pdfTitreEdit, setPdfTitreEdit] = useState(false);
   const [pdfTitreVal,  setPdfTitreVal]  = useState("");
@@ -201,9 +218,9 @@ export default function CodeInvestissementPage() {
     const file = e.target.files?.[0]; if (!file) return;
     const fd = new FormData();
     fd.append("fichier", file);
-    fd.append("titre", pdfInfo?.titre || "Code des investissements du Sénégal");
+    fd.append("titre", pdfInfo?.titre || (onglet === "code" ? "Code des investissements du Sénégal" : "Modalités d'application du code des investissements"));
     fd.append("version", pdfInfo?.version || "");
-    await fetch(`${API}/code-investissement/pdf`, {method:"POST", body:fd});
+    await fetch(`${base}/pdf`, {method:"POST", body:fd});
     charger(); e.target.value="";
   };
 
@@ -211,7 +228,7 @@ export default function CodeInvestissementPage() {
     if (!pdfTitreVal.trim() || !pdfInfo) return;
     setSaving(true);
     try {
-      await fetch(`${API}/code-investissement/pdf/${pdfInfo.id}`, {
+      await fetch(`${base}/pdf/${pdfInfo.id}`, {
         method: "PATCH",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify({titre: pdfTitreVal}),
@@ -261,11 +278,29 @@ export default function CodeInvestissementPage() {
         [data-rte] *{font-family:var(--font-google-sans)!important;font-size:12px!important}
       `}</style>
 
+      {/* Onglets */}
+      <div style={{ display:"flex", gap:4, marginBottom:28, borderBottom:"2px solid #E8E5E3", paddingBottom:0 }}>
+        {(["code","modalites"] as const).map(o => {
+          const label = o === "code" ? "Code des investissements" : "Modalités d'application";
+          const active = onglet === o;
+          return (
+            <button key={o} onClick={()=>setOnglet(o)}
+              style={{ padding:"10px 22px", border:"none", background:"none", cursor:"pointer", fontSize:13, fontWeight:active?700:500,
+                color: active?"#ca631f":"#9aa5b4", borderBottom: active?"2px solid #ca631f":"2px solid transparent",
+                marginBottom:-2, borderRadius:"6px 6px 0 0", fontFamily:"var(--font-google-sans)", transition:"color 0.15s" }}>
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
         <div>
           <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:4 }}>Administration</p>
-          <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Code des investissements</h1>
+          <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>
+            {onglet === "code" ? "Code des investissements" : "Modalités d'application"}
+          </h1>
           <p style={{ color:"#9aa5b4", fontSize:13, marginTop:4 }}>
             {chapitres.length} chapitre{chapitres.length>1?"s":""} ·{" "}
             {chapitres.reduce((a,c)=>(a + (c.articles?.length||0) + c.sections?.reduce((b:number,s:any)=>b+(s.articles?.length||0),0)),0)} articles
@@ -291,7 +326,7 @@ export default function CodeInvestissementPage() {
                   <Pencil size={11} /> {pdfInfo.titre || "Code des investissements"}
                 </button>
               )}
-              <a href={`${API}/code-investissement/pdf/download`} target="_blank" rel="noopener noreferrer"
+              <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer"
                 style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(202,99,31,0.08)", border:"1px solid rgba(202,99,31,0.2)", borderRadius:9, padding:"8px 14px", fontSize:12, color:"#ca631f", fontWeight:600, textDecoration:"none" }}>
                 <FileText size={13} /> Télécharger
               </a>
