@@ -369,6 +369,11 @@ export default function AccordsPage() {
       if (!actIds.some((id:number)=>(a.activite_ids||[]).includes(id))) return false;
     }
     return true;
+  }).sort((a:any,b:any)=>{
+    if (!a.date_expiration && !b.date_expiration) return 0;
+    if (!a.date_expiration) return 1;
+    if (!b.date_expiration) return -1;
+    return a.date_expiration.localeCompare(b.date_expiration);
   });
 
   const stats = {

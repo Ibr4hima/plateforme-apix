@@ -524,7 +524,13 @@ export default function AdminAccords() {
     try {
       const res  = await fetch(`${API_BASE}/accords?per_page=100&admin=true`);
       const data = await res.json();
-      setAccords(data.data||[]); setTotal(data.total||0);
+      const sorted = (data.data||[]).slice().sort((a:any,b:any)=>{
+        if (!a.date_expiration && !b.date_expiration) return 0;
+        if (!a.date_expiration) return 1;
+        if (!b.date_expiration) return -1;
+        return a.date_expiration.localeCompare(b.date_expiration);
+      });
+      setAccords(sorted); setTotal(data.total||0);
     } catch {} finally { setLoading(false); }
   },[]);
 
