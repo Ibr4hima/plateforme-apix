@@ -29,6 +29,11 @@ const numArt = (n: number) => String(n);
 
 // ── Modal Code des investissements — refonte institutionnelle ─────────────────
 function CodeModal({ onClose }: { onClose: () => void }) {
+  const [onglet,       setOnglet]      = useState<"code" | "modalites">("code");
+  const base = onglet === "code"
+    ? `${API}/code-investissement`
+    : `${API}/modalites-application`;
+
   const [chapitres,    setChapitres]   = useState<any[]>([]);
   const [pdfInfo,      setPdfInfo]     = useState<any>(null);
   const [activeChapId, setActiveChapId]= useState<string | null>(null);
@@ -40,28 +45,34 @@ function CodeModal({ onClose }: { onClose: () => void }) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setLoading(true);
+    setChapitres([]);
+    setActiveChapId(null);
+    setActiveSecId(null);
+    setQ("");
+    setResults(null);
     Promise.all([
-      fetch(`${API}/code-investissement`).then(r => r.json()),
-      fetch(`${API}/code-investissement/pdf/info`).then(r => r.json()),
+      fetch(`${base}`).then(r => r.json()),
+      fetch(`${base}/pdf/info`).then(r => r.json()),
     ]).then(([code, pdf]) => {
       const chapList = Array.isArray(code) ? code : [];
       setChapitres(chapList);
       setPdfInfo(pdf);
       if (chapList.length > 0) setActiveChapId(chapList[0].id);
     }).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  }, [base]);
 
   useEffect(() => {
     if (!q.trim() || q.length < 2) { setResults(null); return; }
     const t = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await fetch(`${API}/code-investissement/search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`${base}/search?q=${encodeURIComponent(q)}`);
         setResults(await res.json());
       } catch {} finally { setSearching(false); }
     }, 350);
     return () => clearTimeout(t);
-  }, [q]);
+  }, [q, base]);
 
   const goChap = (id: string) => { setActiveChapId(id); setActiveSecId(null); setQ(""); if (contentRef.current) contentRef.current.scrollTop = 0; };
   const goSec  = (chapId: string, secId: string | null) => { setActiveChapId(chapId); setActiveSecId(secId); if (contentRef.current) contentRef.current.scrollTop = 0; };
@@ -86,7 +97,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           </div>
           <div style={{ flex:1, minWidth:0 }}>
             <h2 style={{ fontWeight:800, fontSize:"1.05rem", color:"#1a1a2e", margin:0, letterSpacing:"-0.01em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-              {pdfInfo?.titre || "Code des investissements"}
+              {pdfInfo?.titre || (onglet === "code" ? "Code des investissements" : "Modalités d'application")}
             </h2>
           </div>
 
@@ -99,7 +110,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {pdfInfo && (
-            <a href={`${API}/code-investissement/pdf/download`} target="_blank" rel="noopener noreferrer"
+            <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer"
               title="Télécharger le PDF"
               style={{ display:"flex", alignItems:"center", gap:7, background:"#F5F3F0", border:"1px solid #EDEAE6", borderRadius:10, padding:"9px 15px", fontSize:12, color:"#4a5568", fontWeight:600, textDecoration:"none", flexShrink:0, transition:"all 0.15s", whiteSpace:"nowrap" as const }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor="#ca631f"; (e.currentTarget as HTMLElement).style.color="#ca631f"; }}
@@ -114,6 +125,21 @@ function CodeModal({ onClose }: { onClose: () => void }) {
             onMouseLeave={e => { e.currentTarget.style.background="#F5F3F0"; }}>
             <X size={16} color="#4a5568" />
           </button>
+        </div>
+
+        {/* ── Onglets (lois) ── */}
+        <div style={{ display:"flex", gap:0, padding:"0 28px", borderBottom:"1px solid #EDEAE6", flexShrink:0, background:"#fff" }}>
+          {([["code","Code des investissements"],["modalites","Modalités d'application"]] as const).map(([key, label]) => {
+            const active = onglet === key;
+            return (
+              <button key={key} onClick={() => setOnglet(key)}
+                style={{ padding:"12px 0", marginRight:24, background:"none", border:"none", borderBottom: active ? "2px solid #ca631f" : "2px solid transparent", marginBottom:-1, cursor:"pointer", fontSize:12.5, fontWeight: active ? 700 : 500, color: active ? "#ca631f" : "#9aa5b4", fontFamily:"var(--font-google-sans)", transition:"color 0.15s", whiteSpace:"nowrap" as const }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#6b7280"; }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#9aa5b4"; }}>
+                {label}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Body ── */}
