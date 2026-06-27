@@ -192,7 +192,6 @@ function ZonesParType({ zones }: { zones: any[] }) {
         {types.map(t => {
           const active = selectedType === t.type;
           const c = t.meta.color;
-          const entreprises = t.installed + t.eligible;
           const Stat = ({ value, label, accent }: { value:string; label:string; accent?:boolean }) => (
             <div style={{ flex:1, textAlign:"center" as const }}>
               <div style={{ fontSize:25, fontWeight:800, color: accent?c:"#1a1a2e", lineHeight:1.05, letterSpacing:"-0.015em" }}>{value}</div>
@@ -226,14 +225,12 @@ function ZonesParType({ zones }: { zones: any[] }) {
                   <Stat value={String(t.zones.length)} label={t.zones.length>1?"Zones":"Zone"} accent />
                   <div style={{ width:1, background:"#EEEBE8", margin:"4px 0" }}/>
                   <Stat value={t.superficie>0 ? Number(t.superficie).toLocaleString("fr-FR") : "—"} label="ha" />
-                  <div style={{ width:1, background:"#EEEBE8", margin:"4px 0" }}/>
-                  <Stat value={String(entreprises)} label={entreprises>1?"Entreprises":"Entreprise"} />
                 </div>
               </div>
 
-              {/* Pied : répartition + CTA */}
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, padding:"14px 22px 16px", marginTop:16, borderTop:"1px solid #F4F2F0" }}>
-                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6 }}>
+              {/* Pied : répartition + CTA centré */}
+              <div style={{ display:"flex", flexDirection:"column" as const, alignItems:"center", gap:11, padding:"14px 22px 18px", marginTop:16, borderTop:"1px solid #F4F2F0" }}>
+                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, justifyContent:"center" }}>
                   {t.installed > 0 && (
                     <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.08)", padding:"3px 9px", borderRadius:999 }}>
                       <span style={{ width:5, height:5, borderRadius:"50%", background:"#188038" }}/>{t.installed} installée{t.installed>1?"s":""}
@@ -248,8 +245,8 @@ function ZonesParType({ zones }: { zones: any[] }) {
                     <span style={{ fontSize:11, color:"#C5BFBB" }}>Aucune entreprise</span>
                   )}
                 </div>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:12.5, fontWeight:700, color:c, flexShrink:0, whiteSpace:"nowrap" as const }}>
-                  {active ? "Affiché" : "Voir"} <ChevronRight size={15}/>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"7px 20px", borderRadius:999, fontSize:12.5, fontWeight:700, background: active ? c : `${c}12`, color: active ? "#fff" : c, transition:"all 0.15s" }}>
+                  {active ? "Affiché" : "Voir les zones"} <ChevronRight size={15}/>
                 </span>
               </div>
 
