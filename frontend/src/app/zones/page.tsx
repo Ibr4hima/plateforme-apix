@@ -6,7 +6,7 @@ import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import { ZONE_TYPE_META } from "@/components/shared/zoneTypes";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
-import { Building2, ChevronDown, ChevronRight, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
+import { Building2, ChevronRight, FileText, X } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -337,74 +337,6 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
   );
 }
 
-// ── Card zone grille 3 colonnes ────────────────────────────────────────────────
-function ZoneCardGrid({ zone, onClick }: { zone:any; onClick:()=>void }) {
-  const col = (TYPE_META[zone.type_zone]||TYPE_META.ZES).color;
-  return (
-    <div onClick={onClick}
-      style={{ background:"#fff", border:"1px solid #E8E5E3", borderLeft:`3px solid ${col}`, borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", position:"relative" as const }}
-      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${col}20`;ev.currentTarget.style.borderColor=col;}}
-      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=col;}}>
-      <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", lineHeight:1.35, marginBottom:zone.pole_nom?2:8, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
-      {zone.pole_nom&&<div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginBottom:8, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.pole_nom}</div>}
-      <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
-        {zone.date_creation&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
-          <span style={{ color:"#4a5568" }}>Créée le {fmtDate(zone.date_creation)}</span>
-        </div>}
-        {(zone.departement_nom||zone.region_nom)&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#B7410E", flexShrink:0 }}/>
-          <span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</span>
-        </div>}
-      </div>
-      <div style={{ display:"flex", borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
-        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:col+"14", borderRadius:7, padding:"6px 0", fontSize:11, color:col, fontWeight:600 }}>
-          Voir les détails →
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Sidebar filter générique ───────────────────────────────────────────────────
-function ZoneSideFilter({ label, items, selected, onToggle, color, itemColors }: {
-  label:string; items:string[]; selected:string[]; onToggle:(v:string)=>void; color:string; itemColors?:Record<string,string>;
-}) {
-  const [open, setOpen] = useState(true);
-  return (
-    <div style={{ marginBottom:18 }}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"none", border:"none", cursor:"pointer", padding:"4px 0", marginBottom:open?8:0 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          {selected.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:color, display:"inline-block" }}/>}
-          <span style={{ fontSize:11, fontWeight:700, color:selected.length>0?color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
-          {selected.length>0&&<span style={{ fontSize:10, fontWeight:700, color, background:color+"18", padding:"1px 6px", borderRadius:999 }}>{selected.length}</span>}
-        </div>
-        {open?<ChevronUp size={12} style={{ color:"#9aa5b4" }}/>:<ChevronDown size={12} style={{ color:"#9aa5b4" }}/>}
-      </button>
-      {open&&(
-        <div style={{ display:"flex", flexDirection:"column" as const, gap:2, maxHeight:200, overflowY:"auto" as const }}>
-          {items.map(item=>{
-            const sel=selected.includes(item);
-            const ic=itemColors?.[item]||color;
-            return (
-              <button key={item} onClick={()=>onToggle(item)}
-                style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?ic+"12":"transparent", textAlign:"left" as const }}
-                onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLButtonElement).style.background="#F8F7F6";}}
-                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=sel?ic+"12":"transparent";}}>
-                <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?ic:"#C5BFBB"}`, background:sel?ic:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div>
-                <span style={{ fontSize:12, color:sel?ic:"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{item}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Modal détail zone ─────────────────────────────────────────────────────────
 function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
   const [ficheEnt,  setFicheEnt]  = useState<any>(null);
@@ -599,122 +531,12 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
   );
 }
 
-// ── Vue détaillée ─────────────────────────────────────────────────────────────
-function VueDetaillee({ zones }: { zones:any[] }) {
-  const [search, setSearch]       = useState("");
-  const [typesSel, setTypesSel]   = useState<string[]>([]);
-  const [polesSel, setPolesSel]   = useState<string[]>([]);
-  const [regionsSel, setRegionsSel] = useState<string[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
-  const isResizing = useRef(false);
-
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    const startX = e.clientX;
-    const startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => {
-      if (!isResizing.current) return;
-      setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX)));
-    };
-    const onUp = () => {
-      isResizing.current = false;
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-  };
-
-  const [selectedZone, setSelectedZone] = useState<any>(null);
-
-  const allPoles   = Array.from(new Set(zones.map((z:any)=>z.pole_nom).filter(Boolean))).sort() as string[];
-  const allRegions = Array.from(new Set(zones.map((z:any)=>z.region_nom).filter(Boolean))).sort() as string[];
-
-  const TYPE_ORDER: Record<string,number> = { ZES:0, ZAI:1, ZFI:2 };
-  const filtered = zones
-    .filter((z:any)=>{
-      if (search&&!z.nom_zone?.toLowerCase().includes(search.toLowerCase())) return false;
-      if (typesSel.length>0&&!typesSel.includes(z.type_zone)) return false;
-      if (polesSel.length>0&&!polesSel.includes(z.pole_nom)) return false;
-      if (regionsSel.length>0&&!regionsSel.includes(z.region_nom)) return false;
-      return true;
-    })
-    .sort((a:any,b:any)=>{
-      const tDiff=(TYPE_ORDER[a.type_zone]??3)-(TYPE_ORDER[b.type_zone]??3);
-      if (tDiff!==0) return tDiff;
-      return (a.date_creation||"").localeCompare(b.date_creation||"");
-    });
-
-  const toggle=(setter:React.Dispatch<React.SetStateAction<string[]>>)=>(v:string)=>
-    setter(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
-
-  const hasFilter=!!search||typesSel.length>0||polesSel.length>0||regionsSel.length>0;
-  const reinit=()=>{setSearch("");setTypesSel([]);setPolesSel([]);setRegionsSel([]);};
-  const nbFiltres=(search?1:0)+typesSel.length+polesSel.length+regionsSel.length;
-
-  return (
-    <div style={{ display:"flex", alignItems:"flex-start" }}>
-      {/* Sidebar */}
-      <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 72px)", overflowY:"auto" as const, position:"sticky" as const, top:72, display:"flex", flexDirection:"column" as const }}>
-        <div style={{ padding:sidebarOpen?"20px 16px":"10px 8px", flex:1 }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", marginBottom:sidebarOpen?18:0 }}>
-            {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-              <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
-              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
-            </button>
-          </div>
-          {sidebarOpen&&<div>
-            {hasFilter&&<button onClick={reinit} style={{ display:"flex", alignItems:"center", gap:5, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:16 }}>
-              <X size={12}/> Effacer tous les filtres
-            </button>}
-            <div style={{ position:"relative" as const, marginBottom:18 }}>
-              <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher une zone…"
-                style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-              {search&&<button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
-            </div>
-            <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-            <ZoneSideFilter label="Type de zone" color="#ca631f" items={["ZES","ZAI","ZFI"]} selected={typesSel} onToggle={toggle(setTypesSel)} itemColors={{ ZES:"#E35336", ZAI:"#174EA6", ZFI:"#188038" }}/>
-            {allPoles.length>0&&<><div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-            <ZoneSideFilter label="Pôle territorial" color="#ca631f" items={allPoles} selected={polesSel} onToggle={toggle(setPolesSel)}/></>}
-            {allRegions.length>0&&<><div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-            <ZoneSideFilter label="Région" color="#366FE3" items={allRegions} selected={regionsSel} onToggle={toggle(setRegionsSel)}/></>}
-          </div>}
-        </div>
-        {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, top:0, right:0, width:4, height:"100%", cursor:"col-resize", zIndex:10 }} onMouseEnter={e=>(e.currentTarget.style.background="rgba(202,99,31,0.3)")} onMouseLeave={e=>(e.currentTarget.style.background="transparent")}/>}
-      </aside>
-
-      {/* Grille */}
-      <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-        {filtered.length===0?(
-          <div style={{ textAlign:"center", padding:"80px 24px", color:"#9aa5b4" }}>
-            <p style={{ fontSize:16, fontWeight:600, color:"#4a5568" }}>Aucune zone trouvée</p>
-            <p style={{ fontSize:14, marginTop:6 }}>Modifiez vos filtres pour affiner la recherche.</p>
-            {hasFilter&&<button onClick={reinit} style={{ marginTop:16, padding:"8px 18px", borderRadius:10, border:"none", background:"#E35336", color:"#fff", fontWeight:600, fontSize:13, cursor:"pointer" }}>Effacer les filtres</button>}
-          </div>
-        ):(
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
-            {filtered.map((z:any)=><ZoneCardGrid key={z.id} zone={z} onClick={()=>setSelectedZone(z)}/>)}
-          </div>
-        )}
-      </div>
-
-      {selectedZone&&(
-        <ZoneDetailModal zone={selectedZone} onClose={()=>setSelectedZone(null)}/>
-      )}
-    </div>
-  );
-}
-
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function ZonesPage() {
   const [zones,      setZones]      = useState<any[]>([]);
   const [polesCount, setPolesCount] = useState(0);
   const [loading,    setLoading]    = useState(true);
-  const [onglet,     setOnglet]     = useState<"zones"|"liste"|"territoire">("zones");
+  const [onglet,     setOnglet]     = useState<"zones"|"territoire">("zones");
 
   useEffect(()=>{
     fetch(`${API_BASE}/zones-types`)
@@ -764,7 +586,6 @@ export default function ZonesPage() {
           {([
             {key:"zones",      label:"Zones d'investissement", color:"#ca631f"},
             {key:"territoire", label:"Pôles territoires",      color:"#ca631f"},
-            {key:"liste",      label:"Vue détaillée",          color:"#ca631f"},
           ] as const).map(t=>(
             <button key={t.key} onClick={()=>setOnglet(t.key)}
               style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
@@ -775,20 +596,14 @@ export default function ZonesPage() {
       </div>
 
       {/* ── Contenu ── */}
-      {onglet !== "liste" && (
-        <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
-          {onglet==="zones" && (
-            loading ? <Loader/> : <ZonesParType zones={zones}/>
-          )}
-          {onglet==="territoire" && (
-            loading ? <Loader/> : <VueTerritorialeSenegal zones={zones}/>
-          )}
-        </section>
-      )}
-
-      {onglet==="liste" && (
-        loading ? <div style={{padding:"36px 40px"}}><Loader/></div> : <VueDetaillee zones={zones}/>
-      )}
+      <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
+        {onglet==="zones" && (
+          loading ? <Loader/> : <ZonesParType zones={zones}/>
+        )}
+        {onglet==="territoire" && (
+          loading ? <Loader/> : <VueTerritorialeSenegal zones={zones}/>
+        )}
+      </section>
     </main>
   );
 }
