@@ -192,6 +192,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
         {types.map(t => {
           const active = selectedType === t.type;
           const c = t.meta.color;
+          const entreprises = t.installed + t.eligible;
           const Stat = ({ value, label, accent }: { value:string; label:string; accent?:boolean }) => (
             <div style={{ flex:1, textAlign:"center" as const }}>
               <div style={{ fontSize:25, fontWeight:800, color: accent?c:"#1a1a2e", lineHeight:1.05, letterSpacing:"-0.015em" }}>{value}</div>
@@ -215,14 +216,14 @@ function ZonesParType({ zones }: { zones: any[] }) {
                 {/* En-tête : chip acronyme + libellé */}
                 <div style={{ display:"flex", alignItems:"center", gap:13, marginBottom:22 }}>
                   <div style={{ width:46, height:46, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:t.meta.bg, border:`1px solid ${t.meta.border}` }}>
-                    <span style={{ fontSize:13, fontWeight:800, letterSpacing:"0.02em", color:c }}>{t.type}</span>
+                    <span style={{ fontSize:19, fontWeight:800, color:c, lineHeight:1 }}>{t.zones.length}</span>
                   </div>
                   <div style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", lineHeight:1.3 }}>{t.meta.label}</div>
                 </div>
 
                 {/* Statistiques ouvertes */}
                 <div style={{ display:"flex", alignItems:"stretch", paddingBottom:4 }}>
-                  <Stat value={String(t.zones.length)} label={t.zones.length>1?"Zones":"Zone"} accent />
+                  <Stat value={String(entreprises)} label={entreprises>1?"Entreprises":"Entreprise"} />
                   <div style={{ width:1, background:"#EEEBE8", margin:"4px 0" }}/>
                   <Stat value={t.superficie>0 ? Number(t.superficie).toLocaleString("fr-FR") : "—"} label="ha" />
                 </div>
