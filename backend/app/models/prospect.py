@@ -136,6 +136,7 @@ class ProspectEchangeFichier(Base):
     titre       = Column(String(255), nullable=False)
     nom_fichier = Column(String(255), nullable=False)
     chemin      = Column(Text, nullable=False)
+    categorie   = Column(String(20), nullable=False, server_default="autre")
     created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     echange = relationship("ProspectEchange", back_populates="fichiers")

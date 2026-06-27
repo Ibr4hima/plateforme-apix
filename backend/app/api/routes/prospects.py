@@ -155,7 +155,7 @@ def echange_to_dict(e: ProspectEchange) -> dict:
         "enregistre_le":   e.enregistre_le.isoformat() if e.enregistre_le else None,
         "retard_jours":    retard_jours,
         "fichiers": [
-            {"id": f.id, "titre": f.titre, "nom_fichier": f.nom_fichier}
+            {"id": f.id, "titre": f.titre, "nom_fichier": f.nom_fichier, "categorie": f.categorie}
             for f in (e.fichiers or [])
         ],
     }
@@ -800,21 +800,24 @@ async def liste_fichiers_echange(echange_id: int, db: AsyncSession = Depends(get
         .where(ProspectEchangeFichier.echange_id == echange_id)
         .order_by(ProspectEchangeFichier.created_at.asc())
     )
-    return [{"id": f.id, "titre": f.titre, "fichier_nom": f.nom_fichier, "chemin": f.chemin}
+    return [{"id": f.id, "titre": f.titre, "fichier_nom": f.nom_fichier, "chemin": f.chemin, "categorie": f.categorie}
             for f in result.scalars().all()]
 
 
 @router.post("/echanges/{echange_id}/fichiers", status_code=201)
 async def ajouter_fichier_echange(
     echange_id: int,
-    titre:    str        = Form(...),
-    fichier:  UploadFile = File(...),
-    db:       AsyncSession = Depends(get_db),
+    titre:     str        = Form(...),
+    categorie: str        = Form("autre"),
+    fichier:   UploadFile = File(...),
+    db:        AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
     result = await db.execute(select(ProspectEchange).where(ProspectEchange.id == echange_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Échange introuvable")
+    if categorie not in ("compte_rendu", "autre"):
+        categorie = "autre"
     ext = os.path.splitext(fichier.filename)[1]
     nom_fichier = f"{uuid_lib.uuid4()}{ext}"
     chemin_disque = os.path.join(UPLOAD_DIR, nom_fichier)
@@ -825,11 +828,12 @@ async def ajouter_fichier_echange(
         titre=titre,
         nom_fichier=fichier.filename,
         chemin=f"/uploads/prospect_echanges/{nom_fichier}",
+        categorie=categorie,
     )
     db.add(pef)
     await db.flush()
     await db.refresh(pef)
-    return {"id": pef.id, "titre": pef.titre, "fichier_nom": pef.nom_fichier, "chemin": pef.chemin}
+    return {"id": pef.id, "titre": pef.titre, "fichier_nom": pef.nom_fichier, "chemin": pef.chemin, "categorie": pef.categorie}
 
 
 @router.get("/echanges/{echange_id}/fichiers/{fichier_id}/download")

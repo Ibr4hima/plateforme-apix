@@ -643,6 +643,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   const [ok,     setOk]     = useState(false);
   const [emailError, setEmailError] = useState("");
   const [pdfQueue, setPdfQueue] = useState<{file:File;titre:string}[]>([]);
+  const [compteRendu, setCompteRendu] = useState<{file:File;titre:string}|null>(null);
   const [fichiersExistants, setFichiersExistants] = useState<any[]>([]);
   const [localContraintes, setLocalContraintes] = useState<any[]>([]);
   const [showContrainteForm, setShowContrainteForm] = useState(false);
@@ -652,6 +653,11 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
   const [contrainteError, setContrainteError] = useState("");
   const bulletRefs = useRef<(HTMLInputElement|null)[]>([]);
   const upd = (k:string, v:string) => setForm(f=>({ ...f,[k]:v }));
+
+  // Fichiers existants répartis par catégorie (mode édition)
+  const crExistant      = fichiersExistants.find((f:any)=>f.categorie==="compte_rendu") || null;
+  const autresExistants = fichiersExistants.filter((f:any)=>f.categorie!=="compte_rendu");
+  const hasCompteRendu  = !!compteRendu || !!crExistant;
 
   const pointsFocaux: any[] = prospect?.points_focaux || [];
   const estMorale = prospect?.type === "morale";
@@ -709,7 +715,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     setLocalContraintes(contraintesCycleCourant(prospect));
     setShowContrainteForm(false); setEditContrainteId(null);
     setBulletContraintes([""]); setContrainteError("");
-    setError(""); setOk(false); setEmailError(""); setPdfQueue([]);
+    setError(""); setOk(false); setEmailError(""); setPdfQueue([]); setCompteRendu(null);
     if (isEdit && edit?.id) {
       fetch(`${API}/prospects/echanges/${edit.id}/fichiers`).then(r=>r.json()).then(setFichiersExistants).catch(()=>{});
     } else {
@@ -768,6 +774,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
   const handleSave = async () => {
     if (!form.date_echange) { setError("La date est obligatoire"); return; }
+    if (!hasCompteRendu) { setError("Le compte rendu est obligatoire"); return; }
     if (form.canal === "Mail" && form.canal_contact && !isValidEmail(form.canal_contact)) {
       setEmailError("Adresse e-mail invalide"); return;
     }
@@ -796,9 +803,21 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
       const savedEchange = await res.json();
       const echangeId = savedEchange.id ?? edit?.id;
+      if (compteRendu) {
+        // Remplacement : supprimer l'ancien compte rendu pour n'en garder qu'un
+        if (crExistant) {
+          await fetch(`${API}/prospects/echanges/${echangeId}/fichiers/${crExistant.id}`, { method:"DELETE" });
+        }
+        const fd = new FormData();
+        fd.append("titre", compteRendu.titre || compteRendu.file.name);
+        fd.append("categorie", "compte_rendu");
+        fd.append("fichier", compteRendu.file);
+        await fetch(`${API}/prospects/echanges/${echangeId}/fichiers`, { method:"POST", body:fd });
+      }
       for (const p of pdfQueue) {
         const fd = new FormData();
         fd.append("titre", p.titre || p.file.name);
+        fd.append("categorie", "autre");
         fd.append("fichier", p.file);
         await fetch(`${API}/prospects/echanges/${echangeId}/fichiers`, { method:"POST", body:fd });
       }
@@ -918,12 +937,46 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               </div>
             </div>
 
-            {/* Compte rendu & autres documents */}
+            {/* Compte rendu (obligatoire — un seul) */}
             <div>
-              <label style={LS}>Compte rendu &amp; autres documents</label>
-              {fichiersExistants.length > 0 && (
+              <label style={LS}>Compte rendu <span style={{ color:"#dc2626" }}>*</span></label>
+              {crExistant && !compteRendu && (
                 <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, marginBottom:10 }}>
-                  {fichiersExistants.map((f:any) => (
+                  <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${crExistant.id}/download`} target="_blank" rel="noopener noreferrer"
+                    style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:12, color:"#4a5568" }}>
+                    <FileText size={12} style={{ color:"#ca631f" }}/>{crExistant.titre}
+                  </a>
+                </div>
+              )}
+              {compteRendu ? (
+                <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:8, padding:"7px 12px" }}>
+                  <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+                  <input value={compteRendu.titre} onChange={e=>setCompteRendu(cr=>cr?{...cr,titre:e.target.value}:cr)}
+                    placeholder="Titre du compte rendu"
+                    style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(0,79,145,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                  <button onClick={()=>setCompteRendu(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
+                </div>
+              ) : (
+                <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed #C5BFBB", background:"#F2F0EF" }}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
+                  <Upload size={14} color="#9aa5b4"/>
+                  <span style={{ fontSize:13, color:"#9aa5b4" }}>{crExistant ? "Remplacer le compte rendu (PDF)" : "Ajouter le compte rendu (PDF)"}</span>
+                  <input type="file" accept=".pdf" style={{ display:"none" }} onChange={e=>{
+                    const file = e.target.files?.[0]; if (!file) return;
+                    setCompteRendu({ file, titre:file.name.replace(/\.pdf$/i,"") });
+                    e.target.value="";
+                  }}/>
+                </label>
+              )}
+            </div>
+
+            {/* Autres documents (facultatif — un ou plusieurs) */}
+            <div>
+              <label style={LS}>Autres documents <span style={{ fontWeight:400, color:"#9aa5b4" }}>(facultatif)</span></label>
+              {autresExistants.length > 0 && (
+                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, marginBottom:10 }}>
+                  {autresExistants.map((f:any) => (
                     <a key={f.id} href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                       style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:12, color:"#4a5568" }}>
                       <FileText size={12} style={{ color:"#ca631f" }}/>{f.titre}
