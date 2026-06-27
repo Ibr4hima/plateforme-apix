@@ -3,6 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
+import { ZONE_TYPE_META } from "@/components/shared/zoneTypes";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import { Building2, ChevronDown, ChevronRight, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
@@ -15,11 +16,7 @@ function fmtDate(d: string) {
   return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
 }
 
-const TYPE_META: Record<string,{label:string;color:string;bg:string;border:string}> = {
-  ZES: { label:"Zones Économiques Spéciales",           color:"#ca631f", bg:"rgba(202,99,31,0.06)",  border:"rgba(202,99,31,0.2)" },
-  ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#004f91", bg:"rgba(0,79,145,0.06)",   border:"rgba(0,79,145,0.2)" },
-  ZFI: { label:"Zones Franches Industrielles",           color:"#0A7C6E", bg:"rgba(10,124,110,0.06)", border:"rgba(10,124,110,0.2)" },
-};
+const TYPE_META = ZONE_TYPE_META;
 
 const POLE_COLORS = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
 
