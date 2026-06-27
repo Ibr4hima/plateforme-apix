@@ -295,19 +295,16 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
       <div style={{ height:4, background:c }}/>
       <div style={{ padding:"20px 22px" }}>
         {/* En-tête */}
-        <div style={{ display:"flex", alignItems:"flex-start", gap:13, marginBottom:18 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:13, marginBottom:18 }}>
           <div style={{ width:50,height:50,borderRadius:14,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:meta.bg,border:`1px solid ${meta.border}` }}>
             <span style={{ fontSize:13, fontWeight:800, letterSpacing:"0.02em", color:c }}>{zone.type_zone}</span>
           </div>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontWeight:800, fontSize:17, color:"#1a1a2e", lineHeight:1.25, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
-            {(zone.departement_nom||zone.region_nom) && (
-              <div style={{ fontSize:12.5, color:"#9aa5b4", marginTop:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</div>
+            {zone.pole_nom && (
+              <div style={{ fontSize:12.5, fontWeight:600, color:"#9aa5b4", marginTop:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.pole_nom}</div>
             )}
           </div>
-          {zone.pole_nom && (
-            <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11.5, fontWeight:600, color:c, background:meta.bg, border:`1px solid ${meta.border}`, padding:"3px 10px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, marginTop:2 }}>{zone.pole_nom}</span>
-          )}
         </div>
         {/* Bande de stats */}
         <div style={{ display:"flex", alignItems:"stretch", background:"#FAFAF9", border:"1px solid #F2F0EF", borderRadius:13, padding:"14px 4px" }}>
