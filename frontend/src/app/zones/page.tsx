@@ -332,44 +332,53 @@ function ZoneCard({ zone, defaultOpen=false }: { zone:any; defaultOpen?:boolean 
       <div style={{ background:"#fff",borderRadius:14,borderTop:`1px solid ${open?meta.color:"#E8E5E3"}`,borderRight:`1px solid ${open?meta.color:"#E8E5E3"}`,borderBottom:`1px solid ${open?meta.color:"#E8E5E3"}`,borderLeft:`4px solid ${meta.color}`,overflow:"hidden",transition:"all 0.15s",boxShadow:open?"0 4px 20px rgba(0,0,0,0.08)":"0 1px 4px rgba(0,0,0,0.04)" }}>
 
         {/* Header card */}
-        <div onClick={()=>setOpen(o=>!o)} style={{ display:"flex",alignItems:"center",gap:14,padding:"16px 20px",cursor:"pointer" }}>
+        <div onClick={()=>setOpen(o=>!o)}
+          style={{ display:"flex",alignItems:"center",gap:15,padding:"15px 18px",cursor:"pointer",background:open?meta.bg:"#fff",transition:"background 0.15s" }}
+          onMouseEnter={e=>{ if(!open) e.currentTarget.style.background="#FAFAF9"; }}
+          onMouseLeave={e=>{ if(!open) e.currentTarget.style.background="#fff"; }}>
           {/* Badge type */}
-          <div style={{ width:40,height:40,borderRadius:10,background:meta.bg,border:`1px solid ${meta.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-            <span style={{ fontSize:10,fontWeight:800,color:meta.color }}>{zone.type_zone}</span>
+          <div style={{ width:46,height:46,borderRadius:12,background:meta.bg,border:`1px solid ${meta.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+            <span style={{ fontSize:11,fontWeight:800,letterSpacing:"0.02em",color:meta.color }}>{zone.type_zone}</span>
           </div>
+          {/* Bloc principal */}
           <div style={{ flex:1,minWidth:0 }}>
-            <div style={{ fontWeight:700,fontSize:15,color:"#1a1a2e",marginBottom:5 }}>{zone.nom_zone}</div>
-            {/* Infos alignées */}
-            <div style={{ display:"flex",alignItems:"center",gap:8,flexWrap:"wrap" as const }}>
+            <div style={{ fontWeight:700,fontSize:15.5,color:"#1a1a2e",marginBottom:6,lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
+            <div style={{ display:"flex",alignItems:"center",gap:9,flexWrap:"wrap" as const }}>
               {zone.pole_nom && (
-                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:12,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 8px",borderRadius:999 }}>
+                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11.5,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",padding:"2px 9px",borderRadius:999 }}>
                   {zone.pole_nom}
                 </span>
               )}
               {(zone.departement_nom||zone.region_nom) && (
                 <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:12,color:"#9aa5b4" }}>
-                  <MapPin size={11} style={{ color:"#C5BFBB" }}/>
+                  <MapPin size={12} style={{ color:"#C5BFBB" }}/>
                   {[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}
                 </span>
               )}
               {zone.superficie && (
-                <span style={{ fontSize:12,color:"#9aa5b4" }}>
+                <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:12,color:"#9aa5b4" }}>
+                  <span style={{ width:3,height:3,borderRadius:"50%",background:"#D5D0CC" }}/>
                   {Number(zone.superficie).toLocaleString("fr-FR")} ha
-                </span>
-              )}
-              {installes.length>0 && (
-                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"#059669",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 8px",borderRadius:999 }}>
-                  {installes.length} installée{installes.length>1?"s":""}
-                </span>
-              )}
-              {eligibles.length>0 && (
-                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"#b45309",background:"rgba(180,83,9,0.08)",border:"1px solid rgba(180,83,9,0.2)",padding:"2px 8px",borderRadius:999 }}>
-                  {eligibles.length} éligible{eligibles.length>1?"s":""}
                 </span>
               )}
             </div>
           </div>
-          {open?<ChevronDown size={16} style={{ color:"#9aa5b4",flexShrink:0 }}/>:<ChevronRight size={16} style={{ color:"#9aa5b4",flexShrink:0 }}/>}
+          {/* Compteurs + chevron */}
+          <div style={{ display:"flex",alignItems:"center",gap:10,flexShrink:0 }}>
+            {installes.length>0 && (
+              <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#059669",background:"rgba(24,128,56,0.08)",padding:"3px 10px",borderRadius:999 }}>
+                <span style={{ width:5,height:5,borderRadius:"50%",background:"#059669" }}/>{installes.length} installée{installes.length>1?"s":""}
+              </span>
+            )}
+            {eligibles.length>0 && (
+              <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#b45309",background:"rgba(180,83,9,0.08)",padding:"3px 10px",borderRadius:999 }}>
+                <span style={{ width:5,height:5,borderRadius:"50%",background:"#b45309" }}/>{eligibles.length} éligible{eligibles.length>1?"s":""}
+              </span>
+            )}
+            <div style={{ width:30,height:30,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:open?meta.color:"#F2F0EF",transition:"background 0.15s" }}>
+              <ChevronDown size={15} style={{ color:open?"#fff":"#9aa5b4",transform:open?"rotate(0deg)":"rotate(-90deg)",transition:"transform 0.2s" }}/>
+            </div>
+          </div>
         </div>
 
         {/* Contenu déplié */}
