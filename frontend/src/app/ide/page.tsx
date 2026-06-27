@@ -1992,8 +1992,6 @@ const BDEF_GRAPHES_DEFAUT = [
   "act_ca", "eff_vetuste", "inv_actif_immo", "inv_tx_autofin",
   "liq_fdr", "sf_pression_fisc", "sf_autonomie", "rent_ebe",
 ];
-// Couleur unique pour les graphes (secteur/groupe/macro-secteur)
-const BDEF_BLEU = "#004f91";
 // Couleurs distinctes pour la comparaison macro-secteurs sur la vue globale
 const BDEF_MACRO_COULEURS = ["#004f91", "#e07b39", "#2a9d8f", "#c0392b", "#8e44ad"];
 
@@ -2203,7 +2201,8 @@ function OngletNational() {
   const [tip, setTip] = useState<{text:string;x:number;y:number}|null>(null);
   const montrerTip = (e:React.MouseEvent, text:string) => setTip({ text, x:e.clientX, y:e.clientY });
 
-  const couleur = "#004f91";
+  // Couleur d'accent du panneau de droite = couleur du niveau sélectionné
+  const couleur = (sel.niveau && BDEF_NIVEAU_STYLE[sel.niveau]?.color) || "#004f91";
 
   const startResize = (e: React.MouseEvent) => {
     isResizing.current = true;
@@ -2653,7 +2652,10 @@ function OngletNational() {
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
             <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>{sel.libelle}</h2>
-            {anneesAffichees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", flexShrink:0 }}>
+            {BDEF_NIVEAU_LABEL[sel.niveau]&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 11px", borderRadius:999, background:`${couleur}15`, border:`1px solid ${couleur}33`, fontSize:11, fontWeight:700, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.06em", flexShrink:0 }}>
+              {BDEF_NIVEAU_LABEL[sel.niveau]}
+            </span>}
+            {anneesAffichees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:couleur, fontSize:12, fontWeight:700, color:"#fff", flexShrink:0 }}>
               {anneesAffichees[0]} — {anneesAffichees[anneesAffichees.length-1]}
             </span>}
           </div>
@@ -2671,12 +2673,12 @@ function OngletNational() {
               const v = ind&&lastA!==null ? (ind.valeurs[lastA]??null) : null;
               return (
                 <div key={code} onClick={()=>ind&&setKpiActif(ind)}
-                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:"3px solid #004f91", cursor:"pointer", transition:"box-shadow 0.15s, transform 0.15s", minWidth:0, overflow:"hidden" }}
+                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:`3px solid ${couleur}`, cursor:"pointer", transition:"box-shadow 0.15s, transform 0.15s", minWidth:0, overflow:"hidden" }}
                   onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)"; if(ind) montrerTip(e, defBdef(ind.code, ind.libelle));}}
                   onMouseMove={e=>{ if(ind) montrerTip(e, defBdef(ind.code, ind.libelle)); }}
                   onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)"; setTip(null);}}>
                   <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{ind?.libelle??code}</p>
-                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"#004f91", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
+                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:couleur, lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
                   {lastA&&<p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>en {lastA}</p>}
                 </div>
               );
@@ -2692,7 +2694,7 @@ function OngletNational() {
 
         {loading ? (
           <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
-            <div style={{ width:28, height:28, border:"2.5px solid #004f91", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+            <div style={{ width:28, height:28, border:`2.5px solid ${couleur}`, borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
           </div>
         ) : indicateurs.length===0 ? (
           <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"#9aa5b4" }}>
@@ -2714,7 +2716,7 @@ function OngletNational() {
                     return { nom:m.libelle, couleur:BDEF_MACRO_COULEURS[mi%BDEF_MACRO_COULEURS.length], data:anneesAffichees.map(a=>({ annee:a, valeur:(mInd?.valeurs[a]??null) as number|null })) };
                   });
                 } else {
-                  series = [{ nom:ind.libelle, couleur:BDEF_BLEU, data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
+                  series = [{ nom:ind.libelle, couleur, data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
                 }
                 return (
                   <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend={!isGlobal} hideSousTitre
