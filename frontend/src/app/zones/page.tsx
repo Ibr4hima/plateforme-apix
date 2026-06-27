@@ -333,45 +333,45 @@ function ZoneCard({ zone, defaultOpen=false }: { zone:any; defaultOpen?:boolean 
 
         {/* Header card */}
         <div onClick={()=>setOpen(o=>!o)}
-          style={{ display:"flex",alignItems:"center",gap:15,padding:"15px 18px",cursor:"pointer",background:open?meta.bg:"#fff",transition:"background 0.15s" }}
+          style={{ display:"flex",alignItems:"center",gap:16,padding:"14px 18px",cursor:"pointer",background:open?meta.bg:"#fff",transition:"background 0.15s" }}
           onMouseEnter={e=>{ if(!open) e.currentTarget.style.background="#FAFAF9"; }}
           onMouseLeave={e=>{ if(!open) e.currentTarget.style.background="#fff"; }}>
           {/* Badge type */}
           <div style={{ width:46,height:46,borderRadius:12,background:meta.bg,border:`1px solid ${meta.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
             <span style={{ fontSize:11,fontWeight:800,letterSpacing:"0.02em",color:meta.color }}>{zone.type_zone}</span>
           </div>
-          {/* Bloc principal */}
-          <div style={{ flex:1,minWidth:0 }}>
-            <div style={{ fontWeight:700,fontSize:15.5,color:"#1a1a2e",marginBottom:6,lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
-            <div style={{ display:"flex",alignItems:"center",gap:9,flexWrap:"wrap" as const }}>
-              {zone.pole_nom && (
-                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11.5,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",padding:"2px 9px",borderRadius:999 }}>
-                  {zone.pole_nom}
-                </span>
-              )}
-              {(zone.departement_nom||zone.region_nom) && (
-                <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:12,color:"#9aa5b4" }}>
-                  <MapPin size={12} style={{ color:"#C5BFBB" }}/>
-                  {[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}
-                </span>
-              )}
-              {zone.superficie && (
-                <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:12,color:"#9aa5b4" }}>
-                  <span style={{ width:3,height:3,borderRadius:"50%",background:"#D5D0CC" }}/>
-                  {Number(zone.superficie).toLocaleString("fr-FR")} ha
-                </span>
-              )}
-            </div>
+          {/* Titre + pôle */}
+          <div style={{ minWidth:0, flexShrink:0, maxWidth:"34%" }}>
+            <div style={{ fontWeight:700,fontSize:15.5,color:"#1a1a2e",lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
+            {zone.pole_nom && (
+              <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",padding:"2px 9px",borderRadius:999,marginTop:6 }}>
+                {zone.pole_nom}
+              </span>
+            )}
           </div>
-          {/* Compteurs + chevron */}
-          <div style={{ display:"flex",alignItems:"center",gap:10,flexShrink:0 }}>
+          {/* Localisation (au centre, prend l'espace) */}
+          <div style={{ flex:1, display:"flex", alignItems:"center", gap:7, minWidth:0, color:"#9aa5b4" }}>
+            {(zone.departement_nom||zone.region_nom) && <>
+              <MapPin size={14} style={{ color:"#C5BFBB", flexShrink:0 }}/>
+              <span style={{ fontSize:13, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</span>
+            </>}
+          </div>
+          {/* Stats à droite + chevron */}
+          <div style={{ display:"flex",alignItems:"center",gap:14,flexShrink:0 }}>
+            {zone.superficie && (
+              <div style={{ textAlign:"right" as const, lineHeight:1.1 }}>
+                <div style={{ fontSize:14, fontWeight:700, color:"#1a1a2e" }}>{Number(zone.superficie).toLocaleString("fr-FR")}</div>
+                <div style={{ fontSize:9.5, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.06em", marginTop:1 }}>ha</div>
+              </div>
+            )}
+            {(installes.length>0||eligibles.length>0) && <div style={{ width:1, height:26, background:"#EEEBE8" }}/>}
             {installes.length>0 && (
-              <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#059669",background:"rgba(24,128,56,0.08)",padding:"3px 10px",borderRadius:999 }}>
+              <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#059669",background:"rgba(24,128,56,0.08)",padding:"4px 11px",borderRadius:999 }}>
                 <span style={{ width:5,height:5,borderRadius:"50%",background:"#059669" }}/>{installes.length} installée{installes.length>1?"s":""}
               </span>
             )}
             {eligibles.length>0 && (
-              <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#b45309",background:"rgba(180,83,9,0.08)",padding:"3px 10px",borderRadius:999 }}>
+              <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#b45309",background:"rgba(180,83,9,0.08)",padding:"4px 11px",borderRadius:999 }}>
                 <span style={{ width:5,height:5,borderRadius:"50%",background:"#b45309" }}/>{eligibles.length} éligible{eligibles.length>1?"s":""}
               </span>
             )}
