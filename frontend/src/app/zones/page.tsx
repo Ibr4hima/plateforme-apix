@@ -182,6 +182,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
     zones: zs,
     installed: zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length, 0),
     eligible:  zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "eligible").length, 0),
+    superficie: zs.reduce((s, z) => s + (Number(z.superficie) || 0), 0),
   }));
 
   const selectedInfo = selectedType ? types.find(t => t.type === selectedType) : null;
@@ -189,61 +190,75 @@ function ZonesParType({ zones }: { zones: any[] }) {
   return (
     <div>
       {/* ── Cards types ── */}
-      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(types.length, 3)},1fr)`, gap:16, marginBottom: selectedType ? 32 : 0 }}>
+      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(types.length, 3)},1fr)`, gap:18, marginBottom: selectedType ? 32 : 0 }}>
         {types.map(t => {
           const active = selectedType === t.type;
           const c = t.meta.color;
+          const entreprises = t.installed + t.eligible;
+          const Stat = ({ value, label, accent }: { value:string; label:string; accent?:boolean }) => (
+            <div style={{ flex:1, textAlign:"center" as const }}>
+              <div style={{ fontSize:22, fontWeight:800, color: accent ? c : "#1a1a2e", lineHeight:1.1 }}>{value}</div>
+              <div style={{ fontSize:10.5, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.05em", marginTop:3 }}>{label}</div>
+            </div>
+          );
           return (
             <div key={t.type} onClick={() => setSelectedType(active ? null : t.type)}
-              style={{ position:"relative" as const, background:"#fff", border:`1px solid ${active ? c : "#E8E5E3"}`,
-                borderRadius:16, overflow:"hidden", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s",
-                boxShadow: active ? `0 10px 30px ${c}26` : "0 1px 3px rgba(0,0,0,0.05)",
-                transform: active ? "translateY(-2px)" : "none" }}
-              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 8px 24px ${c}1f`; ev.currentTarget.style.transform="translateY(-2px)"; } }}
+              style={{ position:"relative" as const, background: active ? `linear-gradient(160deg, ${c}0c, #fff 55%)` : "#fff",
+                border:`1px solid ${active ? c : "#E8E5E3"}`,
+                borderRadius:18, overflow:"hidden", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",
+                boxShadow: active ? `0 14px 36px ${c}26` : "0 1px 3px rgba(0,0,0,0.05)",
+                transform: active ? "translateY(-3px)" : "none" }}
+              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 10px 28px ${c}1f`; ev.currentTarget.style.transform="translateY(-3px)"; } }}
               onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.05)"; ev.currentTarget.style.transform="none"; } }}>
 
-              {/* Accent supérieur */}
-              <div style={{ height:5, background:`linear-gradient(90deg, ${c}, ${c}99)` }}/>
+              {/* Acronyme filigrane décoratif */}
+              <span aria-hidden style={{ position:"absolute" as const, top:-18, right:-6, fontSize:96, fontWeight:800, color:c, opacity:active?0.10:0.05, lineHeight:1, letterSpacing:"-0.04em", pointerEvents:"none" as const, userSelect:"none" as const }}>{t.type}</span>
 
-              <div style={{ padding:"18px 20px 20px" }}>
-                {/* En-tête : badge acronyme + libellé */}
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:18 }}>
-                  <div style={{ width:46, height:46, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
-                    background: active ? c : t.meta.bg, border:`1px solid ${active ? c : t.meta.border}`, transition:"all 0.18s" }}>
+              <div style={{ position:"relative" as const, padding:"22px 22px 0" }}>
+                {/* En-tête : chip acronyme + libellé */}
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:22 }}>
+                  <div style={{ width:48, height:48, borderRadius:14, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
+                    background: active ? c : t.meta.bg, border:`1px solid ${active ? c : t.meta.border}`, boxShadow: active?`0 4px 12px ${c}33`:"none", transition:"all 0.18s" }}>
                     <span style={{ fontSize:13, fontWeight:800, letterSpacing:"0.03em", color: active ? "#fff" : c }}>{t.type}</span>
                   </div>
-                  <div style={{ fontWeight:700, fontSize:14, color:"#1a1a2e", lineHeight:1.3 }}>{t.meta.label}</div>
+                  <div style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", lineHeight:1.3 }}>{t.meta.label}</div>
                 </div>
 
-                {/* Métrique héro */}
-                <div style={{ display:"flex", alignItems:"baseline", gap:7, marginBottom:16 }}>
-                  <span style={{ fontSize:34, fontWeight:800, color:c, lineHeight:1 }}>{t.zones.length}</span>
-                  <span style={{ fontSize:13, fontWeight:600, color:"#9aa5b4" }}>zone{t.zones.length > 1 ? "s" : ""}</span>
-                </div>
-
-                {/* Stats entreprises */}
-                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:8, borderTop:"1px solid #F2F0EF", paddingTop:14, minHeight:14 }}>
-                  {t.installed > 0 && (
-                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11.5, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.08)", border:"1px solid rgba(24,128,56,0.18)", padding:"3px 9px", borderRadius:999 }}>
-                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#188038" }}/>
-                      {t.installed} installée{t.installed > 1 ? "s" : ""}
-                    </span>
-                  )}
-                  {t.eligible > 0 && (
-                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11.5, fontWeight:600, color:"#b45309", background:"rgba(180,83,9,0.08)", border:"1px solid rgba(180,83,9,0.18)", padding:"3px 9px", borderRadius:999 }}>
-                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#b45309" }}/>
-                      {t.eligible} éligible{t.eligible > 1 ? "s" : ""}
-                    </span>
-                  )}
-                  {t.installed === 0 && t.eligible === 0 && (
-                    <span style={{ fontSize:11.5, color:"#C5BFBB" }}>Aucune entreprise</span>
-                  )}
+                {/* Bande de statistiques */}
+                <div style={{ display:"flex", alignItems:"stretch", background: active?"rgba(255,255,255,0.6)":"#FAFAF9", border:"1px solid #F2F0EF", borderRadius:12, padding:"12px 4px" }}>
+                  <Stat value={String(t.zones.length)} label={t.zones.length>1?"Zones":"Zone"} accent />
+                  <div style={{ width:1, background:"#EDEAE6", margin:"2px 0" }}/>
+                  <Stat value={t.superficie>0 ? Number(t.superficie).toLocaleString("fr-FR") : "—"} label="ha" />
+                  <div style={{ width:1, background:"#EDEAE6", margin:"2px 0" }}/>
+                  <Stat value={String(entreprises)} label={entreprises>1?"Entreprises":"Entreprise"} />
                 </div>
               </div>
 
-              {/* Indicateur de sélection */}
+              {/* Pied : répartition + CTA */}
+              <div style={{ position:"relative" as const, display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, padding:"14px 22px 18px", marginTop:14 }}>
+                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6 }}>
+                  {t.installed > 0 && (
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.08)", padding:"3px 9px", borderRadius:999 }}>
+                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#188038" }}/>{t.installed} installée{t.installed>1?"s":""}
+                    </span>
+                  )}
+                  {t.eligible > 0 && (
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#b45309", background:"rgba(180,83,9,0.08)", padding:"3px 9px", borderRadius:999 }}>
+                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#b45309" }}/>{t.eligible} éligible{t.eligible>1?"s":""}
+                    </span>
+                  )}
+                  {t.installed === 0 && t.eligible === 0 && (
+                    <span style={{ fontSize:11, color:"#C5BFBB" }}>Aucune entreprise</span>
+                  )}
+                </div>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:12, fontWeight:700, color:c, flexShrink:0, whiteSpace:"nowrap" as const }}>
+                  {active ? "Affiché" : "Voir"} <ChevronRight size={14}/>
+                </span>
+              </div>
+
+              {/* Coche sélection */}
               {active && (
-                <div style={{ position:"absolute" as const, top:14, right:14, width:22, height:22, borderRadius:"50%", background:c, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <div style={{ position:"absolute" as const, top:16, right:16, width:22, height:22, borderRadius:"50%", background:c, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 2px 8px ${c}44` }}>
                   <svg width="11" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
               )}
