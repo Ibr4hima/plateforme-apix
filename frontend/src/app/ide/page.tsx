@@ -2652,7 +2652,7 @@ function OngletNational() {
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
             <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>{sel.libelle}</h2>
-            {BDEF_NIVEAU_LABEL[sel.niveau]&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 11px", borderRadius:999, background:`${couleur}15`, border:`1px solid ${couleur}33`, fontSize:11, fontWeight:700, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.06em", flexShrink:0 }}>
+            {BDEF_NIVEAU_LABEL[sel.niveau]&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"#F2F0EF", border:"1px solid #E8E5E3", fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
               {BDEF_NIVEAU_LABEL[sel.niveau]}
             </span>}
             {anneesAffichees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:couleur, fontSize:12, fontWeight:700, color:"#fff", flexShrink:0 }}>
