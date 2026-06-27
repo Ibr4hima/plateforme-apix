@@ -312,11 +312,11 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
         </div>
         {/* Bande de stats */}
         <div style={{ display:"flex", alignItems:"stretch", background:"#FAFAF9", border:"1px solid #F2F0EF", borderRadius:13, padding:"14px 4px" }}>
-          <Stat value={zone.superficie?Number(zone.superficie).toLocaleString("fr-FR"):"—"} label="ha" color={c} />
+          <Stat value={zone.superficie?Number(zone.superficie).toLocaleString("fr-FR"):"—"} label="ha" color="#1a1a2e" />
           <div style={{ width:1, background:"#EEEBE8", margin:"3px 0" }}/>
-          <Stat value={String(installes)} label="Installées" color={installes>0?"#059669":"#C5BFBB"} />
+          <Stat value={String(installes)} label="Installées" color={installes>0?"#1a1a2e":"#C5BFBB"} />
           <div style={{ width:1, background:"#EEEBE8", margin:"3px 0" }}/>
-          <Stat value={String(eligibles)} label="Éligibles" color={eligibles>0?"#b45309":"#C5BFBB"} />
+          <Stat value={String(eligibles)} label="Éligibles" color={eligibles>0?"#1a1a2e":"#C5BFBB"} />
         </div>
       </div>
       {/* Pied : CTA */}
