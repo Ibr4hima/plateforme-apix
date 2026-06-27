@@ -264,7 +264,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
               {selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}
             </span>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
             {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setDetailZone(z)} />)}
           </div>
         </div>
@@ -280,7 +280,6 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
   const meta = TYPE_META[zone.type_zone] || TYPE_META.ZES;
   const c = meta.color;
   const installes = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
-  const eligibles = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="eligible").length;
   const Stat = ({ value, label, color }: { value:string; label:string; color:string }) => (
     <div style={{ flex:1, textAlign:"center" as const }}>
       <div style={{ fontSize:22, fontWeight:800, color, lineHeight:1.05, letterSpacing:"-0.01em" }}>{value}</div>
@@ -315,13 +314,11 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
           <Stat value={zone.superficie?Number(zone.superficie).toLocaleString("fr-FR"):"—"} label="ha" color="#1a1a2e" />
           <div style={{ width:1, background:"#EEEBE8", margin:"3px 0" }}/>
           <Stat value={String(installes)} label="Installées" color={installes>0?"#1a1a2e":"#C5BFBB"} />
-          <div style={{ width:1, background:"#EEEBE8", margin:"3px 0" }}/>
-          <Stat value={String(eligibles)} label="Éligibles" color={eligibles>0?"#1a1a2e":"#C5BFBB"} />
         </div>
       </div>
-      {/* Pied : CTA */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"flex-end", padding:"13px 22px 15px", borderTop:"1px solid #F4F2F0" }}>
-        <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:12.5, fontWeight:700, color:c, whiteSpace:"nowrap" as const }}>Voir les détails <ChevronRight size={15}/></span>
+      {/* Pied : CTA centré stylé */}
+      <div style={{ display:"flex", justifyContent:"center", padding:"13px 22px 16px", borderTop:"1px solid #F4F2F0" }}>
+        <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"7px 20px", borderRadius:999, fontSize:12.5, fontWeight:700, background:`${c}12`, color:c }}>Voir les détails <ChevronRight size={15}/></span>
       </div>
     </div>
   );
