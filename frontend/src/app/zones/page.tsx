@@ -5,7 +5,7 @@ import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
-import { Building2, ChevronDown, ChevronRight, ChevronUp, FileText, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { Building2, ChevronDown, ChevronRight, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -309,19 +309,19 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
       <div style={{ height:4, background:c }}/>
       <div style={{ padding:"20px 22px" }}>
         {/* En-tête */}
-        <div style={{ display:"flex", alignItems:"center", gap:13, marginBottom:18 }}>
+        <div style={{ display:"flex", alignItems:"flex-start", gap:13, marginBottom:18 }}>
           <div style={{ width:50,height:50,borderRadius:14,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:meta.bg,border:`1px solid ${meta.border}` }}>
             <span style={{ fontSize:13, fontWeight:800, letterSpacing:"0.02em", color:c }}>{zone.type_zone}</span>
           </div>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontWeight:800, fontSize:17, color:"#1a1a2e", lineHeight:1.25, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
             {(zone.departement_nom||zone.region_nom) && (
-              <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:4, color:"#9aa5b4" }}>
-                <MapPin size={13} style={{ color:"#C5BFBB", flexShrink:0 }}/>
-                <span style={{ fontSize:12.5, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</span>
-              </div>
+              <div style={{ fontSize:12.5, color:"#9aa5b4", marginTop:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</div>
             )}
           </div>
+          {zone.pole_nom && (
+            <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11.5, fontWeight:600, color:"#366FE3", background:"rgba(54,111,227,0.08)", padding:"3px 10px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, marginTop:2 }}>{zone.pole_nom}</span>
+          )}
         </div>
         {/* Bande de stats */}
         <div style={{ display:"flex", alignItems:"stretch", background:"#FAFAF9", border:"1px solid #F2F0EF", borderRadius:13, padding:"14px 4px" }}>
@@ -332,12 +332,9 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
           <Stat value={String(eligibles)} label="Éligibles" color={eligibles>0?"#b45309":"#C5BFBB"} />
         </div>
       </div>
-      {/* Pied : pôle + CTA */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, padding:"13px 22px 15px", borderTop:"1px solid #F4F2F0" }}>
-        {zone.pole_nom
-          ? <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11.5, fontWeight:600, color:"#366FE3", background:"rgba(54,111,227,0.08)", padding:"3px 10px", borderRadius:999, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, maxWidth:"60%" }}>{zone.pole_nom}</span>
-          : <span/>}
-        <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:12.5, fontWeight:700, color:c, whiteSpace:"nowrap" as const, flexShrink:0 }}>Voir les détails <ChevronRight size={15}/></span>
+      {/* Pied : CTA */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"flex-end", padding:"13px 22px 15px", borderTop:"1px solid #F4F2F0" }}>
+        <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:12.5, fontWeight:700, color:c, whiteSpace:"nowrap" as const }}>Voir les détails <ChevronRight size={15}/></span>
       </div>
     </div>
   );
