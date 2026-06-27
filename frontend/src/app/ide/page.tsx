@@ -2379,7 +2379,6 @@ function OngletNational() {
                         {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                       </div>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <span style={{ fontSize:11, color:"#9aa5b4", marginRight:4 }}>{n.code}</span>
                         <span style={{ fontSize:12, color:sel?"#1a1a2e":"#4a5568", fontWeight:sel?600:400, lineHeight:1.3 }}>{n.libelle}</span>
                       </div>
                     </div>
@@ -2395,13 +2394,13 @@ function OngletNational() {
                   sections = (refs?.macro_secteur||[]).map(macro=>{
                     const enfants = groupesDe(macro.id).filter(matchS);
                     if (!enfants.length) return null;
-                    return <div key={macro.id}><Header txt={`${macro.code} · ${macro.libelle}`}/>{enfants.map(renderItem)}</div>;
+                    return <div key={macro.id}><Header txt={macro.libelle}/>{enfants.map(renderItem)}</div>;
                   });
                 } else {
                   sections = (refs?.groupe||[]).map(groupe=>{
                     const enfants = secteursDe(groupe.id).filter(matchS);
                     if (!enfants.length) return null;
-                    return <div key={groupe.id}><Header txt={`${groupe.code} · ${groupe.libelle}`}/>{enfants.map(renderItem)}</div>;
+                    return <div key={groupe.id}><Header txt={groupe.libelle}/>{enfants.map(renderItem)}</div>;
                   });
                 }
                 return <div style={{ maxHeight:420, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:1 }}>{sections}</div>;
