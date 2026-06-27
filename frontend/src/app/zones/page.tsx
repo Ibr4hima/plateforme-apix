@@ -15,10 +15,10 @@ function fmtDate(d: string) {
   return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
 }
 
-const TYPE_META: Record<string,{label:string;color:string;bg:string;border:string}> = {
-  ZES: { label:"Zones Économiques Spéciales",           color:"#E35336", bg:"rgba(227,83,54,0.06)",  border:"rgba(227,83,54,0.2)" },
-  ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#174EA6", bg:"rgba(23,78,166,0.06)",  border:"rgba(23,78,166,0.2)" },
-  ZFI: { label:"Zones Franches Industrielles",           color:"#188038", bg:"rgba(24,128,56,0.06)",  border:"rgba(24,128,56,0.2)" },
+const TYPE_META: Record<string,{label:string;color:string;bg:string;border:string;grad:[string,string]}> = {
+  ZES: { label:"Zones Économiques Spéciales",           color:"#E35336", bg:"rgba(227,83,54,0.06)",  border:"rgba(227,83,54,0.2)", grad:["#E35336","#B5341F"] },
+  ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#174EA6", bg:"rgba(23,78,166,0.06)",  border:"rgba(23,78,166,0.2)", grad:["#1E5BBE","#0F3A7A"] },
+  ZFI: { label:"Zones Franches Industrielles",           color:"#188038", bg:"rgba(24,128,56,0.06)",  border:"rgba(24,128,56,0.2)", grad:["#1E9D45","#0D652D"] },
 };
 
 const POLE_COLORS = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
@@ -178,7 +178,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
 
   const types = Object.entries(byType).map(([type, zs]) => ({
     type,
-    meta: TYPE_META[type] || { label: type, color: "#9aa5b4", bg: "rgba(154,165,180,0.06)", border: "rgba(154,165,180,0.2)" },
+    meta: TYPE_META[type] || { label: type, color: "#64748b", bg: "rgba(100,116,139,0.06)", border: "rgba(100,116,139,0.2)", grad: ["#64748b","#475569"] as [string,string] },
     zones: zs,
     installed: zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length, 0),
     eligible:  zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "eligible").length, 0),
@@ -194,72 +194,74 @@ function ZonesParType({ zones }: { zones: any[] }) {
         {types.map(t => {
           const active = selectedType === t.type;
           const c = t.meta.color;
+          const [g0, g1] = t.meta.grad;
           const entreprises = t.installed + t.eligible;
-          const Stat = ({ value, label, accent }: { value:string; label:string; accent?:boolean }) => (
+          const Stat = ({ value, label }: { value:string; label:string }) => (
             <div style={{ flex:1, textAlign:"center" as const }}>
-              <div style={{ fontSize:22, fontWeight:800, color: accent ? c : "#1a1a2e", lineHeight:1.1 }}>{value}</div>
-              <div style={{ fontSize:10.5, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.05em", marginTop:3 }}>{label}</div>
+              <div style={{ fontSize:24, fontWeight:800, color:"#fff", lineHeight:1.05, letterSpacing:"-0.01em" }}>{value}</div>
+              <div style={{ fontSize:10, fontWeight:600, color:"rgba(255,255,255,0.75)", textTransform:"uppercase" as const, letterSpacing:"0.06em", marginTop:4 }}>{label}</div>
             </div>
           );
           return (
             <div key={t.type} onClick={() => setSelectedType(active ? null : t.type)}
-              style={{ position:"relative" as const, background: active ? `linear-gradient(160deg, ${c}0c, #fff 55%)` : "#fff",
-                border:`1px solid ${active ? c : "#E8E5E3"}`,
-                borderRadius:18, overflow:"hidden", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",
-                boxShadow: active ? `0 14px 36px ${c}26` : "0 1px 3px rgba(0,0,0,0.05)",
-                transform: active ? "translateY(-3px)" : "none" }}
-              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 10px 28px ${c}1f`; ev.currentTarget.style.transform="translateY(-3px)"; } }}
-              onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.05)"; ev.currentTarget.style.transform="none"; } }}>
+              style={{ position:"relative" as const, borderRadius:20, overflow:"hidden", cursor:"pointer", color:"#fff",
+                background:`linear-gradient(150deg, ${g0} 0%, ${g1} 100%)`,
+                boxShadow: active ? `0 20px 46px ${c}66, inset 0 0 0 2px rgba(255,255,255,0.85)` : `0 8px 22px ${c}33`,
+                transform: active ? "translateY(-4px)" : "none",
+                transition:"box-shadow 0.2s, transform 0.2s" }}
+              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 14px 34px ${c}4d`; ev.currentTarget.style.transform="translateY(-4px)"; } }}
+              onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 8px 22px ${c}33`; ev.currentTarget.style.transform="none"; } }}>
 
-              {/* Acronyme filigrane décoratif */}
-              <span aria-hidden style={{ position:"absolute" as const, top:-18, right:-6, fontSize:96, fontWeight:800, color:c, opacity:active?0.10:0.05, lineHeight:1, letterSpacing:"-0.04em", pointerEvents:"none" as const, userSelect:"none" as const }}>{t.type}</span>
+              {/* Halo lumineux + acronyme filigrane */}
+              <div aria-hidden style={{ position:"absolute" as const, top:-60, right:-40, width:180, height:180, borderRadius:"50%", background:"radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)", pointerEvents:"none" as const }}/>
+              <span aria-hidden style={{ position:"absolute" as const, bottom:-30, right:-8, fontSize:110, fontWeight:800, color:"#fff", opacity:0.08, lineHeight:1, letterSpacing:"-0.05em", pointerEvents:"none" as const, userSelect:"none" as const }}>{t.type}</span>
 
               <div style={{ position:"relative" as const, padding:"22px 22px 0" }}>
-                {/* En-tête : chip acronyme + libellé */}
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:22 }}>
-                  <div style={{ width:48, height:48, borderRadius:14, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
-                    background: active ? c : t.meta.bg, border:`1px solid ${active ? c : t.meta.border}`, boxShadow: active?`0 4px 12px ${c}33`:"none", transition:"all 0.18s" }}>
-                    <span style={{ fontSize:13, fontWeight:800, letterSpacing:"0.03em", color: active ? "#fff" : c }}>{t.type}</span>
+                {/* En-tête : chip glass acronyme + libellé */}
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
+                  <div style={{ width:50, height:50, borderRadius:14, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
+                    background:"rgba(255,255,255,0.18)", border:"1px solid rgba(255,255,255,0.35)", backdropFilter:"blur(4px)", WebkitBackdropFilter:"blur(4px)" }}>
+                    <span style={{ fontSize:14, fontWeight:800, letterSpacing:"0.03em", color:"#fff" }}>{t.type}</span>
                   </div>
-                  <div style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", lineHeight:1.3 }}>{t.meta.label}</div>
+                  <div style={{ fontWeight:700, fontSize:15, color:"#fff", lineHeight:1.3, textShadow:"0 1px 2px rgba(0,0,0,0.12)" }}>{t.meta.label}</div>
                 </div>
 
-                {/* Bande de statistiques */}
-                <div style={{ display:"flex", alignItems:"stretch", background: active?"rgba(255,255,255,0.6)":"#FAFAF9", border:"1px solid #F2F0EF", borderRadius:12, padding:"12px 4px" }}>
-                  <Stat value={String(t.zones.length)} label={t.zones.length>1?"Zones":"Zone"} accent />
-                  <div style={{ width:1, background:"#EDEAE6", margin:"2px 0" }}/>
+                {/* Bande de statistiques (glass) */}
+                <div style={{ display:"flex", alignItems:"stretch", background:"rgba(255,255,255,0.14)", border:"1px solid rgba(255,255,255,0.22)", borderRadius:14, padding:"14px 4px" }}>
+                  <Stat value={String(t.zones.length)} label={t.zones.length>1?"Zones":"Zone"} />
+                  <div style={{ width:1, background:"rgba(255,255,255,0.25)", margin:"2px 0" }}/>
                   <Stat value={t.superficie>0 ? Number(t.superficie).toLocaleString("fr-FR") : "—"} label="ha" />
-                  <div style={{ width:1, background:"#EDEAE6", margin:"2px 0" }}/>
+                  <div style={{ width:1, background:"rgba(255,255,255,0.25)", margin:"2px 0" }}/>
                   <Stat value={String(entreprises)} label={entreprises>1?"Entreprises":"Entreprise"} />
                 </div>
               </div>
 
               {/* Pied : répartition + CTA */}
-              <div style={{ position:"relative" as const, display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, padding:"14px 22px 18px", marginTop:14 }}>
+              <div style={{ position:"relative" as const, display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, padding:"14px 22px 18px", marginTop:12 }}>
                 <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6 }}>
                   {t.installed > 0 && (
-                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.08)", padding:"3px 9px", borderRadius:999 }}>
-                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#188038" }}/>{t.installed} installée{t.installed>1?"s":""}
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#fff", background:"rgba(255,255,255,0.2)", padding:"3px 10px", borderRadius:999 }}>
+                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#fff" }}/>{t.installed} installée{t.installed>1?"s":""}
                     </span>
                   )}
                   {t.eligible > 0 && (
-                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#b45309", background:"rgba(180,83,9,0.08)", padding:"3px 9px", borderRadius:999 }}>
-                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#b45309" }}/>{t.eligible} éligible{t.eligible>1?"s":""}
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#fff", background:"rgba(255,255,255,0.2)", padding:"3px 10px", borderRadius:999 }}>
+                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#fff" }}/>{t.eligible} éligible{t.eligible>1?"s":""}
                     </span>
                   )}
                   {t.installed === 0 && t.eligible === 0 && (
-                    <span style={{ fontSize:11, color:"#C5BFBB" }}>Aucune entreprise</span>
+                    <span style={{ fontSize:11, color:"rgba(255,255,255,0.7)" }}>Aucune entreprise</span>
                   )}
                 </div>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:12, fontWeight:700, color:c, flexShrink:0, whiteSpace:"nowrap" as const }}>
-                  {active ? "Affiché" : "Voir"} <ChevronRight size={14}/>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:12.5, fontWeight:700, color:"#fff", flexShrink:0, whiteSpace:"nowrap" as const }}>
+                  {active ? "Affiché" : "Voir"} <ChevronRight size={15}/>
                 </span>
               </div>
 
               {/* Coche sélection */}
               {active && (
-                <div style={{ position:"absolute" as const, top:16, right:16, width:22, height:22, borderRadius:"50%", background:c, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 2px 8px ${c}44` }}>
-                  <svg width="11" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <div style={{ position:"absolute" as const, top:16, right:16, width:24, height:24, borderRadius:"50%", background:"#fff", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 8px rgba(0,0,0,0.2)" }}>
+                  <svg width="12" height="9" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
               )}
             </div>
