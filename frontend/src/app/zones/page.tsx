@@ -168,6 +168,7 @@ function SunburstZones({ zones }: { zones:any[] }) {
 // ── Vue types de zones (cards + liste) ───────────────────────────────────────
 function ZonesParType({ zones }: { zones: any[] }) {
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [detailZone, setDetailZone] = useState<any>(null);
 
   // Group zones by type_zone, preserving insertion order
   const byType: Record<string, any[]> = {};
@@ -276,172 +277,69 @@ function ZonesParType({ zones }: { zones: any[] }) {
             <span style={{ fontWeight:700, fontSize:15, color:"#1a1a2e" }}>{selectedInfo.meta.label}</span>
             <span style={{ fontSize:12, fontWeight:600, color:"#9aa5b4", marginLeft:"auto" }}>{selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}</span>
           </div>
-          <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
-            {selectedInfo.zones.map((z: any) => <ZoneCard key={z.id} zone={z} />)}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16 }}>
+            {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setDetailZone(z)} />)}
           </div>
         </div>
       )}
+
+      {detailZone && <ZoneDetailModal zone={detailZone} onClose={()=>setDetailZone(null)} />}
     </div>
   );
 }
 
-// ── Card zone ─────────────────────────────────────────────────────────────────
-function ZoneCard({ zone, defaultOpen=false }: { zone:any; defaultOpen?:boolean }) {
-  const [open,        setOpen]        = useState(defaultOpen);
-  const [ficheEnt, setFicheEnt] = useState<any>(null);
-  const [loadingFiche, setLoadingFiche] = useState(false);
-
-  const ouvrirFiche = async (entrepriseId: number) => {
-    setLoadingFiche(true);
-    try {
-      const res = await fetch(`${API_BASE}/entreprises/${entrepriseId}`);
-      setFicheEnt(await res.json());
-    } catch(e) { console.error(e); }
-    finally { setLoadingFiche(false); }
-  };
-  const meta     = TYPE_META[zone.type_zone] || TYPE_META.ZES;
-  const installes = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee");
-  const eligibles = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="eligible");
-
-  const EntRow = ({ ze, statut }: { ze:any; statut:"installee"|"eligible" }) => {
-    const isI = statut==="installee";
-    const col = isI?"#059669":"#b45309";
-    const bg  = isI?"rgba(24,128,56,0.08)":"rgba(180,83,9,0.08)";
-    return (
-      <div style={{ display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"#fff",borderRadius:10,border:"1px solid #E8E5E3" }}>
-        <div style={{ width:32,height:32,borderRadius:8,background:bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-          <Building2 size={14} style={{ color:col }}/>
-        </div>
-        <div style={{ flex:1,minWidth:0 }}>
-          <div style={{ fontWeight:600,fontSize:13,color:"#1a1a2e",marginBottom:1 }}>{ze.entreprise?.nom}</div>
-          {ze.entreprise?.forme_juridique && <div style={{ fontSize:11,color:"#9aa5b4" }}>{ze.entreprise.forme_juridique}</div>}
-        </div>
-        <span style={{ fontSize:10,fontWeight:700,color:col,background:isI?"#dcfce7":"#fef9c3",border:`1px solid ${isI?"#86efac":"#fde68a"}`,padding:"2px 8px",borderRadius:999,flexShrink:0 }}>
-          {isI?"Installée":"Éligible"}
-        </span>
-        <button onClick={()=>ouvrirFiche(ze.entreprise?.id)}
-          style={{ display:"flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:11,fontWeight:600,color:"#4a5568",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap" as const }}>
-          <Building2 size={11}/> Fiche
-        </button>
-      </div>
-    );
-  };
-
+// ── Grande card zone (ouvre le modal détail) ──────────────────────────────────
+function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
+  const meta = TYPE_META[zone.type_zone] || TYPE_META.ZES;
+  const c = meta.color;
+  const installes = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+  const eligibles = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="eligible").length;
+  const Stat = ({ value, label, color }: { value:string; label:string; color:string }) => (
+    <div style={{ flex:1, textAlign:"center" as const }}>
+      <div style={{ fontSize:22, fontWeight:800, color, lineHeight:1.05, letterSpacing:"-0.01em" }}>{value}</div>
+      <div style={{ fontSize:9.5, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.06em", marginTop:4 }}>{label}</div>
+    </div>
+  );
   return (
-    <>
-      <div style={{ background:"#fff",borderRadius:14,borderTop:`1px solid ${open?meta.color:"#E8E5E3"}`,borderRight:`1px solid ${open?meta.color:"#E8E5E3"}`,borderBottom:`1px solid ${open?meta.color:"#E8E5E3"}`,borderLeft:`4px solid ${meta.color}`,overflow:"hidden",transition:"all 0.15s",boxShadow:open?"0 4px 20px rgba(0,0,0,0.08)":"0 1px 4px rgba(0,0,0,0.04)" }}>
-
-        {/* Header card */}
-        <div onClick={()=>setOpen(o=>!o)}
-          style={{ display:"flex",alignItems:"center",gap:16,padding:"14px 18px",cursor:"pointer",background:open?meta.bg:"#fff",transition:"background 0.15s" }}
-          onMouseEnter={e=>{ if(!open) e.currentTarget.style.background="#FAFAF9"; }}
-          onMouseLeave={e=>{ if(!open) e.currentTarget.style.background="#fff"; }}>
-          {/* Badge type */}
-          <div style={{ width:46,height:46,borderRadius:12,background:meta.bg,border:`1px solid ${meta.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-            <span style={{ fontSize:11,fontWeight:800,letterSpacing:"0.02em",color:meta.color }}>{zone.type_zone}</span>
+    <div onClick={onClick}
+      style={{ background:"#fff", border:"1px solid #EAE7E4", borderRadius:18, overflow:"hidden", cursor:"pointer",
+        boxShadow:"0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)", transition:"box-shadow 0.2s, transform 0.2s, border-color 0.2s" }}
+      onMouseEnter={e=>{ e.currentTarget.style.boxShadow=`0 14px 32px ${c}22`; e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.borderColor=c; }}
+      onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#EAE7E4"; }}>
+      <div style={{ height:4, background:c }}/>
+      <div style={{ padding:"20px 22px" }}>
+        {/* En-tête */}
+        <div style={{ display:"flex", alignItems:"center", gap:13, marginBottom:18 }}>
+          <div style={{ width:50,height:50,borderRadius:14,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:meta.bg,border:`1px solid ${meta.border}` }}>
+            <span style={{ fontSize:13, fontWeight:800, letterSpacing:"0.02em", color:c }}>{zone.type_zone}</span>
           </div>
-          {/* Titre + pôle */}
-          <div style={{ minWidth:0, flexShrink:0, maxWidth:"34%" }}>
-            <div style={{ fontWeight:700,fontSize:15.5,color:"#1a1a2e",lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
-            {zone.pole_nom && (
-              <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,color:"#366FE3",background:"rgba(54,111,227,0.08)",padding:"2px 9px",borderRadius:999,marginTop:6 }}>
-                {zone.pole_nom}
-              </span>
-            )}
-          </div>
-          {/* Localisation (au centre, prend l'espace) */}
-          <div style={{ flex:1, display:"flex", alignItems:"center", gap:7, minWidth:0, color:"#9aa5b4" }}>
-            {(zone.departement_nom||zone.region_nom) && <>
-              <MapPin size={14} style={{ color:"#C5BFBB", flexShrink:0 }}/>
-              <span style={{ fontSize:13, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</span>
-            </>}
-          </div>
-          {/* Stats à droite + chevron */}
-          <div style={{ display:"flex",alignItems:"center",gap:14,flexShrink:0 }}>
-            {zone.superficie && (
-              <div style={{ textAlign:"right" as const, lineHeight:1.1 }}>
-                <div style={{ fontSize:14, fontWeight:700, color:"#1a1a2e" }}>{Number(zone.superficie).toLocaleString("fr-FR")}</div>
-                <div style={{ fontSize:9.5, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.06em", marginTop:1 }}>ha</div>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontWeight:800, fontSize:17, color:"#1a1a2e", lineHeight:1.25, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
+            {(zone.departement_nom||zone.region_nom) && (
+              <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:4, color:"#9aa5b4" }}>
+                <MapPin size={13} style={{ color:"#C5BFBB", flexShrink:0 }}/>
+                <span style={{ fontSize:12.5, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom,zone.region_nom].filter(Boolean).join(", ")}</span>
               </div>
             )}
-            {(installes.length>0||eligibles.length>0) && <div style={{ width:1, height:26, background:"#EEEBE8" }}/>}
-            {installes.length>0 && (
-              <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#059669",background:"rgba(24,128,56,0.08)",padding:"4px 11px",borderRadius:999 }}>
-                <span style={{ width:5,height:5,borderRadius:"50%",background:"#059669" }}/>{installes.length} installée{installes.length>1?"s":""}
-              </span>
-            )}
-            {eligibles.length>0 && (
-              <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#b45309",background:"rgba(180,83,9,0.08)",padding:"4px 11px",borderRadius:999 }}>
-                <span style={{ width:5,height:5,borderRadius:"50%",background:"#b45309" }}/>{eligibles.length} éligible{eligibles.length>1?"s":""}
-              </span>
-            )}
-            <div style={{ width:30,height:30,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:open?meta.color:"#F2F0EF",transition:"background 0.15s" }}>
-              <ChevronDown size={15} style={{ color:open?"#fff":"#9aa5b4",transform:open?"rotate(0deg)":"rotate(-90deg)",transition:"transform 0.2s" }}/>
-            </div>
           </div>
         </div>
-
-        {/* Contenu déplié */}
-        {open && (
-          <div style={{ borderTop:`1px solid ${meta.color}25`,padding:"16px 20px",background:meta.bg }}>
-            {zone.description && <><style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style><div data-rte dangerouslySetInnerHTML={{__html:zone.description}} style={{ fontSize:13,color:"#4a5568",lineHeight:1.75,marginBottom:16,padding:"12px 16px",background:"#fff",borderRadius:10,border:`1px solid ${meta.border}` }}/></>}
-
-            {(zone.date_creation||zone.decret_creation||zone.superficie) && (
-              <div style={{ display:"flex",gap:10,marginBottom:16,flexWrap:"wrap" as const }}>
-                {zone.date_creation && (
-                  <div style={{ background:"#fff",borderRadius:9,padding:"8px 14px",border:`1px solid ${meta.border}` }}>
-                    <p style={{ fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",marginBottom:3 }}>Créée le</p>
-                    <p style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{new Date(zone.date_creation+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
-                  </div>
-                )}
-                {zone.decret_creation && (
-                  <div style={{ background:"#fff",borderRadius:9,padding:"8px 14px",border:`1px solid ${meta.border}` }}>
-                    <p style={{ fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",marginBottom:3 }}>Décret</p>
-                    <p style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{zone.decret_creation}</p>
-                  </div>
-                )}
-                {zone.superficie && (
-                  <div style={{ background:"#fff",borderRadius:9,padding:"8px 14px",border:`1px solid ${meta.border}` }}>
-                    <p style={{ fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",marginBottom:3 }}>Superficie</p>
-                    <p style={{ fontSize:13,fontWeight:600,color:"#1a1a2e" }}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {installes.length>0 && (
-              <div style={{ marginBottom:12 }}>
-                <p style={{ fontSize:11,fontWeight:700,color:"#059669",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8 }}>Entreprises installées</p>
-                <div style={{ display:"flex",flexDirection:"column" as const,gap:6 }}>
-                  {installes.map((ze:any)=><EntRow key={ze.id||ze.entreprise?.id} ze={ze} statut="installee"/>)}
-                </div>
-              </div>
-            )}
-
-            {eligibles.length>0 && (
-              <div style={{ marginBottom:12 }}>
-                <p style={{ fontSize:11,fontWeight:700,color:"#b45309",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8 }}>Entreprises éligibles</p>
-                <div style={{ display:"flex",flexDirection:"column" as const,gap:6 }}>
-                  {eligibles.map((ze:any)=><EntRow key={ze.id||ze.entreprise?.id} ze={ze} statut="eligible"/>)}
-                </div>
-              </div>
-            )}
-
-            {zone.fichiers?.length>0 && (
-              <div style={{ display:"flex",flexWrap:"wrap" as const,gap:6,marginTop:8 }}>
-                {zone.fichiers.map((f:any)=>(
-                  <a key={f.id} href={`${API_BASE}/zones-types/${zone.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{ display:"inline-flex",alignItems:"center",gap:5,background:"#fff",border:`1px solid ${meta.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,color:meta.color,textDecoration:"none",fontWeight:600 }}>
-                    <FileText size={11}/>{f.titre||f.nom}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Bande de stats */}
+        <div style={{ display:"flex", alignItems:"stretch", background:"#FAFAF9", border:"1px solid #F2F0EF", borderRadius:13, padding:"14px 4px" }}>
+          <Stat value={zone.superficie?Number(zone.superficie).toLocaleString("fr-FR"):"—"} label="ha" color={c} />
+          <div style={{ width:1, background:"#EEEBE8", margin:"3px 0" }}/>
+          <Stat value={String(installes)} label="Installées" color={installes>0?"#059669":"#C5BFBB"} />
+          <div style={{ width:1, background:"#EEEBE8", margin:"3px 0" }}/>
+          <Stat value={String(eligibles)} label="Éligibles" color={eligibles>0?"#b45309":"#C5BFBB"} />
+        </div>
       </div>
-      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>
-    </>
+      {/* Pied : pôle + CTA */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, padding:"13px 22px 15px", borderTop:"1px solid #F4F2F0" }}>
+        {zone.pole_nom
+          ? <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11.5, fontWeight:600, color:"#366FE3", background:"rgba(54,111,227,0.08)", padding:"3px 10px", borderRadius:999, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, maxWidth:"60%" }}>{zone.pole_nom}</span>
+          : <span/>}
+        <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:12.5, fontWeight:700, color:c, whiteSpace:"nowrap" as const, flexShrink:0 }}>Voir les détails <ChevronRight size={15}/></span>
+      </div>
+    </div>
   );
 }
 
