@@ -228,23 +228,8 @@ function ZonesParType({ zones }: { zones: any[] }) {
                 </div>
               </div>
 
-              {/* Pied : répartition + CTA centré */}
-              <div style={{ display:"flex", flexDirection:"column" as const, alignItems:"center", gap:11, padding:"14px 22px 18px", marginTop:16, borderTop:"1px solid #F4F2F0" }}>
-                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, justifyContent:"center" }}>
-                  {t.installed > 0 && (
-                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.08)", padding:"3px 9px", borderRadius:999 }}>
-                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#188038" }}/>{t.installed} installée{t.installed>1?"s":""}
-                    </span>
-                  )}
-                  {t.eligible > 0 && (
-                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#b45309", background:"rgba(180,83,9,0.08)", padding:"3px 9px", borderRadius:999 }}>
-                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#b45309" }}/>{t.eligible} éligible{t.eligible>1?"s":""}
-                    </span>
-                  )}
-                  {t.installed === 0 && t.eligible === 0 && (
-                    <span style={{ fontSize:11, color:"#C5BFBB" }}>Aucune entreprise</span>
-                  )}
-                </div>
+              {/* Pied : CTA centré */}
+              <div style={{ display:"flex", justifyContent:"center", padding:"14px 22px 18px", marginTop:16, borderTop:"1px solid #F4F2F0" }}>
                 <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"7px 20px", borderRadius:999, fontSize:12.5, fontWeight:700, background: active ? c : `${c}12`, color: active ? "#fff" : c, transition:"all 0.15s" }}>
                   {active ? "Affiché" : "Voir les zones"} <ChevronRight size={15}/>
                 </span>
