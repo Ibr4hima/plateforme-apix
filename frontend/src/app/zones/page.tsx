@@ -320,7 +320,7 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
             )}
           </div>
           {zone.pole_nom && (
-            <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11.5, fontWeight:600, color:"#366FE3", background:"rgba(54,111,227,0.08)", padding:"3px 10px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, marginTop:2 }}>{zone.pole_nom}</span>
+            <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11.5, fontWeight:600, color:c, background:meta.bg, border:`1px solid ${meta.border}`, padding:"3px 10px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, marginTop:2 }}>{zone.pole_nom}</span>
           )}
         </div>
         {/* Bande de stats */}
