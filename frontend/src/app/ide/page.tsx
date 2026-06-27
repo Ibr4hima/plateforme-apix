@@ -1998,35 +1998,37 @@ const BDEF_BLEU = "#004f91";
 const BDEF_MACRO_COULEURS = ["#004f91", "#e07b39", "#2a9d8f", "#c0392b", "#8e44ad"];
 
 // ── Case à cocher (sélection unique) ──────────────────────────────────────────
-const BDEF_NIVEAU_TAG: Record<string,{label:string;color:string}> = {
-  macro_secteur: { label:"Macro-secteur", color:"#ca631f" },
-  groupe:        { label:"Groupe",        color:"#004f91" },
-  secteur:       { label:"Secteur",       color:"#188038" },
+const BDEF_NIVEAU_STYLE: Record<string,{color:string;fs:number;fw:number;base:string}> = {
+  macro_secteur: { color:"#ca631f", fs:13,   fw:700, base:"#1a1a2e" },
+  groupe:        { color:"#004f91", fs:12.5, fw:600, base:"#3a4452" },
+  secteur:       { color:"#188038", fs:12,   fw:500, base:"#5a6472" },
+};
+const BDEF_NIVEAU_LABEL: Record<string,string> = {
+  macro_secteur:"Macro-secteur", groupe:"Groupe", secteur:"Secteur",
 };
 
-function BdefRow({ label, niveau, selected, depth, onSelect, expandable, expanded, onToggle, showTag=true }: {
-  label:string; niveau?:string; selected:boolean; depth:number;
-  onSelect:()=>void; expandable?:boolean; expanded?:boolean; onToggle?:()=>void; showTag?:boolean;
+function BdefRow({ label, niveau, selected, onSelect, expandable, expanded, onToggle }: {
+  label:string; niveau?:string; selected:boolean;
+  onSelect:()=>void; expandable?:boolean; expanded?:boolean; onToggle?:()=>void;
 }) {
-  const tag = niveau ? BDEF_NIVEAU_TAG[niveau] : null;
-  const selColor = tag?.color || "#004f91";
-  const selBg = `${selColor}12`;
+  const st = (niveau && BDEF_NIVEAU_STYLE[niveau]) || { color:"#004f91", fs:12.5, fw:600, base:"#1a1a2e" };
+  const selBg = `${st.color}10`;
+  const dotColor = niveau ? st.color : "#C5BFBB";
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:4, marginLeft:depth*10 }}>
+    <div style={{ display:"flex", alignItems:"center", gap:2 }}>
       {expandable ? (
         <button onClick={onToggle} style={{ background:"none", border:"none", cursor:"pointer", padding:2, display:"flex", flexShrink:0 }}>
-          <ChevronDown size={11} style={{ color:"#9aa5b4", transform:expanded?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+          <ChevronDown size={12} style={{ color:"#9aa5b4", transform:expanded?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
         </button>
-      ) : <span style={{ width:15, flexShrink:0 }}/>}
+      ) : <span style={{ width:16, flexShrink:0 }}/>}
       <button onClick={onSelect}
-        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:selected?selBg:"transparent", textAlign:"left" as const, width:"100%" }}
-        onMouseEnter={e=>{if(!selected)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+        style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 9px", borderRadius:8, border:"none", cursor:"pointer", background:selected?selBg:"transparent", textAlign:"left" as const, width:"100%" }}
+        onMouseEnter={e=>{if(!selected)(e.currentTarget as HTMLElement).style.background="#F6F5F4";}}
         onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=selected?selBg:"transparent";}}>
-        <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${selected?selColor:"#C5BFBB"}`, background:selected?selColor:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${selected?st.color:dotColor+"99"}`, background:selected?st.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
           {selected&&<div style={{ width:5, height:5, borderRadius:"50%", background:"#fff" }}/>}
         </div>
-        {tag&&showTag&&<span style={{ fontSize:8.5, fontWeight:700, color:tag.color, background:`${tag.color}14`, padding:"1px 5px", borderRadius:4, textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0, whiteSpace:"nowrap" as const }}>{tag.label}</span>}
-        <span style={{ fontSize:12, color:selected?selColor:"#4a5568", fontWeight:selected?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{label}</span>
+        <span style={{ fontSize:st.fs, color:selected?st.color:st.base, fontWeight:selected?700:st.fw, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, letterSpacing:niveau==="macro_secteur"?"-0.01em":"0" }}>{label}</span>
       </button>
     </div>
   );
@@ -2433,7 +2435,7 @@ function OngletNational() {
             </div>
 
             {/* Global */}
-            <BdefRow label="Global des secteurs" selected={sel.niveau==="global"} depth={0} onSelect={()=>choisir("global",null)} />
+            <BdefRow label="Global des secteurs" selected={sel.niveau==="global"} onSelect={()=>choisir("global",null)} />
             <div style={{ height:1, background:"#F2F0EF", margin:"8px 0" }}/>
 
             {/* Recherche → résultats à plat */}
@@ -2441,40 +2443,44 @@ function OngletNational() {
               <div style={{ maxHeight:360, overflowY:"auto" as const }}>
                 {resultats.length===0 && <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
                 {resultats.map(({niveau,node})=>(
-                  <div key={`${niveau}-${node.id}`} style={{ marginBottom:2 }}>
-                    <BdefRow label={node.libelle} niveau={niveau} selected={estSel(niveau,node.id)} depth={0} onSelect={()=>choisir(niveau,node)} />
+                  <div key={`${niveau}-${node.id}`} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <BdefRow label={node.libelle} niveau={niveau} selected={estSel(niveau,node.id)} onSelect={()=>choisir(niveau,node)} />
+                    </div>
+                    <span style={{ fontSize:9, fontWeight:700, color:BDEF_NIVEAU_STYLE[niveau]?.color||"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.06em", flexShrink:0, paddingRight:4 }}>{BDEF_NIVEAU_LABEL[niveau]||""}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              /* Cascade Macro → Groupe → Secteur */
+              /* Cascade Macro → Groupe → Secteur (arbre avec lignes de guidage) */
               <div style={{ maxHeight:420, overflowY:"auto" as const }}>
                 {(refs?.macro_secteur||[]).map(macro=>{
                   const mOpen = openMacros.has(macro.id);
                   return (
-                    <div key={macro.id} style={{ marginBottom:2 }}>
-                      <BdefRow label={macro.libelle} niveau="macro_secteur" selected={estSel("macro_secteur",macro.id)} depth={0}
+                    <div key={macro.id} style={{ marginBottom:1 }}>
+                      <BdefRow label={macro.libelle} niveau="macro_secteur" selected={estSel("macro_secteur",macro.id)}
                         onSelect={()=>choisir("macro_secteur",macro)} expandable expanded={mOpen} onToggle={()=>toggleMacro(macro.id)} />
-                      {mOpen && groupesDe(macro.id).map(groupe=>{
-                        const gOpen = openGroupes.has(groupe.id);
-                        return (
-                          <div key={groupe.id}>
-                            <BdefRow label={groupe.libelle} niveau="groupe" selected={estSel("groupe",groupe.id)} depth={1}
-                              onSelect={()=>choisir("groupe",groupe)} expandable expanded={gOpen} onToggle={()=>toggleGroupe(groupe.id)} />
-                            {gOpen && secteursDe(groupe.id).length>0 && (
-                              <>
-                                <div style={{ marginLeft:39, padding:"5px 8px 3px" }}>
-                                  <span style={{ fontSize:8.5, fontWeight:700, color:"#188038", background:"#18803814", padding:"1px 6px", borderRadius:4, textTransform:"uppercase" as const, letterSpacing:"0.05em" }}>Secteurs</span>
-                                </div>
-                                {secteursDe(groupe.id).map(secteur=>(
-                                  <BdefRow key={secteur.id} label={secteur.libelle} niveau="secteur" showTag={false} selected={estSel("secteur",secteur.id)} depth={2}
-                                    onSelect={()=>choisir("secteur",secteur)} />
-                                ))}
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
+                      {mOpen && (
+                        <div style={{ marginLeft:17, borderLeft:"1.5px solid #EDEAE6", paddingLeft:4, marginTop:1 }}>
+                          {groupesDe(macro.id).map(groupe=>{
+                            const gOpen = openGroupes.has(groupe.id);
+                            return (
+                              <div key={groupe.id}>
+                                <BdefRow label={groupe.libelle} niveau="groupe" selected={estSel("groupe",groupe.id)}
+                                  onSelect={()=>choisir("groupe",groupe)} expandable expanded={gOpen} onToggle={()=>toggleGroupe(groupe.id)} />
+                                {gOpen && (
+                                  <div style={{ marginLeft:17, borderLeft:"1.5px solid #EDEAE6", paddingLeft:4, marginTop:1, marginBottom:3 }}>
+                                    {secteursDe(groupe.id).map(secteur=>(
+                                      <BdefRow key={secteur.id} label={secteur.libelle} niveau="secteur" selected={estSel("secteur",secteur.id)}
+                                        onSelect={()=>choisir("secteur",secteur)} />
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
