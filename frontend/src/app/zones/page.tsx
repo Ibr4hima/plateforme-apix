@@ -279,7 +279,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
 function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
   const meta = TYPE_META[zone.type_zone] || TYPE_META.ZES;
   const c = meta.color;
-  const installes = (zone.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+  const entreprises = (zone.entreprises||[]).length;
   const Stat = ({ value, label, color }: { value:string; label:string; color:string }) => (
     <div style={{ flex:1, textAlign:"center" as const }}>
       <div style={{ fontSize:22, fontWeight:800, color, lineHeight:1.05, letterSpacing:"-0.01em" }}>{value}</div>
@@ -310,7 +310,7 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
         <div style={{ display:"flex", alignItems:"stretch", background:"#FAFAF9", border:"1px solid #F2F0EF", borderRadius:13, padding:"14px 4px" }}>
           <Stat value={zone.superficie?Number(zone.superficie).toLocaleString("fr-FR"):"—"} label="ha" color="#1a1a2e" />
           <div style={{ width:1, background:"#EEEBE8", margin:"3px 0" }}/>
-          <Stat value={String(installes)} label="Installées" color={installes>0?"#1a1a2e":"#C5BFBB"} />
+          <Stat value={String(entreprises)} label={entreprises>1?"Entreprises":"Entreprise"} color={entreprises>0?"#1a1a2e":"#C5BFBB"} />
         </div>
       </div>
       {/* Pied : CTA centré stylé */}
