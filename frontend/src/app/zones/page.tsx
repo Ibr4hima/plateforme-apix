@@ -250,12 +250,19 @@ function ZonesParType({ zones }: { zones: any[] }) {
       {/* ── Liste des zones du type sélectionné ── */}
       {selectedInfo && (
         <div>
-          <div style={{ display:"flex", alignItems:"center", gap:11, marginBottom:16 }}>
-            <div style={{ width:32, height:32, borderRadius:9, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:selectedInfo.meta.bg, border:`1px solid ${selectedInfo.meta.border}` }}>
-              <span style={{ fontSize:11, fontWeight:800, color:selectedInfo.meta.color }}>{selectedInfo.type}</span>
+          <div style={{ display:"flex", alignItems:"center", gap:15, padding:"15px 20px", marginBottom:20, borderRadius:16,
+            background:`linear-gradient(100deg, ${selectedInfo.meta.color}14 0%, ${selectedInfo.meta.color}06 42%, rgba(255,255,255,0) 100%)`,
+            border:`1px solid ${selectedInfo.meta.color}22` }}>
+            <div style={{ width:44, height:44, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:"#fff", border:`1px solid ${selectedInfo.meta.border}`, boxShadow:`0 2px 6px ${selectedInfo.meta.color}1a` }}>
+              <span style={{ fontSize:12, fontWeight:800, letterSpacing:"0.02em", color:selectedInfo.meta.color }}>{selectedInfo.type}</span>
             </div>
-            <span style={{ fontWeight:700, fontSize:15, color:"#1a1a2e" }}>{selectedInfo.meta.label}</span>
-            <span style={{ fontSize:12, fontWeight:600, color:"#9aa5b4", marginLeft:"auto" }}>{selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}</span>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:9.5, fontWeight:700, color:selectedInfo.meta.color, textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:3 }}>Type de zone</div>
+              <div style={{ fontWeight:800, fontSize:16, color:"#1a1a2e", lineHeight:1.2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{selectedInfo.meta.label}</div>
+            </div>
+            <span style={{ display:"inline-flex", alignItems:"center", fontSize:12.5, fontWeight:700, color:"#fff", background:selectedInfo.meta.color, padding:"6px 15px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, boxShadow:`0 2px 8px ${selectedInfo.meta.color}40` }}>
+              {selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}
+            </span>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16 }}>
             {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setDetailZone(z)} />)}
