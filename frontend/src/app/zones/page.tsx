@@ -189,54 +189,64 @@ function ZonesParType({ zones }: { zones: any[] }) {
   return (
     <div>
       {/* ── Cards types ── */}
-      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(types.length, 3)},1fr)`, gap:12, marginBottom: selectedType ? 28 : 0 }}>
+      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(types.length, 3)},1fr)`, gap:16, marginBottom: selectedType ? 32 : 0 }}>
         {types.map(t => {
           const active = selectedType === t.type;
+          const c = t.meta.color;
           return (
             <div key={t.type} onClick={() => setSelectedType(active ? null : t.type)}
-              style={{ background:"#fff",
-                borderTop:`1px solid ${active ? t.meta.color : "#E8E5E3"}`,
-                borderRight:`1px solid ${active ? t.meta.color : "#E8E5E3"}`,
-                borderBottom:`1px solid ${active ? t.meta.color : "#E8E5E3"}`,
-                borderLeft:`3px solid ${t.meta.color}`,
-                borderRadius:12, padding:"14px 16px",
-                boxShadow: active ? `0 4px 20px ${t.meta.color}20` : "0 1px 4px rgba(0,0,0,0.04)",
-                cursor:"pointer", transition:"all 0.15s" }}
-              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 4px 16px ${t.meta.color}20`; ev.currentTarget.style.borderTopColor=t.meta.color; ev.currentTarget.style.borderRightColor=t.meta.color; ev.currentTarget.style.borderBottomColor=t.meta.color; } }}
-              onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderTopColor="#E8E5E3"; ev.currentTarget.style.borderRightColor="#E8E5E3"; ev.currentTarget.style.borderBottomColor="#E8E5E3"; } }}>
+              style={{ position:"relative" as const, background:"#fff", border:`1px solid ${active ? c : "#E8E5E3"}`,
+                borderRadius:16, overflow:"hidden", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s",
+                boxShadow: active ? `0 10px 30px ${c}26` : "0 1px 3px rgba(0,0,0,0.05)",
+                transform: active ? "translateY(-2px)" : "none" }}
+              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 8px 24px ${c}1f`; ev.currentTarget.style.transform="translateY(-2px)"; } }}
+              onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.05)"; ev.currentTarget.style.transform="none"; } }}>
 
-              <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", marginBottom:10 }}>{t.meta.label}</div>
+              {/* Accent supérieur */}
+              <div style={{ height:5, background:`linear-gradient(90deg, ${c}, ${c}99)` }}/>
 
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:6, marginBottom:12 }}>
-                {/* Zone count */}
-                <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12 }}>
-                  <div style={{ width:6, height:6, borderRadius:"50%", background:t.meta.color, flexShrink:0 }}/>
-                  <span style={{ fontWeight:600, color:t.meta.color }}>{t.zones.length} zone{t.zones.length > 1 ? "s" : ""}</span>
+              <div style={{ padding:"18px 20px 20px" }}>
+                {/* En-tête : badge acronyme + libellé */}
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:18 }}>
+                  <div style={{ width:46, height:46, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
+                    background: active ? c : t.meta.bg, border:`1px solid ${active ? c : t.meta.border}`, transition:"all 0.18s" }}>
+                    <span style={{ fontSize:13, fontWeight:800, letterSpacing:"0.03em", color: active ? "#fff" : c }}>{t.type}</span>
+                  </div>
+                  <div style={{ fontWeight:700, fontSize:14, color:"#1a1a2e", lineHeight:1.3 }}>{t.meta.label}</div>
                 </div>
-                {/* Installed enterprises */}
-                {t.installed > 0 && (
-                  <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12 }}>
-                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
-                    <span style={{ color:"#4a5568" }}>{t.installed} entreprise{t.installed > 1 ? "s" : ""} installée{t.installed > 1 ? "s" : ""}</span>
-                  </div>
-                )}
-                {/* Eligible enterprises */}
-                {t.eligible > 0 && (
-                  <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12 }}>
-                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#b45309", flexShrink:0 }}/>
-                    <span style={{ color:"#4a5568" }}>{t.eligible} entreprise{t.eligible > 1 ? "s" : ""} éligible{t.eligible > 1 ? "s" : ""}</span>
-                  </div>
-                )}
+
+                {/* Métrique héro */}
+                <div style={{ display:"flex", alignItems:"baseline", gap:7, marginBottom:16 }}>
+                  <span style={{ fontSize:34, fontWeight:800, color:c, lineHeight:1 }}>{t.zones.length}</span>
+                  <span style={{ fontSize:13, fontWeight:600, color:"#9aa5b4" }}>zone{t.zones.length > 1 ? "s" : ""}</span>
+                </div>
+
+                {/* Stats entreprises */}
+                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:8, borderTop:"1px solid #F2F0EF", paddingTop:14, minHeight:14 }}>
+                  {t.installed > 0 && (
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11.5, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.08)", border:"1px solid rgba(24,128,56,0.18)", padding:"3px 9px", borderRadius:999 }}>
+                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#188038" }}/>
+                      {t.installed} installée{t.installed > 1 ? "s" : ""}
+                    </span>
+                  )}
+                  {t.eligible > 0 && (
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11.5, fontWeight:600, color:"#b45309", background:"rgba(180,83,9,0.08)", border:"1px solid rgba(180,83,9,0.18)", padding:"3px 9px", borderRadius:999 }}>
+                      <span style={{ width:5, height:5, borderRadius:"50%", background:"#b45309" }}/>
+                      {t.eligible} éligible{t.eligible > 1 ? "s" : ""}
+                    </span>
+                  )}
+                  {t.installed === 0 && t.eligible === 0 && (
+                    <span style={{ fontSize:11.5, color:"#C5BFBB" }}>Aucune entreprise</span>
+                  )}
+                </div>
               </div>
 
-              <div style={{ borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
-                <button style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:4,
-                  background: active ? t.meta.color : `${t.meta.color}14`,
-                  border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0",
-                  fontSize:11, color: active ? "#fff" : t.meta.color, fontWeight:700, transition:"all 0.15s" }}>
-                  {active ? "Sélectionné ✓" : `Voir les zones →`}
-                </button>
-              </div>
+              {/* Indicateur de sélection */}
+              {active && (
+                <div style={{ position:"absolute" as const, top:14, right:14, width:22, height:22, borderRadius:"50%", background:c, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="11" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
+              )}
             </div>
           );
         })}
@@ -245,11 +255,12 @@ function ZonesParType({ zones }: { zones: any[] }) {
       {/* ── Liste des zones du type sélectionné ── */}
       {selectedInfo && (
         <div>
-          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, padding:"12px 16px",
-            background:`${selectedInfo.meta.color}08`, border:`1px solid ${selectedInfo.meta.color}25`, borderRadius:12 }}>
-            <div style={{ width:10, height:10, borderRadius:"50%", background:selectedInfo.meta.color, flexShrink:0 }}/>
-            <span style={{ fontWeight:700, fontSize:14, color:selectedInfo.meta.color }}>{selectedInfo.meta.label}</span>
-            <span style={{ fontSize:12, color:"#9aa5b4", marginLeft:"auto" }}>{selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}</span>
+          <div style={{ display:"flex", alignItems:"center", gap:11, marginBottom:16 }}>
+            <div style={{ width:32, height:32, borderRadius:9, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:selectedInfo.meta.bg, border:`1px solid ${selectedInfo.meta.border}` }}>
+              <span style={{ fontSize:11, fontWeight:800, color:selectedInfo.meta.color }}>{selectedInfo.type}</span>
+            </div>
+            <span style={{ fontWeight:700, fontSize:15, color:"#1a1a2e" }}>{selectedInfo.meta.label}</span>
+            <span style={{ fontSize:12, fontWeight:600, color:"#9aa5b4", marginLeft:"auto" }}>{selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}</span>
           </div>
           <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
             {selectedInfo.zones.map((z: any) => <ZoneCard key={z.id} zone={z} />)}
