@@ -1952,10 +1952,6 @@ type BdefRefs = { macro_secteur:BdefNode[]; groupe:BdefNode[]; secteur:BdefNode[
 type BdefIndic = { code:string; libelle:string; unite:string; categorie:string; valeurs:Record<string,number|null> };
 type BdefSel = { niveau:"global"|"macro_secteur"|"groupe"|"secteur"; cible_id:number|null; libelle:string };
 
-const NIVEAU_LABEL_BDEF: Record<string,string> = {
-  global:"Global", macro_secteur:"Macro-secteur", groupe:"Groupe", secteur:"Secteur",
-};
-
 // ── Définitions simples des indicateurs BDEF (affichées au survol) ────────────
 const BDEF_DEFINITIONS: Record<string,string> = {
   act_ca:           "Le chiffre d'affaires, c'est le total des ventes réalisées par les entreprises du secteur sur l'année. Autrement dit : combien d'argent le secteur a généré en vendant ses produits et services.",
@@ -2002,10 +1998,17 @@ const BDEF_BLEU = "#004f91";
 const BDEF_MACRO_COULEURS = ["#004f91", "#e07b39", "#2a9d8f", "#c0392b", "#8e44ad"];
 
 // ── Case à cocher (sélection unique) ──────────────────────────────────────────
-function BdefRow({ label, code, selected, depth, onSelect, expandable, expanded, onToggle }: {
-  label:string; code?:string; selected:boolean; depth:number;
+const BDEF_NIVEAU_TAG: Record<string,{label:string;color:string}> = {
+  macro_secteur: { label:"Macro-secteur", color:"#ca631f" },
+  groupe:        { label:"Groupe",        color:"#004f91" },
+  secteur:       { label:"Secteur",       color:"#188038" },
+};
+
+function BdefRow({ label, niveau, selected, depth, onSelect, expandable, expanded, onToggle }: {
+  label:string; niveau?:string; selected:boolean; depth:number;
   onSelect:()=>void; expandable?:boolean; expanded?:boolean; onToggle?:()=>void;
 }) {
+  const tag = niveau ? BDEF_NIVEAU_TAG[niveau] : null;
   return (
     <div style={{ display:"flex", alignItems:"center", gap:4, marginLeft:depth*10 }}>
       {expandable ? (
@@ -2020,7 +2023,7 @@ function BdefRow({ label, code, selected, depth, onSelect, expandable, expanded,
         <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${selected?"#004f91":"#C5BFBB"}`, background:selected?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
           {selected&&<div style={{ width:5, height:5, borderRadius:"50%", background:"#fff" }}/>}
         </div>
-        {code&&<span style={{ fontSize:10, color:"#C5BFBB", fontWeight:600, flexShrink:0 }}>{code}</span>}
+        {tag&&<span style={{ fontSize:8.5, fontWeight:700, color:tag.color, background:`${tag.color}14`, padding:"1px 5px", borderRadius:4, textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0, whiteSpace:"nowrap" as const }}>{tag.label}</span>}
         <span style={{ fontSize:12, color:selected?"#004f91":"#4a5568", fontWeight:selected?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{label}</span>
       </button>
     </div>
@@ -2292,7 +2295,7 @@ function OngletNational() {
   const toggleComp   = (id:number) => setCompSelec(p=>p.includes(id)?p.filter(x=>x!==id):p.length<4?[...p,id]:p);
 
   const choisir = (niveau:BdefSel["niveau"], node:BdefNode|null) =>
-    setSel({ niveau, cible_id: node?node.id:null, libelle: node?`${node.code} — ${node.libelle}`:"Global des secteurs" });
+    setSel({ niveau, cible_id: node?node.id:null, libelle: node?node.libelle:"Global des secteurs" });
   const estSel = (niveau:string, id:number|null) => sel.niveau===niveau && sel.cible_id===id;
 
   // Recherche : résultats à plat tous niveaux confondus
@@ -2437,8 +2440,7 @@ function OngletNational() {
                 {resultats.length===0 && <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
                 {resultats.map(({niveau,node})=>(
                   <div key={`${niveau}-${node.id}`} style={{ marginBottom:2 }}>
-                    <BdefRow label={node.libelle} code={node.code} selected={estSel(niveau,node.id)} depth={0} onSelect={()=>choisir(niveau,node)} />
-                    <span style={{ fontSize:9, color:"#C5BFBB", marginLeft:38, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>{NIVEAU_LABEL_BDEF[niveau]}</span>
+                    <BdefRow label={node.libelle} niveau={niveau} selected={estSel(niveau,node.id)} depth={0} onSelect={()=>choisir(niveau,node)} />
                   </div>
                 ))}
               </div>
@@ -2449,16 +2451,16 @@ function OngletNational() {
                   const mOpen = openMacros.has(macro.id);
                   return (
                     <div key={macro.id} style={{ marginBottom:2 }}>
-                      <BdefRow label={macro.libelle} code={macro.code} selected={estSel("macro_secteur",macro.id)} depth={0}
+                      <BdefRow label={macro.libelle} niveau="macro_secteur" selected={estSel("macro_secteur",macro.id)} depth={0}
                         onSelect={()=>choisir("macro_secteur",macro)} expandable expanded={mOpen} onToggle={()=>toggleMacro(macro.id)} />
                       {mOpen && groupesDe(macro.id).map(groupe=>{
                         const gOpen = openGroupes.has(groupe.id);
                         return (
                           <div key={groupe.id}>
-                            <BdefRow label={groupe.libelle} code={groupe.code} selected={estSel("groupe",groupe.id)} depth={1}
+                            <BdefRow label={groupe.libelle} niveau="groupe" selected={estSel("groupe",groupe.id)} depth={1}
                               onSelect={()=>choisir("groupe",groupe)} expandable expanded={gOpen} onToggle={()=>toggleGroupe(groupe.id)} />
                             {gOpen && secteursDe(groupe.id).map(secteur=>(
-                              <BdefRow key={secteur.id} label={secteur.libelle} code={secteur.code} selected={estSel("secteur",secteur.id)} depth={2}
+                              <BdefRow key={secteur.id} label={secteur.libelle} niveau="secteur" selected={estSel("secteur",secteur.id)} depth={2}
                                 onSelect={()=>choisir("secteur",secteur)} />
                             ))}
                           </div>
