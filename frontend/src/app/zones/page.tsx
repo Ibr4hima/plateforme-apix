@@ -16,9 +16,9 @@ function fmtDate(d: string) {
 }
 
 const TYPE_META: Record<string,{label:string;color:string;bg:string;border:string}> = {
-  ZES: { label:"Zones Économiques Spéciales",           color:"#E35336", bg:"rgba(227,83,54,0.06)",  border:"rgba(227,83,54,0.2)" },
-  ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#174EA6", bg:"rgba(23,78,166,0.06)",  border:"rgba(23,78,166,0.2)" },
-  ZFI: { label:"Zones Franches Industrielles",           color:"#188038", bg:"rgba(24,128,56,0.06)",  border:"rgba(24,128,56,0.2)" },
+  ZES: { label:"Zones Économiques Spéciales",           color:"#ca631f", bg:"rgba(202,99,31,0.06)",  border:"rgba(202,99,31,0.2)" },
+  ZAI: { label:"Zones Aménagées pour l'Investissement", color:"#004f91", bg:"rgba(0,79,145,0.06)",   border:"rgba(0,79,145,0.2)" },
+  ZFI: { label:"Zones Franches Industrielles",           color:"#0A7C6E", bg:"rgba(10,124,110,0.06)", border:"rgba(10,124,110,0.2)" },
 };
 
 const POLE_COLORS = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
