@@ -260,150 +260,6 @@ function ZonesParType({ zones }: { zones: any[] }) {
   );
 }
 
-// ── Sunburst par pôle ─────────────────────────────────────────────────────────
-function SunburstPoles({ zones }: { zones:any[] }) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [ficheEnt, setFicheEnt] = useState<any>(null);
-
-  useEffect(() => {
-    if (!zones.length || !svgRef.current || !wrapRef.current) return;
-    const W = wrapRef.current.clientWidth || 900;
-    const H = 500;
-
-    const byPole: Record<string,any[]> = {};
-    const poleNoms: Record<string,string> = {};
-    zones.forEach((z:any)=>{
-      const pid=String(z.pole_id||"sans-pole");
-      if (!byPole[pid]) { byPole[pid]=[]; poleNoms[pid]=z.pole_nom||"Sans pôle"; }
-      byPole[pid].push(z);
-    });
-
-    const tree = {
-      name: "Pôles Territoire",
-      children: Object.entries(byPole).map(([pid,zs],pi)=>({
-        name: poleNoms[pid], poleIndex:pi,
-        children: zs.map((z:any)=>({
-          name:z.nom_zone, poleIndex:pi, type:z.type_zone, value:1, data:z,
-          children: z.entreprises?.filter((ze:any)=>ze.statut==="installee").length>0
-            ? z.entreprises.filter((ze:any)=>ze.statut==="installee").map((ze:any)=>({ name:ze.entreprise?.nom||"—", poleIndex:pi, value:1, data:ze.entreprise }))
-            : undefined,
-        })),
-      })),
-    };
-
-    const el = svgRef.current;
-    d3.select(el).selectAll("*").remove();
-    const hierarchy = d3.hierarchy(tree).sum((d:any)=>d.children?0:1)
-      .sort((a,b)=>(b.height-a.height)||((b.value||0)-(a.value||0)));
-    const root = d3.partition<any>().size([H,(hierarchy.height+1)*W/3])(hierarchy as any);
-    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("width",W).attr("height",H).attr("style","max-width:100%;height:auto;");
-
-    const getColor=(d:any):string=>{
-      if(d.depth===0) return "#F2F2F2";
-      const pi=d.data.poleIndex??0;
-      const c=POLE_COLORS[pi%POLE_COLORS.length];
-      if(d.depth===1) return c;
-      const a=d.depth===2?0.62:d.depth===3?0.38:0.25;
-      return c+Math.round(a*255).toString(16).padStart(2,"0");
-    };
-    const rectH=(d:any)=>Math.max(0,d.x1-d.x0-Math.min(1,(d.x1-d.x0)/2));
-    const labelOk=(d:any)=>d.y1<=W&&d.y0>=0&&d.x1-d.x0>16;
-
-    const cell=svg.selectAll<SVGGElement,any>("g").data(root.descendants()).join("g")
-      .attr("transform",(d:any)=>`translate(${d.y0},${d.x0})`);
-    cell.append("rect")
-      .attr("width",(d:any)=>Math.max(0,d.y1-d.y0-1)).attr("height",(d:any)=>rectH(d))
-      .attr("fill",getColor).attr("stroke","#F2F0EF").attr("stroke-width",0.05).style("cursor","pointer");
-    const text=cell.append("text").style("user-select","none").attr("pointer-events","none")
-      .attr("x",6).attr("y",14)
-      .attr("font-size",(d:any)=>d.depth===0?13:d.depth===1?12:11)
-      .attr("font-weight",(d:any)=>d.depth<=1?700:400)
-      .attr("font-family","var(--font-google-sans),sans-serif")
-      .attr("fill","#1a1a2e").attr("fill-opacity",(d:any)=>+labelOk(d));
-    text.append("tspan").text((d:any)=>{
-      const w=(d.y1-d.y0)-12; const n=d.data.name||""; const c=Math.floor(w/6.5);
-      return n.length>c?n.slice(0,Math.max(3,c-1))+"…":n;
-    });
-
-    // ── Badges dans SunburstPoles via foreignObject ───────────────────────────
-    const TYPE_COLORS_MAP: Record<string,string> = { ZES:"#E35336", ZAI:"#366FE3", ZFI:"#188038" };
-
-    // Badges par type pour les pôles (depth=1)
-    cell.filter((d:any)=>d.depth===1&&d.children&&labelOk(d)&&(d.x1-d.x0)>40)
-      .each(function(d:any) {
-        const children = d.children || [];
-        const byType: Record<string,number> = {};
-        children.forEach((c:any)=>{ const t=c.data.type; if(t) byType[t]=(byType[t]||0)+1; });
-        const parts = (Object.entries(byType) as [string,number][]).filter(([,n])=>n>0);
-        if (!parts.length) return;
-        const w = Math.max(0, d.y1-d.y0-12);
-        const fo = d3.select(this as SVGGElement).append("foreignObject")
-          .attr("x",6).attr("y",18).attr("width",w).attr("height",26)
-          .attr("pointer-events","none");
-        const div = fo.append("xhtml:div")
-          .style("display","flex").style("gap","4px").style("align-items","center");
-        parts.forEach(([type,n])=>{
-          const col = TYPE_COLORS_MAP[type]||"#9aa5b4";
-          div.append("xhtml:span")
-            .style("display","inline-flex").style("align-items","center").style("height","18px")
-            .style("padding","0 7px").style("background",col+"22").style("border",`1px solid ${col}55`)
-            .style("border-radius","8px").style("font-size","9px").style("font-weight","700")
-            .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
-            .style("white-space","nowrap")
-            .text(`${n} ${type}`);
-        });
-      });
-
-    // Badge numérique à l'extrême droite pour les zones (depth=2)
-    cell.filter((d:any)=>d.depth===2&&labelOk(d)&&(d.x1-d.x0)>24)
-      .each(function(d:any) {
-        const ents=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
-        if(!ents) return;
-        const col="#059669";
-        const w=Math.max(0,d.y1-d.y0-12);
-        d3.select(this as SVGGElement).append("foreignObject")
-          .attr("x",6).attr("y",2).attr("width",w).attr("height",18)
-          .attr("pointer-events","none")
-          .append("xhtml:div")
-          .style("display","flex").style("justify-content","flex-end").style("align-items","center").style("height","18px")
-          .append("xhtml:span")
-          .style("display","inline-flex").style("align-items","center")
-          .style("height","15px").style("padding","0 6px")
-          .style("background",col+"22").style("border",`1px solid ${col}55`)
-          .style("border-radius","6px").style("font-size","9px").style("font-weight","700")
-          .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
-          .text(`${ents}`);
-      });
-
-    let focus=root;
-    cell.select("rect").on("click",function(_:any,p:any){
-      if(p.depth===3&&p.data.data?.id){
-        fetch(`${API_BASE}/entreprises/${p.data.data.id}`)
-          .then(r=>r.json()).then(d=>setFicheEnt(d)).catch(()=>{});
-        return;
-      }
-      focus=focus===p?(p=p.parent):p; if(!p) return;
-      root.each((d:any)=>{ d.target={
-        x0:(d.x0-p.x0)/(p.x1-p.x0)*H, x1:(d.x1-p.x0)/(p.x1-p.x0)*H,
-        y0:d.y0-p.y0, y1:d.y1-p.y0,
-      };});
-      const t=cell.transition().duration(750).ease(d3.easeCubicInOut)
-        .attr("transform",(d:any)=>`translate(${d.target.y0},${d.target.x0})`);
-      cell.select("rect").transition(t).attr("height",(d:any)=>rectH(d.target));
-      text.transition(t).attr("fill-opacity",(d:any)=>+labelOk(d.target));
-    });
-    cell.append("title").text((d:any)=>d.ancestors().map((n:any)=>n.data.name).reverse().join(" › "));
-  },[zones]);
-
-  return (
-    <div ref={wrapRef}>
-      <svg ref={svgRef} style={{ width:"100%",height:500,display:"block" }}/>
-      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>
-    </div>
-  );
-}
-
 // ── Card zone ─────────────────────────────────────────────────────────────────
 function ZoneCard({ zone, defaultOpen=false }: { zone:any; defaultOpen?:boolean }) {
   const [open,        setOpen]        = useState(defaultOpen);
@@ -932,7 +788,7 @@ export default function ZonesPage() {
   const [zones,      setZones]      = useState<any[]>([]);
   const [polesCount, setPolesCount] = useState(0);
   const [loading,    setLoading]    = useState(true);
-  const [onglet,     setOnglet]     = useState<"zones"|"poles"|"liste"|"territoire">("zones");
+  const [onglet,     setOnglet]     = useState<"zones"|"liste"|"territoire">("zones");
 
   useEffect(()=>{
     fetch(`${API_BASE}/zones-types`)
@@ -981,8 +837,7 @@ export default function ZonesPage() {
         <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
           {([
             {key:"zones",      label:"Zones d'investissement", color:"#ca631f"},
-            {key:"poles",      label:"Pôles territoires",      color:"#ca631f"},
-            {key:"territoire", label:"Vue territoriale",       color:"#ca631f"},
+            {key:"territoire", label:"Pôles territoires",      color:"#ca631f"},
             {key:"liste",      label:"Vue détaillée",          color:"#ca631f"},
           ] as const).map(t=>(
             <button key={t.key} onClick={()=>setOnglet(t.key)}
@@ -998,9 +853,6 @@ export default function ZonesPage() {
         <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
           {onglet==="zones" && (
             loading ? <Loader/> : <ZonesParType zones={zones}/>
-          )}
-          {onglet==="poles" && (
-            loading ? <Loader/> : <SunburstPoles zones={zones}/>
           )}
           {onglet==="territoire" && (
             loading ? <Loader/> : <VueTerritorialeSenegal zones={zones}/>
