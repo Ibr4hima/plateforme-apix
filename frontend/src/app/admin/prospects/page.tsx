@@ -1761,8 +1761,8 @@ export default function ProspectsPage() {
         params.set("conclu", "true");
       } else {
         params.set("conclu", "false");
-        if (onglet==="historique") params.set("contactes", "true");
-        // "cibles" : pas de filtre contactes — on affiche tous les non-conclus
+        // "historique" (En contact) : déjà contactés ; "cibles" : pas encore contactés
+        params.set("contactes", onglet==="historique" ? "true" : "false");
       }
       const res  = await fetch(`${API}/prospects?${params}`);
       const data = await res.json();
