@@ -40,7 +40,16 @@ async def get_kpis(db: AsyncSession = Depends(get_db)):
               (SELECT COUNT(*) FROM prospects p WHERE p.is_deleted=FALSE AND p.issue IS NULL
                  AND NOT EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)),
               (SELECT COUNT(*) FROM prospects p WHERE p.is_deleted=FALSE AND p.issue IS NULL
-                 AND EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id))
+                 AND EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)),
+              -- Durée de transformation moyenne (jours) : entreprises décidées à s'installer
+              -- entre le tout premier contact (min date_echange) et la conclusion de l'accord
+              (SELECT ROUND(AVG(diff))::int FROM (
+                 SELECT (p.issue_conclu_le::date - MIN(e.date_echange)) AS diff
+                 FROM prospects p
+                 JOIN prospect_echanges e ON e.prospect_id = p.id
+                 WHERE p.is_deleted=FALSE AND p.issue='installe' AND p.issue_conclu_le IS NOT NULL
+                 GROUP BY p.id, p.issue_conclu_le
+               ) s)
         """))
         k = r.fetchone()
         return {
@@ -60,6 +69,7 @@ async def get_kpis(db: AsyncSession = Depends(get_db)):
             "global_installees":  k[0],
             "global_ciblees":     k[12],
             "global_contactees":  k[13],
+            "global_duree":       k[14],
         }
     except Exception:
         return {}
