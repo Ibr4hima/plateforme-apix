@@ -89,6 +89,65 @@ function BarH({ data, height, palette=COLORS }: { data:any[]; height:number; pal
   return <div ref={cRef} style={{width:"100%"}}><svg ref={ref} width={w} height={height}/></div>;
 }
 
+// ─── Barres horizontales style « Horizontal bar chart » (D3) ─────────────────
+// Axe des catégories à gauche, axe des valeurs en haut, valeur dans la barre.
+function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
+  const ref=useRef<SVGSVGElement>(null); const cRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(560);
+  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{
+    if(!ref.current||!data.length) return;
+    const svg=d3.select(ref.current); svg.selectAll("*").remove();
+
+    const marginTop=26, marginRight=14, marginBottom=8;
+    const longest = d3.max(data, (d:any)=>String(d.label).length) || 8;
+    const marginLeft = Math.min(190, Math.max(64, longest*6.4 + 8));
+
+    const sorted = [...data].sort((a:any,b:any)=>b.valeur-a.valeur);
+    const maxVal = d3.max(sorted, (d:any)=>d.valeur) || 1;
+
+    const x = d3.scaleLinear().domain([0, maxVal]).range([marginLeft, w-marginRight]);
+    const y = d3.scaleBand().domain(sorted.map((d:any)=>String(d.label))).rangeRound([marginTop, height-marginBottom]).padding(0.18);
+
+    svg.attr("viewBox",`0 0 ${w} ${height}`).attr("preserveAspectRatio","xMidYMid meet")
+       .attr("style","max-width:100%;height:auto;");
+
+    // Barres
+    svg.append("g").selectAll("rect").data(sorted).join("rect")
+      .attr("x", x(0)).attr("y", (d:any)=>y(String(d.label))!)
+      .attr("height", y.bandwidth()).attr("rx", 3)
+      .attr("fill", (_:any,i:number)=>palette[i%palette.length])
+      .attr("width", 0)
+      .transition().duration(450).delay((_:any,i:number)=>i*40)
+      .attr("width", (d:any)=>Math.max(0, x(d.valeur)-x(0)));
+
+    // Valeurs (dans la barre en blanc, sinon à droite en gris)
+    svg.append("g").attr("text-anchor","end").style("font-family","var(--font-google-sans),sans-serif")
+      .selectAll("text").data(sorted).join("text")
+      .attr("x", (d:any)=>x(d.valeur)).attr("y", (d:any)=>y(String(d.label))!+y.bandwidth()/2)
+      .attr("dy","0.35em").attr("dx",-6).attr("font-size",11).attr("font-weight",700).attr("fill","#fff")
+      .text((d:any)=>Number(d.valeur).toLocaleString("fr-FR"))
+      .call((t:any)=>t.filter((d:any)=>x(d.valeur)-x(0)<26).attr("dx",6).attr("fill","#4a5568").attr("text-anchor","start"));
+
+    // Axe des valeurs (haut)
+    svg.append("g").attr("transform",`translate(0,${marginTop})`)
+      .call(d3.axisTop(x).ticks(Math.max(2, Math.round(w/95))).tickFormat(d3.format("d")))
+      .call((g:any)=>g.select(".domain").remove())
+      .call((g:any)=>g.selectAll(".tick line").attr("stroke","#EBEBEB").attr("y2", height-marginTop-marginBottom))
+      .call((g:any)=>g.selectAll("text").style("fill","#9aa5b4").style("font-size","9px"));
+
+    // Axe des catégories (gauche)
+    const maxChars = Math.max(4, Math.floor((marginLeft-10)/6.4));
+    svg.append("g").attr("transform",`translate(${marginLeft},0)`)
+      .call(d3.axisLeft(y).tickSizeOuter(0).tickFormat((d:any)=>{ const s=String(d); return s.length>maxChars?s.slice(0,maxChars-1)+"…":s; }))
+      .call((g:any)=>g.select(".domain").remove())
+      .call((g:any)=>g.selectAll(".tick line").remove())
+      .call((g:any)=>g.selectAll("text").style("fill","#374151").style("font-size","11px").style("font-weight","500"));
+  },[data,w,height,palette]);
+
+  if(!data.length) return <EmptyState h={height}/>;
+  return <div ref={cRef} style={{width:"100%"}}><svg ref={ref} style={{width:"100%",height,display:"block"}}/></div>;
+}
+
 function BarV({ data, height, color="#004f91" }: { data:any[]; height:number; color?:string }) {
   const ref=useRef<SVGSVGElement>(null); const cRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(400);
   useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
@@ -1143,11 +1202,12 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites";
   const cardData  = isLong ? data.slice(0,3) : data;
   const modalData = isLong ? data.slice(0,7) : data;
-  const cardH = Math.min(300, Math.max(150, cardData.length*40));
+  const cardH  = 26 + Math.max(1, cardData.length)*38 + 8;
+  const modalH = 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
-    : cardData.length===0 ? <EmptyState h={h}/> : <BarH data={cardData} height={h} palette={INDIC_PALETTE}/>;
+    : cardData.length===0 ? <EmptyState h={h}/> : <HBarAxisChart data={cardData} height={h} palette={INDIC_PALETTE}/>;
 
   return (
     <>
@@ -1172,7 +1232,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
       </div>
 
       <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top 7`:titre} vizId={id}>
-        <BarH data={modalData} height={Math.max(360, modalData.length*46)} palette={INDIC_PALETTE}/>
+        <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={INDIC_PALETTE}/>
       </VizModal>
     </>
   );
