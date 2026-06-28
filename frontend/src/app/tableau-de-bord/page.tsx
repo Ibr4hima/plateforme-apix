@@ -1195,15 +1195,12 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
         style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", boxShadow:"0 1px 4px rgba(0,0,0,0.05)", overflow:"hidden", cursor:loading||data.length===0?"default":"pointer", transition:"all 0.18s" }}
         onMouseEnter={e=>{ if(!loading&&data.length>0){ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)"; e.currentTarget.style.transform="translateY(-2px)"; } }}
         onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)"; e.currentTarget.style.transform="translateY(0)"; }}>
-        <div style={{ height:3, background:dim.color }}/>
         <div style={{ padding:"16px 18px" }}>
-          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:10, marginBottom:12 }}>
-            <div style={{ minWidth:0 }}>
-              <span style={{ display:"inline-block", fontSize:9.5, fontWeight:700, color:dim.color, background:`${dim.color}14`, padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.05em", marginBottom:6 }}>{dim.label}</span>
-              <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0 }}>
-                {ind.label}
-                {isLong && <span style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:5, marginLeft:8, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>Top 3</span>}
-              </p>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, marginBottom:14 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0, flexWrap:"wrap" as const }}>
+              <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0 }}>{ind.label}</p>
+              <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>{dim.label}</span>
+              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>Top 3</span>}
             </div>
             <button onClick={e=>{e.stopPropagation();onRemove();}} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB", flexShrink:0 }}><X size={13}/></button>
           </div>
