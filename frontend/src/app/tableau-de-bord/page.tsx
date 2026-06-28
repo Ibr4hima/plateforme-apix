@@ -9,7 +9,7 @@ import {
   SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CATALOGUE, KPIS_DISPONIBLES, CATEGORIES, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
+import { CATALOGUE, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
 import { AnalyticTable } from "@/components/dashboard/DataTable";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -20,7 +20,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 // ─── Persistance ──────────────────────────────────────────────────────────────
-const STORAGE_KEY = "apix_dashboard_v3";
+const STORAGE_KEY = "apix_dashboard_v4";
 interface DashConfig {
   kpisActifs: string[];
   cards: CardConfig[];
@@ -1060,18 +1060,46 @@ function TableCard({ card, onRemove }: {
   );
 }
 
+// ─── Indicateurs (KPI) : cascade dimension → indicateur ──────────────────────
+const KPI_DIMENSIONS = [
+  { key:"global",    label:"Global",               color:"#ca631f" },
+  { key:"secteurs",  label:"Secteurs d'activités",  color:"#004f91" },
+  { key:"branches",  label:"Branches d'activités",  color:"#188038" },
+  { key:"activites", label:"Activités",             color:"#7c3aed" },
+  { key:"pays",      label:"Pays",                  color:"#0891b2" },
+];
+const KPI_INDICATEURS = [
+  { key:"ciblees",    label:"Entreprises ciblées" },
+  { key:"contactees", label:"Entreprises contactées" },
+  { key:"installees", label:"Entreprises installées" },
+  { key:"duree",      label:"Durée de transformation" },
+  { key:"taux",       label:"Taux de transformation" },
+];
+function kpiMeta(id:string) {
+  const [dimKey, indKey] = id.split("__");
+  const dim = KPI_DIMENSIONS.find(d=>d.key===dimKey);
+  const ind = KPI_INDICATEURS.find(i=>i.key===indKey);
+  if(!dim||!ind) return null;
+  return { dimLabel:dim.label, indLabel:ind.label, color:dim.color, indKey };
+}
+
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 function KPICard({ kpiId, value }: { kpiId:string; value:any }) {
-  const def=KPIS_DISPONIBLES.find(k=>k.id===kpiId);
-  if(!def) return null;
-  const displayValue=kpiId==="intentions_usd"?`${(Number(value)/1_000_000||0).toFixed(1)} M$`:Number(value||0).toLocaleString("fr-FR");
+  const meta=kpiMeta(kpiId);
+  if(!meta) return null;
+  const display = (value==null||value==="")
+    ? "—"
+    : meta.indKey==="taux"   ? `${value} %`
+    : meta.indKey==="duree"  ? `${value} j`
+    : Number(value).toLocaleString("fr-FR");
   return (
     <div
-      style={{background:"#fff",borderRadius:12,padding:"13px 14px",border:"1px solid #E8E5E3",borderLeft:`3px solid ${def.color}`,cursor:"default",transition:"all 0.15s"}}
+      style={{background:"#fff",borderRadius:12,padding:"13px 14px",border:"1px solid #E8E5E3",borderLeft:`3px solid ${meta.color}`,cursor:"default",transition:"all 0.15s"}}
       onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)";}}
       onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";}}>
-      <p style={{fontSize:9,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.07em",marginBottom:6,lineHeight:1.4}}>{def.label}</p>
-      <p style={{fontSize:"1.1rem",fontWeight:800,color:def.color,lineHeight:1}}>{displayValue}</p>
+      <p style={{fontSize:9,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.07em",marginBottom:6,lineHeight:1.4}}>{meta.indLabel}</p>
+      <p style={{fontSize:"1.1rem",fontWeight:800,color:meta.color,lineHeight:1}}>{display}</p>
+      <p style={{fontSize:9,fontWeight:700,color:meta.color,textTransform:"uppercase" as const,letterSpacing:"0.06em",marginTop:5,opacity:0.8}}>{meta.dimLabel}</p>
     </div>
   );
 }
@@ -1121,9 +1149,10 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
 
   const isResizing = useRef(false);
   const [search, setSearch] = useState("");
+  const [openDims, setOpenDims] = useState<Set<string>>(new Set(["global"]));
+  const toggleDim = (k:string) => setOpenDims(prev=>{ const n=new Set(prev); n.has(k)?n.delete(k):n.add(k); return n; });
   const q = search.trim().toLowerCase();
 
-  const kpiFiltered    = KPIS_DISPONIBLES.filter(k=>!q||k.label.toLowerCase().includes(q));
   const vizFiltered    = CATALOGUE.filter(v=>!q||v.titre.toLowerCase().includes(q));
   const tablesFiltered = TABLES_ANALYTIQUES.filter(t=>!q||t.titre.toLowerCase().includes(q)||t.description.toLowerCase().includes(q));
 
@@ -1169,18 +1198,50 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
         <div style={{ padding:"8px 16px 16px", overflowY:"auto" as const, flex:1 }}>
           {onglet==="viz"&&<>
             <SbSection title="Indicateurs (KPI)" count={config.kpisActifs.length}>
-              {kpiFiltered.length===0 ? <SbEmpty/> : kpiFiltered.map(kpi=>{
-                const active=config.kpisActifs.includes(kpi.id);
-                const disabled=!active&&config.kpisActifs.length>=5;
-                return (
-                  <div key={kpi.id} className="sb-item" onClick={()=>{ if(!disabled) onToggleKPI(kpi.id); }}
-                    style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1 }}>
-                    <SbCheck active={active}/>
-                    <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?600:400, flex:1 }}>{kpi.label}</span>
-                  </div>
-                );
-              })}
-              {config.kpisActifs.length>=5 && <p style={{ fontSize:10.5, color:"#9aa5b4", padding:"4px 8px 0" }}>Maximum 5 indicateurs.</p>}
+              {(()=>{
+                const dims = KPI_DIMENSIONS.map(dim=>{
+                  const indics = KPI_INDICATEURS.filter(ind=>!q
+                    || ind.label.toLowerCase().includes(q)
+                    || dim.label.toLowerCase().includes(q));
+                  return { dim, indics };
+                }).filter(d=>d.indics.length>0);
+                if (dims.length===0) return <SbEmpty/>;
+                return dims.map(({dim, indics})=>{
+                  const open = openDims.has(dim.key) || !!q;
+                  return (
+                    <div key={dim.key} style={{ marginBottom:1 }}>
+                      {/* Dimension (repliable) */}
+                      <div style={{ display:"flex", alignItems:"center", gap:2 }}>
+                        <button onClick={()=>toggleDim(dim.key)} style={{ background:"none", border:"none", cursor:"pointer", padding:2, display:"flex", flexShrink:0 }}>
+                          <ChevronDown size={12} style={{ color:"#9aa5b4", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                        </button>
+                        <div onClick={()=>toggleDim(dim.key)} style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding:"6px 6px", borderRadius:7, cursor:"pointer" }} className="sb-item">
+                          <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${dim.color}`, flexShrink:0 }}/>
+                          <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e" }}>{dim.label}</span>
+                        </div>
+                      </div>
+                      {/* Indicateurs (feuilles) */}
+                      {open && (
+                        <div style={{ marginLeft:16, borderLeft:"1.5px solid #EDEAE6", paddingLeft:4, marginTop:1 }}>
+                          {indics.map(ind=>{
+                            const id = `${dim.key}__${ind.key}`;
+                            const active = config.kpisActifs.includes(id);
+                            const disabled = !active && config.kpisActifs.length>=5;
+                            return (
+                              <div key={id} className="sb-item" onClick={()=>{ if(!disabled) onToggleKPI(id); }}
+                                style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1 }}>
+                                <SbCheck active={active}/>
+                                <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?600:400 }}>{ind.label}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
+              {config.kpisActifs.length>=5 && <p style={{ fontSize:10.5, color:"#9aa5b4", padding:"6px 8px 0" }}>Maximum 5 indicateurs.</p>}
             </SbSection>
             <div style={{ height:1, background:"#F2F0EF", marginBottom:16 }}/>
             <SbSection title="Visualisations" count={config.cards.length}>
