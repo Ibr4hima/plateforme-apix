@@ -1879,6 +1879,12 @@ export default function ProspectsPage() {
                       activite?.label === "À recontacter"
                         ? (lastCycle && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Cycle {lastCycle.cycle_num} : conclu le {lastCycle.conclu_le ? fmtJour(lastCycle.conclu_le) : "—"}</span></div>)
                         : (dernierEch && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Dernier échange : {fmtJour(dernierEch.date_echange)}</span></div>)
+                    ) : onglet==="precedents" ? (
+                      p.issue==="installe"
+                        ? (p.issue_conclu_le && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#0D652D",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Accord conclu le {fmtJour(p.issue_conclu_le)}</span></div>)
+                        : p.issue==="decline"
+                          ? (p.issue_conclu_le && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#6b7280",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Décliné le {fmtJour(p.issue_conclu_le)}</span></div>)
+                          : null
                     ) : (
                       p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>
                     )}
