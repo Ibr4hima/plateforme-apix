@@ -1068,7 +1068,7 @@ const GLOBAL_KPIS: { key:string; label:string; statKey:string; unit?:"jours"|"%"
   { key:"installees", label:"Entreprises installées",          statKey:"global_installees" },
   { key:"ciblees",    label:"Entreprises ciblées",             statKey:"global_ciblees" },
   { key:"contactees", label:"Entreprises en contact",          statKey:"global_contactees" },
-  { key:"duree",      label:"Durée de transformation moyenne", statKey:"global_duree",  unit:"jours" },
+  { key:"duree",      label:"Durée de transformation",         statKey:"global_duree",  unit:"jours" },
   { key:"taux",       label:"Taux de transformation",          statKey:"global_taux",   unit:"%" },
 ];
 
@@ -1076,16 +1076,20 @@ const GLOBAL_KPIS: { key:string; label:string; statKey:string; unit?:"jours"|"%"
 function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any }) {
   const num = Number(value);
   const hasVal = value!=null && value!=="" && !Number.isNaN(num);
+  const nb = hasVal ? num.toLocaleString("fr-FR") : "—";
   const display = !hasVal ? "—"
-    : def.unit==="%"     ? `${num.toLocaleString("fr-FR")} %`
-    : def.unit==="jours" ? `${num.toLocaleString("fr-FR")} j`
-    : num.toLocaleString("fr-FR");
+    : def.unit==="%"     ? `${nb} %`
+    : def.unit==="jours" ? `${nb} jours`
+    : nb;
   return (
-    <div style={{ background:"#fff", borderRadius:14, padding:"16px 18px", border:"1px solid #E8E5E3", borderLeft:`4px solid ${KPI_ACCENT}`, transition:"box-shadow 0.15s" }}
-      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.07)";}}
-      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";}}>
-      <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.06em", marginBottom:10, lineHeight:1.4, minHeight:30 }}>{def.label}</p>
-      <p style={{ fontSize:"1.5rem", fontWeight:800, color:KPI_ACCENT, lineHeight:1 }}>{display}</p>
+    <div style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:`3px solid ${KPI_ACCENT}`, transition:"all 0.15s" }}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)";}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";}}>
+      <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{def.label}</p>
+      <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
+        <p style={{ fontSize:"1.1rem", fontWeight:800, color:KPI_ACCENT, lineHeight:1 }}>{display}</p>
+        {def.unit==="jours" && <span style={{ fontSize:8.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:5, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>moy.</span>}
+      </div>
     </div>
   );
 }
@@ -1409,7 +1413,7 @@ export default function TableauDeBordPage() {
           {/* ── Onglet Visualisation ─────────────────────────────────────────── */}
           {onglet==="viz" && (<>
             {/* Indicateurs Global fixes */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:14,marginBottom:28}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
               {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
             </div>
 
