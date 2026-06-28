@@ -1060,46 +1060,32 @@ function TableCard({ card, onRemove }: {
   );
 }
 
-// ─── Indicateurs (KPI) : cascade dimension → indicateur ──────────────────────
-const KPI_DIMENSIONS = [
-  { key:"global",    label:"Global",               color:"#ca631f" },
-  { key:"secteurs",  label:"Secteurs d'activités",  color:"#004f91" },
-  { key:"branches",  label:"Branches d'activités",  color:"#188038" },
-  { key:"activites", label:"Activités",             color:"#7c3aed" },
-  { key:"pays",      label:"Pays",                  color:"#0891b2" },
+// ─── Indicateurs Global (fixes, toujours affichés) ───────────────────────────
+// Affichage façon IDE. Les valeurs viennent de /dashboard/stats (statKey) ;
+// en attendant le branchement des calculs, on affiche « — ».
+const KPI_ACCENT = "#004f91";
+const GLOBAL_KPIS: { key:string; label:string; statKey:string; unit?:"jours"|"%" }[] = [
+  { key:"installees", label:"Entreprises installées",          statKey:"global_installees" },
+  { key:"ciblees",    label:"Entreprises ciblées",             statKey:"global_ciblees" },
+  { key:"contactees", label:"Entreprises en contact",          statKey:"global_contactees" },
+  { key:"duree",      label:"Durée de transformation moyenne", statKey:"global_duree",  unit:"jours" },
+  { key:"taux",       label:"Taux de transformation",          statKey:"global_taux",   unit:"%" },
 ];
-const KPI_INDICATEURS = [
-  { key:"ciblees",    label:"Entreprises ciblées" },
-  { key:"contactees", label:"Entreprises contactées" },
-  { key:"installees", label:"Entreprises installées" },
-  { key:"duree",      label:"Durée de transformation" },
-  { key:"taux",       label:"Taux de transformation" },
-];
-function kpiMeta(id:string) {
-  const [dimKey, indKey] = id.split("__");
-  const dim = KPI_DIMENSIONS.find(d=>d.key===dimKey);
-  const ind = KPI_INDICATEURS.find(i=>i.key===indKey);
-  if(!dim||!ind) return null;
-  return { dimLabel:dim.label, indLabel:ind.label, color:dim.color, indKey };
-}
 
-// ─── KPI Card ─────────────────────────────────────────────────────────────────
-function KPICard({ kpiId, value }: { kpiId:string; value:any }) {
-  const meta=kpiMeta(kpiId);
-  if(!meta) return null;
-  const display = (value==null||value==="")
-    ? "—"
-    : meta.indKey==="taux"   ? `${value} %`
-    : meta.indKey==="duree"  ? `${value} j`
-    : Number(value).toLocaleString("fr-FR");
+// ─── KPI Card (fixe, style IDE) ──────────────────────────────────────────────
+function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any }) {
+  const num = Number(value);
+  const hasVal = value!=null && value!=="" && !Number.isNaN(num);
+  const display = !hasVal ? "—"
+    : def.unit==="%"     ? `${num.toLocaleString("fr-FR")} %`
+    : def.unit==="jours" ? `${num.toLocaleString("fr-FR")} j`
+    : num.toLocaleString("fr-FR");
   return (
-    <div
-      style={{background:"#fff",borderRadius:12,padding:"13px 14px",border:"1px solid #E8E5E3",borderLeft:`3px solid ${meta.color}`,cursor:"default",transition:"all 0.15s"}}
-      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)";}}
-      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";}}>
-      <p style={{fontSize:9,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.07em",marginBottom:6,lineHeight:1.4}}>{meta.indLabel}</p>
-      <p style={{fontSize:"1.1rem",fontWeight:800,color:meta.color,lineHeight:1}}>{display}</p>
-      <p style={{fontSize:9,fontWeight:700,color:meta.color,textTransform:"uppercase" as const,letterSpacing:"0.06em",marginTop:5,opacity:0.8}}>{meta.dimLabel}</p>
+    <div style={{ background:"#fff", borderRadius:14, padding:"16px 18px", border:"1px solid #E8E5E3", borderLeft:`4px solid ${KPI_ACCENT}`, transition:"box-shadow 0.15s" }}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.07)";}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";}}>
+      <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.06em", marginBottom:10, lineHeight:1.4, minHeight:30 }}>{def.label}</p>
+      <p style={{ fontSize:"1.5rem", fontWeight:800, color:KPI_ACCENT, lineHeight:1 }}>{display}</p>
     </div>
   );
 }
@@ -1137,10 +1123,10 @@ function SbEmpty() {
 }
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
+function Sidebar({ config, onToggleTable, onReset,
   sidebarOpen, setSidebarOpen, sidebarWidth, setSidebarWidth, onglet }: {
-  config: DashConfig; onToggleCard:(viz:Visualisation)=>void;
-  onToggleTable:(tableId:string)=>void; onToggleKPI:(id:string)=>void;
+  config: DashConfig;
+  onToggleTable:(tableId:string)=>void;
   onReset:()=>void;
   sidebarOpen: boolean; setSidebarOpen:(v:boolean)=>void;
   sidebarWidth: number; setSidebarWidth:(v:number)=>void;
@@ -1149,8 +1135,6 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
 
   const isResizing = useRef(false);
   const [search, setSearch] = useState("");
-  const [openDims, setOpenDims] = useState<Set<string>>(new Set(["global"]));
-  const toggleDim = (k:string) => setOpenDims(prev=>{ const n=new Set(prev); n.has(k)?n.delete(k):n.add(k); return n; });
   const q = search.trim().toLowerCase();
 
   const tablesFiltered = TABLES_ANALYTIQUES.filter(t=>!q||t.titre.toLowerCase().includes(q)||t.description.toLowerCase().includes(q));
@@ -1195,55 +1179,6 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
 
         {/* Sections */}
         <div style={{ padding:"8px 16px 16px", overflowY:"auto" as const, flex:1 }}>
-          {onglet==="viz"&&<>
-            <SbSection title="Indicateurs (KPI)" count={config.kpisActifs.length}>
-              {(()=>{
-                const dims = KPI_DIMENSIONS.map(dim=>{
-                  const indics = KPI_INDICATEURS.filter(ind=>!q
-                    || ind.label.toLowerCase().includes(q)
-                    || dim.label.toLowerCase().includes(q));
-                  return { dim, indics };
-                }).filter(d=>d.indics.length>0);
-                if (dims.length===0) return <SbEmpty/>;
-                return dims.map(({dim, indics})=>{
-                  const open = openDims.has(dim.key) || !!q;
-                  return (
-                    <div key={dim.key} style={{ marginBottom:1 }}>
-                      {/* Dimension (repliable) */}
-                      <div style={{ display:"flex", alignItems:"center", gap:2 }}>
-                        <button onClick={()=>toggleDim(dim.key)} style={{ background:"none", border:"none", cursor:"pointer", padding:2, display:"flex", flexShrink:0 }}>
-                          <ChevronDown size={12} style={{ color:"#9aa5b4", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
-                        </button>
-                        <div onClick={()=>toggleDim(dim.key)} style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding:"6px 6px", borderRadius:7, cursor:"pointer" }} className="sb-item">
-                          <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${dim.color}`, flexShrink:0 }}/>
-                          <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e" }}>{dim.label}</span>
-                        </div>
-                      </div>
-                      {/* Indicateurs (feuilles) */}
-                      {open && (
-                        <div style={{ marginLeft:16, borderLeft:"1.5px solid #EDEAE6", paddingLeft:4, marginTop:1 }}>
-                          {indics.map(ind=>{
-                            const id = `${dim.key}__${ind.key}`;
-                            const active = config.kpisActifs.includes(id);
-                            const disabled = !active && config.kpisActifs.length>=5;
-                            return (
-                              <div key={id} className="sb-item" onClick={()=>{ if(!disabled) onToggleKPI(id); }}
-                                style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1 }}>
-                                <SbCheck active={active}/>
-                                <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?600:400 }}>{ind.label}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                });
-              })()}
-              {config.kpisActifs.length>=5 && <p style={{ fontSize:10.5, color:"#9aa5b4", padding:"6px 8px 0" }}>Maximum 5 indicateurs.</p>}
-            </SbSection>
-          </>}
-
           {onglet==="tables"&&
             <SbSection title="Tableaux analytiques" count={config.tableCards.length}>
               {tablesFiltered.length===0 ? <SbEmpty/> : tablesFiltered.map(t=>{
@@ -1354,57 +1289,32 @@ export default function TableauDeBordPage() {
 
       {/* ── Contenu ──────────────────────────────────────────────────────────── */}
       <div style={{display:"flex",alignItems:"flex-start"}}>
-        <Sidebar config={config} onToggleCard={toggleCard} onToggleTable={toggleTable} onToggleKPI={toggleKPI}
+        {onglet==="tables" && <Sidebar config={config} onToggleTable={toggleTable}
           onReset={resetConfig}
           sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
           sidebarWidth={sidebarWidth} setSidebarWidth={setSidebarWidth}
-          onglet={onglet}/>
-        <main style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
+          onglet={onglet}/>}
+        <main style={{flex:1,minWidth:0,padding:"36px 40px 80px",maxWidth:onglet==="viz"?1400:undefined,margin:onglet==="viz"?"0 auto":undefined}}>
 
           {/* En-tête de contenu */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap" as const,gap:12}}>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <div style={{width:10,height:10,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-              <h2 style={{fontWeight:800,fontSize:"1.3rem",color:"#1a1a2e",margin:0}}>{onglet==="viz"?"Visualisation de données":"Tableaux analytiques"}</h2>
-              <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.10)",padding:"4px 12px",borderRadius:999}}>
-                {onglet==="viz"
-                  ? `${config.cards.length} graphique${config.cards.length>1?"s":""}`
-                  : `${config.tableCards.length} tableau${config.tableCards.length>1?"x":""}`}
-              </span>
+              <h2 style={{fontWeight:800,fontSize:"1.3rem",color:"#1a1a2e",margin:0}}>{onglet==="viz"?"Indicateurs clés":"Tableaux analytiques"}</h2>
+              {onglet==="tables" && <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.10)",padding:"4px 12px",borderRadius:999}}>
+                {`${config.tableCards.length} tableau${config.tableCards.length>1?"x":""}`}
+              </span>}
             </div>
             <p style={{fontSize:12.5,color:"#9aa5b4",margin:0}}>
-              {onglet==="viz"?"Sélectionnez indicateurs et graphiques dans le filtre":"Sélectionnez des tableaux dans le filtre"}
+              {onglet==="viz"?"Vue d'ensemble de la transformation des investisseurs":"Sélectionnez des tableaux dans le filtre"}
             </p>
           </div>
 
-          {/* KPIs — onglet viz uniquement */}
-          {onglet==="viz"&&<div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
-            {config.kpisActifs.map(id=><KPICard key={id} kpiId={id} value={kpis[id]}/>)}
-            {Array.from({length:Math.max(0,5-config.kpisActifs.length)}).map((_,i)=>(
-              <div key={`empty-${i}`} style={{background:"#fff",borderRadius:12,padding:"13px 14px",border:"1.5px dashed #E8E5E3",display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:4,minHeight:72}}>
-                <span style={{fontSize:20,color:"#C5BFBB",lineHeight:1}}>+</span>
-                <span style={{fontSize:10,color:"#C5BFBB",textAlign:"center" as const,lineHeight:1.5}}>Choisir dans<br/>le filtre</span>
-              </div>
-            ))}
-          </div>}
-
-          {/* ── Onglet Visualisation de données ────────────────────────────── */}
+          {/* ── Onglet Visualisation : indicateurs Global fixes ─────────────── */}
           {onglet==="viz" && (
-            config.cards.length===0?(
-              <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"80px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
-                <BarChart2 size={48} style={{color:"#E8E5E3",marginBottom:16}}/>
-                <p style={{fontSize:16,fontWeight:700,color:"#4a5568",marginBottom:8}}>Aucune visualisation</p>
-                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:360}}>Utilisez la barre latérale pour ajouter des graphiques et visualisations.</p>
-              </div>
-            ):(
-              <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,alignItems:"start"}}>
-                {config.cards.map(card=>{
-                  const viz=CATALOGUE.find(v=>v.id===card.vizId);
-                  if(!viz) return null;
-                  return <VizCard key={card.id} card={card} viz={viz} onRemove={()=>removeCard(card.id)}/>;
-                })}
-              </div>
-            )
+            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:14}}>
+              {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
+            </div>
           )}
 
           {/* ── Onglet Tableaux analytiques ─────────────────────────────────── */}
