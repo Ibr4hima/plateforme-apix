@@ -150,7 +150,7 @@ function BarV({ data, height, color="#004f91" }: { data:any[]; height:number; co
   return <div ref={cRef} style={{width:"100%"}}><svg ref={ref} width={w} height={height}/></div>;
 }
 
-function DonutChart({ data, size }: { data:any[]; size:number }) {
+function DonutChart({ data, size, palette=COLORS }: { data:any[]; size:number; palette?:string[] }) {
   const ref=useRef<SVGSVGElement>(null);
   useEffect(()=>{
     if(!ref.current||!data.length) return;
@@ -161,7 +161,7 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
     const arc=d3.arc<d3.PieArcDatum<any>>().innerRadius(R*.58).outerRadius(R);
     const arcH=d3.arc<d3.PieArcDatum<any>>().innerRadius(R*.58).outerRadius(R+5);
     g.selectAll("path").data(pie(data)).join("path")
-      .attr("fill",(_,i)=>COLORS[i%COLORS.length]).attr("opacity",.85).attr("d",arc as any)
+      .attr("fill",(_,i)=>palette[i%palette.length]).attr("opacity",.85).attr("d",arc as any)
       .style("cursor","pointer")
       .on("mouseenter",function(_,d){d3.select(this).attr("d",arcH(d) as string).attr("opacity",1);})
       .on("mouseleave",function(_,d){d3.select(this).attr("d",arc(d) as string).attr("opacity",.85);})
@@ -180,7 +180,7 @@ function DonutChart({ data, size }: { data:any[]; size:number }) {
         {data.slice(0,7).map((it,i)=>(
           <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <div style={{width:8,height:8,borderRadius:2,background:COLORS[i%COLORS.length],flexShrink:0}}/>
+              <div style={{width:8,height:8,borderRadius:2,background:palette[i%palette.length],flexShrink:0}}/>
               <span style={{fontSize:11,color:"#4a5568"}}>{String(it.label)}</span>
             </div>
             <span style={{fontSize:11,fontWeight:700,color:"#1a1a2e"}}>{Number(it.valeur).toLocaleString("fr-FR")}</span>
@@ -1176,15 +1176,18 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const { dim, ind } = meta;
   const titre = `${ind.label} — ${dim.label}`;
   // Dimensions à forte cardinalité : top 3 en vignette, top 7 en grand
+  const isSecteurs = dim.key==="secteurs";
   const isLong    = dim.key==="branches" || dim.key==="activites";
   const cardData  = isLong ? data.slice(0,3) : data;
   const modalData = isLong ? data.slice(0,7) : data;
-  const cardH  = 26 + Math.max(1, cardData.length)*38 + 8;
+  const cardH  = isSecteurs ? 175 : 26 + Math.max(1, cardData.length)*38 + 8;
   const modalH = 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
-    : cardData.length===0 ? <EmptyState h={h}/> : <HBarAxisChart data={cardData} height={h} palette={INDIC_PALETTE}/>;
+    : cardData.length===0 ? <EmptyState h={h}/>
+    : isSecteurs ? <DonutChart data={cardData} size={150} palette={INDIC_PALETTE}/>
+    : <HBarAxisChart data={cardData} height={h} palette={INDIC_PALETTE}/>;
 
   return (
     <>
@@ -1209,7 +1212,9 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
       </div>
 
       <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top 7`:titre} vizId={id}>
-        <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={INDIC_PALETTE}/>
+        {isSecteurs
+          ? <DonutChart data={modalData} size={260} palette={INDIC_PALETTE}/>
+          : <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={INDIC_PALETTE}/>}
       </VizModal>
     </>
   );
