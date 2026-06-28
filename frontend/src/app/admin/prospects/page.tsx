@@ -401,7 +401,6 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
     if (!form.nom.trim()) { setError("Le nom est obligatoire"); return; }
     if (!form.telephones.filter(Boolean).length) { setError("Au moins un numéro de téléphone est obligatoire"); return; }
     if (!form.mails.filter(Boolean).length) { setError("Au moins un email est obligatoire"); return; }
-    if (!form.siteweb.trim()) { setError("Le site web est obligatoire pour une personne morale"); return; }
     for (const pf of form.points_focaux.filter(p=>p.nom.trim())) {
       if (!pf.telephones.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un téléphone est obligatoire`); return; }
       if (!pf.mails.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un email est obligatoire`); return; }
@@ -487,7 +486,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
                   <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                     <div>
-                      <label style={LS}>Site web *</label>
+                      <label style={LS}>Site web</label>
                       <input value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="ex. exemple.com" style={IS}/>
                     </div>
                     <div>
@@ -577,7 +576,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
               </ToggleField>
 
               <ToggleField
-                label="Adéquation profil / destination Sénégal"
+                label="Adéquation Profil Investisseur / Secteurs prioritaires"
                 desc="Le profil de l'investisseur correspond aux opportunités et secteurs prioritaires du Sénégal"
                 value={form.objet_adequation_senegal} onChange={v=>upd("objet_adequation_senegal",v)}>
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:12, marginTop:8 }}>
@@ -590,7 +589,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
                     />
                   </div>
                   <div>
-                    <label style={LS}>Détails de l'adéquation</label>
+                    <label style={LS}>Commentaires</label>
                     <div style={{ minHeight:120 }}>
                       <RichTextEditor value={form.objet_adequation_details} onChange={v=>upd("objet_adequation_details",v)}/>
                     </div>
