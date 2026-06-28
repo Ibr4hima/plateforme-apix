@@ -63,7 +63,7 @@ function detectChartType(data: any[]): ChartType {
 }
 
 // ─── Graphiques d3 ────────────────────────────────────────────────────────────
-function BarH({ data, height }: { data:any[]; height:number }) {
+function BarH({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
   const ref=useRef<SVGSVGElement>(null); const cRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(400);
   useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
   useEffect(()=>{
@@ -74,7 +74,7 @@ function BarH({ data, height }: { data:any[]; height:number }) {
     const x=d3.scaleLinear().domain([0,d3.max(data,d=>d.valeur)||1]).range([0,W]);
     const y=d3.scaleBand().domain(data.map(d=>String(d.label))).range([0,H]).padding(0.28);
     g.selectAll("rect").data(data).join("rect").attr("x",0).attr("y",d=>y(String(d.label))??0)
-      .attr("height",y.bandwidth()).attr("fill",(_,i)=>COLORS[i%COLORS.length]).attr("opacity",0.85).attr("width",0)
+      .attr("height",y.bandwidth()).attr("fill",(_,i)=>palette[i%palette.length]).attr("opacity",0.9).attr("width",0)
       .transition().duration(450).delay((_,i)=>i*35).attr("width",d=>x(d.valeur));
     g.selectAll(".lbl").data(data).join("text").attr("class","lbl").attr("x",-7)
       .attr("y",d=>(y(String(d.label))??0)+y.bandwidth()/2).attr("dy","0.35em")
@@ -1117,6 +1117,9 @@ function indicMeta(id:string) {
   return { dim, ind };
 }
 
+// Palette des visualisations du tableau de bord
+const INDIC_PALETTE = ["#ca631f", "#004f91", "#0A7C6E"];
+
 // ─── Carte visualisation d'un indicateur ─────────────────────────────────────
 function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const meta = indicMeta(id);
@@ -1140,7 +1143,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
 
   const body = (h:number) => loading
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
-    : data.length===0 ? <EmptyState h={h}/> : <BarH data={data} height={h}/>;
+    : data.length===0 ? <EmptyState h={h}/> : <BarH data={data} height={h} palette={INDIC_PALETTE}/>;
 
   return (
     <>
@@ -1162,7 +1165,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
       </div>
 
       <VizModal open={open} onClose={()=>setOpen(false)} titre={titre} vizId={id}>
-        <BarH data={data} height={Math.max(360, data.length*46)}/>
+        <BarH data={data} height={Math.max(360, data.length*46)} palette={INDIC_PALETTE}/>
       </VizModal>
     </>
   );
