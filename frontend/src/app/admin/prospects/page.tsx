@@ -1571,6 +1571,11 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                           ))}
                                         </div>
                                       )}
+                                      {/* Pied : horodatage serveur */}
+                                      <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
+                                        <Clock size={11} style={{ flexShrink:0 }}/>
+                                        <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}</span>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
@@ -1668,6 +1673,11 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                           ))}
                                         </div>
                                       )}
+                                      {/* Pied : horodatage serveur */}
+                                      <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
+                                        <Clock size={11} style={{ flexShrink:0 }}/>
+                                        <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}</span>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
