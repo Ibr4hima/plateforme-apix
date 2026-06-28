@@ -1233,7 +1233,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
           {onglet==="viz"&&
             <SbSection title="Indicateurs" count={config.kpisActifs.length}>
               {(()=>{
-                const dims = KPI_DIMENSIONS.map(dim=>{
+                const dims = KPI_DIMENSIONS.filter(d=>d.key!=="global").map(dim=>{
                   const indics = KPI_INDICATEURS.filter(ind=>!q
                     || ind.label.toLowerCase().includes(q)
                     || dim.label.toLowerCase().includes(q));
@@ -1403,9 +1403,7 @@ export default function TableauDeBordPage() {
                 {`${config.tableCards.length} tableau${config.tableCards.length>1?"x":""}`}
               </span>}
             </div>
-            <p style={{fontSize:12.5,color:"#9aa5b4",margin:0}}>
-              {onglet==="viz"?"Vue d'ensemble de la transformation des investisseurs":"Sélectionnez des tableaux dans le filtre"}
-            </p>
+            {onglet==="tables" && <p style={{fontSize:12.5,color:"#9aa5b4",margin:0}}>Sélectionnez des tableaux dans le filtre</p>}
           </div>
 
           {/* ── Onglet Visualisation ─────────────────────────────────────────── */}
