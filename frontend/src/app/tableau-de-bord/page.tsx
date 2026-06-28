@@ -1153,7 +1153,6 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
   const toggleDim = (k:string) => setOpenDims(prev=>{ const n=new Set(prev); n.has(k)?n.delete(k):n.add(k); return n; });
   const q = search.trim().toLowerCase();
 
-  const vizFiltered    = CATALOGUE.filter(v=>!q||v.titre.toLowerCase().includes(q));
   const tablesFiltered = TABLES_ANALYTIQUES.filter(t=>!q||t.titre.toLowerCase().includes(q)||t.description.toLowerCase().includes(q));
 
   const startResize = (e: React.MouseEvent) => {
@@ -1242,19 +1241,6 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
                 });
               })()}
               {config.kpisActifs.length>=5 && <p style={{ fontSize:10.5, color:"#9aa5b4", padding:"6px 8px 0" }}>Maximum 5 indicateurs.</p>}
-            </SbSection>
-            <div style={{ height:1, background:"#F2F0EF", marginBottom:16 }}/>
-            <SbSection title="Visualisations" count={config.cards.length}>
-              {vizFiltered.length===0 ? <SbEmpty/> : vizFiltered.map(viz=>{
-                const active = config.cards.some(c=>c.vizId===viz.id);
-                return (
-                  <div key={viz.id} className="sb-item" onClick={()=>onToggleCard(viz)}
-                    style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:"pointer" }}>
-                    <SbCheck active={active}/>
-                    <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?600:400, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</span>
-                  </div>
-                );
-              })}
             </SbSection>
           </>}
 
