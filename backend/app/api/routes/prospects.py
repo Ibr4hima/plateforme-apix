@@ -581,7 +581,7 @@ async def ajouter_echange(prospect_id: int, payload: dict, db: AsyncSession = De
     )
     db.add(e)
     await db.flush()
-    await db.refresh(e)
+    await db.refresh(e, attribute_names=["fichiers"])
     return echange_to_dict(e)
 
 
@@ -670,7 +670,7 @@ async def modifier_echange(echange_id: int, payload: dict, db: AsyncSession = De
         e.canal_contact = (payload["canal_contact"] or "").strip() or None
 
     await db.flush()
-    await db.refresh(e)
+    await db.refresh(e, attribute_names=["fichiers"])
     return echange_to_dict(e)
 
 
