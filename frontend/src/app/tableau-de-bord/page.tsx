@@ -4,8 +4,8 @@ import Navbar from "@/components/layout/Navbar";
 import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
 import {
-  Activity, BarChart2, Building2, Calendar,
-  DollarSign, Handshake, Layers, Loader2, MapPin,
+  Activity, BarChart2, Building2, Calendar, ChevronDown, ChevronUp,
+  DollarSign, Handshake, Layers, Loader2, MapPin, RotateCcw, Search,
   SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -1076,6 +1076,38 @@ function KPICard({ kpiId, value }: { kpiId:string; value:any }) {
   );
 }
 
+// ─── Section repliable (style IDE) ────────────────────────────────────────────
+function SbSection({ title, count, accent="#ca631f", defaultOpen=true, children }:{
+  title:string; count?:number; accent?:string; defaultOpen?:boolean; children:React.ReactNode;
+}) {
+  const [open,setOpen]=useState(defaultOpen);
+  const on = (count??0)>0;
+  return (
+    <div style={{ marginBottom:16 }}>
+      <button onClick={()=>setOpen(o=>!o)}
+        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"none", border:"none", cursor:"pointer", padding:"4px 0", marginBottom:open?8:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          {on&&<span style={{ width:6, height:6, borderRadius:"50%", background:accent }}/>}
+          <span style={{ fontSize:11, fontWeight:700, color:on?accent:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{title}</span>
+          {on&&<span style={{ fontSize:10, fontWeight:700, color:accent, background:`${accent}26`, padding:"1px 6px", borderRadius:999 }}>{count}</span>}
+        </div>
+        {open?<ChevronUp size={13} style={{ color:"#9aa5b4" }}/>:<ChevronDown size={13} style={{ color:"#9aa5b4" }}/>}
+      </button>
+      {open&&children}
+    </div>
+  );
+}
+
+const SbCheck = ({ active }:{ active:boolean }) => (
+  <div style={{ width:14, height:14, borderRadius:4, border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+    {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+  </div>
+);
+
+function SbEmpty() {
+  return <p style={{ fontSize:12, color:"#C5BFBB", textAlign:"center" as const, padding:"10px 0" }}>Aucun résultat</p>;
+}
+
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
   sidebarOpen, setSidebarOpen, sidebarWidth, setSidebarWidth, onglet }: {
@@ -1087,31 +1119,34 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
   onglet: "viz"|"tables";
 }) {
 
-  const isResizing                     = useRef(false);
+  const isResizing = useRef(false);
+  const [search, setSearch] = useState("");
+  const q = search.trim().toLowerCase();
 
-  const filtered       = CATALOGUE;
-  const filteredTables = TABLES_ANALYTIQUES;
+  const kpiFiltered    = KPIS_DISPONIBLES.filter(k=>!q||k.label.toLowerCase().includes(q));
+  const vizFiltered    = CATALOGUE.filter(v=>!q||v.titre.toLowerCase().includes(q));
+  const tablesFiltered = TABLES_ANALYTIQUES.filter(t=>!q||t.titre.toLowerCase().includes(q)||t.description.toLowerCase().includes(q));
 
   const startResize = (e: React.MouseEvent) => {
     isResizing.current = true;
     const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
+    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(220, Math.min(520, startW + ev.clientX - startX))); };
     const onUp   = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
   const hasAdded = config.kpisActifs.length>0||config.cards.length>0||config.tableCards.length>0;
-  const nbActifs = (config.kpisActifs.length>0?1:0)+(config.cards.length>0?1:0)+(config.tableCards.length>0?1:0);
+  const nbActifs = config.kpisActifs.length+config.cards.length+config.tableCards.length;
 
   return (
-    <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 122px)", overflowY:"auto" as const, position:"sticky" as const, top:122, display:"flex", flexDirection:"column" as const }}>
-      <style>{`::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#E8E5E3;border-radius:4px}.sb-item:hover{background:#F8F7F6!important}`}</style>
+    <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 122px)", position:"sticky" as const, top:122, display:"flex", flexDirection:"column" as const }}>
+      <style>{`::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#E8E5E3;border-radius:4px}.sb-item:hover{background:#F8F7F6!important}`}</style>
 
       {/* Poignée de redimensionnement */}
       {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
 
       {/* En-tête */}
-      <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
+      <div style={{ padding:sidebarOpen?"14px 16px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
         {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
         <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
           <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
@@ -1119,86 +1154,77 @@ function Sidebar({ config, onToggleCard, onToggleTable, onToggleKPI, onReset,
         </button>
       </div>
 
-      {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-
-
-        {/* KPIs — onglet viz uniquement */}
-        {onglet==="viz"&&<>
-        <div style={{ marginBottom:18 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
-            {config.kpisActifs.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.kpisActifs.length}/5</span>}
-          </div>
-          <div>
-            {KPIS_DISPONIBLES.map(kpi=>{
-              const active=config.kpisActifs.includes(kpi.id);
-              const disabled=!active&&config.kpisActifs.length>=5;
-              return (
-                <label key={kpi.id} className="sb-item" style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1 }}>
-                  <div style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                  </div>
-                  <input type="checkbox" checked={active} disabled={disabled} onChange={()=>onToggleKPI(kpi.id)} style={{ display:"none" }}/>
-                  <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?500:400, flex:1 }}>{kpi.label}</span>
-                </label>
-              );
-            })}
+      {sidebarOpen&&<>
+        {/* Recherche */}
+        <div style={{ padding:"12px 16px 6px", flexShrink:0 }}>
+          <div style={{ position:"relative" as const }}>
+            <Search size={13} style={{ position:"absolute" as const, left:10, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={onglet==="tables"?"Rechercher un tableau…":"Rechercher…"}
+              style={{ width:"100%", paddingLeft:31, paddingRight:search?28:10, paddingTop:8, paddingBottom:8, borderRadius:9, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+            {search&&<button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={12} style={{ color:"#9aa5b4" }}/></button>}
           </div>
         </div>
-        <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
 
-        {/* Visualisations */}
-        <div style={{ marginBottom:18 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-            {config.cards.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-            <span style={{ fontSize:11, fontWeight:700, color:config.cards.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Visualisation de données</span>
-            {config.cards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.cards.length}</span>}
-          </div>
-          <div>
-            {filtered.map(viz=>{
-              const active = config.cards.some(c=>c.vizId===viz.id);
-              return (
-                <label key={viz.id} className="sb-item" style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, cursor:"pointer" }}>
-                  <div onClick={()=>onToggleCard(viz)} style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
-                    {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+        {/* Sections */}
+        <div style={{ padding:"8px 16px 16px", overflowY:"auto" as const, flex:1 }}>
+          {onglet==="viz"&&<>
+            <SbSection title="Indicateurs (KPI)" count={config.kpisActifs.length}>
+              {kpiFiltered.length===0 ? <SbEmpty/> : kpiFiltered.map(kpi=>{
+                const active=config.kpisActifs.includes(kpi.id);
+                const disabled=!active&&config.kpisActifs.length>=5;
+                return (
+                  <div key={kpi.id} className="sb-item" onClick={()=>{ if(!disabled) onToggleKPI(kpi.id); }}
+                    style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1 }}>
+                    <SbCheck active={active}/>
+                    <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?600:400, flex:1 }}>{kpi.label}</span>
                   </div>
-                  <div onClick={()=>onToggleCard(viz)} style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?500:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</p>
+                );
+              })}
+              {config.kpisActifs.length>=5 && <p style={{ fontSize:10.5, color:"#9aa5b4", padding:"4px 8px 0" }}>Maximum 5 indicateurs.</p>}
+            </SbSection>
+            <div style={{ height:1, background:"#F2F0EF", marginBottom:16 }}/>
+            <SbSection title="Visualisations" count={config.cards.length}>
+              {vizFiltered.length===0 ? <SbEmpty/> : vizFiltered.map(viz=>{
+                const active = config.cards.some(c=>c.vizId===viz.id);
+                return (
+                  <div key={viz.id} className="sb-item" onClick={()=>onToggleCard(viz)}
+                    style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:"pointer" }}>
+                    <SbCheck active={active}/>
+                    <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?600:400, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{viz.titre}</span>
                   </div>
-                </label>
-              );
-            })}
-          </div>
+                );
+              })}
+            </SbSection>
+          </>}
+
+          {onglet==="tables"&&
+            <SbSection title="Tableaux analytiques" count={config.tableCards.length}>
+              {tablesFiltered.length===0 ? <SbEmpty/> : tablesFiltered.map(t=>{
+                const active = config.tableCards.some(c=>c.tableId===t.id);
+                return (
+                  <div key={t.id} className="sb-item" onClick={()=>onToggleTable(t.id)}
+                    style={{ display:"flex", alignItems:"flex-start", gap:9, padding:"8px 8px", borderRadius:8, cursor:"pointer" }}>
+                    <div style={{ marginTop:1 }}><SbCheck active={active}/></div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?600:500, lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
+                      <p style={{ fontSize:10.5, color:"#9aa5b4", lineHeight:1.4, marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </SbSection>}
         </div>
-        <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-        </>}
 
-        {/* Tableaux analytiques — onglet tables uniquement */}
-        {onglet==="tables"&&
-        <div>
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-            {config.tableCards.length>0&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-            <span style={{ fontSize:11, fontWeight:700, color:config.tableCards.length>0?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Tableaux analytiques</span>
-            {config.tableCards.length>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>{config.tableCards.length}</span>}
+        {/* Pied : réinitialiser */}
+        {hasAdded && (
+          <div style={{ padding:"12px 16px", borderTop:"1px solid #F2F0EF", flexShrink:0 }}>
+            <button onClick={onReset}
+              style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:9, padding:"9px 12px", fontSize:12, fontWeight:600, cursor:"pointer" }}>
+              <RotateCcw size={13}/> Tout réinitialiser
+            </button>
           </div>
-          <div>
-            {filteredTables.map(t=>{
-              const active = config.tableCards.some(c=>c.tableId===t.id);
-              return (
-                <label key={t.id} className="sb-item" style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, cursor:"pointer" }}>
-                  <div onClick={()=>onToggleTable(t.id)} style={{ width:13, height:13, borderRadius:3, border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
-                    {active&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                  </div>
-                  <div onClick={()=>onToggleTable(t.id)} style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?500:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
-                  </div>
-                </label>
-              );
-            })}
-          </div>
-        </div>}
-
-      </div>}
+        )}
+      </>}
     </aside>
   );
 }
@@ -1287,6 +1313,22 @@ export default function TableauDeBordPage() {
           sidebarWidth={sidebarWidth} setSidebarWidth={setSidebarWidth}
           onglet={onglet}/>
         <main style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
+
+          {/* En-tête de contenu */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap" as const,gap:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <div style={{width:10,height:10,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+              <h2 style={{fontWeight:800,fontSize:"1.3rem",color:"#1a1a2e",margin:0}}>{onglet==="viz"?"Visualisation de données":"Tableaux analytiques"}</h2>
+              <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.10)",padding:"4px 12px",borderRadius:999}}>
+                {onglet==="viz"
+                  ? `${config.cards.length} graphique${config.cards.length>1?"s":""}`
+                  : `${config.tableCards.length} tableau${config.tableCards.length>1?"x":""}`}
+              </span>
+            </div>
+            <p style={{fontSize:12.5,color:"#9aa5b4",margin:0}}>
+              {onglet==="viz"?"Sélectionnez indicateurs et graphiques dans le filtre":"Sélectionnez des tableaux dans le filtre"}
+            </p>
+          </div>
 
           {/* KPIs — onglet viz uniquement */}
           {onglet==="viz"&&<div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
