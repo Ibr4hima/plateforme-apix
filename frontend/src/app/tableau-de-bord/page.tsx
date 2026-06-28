@@ -1117,28 +1117,54 @@ function indicMeta(id:string) {
   return { dim, ind };
 }
 
-// ─── Carte visualisation d'un indicateur (placeholder) ───────────────────────
+// ─── Carte visualisation d'un indicateur ─────────────────────────────────────
 function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const meta = indicMeta(id);
+  const [data, setData]       = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen]       = useState(false);
+
+  useEffect(()=>{
+    if(!meta) return;
+    setLoading(true);
+    fetch(`${API}/dashboard/indicateur?dimension=${meta.dim.key}&indicateur=${meta.ind.key}`)
+      .then(r=>r.json()).then(d=>setData(Array.isArray(d)?d:[]))
+      .catch(()=>setData([])).finally(()=>setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[id]);
+
   if(!meta) return null;
   const { dim, ind } = meta;
+  const titre = `${ind.label} — ${dim.label}`;
+  const cardH = Math.min(300, Math.max(150, data.length*40));
+
+  const body = (h:number) => loading
+    ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
+    : data.length===0 ? <EmptyState h={h}/> : <BarH data={data} height={h}/>;
+
   return (
-    <div style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", boxShadow:"0 1px 4px rgba(0,0,0,0.05)", overflow:"hidden" }}>
-      <div style={{ height:3, background:dim.color }}/>
-      <div style={{ padding:"16px 18px" }}>
-        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:10, marginBottom:4 }}>
-          <div style={{ minWidth:0 }}>
-            <span style={{ display:"inline-block", fontSize:9.5, fontWeight:700, color:dim.color, background:`${dim.color}14`, padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.05em", marginBottom:6 }}>{dim.label}</span>
-            <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0 }}>{ind.label}</p>
+    <>
+      <div onClick={()=>!loading&&data.length>0&&setOpen(true)}
+        style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", boxShadow:"0 1px 4px rgba(0,0,0,0.05)", overflow:"hidden", cursor:loading||data.length===0?"default":"pointer", transition:"all 0.18s" }}
+        onMouseEnter={e=>{ if(!loading&&data.length>0){ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)"; e.currentTarget.style.transform="translateY(-2px)"; } }}
+        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)"; e.currentTarget.style.transform="translateY(0)"; }}>
+        <div style={{ height:3, background:dim.color }}/>
+        <div style={{ padding:"16px 18px" }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:10, marginBottom:12 }}>
+            <div style={{ minWidth:0 }}>
+              <span style={{ display:"inline-block", fontSize:9.5, fontWeight:700, color:dim.color, background:`${dim.color}14`, padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.05em", marginBottom:6 }}>{dim.label}</span>
+              <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0 }}>{ind.label}</p>
+            </div>
+            <button onClick={e=>{e.stopPropagation();onRemove();}} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB", flexShrink:0 }}><X size={13}/></button>
           </div>
-          <button onClick={onRemove} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB", flexShrink:0 }}><X size={13}/></button>
-        </div>
-        <div style={{ height:170, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:8, color:"#C5BFBB", background:"#FAFAF9", borderRadius:10, border:"1px dashed #E8E5E3", marginTop:10 }}>
-          <BarChart2 size={22} style={{ color:"#E8E5E3" }}/>
-          <span style={{ fontSize:11.5 }}>Visualisation à venir</span>
+          <div style={{ pointerEvents:"none" as const }}>{body(cardH)}</div>
         </div>
       </div>
-    </div>
+
+      <VizModal open={open} onClose={()=>setOpen(false)} titre={titre} vizId={id}>
+        <BarH data={data} height={Math.max(360, data.length*46)}/>
+      </VizModal>
+    </>
   );
 }
 
