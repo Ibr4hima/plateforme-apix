@@ -1090,6 +1090,54 @@ function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any })
   );
 }
 
+// ─── Cascade dimension → indicateur (filtre des visualisations) ──────────────
+const KPI_DIMENSIONS = [
+  { key:"global",    label:"Global",                color:"#ca631f" },
+  { key:"secteurs",  label:"Secteurs d'activités",  color:"#004f91" },
+  { key:"branches",  label:"Branches d'activités",  color:"#188038" },
+  { key:"activites", label:"Activités",             color:"#7c3aed" },
+  { key:"pays",      label:"Pays",                  color:"#0891b2" },
+];
+const KPI_INDICATEURS = [
+  { key:"ciblees",    label:"Entreprises ciblées" },
+  { key:"contactees", label:"Entreprises contactées" },
+  { key:"installees", label:"Entreprises installées" },
+  { key:"duree",      label:"Durée de transformation" },
+  { key:"taux",       label:"Taux de transformation" },
+];
+function indicMeta(id:string) {
+  const [dimKey, indKey] = id.split("__");
+  const dim = KPI_DIMENSIONS.find(d=>d.key===dimKey);
+  const ind = KPI_INDICATEURS.find(i=>i.key===indKey);
+  if(!dim||!ind) return null;
+  return { dim, ind };
+}
+
+// ─── Carte visualisation d'un indicateur (placeholder) ───────────────────────
+function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
+  const meta = indicMeta(id);
+  if(!meta) return null;
+  const { dim, ind } = meta;
+  return (
+    <div style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", boxShadow:"0 1px 4px rgba(0,0,0,0.05)", overflow:"hidden" }}>
+      <div style={{ height:3, background:dim.color }}/>
+      <div style={{ padding:"16px 18px" }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:10, marginBottom:4 }}>
+          <div style={{ minWidth:0 }}>
+            <span style={{ display:"inline-block", fontSize:9.5, fontWeight:700, color:dim.color, background:`${dim.color}14`, padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.05em", marginBottom:6 }}>{dim.label}</span>
+            <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0 }}>{ind.label}</p>
+          </div>
+          <button onClick={onRemove} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB", flexShrink:0 }}><X size={13}/></button>
+        </div>
+        <div style={{ height:170, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:8, color:"#C5BFBB", background:"#FAFAF9", borderRadius:10, border:"1px dashed #E8E5E3", marginTop:10 }}>
+          <BarChart2 size={22} style={{ color:"#E8E5E3" }}/>
+          <span style={{ fontSize:11.5 }}>Visualisation à venir</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Section repliable (style IDE) ────────────────────────────────────────────
 function SbSection({ title, count, accent="#ca631f", defaultOpen=true, children }:{
   title:string; count?:number; accent?:string; defaultOpen?:boolean; children:React.ReactNode;
@@ -1123,10 +1171,11 @@ function SbEmpty() {
 }
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({ config, onToggleTable, onReset,
+function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
   sidebarOpen, setSidebarOpen, sidebarWidth, setSidebarWidth, onglet }: {
   config: DashConfig;
   onToggleTable:(tableId:string)=>void;
+  onToggleKPI:(id:string)=>void;
   onReset:()=>void;
   sidebarOpen: boolean; setSidebarOpen:(v:boolean)=>void;
   sidebarWidth: number; setSidebarWidth:(v:number)=>void;
@@ -1135,6 +1184,8 @@ function Sidebar({ config, onToggleTable, onReset,
 
   const isResizing = useRef(false);
   const [search, setSearch] = useState("");
+  const [openDims, setOpenDims] = useState<Set<string>>(new Set(["global"]));
+  const toggleDim = (k:string) => setOpenDims(prev=>{ const n=new Set(prev); n.has(k)?n.delete(k):n.add(k); return n; });
   const q = search.trim().toLowerCase();
 
   const tablesFiltered = TABLES_ANALYTIQUES.filter(t=>!q||t.titre.toLowerCase().includes(q)||t.description.toLowerCase().includes(q));
@@ -1179,6 +1230,52 @@ function Sidebar({ config, onToggleTable, onReset,
 
         {/* Sections */}
         <div style={{ padding:"8px 16px 16px", overflowY:"auto" as const, flex:1 }}>
+          {onglet==="viz"&&
+            <SbSection title="Indicateurs" count={config.kpisActifs.length}>
+              {(()=>{
+                const dims = KPI_DIMENSIONS.map(dim=>{
+                  const indics = KPI_INDICATEURS.filter(ind=>!q
+                    || ind.label.toLowerCase().includes(q)
+                    || dim.label.toLowerCase().includes(q));
+                  return { dim, indics };
+                }).filter(d=>d.indics.length>0);
+                if (dims.length===0) return <SbEmpty/>;
+                return dims.map(({dim, indics})=>{
+                  const open = openDims.has(dim.key) || !!q;
+                  return (
+                    <div key={dim.key} style={{ marginBottom:1 }}>
+                      {/* Dimension (repliable) */}
+                      <div style={{ display:"flex", alignItems:"center", gap:2 }}>
+                        <button onClick={()=>toggleDim(dim.key)} style={{ background:"none", border:"none", cursor:"pointer", padding:2, display:"flex", flexShrink:0 }}>
+                          <ChevronDown size={12} style={{ color:"#9aa5b4", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                        </button>
+                        <div onClick={()=>toggleDim(dim.key)} style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding:"6px 6px", borderRadius:7, cursor:"pointer" }} className="sb-item">
+                          <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${dim.color}`, flexShrink:0 }}/>
+                          <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e" }}>{dim.label}</span>
+                        </div>
+                      </div>
+                      {/* Indicateurs (feuilles) */}
+                      {open && (
+                        <div style={{ marginLeft:16, borderLeft:"1.5px solid #EDEAE6", paddingLeft:4, marginTop:1 }}>
+                          {indics.map(ind=>{
+                            const id = `${dim.key}__${ind.key}`;
+                            const active = config.kpisActifs.includes(id);
+                            return (
+                              <div key={id} className="sb-item" onClick={()=>onToggleKPI(id)}
+                                style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:"pointer" }}>
+                                <SbCheck active={active}/>
+                                <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?600:400 }}>{ind.label}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
+            </SbSection>}
+
           {onglet==="tables"&&
             <SbSection title="Tableaux analytiques" count={config.tableCards.length}>
               {tablesFiltered.length===0 ? <SbEmpty/> : tablesFiltered.map(t=>{
@@ -1245,10 +1342,11 @@ export default function TableauDeBordPage() {
   const removeTable=useCallback((id:string)=>setConfig(p=>({...p,tableCards:p.tableCards.filter(c=>c.id!==id)})),[]);
   const updateCard=useCallback((id:string,patch:Partial<CardConfig>)=>setConfig(p=>({...p,cards:p.cards.map(c=>c.id===id?{...c,...patch}:c)})),[]);
   const updateTable=useCallback((id:string,patch:Partial<TableCardConfig>)=>setConfig(p=>({...p,tableCards:p.tableCards.map(c=>c.id===id?{...c,...patch}:c)})),[]);
-  const toggleKPI=useCallback((kpiId:string)=>setConfig(p=>{
-    const actifs=p.kpisActifs.includes(kpiId)?p.kpisActifs.filter(k=>k!==kpiId):p.kpisActifs.length<5?[...p.kpisActifs,kpiId]:p.kpisActifs;
-    return {...p,kpisActifs:actifs};
-  }),[]);
+  const toggleKPI=useCallback((kpiId:string)=>setConfig(p=>({
+    ...p,
+    kpisActifs: p.kpisActifs.includes(kpiId) ? p.kpisActifs.filter(k=>k!==kpiId) : [...p.kpisActifs, kpiId],
+  })),[]);
+  const removeKPI=useCallback((kpiId:string)=>setConfig(p=>({...p,kpisActifs:p.kpisActifs.filter(k=>k!==kpiId)})),[]);
 
   const totalItems=config.cards.length+config.tableCards.length;
   const [onglet, setOnglet] = useState<"viz"|"tables">("viz");
@@ -1289,12 +1387,12 @@ export default function TableauDeBordPage() {
 
       {/* ── Contenu ──────────────────────────────────────────────────────────── */}
       <div style={{display:"flex",alignItems:"flex-start"}}>
-        {onglet==="tables" && <Sidebar config={config} onToggleTable={toggleTable}
+        <Sidebar config={config} onToggleTable={toggleTable} onToggleKPI={toggleKPI}
           onReset={resetConfig}
           sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
           sidebarWidth={sidebarWidth} setSidebarWidth={setSidebarWidth}
-          onglet={onglet}/>}
-        <main style={{flex:1,minWidth:0,padding:"36px 40px 80px",maxWidth:onglet==="viz"?1400:undefined,margin:onglet==="viz"?"0 auto":undefined}}>
+          onglet={onglet}/>
+        <main style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
 
           {/* En-tête de contenu */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap" as const,gap:12}}>
@@ -1310,12 +1408,26 @@ export default function TableauDeBordPage() {
             </p>
           </div>
 
-          {/* ── Onglet Visualisation : indicateurs Global fixes ─────────────── */}
-          {onglet==="viz" && (
-            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:14}}>
+          {/* ── Onglet Visualisation ─────────────────────────────────────────── */}
+          {onglet==="viz" && (<>
+            {/* Indicateurs Global fixes */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:14,marginBottom:28}}>
               {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
             </div>
-          )}
+
+            {/* Visualisations sélectionnées dans le filtre */}
+            {config.kpisActifs.length===0 ? (
+              <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"64px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const}}>
+                <BarChart2 size={44} style={{color:"#E8E5E3",marginBottom:14}}/>
+                <p style={{fontSize:15,fontWeight:700,color:"#4a5568",marginBottom:6}}>Aucune visualisation sélectionnée</p>
+                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:380}}>Choisissez un indicateur par dimension dans le filtre (Global, Secteurs, Branches, Activités, Pays) pour afficher des visualisations.</p>
+              </div>
+            ) : (
+              <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,alignItems:"start"}}>
+                {config.kpisActifs.map(id=><IndicViz key={id} id={id} onRemove={()=>removeKPI(id)}/>)}
+              </div>
+            )}
+          </>)}
 
           {/* ── Onglet Tableaux analytiques ─────────────────────────────────── */}
           {onglet==="tables" && (
