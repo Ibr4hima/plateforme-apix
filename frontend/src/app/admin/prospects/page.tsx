@@ -162,8 +162,8 @@ function badgeProspect(p:any) {
   }
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
-  if (jours <= 30) return { label:"En cours",   color:"#059669", bg:"rgba(5,150,105,0.10)" };
-  if (jours <= 60) return { label:"En attente", color:"#ca631f", bg:"rgba(202,99,31,0.10)" };
+  if (jours <= 90)  return { label:"En cours",   color:"#059669", bg:"rgba(5,150,105,0.10)" };
+  if (jours <= 120) return { label:"En attente", color:"#ca631f", bg:"rgba(202,99,31,0.10)" };
   return                  { label:"Inactif",    color:"#dc2626", bg:"rgba(220,38,38,0.10)" };
 }
 
