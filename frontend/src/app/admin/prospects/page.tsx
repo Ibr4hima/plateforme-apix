@@ -1853,6 +1853,10 @@ export default function ProspectsPage() {
               const displayName = p.nom;
               const accent = "#004f91";
               const activite = badgeProspect(p);
+              const fmtJour = (d:string) => new Date(d).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});
+              const lastCycle = [...(p.cycles||[])].sort((a:any,b:any)=>b.cycle_num-a.cycle_num)[0];
+              const echsCourant = echangesDuCycle(p, null);
+              const dernierEch = echsCourant.length ? [...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1) : null;
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
                   style={{ background:"#fff", borderTop:"1px solid #E8E5E3", borderRight:"1px solid #E8E5E3", borderBottom:"1px solid #E8E5E3", borderLeft:`3px solid ${accent}`, borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}
@@ -1871,7 +1875,13 @@ export default function ProspectsPage() {
                   {p.siege_nom && <div style={{ fontSize:11, color:"#9aa5b4", fontWeight:500, marginBottom:10 }}>{p.siege_nom}</div>}
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
                     {p.mails?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Mail : {p.mails[0]}</span></div>}
-                    {p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>}
+                    {onglet==="historique" ? (
+                      activite?.label === "À recontacter"
+                        ? (lastCycle && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Cycle {lastCycle.cycle_num} : conclu le {lastCycle.conclu_le ? fmtJour(lastCycle.conclu_le) : "—"}</span></div>)
+                        : (dernierEch && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Dernier échange : {fmtJour(dernierEch.date_echange)}</span></div>)
+                    ) : (
+                      p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>
+                    )}
                   </div>
                   {onglet==="precedents" ? (
                     <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
