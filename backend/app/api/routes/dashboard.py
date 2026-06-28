@@ -93,16 +93,29 @@ async def indicateur_distribution(
         return []
     ref_table, col = DIM[dimension]
 
-    # Indicateur → filtre prospect (ciblées / en contact)
+    # Entreprises installées : répartition depuis la table entreprises_installees.
+    # Une entreprise spécialisée dans plusieurs secteurs est comptée dans chacun.
+    if indicateur == "installees":
+        return await safe(db, f"""
+            SELECT r.nom AS label, COUNT(DISTINCT e.id) AS valeur
+            FROM entreprises_installees e
+            JOIN LATERAL unnest(e.{col}) sid ON TRUE
+            JOIN {ref_table} r ON r.id = sid
+            WHERE e.is_deleted = FALSE
+              AND array_length(e.{col}, 1) > 0
+            GROUP BY r.nom
+            ORDER BY valeur DESC, r.nom
+        """)
+
+    # Indicateurs basés sur les prospects (ciblées / en contact)
     if indicateur == "ciblees":
         pfilter = "p.issue IS NULL AND NOT EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)"
     elif indicateur == "contactees":
         pfilter = "p.issue IS NULL AND EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)"
     else:
-        # installees / duree / taux : à définir
+        # duree / taux : à définir
         return []
 
-    # Une entreprise spécialisée dans plusieurs secteurs est comptée dans chacun.
     return await safe(db, f"""
         SELECT r.nom AS label, COUNT(DISTINCT p.id) AS valeur
         FROM prospects p
