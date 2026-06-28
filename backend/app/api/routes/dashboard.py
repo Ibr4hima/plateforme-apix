@@ -35,7 +35,12 @@ async def get_kpis(db: AsyncSession = Depends(get_db)):
               (SELECT COALESCE(SUM(montant_projete_usd),0) FROM intentions_investissement WHERE is_deleted=FALSE),
               (SELECT COUNT(*) FROM zones                WHERE is_deleted=FALSE),
               (SELECT COUNT(*) FROM poles_territoires),
-              (SELECT COUNT(*) FROM zone_entreprises)
+              (SELECT COUNT(*) FROM zone_entreprises),
+              -- Indicateurs Global (tableau de bord)
+              (SELECT COUNT(*) FROM prospects p WHERE p.is_deleted=FALSE AND p.issue IS NULL
+                 AND NOT EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)),
+              (SELECT COUNT(*) FROM prospects p WHERE p.is_deleted=FALSE AND p.issue IS NULL
+                 AND EXISTS (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id))
         """))
         k = r.fetchone()
         return {
@@ -51,6 +56,10 @@ async def get_kpis(db: AsyncSession = Depends(get_db)):
             "zones_total":        k[9],
             "poles_total":        k[10],
             "zone_ent_total":     k[11],
+            # Indicateurs Global du tableau de bord
+            "global_installees":  k[0],
+            "global_ciblees":     k[12],
+            "global_contactees":  k[13],
         }
     except Exception:
         return {}
