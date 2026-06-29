@@ -1601,6 +1601,15 @@ export default function TableauDeBordPage() {
               {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
             </div>
 
+            {/* Visualisation permanente : Répartition des entreprises */}
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"18px 20px",marginBottom:28}}>
+              <h3 style={{fontWeight:800,fontSize:15,color:"#1a1a2e",margin:"0 0 14px"}}>Répartition des entreprises</h3>
+              <div style={{height:200,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:8,color:"#C5BFBB",background:"#FAFAF9",borderRadius:12,border:"1px dashed #E8E5E3"}}>
+                <BarChart2 size={24} style={{color:"#E8E5E3"}}/>
+                <span style={{fontSize:12.5}}>Visualisation à venir</span>
+              </div>
+            </div>
+
             {/* Visualisations sélectionnées dans le filtre */}
             {config.kpisActifs.length===0 ? (
               <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"64px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const}}>
