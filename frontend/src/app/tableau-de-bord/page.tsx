@@ -1604,7 +1604,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const realSum = data.reduce((s:number,d:any)=> s + (Number(d.valeur)||0), 0);
   const baseData =
     (isPays && data.length<=paysSeuil && PAYS_FICTIF[ind.key]) ? PAYS_FICTIF[ind.key]
-    : (isSecteurs && realSum<=5 && SECTEUR_FICTIF[ind.key]) ? SECTEUR_FICTIF[ind.key]
+    : (isSecteurs && realSum<=10 && SECTEUR_FICTIF[ind.key]) ? SECTEUR_FICTIF[ind.key]
     : data;
   // Tri déterministe (valeur desc, libellé asc) + couleur figée par rang →
   // un même item garde sa couleur entre la vignette et le modal (même en cas d'égalité).
