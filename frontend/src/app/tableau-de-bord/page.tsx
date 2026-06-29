@@ -113,7 +113,7 @@ function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:nu
       color: { type: "identity" as const },
       style: { fontFamily: "var(--font-google-sans), sans-serif", fontSize: "11px", background: "transparent", overflow: "visible" },
       marks: [
-        Plot.barX(sorted, { x:"valeur", y:"label", sort:{ y:"x", reverse:true }, fill:"_c", rx:3 }),
+        Plot.barX(sorted, { x:"valeur", y:"label", sort:{ y:"x", reverse:true }, fill:"_c" }),
         Plot.text(sorted, { text:(d:any)=>Number(d.valeur).toLocaleString("fr-FR"), y:"label", x:"valeur", textAnchor:"end", dx:-5, fill:"white", fontWeight:700 }),
       ],
     });
@@ -1240,7 +1240,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites";
   const cardData  = isLong ? data.slice(0,3) : data;
   const modalData = isLong ? data.slice(0,7) : data;
-  const cardH  = isSecteurs ? 200 : 26 + Math.max(1, cardData.length)*38 + 8;
+  const cardH  = 200; // vignettes : taille uniforme pour tous les indicateurs
   const modalH = isSecteurs ? 380 : 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
