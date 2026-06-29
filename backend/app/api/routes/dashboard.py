@@ -83,6 +83,31 @@ async def indicateur_distribution(
     indicateur: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
+    # ── Dimension Pays : pays d'origine (siège) — clé étrangère simple ──
+    if dimension == "pays":
+        if indicateur == "installees":
+            return await safe(db, """
+                SELECT pa.nom_fr AS label, COUNT(*) AS valeur
+                FROM entreprises_installees e
+                JOIN ref_pays pa ON pa.id = e.siege_pays_id
+                WHERE e.is_deleted = FALSE AND e.siege_pays_id IS NOT NULL
+                GROUP BY pa.nom_fr
+                ORDER BY valeur DESC, pa.nom_fr
+            """)
+        if indicateur in ("ciblees", "contactees"):
+            ex = "NOT EXISTS" if indicateur == "ciblees" else "EXISTS"
+            return await safe(db, f"""
+                SELECT pa.nom_fr AS label, COUNT(*) AS valeur
+                FROM prospects p
+                JOIN ref_pays pa ON pa.id = p.siege_id
+                WHERE p.is_deleted = FALSE AND p.siege_id IS NOT NULL
+                  AND p.issue IS NULL
+                  AND {ex} (SELECT 1 FROM prospect_echanges e WHERE e.prospect_id = p.id)
+                GROUP BY pa.nom_fr
+                ORDER BY valeur DESC, pa.nom_fr
+            """)
+        return []
+
     # Dimension → table de référence + colonne tableau d'ids sur prospects
     DIM = {
         "secteurs":  ("ref_secteurs",  "secteur_ids"),

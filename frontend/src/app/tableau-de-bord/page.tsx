@@ -1246,7 +1246,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const titre = `${ind.label} — ${dim.label}`;
   // Dimensions à forte cardinalité : top 3 en vignette, top 7 en grand
   const isSecteurs = dim.key==="secteurs";
-  const isLong    = dim.key==="branches" || dim.key==="activites";
+  const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
   const cardData  = isLong ? data.slice(0,5) : data;
   const modalData = isLong ? data.slice(0,7) : data;
   const cardH  = 200; // vignettes : taille uniforme pour tous les indicateurs
