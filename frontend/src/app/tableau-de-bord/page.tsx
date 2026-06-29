@@ -1508,6 +1508,14 @@ const BAR_PALETTE7  = ["#E2862F", "#2E7FB8", "#239B8C", "#74A368", "#E8AD22", "#
 // Dégradé bleu (rang 0 = plus foncé → plus clair) pour les bandes « Pays »
 const paysRamp = (n:number,i:number) => d3.interpolateRgb("#003468","#EDF4FB")(n>1 ? Math.min(i,n-1)/(n-1) : 0) as string;
 
+// Codes ISO3 des pays (libellé court pour les vignettes)
+const PAYS_ISO3: Record<string,string> = {
+  "France":"FRA","Maroc":"MAR","Chine":"CHN","Turquie":"TUR","Inde":"IND",
+  "Émirats arabes unis":"ARE","Espagne":"ESP","Liban":"LBN","États-Unis":"USA","Mali":"MLI",
+  "Côte d'Ivoire":"CIV","Allemagne":"DEU","Portugal":"PRT","Tunisie":"TUN","Belgique":"BEL",
+};
+const toIso3 = (label:string) => PAYS_ISO3[label] || label;
+
 // Données fictives par pays d'origine (le temps de remplir la bdd)
 const mkPays = (vals:[string,number][]) => vals.map(([label,valeur])=>({label,valeur}));
 const PAYS_FICTIF: Record<string, {label:string; valeur:number}[]> = {
@@ -1568,7 +1576,9 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
     _c: isPays ? paysRamp(rows.length, i) : BAR_PALETTE7[i%BAR_PALETTE7.length],
   }));
   const colored   = colorize(sortedAll);
-  const cardData  = colorize(isLong ? sortedAll.slice(0,cardN) : sortedAll);
+  // Vignettes « Pays » : libellés courts en code ISO3 ; le modal garde les noms complets.
+  const cardData  = colorize(isLong ? sortedAll.slice(0,cardN) : sortedAll)
+    .map((d:any)=> isPays ? { ...d, label: toIso3(String(d.label)) } : d);
   const modalData = colorize(isLong ? sortedAll.slice(0,modalN) : sortedAll);
   const cardH  = 200; // vignettes : taille uniforme pour tous les indicateurs
   const modalH = isSecteurs ? 380 : isPays ? 440 : 26 + Math.max(1, modalData.length)*44 + 8;
