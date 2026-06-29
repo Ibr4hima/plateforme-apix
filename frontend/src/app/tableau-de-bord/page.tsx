@@ -199,7 +199,7 @@ function DonutLabeled({ data, height, palette=COLORS }: { data:any[]; height:num
     if(!ref.current||!data.length) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
     const W=w, H=height;
-    const radius = Math.max(36, Math.min(H/2 - 14, W/2 - 150));
+    const radius = Math.max(40, Math.min(H/2 - 10, W/2 - 140));
     svg.attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet").attr("style","max-width:100%;height:auto;");
     const g = svg.append("g").attr("transform",`translate(${W/2},${H/2})`);
 
@@ -1239,8 +1239,8 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites";
   const cardData  = isLong ? data.slice(0,3) : data;
   const modalData = isLong ? data.slice(0,7) : data;
-  const cardH  = isSecteurs ? 220 : 26 + Math.max(1, cardData.length)*38 + 8;
-  const modalH = isSecteurs ? 340 : 26 + Math.max(1, modalData.length)*44 + 8;
+  const cardH  = isSecteurs ? 300 : 26 + Math.max(1, cardData.length)*38 + 8;
+  const modalH = isSecteurs ? 380 : 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
