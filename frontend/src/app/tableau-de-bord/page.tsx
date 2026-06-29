@@ -1240,7 +1240,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites";
   const cardData  = isLong ? data.slice(0,3) : data;
   const modalData = isLong ? data.slice(0,7) : data;
-  const cardH  = isSecteurs ? 230 : 26 + Math.max(1, cardData.length)*38 + 8;
+  const cardH  = isSecteurs ? 200 : 26 + Math.max(1, cardData.length)*38 + 8;
   const modalH = isSecteurs ? 380 : 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
