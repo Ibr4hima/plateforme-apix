@@ -142,10 +142,13 @@ export default function ProspectsPage() {
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
     isResizing.current = true;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
     const startX = e.clientX, startW = sidebarWidth;
     const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(480, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 

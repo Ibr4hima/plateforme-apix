@@ -763,6 +763,8 @@ export default function OpportunitesPage() {
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
     isResizing.current = true;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
     const startX = e.clientX;
     const startW = sidebarWidth;
     const onMove = (ev: MouseEvent) => {
@@ -771,6 +773,8 @@ export default function OpportunitesPage() {
     };
     const onUp = () => {
       isResizing.current = false;
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
     };
