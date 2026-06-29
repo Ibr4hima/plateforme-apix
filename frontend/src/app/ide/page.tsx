@@ -702,10 +702,13 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
     isResizing.current = true;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
     const startX = e.clientX, startW = sidebarWidth;
     const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
@@ -1063,10 +1066,13 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
     isResizing.current = true;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
     const startX = e.clientX, startW = sidebarWidth;
     const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
   const [searchPays,  setSearchPays]  = useState("");
@@ -1603,10 +1609,13 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
   const [sidebarWidth,setSidebarWidth]=useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
     isResizing.current = true;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
     const startX = e.clientX, startW = sidebarWidth;
     const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
@@ -2205,10 +2214,13 @@ function OngletNational() {
   const couleur = (sel.niveau && BDEF_NIVEAU_STYLE[sel.niveau]?.color) || "#004f91";
 
   const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
     isResizing.current = true;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
     const startX = e.clientX, startW = sidebarWidth;
     const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(220, Math.min(540, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
