@@ -1736,7 +1736,7 @@ export default function TableauDeBordPage() {
                 onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap" as const}}>
                   <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:0}}>Répartition des entreprises</p>
-                  <span style={{fontSize:9.5,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em"}}>Densité (ent./100 km²)</span>
+                  <span style={{fontSize:9.5,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em"}}>ent./100 km²</span>
                 </div>
                 <CarteSenegal height={200}/>
               </div>
