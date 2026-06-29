@@ -1213,8 +1213,10 @@ function indicMeta(id:string) {
   return { dim, ind };
 }
 
-// Palette des visualisations du tableau de bord
-const INDIC_PALETTE = ["#ca631f", "#004f91", "#0A7C6E"];
+// Palettes des visualisations du tableau de bord
+const INDIC_PALETTE = ["#ca631f", "#004f91", "#0A7C6E"];                       // secteurs (donut)
+const BAR_PALETTE5  = ["#F4A96B", "#6BAED6", "#63BFB3", "#A8C8A0", "#F5CC6E"]; // top 5 (vignette)
+const BAR_PALETTE7  = ["#F4A96B", "#6BAED6", "#63BFB3", "#A8C8A0", "#F5CC6E", "#9DB8D9", "#F0947C"]; // top 7 (modal)
 
 // ─── Carte visualisation d'un indicateur ─────────────────────────────────────
 function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
@@ -1247,7 +1249,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
     : cardData.length===0 ? <EmptyState h={h}/>
     : isSecteurs ? <DonutLabeled data={cardData} height={h} palette={INDIC_PALETTE} compact/>
-    : <HBarAxisChart data={cardData} height={h} palette={INDIC_PALETTE}/>;
+    : <HBarAxisChart data={cardData} height={h} palette={BAR_PALETTE5}/>;
 
   return (
     <>
@@ -1271,7 +1273,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
       <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top 7`:titre} vizId={id}>
         {isSecteurs
           ? <DonutLabeled data={modalData} height={Math.max(340, modalH)} palette={INDIC_PALETTE}/>
-          : <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={INDIC_PALETTE}/>}
+          : <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={BAR_PALETTE7}/>}
       </VizModal>
     </>
   );
