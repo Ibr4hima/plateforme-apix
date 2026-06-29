@@ -1355,13 +1355,12 @@ function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boo
     <div style={{ position:"relative" as const }}>
       <div ref={ref} style={{ width:"100%", height }}/>
 
-      {/* Légende d'intensité */}
+      {/* Légende d'intensité (centrée) */}
       {legend && bornes && (
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:8, paddingLeft:2 }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:10 }}>
           <span style={{ fontSize:10, fontWeight:600, color:"#9aa5b4" }}>Faible</span>
-          <div style={{ flex:1, maxWidth:180, height:8, borderRadius:999, background:`linear-gradient(90deg, ${HEAT_STOPS.join(",")})` }}/>
+          <div style={{ width:200, height:8, borderRadius:999, background:`linear-gradient(90deg, ${HEAT_STOPS.join(",")})` }}/>
           <span style={{ fontSize:10, fontWeight:600, color:"#9aa5b4" }}>Forte</span>
-          <span style={{ fontSize:9.5, color:"#C5BFBB", marginLeft:4 }}>densité (ent./100 km²)</span>
         </div>
       )}
 
@@ -1735,7 +1734,10 @@ export default function TableauDeBordPage() {
                 style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s"}}
                 onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
                 onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
-                <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:"0 0 12px"}}>Répartition des entreprises</p>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap" as const}}>
+                  <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:0}}>Répartition des entreprises</p>
+                  <span style={{fontSize:9.5,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em"}}>Densité (ent./100 km²)</span>
+                </div>
                 <CarteSenegal height={200}/>
               </div>
             </div>
