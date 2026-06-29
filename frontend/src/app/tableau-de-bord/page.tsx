@@ -1299,25 +1299,25 @@ function CarteSenegal({ height=200 }: { height?:number }) {
           .attr("d", (d:any)=>pathGen(d)).attr("fill","#E0E0E0")
           .attr("stroke","#C4C4C4").attr("stroke-width",0.6).attr("stroke-linejoin","round");
 
-        // Défs : flou + masque (clip) sur le pays
+        // Défs : flou partagé
         const defs = svg.append("defs");
         const minHW = Math.min(W,H);
         defs.append("filter").attr("id","heat-blur")
           .attr("x","-40%").attr("y","-40%").attr("width","180%").attr("height","180%")
-          .append("feGaussianBlur").attr("in","SourceGraphic").attr("stdDeviation", Math.max(6, minHW*0.05));
-        let pays:any; try { pays = topojson.merge(topo, topo.objects.sen.geometries); } catch { pays=geojson; }
-        defs.append("clipPath").attr("id","sen-clip").append("path").attr("d", pathGen(pays) as string);
+          .append("feGaussianBlur").attr("in","SourceGraphic").attr("stdDeviation", Math.max(4, minHW*0.035));
 
-        // Heatmap : un blob par région, taille + couleur selon la concentration
-        const rScale = d3.scaleSqrt().domain([0,maxVal]).range([minHW*0.11, minHW*0.30]);
+        // Heatmap : un blob par région, CLIPPÉ à sa propre région (pas de débordement)
+        const rScale = d3.scaleSqrt().domain([0,maxVal]).range([minHW*0.13, minHW*0.34]);
         const heatColor = (v:number)=> d3.interpolateTurbo(0.28 + 0.66*(v/maxVal));
-        const heat = svg.append("g").attr("clip-path","url(#sen-clip)").attr("filter","url(#heat-blur)").attr("opacity",0.72);
-        geojson.features.forEach((f:any)=>{
+        geojson.features.forEach((f:any,i:number)=>{
           const nom = SEN_NAME_MAP[f.properties?.name||""] || f.properties?.name || "";
           const v = counts[nom] || 0;
           if (v<=0) return;
+          defs.append("clipPath").attr("id",`heat-clip-${i}`).append("path").attr("d", pathGen(f) as string);
           const c = pathGen.centroid(f);
-          heat.append("circle").attr("cx",c[0]).attr("cy",c[1]).attr("r",rScale(v)).attr("fill", heatColor(v));
+          svg.append("g")
+            .attr("clip-path",`url(#heat-clip-${i})`).attr("filter","url(#heat-blur)").attr("opacity",0.8)
+            .append("circle").attr("cx",c[0]).attr("cy",c[1]).attr("r",rScale(v)).attr("fill", heatColor(v));
         });
 
         // Contour extérieur par-dessus
