@@ -8,7 +8,7 @@ import {
   DollarSign, Handshake, Layers, Loader2, MapPin, RotateCcw, Search,
   SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { CATALOGUE, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
 import { AnalyticTable } from "@/components/dashboard/DataTable";
 
@@ -1265,6 +1265,7 @@ const heatRamp = (t:number) => d3.interpolateRgbBasis(HEAT_STOPS)(Math.max(0, Ma
 
 function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boolean }) {
   const ref = useRef<HTMLDivElement>(null);
+  const uid = useId().replace(/[:]/g,"");
   const [tip, setTip] = useState<{nom:string; valeur:number; densite:number; x:number; y:number}|null>(null);
   const [bornes, setBornes] = useState<{min:number; max:number}|null>(null);
 
@@ -1312,7 +1313,7 @@ function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boo
         // Flou partagé
         const defs = svg.append("defs");
         const minHW = Math.min(W,H);
-        defs.append("filter").attr("id","heat-blur")
+        defs.append("filter").attr("id",`heat-blur-${uid}`)
           .attr("x","-40%").attr("y","-40%").attr("width","180%").attr("height","180%")
           .append("feGaussianBlur").attr("in","SourceGraphic").attr("stdDeviation", Math.max(4, minHW*0.035));
 
@@ -1321,12 +1322,12 @@ function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boo
           const nom = SEN_NAME_MAP[f.properties?.name||""] || f.properties?.name || "";
           const v = info[nom]?.densite || 0;
           if (v<=0) return;
-          defs.append("clipPath").attr("id",`heat-clip-${i}`).append("path").attr("d", pathGen(f) as string);
+          defs.append("clipPath").attr("id",`heat-clip-${uid}-${i}`).append("path").attr("d", pathGen(f) as string);
           const c = pathGen.centroid(f);
           const [[x0,y0],[x1,y1]] = pathGen.bounds(f);
           const r = Math.max(x1-x0, y1-y0)/2 * 0.98;
           svg.append("g")
-            .attr("clip-path",`url(#heat-clip-${i})`).attr("filter","url(#heat-blur)").attr("opacity",0.88)
+            .attr("clip-path",`url(#heat-clip-${uid}-${i})`).attr("filter",`url(#heat-blur-${uid})`).attr("opacity",0.88)
             .append("circle").attr("cx",c[0]).attr("cy",c[1]).attr("r",r).attr("fill", heatRamp(v/maxDens));
         });
 
