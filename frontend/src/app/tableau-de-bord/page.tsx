@@ -1761,7 +1761,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
   const nbActifs = config.kpisActifs.length+config.cards.length+config.tableCards.length;
 
   return (
-    <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 122px)", position:"sticky" as const, top:122, display:"flex", flexDirection:"column" as const }}>
+    <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
       <style>{`::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#E8E5E3;border-radius:4px}.sb-item:hover{background:#F8F7F6!important}`}</style>
 
       {/* Poignée de redimensionnement */}
