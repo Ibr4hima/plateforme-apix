@@ -1505,6 +1505,28 @@ function GroupedBarZones({ height=200, fill=false }: { height?:number; fill?:boo
 // Palettes des visualisations du tableau de bord
 const BAR_PALETTE5  = ["#E2862F", "#2E7FB8", "#239B8C", "#74A368", "#E8AD22"]; // secteurs (donut) + top 5 (vignette)
 const BAR_PALETTE7  = ["#E2862F", "#2E7FB8", "#239B8C", "#74A368", "#E8AD22", "#5E84BC", "#E25F40"]; // top 7 (modal)
+// Dégradé bleu (rang 0 = plus foncé → plus clair) pour les bandes « Pays »
+const paysRamp = (n:number,i:number) => d3.interpolateRgb("#003468","#EDF4FB")(n>1 ? Math.min(i,n-1)/(n-1) : 0) as string;
+
+// Données fictives par pays d'origine (le temps de remplir la bdd)
+const mkPays = (vals:[string,number][]) => vals.map(([label,valeur])=>({label,valeur}));
+const PAYS_FICTIF: Record<string, {label:string; valeur:number}[]> = {
+  ciblees: mkPays([
+    ["France",58],["Maroc",49],["Chine",44],["Turquie",38],["Inde",33],
+    ["Émirats arabes unis",29],["Espagne",25],["Liban",21],["États-Unis",18],["Mali",15],
+    ["Côte d'Ivoire",13],["Allemagne",11],["Portugal",9],["Tunisie",7],["Belgique",5],
+  ]),
+  contactees: mkPays([
+    ["France",41],["Maroc",35],["Chine",31],["Turquie",27],["Inde",23],
+    ["Émirats arabes unis",20],["Espagne",17],["Liban",14],["États-Unis",12],["Mali",10],
+    ["Côte d'Ivoire",8],["Allemagne",7],["Portugal",5],["Tunisie",4],["Belgique",3],
+  ]),
+  installees: mkPays([
+    ["France",27],["Maroc",22],["Chine",19],["Turquie",16],["Inde",13],
+    ["Émirats arabes unis",11],["Espagne",9],["Liban",7],["États-Unis",6],["Mali",5],
+    ["Côte d'Ivoire",4],["Allemagne",3],["Portugal",2],["Tunisie",2],["Belgique",1],
+  ]),
+};
 
 // ─── Carte visualisation d'un indicateur ─────────────────────────────────────
 function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
@@ -1531,13 +1553,21 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
   const cardN  = isPays ? 7 : 5;
   const modalN = isPays ? 15 : 7;
+  // Pays : données fictives le temps de remplir la bdd
+  const baseData = (isPays && data.length===0 && PAYS_FICTIF[ind.key]) ? PAYS_FICTIF[ind.key] : data;
   // Tri déterministe (valeur desc, libellé asc) + couleur figée par rang →
   // un même item garde sa couleur entre la vignette et le modal (même en cas d'égalité).
-  const colored = [...data]
-    .sort((a:any,b:any)=> (b.valeur-a.valeur) || String(a.label).localeCompare(String(b.label),"fr"))
-    .map((d:any,i:number)=>({ ...d, _c: BAR_PALETTE7[i%BAR_PALETTE7.length] }));
-  const cardData  = isLong ? colored.slice(0,cardN) : colored;
-  const modalData = isLong ? colored.slice(0,modalN) : colored;
+  const sortedAll = [...baseData]
+    .sort((a:any,b:any)=> (b.valeur-a.valeur) || String(a.label).localeCompare(String(b.label),"fr"));
+  // Pays : dégradé bleu réparti sur l'ensemble affiché (foncé = plus élevé).
+  // Autres : palette catégorielle figée par rang.
+  const colorize = (rows:any[]) => rows.map((d:any,i:number)=>({
+    ...d,
+    _c: isPays ? paysRamp(rows.length, i) : BAR_PALETTE7[i%BAR_PALETTE7.length],
+  }));
+  const colored   = colorize(sortedAll);
+  const cardData  = colorize(isLong ? sortedAll.slice(0,cardN) : sortedAll);
+  const modalData = colorize(isLong ? sortedAll.slice(0,modalN) : sortedAll);
   const cardH  = 200; // vignettes : taille uniforme pour tous les indicateurs
   const modalH = isSecteurs ? 380 : isPays ? 440 : 26 + Math.max(1, modalData.length)*44 + 8;
 
@@ -1550,9 +1580,9 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
 
   return (
     <>
-      <div onClick={()=>!loading&&data.length>0&&setOpen(true)}
-        style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", boxShadow:"0 1px 4px rgba(0,0,0,0.05)", overflow:"hidden", cursor:loading||data.length===0?"default":"pointer", transition:"all 0.18s" }}
-        onMouseEnter={e=>{ if(!loading&&data.length>0){ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)"; e.currentTarget.style.transform="translateY(-2px)"; } }}
+      <div onClick={()=>!loading&&colored.length>0&&setOpen(true)}
+        style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", boxShadow:"0 1px 4px rgba(0,0,0,0.05)", overflow:"hidden", cursor:loading||colored.length===0?"default":"pointer", transition:"all 0.18s" }}
+        onMouseEnter={e=>{ if(!loading&&colored.length>0){ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)"; e.currentTarget.style.transform="translateY(-2px)"; } }}
         onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)"; e.currentTarget.style.transform="translateY(0)"; }}>
         <div style={{ padding:"16px 18px" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, marginBottom:14 }}>
