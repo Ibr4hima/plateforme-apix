@@ -1,21 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-// Couleurs exactes définies dans l'onglet Pôles territoires — par pole.id
-const POLE_PALETTE = [
-  "#FFD9B3",
-  "#FFF4A3",
-  "#C8EEC8",
-  "#A8DFE8",
-  "#B8C8F8",
-  "#D8B8F0",
-  "#FADADD",
-  "#F0D8C8",
-];
 
 const REGION_PALETTE: Record<string, string> = {
   "Dakar":       "#FADADD",
@@ -71,8 +59,20 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       .catch(() => {});
   }, [mode]);
 
-  // Couleur par pole.id (1-based index dans la palette)
-  const getPoleColor = (poleId: number) => POLE_PALETTE[(poleId - 1) % POLE_PALETTE.length];
+  // Couleur par pôle : dégradé bleu #003468 → #EDF4FB réparti sur l'ensemble
+  // des pôles (triés par id), le premier étant le plus foncé.
+  const poleRank = useMemo(() => {
+    const ids = [...poles].map(p => p.id).sort((a, b) => a - b);
+    const m = new Map<number, number>();
+    ids.forEach((id, i) => m.set(id, i));
+    return m;
+  }, [poles]);
+  const getPoleColor = (poleId: number) => {
+    const n = poles.length;
+    const i = poleRank.get(poleId) ?? 0;
+    const t = n > 1 ? i / (n - 1) : 0;
+    return d3.interpolateRgb("#003468", "#EDF4FB")(t);
+  };
 
 
   useEffect(() => {
