@@ -1250,6 +1250,49 @@ function indicMeta(id:string) {
   return { dim, ind };
 }
 
+// ─── Carte du Sénégal (remplie en gris, frontières) ──────────────────────────
+function CarteSenegal({ height=200 }: { height?:number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(()=>{
+    const container = ref.current; if(!container) return;
+    let cancelled=false;
+    const loadTopojson = () => new Promise<any>((res,rej)=>{
+      const w:any = window;
+      const poll=()=>{ if(w.topojson) res(w.topojson); else setTimeout(poll,50); };
+      if(w.topojson){ res(w.topojson); return; }
+      if(document.querySelector('script[data-lib="topojson"]')){ poll(); return; }
+      const s=document.createElement("script"); s.setAttribute("data-lib","topojson");
+      s.src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js";
+      s.onerror=rej; s.onload=poll; document.head.appendChild(s);
+    });
+    loadTopojson()
+      .then(()=>fetch("https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/sen.topo.json"))
+      .then(r=>r.json())
+      .then((topo:any)=>{
+        if(cancelled||!ref.current) return;
+        const topojson:any = (window as any).topojson;
+        const W = container.clientWidth || 480;
+        const H = height;
+        container.innerHTML="";
+        const svg = d3.select(container).append("svg")
+          .attr("width","100%").attr("viewBox",`0 0 ${W} ${H}`).style("display","block");
+        const geojson = topojson.feature(topo, topo.objects.sen);
+        const projection = d3.geoMercator().fitExtent([[8,8],[W-8,H-8]], geojson);
+        const pathGen = d3.geoPath().projection(projection);
+        // Régions remplies en gris + lignes de frontières
+        svg.selectAll("path.reg").data(geojson.features).join("path")
+          .attr("d", (d:any)=>pathGen(d)).attr("fill","#C4C4C4")
+          .attr("stroke","#666666").attr("stroke-width",0.6).attr("stroke-linejoin","round");
+        // Contour extérieur (un peu plus marqué)
+        svg.append("path").datum(topojson.mesh(topo, topo.objects.sen, (a:any,b:any)=>a===b))
+          .attr("d", pathGen as any).attr("fill","none").attr("stroke","#666666").attr("stroke-width",1).attr("stroke-linejoin","round");
+      })
+      .catch(console.error);
+    return ()=>{ cancelled=true; if(ref.current) ref.current.innerHTML=""; };
+  },[height]);
+  return <div ref={ref} style={{ width:"100%", height }}/>;
+}
+
 // Palettes des visualisations du tableau de bord
 const BAR_PALETTE5  = ["#E2862F", "#2E7FB8", "#239B8C", "#74A368", "#E8AD22"]; // secteurs (donut) + top 5 (vignette)
 const BAR_PALETTE7  = ["#E2862F", "#2E7FB8", "#239B8C", "#74A368", "#E8AD22", "#5E84BC", "#E25F40"]; // top 7 (modal)
@@ -1602,11 +1645,10 @@ export default function TableauDeBordPage() {
             </div>
 
             {/* Visualisation permanente : Répartition des entreprises */}
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"18px 20px",marginBottom:28}}>
-              <h3 style={{fontWeight:800,fontSize:15,color:"#1a1a2e",margin:"0 0 14px"}}>Répartition des entreprises</h3>
-              <div style={{height:200,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:8,color:"#C5BFBB",background:"#FAFAF9",borderRadius:12,border:"1px dashed #E8E5E3"}}>
-                <BarChart2 size={24} style={{color:"#E8E5E3"}}/>
-                <span style={{fontSize:12.5}}>Visualisation à venir</span>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,marginBottom:28,alignItems:"start"}}>
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px"}}>
+                <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:"0 0 12px"}}>Répartition des entreprises</p>
+                <CarteSenegal height={200}/>
               </div>
             </div>
 
