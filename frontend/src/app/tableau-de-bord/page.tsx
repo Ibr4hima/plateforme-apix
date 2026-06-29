@@ -66,7 +66,7 @@ function detectChartType(data: any[]): ChartType {
 // ─── Graphiques d3 ────────────────────────────────────────────────────────────
 function BarH({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
   const ref=useRef<SVGSVGElement>(null); const cRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(400);
-  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
     if(!ref.current||!data.length) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
@@ -94,7 +94,7 @@ function BarH({ data, height, palette=COLORS }: { data:any[]; height:number; pal
 // Libellé AU-DESSUS de chaque barre (idéal pour les noms longs) — barres pleine largeur.
 function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
   const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(560);
-  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
     if(!ref.current||!data.length) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
@@ -143,7 +143,7 @@ function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:nu
 // ─── Barres verticales (Observable Plot) — libellés inclinés ─────────────────
 function VBarChart({ data, height, palette=COLORS, rotateX=false }: { data:any[]; height:number; palette?:string[]; rotateX?:boolean }) {
   const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(440);
-  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
     if(!ref.current) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
@@ -197,7 +197,7 @@ function VBarChart({ data, height, palette=COLORS, rotateX=false }: { data:any[]
 
 function BarV({ data, height, color="#004f91" }: { data:any[]; height:number; color?:string }) {
   const ref=useRef<SVGSVGElement>(null); const cRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(400);
-  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
     if(!ref.current||!data.length) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
@@ -264,7 +264,7 @@ function DonutChart({ data, size, palette=COLORS }: { data:any[]; size:number; p
 // ─── Donut avec étiquettes reliées par des lignes (leader lines) ─────────────
 function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:any[]; height:number; palette?:string[]; compact?:boolean }) {
   const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(440);
-  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
     if(!ref.current||!data.length) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
@@ -1750,10 +1750,19 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
   const tablesFiltered = TABLES_ANALYTIQUES.filter(t=>!q||t.titre.toLowerCase().includes(q)||t.description.toLowerCase().includes(q));
 
   const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
     isResizing.current = true;
     const startX = e.clientX, startW = sidebarWidth;
+    // Empêche la sélection de texte et fige le curseur pendant le glisser
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
     const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(220, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp   = () => { isResizing.current = false; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    const onUp   = () => {
+      isResizing.current = false;
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+      document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+    };
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
