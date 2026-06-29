@@ -372,7 +372,6 @@ export default function EntreprisesPage() {
             <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
           <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Entreprises formalisées</h1>
-          <p style={{color:"rgba(255,255,255,0.45)",fontSize:15,maxWidth:540,lineHeight:1.7,marginBottom:24}}>Cartographie des entreprises formalisées et installées au Sénégal.</p>
           {tous.length>0&&<span style={{display:"inline-flex",alignItems:"center",fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>
             {tous.length} entreprise{tous.length>1?"s":""}
           </span>}

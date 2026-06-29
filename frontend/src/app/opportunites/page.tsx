@@ -1062,7 +1062,6 @@ export default function OpportunitesPage() {
             <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
           <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>Opportunités d&apos;investissement</h1>
-          <p style={{color:"rgba(255,255,255,0.45)",fontSize:15,maxWidth:560,lineHeight:1.7,marginBottom:24}}>Projets structurants, potentialités territoriales et avantages fiscaux pour investir au Sénégal.</p>
           <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
             {stats.projets>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.projets} projet{stats.projets>1?"s":""}</span>}
           </div>
