@@ -59,9 +59,11 @@ cp .env.prod.example .env.prod
 #   POSTGRES_PASSWORD / SECRET_KEY / AUTH_SECRET = valeurs fortes aléatoires
 
 # Mot de passe d'accès à la démo (basic-auth)
-cp secrets.caddy.env.example secrets.caddy.env
-docker run --rm caddy:2-alpine caddy hash-password --plaintext 'MON_MDP_DEMO'
-#   Coller le hash dans secrets.caddy.env → BASIC_AUTH_HASH (laisser BASIC_AUTH_USER=apix)
+#   Le hash bcrypt contient des « $ » que Compose interprète comme des variables :
+#   il faut les DOUBLER ($ -> $$). La commande ci-dessous le fait automatiquement.
+HASH=$(docker run --rm caddy:2-alpine caddy hash-password --plaintext 'MON_MDP_DEMO')
+ESC=$(printf '%s' "$HASH" | sed 's/\$/$$/g')
+printf 'BASIC_AUTH_USER=apix\nBASIC_AUTH_HASH=%s\n' "$ESC" > secrets.caddy.env
 
 # Premier déploiement
 bash scripts/deploy.sh
