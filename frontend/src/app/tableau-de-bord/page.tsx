@@ -199,7 +199,7 @@ function DonutLabeled({ data, height, palette=COLORS }: { data:any[]; height:num
     if(!ref.current||!data.length) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
     const W=w, H=height;
-    const radius = Math.max(36, Math.min(H/2 - 14, W/2 - 130));
+    const radius = Math.max(36, Math.min(H/2 - 14, W/2 - 150));
     svg.attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet").attr("style","max-width:100%;height:auto;");
     const g = svg.append("g").attr("transform",`translate(${W/2},${H/2})`);
 
@@ -220,20 +220,30 @@ function DonutLabeled({ data, height, palette=COLORS }: { data:any[]; height:num
     g.append("text").attr("text-anchor","middle").attr("dy","-.05em").style("font-size","18px").style("font-weight","800").style("fill","#1a1a2e").text(total.toLocaleString("fr-FR"));
     g.append("text").attr("text-anchor","middle").attr("dy","1.4em").style("font-size","9.5px").style("fill","#9aa5b4").text("total");
 
-    // Lignes de repère
+    // Lignes de repère (coude + segment horizontal)
+    const lineEnd = radius*1.16;
     g.selectAll("polyline").data(arcs).join("polyline")
-      .attr("fill","none").attr("stroke","#C5BFBB").attr("stroke-width",1)
-      .attr("points",(d:any)=>{ const p0=arc.centroid(d); const p1=outer.centroid(d); const p2:[number,number]=[radius*1.18*(mid(d)<Math.PI?1:-1), p1[1]]; return [p0,p1,p2] as any; });
+      .attr("fill","none").attr("stroke","#D5D0CC").attr("stroke-width",1).attr("stroke-linejoin","round")
+      .attr("points",(d:any)=>{ const p0=arc.centroid(d); const p1=outer.centroid(d); const p2:[number,number]=[lineEnd*(mid(d)<Math.PI?1:-1), p1[1]]; return [p0,p1,p2] as any; });
 
-    // Étiquettes (nom + valeur)
-    const lbl = g.selectAll("g.lbl").data(arcs).join("g").attr("class","lbl")
-      .attr("transform",(d:any)=>{ const p:[number,number]=[radius*1.22*(mid(d)<Math.PI?1:-1), outer.centroid(d)[1]]; return `translate(${p[0]},${p[1]})`; })
-      .style("font-family","var(--font-google-sans),sans-serif");
-    lbl.append("text").attr("text-anchor",(d:any)=>mid(d)<Math.PI?"start":"end").attr("dy","-0.1em")
-      .style("font-size","11px").style("fill","#4a5568").text((d:any)=>String(d.data.label));
-    lbl.append("text").attr("text-anchor",(d:any)=>mid(d)<Math.PI?"start":"end").attr("dy","1.15em")
-      .style("font-size","11.5px").style("font-weight","700").attr("fill",(_,i:number)=>palette[i%palette.length])
-      .text((d:any)=>Number(d.data.valeur).toLocaleString("fr-FR"));
+    // Étiquettes (nom + badge valeur, sur une ligne, alignées sur le trait)
+    const esc=(s:string)=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const shortLbl=(s:string)=>{ const c=String(s).replace(/^secteur\s+/i,""); return c.charAt(0).toUpperCase()+c.slice(1); };
+    const FO_W=190, FO_H=24;
+    const fo = g.selectAll("foreignObject.lbl").data(arcs).join("foreignObject").attr("class","lbl")
+      .attr("width",FO_W).attr("height",FO_H)
+      .attr("x",(d:any)=>{ const right=mid(d)<Math.PI; const lx=(lineEnd+6)*(right?1:-1); return right?lx:lx-FO_W; })
+      .attr("y",(d:any)=>outer.centroid(d)[1]-FO_H/2)
+      .style("overflow","visible").style("pointer-events","none");
+    fo.append("xhtml:div")
+      .style("display","flex").style("align-items","center").style("gap","7px").style("height",`${FO_H}px`)
+      .style("justify-content",(d:any)=>mid(d)<Math.PI?"flex-start":"flex-end")
+      .style("white-space","nowrap").style("font-family","var(--font-google-sans),sans-serif")
+      .html((d:any,i:number)=>{
+        const c=palette[i%palette.length];
+        return `<span style="font-size:12.5px;color:#4a5568">${esc(shortLbl(d.data.label))}</span>`+
+               `<span style="font-size:11px;font-weight:800;color:#fff;background:${c};padding:1px 8px;border-radius:999px;line-height:1.5">${Number(d.data.valeur).toLocaleString("fr-FR")}</span>`;
+      });
   },[data,w,height,palette]);
 
   if(!data.length) return <EmptyState h={height}/>;
