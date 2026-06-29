@@ -135,32 +135,58 @@ function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:nu
 }
 
 // ─── Barres verticales (Observable Plot) — libellés inclinés ─────────────────
-function VBarChart({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
-  const cRef=useRef<HTMLDivElement>(null); const plotRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(440);
+function VBarChart({ data, height, palette=COLORS, rotateX=false }: { data:any[]; height:number; palette?:string[]; rotateX?:boolean }) {
+  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(440);
   useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
   useEffect(()=>{
-    if(!plotRef.current) return;
-    plotRef.current.innerHTML="";
+    if(!ref.current) return;
+    const svg=d3.select(ref.current); svg.selectAll("*").remove();
     if(!data.length) return;
     const sorted=[...data].sort((a:any,b:any)=>b.valeur-a.valeur).map((d:any,i:number)=>({ ...d, _c: d._c ?? palette[i%palette.length] }));
-    const chart=Plot.plot({
-      width:w, height,
-      marginTop:16, marginBottom:66, marginLeft:30, marginRight:8,
-      x:{ label:null, tickSize:0, tickRotate:-30, tickFormat:(d:any)=>{ const s=String(d); return s.length>16?s.slice(0,15)+"…":s; } },
-      y:{ label:null, grid:true, ticks:4, tickFormat:(d:any)=>`${d}` },
-      color:{ type:"identity" as const },
-      style:{ fontFamily:"var(--font-google-sans), sans-serif", fontSize:"11px", background:"transparent", overflow:"visible" },
-      marks:[
-        Plot.ruleY([0], { stroke:"#E8E5E3" }),
-        Plot.barY(sorted, { x:"label", y:"valeur", fill:"_c", sort:{ x:"y", reverse:true } }),
-        Plot.text(sorted, { x:"label", y:"valeur", text:(d:any)=>Number(d.valeur).toLocaleString("fr-FR"), dy:-6, lineAnchor:"bottom", fill:"#4a5568", fontWeight:700 }),
-      ],
-    });
-    (chart as HTMLElement).style.maxWidth="100%";
-    plotRef.current.appendChild(chart);
-  },[data,w,height,palette]);
+    const W=w, H=height, M={top:18,right:8,bottom:rotateX?64:26,left:30};
+    const x=d3.scaleBand().domain(sorted.map((d:any)=>String(d.label))).rangeRound([M.left,W-M.right]).padding(0.2);
+    const maxVal=d3.max(sorted,(d:any)=>d.valeur)||1;
+    const y=d3.scaleLinear().domain([0,maxVal]).nice().rangeRound([H-M.bottom,M.top]);
+    svg.attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet")
+       .attr("style","max-width:100%;height:auto;font-family:var(--font-google-sans),sans-serif;");
+
+    // Grille horizontale
+    svg.append("g").selectAll("line").data(y.ticks(4)).join("line")
+      .attr("x1",M.left).attr("x2",W-M.right).attr("y1",d=>y(d)).attr("y2",d=>y(d)).attr("stroke","#EFEDEA");
+
+    // Barres
+    svg.append("g").selectAll("rect").data(sorted).join("rect")
+      .attr("x",(d:any)=>x(String(d.label))!).attr("width",x.bandwidth())
+      .attr("y",(d:any)=>y(d.valeur)).attr("height",(d:any)=>y(0)-y(d.valeur))
+      .attr("fill",(d:any)=>d._c);
+
+    // Valeurs au-dessus
+    svg.append("g").selectAll("text").data(sorted).join("text")
+      .attr("x",(d:any)=>x(String(d.label))!+x.bandwidth()/2).attr("y",(d:any)=>y(d.valeur)-6)
+      .attr("text-anchor","middle").style("font-size","11px").style("font-weight","700").style("fill","#4a5568")
+      .text((d:any)=>Number(d.valeur).toLocaleString("fr-FR"));
+
+    // Axe X (style « zone économique » : gras, sans rotation)
+    const ax=svg.append("g").attr("transform",`translate(0,${H-M.bottom})`)
+      .call(d3.axisBottom(x).tickSizeOuter(0))
+      .call((g:any)=>g.selectAll(".domain").remove());
+    if(rotateX){
+      ax.call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#9aa5b4")
+        .attr("transform","rotate(-30)").style("text-anchor","end")
+        .text((d:any)=>{ const s=String(d); return s.length>14?s.slice(0,13)+"…":s; }));
+    } else {
+      ax.call((g:any)=>g.selectAll("text").style("font-size","11px").style("font-weight","700").style("fill","#4a5568"));
+    }
+
+    // Axe Y (style « zone économique »)
+    svg.append("g").attr("transform",`translate(${M.left},0)`)
+      .call(d3.axisLeft(y).ticks(4).tickFormat(d3.format("d")))
+      .call((g:any)=>g.select(".domain").remove())
+      .call((g:any)=>g.selectAll("line").remove())
+      .call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#9aa5b4"));
+  },[data,w,height,palette,rotateX]);
   if(!data.length) return <EmptyState h={height}/>;
-  return <div ref={cRef} style={{ width:"100%", overflow:"hidden" }}><div ref={plotRef}/></div>;
+  return <div ref={cRef} style={{ width:"100%", position:"relative" as const }}><svg ref={ref} style={{ width:"100%", height, display:"block" }}/></div>;
 }
 
 function BarV({ data, height, color="#004f91" }: { data:any[]; height:number; color?:string }) {
@@ -1613,7 +1639,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
         {isSecteurs
           ? <DonutLabeled data={modalData} height={Math.max(340, modalH)} palette={BAR_PALETTE5}/>
           : isPays
-          ? <VBarChart data={modalData} height={Math.max(320, modalH)} palette={BAR_PALETTE7}/>
+          ? <VBarChart data={modalData} height={Math.max(320, modalH)} palette={BAR_PALETTE7} rotateX/>
           : <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={BAR_PALETTE7}/>}
       </VizModal>
     </>
