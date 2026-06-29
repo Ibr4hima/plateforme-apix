@@ -419,12 +419,13 @@ export default function Navbar() {
 
           {/* ── CTA Connexion ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <Link href="/login"
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #ca631f 0%, #a84e18 100%)", padding: "9px 20px", borderRadius: 10, textDecoration: "none", boxShadow: "0 2px 12px rgba(202,99,31,0.35)", transition: "all 0.2s", letterSpacing: "0em", fontFamily: "var(--font-google-sans)" }}
+            {/* Connexion temporairement inactif (login pas encore prêt) */}
+            <button type="button" onClick={() => {}}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #ca631f 0%, #a84e18 100%)", padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", boxShadow: "0 2px 12px rgba(202,99,31,0.35)", transition: "all 0.2s", letterSpacing: "0em", fontFamily: "var(--font-google-sans)" }}
               onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(202,99,31,0.45)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 12px rgba(202,99,31,0.35)"; }}>
               Connexion
-            </Link>
+            </button>
           </div>
 
           {/* ── Burger mobile ── */}
@@ -457,10 +458,11 @@ export default function Navbar() {
                 style={{ display: "block", width: "100%", textAlign: "left" as const, padding: "10px 14px", color: "#4a5568", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, borderRadius: 10 }}>
                 Code des investissements
               </button>
-              <Link href="/login"
-                style={{ display: "block", textAlign: "center" as const, fontSize: 14, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#ca631f,#a84e18)", padding: "12px", borderRadius: 12, textDecoration: "none", marginTop: 4 }}>
+              {/* Connexion temporairement inactif (login pas encore prêt) */}
+              <button type="button" onClick={() => {}}
+                style={{ display: "block", width: "100%", textAlign: "center" as const, fontSize: 14, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#ca631f,#a84e18)", padding: "12px", borderRadius: 12, border: "none", cursor: "pointer", marginTop: 4 }}>
                 Connexion
-              </Link>
+              </button>
             </div>
           </div>
         )}
