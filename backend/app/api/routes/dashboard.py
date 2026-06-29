@@ -435,6 +435,19 @@ async def viz_detail_zone(zone_id: Optional[int] = Query(None), db: AsyncSession
     """, {"zone_id": zone_id})
 
 # ── Croisements ───────────────────────────────────────────────────────────────
+@router.get("/viz/entreprises-par-zone-eco")
+async def viz_ent_zone_eco(db: AsyncSession = Depends(get_db)):
+    # Grouped bar : groupe = type de zone, sous-groupe = zone, valeur = entreprises installées
+    return await safe(db, """
+        SELECT z.type_zone AS groupe, z.nom_zone AS label,
+               COUNT(ze.id) FILTER (WHERE ze.statut = 'installee') AS valeur
+        FROM zones z
+        LEFT JOIN zone_entreprises ze ON ze.zone_id = z.id
+        WHERE z.is_deleted = FALSE
+        GROUP BY z.type_zone, z.nom_zone
+        ORDER BY z.type_zone, valeur DESC, z.nom_zone
+    """)
+
 @router.get("/viz/crois-entreprises-par-zone")
 async def viz_crois_ent_zone(db: AsyncSession = Depends(get_db)):
     return await safe(db, """
