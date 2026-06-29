@@ -1279,13 +1279,13 @@ function CarteSenegal({ height=200 }: { height?:number }) {
         const geojson = topojson.feature(topo, topo.objects.sen);
         const projection = d3.geoMercator().fitExtent([[8,8],[W-8,H-8]], geojson);
         const pathGen = d3.geoPath().projection(projection);
-        // Régions remplies en gris + lignes de frontières
+        // Régions remplies + lignes de frontières
         svg.selectAll("path.reg").data(geojson.features).join("path")
-          .attr("d", (d:any)=>pathGen(d)).attr("fill","#C4C4C4")
-          .attr("stroke","#666666").attr("stroke-width",0.6).attr("stroke-linejoin","round");
+          .attr("d", (d:any)=>pathGen(d)).attr("fill","#F2F0EF")
+          .attr("stroke","#C9C8C7").attr("stroke-width",0.6).attr("stroke-linejoin","round");
         // Contour extérieur (un peu plus marqué)
         svg.append("path").datum(topojson.mesh(topo, topo.objects.sen, (a:any,b:any)=>a===b))
-          .attr("d", pathGen as any).attr("fill","none").attr("stroke","#666666").attr("stroke-width",1).attr("stroke-linejoin","round");
+          .attr("d", pathGen as any).attr("fill","none").attr("stroke","#C9C8C7").attr("stroke-width",1).attr("stroke-linejoin","round");
       })
       .catch(console.error);
     return ()=>{ cancelled=true; if(ref.current) ref.current.innerHTML=""; };
