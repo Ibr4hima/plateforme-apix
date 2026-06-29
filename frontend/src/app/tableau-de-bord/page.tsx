@@ -1107,15 +1107,26 @@ function downloadPNG(svgEl: SVGSVGElement, filename: string) {
   const H = svgEl.viewBox?.baseVal?.height || svgEl.clientHeight || 400;
   const blob = new Blob([clone.outerHTML], {type:"image/svg+xml"});
   const url = URL.createObjectURL(blob);
+  // Repli : si le canvas est « teinté » (SVG contenant un foreignObject, ex. donut),
+  // toDataURL lève une SecurityError → on exporte alors le SVG.
+  const downloadSvg = () => {
+    const a = document.createElement("a"); a.href=url; a.download=`${filename}.svg`; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  };
   const img = new Image(); img.width=W*2; img.height=H*2;
   img.onload = () => {
-    const canvas = document.createElement("canvas"); canvas.width=W*2; canvas.height=H*2;
-    const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle="#fff"; ctx.fillRect(0,0,W*2,H*2);
-    ctx.drawImage(img,0,0,W*2,H*2);
-    const a = document.createElement("a"); a.href=canvas.toDataURL("image/png"); a.download=`${filename}.png`; a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const canvas = document.createElement("canvas"); canvas.width=W*2; canvas.height=H*2;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle="#fff"; ctx.fillRect(0,0,W*2,H*2);
+      ctx.drawImage(img,0,0,W*2,H*2);
+      const a = document.createElement("a"); a.href=canvas.toDataURL("image/png"); a.download=`${filename}.png`; a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      downloadSvg();
+    }
   };
+  img.onerror = downloadSvg;
   img.src = url;
 }
 
