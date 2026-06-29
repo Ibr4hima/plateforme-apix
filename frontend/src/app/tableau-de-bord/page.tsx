@@ -1250,7 +1250,15 @@ function indicMeta(id:string) {
   return { dim, ind };
 }
 
-// ─── Carte du Sénégal (remplie en gris, frontières) ──────────────────────────
+// ─── Carte du Sénégal + heatmap de concentration des entreprises ─────────────
+// topojson "Thies" → ref_regions "Thiès"
+const SEN_NAME_MAP: Record<string,string> = {
+  "Dakar":"Dakar","Thies":"Thiès","Diourbel":"Diourbel","Louga":"Louga",
+  "Saint-Louis":"Saint-Louis","Matam":"Matam","Tambacounda":"Tambacounda",
+  "Kedougou":"Kédougou","Fatick":"Fatick","Kaolack":"Kaolack","Kaffrine":"Kaffrine",
+  "Kolda":"Kolda","Sedhiou":"Sédhiou","Ziguinchor":"Ziguinchor",
+};
+
 function CarteSenegal({ height=200 }: { height?:number }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(()=>{
@@ -1265,25 +1273,54 @@ function CarteSenegal({ height=200 }: { height?:number }) {
       s.src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js";
       s.onerror=rej; s.onload=poll; document.head.appendChild(s);
     });
-    loadTopojson()
-      .then(()=>fetch("https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/sen.topo.json"))
-      .then(r=>r.json())
-      .then((topo:any)=>{
+    Promise.all([
+      loadTopojson().then(()=>fetch("https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/sen.topo.json")).then(r=>r.json()),
+      fetch(`${API}/dashboard/viz/entreprises-par-region`).then(r=>r.json()).catch(()=>[]),
+    ])
+      .then(([topo, regionData]:any)=>{
         if(cancelled||!ref.current) return;
         const topojson:any = (window as any).topojson;
         const W = container.clientWidth || 480;
         const H = height;
+        // Comptes par région (nom ref → valeur)
+        const counts: Record<string,number> = {};
+        (Array.isArray(regionData)?regionData:[]).forEach((d:any)=>{ counts[d.label]=Number(d.valeur)||0; });
+        const maxVal = Math.max(1, ...Object.values(counts));
+
         container.innerHTML="";
         const svg = d3.select(container).append("svg")
           .attr("width","100%").attr("viewBox",`0 0 ${W} ${H}`).style("display","block");
         const geojson = topojson.feature(topo, topo.objects.sen);
         const projection = d3.geoMercator().fitExtent([[8,8],[W-8,H-8]], geojson);
         const pathGen = d3.geoPath().projection(projection);
-        // Régions remplies + lignes de frontières
+
+        // Fond : régions grises + frontières
         svg.selectAll("path.reg").data(geojson.features).join("path")
           .attr("d", (d:any)=>pathGen(d)).attr("fill","#E0E0E0")
           .attr("stroke","#C4C4C4").attr("stroke-width",0.6).attr("stroke-linejoin","round");
-        // Contour extérieur (un peu plus marqué)
+
+        // Défs : flou + masque (clip) sur le pays
+        const defs = svg.append("defs");
+        const minHW = Math.min(W,H);
+        defs.append("filter").attr("id","heat-blur")
+          .attr("x","-40%").attr("y","-40%").attr("width","180%").attr("height","180%")
+          .append("feGaussianBlur").attr("in","SourceGraphic").attr("stdDeviation", Math.max(6, minHW*0.05));
+        let pays:any; try { pays = topojson.merge(topo, topo.objects.sen.geometries); } catch { pays=geojson; }
+        defs.append("clipPath").attr("id","sen-clip").append("path").attr("d", pathGen(pays) as string);
+
+        // Heatmap : un blob par région, taille + couleur selon la concentration
+        const rScale = d3.scaleSqrt().domain([0,maxVal]).range([minHW*0.11, minHW*0.30]);
+        const heatColor = (v:number)=> d3.interpolateTurbo(0.28 + 0.66*(v/maxVal));
+        const heat = svg.append("g").attr("clip-path","url(#sen-clip)").attr("filter","url(#heat-blur)").attr("opacity",0.72);
+        geojson.features.forEach((f:any)=>{
+          const nom = SEN_NAME_MAP[f.properties?.name||""] || f.properties?.name || "";
+          const v = counts[nom] || 0;
+          if (v<=0) return;
+          const c = pathGen.centroid(f);
+          heat.append("circle").attr("cx",c[0]).attr("cy",c[1]).attr("r",rScale(v)).attr("fill", heatColor(v));
+        });
+
+        // Contour extérieur par-dessus
         svg.append("path").datum(topojson.mesh(topo, topo.objects.sen, (a:any,b:any)=>a===b))
           .attr("d", pathGen as any).attr("fill","none").attr("stroke","#C4C4C4").attr("stroke-width",1).attr("stroke-linejoin","round");
       })
