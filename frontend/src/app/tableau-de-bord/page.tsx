@@ -1747,6 +1747,15 @@ export default function TableauDeBordPage() {
                 </div>
                 <CarteSenegal height={200}/>
               </div>
+
+              {/* Répartition par zones économiques (placeholder) */}
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px"}}>
+                <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:"0 0 12px"}}>Répartition des entreprises par zones économiques</p>
+                <div style={{height:200,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:8,color:"#C5BFBB",background:"#FAFAF9",borderRadius:12,border:"1px dashed #E8E5E3"}}>
+                  <BarChart2 size={24} style={{color:"#E8E5E3"}}/>
+                  <span style={{fontSize:12.5}}>Visualisation à venir</span>
+                </div>
+              </div>
             </div>
             <VizModal open={mapOpen} onClose={()=>setMapOpen(false)} titre="Répartition des entreprises" vizId="repartition-entreprises">
               <CarteSenegal height={480} legendVertical/>
