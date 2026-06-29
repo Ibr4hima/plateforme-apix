@@ -1813,7 +1813,7 @@ export default function TableauDeBordPage() {
             </div>
 
             {/* Visualisation permanente : Répartition des entreprises */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,marginBottom:28,alignItems:"start"}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,marginBottom:28,alignItems:"stretch"}}>
               <div onClick={()=>setMapOpen(true)}
                 style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s"}}
                 onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
@@ -1830,17 +1830,14 @@ export default function TableauDeBordPage() {
                 style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s"}}
                 onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
                 onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap" as const}}>
-                  <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:0}}>Répartition des entreprises par zones économiques</p>
-                  <span style={{fontSize:9.5,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em"}}>Installées</span>
-                </div>
+                <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:"0 0 12px"}}>Répartition des entreprises par zone économique</p>
                 <GroupedBarZones height={200}/>
               </div>
             </div>
             <VizModal open={mapOpen} onClose={()=>setMapOpen(false)} titre="Répartition des entreprises" vizId="repartition-entreprises">
               <CarteSenegal height={480} legendVertical/>
             </VizModal>
-            <VizModal open={zoneEcoOpen} onClose={()=>setZoneEcoOpen(false)} titre="Répartition des entreprises par zones économiques" vizId="entreprises-par-zone-eco">
+            <VizModal open={zoneEcoOpen} onClose={()=>setZoneEcoOpen(false)} titre="Répartition des entreprises par zone économique" vizId="entreprises-par-zone-eco">
               <GroupedBarZones height={460}/>
             </VizModal>
 
