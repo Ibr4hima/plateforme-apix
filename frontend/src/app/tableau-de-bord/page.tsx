@@ -1413,18 +1413,19 @@ const ZONE_ECO_FICTIF = [
 ];
 
 // ─── Grouped bar chart : entreprises par zone, groupées par type de zone ─────
-function GroupedBarZones({ height=200 }: { height?:number }) {
-  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(480);
+function GroupedBarZones({ height=200, fill=false }: { height?:number; fill?:boolean }) {
+  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null);
+  const [w,setW]=useState(480); const [h,setH]=useState(height);
   const data = ZONE_ECO_FICTIF;
   const [tip,setTip]=useState<{nom:string; groupe:string; valeur:number; x:number; y:number}|null>(null);
 
-  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{ const obs=new ResizeObserver(e=>{ setW(e[0].contentRect.width); if(fill && e[0].contentRect.height>0) setH(e[0].contentRect.height); }); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[fill]);
 
   useEffect(()=>{
     if(!ref.current) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
     if(!data.length) return;
-    const W=w, H=height, M={top:12,right:8,bottom:26,left:30};
+    const W=w, H=fill?h:height, M={top:12,right:8,bottom:26,left:30};
     const ORDER=["ZES","ZAI","ZFI"];
     const groups=Array.from(new Set(data.map((d:any)=>d.groupe)))
       .sort((a:any,b:any)=>((ORDER.indexOf(a)+1)||99)-((ORDER.indexOf(b)+1)||99));
@@ -1466,12 +1467,12 @@ function GroupedBarZones({ height=200 }: { height?:number }) {
       .call((g:any)=>g.select(".domain").remove())
       .call((g:any)=>g.selectAll("line").remove())
       .call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#9aa5b4"));
-  },[data,w,height]);
+  },[data,w,h,height,fill]);
 
   if(!data.length) return <EmptyState h={height}/>;
   return (
-    <div ref={cRef} style={{ width:"100%", position:"relative" as const }}>
-      <svg ref={ref} style={{ width:"100%", height, display:"block" }}/>
+    <div ref={cRef} style={{ width:"100%", height: fill?"100%":undefined, position:"relative" as const }}>
+      <svg ref={ref} style={{ width:"100%", height: fill?"100%":height, display:"block" }}/>
       {tip && (
         <div style={{ position:"absolute" as const, left:Math.min(tip.x+12, (cRef.current?.clientWidth||300)-160), top:Math.max(tip.y-10,4), background:"#1a1a2e", color:"#fff", borderRadius:9, padding:"8px 11px", fontSize:12, lineHeight:1.5, pointerEvents:"none" as const, zIndex:20, boxShadow:"0 6px 20px rgba(0,0,0,0.25)", whiteSpace:"nowrap" as const }}>
           <div style={{ fontWeight:700, marginBottom:2 }}>{tip.nom}</div>
@@ -1850,11 +1851,11 @@ export default function TableauDeBordPage() {
 
               {/* Répartition par zones économiques (grouped bar) */}
               <div onClick={()=>setZoneEcoOpen(true)}
-                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s"}}
+                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s",display:"flex",flexDirection:"column" as const}}
                 onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
                 onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
                 <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:"0 0 12px"}}>Répartition des entreprises par zone économique</p>
-                <GroupedBarZones height={200}/>
+                <div style={{flex:1,minHeight:200}}><GroupedBarZones height={200} fill/></div>
               </div>
             </div>
             <VizModal open={mapOpen} onClose={()=>setMapOpen(false)} titre="Répartition des entreprises" vizId="repartition-entreprises">
