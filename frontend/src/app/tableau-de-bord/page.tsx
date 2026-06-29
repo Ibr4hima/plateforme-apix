@@ -1384,17 +1384,41 @@ function CarteSenegal({ height=200, legend=true, legendVertical=false }: { heigh
   );
 }
 
+// Dégradés de marque par type de zone (clair → foncé)
+const ZONE_GRAD: Record<string,[string,string]> = {
+  ZES: ["#EDF4FB", "#003468"], // bleu
+  ZAI: ["#FDF3EC", "#943F0C"], // orange
+  ZFI: ["#ECF5F3", "#065549"], // teal
+};
+// Données fictives temporaires (en attendant le remplissage de la BDD)
+const ZONE_ECO_FICTIF = [
+  { groupe:"ZES", label:"Dakar",       valeur:47 },
+  { groupe:"ZES", label:"Rufisque",    valeur:39 },
+  { groupe:"ZES", label:"Mbour",       valeur:33 },
+  { groupe:"ZES", label:"Thiès",       valeur:27 },
+  { groupe:"ZES", label:"Bambey",      valeur:19 },
+  { groupe:"ZES", label:"Podor",       valeur:13 },
+  { groupe:"ZAI", label:"Tivaouane",   valeur:45 },
+  { groupe:"ZAI", label:"Mbacké",      valeur:38 },
+  { groupe:"ZAI", label:"Kaolack",     valeur:31 },
+  { groupe:"ZAI", label:"Louga",       valeur:24 },
+  { groupe:"ZAI", label:"Fatick",      valeur:18 },
+  { groupe:"ZAI", label:"Bignona",     valeur:12 },
+  { groupe:"ZFI", label:"Ziguinchor",  valeur:43 },
+  { groupe:"ZFI", label:"Kolda",       valeur:36 },
+  { groupe:"ZFI", label:"Tambacounda", valeur:28 },
+  { groupe:"ZFI", label:"Saint-Louis", valeur:22 },
+  { groupe:"ZFI", label:"Matam",       valeur:15 },
+  { groupe:"ZFI", label:"Kédougou",    valeur:11 },
+];
+
 // ─── Grouped bar chart : entreprises par zone, groupées par type de zone ─────
 function GroupedBarZones({ height=200 }: { height?:number }) {
   const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(480);
-  const [data,setData]=useState<any[]>([]); const [loading,setLoading]=useState(true);
+  const data = ZONE_ECO_FICTIF;
   const [tip,setTip]=useState<{nom:string; groupe:string; valeur:number; x:number; y:number}|null>(null);
 
   useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
-  useEffect(()=>{
-    fetch(`${API}/dashboard/viz/entreprises-par-zone-eco`).then(r=>r.json())
-      .then(d=>setData(Array.isArray(d)?d:[])).catch(()=>setData([])).finally(()=>setLoading(false));
-  },[]);
 
   useEffect(()=>{
     if(!ref.current) return;
@@ -1419,13 +1443,13 @@ function GroupedBarZones({ height=200 }: { height?:number }) {
     // Barres groupées
     (groups as string[]).forEach(g=>{
       const items=[...(byGroup.get(g)||[])].sort((a:any,b:any)=>b.valeur-a.valeur);
-      const col=zoneTypeMeta(g).color;
+      const [lo,hi]=ZONE_GRAD[g] || [zoneTypeMeta(g).color,"#ffffff"];
       const xIn=d3.scaleBand().domain(items.map((d:any)=>d.label)).rangeRound([0, fx.bandwidth()!]).padding(0.14);
       const gg=svg.append("g").attr("transform",`translate(${fx(g)},0)`);
       gg.selectAll("rect").data(items).join("rect")
         .attr("x",(d:any)=>xIn(d.label)!).attr("width",xIn.bandwidth())
         .attr("y",(d:any)=>y(d.valeur)).attr("height",(d:any)=>y(0)-y(d.valeur))
-        .attr("fill",(_:any,i:number)=> d3.interpolateRgb(col,"#ffffff")(Math.min(0.5, i*0.12)) as string)
+        .attr("fill",(_:any,i:number)=> d3.interpolateRgb(hi, lo)(items.length>1 ? Math.min(0.82, i/(items.length-1)) : 0) as string)
         .style("cursor","pointer")
         .on("mousemove",function(e:any,d:any){ const rect=cRef.current!.getBoundingClientRect(); setTip({nom:d.label, groupe:g, valeur:d.valeur, x:e.clientX-rect.left, y:e.clientY-rect.top}); })
         .on("mouseleave",()=>setTip(null));
@@ -1444,7 +1468,6 @@ function GroupedBarZones({ height=200 }: { height?:number }) {
       .call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#9aa5b4"));
   },[data,w,height]);
 
-  if(loading) return <div style={{height,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:"#9aa5b4"}}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>;
   if(!data.length) return <EmptyState h={height}/>;
   return (
     <div ref={cRef} style={{ width:"100%", position:"relative" as const }}>
