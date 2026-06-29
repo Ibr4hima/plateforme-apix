@@ -133,6 +133,35 @@ function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:nu
   return <div ref={cRef} style={{ width:"100%" }}><svg ref={ref} style={{ width:"100%", height, display:"block" }}/></div>;
 }
 
+// ─── Barres verticales (Observable Plot) — libellés inclinés ─────────────────
+function VBarChart({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
+  const cRef=useRef<HTMLDivElement>(null); const plotRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(440);
+  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{
+    if(!plotRef.current) return;
+    plotRef.current.innerHTML="";
+    if(!data.length) return;
+    const sorted=[...data].sort((a:any,b:any)=>b.valeur-a.valeur).map((d:any,i:number)=>({ ...d, _c:palette[i%palette.length] }));
+    const chart=Plot.plot({
+      width:w, height,
+      marginTop:16, marginBottom:66, marginLeft:30, marginRight:8,
+      x:{ label:null, tickSize:0, tickRotate:-30, tickFormat:(d:any)=>{ const s=String(d); return s.length>16?s.slice(0,15)+"…":s; } },
+      y:{ label:null, grid:true, ticks:4, tickFormat:(d:any)=>`${d}` },
+      color:{ type:"identity" as const },
+      style:{ fontFamily:"var(--font-google-sans), sans-serif", fontSize:"11px", background:"transparent", overflow:"visible" },
+      marks:[
+        Plot.ruleY([0], { stroke:"#E8E5E3" }),
+        Plot.barY(sorted, { x:"label", y:"valeur", fill:"_c", sort:{ x:"y", reverse:true } }),
+        Plot.text(sorted, { x:"label", y:"valeur", text:(d:any)=>Number(d.valeur).toLocaleString("fr-FR"), dy:-6, lineAnchor:"bottom", fill:"#4a5568", fontWeight:700 }),
+      ],
+    });
+    (chart as HTMLElement).style.maxWidth="100%";
+    plotRef.current.appendChild(chart);
+  },[data,w,height,palette]);
+  if(!data.length) return <EmptyState h={height}/>;
+  return <div ref={cRef} style={{ width:"100%", overflow:"hidden" }}><div ref={plotRef}/></div>;
+}
+
 function BarV({ data, height, color="#004f91" }: { data:any[]; height:number; color?:string }) {
   const ref=useRef<SVGSVGElement>(null); const cRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(400);
   useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
@@ -1246,6 +1275,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const titre = `${ind.label} — ${dim.label}`;
   // Dimensions à forte cardinalité : top 3 en vignette, top 7 en grand
   const isSecteurs = dim.key==="secteurs";
+  const isPays     = dim.key==="pays";
   const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
   const cardData  = isLong ? data.slice(0,5) : data;
   const modalData = isLong ? data.slice(0,7) : data;
@@ -1256,6 +1286,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
     : cardData.length===0 ? <EmptyState h={h}/>
     : isSecteurs ? <DonutLabeled data={cardData} height={h} palette={BAR_PALETTE5} compact/>
+    : isPays ? <VBarChart data={cardData} height={h} palette={BAR_PALETTE5}/>
     : <HBarAxisChart data={cardData} height={h} palette={BAR_PALETTE5}/>;
 
   return (
@@ -1280,6 +1311,8 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
       <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top 7`:titre} vizId={id}>
         {isSecteurs
           ? <DonutLabeled data={modalData} height={Math.max(340, modalH)} palette={BAR_PALETTE5}/>
+          : isPays
+          ? <VBarChart data={modalData} height={Math.max(320, modalH)} palette={BAR_PALETTE7}/>
           : <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={BAR_PALETTE7}/>}
       </VizModal>
     </>
