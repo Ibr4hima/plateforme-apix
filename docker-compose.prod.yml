@@ -56,6 +56,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_FORCE_ZOOM: ${NEXT_PUBLIC_FORCE_ZOOM:-}
     container_name: apix_frontend_prod
     restart: unless-stopped
     environment:
