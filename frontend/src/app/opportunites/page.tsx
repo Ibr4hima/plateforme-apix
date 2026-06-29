@@ -1085,7 +1085,7 @@ export default function OpportunitesPage() {
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
           {/* Sidebar */}
-          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 72px)",overflowY:"auto" as const,position:"sticky" as const,top:72,display:"flex",flexDirection:"column" as const}}>
+          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
             <div style={{padding:sidebarOpen?"20px 16px":"10px 8px",flex:1}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
                 {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}

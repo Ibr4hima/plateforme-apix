@@ -236,7 +236,7 @@ export default function ProspectsPage() {
       {/* ── Corps : sidebar + grille ── */}
       <div style={{ display: "flex", alignItems: "flex-start" }}>
         {/* Sidebar */}
-        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "calc(100vh - 72px)", overflowY: "auto" as const, position: "sticky" as const, top: 72, display: "flex", flexDirection: "column" as const }}>
+        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "calc(100vh - 64px)", overflowY: "auto" as const, position: "sticky" as const, top: 64, display: "flex", flexDirection: "column" as const }}>
           {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute" as const, right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent", transition: "background 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.3)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
           <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
             {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Filtres</span>}

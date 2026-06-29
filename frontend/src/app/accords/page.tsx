@@ -420,7 +420,7 @@ export default function AccordsPage() {
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
           {/* Sidebar bande */}
-          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 72px)",overflowY:"auto" as const,position:"sticky" as const,top:72,display:"flex",flexDirection:"column" as const}}>
+          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
             {/* Handle de resize */}
             {sidebarOpen&&<div onMouseDown={startResize}
               style={{position:"absolute" as const,right:0,top:0,bottom:0,width:4,cursor:"col-resize",zIndex:10,background:"transparent",transition:"background 0.15s"}}
