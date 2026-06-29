@@ -192,14 +192,14 @@ function DonutChart({ data, size, palette=COLORS }: { data:any[]; size:number; p
 }
 
 // ─── Donut avec étiquettes reliées par des lignes (leader lines) ─────────────
-function DonutLabeled({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
+function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:any[]; height:number; palette?:string[]; compact?:boolean }) {
   const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(440);
   useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
   useEffect(()=>{
     if(!ref.current||!data.length) return;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
     const W=w, H=height;
-    const radius = Math.max(40, Math.min(H/2 - 10, W/2 - 140));
+    const radius = Math.max(40, Math.min(H/2 - 10, W/2 - (compact?80:140)));
     svg.attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet").attr("style","max-width:100%;height:auto;");
     const g = svg.append("g").attr("transform",`translate(${W/2},${H/2})`);
 
@@ -221,15 +221,16 @@ function DonutLabeled({ data, height, palette=COLORS }: { data:any[]; height:num
     g.append("text").attr("text-anchor","middle").attr("dy","1.4em").style("font-size","9.5px").style("fill","#9aa5b4").text("total");
 
     // Lignes de repère (coude + segment horizontal)
-    const lineEnd = radius*1.16;
+    const lineEnd = radius*(compact?1.12:1.16);
     g.selectAll("polyline").data(arcs).join("polyline")
       .attr("fill","none").attr("stroke","#D5D0CC").attr("stroke-width",1).attr("stroke-linejoin","round")
       .attr("points",(d:any)=>{ const p0=arc.centroid(d); const p1=outer.centroid(d); const p2:[number,number]=[lineEnd*(mid(d)<Math.PI?1:-1), p1[1]]; return [p0,p1,p2] as any; });
 
     // Étiquettes (nom + badge valeur, sur une ligne, alignées sur le trait)
     const esc=(s:string)=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    const shortLbl=(s:string)=>{ const c=String(s).replace(/^secteur\s+/i,""); return c.charAt(0).toUpperCase()+c.slice(1); };
-    const FO_W=190, FO_H=24;
+    const ABBR:Record<string,string>={ primaire:"Prim.", secondaire:"Sec.", tertiaire:"Tert." };
+    const shortLbl=(s:string)=>{ const c=String(s).replace(/^secteur\s+/i,"").trim(); const cap=c.charAt(0).toUpperCase()+c.slice(1); return compact ? (ABBR[c.toLowerCase()]||cap.slice(0,4)+".") : cap; };
+    const FO_W=compact?100:190, FO_H=24;
     const fo = g.selectAll("foreignObject.lbl").data(arcs).join("foreignObject").attr("class","lbl")
       .attr("width",FO_W).attr("height",FO_H)
       .attr("x",(d:any)=>{ const right=mid(d)<Math.PI; const lx=(lineEnd+6)*(right?1:-1); return right?lx:lx-FO_W; })
@@ -1239,13 +1240,13 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites";
   const cardData  = isLong ? data.slice(0,3) : data;
   const modalData = isLong ? data.slice(0,7) : data;
-  const cardH  = isSecteurs ? 210 : 26 + Math.max(1, cardData.length)*38 + 8;
+  const cardH  = isSecteurs ? 290 : 26 + Math.max(1, cardData.length)*38 + 8;
   const modalH = isSecteurs ? 380 : 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
     : cardData.length===0 ? <EmptyState h={h}/>
-    : isSecteurs ? <DonutLabeled data={cardData} height={h} palette={INDIC_PALETTE}/>
+    : isSecteurs ? <DonutLabeled data={cardData} height={h} palette={INDIC_PALETTE} compact/>
     : <HBarAxisChart data={cardData} height={h} palette={INDIC_PALETTE}/>;
 
   return (
