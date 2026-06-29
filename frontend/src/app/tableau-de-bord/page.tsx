@@ -94,9 +94,13 @@ function BarH({ data, height, palette=COLORS }: { data:any[]; height:number; pal
 // Libellé AU-DESSUS de chaque barre (idéal pour les noms longs) — barres pleine largeur.
 function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
   const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(560);
+  const animSig=useRef<string>("");
   useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
     if(!ref.current||!data.length) return;
+    // Animer seulement quand les données changent, pas au redimensionnement
+    const sig=data.map((d:any)=>`${d.label}:${d.valeur}`).join("|");
+    const animate=sig!==animSig.current; animSig.current=sig;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
     const W=w, H=height, mRight=10;
     const sorted=[...data].sort((a:any,b:any)=>b.valeur-a.valeur);
@@ -116,10 +120,14 @@ function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:nu
       .text((d:any)=>{ const s=String(d.label); return s.length>maxChars?s.slice(0,maxChars-1)+"…":s; });
 
     // Barre
-    rows.append("rect").attr("x",0).attr("y",barY).attr("height",barH)
-      .attr("fill",(d:any,i:number)=>d._c ?? palette[i%palette.length])
-      .attr("width",0).transition().duration(450).delay((_:any,i:number)=>i*45)
-      .attr("width",(d:any)=>Math.max(2, x(d.valeur)));
+    const bars=rows.append("rect").attr("x",0).attr("y",barY).attr("height",barH)
+      .attr("fill",(d:any,i:number)=>d._c ?? palette[i%palette.length]);
+    if(animate){
+      bars.attr("width",0).transition().duration(450).delay((_:any,i:number)=>i*45)
+        .attr("width",(d:any)=>Math.max(2, x(d.valeur)));
+    } else {
+      bars.attr("width",(d:any)=>Math.max(2, x(d.valeur)));
+    }
 
     // Valeur (dans la barre, sinon à droite) — texte à contraste adaptatif
     rows.append("text").attr("y",barY+barH/2).attr("dy","0.35em")
@@ -264,9 +272,13 @@ function DonutChart({ data, size, palette=COLORS }: { data:any[]; size:number; p
 // ─── Donut avec étiquettes reliées par des lignes (leader lines) ─────────────
 function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:any[]; height:number; palette?:string[]; compact?:boolean }) {
   const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(440);
+  const animSig=useRef<string>("");
   useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
     if(!ref.current||!data.length) return;
+    // Animer seulement quand les données changent, pas au redimensionnement
+    const sig=data.map((d:any)=>`${d.label}:${d.valeur}`).join("|");
+    const animate=sig!==animSig.current; animSig.current=sig;
     const svg=d3.select(ref.current); svg.selectAll("*").remove();
     const W=w, H=height;
     const radius = Math.max(40, Math.min(H/2 - 10, W/2 - (compact?80:140)));
@@ -280,10 +292,14 @@ function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:an
     const mid = (d:any)=>d.startAngle+(d.endAngle-d.startAngle)/2;
 
     // Parts
-    g.selectAll("path").data(arcs).join("path")
-      .attr("fill",(d:any,i:number)=>d.data._c ?? palette[i%palette.length]).attr("opacity",0.92)
-      .attr("d",arc as any)
-      .transition().duration(550).attrTween("d",function(d:any){ const i=d3.interpolate({startAngle:0,endAngle:0},d); return (t:number)=>arc(i(t)) as string; });
+    const parts = g.selectAll("path").data(arcs).join("path")
+      .attr("fill",(d:any,i:number)=>d.data._c ?? palette[i%palette.length]).attr("opacity",0.92);
+    if(animate){
+      parts.attr("d",arc as any)
+        .transition().duration(550).attrTween("d",function(d:any){ const i=d3.interpolate({startAngle:0,endAngle:0},d); return (t:number)=>arc(i(t)) as string; });
+    } else {
+      parts.attr("d",arc as any);
+    }
 
     // Total au centre
     const total=d3.sum(data,d=>d.valeur);
