@@ -1263,7 +1263,7 @@ const SEN_NAME_MAP: Record<string,string> = {
 const HEAT_STOPS = ["#EDF4FB", "#C5DCF2", "#90BDE5", "#5596D4", "#2872B8", "#004f91", "#003468"];
 const heatRamp = (t:number) => d3.interpolateRgbBasis(HEAT_STOPS)(Math.max(0, Math.min(1, t)));
 
-function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boolean }) {
+function CarteSenegal({ height=200, legend=true, legendVertical=false }: { height?:number; legend?:boolean; legendVertical?:boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const uid = useId().replace(/[:]/g,"");
   const [tip, setTip] = useState<{nom:string; valeur:number; densite:number; x:number; y:number}|null>(null);
@@ -1356,14 +1356,20 @@ function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boo
     <div style={{ position:"relative" as const }}>
       <div ref={ref} style={{ width:"100%", height }}/>
 
-      {/* Légende d'intensité (centrée) */}
-      {legend && bornes && (
+      {/* Légende d'intensité */}
+      {legend && bornes && (legendVertical ? (
+        <div style={{ position:"absolute" as const, right:16, top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column" as const, alignItems:"center", gap:10 }}>
+          <span style={{ fontSize:12, fontWeight:600, color:"#9aa5b4" }}>Forte</span>
+          <div style={{ width:16, height:240, borderRadius:999, background:`linear-gradient(to top, ${HEAT_STOPS.join(",")})` }}/>
+          <span style={{ fontSize:12, fontWeight:600, color:"#9aa5b4" }}>Faible</span>
+        </div>
+      ) : (
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:10 }}>
           <span style={{ fontSize:10, fontWeight:600, color:"#9aa5b4" }}>Faible</span>
           <div style={{ width:200, height:8, borderRadius:999, background:`linear-gradient(90deg, ${HEAT_STOPS.join(",")})` }}/>
           <span style={{ fontSize:10, fontWeight:600, color:"#9aa5b4" }}>Forte</span>
         </div>
-      )}
+      ))}
 
       {/* Tooltip */}
       {tip && (
@@ -1743,7 +1749,7 @@ export default function TableauDeBordPage() {
               </div>
             </div>
             <VizModal open={mapOpen} onClose={()=>setMapOpen(false)} titre="Répartition des entreprises" vizId="repartition-entreprises">
-              <CarteSenegal height={480}/>
+              <CarteSenegal height={480} legendVertical/>
             </VizModal>
 
             {/* Visualisations sélectionnées dans le filtre */}
