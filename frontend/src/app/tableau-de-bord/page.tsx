@@ -306,8 +306,11 @@ function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:an
       .style("white-space","nowrap").style("font-family","var(--font-google-sans),sans-serif")
       .html((d:any,i:number)=>{
         const c=d.data._c ?? palette[i%palette.length];
+        const rgb=d3.color(c)?.rgb();
+        const lum=rgb ? (0.299*rgb.r+0.587*rgb.g+0.114*rgb.b)/255 : 0;
+        const txt=lum>0.62?"#1a1a2e":"#fff";
         return `<span style="font-size:12.5px;color:#4a5568">${esc(shortLbl(d.data.label))}</span>`+
-               `<span style="font-size:11px;font-weight:800;color:#fff;background:${c};padding:1px 8px;border-radius:999px;line-height:1.5">${Number(d.data.valeur).toLocaleString("fr-FR")}</span>`;
+               `<span style="font-size:11px;font-weight:800;color:${txt};background:${c};padding:1px 8px;border-radius:999px;line-height:1.5">${Number(d.data.valeur).toLocaleString("fr-FR")}</span>`;
       });
   },[data,w,height,palette]);
 
@@ -1542,6 +1545,14 @@ const PAYS_ISO3: Record<string,string> = {
 };
 const toIso3 = (label:string) => PAYS_ISO3[label] || label;
 
+// Données fictives par secteur d'activité (le temps de remplir la bdd)
+const mkRows = (vals:[string,number][]) => vals.map(([label,valeur])=>({label,valeur}));
+const SECTEUR_FICTIF: Record<string, {label:string; valeur:number}[]> = {
+  ciblees:    mkRows([["Tertiaire",64],["Secondaire",41],["Primaire",23]]),
+  contactees: mkRows([["Tertiaire",45],["Secondaire",29],["Primaire",16]]),
+  installees: mkRows([["Tertiaire",30],["Secondaire",19],["Primaire",11]]),
+};
+
 // Données fictives par pays d'origine (le temps de remplir la bdd)
 const mkPays = (vals:[string,number][]) => vals.map(([label,valeur])=>({label,valeur}));
 const PAYS_FICTIF: Record<string, {label:string; valeur:number}[]> = {
@@ -1587,19 +1598,24 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
   const cardN  = isPays ? 7 : 5;
   const modalN = isPays ? 15 : 7;
-  // Pays : données fictives tant que le nombre d'entreprises reste faible
-  // (seuil 15 pour les installées, 5 pour les autres indicateurs)
+  // Données fictives tant que le nombre d'entreprises reste faible
+  // (Pays : seuil 15 pour les installées, 5 sinon ; Secteurs : total réel faible)
   const paysSeuil = ind.key==="installees" ? 15 : 5;
-  const baseData = (isPays && data.length<=paysSeuil && PAYS_FICTIF[ind.key]) ? PAYS_FICTIF[ind.key] : data;
+  const realSum = data.reduce((s:number,d:any)=> s + (Number(d.valeur)||0), 0);
+  const baseData =
+    (isPays && data.length<=paysSeuil && PAYS_FICTIF[ind.key]) ? PAYS_FICTIF[ind.key]
+    : (isSecteurs && realSum<=5 && SECTEUR_FICTIF[ind.key]) ? SECTEUR_FICTIF[ind.key]
+    : data;
   // Tri déterministe (valeur desc, libellé asc) + couleur figée par rang →
   // un même item garde sa couleur entre la vignette et le modal (même en cas d'égalité).
   const sortedAll = [...baseData]
     .sort((a:any,b:any)=> (b.valeur-a.valeur) || String(a.label).localeCompare(String(b.label),"fr"));
-  // Pays : dégradé bleu réparti sur l'ensemble affiché (foncé = plus élevé).
+  // Pays & Secteurs : dégradé bleu (foncé = plus élevé) réparti sur l'ensemble affiché.
   // Autres : palette catégorielle figée par rang.
+  const useRamp = isPays || isSecteurs;
   const colorize = (rows:any[]) => rows.map((d:any,i:number)=>({
     ...d,
-    _c: isPays ? paysRamp(rows.length, i) : BAR_PALETTE7[i%BAR_PALETTE7.length],
+    _c: useRamp ? paysRamp(rows.length, i) : BAR_PALETTE7[i%BAR_PALETTE7.length],
   }));
   const colored   = colorize(sortedAll);
   // Vignettes « Pays » : libellés courts en code ISO3 ; le modal garde les noms complets.
