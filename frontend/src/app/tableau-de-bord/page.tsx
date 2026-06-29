@@ -1553,8 +1553,10 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
   const cardN  = isPays ? 7 : 5;
   const modalN = isPays ? 15 : 7;
-  // Pays : données fictives tant que le nombre d'entreprises ne dépasse pas 5
-  const baseData = (isPays && data.length<=5 && PAYS_FICTIF[ind.key]) ? PAYS_FICTIF[ind.key] : data;
+  // Pays : données fictives tant que le nombre d'entreprises reste faible
+  // (seuil 15 pour les installées, 5 pour les autres indicateurs)
+  const paysSeuil = ind.key==="installees" ? 15 : 5;
+  const baseData = (isPays && data.length<=paysSeuil && PAYS_FICTIF[ind.key]) ? PAYS_FICTIF[ind.key] : data;
   // Tri déterministe (valeur desc, libellé asc) + couleur figée par rang →
   // un même item garde sa couleur entre la vignette et le modal (même en cas d'égalité).
   const sortedAll = [...baseData]
