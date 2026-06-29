@@ -1238,7 +1238,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   // Dimensions à forte cardinalité : top 3 en vignette, top 7 en grand
   const isSecteurs = dim.key==="secteurs";
   const isLong    = dim.key==="branches" || dim.key==="activites";
-  const cardData  = isLong ? data.slice(0,3) : data;
+  const cardData  = isLong ? data.slice(0,5) : data;
   const modalData = isLong ? data.slice(0,7) : data;
   const cardH  = 200; // vignettes : taille uniforme pour tous les indicateurs
   const modalH = isSecteurs ? 380 : 26 + Math.max(1, modalData.length)*44 + 8;
@@ -1260,7 +1260,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
             <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0, flexWrap:"wrap" as const }}>
               <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0 }}>{ind.label}</p>
               <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>{dim.label}</span>
-              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>Top 3</span>}
+              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>Top 5</span>}
             </div>
             <button onClick={e=>{e.stopPropagation();onRemove();}} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB", flexShrink:0 }}><X size={13}/></button>
           </div>
