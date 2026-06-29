@@ -1577,6 +1577,13 @@ const BRANCHE_FICTIF: Record<string, {label:string; valeur:number}[]> = {
   installees: mkRows([["Agro-industrie",24],["Énergie & Mines",20],["BTP & Construction",17],["Tourisme & Hôtellerie",14],["Numérique & Télécoms",11],["Transport & Logistique",8],["Services financiers",6],["Textile & Habillement",4]]),
 };
 
+// Données fictives par activité (le temps de remplir la bdd)
+const ACTIVITE_FICTIF: Record<string, {label:string; valeur:number}[]> = {
+  ciblees:    mkRows([["Culture & maraîchage",48],["Transformation alimentaire",41],["Production d'électricité",35],["Extraction minière",29],["Construction de bâtiments",24],["Hébergement & restauration",19],["Développement logiciel",14],["Transport routier",9]]),
+  contactees: mkRows([["Culture & maraîchage",34],["Transformation alimentaire",29],["Production d'électricité",24],["Extraction minière",20],["Construction de bâtiments",16],["Hébergement & restauration",12],["Développement logiciel",9],["Transport routier",6]]),
+  installees: mkRows([["Culture & maraîchage",22],["Transformation alimentaire",18],["Production d'électricité",15],["Extraction minière",12],["Construction de bâtiments",10],["Hébergement & restauration",7],["Développement logiciel",5],["Transport routier",3]]),
+};
+
 // Données fictives par pays d'origine (le temps de remplir la bdd)
 const mkPays = (vals:[string,number][]) => vals.map(([label,valeur])=>({label,valeur}));
 const PAYS_FICTIF: Record<string, {label:string; valeur:number}[]> = {
@@ -1620,6 +1627,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isSecteurs = dim.key==="secteurs";
   const isPays     = dim.key==="pays";
   const isBranches = dim.key==="branches";
+  const isActivites = dim.key==="activites";
   const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
   const cardN  = isPays ? 7 : 5;
   const modalN = isPays ? 15 : 7;
@@ -1631,6 +1639,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
     (isPays && data.length<=paysSeuil && PAYS_FICTIF[ind.key]) ? PAYS_FICTIF[ind.key]
     : (isSecteurs && realSum<=10 && SECTEUR_FICTIF[ind.key]) ? SECTEUR_FICTIF[ind.key]
     : (isBranches && realSum<=10 && BRANCHE_FICTIF[ind.key]) ? BRANCHE_FICTIF[ind.key]
+    : (isActivites && realSum<=10 && ACTIVITE_FICTIF[ind.key]) ? ACTIVITE_FICTIF[ind.key]
     : data;
   // Tri déterministe (valeur desc, libellé asc) + couleur figée par rang →
   // un même item garde sa couleur entre la vignette et le modal (même en cas d'égalité).
@@ -1638,7 +1647,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
     .sort((a:any,b:any)=> (b.valeur-a.valeur) || String(a.label).localeCompare(String(b.label),"fr"));
   // Pays & Secteurs : dégradé bleu (foncé = plus élevé) réparti sur l'ensemble affiché.
   // Autres : palette catégorielle figée par rang.
-  const useRamp = isPays || isSecteurs || isBranches;
+  const useRamp = isPays || isSecteurs || isBranches || isActivites;
   const colorize = (rows:any[]) => rows.map((d:any,i:number)=>({
     ...d,
     _c: useRamp ? paysRamp(rows.length, i) : BAR_PALETTE7[i%BAR_PALETTE7.length],
