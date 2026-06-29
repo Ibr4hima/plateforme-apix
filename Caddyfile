@@ -1,4 +1,9 @@
 {$DOMAIN} {
+    # Accès protégé par mot de passe (démo) — identifiants fournis via secrets.caddy.env
+    basic_auth {
+        {$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+    }
+
     reverse_proxy /api/* backend:8000
     reverse_proxy /* frontend:3000
 }

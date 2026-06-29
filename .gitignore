@@ -71,6 +71,9 @@ web_modules/
 !.env.example
 !.env.prod.example
 
+# Secrets de déploiement (démo)
+secrets.caddy.env
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
