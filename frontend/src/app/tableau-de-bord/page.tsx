@@ -90,39 +90,47 @@ function BarH({ data, height, palette=COLORS }: { data:any[]; height:number; pal
 }
 
 // ─── Barres horizontales (Observable Plot) — libellés à gauche, valeur en blanc ──
+// Libellé AU-DESSUS de chaque barre (idéal pour les noms longs) — barres pleine largeur.
 function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
-  const cRef=useRef<HTMLDivElement>(null); const plotRef=useRef<HTMLDivElement>(null); const [w,setW]=useState(560);
+  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(560);
   useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
   useEffect(()=>{
-    if(!plotRef.current) return;
-    plotRef.current.innerHTML="";
-    if(!data.length) return;
+    if(!ref.current||!data.length) return;
+    const svg=d3.select(ref.current); svg.selectAll("*").remove();
+    const W=w, H=height, mRight=10;
+    const sorted=[...data].sort((a:any,b:any)=>b.valeur-a.valeur);
+    const N=sorted.length;
+    const x=d3.scaleLinear().domain([0, d3.max(sorted,(d:any)=>d.valeur)||1]).range([0, W-mRight]);
+    const rowH=H/N;
+    const barH=Math.max(12, Math.min(30, rowH-26));
+    const barY=18;
+    const maxChars=Math.max(8, Math.floor((W-mRight)/6.7));
 
-    const sorted = [...data].sort((a:any,b:any)=>b.valeur-a.valeur)
-      .map((d:any,i:number)=>({ ...d, _c: palette[i%palette.length] }));
-    const longest = Math.max(...sorted.map((d:any)=>String(d.label).length));
-    const marginLeft = Math.min(200, Math.max(70, longest*6.2 + 8));
+    svg.attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet").attr("style","max-width:100%;height:auto;font-family:var(--font-google-sans),sans-serif;");
+    const rows=svg.append("g").selectAll("g.row").data(sorted).join("g").attr("transform",(_:any,i:number)=>`translate(0,${i*rowH})`);
 
-    const chart = Plot.plot({
-      width: w,
-      height,
-      marginLeft,
-      marginTop: 4, marginRight: 14, marginBottom: 4,
-      x: { axis: null },
-      y: { label: null, tickSize: 0 },
-      color: { type: "identity" as const },
-      style: { fontFamily: "var(--font-google-sans), sans-serif", fontSize: "11px", background: "transparent", overflow: "visible" },
-      marks: [
-        Plot.barX(sorted, { x:"valeur", y:"label", sort:{ y:"x", reverse:true }, fill:"_c" }),
-        Plot.text(sorted, { text:(d:any)=>Number(d.valeur).toLocaleString("fr-FR"), y:"label", x:"valeur", textAnchor:"end", dx:-5, fill:"white", fontWeight:700 }),
-      ],
-    });
-    (chart as HTMLElement).style.maxWidth = "100%";
-    plotRef.current.appendChild(chart);
+    // Libellé au-dessus
+    rows.append("text").attr("x",1).attr("y",13)
+      .style("font-size","12px").style("font-weight","500").style("fill","#374151")
+      .text((d:any)=>{ const s=String(d.label); return s.length>maxChars?s.slice(0,maxChars-1)+"…":s; });
+
+    // Barre
+    rows.append("rect").attr("x",0).attr("y",barY).attr("height",barH)
+      .attr("fill",(_:any,i:number)=>palette[i%palette.length])
+      .attr("width",0).transition().duration(450).delay((_:any,i:number)=>i*45)
+      .attr("width",(d:any)=>Math.max(2, x(d.valeur)));
+
+    // Valeur (dans la barre, sinon à droite)
+    rows.append("text").attr("y",barY+barH/2).attr("dy","0.35em")
+      .style("font-size","11px").style("font-weight","700")
+      .attr("x",(d:any)=>x(d.valeur)<28 ? x(d.valeur)+6 : x(d.valeur)-7)
+      .attr("text-anchor",(d:any)=>x(d.valeur)<28 ? "start":"end")
+      .attr("fill",(d:any)=>x(d.valeur)<28 ? "#4a5568":"#fff")
+      .text((d:any)=>Number(d.valeur).toLocaleString("fr-FR"));
   },[data,w,height,palette]);
 
   if(!data.length) return <EmptyState h={height}/>;
-  return <div ref={cRef} style={{ width:"100%", overflow:"hidden" }}><div ref={plotRef}/></div>;
+  return <div ref={cRef} style={{ width:"100%" }}><svg ref={ref} style={{ width:"100%", height, display:"block" }}/></div>;
 }
 
 function BarV({ data, height, color="#004f91" }: { data:any[]; height:number; color?:string }) {
