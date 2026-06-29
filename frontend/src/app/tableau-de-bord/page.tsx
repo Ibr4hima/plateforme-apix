@@ -8,10 +8,13 @@ import {
   DollarSign, Handshake, Layers, Loader2, MapPin, RotateCcw, Search,
   SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { CATALOGUE, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
 import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { zoneTypeMeta } from "@/components/shared/zoneTypes";
+
+// Layout effect côté client, effet classique côté serveur (évite le warning SSR)
+const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const COLORS = ["#ca631f","#004f91","#059669","#7c3aed","#0891b2","#d97706","#E35336","#188038","#dc2626","#65a30d","#f59e0b","#6366f1","#14b8a6","#f43f5e","#84cc16"];
@@ -93,11 +96,11 @@ function BarH({ data, height, palette=COLORS }: { data:any[]; height:number; pal
 // ─── Barres horizontales (Observable Plot) — libellés à gauche, valeur en blanc ──
 // Libellé AU-DESSUS de chaque barre (idéal pour les noms longs) — barres pleine largeur.
 function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
-  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(560);
+  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(0);
   const animSig=useRef<string>("");
-  useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
+  useIsoLayout(()=>{ const el=cRef.current; if(!el) return; const measure=()=>setW(p=>{ const cw=Math.round(el.clientWidth); return cw&&cw!==p?cw:p; }); measure(); let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(()=>{ clearTimeout(_t); _t=setTimeout(measure,140); }); obs.observe(el); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
-    if(!ref.current||!data.length) return;
+    if(!ref.current||!data.length||!w) return;
     // Animer seulement quand les données changent, pas au redimensionnement
     const sig=data.map((d:any)=>`${d.label}:${d.valeur}`).join("|");
     const animate=sig!==animSig.current; animSig.current=sig;
@@ -271,11 +274,11 @@ function DonutChart({ data, size, palette=COLORS }: { data:any[]; size:number; p
 
 // ─── Donut avec étiquettes reliées par des lignes (leader lines) ─────────────
 function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:any[]; height:number; palette?:string[]; compact?:boolean }) {
-  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(440);
+  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(0);
   const animSig=useRef<string>("");
-  useEffect(()=>{ let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(e=>{ const cw=e[0].contentRect.width; clearTimeout(_t); _t=setTimeout(()=>setW(cw),140); }); if(cRef.current)obs.observe(cRef.current); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
+  useIsoLayout(()=>{ const el=cRef.current; if(!el) return; const measure=()=>setW(p=>{ const cw=Math.round(el.clientWidth); return cw&&cw!==p?cw:p; }); measure(); let _t:ReturnType<typeof setTimeout>; const obs=new ResizeObserver(()=>{ clearTimeout(_t); _t=setTimeout(measure,140); }); obs.observe(el); return()=>{ clearTimeout(_t); obs.disconnect(); }; },[]);
   useEffect(()=>{
-    if(!ref.current||!data.length) return;
+    if(!ref.current||!data.length||!w) return;
     // Animer seulement quand les données changent, pas au redimensionnement
     const sig=data.map((d:any)=>`${d.label}:${d.valeur}`).join("|");
     const animate=sig!==animSig.current; animSig.current=sig;
