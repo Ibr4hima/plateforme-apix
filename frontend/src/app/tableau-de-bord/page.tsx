@@ -191,6 +191,55 @@ function DonutChart({ data, size, palette=COLORS }: { data:any[]; size:number; p
   );
 }
 
+// ─── Donut avec étiquettes reliées par des lignes (leader lines) ─────────────
+function DonutLabeled({ data, height, palette=COLORS }: { data:any[]; height:number; palette?:string[] }) {
+  const cRef=useRef<HTMLDivElement>(null); const ref=useRef<SVGSVGElement>(null); const [w,setW]=useState(440);
+  useEffect(()=>{ const obs=new ResizeObserver(e=>setW(e[0].contentRect.width)); if(cRef.current)obs.observe(cRef.current); return()=>obs.disconnect(); },[]);
+  useEffect(()=>{
+    if(!ref.current||!data.length) return;
+    const svg=d3.select(ref.current); svg.selectAll("*").remove();
+    const W=w, H=height;
+    const radius = Math.max(36, Math.min(H/2 - 14, W/2 - 130));
+    svg.attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet").attr("style","max-width:100%;height:auto;");
+    const g = svg.append("g").attr("transform",`translate(${W/2},${H/2})`);
+
+    const pie = d3.pie<any>().value(d=>d.valeur).sort(null);
+    const arc = d3.arc<d3.PieArcDatum<any>>().innerRadius(radius*0.6).outerRadius(radius);
+    const outer = d3.arc<d3.PieArcDatum<any>>().innerRadius(radius*1.06).outerRadius(radius*1.06);
+    const arcs = pie(data);
+    const mid = (d:any)=>d.startAngle+(d.endAngle-d.startAngle)/2;
+
+    // Parts
+    g.selectAll("path").data(arcs).join("path")
+      .attr("fill",(_,i)=>palette[i%palette.length]).attr("opacity",0.92)
+      .attr("d",arc as any)
+      .transition().duration(550).attrTween("d",function(d:any){ const i=d3.interpolate({startAngle:0,endAngle:0},d); return (t:number)=>arc(i(t)) as string; });
+
+    // Total au centre
+    const total=d3.sum(data,d=>d.valeur);
+    g.append("text").attr("text-anchor","middle").attr("dy","-.05em").style("font-size","18px").style("font-weight","800").style("fill","#1a1a2e").text(total.toLocaleString("fr-FR"));
+    g.append("text").attr("text-anchor","middle").attr("dy","1.4em").style("font-size","9.5px").style("fill","#9aa5b4").text("total");
+
+    // Lignes de repère
+    g.selectAll("polyline").data(arcs).join("polyline")
+      .attr("fill","none").attr("stroke","#C5BFBB").attr("stroke-width",1)
+      .attr("points",(d:any)=>{ const p0=arc.centroid(d); const p1=outer.centroid(d); const p2:[number,number]=[radius*1.18*(mid(d)<Math.PI?1:-1), p1[1]]; return [p0,p1,p2] as any; });
+
+    // Étiquettes (nom + valeur)
+    const lbl = g.selectAll("g.lbl").data(arcs).join("g").attr("class","lbl")
+      .attr("transform",(d:any)=>{ const p:[number,number]=[radius*1.22*(mid(d)<Math.PI?1:-1), outer.centroid(d)[1]]; return `translate(${p[0]},${p[1]})`; })
+      .style("font-family","var(--font-google-sans),sans-serif");
+    lbl.append("text").attr("text-anchor",(d:any)=>mid(d)<Math.PI?"start":"end").attr("dy","-0.1em")
+      .style("font-size","11px").style("fill","#4a5568").text((d:any)=>String(d.data.label));
+    lbl.append("text").attr("text-anchor",(d:any)=>mid(d)<Math.PI?"start":"end").attr("dy","1.15em")
+      .style("font-size","11.5px").style("font-weight","700").attr("fill",(_,i:number)=>palette[i%palette.length])
+      .text((d:any)=>Number(d.data.valeur).toLocaleString("fr-FR"));
+  },[data,w,height,palette]);
+
+  if(!data.length) return <EmptyState h={height}/>;
+  return <div ref={cRef} style={{width:"100%"}}><svg ref={ref} style={{width:"100%",height,display:"block"}}/></div>;
+}
+
 // ─── Line Chart (Créations par année) — style IDE ────────────────────────────
 function CreationsLineChart({ data, height }: { data: { label: number; valeur: number }[]; height: number }) {
   const svgRef  = useRef<SVGSVGElement>(null);
@@ -1180,13 +1229,13 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites";
   const cardData  = isLong ? data.slice(0,3) : data;
   const modalData = isLong ? data.slice(0,7) : data;
-  const cardH  = isSecteurs ? 175 : 26 + Math.max(1, cardData.length)*38 + 8;
-  const modalH = 26 + Math.max(1, modalData.length)*44 + 8;
+  const cardH  = isSecteurs ? 220 : 26 + Math.max(1, cardData.length)*38 + 8;
+  const modalH = isSecteurs ? 340 : 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
     : cardData.length===0 ? <EmptyState h={h}/>
-    : isSecteurs ? <DonutChart data={cardData} size={150} palette={INDIC_PALETTE}/>
+    : isSecteurs ? <DonutLabeled data={cardData} height={h} palette={INDIC_PALETTE}/>
     : <HBarAxisChart data={cardData} height={h} palette={INDIC_PALETTE}/>;
 
   return (
@@ -1210,7 +1259,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
 
       <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top 7`:titre} vizId={id}>
         {isSecteurs
-          ? <DonutChart data={modalData} size={260} palette={INDIC_PALETTE}/>
+          ? <DonutLabeled data={modalData} height={Math.max(340, modalH)} palette={INDIC_PALETTE}/>
           : <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={INDIC_PALETTE}/>}
       </VizModal>
     </>
