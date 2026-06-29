@@ -1260,7 +1260,7 @@ const SEN_NAME_MAP: Record<string,string> = {
 };
 
 // Rampe thermique (densité faible → forte) — chaude, cohérente avec l'app
-const HEAT_STOPS = ["#E9EDF2", "#9FD0C8", "#F3C969", "#E2862F", "#C0392B"];
+const HEAT_STOPS = ["#EDF4FB", "#C5DCF2", "#90BDE5", "#5596D4", "#2872B8", "#004f91", "#003468"];
 const heatRamp = (t:number) => d3.interpolateRgbBasis(HEAT_STOPS)(Math.max(0, Math.min(1, t)));
 
 function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boolean }) {
@@ -1306,8 +1306,8 @@ function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boo
 
         // Fond : régions + frontières
         svg.selectAll("path.reg").data(geojson.features).join("path")
-          .attr("d", (d:any)=>pathGen(d)).attr("fill","#E6E4E1")
-          .attr("stroke","#CFCDCA").attr("stroke-width",0.6).attr("stroke-linejoin","round");
+          .attr("d", (d:any)=>pathGen(d)).attr("fill","#C4C4C4")
+          .attr("stroke","#666666").attr("stroke-width",0.6).attr("stroke-linejoin","round");
 
         // Flou partagé
         const defs = svg.append("defs");
@@ -1332,7 +1332,7 @@ function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boo
 
         // Contour extérieur
         svg.append("path").datum(topojson.mesh(topo, topo.objects.sen, (a:any,b:any)=>a===b))
-          .attr("d", pathGen as any).attr("fill","none").attr("stroke","#B9B7B4").attr("stroke-width",1.2).attr("stroke-linejoin","round");
+          .attr("d", pathGen as any).attr("fill","none").attr("stroke","#666666").attr("stroke-width",1.2).attr("stroke-linejoin","round");
 
         // Couche d'interaction (tooltip) : paths transparents par région, au-dessus
         svg.selectAll("path.hit").data(geojson.features).join("path").attr("class","hit")
