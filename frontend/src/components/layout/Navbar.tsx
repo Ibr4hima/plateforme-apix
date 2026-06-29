@@ -356,7 +356,7 @@ export default function Navbar() {
           </Link>
 
           {/* ── Nav desktop ── */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <nav className="apix-nav-desktop" style={{ display: "flex", alignItems: "center", gap: 4 }}>
 
             {/* Modules dropdown */}
             <div style={{ position: "relative" }}
@@ -418,7 +418,7 @@ export default function Navbar() {
           </nav>
 
           {/* ── CTA Connexion ── */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <Link href="/login"
               style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #ca631f 0%, #a84e18 100%)", padding: "9px 20px", borderRadius: 10, textDecoration: "none", boxShadow: "0 2px 12px rgba(202,99,31,0.35)", transition: "all 0.2s", letterSpacing: "0em", fontFamily: "var(--font-google-sans)" }}
               onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(202,99,31,0.45)"; }}
@@ -428,7 +428,7 @@ export default function Navbar() {
           </div>
 
           {/* ── Burger mobile ── */}
-          <button onClick={() => setMenuOpen(!menuOpen)}
+          <button onClick={() => setMenuOpen(!menuOpen)} className="apix-nav-burger"
             style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: textColor, padding: 8 }}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -470,6 +470,11 @@ export default function Navbar() {
       {codeOpen && <CodeModal onClose={() => setCodeOpen(false)} />}
 
       <style>{`
+        /* Bascule responsive de la navbar : nav desktop ↔ menu burger */
+        @media (max-width: 860px){
+          .apix-nav-desktop, .apix-nav-cta { display: none !important; }
+          .apix-nav-burger { display: flex !important; }
+        }
         mark { background: rgba(202,99,31,0.2); color: #ca631f; border-radius: 3px; padding: 0 2px; }
         [data-rte] ul{padding-left:20px;list-style-type:disc}
         [data-rte] ul.dash-list{list-style-type:"— ";padding-left:22px}
