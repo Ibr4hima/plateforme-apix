@@ -1259,8 +1259,15 @@ const SEN_NAME_MAP: Record<string,string> = {
   "Kolda":"Kolda","Sedhiou":"Sédhiou","Ziguinchor":"Ziguinchor",
 };
 
-function CarteSenegal({ height=200 }: { height?:number }) {
+// Rampe thermique (densité faible → forte) — chaude, cohérente avec l'app
+const HEAT_STOPS = ["#E9EDF2", "#9FD0C8", "#F3C969", "#E2862F", "#C0392B"];
+const heatRamp = (t:number) => d3.interpolateRgbBasis(HEAT_STOPS)(Math.max(0, Math.min(1, t)));
+
+function CarteSenegal({ height=200, legend=true }: { height?:number; legend?:boolean }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [tip, setTip] = useState<{nom:string; valeur:number; densite:number; x:number; y:number}|null>(null);
+  const [bornes, setBornes] = useState<{min:number; max:number}|null>(null);
+
   useEffect(()=>{
     const container = ref.current; if(!container) return;
     let cancelled=false;
@@ -1282,10 +1289,13 @@ function CarteSenegal({ height=200 }: { height?:number }) {
         const topojson:any = (window as any).topojson;
         const W = container.clientWidth || 480;
         const H = height;
-        // Densité d'entreprises par région (nom ref → densité)
-        const dens: Record<string,number> = {};
-        (Array.isArray(regionData)?regionData:[]).forEach((d:any)=>{ dens[d.label]=Number(d.densite)||0; });
-        const maxDens = Math.max(1e-9, ...Object.values(dens));
+        // Densité + valeur par région (nom ref → {valeur, densite})
+        const info: Record<string,{valeur:number; densite:number}> = {};
+        (Array.isArray(regionData)?regionData:[]).forEach((d:any)=>{ info[d.label]={ valeur:Number(d.valeur)||0, densite:Number(d.densite)||0 }; });
+        const densVals = Object.values(info).map(d=>d.densite).filter(d=>d>0);
+        const maxDens = Math.max(1e-9, ...densVals);
+        const minDens = densVals.length ? Math.min(...densVals) : 0;
+        setBornes({ min:minDens, max:maxDens });
 
         container.innerHTML="";
         const svg = d3.select(container).append("svg")
@@ -1294,42 +1304,77 @@ function CarteSenegal({ height=200 }: { height?:number }) {
         const projection = d3.geoMercator().fitExtent([[8,8],[W-8,H-8]], geojson);
         const pathGen = d3.geoPath().projection(projection);
 
-        // Fond : régions grises + frontières
+        // Fond : régions + frontières
         svg.selectAll("path.reg").data(geojson.features).join("path")
-          .attr("d", (d:any)=>pathGen(d)).attr("fill","#E0E0E0")
-          .attr("stroke","#C4C4C4").attr("stroke-width",0.6).attr("stroke-linejoin","round");
+          .attr("d", (d:any)=>pathGen(d)).attr("fill","#E6E4E1")
+          .attr("stroke","#CFCDCA").attr("stroke-width",0.6).attr("stroke-linejoin","round");
 
-        // Défs : flou partagé
+        // Flou partagé
         const defs = svg.append("defs");
         const minHW = Math.min(W,H);
         defs.append("filter").attr("id","heat-blur")
           .attr("x","-40%").attr("y","-40%").attr("width","180%").attr("height","180%")
           .append("feGaussianBlur").attr("in","SourceGraphic").attr("stdDeviation", Math.max(4, minHW*0.035));
 
-        // Heatmap : un blob par région, CLIPPÉ à sa propre région.
-        // Taille = couvre la région (∝ superficie projetée) · Couleur = densité d'entreprises.
-        const heatColor = (v:number)=> d3.interpolateTurbo(0.30 + 0.64*(v/maxDens));
+        // Heatmap : un blob par région, clippé à sa région. Couleur = densité.
         geojson.features.forEach((f:any,i:number)=>{
           const nom = SEN_NAME_MAP[f.properties?.name||""] || f.properties?.name || "";
-          const v = dens[nom] || 0;
+          const v = info[nom]?.densite || 0;
           if (v<=0) return;
           defs.append("clipPath").attr("id",`heat-clip-${i}`).append("path").attr("d", pathGen(f) as string);
           const c = pathGen.centroid(f);
           const [[x0,y0],[x1,y1]] = pathGen.bounds(f);
-          const r = Math.max(x1-x0, y1-y0)/2 * 0.98; // couvre la région
+          const r = Math.max(x1-x0, y1-y0)/2 * 0.98;
           svg.append("g")
-            .attr("clip-path",`url(#heat-clip-${i})`).attr("filter","url(#heat-blur)").attr("opacity",0.82)
-            .append("circle").attr("cx",c[0]).attr("cy",c[1]).attr("r",r).attr("fill", heatColor(v));
+            .attr("clip-path",`url(#heat-clip-${i})`).attr("filter","url(#heat-blur)").attr("opacity",0.88)
+            .append("circle").attr("cx",c[0]).attr("cy",c[1]).attr("r",r).attr("fill", heatRamp(v/maxDens));
         });
 
-        // Contour extérieur par-dessus
+        // Contour extérieur
         svg.append("path").datum(topojson.mesh(topo, topo.objects.sen, (a:any,b:any)=>a===b))
-          .attr("d", pathGen as any).attr("fill","none").attr("stroke","#C4C4C4").attr("stroke-width",1).attr("stroke-linejoin","round");
+          .attr("d", pathGen as any).attr("fill","none").attr("stroke","#B9B7B4").attr("stroke-width",1.2).attr("stroke-linejoin","round");
+
+        // Couche d'interaction (tooltip) : paths transparents par région, au-dessus
+        svg.selectAll("path.hit").data(geojson.features).join("path").attr("class","hit")
+          .attr("d",(d:any)=>pathGen(d)).attr("fill","transparent").style("cursor","pointer")
+          .on("mousemove", function(event:any, d:any){
+            const nom = SEN_NAME_MAP[d.properties?.name||""] || d.properties?.name || "";
+            const rect = container.getBoundingClientRect();
+            const r = info[nom] || { valeur:0, densite:0 };
+            setTip({ nom, valeur:r.valeur, densite:r.densite, x:event.clientX-rect.left, y:event.clientY-rect.top });
+          })
+          .on("mouseleave", ()=>setTip(null));
       })
       .catch(console.error);
     return ()=>{ cancelled=true; if(ref.current) ref.current.innerHTML=""; };
   },[height]);
-  return <div ref={ref} style={{ width:"100%", height }}/>;
+
+  const fmtDens = (d:number) => (d*100).toLocaleString("fr-FR",{maximumFractionDigits:1});
+
+  return (
+    <div style={{ position:"relative" as const }}>
+      <div ref={ref} style={{ width:"100%", height }}/>
+
+      {/* Légende d'intensité */}
+      {legend && bornes && (
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:8, paddingLeft:2 }}>
+          <span style={{ fontSize:10, fontWeight:600, color:"#9aa5b4" }}>Faible</span>
+          <div style={{ flex:1, maxWidth:180, height:8, borderRadius:999, background:`linear-gradient(90deg, ${HEAT_STOPS.join(",")})` }}/>
+          <span style={{ fontSize:10, fontWeight:600, color:"#9aa5b4" }}>Forte</span>
+          <span style={{ fontSize:9.5, color:"#C5BFBB", marginLeft:4 }}>densité (ent./100 km²)</span>
+        </div>
+      )}
+
+      {/* Tooltip */}
+      {tip && (
+        <div style={{ position:"absolute" as const, left:Math.min(tip.x+12, (ref.current?.clientWidth||300)-150), top:Math.max(tip.y-10,4), background:"#1a1a2e", color:"#fff", borderRadius:9, padding:"8px 11px", fontSize:12, lineHeight:1.5, pointerEvents:"none" as const, zIndex:20, boxShadow:"0 6px 20px rgba(0,0,0,0.25)", whiteSpace:"nowrap" as const }}>
+          <div style={{ fontWeight:700, marginBottom:2 }}>{tip.nom}</div>
+          <div style={{ opacity:0.85 }}>{tip.valeur.toLocaleString("fr-FR")} entreprise{tip.valeur>1?"s":""}</div>
+          <div style={{ opacity:0.85 }}>Densité : {fmtDens(tip.densite)} / 100 km²</div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Palettes des visualisations du tableau de bord
@@ -1620,6 +1665,7 @@ export default function TableauDeBordPage() {
 
   const totalItems=config.cards.length+config.tableCards.length;
   const [onglet, setOnglet] = useState<"viz"|"tables">("viz");
+  const [mapOpen, setMapOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const resetConfig = useCallback(() => setConfig(DEFAULT_CONFIG), []);
@@ -1685,11 +1731,17 @@ export default function TableauDeBordPage() {
 
             {/* Visualisation permanente : Répartition des entreprises */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,marginBottom:28,alignItems:"start"}}>
-              <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px"}}>
+              <div onClick={()=>setMapOpen(true)}
+                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s"}}
+                onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
+                onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
                 <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:"0 0 12px"}}>Répartition des entreprises</p>
                 <CarteSenegal height={200}/>
               </div>
             </div>
+            <VizModal open={mapOpen} onClose={()=>setMapOpen(false)} titre="Répartition des entreprises" vizId="repartition-entreprises">
+              <CarteSenegal height={480}/>
+            </VizModal>
 
             {/* Visualisations sélectionnées dans le filtre */}
             {config.kpisActifs.length===0 ? (
