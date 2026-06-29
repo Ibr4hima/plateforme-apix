@@ -1277,10 +1277,12 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isSecteurs = dim.key==="secteurs";
   const isPays     = dim.key==="pays";
   const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
-  const cardData  = isLong ? data.slice(0,5) : data;
-  const modalData = isLong ? data.slice(0,7) : data;
+  const cardN  = isPays ? 7 : 5;
+  const modalN = isPays ? 15 : 7;
+  const cardData  = isLong ? data.slice(0,cardN) : data;
+  const modalData = isLong ? data.slice(0,modalN) : data;
   const cardH  = 200; // vignettes : taille uniforme pour tous les indicateurs
-  const modalH = isSecteurs ? 380 : 26 + Math.max(1, modalData.length)*44 + 8;
+  const modalH = isSecteurs ? 380 : isPays ? 440 : 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
     ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
@@ -1300,7 +1302,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
             <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0, flexWrap:"wrap" as const }}>
               <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0 }}>{ind.label}</p>
               <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>{dim.label}</span>
-              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>Top 5</span>}
+              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>Top {cardN}</span>}
             </div>
             <button onClick={e=>{e.stopPropagation();onRemove();}} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB", flexShrink:0 }}><X size={13}/></button>
           </div>
@@ -1308,7 +1310,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
         </div>
       </div>
 
-      <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top 7`:titre} vizId={id}>
+      <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top ${modalN}`:titre} vizId={id}>
         {isSecteurs
           ? <DonutLabeled data={modalData} height={Math.max(340, modalH)} palette={BAR_PALETTE5}/>
           : isPays
