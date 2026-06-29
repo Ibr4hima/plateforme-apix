@@ -1260,6 +1260,25 @@ const SEN_NAME_MAP: Record<string,string> = {
   "Kolda":"Kolda","Sedhiou":"Sédhiou","Ziguinchor":"Ziguinchor",
 };
 
+// Données fictives de densité par région (le temps de remplir la bdd) —
+// densite = entreprises / km² (affichée ×100). Réparties pour bien voir la heatmap.
+const REGION_DENSITE_FICTIF = [
+  { label:"Dakar",       valeur:300, densite:0.050 },
+  { label:"Thiès",       valeur:228, densite:0.038 },
+  { label:"Diourbel",    valeur:192, densite:0.032 },
+  { label:"Kaolack",     valeur:162, densite:0.027 },
+  { label:"Ziguinchor",  valeur:138, densite:0.023 },
+  { label:"Fatick",      valeur:114, densite:0.019 },
+  { label:"Saint-Louis", valeur:96,  densite:0.016 },
+  { label:"Kolda",       valeur:78,  densite:0.013 },
+  { label:"Sédhiou",     valeur:66,  densite:0.011 },
+  { label:"Kaffrine",    valeur:54,  densite:0.009 },
+  { label:"Louga",       valeur:42,  densite:0.007 },
+  { label:"Matam",       valeur:30,  densite:0.005 },
+  { label:"Tambacounda", valeur:24,  densite:0.004 },
+  { label:"Kédougou",    valeur:18,  densite:0.003 },
+];
+
 // Rampe thermique (densité faible → forte) — chaude, cohérente avec l'app
 const HEAT_STOPS = ["#EDF4FB", "#C5DCF2", "#90BDE5", "#5596D4", "#2872B8", "#004f91", "#003468"];
 const heatRamp = (t:number) => d3.interpolateRgbBasis(HEAT_STOPS)(Math.max(0, Math.min(1, t)));
@@ -1284,7 +1303,7 @@ function CarteSenegal({ height=200, legend=true, legendVertical=false }: { heigh
     });
     Promise.all([
       loadTopojson().then(()=>fetch("https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/sen.topo.json")).then(r=>r.json()),
-      fetch(`${API}/dashboard/viz/region-densite`).then(r=>r.json()).catch(()=>[]),
+      Promise.resolve(REGION_DENSITE_FICTIF),
     ])
       .then(([topo, regionData]:any)=>{
         if(cancelled||!ref.current) return;
