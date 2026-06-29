@@ -1281,7 +1281,7 @@ function CarteSenegal({ height=200 }: { height?:number }) {
         const pathGen = d3.geoPath().projection(projection);
         // Régions remplies + lignes de frontières
         svg.selectAll("path.reg").data(geojson.features).join("path")
-          .attr("d", (d:any)=>pathGen(d)).attr("fill","#E5E2DF")
+          .attr("d", (d:any)=>pathGen(d)).attr("fill","#E0E0E0")
           .attr("stroke","#C9C8C7").attr("stroke-width",0.6).attr("stroke-linejoin","round");
         // Contour extérieur (un peu plus marqué)
         svg.append("path").datum(topojson.mesh(topo, topo.objects.sen, (a:any,b:any)=>a===b))
