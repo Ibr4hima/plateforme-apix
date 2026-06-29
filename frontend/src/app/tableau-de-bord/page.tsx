@@ -121,12 +121,18 @@ function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:nu
       .attr("width",0).transition().duration(450).delay((_:any,i:number)=>i*45)
       .attr("width",(d:any)=>Math.max(2, x(d.valeur)));
 
-    // Valeur (dans la barre, sinon à droite)
+    // Valeur (dans la barre, sinon à droite) — texte à contraste adaptatif
     rows.append("text").attr("y",barY+barH/2).attr("dy","0.35em")
       .style("font-size","11px").style("font-weight","700")
       .attr("x",(d:any)=>x(d.valeur)<28 ? x(d.valeur)+6 : x(d.valeur)-7)
       .attr("text-anchor",(d:any)=>x(d.valeur)<28 ? "start":"end")
-      .attr("fill",(d:any)=>x(d.valeur)<28 ? "#4a5568":"#fff")
+      .attr("fill",(d:any,i:number)=>{
+        if(x(d.valeur)<28) return "#4a5568";
+        const col=d._c ?? palette[i%palette.length];
+        const rgb=d3.color(col)?.rgb();
+        const lum=rgb ? (0.299*rgb.r+0.587*rgb.g+0.114*rgb.b)/255 : 0;
+        return lum>0.62 ? "#1a1a2e" : "#fff";
+      })
       .text((d:any)=>Number(d.valeur).toLocaleString("fr-FR"));
   },[data,w,height,palette]);
 
@@ -1564,6 +1570,13 @@ const SECTEUR_FICTIF: Record<string, {label:string; valeur:number}[]> = {
   installees: mkRows([["Tertiaire",30],["Secondaire",19],["Primaire",11]]),
 };
 
+// Données fictives par branche d'activité (le temps de remplir la bdd)
+const BRANCHE_FICTIF: Record<string, {label:string; valeur:number}[]> = {
+  ciblees:    mkRows([["Agro-industrie",52],["Énergie & Mines",44],["BTP & Construction",37],["Tourisme & Hôtellerie",31],["Numérique & Télécoms",26],["Transport & Logistique",21],["Services financiers",16],["Textile & Habillement",11]]),
+  contactees: mkRows([["Agro-industrie",37],["Énergie & Mines",31],["BTP & Construction",26],["Tourisme & Hôtellerie",22],["Numérique & Télécoms",18],["Transport & Logistique",14],["Services financiers",11],["Textile & Habillement",8]]),
+  installees: mkRows([["Agro-industrie",24],["Énergie & Mines",20],["BTP & Construction",17],["Tourisme & Hôtellerie",14],["Numérique & Télécoms",11],["Transport & Logistique",8],["Services financiers",6],["Textile & Habillement",4]]),
+};
+
 // Données fictives par pays d'origine (le temps de remplir la bdd)
 const mkPays = (vals:[string,number][]) => vals.map(([label,valeur])=>({label,valeur}));
 const PAYS_FICTIF: Record<string, {label:string; valeur:number}[]> = {
@@ -1606,6 +1619,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   // Dimensions à forte cardinalité : top 3 en vignette, top 7 en grand
   const isSecteurs = dim.key==="secteurs";
   const isPays     = dim.key==="pays";
+  const isBranches = dim.key==="branches";
   const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
   const cardN  = isPays ? 7 : 5;
   const modalN = isPays ? 15 : 7;
@@ -1616,6 +1630,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const baseData =
     (isPays && data.length<=paysSeuil && PAYS_FICTIF[ind.key]) ? PAYS_FICTIF[ind.key]
     : (isSecteurs && realSum<=10 && SECTEUR_FICTIF[ind.key]) ? SECTEUR_FICTIF[ind.key]
+    : (isBranches && realSum<=10 && BRANCHE_FICTIF[ind.key]) ? BRANCHE_FICTIF[ind.key]
     : data;
   // Tri déterministe (valeur desc, libellé asc) + couleur figée par rang →
   // un même item garde sa couleur entre la vignette et le modal (même en cas d'égalité).
@@ -1623,7 +1638,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
     .sort((a:any,b:any)=> (b.valeur-a.valeur) || String(a.label).localeCompare(String(b.label),"fr"));
   // Pays & Secteurs : dégradé bleu (foncé = plus élevé) réparti sur l'ensemble affiché.
   // Autres : palette catégorielle figée par rang.
-  const useRamp = isPays || isSecteurs;
+  const useRamp = isPays || isSecteurs || isBranches;
   const colorize = (rows:any[]) => rows.map((d:any,i:number)=>({
     ...d,
     _c: useRamp ? paysRamp(rows.length, i) : BAR_PALETTE7[i%BAR_PALETTE7.length],
