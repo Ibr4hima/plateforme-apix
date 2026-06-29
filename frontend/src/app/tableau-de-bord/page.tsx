@@ -1251,8 +1251,8 @@ function indicMeta(id:string) {
 }
 
 // Palettes des visualisations du tableau de bord
-const BAR_PALETTE5  = ["#F4A96B", "#6BAED6", "#63BFB3", "#A8C8A0", "#F5CC6E"]; // secteurs (donut) + top 5 (vignette)
-const BAR_PALETTE7  = ["#F4A96B", "#6BAED6", "#63BFB3", "#A8C8A0", "#F5CC6E", "#9DB8D9", "#F0947C"]; // top 7 (modal)
+const BAR_PALETTE5  = ["#ED9A4E", "#4E97C7", "#3FB0A2", "#8FB985", "#F0BE47"]; // secteurs (donut) + top 5 (vignette)
+const BAR_PALETTE7  = ["#ED9A4E", "#4E97C7", "#3FB0A2", "#8FB985", "#F0BE47", "#7FA1CC", "#EB7A5E"]; // top 7 (modal)
 
 // ─── Carte visualisation d'un indicateur ─────────────────────────────────────
 function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
