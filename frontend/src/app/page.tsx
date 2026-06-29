@@ -77,12 +77,25 @@ export default function HomePage() {
         .hero-p{animation:fadeUp 0.7s 0.2s ease both}
         .hero-cta{animation:fadeUp 0.7s 0.3s ease both}
         .hero-stats{animation:fadeUp 0.7s 0.45s ease both}
+
+        /* ── Responsive page d'accueil ── */
+        @media (max-width: 860px){
+          .lp-pad { padding-left: 20px !important; padding-right: 20px !important; }
+          .lp-quick { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+          .lp-quick-item { border-right: none !important; }
+          .lp-modules-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .lp-cta-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+        }
+        @media (max-width: 520px){
+          .lp-quick { grid-template-columns: 1fr !important; }
+          .lp-modules-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       <Navbar/>
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section style={{minHeight:"100vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 0px",position:"relative" as const,background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",overflow:"hidden"}}>
+      <section className="lp-pad" style={{minHeight:"100vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 0px",position:"relative" as const,background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",overflow:"hidden"}}>
 
         {/* Déco fond */}
 <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
@@ -160,7 +173,7 @@ export default function HomePage() {
 
       {/* ── BANDE ACCÈS RAPIDE ────────────────────────────────────────────────── */}
       <section style={{background:"linear-gradient(135deg,#ca631f,#ca631f)",padding:"0"}}>
-        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"stretch"}}>
+        <div className="lp-quick" style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"stretch"}}>
           {[
             {icon:BarChart2, label:"Tableau de bord",     href:"/tableau-de-bord", sub:"KPIs & Analyses"},
             {icon:Building2, label:"Entreprises",          href:"/entreprises",     sub:"Registre complet"},
@@ -169,7 +182,7 @@ export default function HomePage() {
           ].map((item,i)=>{
             const Icon=item.icon;
             return (
-              <Link key={i} href={item.href} style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none",transition:"background 0.15s"}}
+              <Link key={i} href={item.href} className="lp-quick-item" style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none",transition:"background 0.15s"}}
                 onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,0,0,0.1)";}}
                 onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                 <div style={{width:36,height:36,borderRadius:9,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -187,7 +200,7 @@ export default function HomePage() {
       </section>
 
       {/* ── MODULES ──────────────────────────────────────────────────────────── */}
-      <section style={{background:"#F2F0EF",padding:"80px 60px"}}>
+      <section className="lp-pad" style={{background:"#F2F0EF",padding:"80px 60px"}}>
         <div style={{maxWidth:1200,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48,flexWrap:"wrap" as const,gap:20}}>
             <div>
@@ -200,7 +213,7 @@ export default function HomePage() {
               Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
             </p>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#E8E5E3",border:"1px solid #E8E5E3",borderRadius:16,overflow:"hidden"}}>
+          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#E8E5E3",border:"1px solid #E8E5E3",borderRadius:16,overflow:"hidden"}}>
             {MODULES.map((m,i)=>(
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,transition:"background 0.15s",position:"relative" as const}}
                   onMouseEnter={e=>{e.currentTarget.style.background="#FAFAF9";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="1";(e.currentTarget.querySelector(".mod-num") as HTMLElement)!.style.color=m.color;}}
@@ -225,11 +238,11 @@ export default function HomePage() {
       </section>
 
       {/* ── TABLEAU DE BORD CTA ───────────────────────────────────────────────── */}
-      <section style={{background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
+      <section className="lp-pad" style={{background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
           <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
         </div>
-        <div style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
+        <div className="lp-cta-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
           <div>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"5px 14px",marginBottom:24}}>
               <BarChart2 size={12} style={{color:"#ca631f"}}/>
@@ -272,7 +285,7 @@ export default function HomePage() {
       </section>
 
       {/* ── IDENTITÉ INSTITUTIONNELLE ─────────────────────────────────────────── */}
-      <section style={{background:"#E8E5E3",padding:"64px 60px"}}>
+      <section className="lp-pad" style={{background:"#E8E5E3",padding:"64px 60px"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap" as const,gap:40}}>
           <div style={{display:"flex",alignItems:"center",gap:20}}>
             <Image src="/logo_apix.png" alt="APIX Sénégal" width={80} height={40} style={{height:40,width:"auto",objectFit:"contain"}}/>
@@ -298,7 +311,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
-      <footer style={{borderTop:"1px solid #C5BFBB",padding:"24px 60px",background:"#E8E5E3"}}>
+      <footer className="lp-pad" style={{borderTop:"1px solid #C5BFBB",padding:"24px 60px",background:"#E8E5E3"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:12}}>
           <p style={{color:"#9aa5b4",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
           <p style={{color:"#9aa5b4",fontSize:12}}>Plateforme à usage institutionnel</p>
