@@ -329,7 +329,7 @@ export default function Navbar() {
   const closeModules = () => { timeoutRef.current = setTimeout(() => setModulesOpen(false), 120); };
 
   const textColor = scrolled ? "#4a5568" : (isDark ? "rgba(255,255,255,0.85)" : "#4a5568");
-  const textHover = scrolled ? "#004f91" : (isDark ? "#fff" : "#004f91");
+  const textHover = scrolled ? "#003468" : (isDark ? "#fff" : "#003468");
   const bg = scrolled
     ? "rgba(255,255,255,0.96)"
     : isDark ? "rgba(14,14,26,0.7)" : "rgba(242,240,239,0.7)";
@@ -389,8 +389,8 @@ export default function Navbar() {
                         style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s", background: "transparent" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                        <span style={{ width: 30, height: 30, borderRadius: 8, background: `${m.color}10`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 17, color: m.color, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
+                        <span style={{ width: 30, height: 30, borderRadius: 8, background: "#EDF4FB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#003468", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
                         </span>
                         <span style={{ color: "#1a1a2e", fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>{m.label}</span>
                       </Link>
@@ -442,8 +442,8 @@ export default function Navbar() {
               {modules.map(m => (
                 <Link key={m.href} href={m.href} onClick={() => setMenuOpen(false)}
                   style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, color: "#1a1a2e", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
-                  <span style={{ width: 26, height: 26, borderRadius: 7, background: `${m.color}10`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 15, color: m.color, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
+                  <span style={{ width: 26, height: 26, borderRadius: 7, background: "#EDF4FB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 15, color: "#003468", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
                   </span>
                   {m.label}
                 </Link>
