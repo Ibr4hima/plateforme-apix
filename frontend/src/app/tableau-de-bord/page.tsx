@@ -116,7 +116,7 @@ function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:nu
 
     // Barre
     rows.append("rect").attr("x",0).attr("y",barY).attr("height",barH)
-      .attr("fill",(_:any,i:number)=>palette[i%palette.length])
+      .attr("fill",(d:any,i:number)=>d._c ?? palette[i%palette.length])
       .attr("width",0).transition().duration(450).delay((_:any,i:number)=>i*45)
       .attr("width",(d:any)=>Math.max(2, x(d.valeur)));
 
@@ -141,7 +141,7 @@ function VBarChart({ data, height, palette=COLORS }: { data:any[]; height:number
     if(!plotRef.current) return;
     plotRef.current.innerHTML="";
     if(!data.length) return;
-    const sorted=[...data].sort((a:any,b:any)=>b.valeur-a.valeur).map((d:any,i:number)=>({ ...d, _c:palette[i%palette.length] }));
+    const sorted=[...data].sort((a:any,b:any)=>b.valeur-a.valeur).map((d:any,i:number)=>({ ...d, _c: d._c ?? palette[i%palette.length] }));
     const chart=Plot.plot({
       width:w, height,
       marginTop:16, marginBottom:66, marginLeft:30, marginRight:8,
@@ -248,7 +248,7 @@ function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:an
 
     // Parts
     g.selectAll("path").data(arcs).join("path")
-      .attr("fill",(_,i)=>palette[i%palette.length]).attr("opacity",0.92)
+      .attr("fill",(d:any,i:number)=>d.data._c ?? palette[i%palette.length]).attr("opacity",0.92)
       .attr("d",arc as any)
       .transition().duration(550).attrTween("d",function(d:any){ const i=d3.interpolate({startAngle:0,endAngle:0},d); return (t:number)=>arc(i(t)) as string; });
 
@@ -278,7 +278,7 @@ function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:an
       .style("justify-content",(d:any)=>mid(d)<Math.PI?"flex-start":"flex-end")
       .style("white-space","nowrap").style("font-family","var(--font-google-sans),sans-serif")
       .html((d:any,i:number)=>{
-        const c=palette[i%palette.length];
+        const c=d.data._c ?? palette[i%palette.length];
         return `<span style="font-size:12.5px;color:#4a5568">${esc(shortLbl(d.data.label))}</span>`+
                `<span style="font-size:11px;font-weight:800;color:#fff;background:${c};padding:1px 8px;border-radius:999px;line-height:1.5">${Number(d.data.valeur).toLocaleString("fr-FR")}</span>`;
       });
@@ -1279,8 +1279,13 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const isLong    = dim.key==="branches" || dim.key==="activites" || dim.key==="pays";
   const cardN  = isPays ? 7 : 5;
   const modalN = isPays ? 15 : 7;
-  const cardData  = isLong ? data.slice(0,cardN) : data;
-  const modalData = isLong ? data.slice(0,modalN) : data;
+  // Tri déterministe (valeur desc, libellé asc) + couleur figée par rang →
+  // un même item garde sa couleur entre la vignette et le modal (même en cas d'égalité).
+  const colored = [...data]
+    .sort((a:any,b:any)=> (b.valeur-a.valeur) || String(a.label).localeCompare(String(b.label),"fr"))
+    .map((d:any,i:number)=>({ ...d, _c: BAR_PALETTE7[i%BAR_PALETTE7.length] }));
+  const cardData  = isLong ? colored.slice(0,cardN) : colored;
+  const modalData = isLong ? colored.slice(0,modalN) : colored;
   const cardH  = 200; // vignettes : taille uniforme pour tous les indicateurs
   const modalH = isSecteurs ? 380 : isPays ? 440 : 26 + Math.max(1, modalData.length)*44 + 8;
 
