@@ -111,7 +111,7 @@ function HBarAxisChart({ data, height, palette=COLORS }: { data:any[]; height:nu
 
     // Libellé au-dessus
     rows.append("text").attr("x",1).attr("y",13)
-      .style("font-size","12px").style("font-weight","500").style("fill","#374151")
+      .style("font-size","12.5px").style("font-weight","400").style("fill","#4a5568")
       .text((d:any)=>{ const s=String(d.label); return s.length>maxChars?s.slice(0,maxChars-1)+"…":s; });
 
     // Barre
