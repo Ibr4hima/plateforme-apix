@@ -1275,17 +1275,17 @@ function CarteSenegal({ height=200 }: { height?:number }) {
     });
     Promise.all([
       loadTopojson().then(()=>fetch("https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/sen.topo.json")).then(r=>r.json()),
-      fetch(`${API}/dashboard/viz/entreprises-par-region`).then(r=>r.json()).catch(()=>[]),
+      fetch(`${API}/dashboard/viz/region-densite`).then(r=>r.json()).catch(()=>[]),
     ])
       .then(([topo, regionData]:any)=>{
         if(cancelled||!ref.current) return;
         const topojson:any = (window as any).topojson;
         const W = container.clientWidth || 480;
         const H = height;
-        // Comptes par région (nom ref → valeur)
-        const counts: Record<string,number> = {};
-        (Array.isArray(regionData)?regionData:[]).forEach((d:any)=>{ counts[d.label]=Number(d.valeur)||0; });
-        const maxVal = Math.max(1, ...Object.values(counts));
+        // Densité d'entreprises par région (nom ref → densité)
+        const dens: Record<string,number> = {};
+        (Array.isArray(regionData)?regionData:[]).forEach((d:any)=>{ dens[d.label]=Number(d.densite)||0; });
+        const maxDens = Math.max(1e-9, ...Object.values(dens));
 
         container.innerHTML="";
         const svg = d3.select(container).append("svg")
@@ -1306,18 +1306,20 @@ function CarteSenegal({ height=200 }: { height?:number }) {
           .attr("x","-40%").attr("y","-40%").attr("width","180%").attr("height","180%")
           .append("feGaussianBlur").attr("in","SourceGraphic").attr("stdDeviation", Math.max(4, minHW*0.035));
 
-        // Heatmap : un blob par région, CLIPPÉ à sa propre région (pas de débordement)
-        const rScale = d3.scaleSqrt().domain([0,maxVal]).range([minHW*0.13, minHW*0.34]);
-        const heatColor = (v:number)=> d3.interpolateTurbo(0.28 + 0.66*(v/maxVal));
+        // Heatmap : un blob par région, CLIPPÉ à sa propre région.
+        // Taille = couvre la région (∝ superficie projetée) · Couleur = densité d'entreprises.
+        const heatColor = (v:number)=> d3.interpolateTurbo(0.30 + 0.64*(v/maxDens));
         geojson.features.forEach((f:any,i:number)=>{
           const nom = SEN_NAME_MAP[f.properties?.name||""] || f.properties?.name || "";
-          const v = counts[nom] || 0;
+          const v = dens[nom] || 0;
           if (v<=0) return;
           defs.append("clipPath").attr("id",`heat-clip-${i}`).append("path").attr("d", pathGen(f) as string);
           const c = pathGen.centroid(f);
+          const [[x0,y0],[x1,y1]] = pathGen.bounds(f);
+          const r = Math.max(x1-x0, y1-y0)/2 * 0.98; // couvre la région
           svg.append("g")
-            .attr("clip-path",`url(#heat-clip-${i})`).attr("filter","url(#heat-blur)").attr("opacity",0.8)
-            .append("circle").attr("cx",c[0]).attr("cy",c[1]).attr("r",rScale(v)).attr("fill", heatColor(v));
+            .attr("clip-path",`url(#heat-clip-${i})`).attr("filter","url(#heat-blur)").attr("opacity",0.82)
+            .append("circle").attr("cx",c[0]).attr("cy",c[1]).attr("r",r).attr("fill", heatColor(v));
         });
 
         // Contour extérieur par-dessus

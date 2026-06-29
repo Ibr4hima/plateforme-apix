@@ -251,6 +251,22 @@ async def viz_ent_region(db: AsyncSession = Depends(get_db)):
         GROUP BY r.nom ORDER BY valeur DESC
     """)
 
+@router.get("/viz/region-densite")
+async def viz_region_densite(db: AsyncSession = Depends(get_db)):
+    # Densité = entreprises installées / superficie (km²) par région.
+    return await safe(db, """
+        SELECT r.nom AS label,
+               COUNT(e.id) AS valeur,
+               r.superficie AS superficie,
+               CASE WHEN r.superficie > 0
+                    THEN COUNT(e.id)::numeric / r.superficie
+                    ELSE 0 END AS densite
+        FROM ref_regions r
+        LEFT JOIN entreprises_installees e ON e.region_id = r.id AND e.is_deleted = FALSE
+        GROUP BY r.nom, r.superficie
+        ORDER BY densite DESC
+    """)
+
 @router.get("/viz/region-stats")
 async def viz_region_stats(db: AsyncSession = Depends(get_db)):
     return await safe(db, """
