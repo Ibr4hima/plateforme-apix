@@ -47,12 +47,10 @@ function SideFilter({ label, items, selected, onToggle, color }: {
             const sel = selected.includes(item);
             return (
               <button key={item} onClick={() => onToggle(item)}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: "pointer", background: sel ? color + "12" : "transparent", textAlign: "left" as const }}
-                onMouseEnter={e => { if (!sel) e.currentTarget.style.background = "#F8F7F6"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = sel ? color + "12" : "transparent"; }}>
-                <div style={{ width: 14, height: 14, borderRadius: 3, border: `2px solid ${sel ? color : "#C5BFBB"}`, background: sel ? color : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {sel && <svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                </div>
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? color : "#C5BFBB"}`, background: sel ? color : "transparent", flexShrink: 0 }} />
                 <span style={{ fontSize: 12, color: sel ? "#1a1a2e" : "#4a5568", fontWeight: sel ? 600 : 400 }}>{item}</span>
               </button>
             );
@@ -240,6 +238,7 @@ export default function ProspectsPage() {
       <div style={{ display: "flex", alignItems: "flex-start" }}>
         {/* Sidebar */}
         <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "calc(100vh - 64px)", overflowY: "auto" as const, position: "sticky" as const, top: 64, display: "flex", flexDirection: "column" as const }}>
+          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
           {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute" as const, right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent", transition: "background 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.3)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
           <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
             {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Filtres</span>}
@@ -262,7 +261,7 @@ export default function ProspectsPage() {
               </div>
               <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
               {paysOpts.length > 0 && <SideFilter label="Pays / Siège" color="#004f91" items={paysOpts} selected={paysSel} onToggle={togglePays} />}
-              {secteurOpts.length > 0 && <><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /><SideFilter label="Secteur" color="#E35336" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} /></>}
+              {secteurOpts.length > 0 && <><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /><SideFilter label="Secteur" color="#004f91" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} /></>}
             </div>
           )}
         </aside>
