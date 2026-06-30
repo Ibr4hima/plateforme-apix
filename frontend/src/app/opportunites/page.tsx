@@ -1064,9 +1064,9 @@ export default function OpportunitesPage() {
       <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:0,zIndex:10}}>
         <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
           {([
-            {key:"projets",       label:"Banque de projets",      color:"#ca631f"},
-            {key:"potentialites", label:"Potentialités par zone",  color:"#ca631f"},
-            {key:"avantages",     label:"Avantages & incitations", color:"#ca631f"},
+            {key:"projets",       label:"Banque de projets",      color:"#004f91"},
+            {key:"potentialites", label:"Potentialités par zone",  color:"#004f91"},
+            {key:"avantages",     label:"Avantages & incitations", color:"#004f91"},
           ] as const).map(t=>(
             <button key={t.key} onClick={()=>setOnglet(t.key)}
               style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
@@ -1105,7 +1105,7 @@ export default function OpportunitesPage() {
                       {projQ&&<button onClick={()=>setProjQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                     </div>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                    <SideFilter label="Pôle territoire" color="#ca631f"
+                    <SideFilter label="Pôle territoire" color="#004f91"
                       items={poles.map((p:any)=>({value:p.pole_territoire,label:p.pole_territoire}))}
                       selected={projPoles} onToggle={toggle(projPoles,setProjPoles)}/>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
@@ -1139,7 +1139,7 @@ export default function OpportunitesPage() {
                       items={[{value:"pole",label:"Pôles"},{value:"region",label:"Régions"},{value:"departement",label:"Départements"},{value:"arrondissement",label:"Arrondissements"}]}
                       selected={potsNiveau} onToggle={toggle(potsNiveau,setPotsNiveau)}/>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                    <SideFilter label="Pôle territoire" color="#ca631f"
+                    <SideFilter label="Pôle territoire" color="#004f91"
                       items={poles.map((p:any)=>({value:p.pole_territoire,label:p.pole_territoire}))}
                       selected={potsPoles} onToggle={toggle(potsPoles,setPotsPoles)}/>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
