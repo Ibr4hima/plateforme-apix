@@ -792,12 +792,13 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 
         {/* Sidebar bande */}
         <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", overflowY:"auto" as const, position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
-          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
+          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
           <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
             {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-              <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
-              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
+            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
+              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
             </button>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
@@ -826,9 +827,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               {/* Pays */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-                  {paysSelec!=="Sénégal"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec!=="Sénégal"?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
-                  {paysSelec!=="Sénégal"&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
+                  {paysSelec!=="Sénégal"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
+                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec!=="Sénégal"?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
+                  {paysSelec!=="Sénégal"&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
                 </div>
                 {/* Sénégal épinglé */}
                 {(()=>{
@@ -838,11 +839,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                     <div style={{ marginBottom:8 }}>
                       <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
                       <button onClick={()=>setPaysSelec("Sénégal")}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?"#004f9112":"rgba(0,79,145,0.04)", textAlign:"left" as const, width:"100%" }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"rgba(0,79,145,0.04)", textAlign:"left" as const, width:"100%" }}
                         onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?"#004f9112":"rgba(0,79,145,0.04)";}}>
-                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,79,145,0.04)";}}>
+                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          
                         </div>
                         <span style={{ fontSize:12, color:sel?"#004f91":"#4a5568", fontWeight:sel?600:400 }}>Sénégal</span>
                         <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
@@ -859,8 +860,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                       <div key={continent} style={{ marginBottom:6 }}>
                         <button onClick={()=>toggleCont(continent)}
                           style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(202,99,31,0.06)", border:"none", cursor:"pointer", marginBottom:3 }}>
-                          <span style={{ fontSize:10, fontWeight:700, color:"#ca631f", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
-                          <ChevronDown size={11} style={{ color:"#ca631f", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                          <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
+                          <ChevronDown size={11} style={{ color:"#004f91", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
                         </button>
                         {isOpen&&Object.entries(zones).sort(([a],[b])=>a.localeCompare(b,"fr")).map(([zone,paysInZone]) => (
                           <div key={zone} style={{ marginLeft:6, marginBottom:4 }}>
@@ -869,8 +870,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                               const sel = paysSelec === p.nom;
                               if (p.nom==="Sénégal") return (
                                 <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
-                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    
                                   </div>
                                   <span style={{ fontSize:12, color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
                                   <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4" }}>Réf.</span>
@@ -878,11 +879,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                               );
                               return (
                                 <button key={p.nom} onClick={()=>setPaysSelec(p.nom)}
-                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:sel?"#004f9112":"transparent", textAlign:"left" as const, width:"100%" }}
+                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%" }}
                                   onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?"#004f9112":"transparent";}}>
-                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
+                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    
                                   </div>
                                   <span style={{ fontSize:12, color:sel?"#004f91":"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
                                 </button>
@@ -901,8 +902,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
                   {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024)))&&
-                    <span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-                  <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                    <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
+                  <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
                 </div>
                 <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
@@ -916,7 +917,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                     <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
                       <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#ca631f", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
                       <input type="range" min={1990} max={2024} value={anneeMin}
                         onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
                         className="drs-thumb"
@@ -927,9 +928,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                         style={{zIndex:3} as React.CSSProperties}/>
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
                       <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                     </div>
                     <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
                   </div>
@@ -940,7 +941,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                         const sel=anneesSpec.includes(a);
                         return (
                           <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#ca631f":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#ca631f":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#004f91":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
                             {a}
                           </button>
                         );
@@ -973,7 +974,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                         style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, background:isOver?"rgba(0,79,145,0.05)":epingle?"rgba(0,79,145,0.04)":"transparent", cursor:"grab", opacity:isDragging?0.3:disabled?0.3:1, transition:"background 0.1s", userSelect:"none" as const }}
                         onMouseEnter={ev=>{ if(!isDragging) ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.07)":"#F8F7F6"; }}
                         onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.04)":"transparent"; }}>
-                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:disabled?"not-allowed":"pointer" }}
+                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:disabled?"not-allowed":"pointer" }}
                           onClick={ev=>{ ev.stopPropagation(); !disabled&&toggleEpingle(k.id); }}>
                           {epingle&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         </div>
@@ -1119,12 +1120,13 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
 
         {/* Sidebar bande */}
         <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", overflowY:"auto" as const, position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
-          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
+          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
           <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
             {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-              <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
-              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
+            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
+              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
             </button>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
@@ -1154,10 +1156,10 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                    {(paysSelec.length>1||paysSelec[0]!=="Sénégal")&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-                    <span style={{ fontSize:11, fontWeight:700, color:(paysSelec.length>1||paysSelec[0]!=="Sénégal")?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
+                    {(paysSelec.length>1||paysSelec[0]!=="Sénégal")&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
+                    <span style={{ fontSize:11, fontWeight:700, color:(paysSelec.length>1||paysSelec[0]!=="Sénégal")?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
                   </div>
-                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec.length>=4?"#ca631f":"#9aa5b4", background:paysSelec.length>=4?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{paysSelec.length}/4</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec.length>=4?"#004f91":"#9aa5b4", background:paysSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{paysSelec.length}/4</span>
                 </div>
                 {/* Sénégal épinglé */}
                 {(()=>{
@@ -1168,11 +1170,11 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                     <div style={{ marginBottom:8 }}>
                       <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
                       <button onClick={()=>{ if(sel){if(paysSelec.length>1)setPaysSelec(prev=>prev.filter(n=>n!=="Sénégal"));}else if(canAdd){setPaysSelec(prev=>[...prev,"Sénégal"]);} }}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:sel||canAdd?"pointer":"not-allowed", background:sel?col+"12":"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%", opacity:!sel&&!canAdd?0.4:1 }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:sel||canAdd?"pointer":"not-allowed", background:"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%", opacity:!sel&&!canAdd?0.4:1 }}
                         onMouseEnter={e=>{if(sel||canAdd)(e.currentTarget as HTMLElement).style.background=sel?col+"20":"#F8F7F6";}}
-                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"rgba(24,128,56,0.04)";}}>
-                        <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(24,128,56,0.04)";}}>
+                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          
                         </div>
                         <span style={{ fontSize:12, color:sel?col:"#4a5568", fontWeight:sel?600:400 }}>Sénégal</span>
                         <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
@@ -1189,8 +1191,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                       <div key={continent} style={{ marginBottom:6 }}>
                         <button onClick={()=>toggleCont(continent)}
                           style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(202,99,31,0.06)", border:"none", cursor:"pointer", marginBottom:3 }}>
-                          <span style={{ fontSize:10, fontWeight:700, color:"#ca631f", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
-                          <ChevronDown size={11} style={{ color:"#ca631f", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                          <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
+                          <ChevronDown size={11} style={{ color:"#004f91", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
                         </button>
                         {isOpen&&Object.entries(zones).sort(([a],[b])=>a.localeCompare(b,"fr")).map(([zone,paysInZone]) => (
                           <div key={zone} style={{ marginLeft:6, marginBottom:4 }}>
@@ -1202,8 +1204,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                               const disabled = !sel && !canAdd;
                               if (p.nom==="Sénégal") return (
                                 <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
-                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    
                                   </div>
                                   <span style={{ fontSize:12, color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
                                   <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4" }}>Réf.</span>
@@ -1211,11 +1213,11 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                               );
                               return (
                                 <button key={p.nom} onClick={()=>{ if(sel&&paysSelec.length>1) setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); else if(canAdd) setPaysSelec(prev=>[...prev,p.nom]); }}
-                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1 }}
+                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1 }}
                                   onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"transparent";}}>
-                                  <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
+                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    
                                   </div>
                                   <span style={{ fontSize:12, color:sel?col:"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
                                 </button>
@@ -1234,8 +1236,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
                   {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024)))&&
-                    <span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-                  <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                    <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
+                  <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
                 </div>
                 <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
@@ -1249,7 +1251,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                     <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
                       <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#ca631f", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
                       <input type="range" min={1990} max={2024} value={anneeMin}
                         onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
                         className="drs-thumb"
@@ -1260,9 +1262,9 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                         style={{zIndex:3} as React.CSSProperties}/>
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
                       <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                     </div>
                     <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
                   </div>
@@ -1273,7 +1275,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                         const sel=anneesSpec.includes(a);
                         return (
                           <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#ca631f":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#ca631f":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#004f91":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
                             {a}
                           </button>
                         );
@@ -1701,12 +1703,13 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
     <div style={{ display:"flex", alignItems:"flex-start" }}>
       {/* Sidebar */}
       <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", overflowY:"auto" as const, position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
-        {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
+        {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
           {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-          <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-            <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
-            {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
+          <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+            <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
+            {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
           </button>
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
@@ -1739,8 +1742,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
               {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024)))&&
-                <span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
+              <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
             <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
@@ -1754,14 +1757,14 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
                   <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#ca631f", borderRadius:2, transform:"translateY(-50%)" }}/>
+                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
                   <input type="range" min={1990} max={2024} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
                   <input type="range" min={1990} max={2024} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
                   <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                 </div>
                 <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
               </div>
@@ -1772,7 +1775,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
                     const sel=anneesSpec.includes(a);
                     return (
                       <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#ca631f":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#ca631f":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#004f91":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
                         {a}
                       </button>
                     );
@@ -1789,7 +1792,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
 
           {/* compteur global */}
           <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:10 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=4?"#ca631f":"#9aa5b4", background:grpSelec.length>=4?"rgba(202,99,31,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/4</span>
+            <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=4?"#004f91":"#9aa5b4", background:grpSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/4</span>
           </div>
 
           {groupements.length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Chargement…</p>}
@@ -1802,11 +1805,11 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
               const disabled = !sel && grpSelec.length >= 4;
               return (
                 <button key={g.code} onClick={()=>toggle(g.code)}
-                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:sel?col+"12":"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:1 }}
+                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:1 }}
                   onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=sel?col+"12":"transparent";}}>
-                  <div style={{ width:13, height:13, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
+                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    
                   </div>
                   <span style={{ fontSize:12, color:sel?col:"#1a1a2e", fontWeight:sel?600:400, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{g.nom_fr}</span>
                 </button>
@@ -2329,11 +2332,12 @@ function OngletNational() {
     <div style={{ display:"flex", alignItems:"flex-start" }}>
       {/* Sidebar */}
       <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", overflowY:"auto" as const, position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
-        {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
+        {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
           {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-          <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
-            <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
+          <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
+            <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
           </button>
         </div>
 
@@ -2393,8 +2397,8 @@ function OngletNational() {
                       style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"6px 8px", borderRadius:6, background:sel?"rgba(0,79,145,0.04)":"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
                       onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background=sel?"rgba(0,79,145,0.07)":"#F8F7F6"; }}
                       onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background=sel?"rgba(0,79,145,0.04)":"transparent"; }}>
-                      <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1 }}>
-                        {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                      <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1 }}>
+                        
                       </div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <span style={{ fontSize:12, color:sel?"#1a1a2e":"#4a5568", fontWeight:sel?600:400, lineHeight:1.3 }}>{n.libelle}</span>
@@ -2403,7 +2407,7 @@ function OngletNational() {
                   );
                 };
                 const Header = ({txt}:{txt:string})=>(
-                  <p style={{ fontSize:9.5, fontWeight:700, color:"#ca631f", letterSpacing:"0.08em", textTransform:"uppercase" as const, padding:"2px 8px", margin:"10px 0 3px" }}>{txt}</p>
+                  <p style={{ fontSize:9.5, fontWeight:700, color:"#004f91", letterSpacing:"0.08em", textTransform:"uppercase" as const, padding:"2px 8px", margin:"10px 0 3px" }}>{txt}</p>
                 );
                 let sections: React.ReactNode;
                 if (compType==="macro_secteur") {
@@ -2441,8 +2445,8 @@ function OngletNational() {
           {/* Activités */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-              {sel.niveau!=="global"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:sel.niveau!=="global"?"#ca631f":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Activités</span>
+              {sel.niveau!=="global"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
+              <span style={{ fontSize:11, fontWeight:700, color:sel.niveau!=="global"?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Activités</span>
             </div>
 
             {/* Global */}
@@ -2505,7 +2509,7 @@ function OngletNational() {
           <div style={{ marginBottom:8 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
               {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==bornes[0]||anneeMax!==bornes[1])))&&
-                <span style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", display:"inline-block" }}/>}
+                <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
               <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
             <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
@@ -2520,21 +2524,21 @@ function OngletNational() {
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
                   <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-bornes[0])/span)*100}%`, width:`${Math.max(0,((anneeMax-bornes[0])/span)*100-((anneeMin-bornes[0])/span)*100)}%`, height:4, background:"#ca631f", borderRadius:2, transform:"translateY(-50%)" }}/>
+                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-bornes[0])/span)*100}%`, width:`${Math.max(0,((anneeMax-bornes[0])/span)*100-((anneeMin-bornes[0])/span)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
                   <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax?4:2} as React.CSSProperties}/>
                   <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
                   <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                 </div>
               </div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:3 }}>
                 {anneesData.map(a=>{ const s=anneesSpec.includes(a); return (
                   <button key={a} onClick={()=>setAnneesSpec(prev=>s?prev.filter(x=>x!==a):[...prev,a].sort())}
-                    style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${s?"#ca631f":"#E8E5E3"}`, cursor:"pointer", fontSize:11, fontWeight:s?700:400, textAlign:"center" as const, background:s?"#ca631f":"#F8F7F6", color:s?"#fff":"#4a5568" }}>{a}</button>
+                    style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${s?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:11, fontWeight:s?700:400, textAlign:"center" as const, background:s?"#004f91":"#F8F7F6", color:s?"#fff":"#4a5568" }}>{a}</button>
                 ); })}
               </div>
             )}
@@ -2576,7 +2580,7 @@ function OngletNational() {
                             onMouseEnter={ev=>{ if(!disabled) ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.07)":"#F8F7F6"; montrerTip(ev, defBdef(ind.code, ind.libelle)); }}
                             onMouseMove={ev=>montrerTip(ev, defBdef(ind.code, ind.libelle))}
                             onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.04)":"transparent"; setTip(null); }}>
-                            <div style={{ width:14, height:14, borderRadius:3, border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                            <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                               {epingle&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                             </div>
                             <span style={{ fontSize:12, color:epingle?"#1a1a2e":"#4a5568", flex:1, lineHeight:1.3, fontWeight:epingle?600:400, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{ind.libelle}</span>
@@ -2784,8 +2788,8 @@ export default function IdePage() {
 .drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
 .drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}
 .drs-thumb::-moz-range-track{background:transparent;height:4px}
-.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#ca631f;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(202,99,31,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
-.drs-thumb::-moz-range-thumb{background:#ca631f;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(202,99,31,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
+.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
+.drs-thumb::-moz-range-thumb{background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <Navbar />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
@@ -2826,7 +2830,7 @@ export default function IdePage() {
                   {v:"projetes", l:"Investissements projetés"},
                 ] as const).map(s=>(
                   <button key={s.v} onClick={()=>setSection(s.v)}
-                    style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${section===s.v?"#ca631f":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:section===s.v?"#ca631f":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+                    style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${section===s.v?"#004f91":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:section===s.v?"#004f91":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
                     {s.l}
                   </button>
                 ))}
