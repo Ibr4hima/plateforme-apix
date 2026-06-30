@@ -2012,10 +2012,12 @@ function BdefRow({ label, niveau, selected, onSelect, expandable, expanded, onTo
         </button>
       ) : <span style={{ width:16, flexShrink:0 }}/>}
       <button onClick={onSelect}
-        style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 9px", borderRadius:8, border:"none", cursor:"pointer", background:selected?selBg:"transparent", textAlign:"left" as const, width:"100%" }}
-        onMouseEnter={e=>{if(!selected)(e.currentTarget as HTMLElement).style.background="#F6F5F4";}}
-        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=selected?selBg:"transparent";}}>
-        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${selected?st.color:dotColor+"99"}`, background:selected?st.color:"transparent", flexShrink:0, transition:"all 0.12s" }}/>
+        style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 9px", borderRadius:8, border:"none", cursor:"pointer", background:(selected&&!niveau)?selBg:"transparent", textAlign:"left" as const, width:"100%" }}
+        onMouseEnter={e=>{if(!(selected&&!niveau))(e.currentTarget as HTMLElement).style.background="#F6F5F4";}}
+        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=(selected&&!niveau)?selBg:"transparent";}}>
+        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${selected?st.color:dotColor+"99"}`, background:selected?st.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
+          {selected&&!niveau&&<div style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
+        </div>
         <span style={{ fontSize:st.fs, color:selected?st.color:st.base, fontWeight:selected?700:st.fw, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, letterSpacing:niveau==="macro_secteur"?"-0.01em":"0" }}>{label}</span>
       </button>
     </div>
