@@ -1739,7 +1739,7 @@ function SbSection({ title, count, accent="#004f91", defaultOpen=true, children 
 }
 
 const SbCheck = ({ active }:{ active:boolean }) => (
-  <div style={{ width:11, height:11, borderRadius:"50%", border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0 }}/>
+  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${active?"#004f91":"#C5BFBB"}`, background:active?"#004f91":"transparent", flexShrink:0 }}/>
 );
 
 function SbEmpty() {
@@ -1791,7 +1791,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
       <style>{`::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#E8E5E3;border-radius:4px}.sb-item:hover{background:#F8F7F6!important}`}</style>
 
       {/* Poignée de redimensionnement */}
-      {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,0,0,0.15)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+      {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
 
       {/* En-tête */}
       <div style={{ padding:sidebarOpen?"14px 16px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
