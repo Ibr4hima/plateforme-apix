@@ -1241,14 +1241,7 @@ function TableCard({ card, onRemove }: {
     <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",
       boxShadow:"0 1px 6px rgba(0,0,0,0.05)",overflow:"hidden",
       gridColumn:"span 2"}}>
-      {/* Badge type + bouton fermer */}
-      <div style={{padding:"10px 16px 0",display:"flex",justifyContent:"flex-end",alignItems:"center",gap:6}}>
-        <button onClick={onRemove}
-          style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:6,padding:5,color:"#9aa5b4"}}>
-          <X size={13}/>
-        </button>
-      </div>
-      <AnalyticTable tableId={card.tableId} titre={def.titre} description={def.description} embedded/>
+      <AnalyticTable tableId={card.tableId} titre={def.titre} description={def.description} embedded onClose={onRemove}/>
     </div>
   );
 }
