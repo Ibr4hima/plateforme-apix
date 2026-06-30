@@ -54,9 +54,9 @@ function SideFilter({ label, items, selected, onToggle, color, listMaxHeight }: 
             const sel=selected.includes(item.value);
             return (
               <button key={item.value} onClick={()=>onToggle(item.value)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?color+"12":"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
-                onMouseLeave={e=>{e.currentTarget.style.background=sel?color+"12":"transparent";}}>
+                style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                 <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                   </div>
                 <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{item.label}</span>
@@ -93,8 +93,8 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {secteurs.map((s:any)=>{const sel=secteursSel.includes(s.nom); return (
               <button key={s.nom} onClick={()=>onSecteur(s.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.1)":"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.1)":"transparent";}}>
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                 <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                   </div>
                 <span style={{fontSize:12,color:sel?"#004f91":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
@@ -106,8 +106,8 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
               <button key={b.nom} onClick={()=>onBranche(b.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(202,99,31,0.1)":"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(202,99,31,0.1)":"transparent";}}>
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                 <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                   </div>
                 <span style={{fontSize:12,color:sel?"#ca631f":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
@@ -119,8 +119,8 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {activites.map((a:any)=>{const sel=activitesSel.includes(a.nom); return (
               <button key={a.nom} onClick={()=>onActivite(a.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(24,128,56,0.08)":"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(24,128,56,0.08)":"transparent";}}>
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                 <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                   </div>
                 <span style={{fontSize:12,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
@@ -452,7 +452,9 @@ export default function AccordsPage() {
                   <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
                     {STATUT_OPTS.map(b=>(
                       <button key={b.value} onClick={()=>setStatutFiltre(b.value)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",background:statutFiltre===b.value?b.bg:"transparent",cursor:"pointer",textAlign:"left" as const,fontSize:12,fontWeight:statutFiltre===b.value?700:400,color:statutFiltre===b.value?b.text:"#4a5568"}}>
+                        className="sb-item-row"
+                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",background:"transparent",cursor:"pointer",textAlign:"left" as const,fontSize:12,fontWeight:statutFiltre===b.value?700:400,color:statutFiltre===b.value?b.text:"#4a5568"}}
+                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:7,height:7,borderRadius:"50%",background:b.text,opacity:statutFiltre===b.value?1:0.3,flexShrink:0}}/>{b.label}
                       </button>
                     ))}
@@ -474,9 +476,9 @@ export default function AccordsPage() {
                     {/* Sénégal */}
                     {senegalId!==undefined&&(()=>{const sel=paysIdsFiltres.includes(senegalId); return (
                       <button onClick={()=>togglePaysId(senegalId)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
-                        onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
-                        onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
+                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
+                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                        onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                   </div>
                         <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>Sénégal</span>
@@ -485,9 +487,9 @@ export default function AccordsPage() {
                     {/* APIX S.A */}
                     {(()=>{const sel=apixFiltre; return (
                       <button onClick={()=>setApixFiltre(f=>!f)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
-                        onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
-                        onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
+                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
+                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                        onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                   </div>
                         <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>APIX S.A</span>
@@ -499,9 +501,9 @@ export default function AccordsPage() {
                       <div style={{maxHeight:160,overflowY:"auto" as const}}>
                         {autresPays.map((p:any)=>{const sel=paysIdsFiltres.includes(p.id); return (
                           <button key={p.id} onClick={()=>togglePaysId(p.id)}
-                            style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
-                            onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
-                            onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
+                            style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
+                            onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                            onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                             <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                           </div>
                             <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{p.nom}</span>
