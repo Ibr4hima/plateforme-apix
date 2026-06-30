@@ -1858,21 +1858,18 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
             </div>}
 
           {onglet==="tables"&&
-            <SbSection title="Tableaux analytiques" count={config.tableCards.length}>
+            <div>
               {tablesFiltered.length===0 ? <SbEmpty/> : tablesFiltered.map(t=>{
                 const active = config.tableCards.some(c=>c.tableId===t.id);
                 return (
                   <div key={t.id} className="sb-item" onClick={()=>onToggleTable(t.id)}
-                    style={{ display:"flex", alignItems:"flex-start", gap:9, padding:"8px 8px", borderRadius:8, cursor:"pointer" }}>
-                    <div style={{ marginTop:1 }}><SbCheck active={active}/></div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <p style={{ fontSize:12, color:active?"#004f91":"#1a1a2e", fontWeight:active?600:500, lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</p>
-                      <p style={{ fontSize:10.5, color:"#9aa5b4", lineHeight:1.4, marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.description}</p>
-                    </div>
+                    style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:"pointer" }}>
+                    <SbCheck active={active}/>
+                    <span style={{ fontSize:12, color:"#4a5568", fontWeight:active?700:400, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{t.titre}</span>
                   </div>
                 );
               })}
-            </SbSection>}
+            </div>}
         </div>
 
         {/* Pied : réinitialiser */}
