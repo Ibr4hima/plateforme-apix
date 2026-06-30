@@ -2165,6 +2165,8 @@ function OngletNational() {
   const [compData, setCompData]       = useState<Record<number,BdefIndic[]>>({});
   const [compAnneesData, setCompAnneesData] = useState<number[]>([]);
   const [compSearch, setCompSearch]   = useState("");
+  const [compCatOuverts, setCompCatOuverts] = useState<Set<string>>(new Set());
+  const toggleCompCat = (k:string) => setCompCatOuverts(p=>{ const n=new Set(p); n.has(k)?n.delete(k):n.add(k); return n; });
   const [loadingComp, setLoadingComp] = useState(false);
 
   // Période (bornes dérivées des données)
@@ -2374,8 +2376,11 @@ function OngletNational() {
                     </div>
                   );
                 };
-                const Header = ({txt}:{txt:string})=>(
-                  <p style={{ fontSize:9.5, fontWeight:700, color:"#004f91", letterSpacing:"0.08em", textTransform:"uppercase" as const, padding:"2px 8px", margin:"10px 0 3px" }}>{txt}</p>
+                const CatHeader = ({txt, open, onToggle}:{txt:string; open:boolean; onToggle:()=>void})=>(
+                  <button onClick={onToggle} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 8px", marginTop:6, marginBottom:3 }}>
+                    <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{txt}</span>
+                    <ChevronDown size={11} style={{ color:"#004f91", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                  </button>
                 );
                 let sections: React.ReactNode;
                 if (compType==="macro_secteur") {
@@ -2384,13 +2389,15 @@ function OngletNational() {
                   sections = (refs?.macro_secteur||[]).map(macro=>{
                     const enfants = groupesDe(macro.id).filter(matchS);
                     if (!enfants.length) return null;
-                    return <div key={macro.id}><Header txt={macro.libelle}/>{enfants.map(renderItem)}</div>;
+                    const open = compCatOuverts.has(`m${macro.id}`);
+                    return <div key={macro.id}><CatHeader txt={macro.libelle} open={open} onToggle={()=>toggleCompCat(`m${macro.id}`)}/>{open&&enfants.map(renderItem)}</div>;
                   });
                 } else {
                   sections = (refs?.groupe||[]).map(groupe=>{
                     const enfants = secteursDe(groupe.id).filter(matchS);
                     if (!enfants.length) return null;
-                    return <div key={groupe.id}><Header txt={groupe.libelle}/>{enfants.map(renderItem)}</div>;
+                    const open = compCatOuverts.has(`g${groupe.id}`);
+                    return <div key={groupe.id}><CatHeader txt={groupe.libelle} open={open} onToggle={()=>toggleCompCat(`g${groupe.id}`)}/>{open&&enfants.map(renderItem)}</div>;
                   });
                 }
                 return <div style={{ maxHeight:420, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:1 }}>{sections}</div>;
