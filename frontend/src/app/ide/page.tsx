@@ -826,9 +826,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                     <div style={{ marginBottom:8 }}>
                       <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
                       <button onClick={()=>setPaysSelec("Sénégal")}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"rgba(0,79,145,0.04)", textAlign:"left" as const, width:"100%" }}
-                        onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,79,145,0.04)";}}>
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%" }}
+                        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
                         <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                           
                         </div>
@@ -846,7 +846,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                     return (
                       <div key={continent} style={{ marginBottom:6 }}>
                         <button onClick={()=>toggleCont(continent)}
-                          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(202,99,31,0.06)", border:"none", cursor:"pointer", marginBottom:3 }}>
+                          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", marginBottom:3 }}>
                           <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
                           <ChevronDown size={11} style={{ color:"#004f91", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
                         </button>
@@ -1172,7 +1172,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                     return (
                       <div key={continent} style={{ marginBottom:6 }}>
                         <button onClick={()=>toggleCont(continent)}
-                          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(202,99,31,0.06)", border:"none", cursor:"pointer", marginBottom:3 }}>
+                          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", marginBottom:3 }}>
                           <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
                           <ChevronDown size={11} style={{ color:"#004f91", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
                         </button>
