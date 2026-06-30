@@ -694,8 +694,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const [kpisOrdre,   setKpisOrdre]   = useState<string[]>(KPI_25_IDS);
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
   const [kpiActif,     setKpiActif]     = useState<KpiResult|null>(null);
-  const [dragIdx,      setDragIdx]      = useState<number|null>(null);
-  const [dragOver,     setDragOver]     = useState<number|null>(null);
   const [searchPays,   setSearchPays]   = useState("");
   const [openConts,    setOpenConts]    = useState<Set<string>>(new Set(["Afrique"]));
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
@@ -745,17 +743,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   };
 
   // Drag & drop handlers
-  const handleDragStart = (i: number) => setDragIdx(i);
-  const handleDragOver  = (e: React.DragEvent, i: number) => { e.preventDefault(); setDragOver(i); };
-  const handleDrop      = (i: number) => {
-    if (dragIdx===null||dragIdx===i) return;
-    const next=[...kpisOrdre];
-    const [moved]=next.splice(dragIdx,1);
-    next.splice(i,0,moved);
-    setKpisOrdre(next);
-    setDragIdx(null); setDragOver(null);
-  };
-  const handleDragEnd   = () => { setDragIdx(null); setDragOver(null); };
 
   const buildSerie = (dir: string, ind: string) => [{
     nom: paysSelec, couleur,
@@ -965,19 +952,14 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   {kpisSidebar.map((k,i)=>{
                     const epingle = kpisEpingles.includes(k.id);
                     const disabled = !epingle && kpisEpingles.length >= 5;
-                    const isDragging = dragIdx===i; const isOver = dragOver===i;
                     return (
-                      <div key={k.id} draggable
-                        onDragStart={()=>handleDragStart(i)} onDragOver={e=>handleDragOver(e,i)}
-                        onDrop={()=>handleDrop(i)} onDragEnd={handleDragEnd}
+                      <div key={k.id}
                         title={k.description}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, background:isOver?"rgba(0,79,145,0.05)":epingle?"rgba(0,79,145,0.04)":"transparent", cursor:"grab", opacity:isDragging?0.3:disabled?0.3:1, transition:"background 0.1s", userSelect:"none" as const }}
-                        onMouseEnter={ev=>{ if(!isDragging) ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.07)":"#F8F7F6"; }}
-                        onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.04)":"transparent"; }}>
-                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", cursor:disabled?"not-allowed":"pointer" }}
-                          onClick={ev=>{ ev.stopPropagation(); !disabled&&toggleEpingle(k.id); }}>
-                          {epingle&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                        </div>
+                        onClick={()=>{ !disabled&&toggleEpingle(k.id); }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, background:"transparent", cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.3:1, transition:"background 0.1s" }}
+                        onMouseEnter={ev=>{ ev.currentTarget.style.background="#F8F7F6"; }}
+                        onMouseLeave={ev=>{ ev.currentTarget.style.background="transparent"; }}>
+                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0 }}/>
                         {(()=>{ const dernAnnee=modeAnnees==="specifiques"&&anneesSpec.length>0?anneesSpec[anneesSpec.length-1]:anneeMax; const {main,badge}=splitKpiLabel(k.label,dernAnnee); return (<><span style={{ fontSize:12, color:epingle?"#1a1a2e":"#4a5568", flex:1, minWidth:0, lineHeight:1.35, fontWeight:epingle?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{main}</span>{badge&&<span style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{badge}</span>}</>); })()}
                       </div>
                     );
