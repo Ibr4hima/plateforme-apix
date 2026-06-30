@@ -2542,9 +2542,8 @@ function OngletNational() {
               return (
                 <div key={cat} style={{ marginBottom:3 }}>
                   <button onClick={()=>setCatKpiOuverts(p=>{const n=new Set(p);n.has(cat)?n.delete(cat):n.add(cat);return n;})}
-                    style={{ display:"flex", alignItems:"center", gap:7, width:"100%", background:ouvert?"rgba(0,79,145,0.04)":"transparent", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 8px", textAlign:"left" as const }}>
-                    <div style={{ width:8, height:8, borderRadius:2, background:col, flexShrink:0 }}/>
-                    <span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", flex:1 }}>{cat}</span>
+                    style={{ display:"flex", alignItems:"center", gap:7, width:"100%", background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 8px", textAlign:"left" as const }}>
+                    <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const, flex:1 }}>{cat}</span>
                     {nbEpCat>0&&<span style={{ fontSize:9, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.1)", padding:"1px 5px", borderRadius:4 }}>{nbEpCat}</span>}
                     <ChevronRight size={11} style={{ color:"#9aa5b4", transform:ouvert?"rotate(90deg)":"none", transition:"transform 0.15s", flexShrink:0 }}/>
                   </button>
@@ -2560,9 +2559,7 @@ function OngletNational() {
                             onMouseEnter={ev=>{ if(!disabled) ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.07)":"#F8F7F6"; montrerTip(ev, defBdef(ind.code, ind.libelle)); }}
                             onMouseMove={ev=>montrerTip(ev, defBdef(ind.code, ind.libelle))}
                             onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.04)":"transparent"; setTip(null); }}>
-                            <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                              {epingle&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                            </div>
+                            <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0 }}/>
                             <span style={{ fontSize:12, color:epingle?"#1a1a2e":"#4a5568", flex:1, lineHeight:1.3, fontWeight:epingle?600:400, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{ind.libelle}</span>
                             <span style={{ fontSize:9, color:"#9aa5b4", fontWeight:500, flexShrink:0 }}>{ind.unite}</span>
                           </div>
