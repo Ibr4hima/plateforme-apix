@@ -57,9 +57,8 @@ function SideFilter({ label, items, selected, onToggle, color, listMaxHeight }: 
                 style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?color+"12":"transparent",textAlign:"left" as const}}
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
                 onMouseLeave={e=>{e.currentTarget.style.background=sel?color+"12":"transparent";}}>
-                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div>
+                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                  </div>
                 <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{item.label}</span>
               </button>
             );
@@ -83,51 +82,48 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          {hasFilter&&<span style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",display:"inline-block"}}/>}
-          <span style={{fontSize:11,fontWeight:700,color:hasFilter?"#ca631f":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
+          {hasFilter&&<span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",display:"inline-block"}}/>}
+          <span style={{fontSize:11,fontWeight:700,color:hasFilter?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
         </div>
         {open?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
       </button>
       {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
         <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#ca631f",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</p>
+          <p style={{fontSize:10,fontWeight:700,color:"#004f91",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {secteurs.map((s:any)=>{const sel=secteursSel.includes(s.nom); return (
               <button key={s.nom} onClick={()=>onSecteur(s.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(202,99,31,0.1)":"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(202,99,31,0.1)":"transparent";}}>
-                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div>
-                <span style={{fontSize:12,color:sel?"#ca631f":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.1)":"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.1)":"transparent";}}>
+                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                  </div>
+                <span style={{fontSize:12,color:sel?"#004f91":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
               </button>);})}
           </div>
         </div>
-        {secteursSel.length>0&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#004f91",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</p>
+        {secteursSel.length>0&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(0,79,145,0.15)"}}>
+          <p style={{fontSize:10,fontWeight:700,color:"#2872B8",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
               <button key={b.nom} onClick={()=>onBranche(b.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.1)":"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.1)":"transparent";}}>
-                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div>
-                <span style={{fontSize:12,color:sel?"#004f91":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(40,114,184,0.12)":"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(40,114,184,0.12)":"transparent";}}>
+                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#2872B8":"#C5BFBB"}`,background:sel?"#2872B8":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                  </div>
+                <span style={{fontSize:12,color:sel?"#2872B8":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
               </button>);})}
           </div>
         </div>}
-        {branchesSel.length>0&&activites.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(0,79,145,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</p>
+        {branchesSel.length>0&&activites.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(40,114,184,0.18)"}}>
+          <p style={{fontSize:10,fontWeight:700,color:"#5596D4",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</p>
           <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
             {activites.map((a:any)=>{const sel=activitesSel.includes(a.nom); return (
               <button key={a.nom} onClick={()=>onActivite(a.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(24,128,56,0.08)":"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(24,128,56,0.08)":"transparent";}}>
-                <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div>
-                <span style={{fontSize:12,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(85,150,212,0.14)":"transparent",textAlign:"left" as const}}
+                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(85,150,212,0.14)":"transparent";}}>
+                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#5596D4":"#C5BFBB"}`,background:sel?"#5596D4":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                  </div>
+                <span style={{fontSize:12,color:sel?"#5596D4":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
               </button>);})}
           </div>
         </div>}
@@ -429,15 +425,15 @@ export default function AccordsPage() {
             {/* Handle de resize */}
             {sidebarOpen&&<div onMouseDown={startResize}
               style={{position:"absolute" as const,right:0,top:0,bottom:0,width:4,cursor:"col-resize",zIndex:10,background:"transparent",transition:"background 0.15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}}
               onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
             {/* Header toggle */}
             <div style={{padding:sidebarOpen?"14px 16px 10px":"12px 8px",borderBottom:"1px solid #F2F0EF",display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",flexShrink:0}}>
               {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
               <button onClick={()=>setSidebarOpen(o=>!o)}
-                style={{background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
-                <SlidersHorizontal size={14} style={{color:"#ca631f"}}/>
-                {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
+                style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
+                <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
+                {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
               </button>
             </div>
             {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
@@ -480,9 +476,8 @@ export default function AccordsPage() {
                         style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
                         onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
                         onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
-                        <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                        </div>
+                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                                  </div>
                         <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>Sénégal</span>
                       </button>
                     );})()}
@@ -492,9 +487,8 @@ export default function AccordsPage() {
                         style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
                         onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
                         onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
-                        <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                          {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                        </div>
+                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                                  </div>
                         <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>APIX S.A</span>
                       </button>
                     );})()}
@@ -507,9 +501,8 @@ export default function AccordsPage() {
                             style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:sel?"rgba(0,79,145,0.12)":"transparent",textAlign:"left" as const,width:"100%"}}
                             onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
                             onMouseLeave={e=>{e.currentTarget.style.background=sel?"rgba(0,79,145,0.12)":"transparent";}}>
-                            <div style={{width:14,height:14,borderRadius:3,border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                              {sel&&<svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                            </div>
+                            <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                                          </div>
                             <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{p.nom}</span>
                           </button>
                         );})}

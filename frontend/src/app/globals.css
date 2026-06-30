@@ -33,7 +33,7 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--surface-1); }
 ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--apix-orange); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 ::selection { background: rgba(202, 99, 31, 0.2); color: var(--text-primary); }
 
 .font-display { font-family: var(--font-display); }
