@@ -1243,12 +1243,6 @@ function TableCard({ card, onRemove }: {
       gridColumn:"span 2"}}>
       {/* Badge type + bouton fermer */}
       <div style={{padding:"10px 16px 0",display:"flex",justifyContent:"flex-end",alignItems:"center",gap:6}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginRight:"auto"}}>
-          <div style={{width:20,height:20,borderRadius:5,background:"#eff6ff",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <Table2 size={10} color="#004f91"/>
-          </div>
-          <span style={{fontSize:10,fontWeight:700,color:"#004f91",textTransform:"uppercase" as const,letterSpacing:"0.06em"}}>Tableau analytique</span>
-        </div>
         <button onClick={onRemove}
           style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:6,padding:5,color:"#9aa5b4"}}>
           <X size={13}/>
@@ -1803,15 +1797,15 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
       </div>
 
       {sidebarOpen&&<>
-        {/* Recherche */}
-        <div style={{ padding:"12px 16px 6px", flexShrink:0 }}>
+        {/* Recherche (uniquement onglet Visualisation) */}
+        {onglet==="viz" && <div style={{ padding:"12px 16px 6px", flexShrink:0 }}>
           <div style={{ position:"relative" as const }}>
             <Search size={13} style={{ position:"absolute" as const, left:10, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={onglet==="tables"?"Rechercher un tableau…":"Rechercher…"}
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
               style={{ width:"100%", paddingLeft:31, paddingRight:search?28:10, paddingTop:8, paddingBottom:8, borderRadius:9, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
             {search&&<button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={12} style={{ color:"#9aa5b4" }}/></button>}
           </div>
-        </div>
+        </div>}
 
         {/* Sections */}
         <div style={{ padding:"8px 16px 16px", overflowY:"auto" as const, flex:1 }}>
@@ -1974,17 +1968,13 @@ export default function TableauDeBordPage() {
           onglet={onglet}/>
         <main style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
 
-          {/* En-tête de contenu */}
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap" as const,gap:12}}>
+          {/* En-tête de contenu (uniquement onglet Visualisation) */}
+          {onglet==="viz" && <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap" as const,gap:12}}>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <div style={{width:10,height:10,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-              <h2 style={{fontWeight:800,fontSize:"1.3rem",color:"#1a1a2e",margin:0}}>{onglet==="viz"?"Indicateurs clés":"Tableaux analytiques"}</h2>
-              {onglet==="tables" && <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.10)",padding:"4px 12px",borderRadius:999}}>
-                {`${config.tableCards.length} tableau${config.tableCards.length>1?"x":""}`}
-              </span>}
+              <h2 style={{fontWeight:800,fontSize:"1.3rem",color:"#1a1a2e",margin:0}}>Indicateurs clés</h2>
             </div>
-            {onglet==="tables" && <p style={{fontSize:12.5,color:"#9aa5b4",margin:0}}>Sélectionnez des tableaux dans le filtre</p>}
-          </div>
+          </div>}
 
           {/* ── Onglet Visualisation ─────────────────────────────────────────── */}
           {onglet==="viz" && (<>
