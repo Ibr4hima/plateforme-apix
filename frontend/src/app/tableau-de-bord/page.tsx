@@ -1295,11 +1295,11 @@ function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any })
 
 // ─── Cascade dimension → indicateur (filtre des visualisations) ──────────────
 const KPI_DIMENSIONS = [
-  { key:"global",    label:"Global",                color:"#ca631f" },
+  { key:"global",    label:"Global",                color:"#004f91" },
   { key:"secteurs",  label:"Secteurs d'activités",  color:"#004f91" },
-  { key:"branches",  label:"Branches d'activités",  color:"#188038" },
-  { key:"activites", label:"Activités",             color:"#7c3aed" },
-  { key:"pays",      label:"Pays",                  color:"#0891b2" },
+  { key:"branches",  label:"Branches d'activités",  color:"#004f91" },
+  { key:"activites", label:"Activités",             color:"#004f91" },
+  { key:"pays",      label:"Pays",                  color:"#004f91" },
 ];
 const KPI_INDICATEURS = [
   { key:"ciblees",    label:"Entreprises ciblées" },
@@ -1717,7 +1717,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
 }
 
 // ─── Section repliable (style IDE) ────────────────────────────────────────────
-function SbSection({ title, count, accent="#ca631f", defaultOpen=true, children }:{
+function SbSection({ title, count, accent="#004f91", defaultOpen=true, children }:{
   title:string; count?:number; accent?:string; defaultOpen?:boolean; children:React.ReactNode;
 }) {
   const [open,setOpen]=useState(defaultOpen);
@@ -1790,7 +1790,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
 
   return (
     <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
-      <style>{`::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#E8E5E3;border-radius:4px}.sb-item:hover{background:#F8F7F6!important}`}</style>
+      <style>{`::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,79,145,0.55);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#004f91}.sb-item:hover{background:#F8F7F6!important}`}</style>
 
       {/* Poignée de redimensionnement */}
       {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(202,99,31,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
@@ -1798,9 +1798,9 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
       {/* En-tête */}
       <div style={{ padding:sidebarOpen?"14px 16px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
         {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-        <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-          <SlidersHorizontal size={14} style={{ color:"#ca631f" }}/>
-          {sidebarOpen&&nbActifs>0&&<span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbActifs}</span>}
+        <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+          <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
+          {sidebarOpen&&nbActifs>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbActifs}</span>}
         </button>
       </div>
 
