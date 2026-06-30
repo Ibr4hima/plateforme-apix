@@ -206,8 +206,8 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",display:"inline-block"}}/>}
-          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"#ca631f":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
+          {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",display:"inline-block"}}/>}
+          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
         </div>
         {open?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
       </button>
@@ -215,7 +215,7 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
         <div style={{padding:"2px 4px 0"}}>
           <div style={{position:"relative" as const,height:24,marginBottom:10}}>
             <div style={{position:"absolute" as const,top:"50%",left:0,right:0,height:4,background:"#E8E5E3",borderRadius:2,transform:"translateY(-50%)"}}/>
-            <div style={{position:"absolute" as const,top:"50%",left:`${leftPct}%`,width:`${Math.max(0,rightPct-leftPct)}%`,height:4,background:"#ca631f",borderRadius:2,transform:"translateY(-50%)"}}/>
+            <div style={{position:"absolute" as const,top:"50%",left:`${leftPct}%`,width:`${Math.max(0,rightPct-leftPct)}%`,height:4,background:"#004f91",borderRadius:2,transform:"translateY(-50%)"}}/>
             <input type="range" min={minYear} max={maxYear} value={startYear}
               onChange={ev=>onChange(Math.min(Number(ev.target.value),endYear-1),endYear)}
               className="drs-thumb"
@@ -226,9 +226,9 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
               style={{zIndex:3} as React.CSSProperties}/>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
+            <span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
             <span style={{fontSize:10,color:"#9aa5b4"}}>—</span>
-            <span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
+            <span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
           </div>
           {isFiltered&&<button onClick={()=>onChange(minYear,maxYear)}
             style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:4}}>
@@ -356,8 +356,8 @@ export default function EntreprisesPage() {
 .drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
 .drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}
 .drs-thumb::-moz-range-track{background:transparent;height:4px}
-.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#ca631f;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(202,99,31,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
-.drs-thumb::-moz-range-thumb{background:#ca631f;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(202,99,31,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
+.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
+.drs-thumb::-moz-range-thumb{background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <Navbar/>
       <section style={{padding:"100px 40px 40px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
@@ -375,8 +375,8 @@ export default function EntreprisesPage() {
       <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:0,zIndex:10}}>
         <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
           {([
-            {key:"liste",      label:"Liste des entreprises", color:"#ca631f"},
-            {key:"territoire", label:"Vue territoriale",      color:"#ca631f"},
+            {key:"liste",      label:"Liste des entreprises", color:"#004f91"},
+            {key:"territoire", label:"Vue territoriale",      color:"#004f91"},
           ] as const).map(t=>(
             <button key={t.key} onClick={()=>setOnglet(t.key)}
               style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
@@ -422,14 +422,15 @@ export default function EntreprisesPage() {
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Forme juridique" color="#188038" items={formeOpts} selected={formesSel} onToggle={toggleForme}/>
+                <SideFilter label="Forme juridique" color="#004f91" items={formeOpts} selected={formesSel} onToggle={toggleForme}/>
+                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 {dateMin<dateMax&&<DateRangeFilter minYear={dateMin} maxYear={dateMax} startYear={dateStart} endYear={dateEnd} onChange={(s,e)=>{setDateStart(s);setDateEnd(e);}}/>}
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <LocalisationFilter regions={regions} regionsSel={regionsSel} departementsSel={deptsSel} arrondissementsSel={arrondsSel} onRegion={toggleRegion} onDepartement={toggleDept} onArrond={toggleArr}/>
                 {poles.length>0&&<><div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Pôle territoire" color="#ca631f" items={poles} selected={polesSel} onToggle={togglePole}/></>}
+                <SideFilter label="Pôle territoire" color="#004f91" items={poles} selected={polesSel} onToggle={togglePole}/></>}
             </div>}
           </aside>
           {/* Grille */}
