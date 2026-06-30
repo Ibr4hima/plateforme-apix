@@ -1790,6 +1790,13 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
       </div>
 
       {sidebarOpen&&<>
+        {/* Tout réinitialiser (en haut, à la place de l'ancienne recherche) */}
+        {hasAdded && <div style={{ padding:"12px 16px 6px", flexShrink:0 }}>
+          <button onClick={onReset}
+            style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:9, padding:"9px 12px", fontSize:12, fontWeight:600, cursor:"pointer" }}>
+            <RotateCcw size={13}/> Tout réinitialiser
+          </button>
+        </div>}
         {/* Recherche (uniquement onglet Visualisation) */}
         {onglet==="viz" && <div style={{ padding:"12px 16px 6px", flexShrink:0 }}>
           <div style={{ position:"relative" as const }}>
@@ -1859,15 +1866,6 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
             </div>}
         </div>
 
-        {/* Pied : réinitialiser */}
-        {hasAdded && (
-          <div style={{ padding:"12px 16px", borderTop:"1px solid #F2F0EF", flexShrink:0 }}>
-            <button onClick={onReset}
-              style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:9, padding:"9px 12px", fontSize:12, fontWeight:600, cursor:"pointer" }}>
-              <RotateCcw size={13}/> Tout réinitialiser
-            </button>
-          </div>
-        )}
       </>}
     </aside>
   );
