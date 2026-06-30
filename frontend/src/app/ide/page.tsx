@@ -2366,9 +2366,9 @@ function OngletNational() {
                   const col = colIdx>=0 ? BDEF_MACRO_COULEURS[colIdx%BDEF_MACRO_COULEURS.length] : "#004f91";
                   return (
                     <div key={n.id} onClick={()=>{ if(!disabled) toggleComp(n.id); }}
-                      style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:6, background:sel?"rgba(0,79,145,0.04)":"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
-                      onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background=sel?"rgba(0,79,145,0.07)":"#F8F7F6"; }}
-                      onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background=sel?"rgba(0,79,145,0.04)":"transparent"; }}>
+                      style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:6, background:"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
+                      onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background="#F8F7F6"; }}
+                      onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="transparent"; }}>
                       <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0 }}/>
                       <span style={{ fontSize:12, color:sel?"#1a1a2e":"#4a5568", fontWeight:sel?600:400, lineHeight:1.3, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{n.libelle}</span>
                     </div>
