@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -33,6 +33,20 @@ const NAME_MAP: Record<string, string> = {
   "Kolda":"Kolda","Sedhiou":"Sédhiou","Ziguinchor":"Ziguinchor",
 };
 
+// Couleurs des pôles territoriaux (par nom normalisé)
+const POLE_COULEURS: Record<string, string> = {
+  "dakar": "#BCD3E6",
+  "thies": "#BCDBE6",
+  "diourbel louga": "#BCE6D8",
+  "centre": "#BCE6C9",
+  "nord": "#CEE6BC",
+  "nord est": "#E6E6BC",
+  "sud": "#E6D1BC",
+  "sud est": "#E6C5BC",
+};
+const normPole = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/pole/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+
 export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onPoleClickRef = useRef(onPoleClick);
@@ -59,19 +73,10 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       .catch(() => {});
   }, [mode]);
 
-  // Couleur par pôle : dégradé bleu #003468 → #EDF4FB réparti sur l'ensemble
-  // des pôles (triés par id), le premier étant le plus foncé.
-  const poleRank = useMemo(() => {
-    const ids = [...poles].map(p => p.id).sort((a, b) => a - b);
-    const m = new Map<number, number>();
-    ids.forEach((id, i) => m.set(id, i));
-    return m;
-  }, [poles]);
+  // Couleur par pôle : table fixe par nom (fallback gris).
   const getPoleColor = (poleId: number) => {
-    const n = poles.length;
-    const i = poleRank.get(poleId) ?? 0;
-    const t = n > 1 ? i / (n - 1) : 0;
-    return d3.interpolateRgb("#003468", "#EDF4FB")(t);
+    const p = poles.find(x => x.id === poleId);
+    return (p && POLE_COULEURS[normPole(p.pole_territoire)]) || "#E8E5E3";
   };
 
 
