@@ -1816,7 +1816,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
         {/* Sections */}
         <div style={{ padding:"8px 16px 16px", overflowY:"auto" as const, flex:1 }}>
           {onglet==="viz"&&
-            <SbSection title="Indicateurs" count={config.kpisActifs.length}>
+            <div>
               {(()=>{
                 const dims = KPI_DIMENSIONS.filter(d=>d.key!=="global").map(dim=>{
                   const indics = KPI_INDICATEURS.filter(ind=>!q
@@ -1845,7 +1845,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
                               <div key={id} className="sb-item" onClick={()=>onToggleKPI(id)}
                                 style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 8px", borderRadius:8, cursor:"pointer" }}>
                                 <SbCheck active={active}/>
-                                <span style={{ fontSize:12, color:active?"#004f91":"#4a5568", fontWeight:active?600:400 }}>{ind.label}</span>
+                                <span style={{ fontSize:12, color:"#4a5568", fontWeight:active?700:400 }}>{ind.label}</span>
                               </div>
                             );
                           })}
@@ -1855,7 +1855,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
                   );
                 });
               })()}
-            </SbSection>}
+            </div>}
 
           {onglet==="tables"&&
             <SbSection title="Tableaux analytiques" count={config.tableCards.length}>
