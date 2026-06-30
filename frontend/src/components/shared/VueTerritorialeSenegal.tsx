@@ -6,20 +6,20 @@ import * as d3 from "d3";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const REGION_PALETTE: Record<string, string> = {
-  "Dakar":       "#FADADD",
-  "Thiès":       "#FFD9B3",
-  "Diourbel":    "#FFF4A3",
-  "Louga":       "#E8F0C0",
-  "Saint-Louis": "#C8EEC8",
-  "Matam":       "#C8E8D8",
-  "Tambacounda": "#A8DFE8",
-  "Kédougou":    "#D8E8F8",
-  "Fatick":      "#B8C8F8",
-  "Kaolack":     "#D8B8F0",
-  "Kaffrine":    "#E8D8F8",
-  "Kolda":       "#F8C8E8",
-  "Sédhiou":     "#F0D8C8",
-  "Ziguinchor":  "#F5E6C8",
+  "Dakar":       "#9DC3E6", // bleu ciel
+  "Thiès":       "#B4DE9D", // vert tendre
+  "Diourbel":    "#E6C79D", // pêche
+  "Louga":       "#9DDEC2", // menthe
+  "Saint-Louis": "#C9B8E6", // lilas doux
+  "Matam":       "#E6DE9D", // jaune doux
+  "Tambacounda": "#9DD3DE", // teal
+  "Kédougou":    "#E6AC9D", // corail
+  "Fatick":      "#D2DE9D", // vert-jaune
+  "Kaolack":     "#9DB0E6", // bleu pervenche
+  "Kaffrine":    "#E6B8D2", // rose doux
+  "Kolda":       "#BEE6C2", // vert pâle
+  "Sédhiou":     "#E6D4B0", // sable
+  "Ziguinchor":  "#A8DEDE", // aqua
 };
 
 // Parser la localisation : "Kaolack, Fatick et Kaffrine" → ["Kaolack","Fatick","Kaffrine"]
