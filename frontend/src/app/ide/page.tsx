@@ -695,7 +695,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
   const [kpiActif,     setKpiActif]     = useState<KpiResult|null>(null);
   const [searchPays,   setSearchPays]   = useState("");
-  const [openConts,    setOpenConts]    = useState<Set<string>>(new Set(["Afrique"]));
+  const [openConts,    setOpenConts]    = useState<Set<string>>(new Set());
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
@@ -823,8 +823,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   const sel = paysSelec==="Sénégal";
                   const col = "#004f91";
                   return (
-                    <div style={{ marginBottom:8 }}>
-                      <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
+                    <div style={{ marginBottom:8, marginLeft:6 }}>
                       <button onClick={()=>setPaysSelec("Sénégal")}
                         style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%" }}
                         onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
@@ -1038,7 +1037,7 @@ const COMP_PALETTE = ["#004f91","#ca631f","#188038","#6A1B9A"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
 function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
-  const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal","Maroc","Côte d'Ivoire","Nigeria"]);
+  const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [anneeMin,    setAnneeMin]    = useState(1990);
@@ -1059,7 +1058,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
   const [searchPays,  setSearchPays]  = useState("");
-  const [openConts,   setOpenConts]   = useState<Set<string>>(new Set(["Afrique"]));
+  const [openConts,   setOpenConts]   = useState<Set<string>>(new Set());
 
   const charger = useCallback(async () => {
     if (!paysSelec.length) return;
@@ -1149,8 +1148,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                   const col = COMP_PALETTE[paysSelec.indexOf("Sénégal")] ?? COMP_PALETTE[0];
                   const canAdd = !sel && paysSelec.length < 4;
                   return (
-                    <div style={{ marginBottom:8 }}>
-                      <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
+                    <div style={{ marginBottom:8, marginLeft:6 }}>
                       <button onClick={()=>{ if(sel){if(paysSelec.length>1)setPaysSelec(prev=>prev.filter(n=>n!=="Sénégal"));}else if(canAdd){setPaysSelec(prev=>[...prev,"Sénégal"]);} }}
                         style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:sel||canAdd?"pointer":"not-allowed", background:"transparent", textAlign:"left" as const, width:"100%", opacity:!sel&&!canAdd?0.4:1 }}
                         onMouseEnter={e=>{if(sel||canAdd)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
