@@ -568,8 +568,8 @@ export default function ZonesPage() {
       <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:0,zIndex:10}}>
         <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
           {([
-            {key:"zones",      label:"Zones d'investissement", color:"#ca631f"},
-            {key:"territoire", label:"Pôles territoires",      color:"#ca631f"},
+            {key:"zones",      label:"Zones d'investissement", color:"#004f91"},
+            {key:"territoire", label:"Pôles territoires",      color:"#004f91"},
           ] as const).map(t=>(
             <button key={t.key} onClick={()=>setOnglet(t.key)}
               style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
