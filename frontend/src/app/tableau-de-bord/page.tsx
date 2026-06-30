@@ -1829,16 +1829,12 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
                   const open = openDims.has(dim.key) || !!q;
                   return (
                     <div key={dim.key} style={{ marginBottom:1 }}>
-                      {/* Dimension (repliable) */}
-                      <div style={{ display:"flex", alignItems:"center", gap:2 }}>
-                        <button onClick={()=>toggleDim(dim.key)} style={{ background:"none", border:"none", cursor:"pointer", padding:2, display:"flex", flexShrink:0 }}>
-                          <ChevronDown size={12} style={{ color:"#9aa5b4", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
-                        </button>
-                        <div onClick={()=>toggleDim(dim.key)} style={{ display:"flex", alignItems:"center", gap:8, flex:1, padding:"6px 6px", borderRadius:7, cursor:"pointer" }} className="sb-item">
-                          <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${dim.color}`, flexShrink:0 }}/>
-                          <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e" }}>{dim.label}</span>
-                        </div>
-                      </div>
+                      {/* Dimension (repliable) — style continents */}
+                      <button onClick={()=>toggleDim(dim.key)}
+                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 8px", marginBottom:3 }}>
+                        <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{dim.label}</span>
+                        <ChevronDown size={11} style={{ color:"#004f91", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
+                      </button>
                       {/* Indicateurs (feuilles) */}
                       {open && (
                         <div style={{ marginLeft:16, borderLeft:"1.5px solid #EDEAE6", paddingLeft:4, marginTop:1 }}>
