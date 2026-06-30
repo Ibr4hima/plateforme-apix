@@ -1985,7 +1985,7 @@ const BDEF_GRAPHES_DEFAUT = [
   "liq_fdr", "sf_pression_fisc", "sf_autonomie", "rent_ebe",
 ];
 // Couleurs distinctes pour la comparaison macro-secteurs sur la vue globale
-const BDEF_MACRO_COULEURS = ["#004f91", "#e07b39", "#2a9d8f", "#c0392b", "#8e44ad"];
+const BDEF_MACRO_COULEURS = ["#004f91", "#ca631f", "#188038", "#6A1B9A"];
 
 // ── Case à cocher (sélection unique) ──────────────────────────────────────────
 const BDEF_NIVEAU_STYLE: Record<string,{color:string;fs:number;fw:number;base:string}> = {
@@ -2356,14 +2356,6 @@ function OngletNational() {
                 <span style={{ fontSize:11, fontWeight:600, color:compSelec.length>=4?"#004f91":"#9aa5b4", background:compSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{compSelec.length}/4</span>
               </div>
 
-              {/* Recherche */}
-              <div style={{ position:"relative" as const, marginBottom:12 }}>
-                <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
-                <input value={compSearch} onChange={e=>setCompSearch(e.target.value)} placeholder={`Rechercher un ${compType==="groupe"?"groupe":compType==="macro_secteur"?"macro-secteur":"secteur"}…`}
-                  style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-                {compSearch&&<button onClick={()=>setCompSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
-              </div>
-
               {/* Liste (groupée par parent, non dépliante) */}
               {(()=>{
                 const matchS = (n:BdefNode)=>!compSearch||n.libelle.toLowerCase().includes(compSearch.toLowerCase())||n.code.includes(compSearch);
@@ -2374,15 +2366,11 @@ function OngletNational() {
                   const col = colIdx>=0 ? BDEF_MACRO_COULEURS[colIdx%BDEF_MACRO_COULEURS.length] : "#004f91";
                   return (
                     <div key={n.id} onClick={()=>{ if(!disabled) toggleComp(n.id); }}
-                      style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"6px 8px", borderRadius:6, background:sel?"rgba(0,79,145,0.04)":"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
+                      style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:6, background:sel?"rgba(0,79,145,0.04)":"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
                       onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background=sel?"rgba(0,79,145,0.07)":"#F8F7F6"; }}
                       onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background=sel?"rgba(0,79,145,0.04)":"transparent"; }}>
-                      <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1 }}>
-                        
-                      </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <span style={{ fontSize:12, color:sel?"#1a1a2e":"#4a5568", fontWeight:sel?600:400, lineHeight:1.3 }}>{n.libelle}</span>
-                      </div>
+                      <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0 }}/>
+                      <span style={{ fontSize:12, color:sel?"#1a1a2e":"#4a5568", fontWeight:sel?600:400, lineHeight:1.3, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{n.libelle}</span>
                     </div>
                   );
                 };
