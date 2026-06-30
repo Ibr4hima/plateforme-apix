@@ -191,7 +191,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
       <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(types.length, 3)},1fr)`, gap:18, marginBottom: selectedType ? 32 : 0 }}>
         {types.map(t => {
           const active = selectedType === t.type;
-          const c = ({ ZAI:"#004f91", ZES:"#ca631f", ZFI:"#188038" } as Record<string,string>)[t.type] || t.meta.color;
+          const c = t.meta.color;
           const entreprises = t.installed + t.eligible;
           const Stat = ({ value, label, accent }: { value:string; label:string; accent?:boolean }) => (
             <div style={{ flex:1, textAlign:"center" as const }}>
@@ -215,7 +215,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
               <div style={{ padding:"20px 22px 0" }}>
                 {/* En-tête : chip acronyme + libellé */}
                 <div style={{ display:"flex", alignItems:"center", gap:13, marginBottom:22 }}>
-                  <div style={{ width:46, height:46, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:`${c}12`, border:`1px solid ${c}26` }}>
+                  <div style={{ width:46, height:46, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:t.meta.bg, border:`1px solid ${t.meta.border}` }}>
                     <span style={{ fontSize:19, fontWeight:800, color:c, lineHeight:1 }}>{t.zones.length}</span>
                   </div>
                   <div style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", lineHeight:1.3 }}>{t.meta.label}</div>
