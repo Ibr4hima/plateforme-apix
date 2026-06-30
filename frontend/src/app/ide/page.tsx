@@ -1034,7 +1034,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 }
 
 // ── Palette fixe pour l'analyse comparative ───────────────────────────────────
-const COMP_PALETTE = ["#004f91","#ca631f","#188038","#FF7E70","#575799"];
+const COMP_PALETTE = ["#004f91","#ca631f","#188038","#6A1B9A"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
 function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
@@ -1152,9 +1152,9 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                     <div style={{ marginBottom:8 }}>
                       <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:4 }}>Pays de référence</p>
                       <button onClick={()=>{ if(sel){if(paysSelec.length>1)setPaysSelec(prev=>prev.filter(n=>n!=="Sénégal"));}else if(canAdd){setPaysSelec(prev=>[...prev,"Sénégal"]);} }}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:sel||canAdd?"pointer":"not-allowed", background:"rgba(24,128,56,0.04)", textAlign:"left" as const, width:"100%", opacity:!sel&&!canAdd?0.4:1 }}
-                        onMouseEnter={e=>{if(sel||canAdd)(e.currentTarget as HTMLElement).style.background=sel?col+"20":"#F8F7F6";}}
-                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(24,128,56,0.04)";}}>
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:sel||canAdd?"pointer":"not-allowed", background:"transparent", textAlign:"left" as const, width:"100%", opacity:!sel&&!canAdd?0.4:1 }}
+                        onMouseEnter={e=>{if(sel||canAdd)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
                         <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                           
                         </div>
