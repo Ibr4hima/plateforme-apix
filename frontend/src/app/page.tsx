@@ -41,13 +41,13 @@ function AnimatedCounter({ target, suffix="", decimals=0 }: { target:number; suf
 
 const MODULES = [
   { num:"01", icon:"payments",               label:"Investissements privés",        href:"/ide",          color:"#ca631f", desc:"Flux d'investissements directs entrants et sortants" },
-  { num:"02", icon:"universal_currency_alt", label:"Intentions d'investissement",   href:"/intentions",   color:"#366FE3", desc:"Projets d'investissement déclarés à court et moyen terme" },
+  { num:"02", icon:"universal_currency_alt", label:"Intentions d'investissement",   href:"/intentions",   color:"#004f91", desc:"Projets d'investissement déclarés à court et moyen terme" },
   { num:"03", icon:"frame_inspect",          label:"Prospects",                     href:"/prospects",    color:"#ca631f", desc:"Portefeuille d'entreprises internationales ciblées" },
-  { num:"04", icon:"enterprise",             label:"Entreprises installées",        href:"/entreprises",  color:"#366FE3", desc:"Cartographie des entreprises formalisées installées" },
+  { num:"04", icon:"enterprise",             label:"Entreprises installées",        href:"/entreprises",  color:"#004f91", desc:"Cartographie des entreprises formalisées installées" },
   { num:"05", icon:"real_estate_agent",      label:"Zones d'investissement",        href:"/zones",        color:"#ca631f", desc:"ZES, ZAI, ZFI et pôles territoriaux d'investissement" },
-  { num:"06", icon:"bookmark_stacks",        label:"Opportunités d'investissement", href:"/opportunites", color:"#366FE3", desc:"Potentialités sectorielles à promouvoir auprès des investisseurs" },
+  { num:"06", icon:"bookmark_stacks",        label:"Opportunités d'investissement", href:"/opportunites", color:"#004f91", desc:"Potentialités sectorielles à promouvoir auprès des investisseurs" },
   { num:"07", icon:"signature",              label:"Accords & Traités",             href:"/accords",      color:"#ca631f", desc:"Traités bilatéraux et accords de coopération économique" },
-  { num:"08", icon:"event",                  label:"Événements",                    href:"/evenements",   color:"#366FE3", desc:"Forums, salons, missions de prospection et rencontres B2B" },
+  { num:"08", icon:"event",                  label:"Événements",                    href:"/evenements",   color:"#004f91", desc:"Forums, salons, missions de prospection et rencontres B2B" },
 ];
 
 export default function HomePage() {
