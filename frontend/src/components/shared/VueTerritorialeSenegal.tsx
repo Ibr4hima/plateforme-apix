@@ -35,14 +35,14 @@ const NAME_MAP: Record<string, string> = {
 
 // Couleurs des pôles territoriaux (par nom normalisé)
 const POLE_COULEURS: Record<string, string> = {
-  "dakar": "#BCD3E6",
-  "thies": "#BCDBE6",
-  "diourbel louga": "#BCE6D8",
-  "centre": "#BCE6C9",
-  "nord": "#CEE6BC",
-  "nord est": "#E6E6BC",
-  "sud": "#E6D1BC",
-  "sud est": "#E6C5BC",
+  "dakar": "#9DC3E6",        // bleu clair
+  "thies": "#9DD3DE",        // bleu-teal
+  "diourbel louga": "#9DDEC2", // menthe
+  "centre": "#B4DE9D",       // vert tendre
+  "nord": "#D2DE9D",         // vert-jaune
+  "nord est": "#E6DE9D",     // jaune doux
+  "sud": "#E6C79D",          // pêche
+  "sud est": "#E6AC9D",      // corail clair
 };
 const normPole = (s: string) =>
   (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/pole/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
