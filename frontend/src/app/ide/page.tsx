@@ -1989,8 +1989,8 @@ const BDEF_MACRO_COULEURS = ["#004f91", "#e07b39", "#2a9d8f", "#c0392b", "#8e44a
 
 // ── Case à cocher (sélection unique) ──────────────────────────────────────────
 const BDEF_NIVEAU_STYLE: Record<string,{color:string;fs:number;fw:number;base:string}> = {
-  macro_secteur: { color:"#ca631f", fs:13,   fw:700, base:"#1a1a2e" },
-  groupe:        { color:"#004f91", fs:12.5, fw:600, base:"#3a4452" },
+  macro_secteur: { color:"#004f91", fs:13,   fw:700, base:"#1a1a2e" },
+  groupe:        { color:"#ca631f", fs:12.5, fw:600, base:"#3a4452" },
   secteur:       { color:"#188038", fs:12,   fw:500, base:"#5a6472" },
 };
 const BDEF_NIVEAU_LABEL: Record<string,string> = {
@@ -2015,9 +2015,7 @@ function BdefRow({ label, niveau, selected, onSelect, expandable, expanded, onTo
         style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 9px", borderRadius:8, border:"none", cursor:"pointer", background:selected?selBg:"transparent", textAlign:"left" as const, width:"100%" }}
         onMouseEnter={e=>{if(!selected)(e.currentTarget as HTMLElement).style.background="#F6F5F4";}}
         onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=selected?selBg:"transparent";}}>
-        <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${selected?st.color:dotColor+"99"}`, background:selected?st.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
-          {selected&&<div style={{ width:5, height:5, borderRadius:"50%", background:"#fff" }}/>}
-        </div>
+        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${selected?st.color:dotColor+"99"}`, background:selected?st.color:"transparent", flexShrink:0, transition:"all 0.12s" }}/>
         <span style={{ fontSize:st.fs, color:selected?st.color:st.base, fontWeight:selected?700:st.fw, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, letterSpacing:niveau==="macro_secteur"?"-0.01em":"0" }}>{label}</span>
       </button>
     </div>
