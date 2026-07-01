@@ -12,8 +12,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Utilisateur non-root
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Utilisateur non-root. On crée /app/uploads AVANT le chown pour que le dossier
+# existe et appartienne à appuser : sans ça, le volume Docker monté dessus est
+# créé « root » et l'app non-root ne peut pas y écrire (téléversements KO).
+RUN useradd -m -u 1000 appuser \
+ && mkdir -p /app/uploads \
+ && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000

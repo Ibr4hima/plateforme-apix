@@ -37,6 +37,12 @@ bash scripts/apply_migrations.sh
 echo "▸ (Re)démarrage de la stack…"
 $COMPOSE up -d
 
+# Le volume backend_uploads est monté sur /app/uploads mais créé « root » par
+# Docker, alors que le backend tourne en utilisateur non-root (uid 1000) → sans
+# ce chown, les téléversements (PDF du code, modalités, projets…) échouent.
+echo "▸ Droits du dossier uploads (writable par l'app non-root)…"
+$COMPOSE exec -T -u root backend sh -c 'mkdir -p /app/uploads && chown -R 1000:1000 /app/uploads' 2>/dev/null || true
+
 echo "▸ Nettoyage des images inutilisées…"
 docker image prune -f >/dev/null 2>&1 || true
 
