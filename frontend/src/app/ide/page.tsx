@@ -2412,8 +2412,8 @@ function OngletNational() {
           {/* Activités */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-              {sel.niveau!=="global"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:sel.niveau!=="global"?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Activités</span>
+              <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Activités</span>
+              {sel.niveau!=="global"&&(()=>{ const c=BDEF_NIVEAU_STYLE[sel.niveau]?.color||"#004f91"; return <span style={{ fontSize:10, fontWeight:700, color:c, background:`${c}1a`, padding:"1px 6px", borderRadius:999 }}>1</span>; })()}
             </div>
 
             {/* Global */}
