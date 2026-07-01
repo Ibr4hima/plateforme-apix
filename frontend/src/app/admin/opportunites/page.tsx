@@ -1160,10 +1160,10 @@ export default function OpportunitesAdminPage() {
             /* ── Vue 4 cards de sélection ── */
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
               {([
-                {key:"pole",           label:"Pôles territoires", color:"#E35336", textColor:"#E35336"},
-                {key:"region",         label:"Régions",           color:"#0F52BA", textColor:"#0F52BA"},
-                {key:"departement",    label:"Départements",      color:"#0D652D", textColor:"#0D652D"},
-                {key:"arrondissement", label:"Arrondissements",   color:"#FBBC04", textColor:"#8A6100"},
+                {key:"pole",           label:"Pôles territoires", color:"#004f91", textColor:"#004f91"},
+                {key:"region",         label:"Régions",           color:"#ca631f", textColor:"#ca631f"},
+                {key:"departement",    label:"Départements",      color:"#188038", textColor:"#188038"},
+                {key:"arrondissement", label:"Arrondissements",   color:"#6A1B9A", textColor:"#6A1B9A"},
               ] as const).map(n=>{
                 const items = pots.filter((p:any)=>p.niveau===n.key);
                 const count = items.length;
