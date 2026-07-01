@@ -35,8 +35,7 @@ function SideFilter({ label, items, selected, onToggle, color }: {
       <button onClick={() => setOpen(o => !o)}
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", cursor: "pointer", padding: "4px 0", marginBottom: open ? 8 : 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          {selected.length > 0 && <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, display: "inline-block" }} />}
-          <span style={{ fontSize: 11, fontWeight: 700, color: selected.length > 0 ? color : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>{label}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>{label}</span>
           {selected.length > 0 && <span style={{ fontSize: 10, fontWeight: 700, color, background: color + "18", padding: "1px 6px", borderRadius: 999 }}>{selected.length}</span>}
         </div>
         {open ? <ChevronUp size={12} style={{ color: "#9aa5b4" }} /> : <ChevronDown size={12} style={{ color: "#9aa5b4" }} />}
