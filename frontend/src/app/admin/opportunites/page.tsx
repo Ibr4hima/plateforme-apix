@@ -1322,9 +1322,9 @@ export default function OpportunitesAdminPage() {
             /* ── Vue secteurs : 3 cards style BanqueProjets ── */
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {([
-                {key:"primaire",   label:"Secteur Primaire",   color:"#E35336"},
-                {key:"secondaire", label:"Secteur Secondaire", color:"#0F52BA"},
-                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#0D652D"},
+                {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
+                {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
+                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#188038"},
               ] as const).map(s=>{
                 const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
                 const count = items.length;
