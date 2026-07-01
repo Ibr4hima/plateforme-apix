@@ -533,11 +533,11 @@ export default function AdminEntreprises() {
     <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
-        <div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
           <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Entreprises installées</h1>
-          <p style={{color:"#9aa5b4",fontSize:13,marginTop:2}}>{total} entreprise{total>1?"s":""} au total</p>
+          <span style={{fontSize:14,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"3px 12px",borderRadius:999}}>{total}</span>
         </div>
-        <button onClick={()=>{setEditItem(null);setModal(true);}} style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
+        <button onClick={()=>{setEditItem(null);setModal(true);}} style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
           <Plus size={15}/> Ajouter une entreprise
         </button>
       </div>
@@ -552,21 +552,21 @@ export default function AdminEntreprises() {
           <p style={{fontSize:14,color:"#4a5568"}}>Aucune entreprise — cliquez sur "Ajouter" pour commencer.</p>
         </div>
       ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:12}}>
           {entreprises.map(e=>(
             <div key={e.id} onClick={()=>setVue(e)}
-              style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:"3px solid #ca631f",cursor:"pointer",transition:"all 0.15s"}}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)"; ev.currentTarget.style.borderColor="#ca631f";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+              style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:"3px solid #004f91",cursor:"pointer",transition:"all 0.15s"}}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(0,79,145,0.12)"; ev.currentTarget.style.borderColor="#004f91";}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor="#004f91";}}>
               <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.forme_juridique?2:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
               {e.forme_juridique&&<div style={{fontSize:11,color:"#9aa5b4",fontWeight:500,marginBottom:10}}>{e.forme_juridique}</div>}
               <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/><span style={{color:"#4a5568"}}>{fmtD(e.date_creation)}</span></div>}
-                {e.adresse&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.adresse}</span></div>}
+                {e.date_creation&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0}}/><span style={{color:"#4a5568"}}>{fmtD(e.date_creation)}</span></div>}
+                {e.adresse&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}><div style={{width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.adresse}</span></div>}
               </div>
               <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
                 <button onClick={()=>{setEditItem(e);setModal(true);}} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}><Pencil size={12}/> Modifier</button>
-                <button onClick={()=>handleTogglePublie(e)} disabled={togglingId===e.id} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:e.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:e.est_publie?"#15803d":"#6b7280",fontWeight:600}}>
+                <button onClick={()=>handleTogglePublie(e)} disabled={togglingId===e.id} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:e.est_publie?"rgba(24,128,56,0.08)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:e.est_publie?"#188038":"#6b7280",fontWeight:600}}>
                   {togglingId===e.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:e.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                 </button>
                 <button onClick={()=>handleDelete(e.id)} disabled={deleting===e.id} style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
