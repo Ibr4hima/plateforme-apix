@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Exporte le contenu du « Code des investissements » de la base LOCALE vers une
-# migration SQL (database/migrations/037_code_contenu.sql).
+# Exporte le contenu d'un document juridique (« Code des investissements » ou
+# « Modalités d'application ») de la base LOCALE vers une migration SQL.
 #
 # Pourquoi : le contenu (chapitres / sections / articles) vit dans la base de
 # données, pas dans le code. Les éditions faites via l'admin local restent dans
@@ -9,9 +9,10 @@
 # local pour qu'il soit rejoué automatiquement au déploiement.
 #
 # Usage (sur ta machine, avec la stack locale démarrée) :
-#   bash scripts/export_code_contenu.sh
-#   git add database/migrations/037_code_contenu.sql
-#   git commit -m "Contenu du code des investissements" && git push
+#   bash scripts/export_code_contenu.sh              # → Code des investissements
+#   bash scripts/export_code_contenu.sh modalites    # → Modalités d'application
+#   git add database/migrations/<fichier généré>
+#   git commit -m "Contenu ..." && git push
 #
 # Variables optionnelles :
 #   CONTAINER   nom du conteneur Postgres local (défaut: apix_postgres)
@@ -20,13 +21,25 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+DOC="${1:-code}"
+case "$DOC" in
+  code)
+    PREFIX="code";      LABEL="Code des investissements"
+    OUT="database/migrations/037_code_contenu.sql" ;;
+  modalites)
+    PREFIX="modalites"; LABEL="Modalités d'application"
+    OUT="database/migrations/094_modalites_contenu.sql" ;;
+  *)
+    echo "✗ Document inconnu : « $DOC ». Valeurs possibles : code | modalites" >&2
+    exit 1 ;;
+esac
+
 # Identifiants : priorité aux variables d'env, sinon .env
 if [ -f .env ]; then set -a; # shellcheck disable=SC1091
   source .env; set +a; fi
 PGUSER="${PGUSER:-${POSTGRES_USER:-postgres}}"
 PGDB="${PGDB:-${POSTGRES_DB:-apix}}"
 CONTAINER="${CONTAINER:-apix_postgres}"
-OUT="database/migrations/037_code_contenu.sql"
 
 if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
   echo "✗ Conteneur Postgres « $CONTAINER » introuvable. Démarre la stack locale (docker compose up -d) ou passe CONTAINER=..." >&2
@@ -43,36 +56,35 @@ dump() {
     | awk '/^COPY /{p=1} p{print} /^\\\.$/{p=0}'
 }
 
-CH=$(dump code_chapitres)
-SE=$(dump code_sections)
-AR=$(dump code_articles)
+CH=$(dump "${PREFIX}_chapitres")
+SE=$(dump "${PREFIX}_sections")
+AR=$(dump "${PREFIX}_articles")
 
 # Nombre de lignes de données = lignes du bloc COPY moins l'en-tête et le « \. »
 nb() { printf '%s' "$1" | grep -cvE '^COPY |^\\\.$' || true; }
-echo "  chapitres : $(nb "$CH") · sections : $(nb "$SE") · articles : $(nb "$AR")"
+echo "  [$DOC] chapitres : $(nb "$CH") · sections : $(nb "$SE") · articles : $(nb "$AR")"
 
 if [ -z "$CH" ] && [ -z "$AR" ]; then
-  echo "✗ Aucun contenu trouvé dans la base locale. Rien à exporter." >&2
+  echo "✗ Aucun contenu trouvé dans la base locale pour « $LABEL ». Rien à exporter." >&2
   exit 1
 fi
 
 {
   echo "-- ============================================================================="
-  echo "-- Migration 037 — Contenu du Code des investissements (export de la base locale)"
+  echo "-- Migration — Contenu « $LABEL » (export de la base locale)"
   echo "-- Généré par scripts/export_code_contenu.sh — NE PAS éditer à la main."
   echo "-- Rejoue le contenu (chapitres/sections/articles) tel qu'édité en local."
   echo "-- ============================================================================="
   echo "BEGIN;"
   echo ""
-  echo "-- Garantit la présence de la colonne 'contenu' (le modèle l'utilise mais"
-  echo "-- aucune migration ne l'ajoutait sur code_chapitres/code_sections). Idempotent."
-  echo "ALTER TABLE code_chapitres ADD COLUMN IF NOT EXISTS contenu TEXT;"
-  echo "ALTER TABLE code_sections  ADD COLUMN IF NOT EXISTS contenu TEXT;"
+  echo "-- Garantit la présence de la colonne 'contenu' (idempotent, sans effet si déjà là)."
+  echo "ALTER TABLE ${PREFIX}_chapitres ADD COLUMN IF NOT EXISTS contenu TEXT;"
+  echo "ALTER TABLE ${PREFIX}_sections  ADD COLUMN IF NOT EXISTS contenu TEXT;"
   echo ""
   echo "-- On repart d'une table propre pour éviter les doublons (le PDF n'est pas touché)."
-  echo "DELETE FROM code_articles;"
-  echo "DELETE FROM code_sections;"
-  echo "DELETE FROM code_chapitres;"
+  echo "DELETE FROM ${PREFIX}_articles;"
+  echo "DELETE FROM ${PREFIX}_sections;"
+  echo "DELETE FROM ${PREFIX}_chapitres;"
   echo ""
   echo "-- Chapitres"
   printf '%s\n' "$CH"
@@ -87,4 +99,4 @@ fi
 } > "$OUT"
 
 echo "✅ $OUT généré (chapitres $(nb "$CH") · sections $(nb "$SE") · articles $(nb "$AR"))."
-echo "   Vérifie, puis : git add $OUT && git commit -m \"Contenu du code des investissements\" && git push"
+echo "   Vérifie, puis : git add $OUT && git commit -m \"Contenu $LABEL\" && git push"
