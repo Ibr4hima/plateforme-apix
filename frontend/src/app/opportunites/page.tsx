@@ -1135,7 +1135,7 @@ export default function OpportunitesPage() {
                       {potsQ&&<button onClick={()=>setPotsQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                     </div>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                    <SideFilter label="Zone" color="#059669"
+                    <SideFilter label="Zone" color="#004f91"
                       items={[{value:"pole",label:"Pôles"},{value:"region",label:"Régions"},{value:"departement",label:"Départements"},{value:"arrondissement",label:"Arrondissements"}]}
                       selected={potsNiveau} onToggle={toggle(potsNiveau,setPotsNiveau)}/>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
