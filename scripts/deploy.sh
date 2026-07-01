@@ -40,8 +40,22 @@ $COMPOSE up -d
 # Le volume backend_uploads est monté sur /app/uploads mais créé « root » par
 # Docker, alors que le backend tourne en utilisateur non-root (uid 1000) → sans
 # ce chown, les téléversements (PDF du code, modalités, projets…) échouent.
-echo "▸ Droits du dossier uploads (writable par l'app non-root)…"
-$COMPOSE exec -T -u root backend sh -c 'mkdir -p /app/uploads && chown -R 1000:1000 /app/uploads' 2>/dev/null || true
+# On attend que le conteneur backend soit lancé, on chowne, puis on affiche un
+# diagnostic (droits + test d'écriture) directement dans les logs de déploiement.
+echo "▸ Droits + diagnostic du dossier uploads…"
+for _ in $(seq 1 15); do
+  if [ -n "$($COMPOSE ps -q backend 2>/dev/null)" ]; then break; fi
+  sleep 2
+done
+$COMPOSE exec -T -u root backend sh -c '
+  set -e
+  mkdir -p /app/uploads/code_investissement /app/uploads/modalites_application
+  chown -R 1000:1000 /app/uploads
+  echo "  --- ls -la /app/uploads ---"; ls -la /app/uploads
+  echo "  --- modalites ---"; ls -la /app/uploads/modalites_application 2>&1 || true
+  echo "  --- test écriture appuser ---"
+  su appuser -s /bin/sh -c "touch /app/uploads/modalites_application/_wt && echo WRITE_OK && rm -f /app/uploads/modalites_application/_wt" 2>&1 || echo WRITE_FAIL
+' || echo "  ⚠ exec backend impossible (conteneur pas prêt ?)"
 
 echo "▸ Nettoyage des images inutilisées…"
 docker image prune -f >/dev/null 2>&1 || true
