@@ -1737,6 +1737,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 export default function ProspectsPage() {
   const [prospects,    setProspects]    = useState<any[]>([]);
   const [total,        setTotal]        = useState(0);
+  const [counts,       setCounts]       = useState<{cibles:number;historique:number;precedents:number}>({cibles:0,historique:0,precedents:0});
   const [loading,      setLoading]      = useState(true);
   const [onglet,       setOnglet]       = useState<"cibles"|"historique"|"precedents">("cibles");
   const [modal,        setModal]        = useState(false);
@@ -1771,6 +1772,20 @@ export default function ProspectsPage() {
   }, [q, onglet]);
 
   useEffect(()=>{ charger(); }, [charger]);
+
+  const chargerCounts = useCallback(async()=>{
+    try {
+      const mk = (extra:Record<string,string>) => { const p=new URLSearchParams({ page:"1", per_page:"1" }); if(q)p.set("q",q); Object.entries(extra).forEach(([k,v])=>p.set(k,v)); return p; };
+      const [rC,rH,rP] = await Promise.all([
+        fetch(`${API}/prospects?${mk({ conclu:"false", contactes:"false" })}`).then(r=>r.json()),
+        fetch(`${API}/prospects?${mk({ conclu:"false", contactes:"true" })}`).then(r=>r.json()),
+        fetch(`${API}/prospects?${mk({ conclu:"true" })}`).then(r=>r.json()),
+      ]);
+      setCounts({ cibles:rC.total||0, historique:rH.total||0, precedents:rP.total||0 });
+    } catch(e){ console.error(e); }
+  }, [q]);
+
+  useEffect(()=>{ chargerCounts(); }, [chargerCounts, prospects]);
 
   const handleDelete = async (id:number) => {
     if (!confirm("Supprimer ce prospect ?")) return;
@@ -1814,20 +1829,23 @@ export default function ProspectsPage() {
         [data-rte] *{font-family:var(--font-google-sans);font-size:13px}
       `}</style>
 
-      <div style={{ marginBottom:8, display:"flex", alignItems:"center", gap:12 }}>
+      <div style={{ marginBottom:8 }}>
         <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Prospects</h1>
-        <span style={{ fontSize:14, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.1)", padding:"3px 12px", borderRadius:999 }}>{total}</span>
       </div>
 
       {/* Onglets */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#fff", borderBottom:"1px solid #E8E5E3", marginBottom:24 }}>
         <div style={{ display:"flex" }}>
-          {([["cibles","Investisseurs ciblés"],["historique","En contact"],["precedents","Terminés"]] as const).map(([key,label])=>(
+          {([["cibles","Investisseurs ciblés"],["historique","Investisseurs en contact"],["precedents","Investisseurs transformés"]] as const).map(([key,label])=>{
+            const actif = onglet===key;
+            return (
             <button key={key} onClick={()=>setOnglet(key)}
-              style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${onglet===key?"#004f91":"transparent"}`, background:"transparent", color:onglet===key?"#004f91":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
+              style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${actif?"#004f91":"transparent"}`, background:"transparent", color:actif?"#004f91":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
               {label}
+              {counts[key]>0 && <span style={{ marginLeft:7, fontSize:11, fontWeight:700, color:actif?"#004f91":"#9aa5b4", background:actif?"rgba(0,79,145,0.1)":"#F2F0EF", padding:"1px 7px", borderRadius:999 }}>{counts[key]}</span>}
             </button>
-          ))}
+            );
+          })}
         </div>
         {onglet!=="precedents" && (
           <button onClick={()=>{ setEdit(null); setModal(true); }}
