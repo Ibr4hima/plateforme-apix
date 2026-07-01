@@ -832,7 +832,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                         <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                           
                         </div>
-                        <span style={{ fontSize:12, color:sel?"#004f91":"#4a5568", fontWeight:sel?600:400 }}>Sénégal</span>
+                        <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400 }}>Sénégal</span>
                         <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
                       </button>
                     </div>
@@ -872,7 +872,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                                   <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                                     
                                   </div>
-                                  <span style={{ fontSize:12, color:sel?"#004f91":"#4a5568", fontWeight:sel?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
+                                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
                                 </button>
                               );
                             })}
