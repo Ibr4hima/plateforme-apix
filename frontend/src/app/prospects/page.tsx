@@ -219,8 +219,8 @@ export default function ProspectsPage() {
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", display: "flex", gap: 0 }}>
           {([
             { key: "cibles",     label: "Investisseurs ciblés",   count: cibles.length    },
-            { key: "historique", label: "En contact",              count: enContact.length },
-            { key: "termines",   label: "Terminés",                count: termines.length  },
+            { key: "historique", label: enContact.length > 1 ? "Investisseurs en contact" : "Investisseur en contact", count: enContact.length },
+            { key: "termines",   label: termines.length  > 1 ? "Investisseurs transformés" : "Investisseur transformé", count: termines.length  },
           ] as const).map(t => (
             <button key={t.key} onClick={() => setOnglet(t.key)}
               style={{ padding: "16px 22px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", fontSize: 13, fontWeight: 600, color: onglet === t.key ? "#004f91" : "#9aa5b4", borderBottom: `2px solid ${onglet === t.key ? "#004f91" : "transparent"}`, transition: "all 0.15s" }}>
