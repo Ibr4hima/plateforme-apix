@@ -2010,7 +2010,7 @@ function BdefRow({ label, niveau, selected, onSelect, expandable, expanded, onTo
         <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${selected?st.color:dotColor+"99"}`, background:selected?st.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
           {selected&&!niveau&&<div style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
         </div>
-        <span style={{ fontSize:st.fs, color:selected?st.color:st.base, fontWeight:selected?700:st.fw, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, letterSpacing:niveau==="macro_secteur"?"-0.01em":"0" }}>{label}</span>
+        <span style={{ fontSize:st.fs, color:"#4a5568", fontWeight:selected?700:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, letterSpacing:niveau==="macro_secteur"?"-0.01em":"0" }}>{label}</span>
       </button>
     </div>
   );
