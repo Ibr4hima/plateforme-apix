@@ -959,14 +959,14 @@ export default function GestionZonesPage() {
                   <div style={{ padding: "20px 22px 0" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 22 }}>
                       <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: t.bg, border: `1px solid ${t.border}` }}>
-                        <span style={{ fontSize: 19, fontWeight: 800, color: c, lineHeight: 1 }}>{zDuT.length}</span>
+                        <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.02em", color: c, lineHeight: 1 }}>{t.code}</span>
                       </div>
                       <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e", lineHeight: 1.3 }}>{t.label}</div>
                     </div>
                     <div style={{ display: "flex", alignItems: "stretch", paddingBottom: 4 }}>
                       <Stat value={String(nbEnt)} label={nbEnt > 1 ? "Entreprises" : "Entreprise"} />
                       <div style={{ width: 1, background: "#EEEBE8", margin: "4px 0" }} />
-                      <Stat value={String(zDuT.length)} label={zDuT.length > 1 ? "Sous-zones" : "Sous-zone"} />
+                      <Stat value={String(zDuT.length)} label={zDuT.length > 1 ? "Zones" : "Zone"} />
                     </div>
                   </div>
                   <div style={{ display: "flex", justifyContent: "center", padding: "14px 22px 18px", marginTop: 16, borderTop: "1px solid #F4F2F0" }}>
