@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 type NavItem =
-  | { type: "link"; label: string; href: string; icon: string }
+  | { type: "link"; label: string; href: string; icon: string; disabled?: boolean }
   | { type: "section"; label: string };
 
 const MODULES: NavItem[] = [
@@ -15,17 +15,17 @@ const MODULES: NavItem[] = [
   { type: "link", label: "Entreprises",                    href: "/admin/entreprises",        icon: "enterprise"            },
   { type: "link", label: "Pôles & Zones d'investissement", href: "/admin/gestion-zones",      icon: "real_estate_agent"     },
   { type: "link", label: "Opportunités d'investissement",  href: "/admin/opportunites",       icon: "bookmark_stacks"       },
-  { type: "link", label: "Intentions d'investissement",    href: "/admin/intentions",         icon: "universal_currency_alt"},
+  { type: "link", label: "Intentions d'investissement",    href: "/admin/intentions",         icon: "universal_currency_alt", disabled: true },
   { type: "link", label: "Prospects",                      href: "/admin/prospects",          icon: "frame_inspect"         },
-  { type: "link", label: "Analyse de données",             href: "/admin/analyse",            icon: "show_chart"            },
+  { type: "link", label: "Analyse de données",             href: "/admin/analyse",            icon: "show_chart",             disabled: true },
   { type: "section", label: "Référentiels" },
-  { type: "link", label: "Pays & Groupements",             href: "/admin/ref-pays",           icon: "public"                },
-  { type: "link", label: "Découpage administratif",        href: "/admin/geo",                icon: "map"                   },
-  { type: "link", label: "Classification NAEMA",           href: "/admin/naema",              icon: "account_tree"          },
-  { type: "link", label: "Tableaux de correspondance",     href: "/admin/classifications",    icon: "table_chart"           },
-  { type: "link", label: "Données IDE",                    href: "/admin/ide",                icon: "finance_mode"          },
-  { type: "link", label: "Données BDEF",                   href: "/admin/bdef",               icon: "database"              },
-  { type: "link", label: "Code des investissements",       href: "/admin/code-investissement",icon: "gavel"                 },
+  { type: "link", label: "Pays & Groupements",             href: "/admin/ref-pays",           icon: "public",                 disabled: true },
+  { type: "link", label: "Découpage administratif",        href: "/admin/geo",                icon: "map",                    disabled: true },
+  { type: "link", label: "Classification NAEMA",           href: "/admin/naema",              icon: "account_tree",           disabled: true },
+  { type: "link", label: "Tableaux de correspondance",     href: "/admin/classifications",    icon: "table_chart",            disabled: true },
+  { type: "link", label: "Données IDE",                    href: "/admin/ide",                icon: "finance_mode",           disabled: true },
+  { type: "link", label: "Données BDEF",                   href: "/admin/bdef",               icon: "database",               disabled: true },
+  { type: "link", label: "Code des investissements",       href: "/admin/code-investissement",icon: "gavel",                  disabled: true },
 ];
 
 const W = 260;
@@ -72,6 +72,25 @@ export default function Sidebar() {
               );
             }
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+
+            // Entrées temporairement indisponibles : non cliquables, grisées.
+            if (item.disabled) {
+              return (
+                <div key={item.href} title="Bientôt disponible"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 11,
+                    width: "100%", padding: "9px 13px", marginBottom: 3, borderRadius: 10,
+                    cursor: "not-allowed", opacity: 0.4,
+                    fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.6)",
+                    fontFamily: "var(--font-google-sans)", userSelect: "none",
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 19, color: "rgba(255,255,255,0.45)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0 }}>{item.icon}</span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                  <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "1px 6px", flexShrink: 0 }}>Bientôt</span>
+                </div>
+              );
+            }
             return (
               <Link key={item.href} href={item.href} style={{ textDecoration: "none", display: "block", marginBottom: 3 }}>
                 <div
