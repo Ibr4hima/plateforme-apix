@@ -778,12 +778,12 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
               onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?"#004f91":"#C5BFBB";}}>
               <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
               <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
-                {p.pole_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#4a5568", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.pole_nom}</span></div>}
-                {p.region_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#4a5568", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>Région de {p.region_nom}</span></div>}
+                {p.pole_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/><span style={{ color:"#4a5568", fontWeight:400 }}>{p.pole_nom}</span></div>}
+                {p.region_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/><span style={{ color:"#4a5568", fontWeight:400 }}>Région de {p.region_nom}</span></div>}
               </div>
               <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={ev=>ev.stopPropagation()}>
                 <button onClick={()=>{ setEdit(p); setModal(true); }}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#ca631f", fontWeight:600 }}>
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
