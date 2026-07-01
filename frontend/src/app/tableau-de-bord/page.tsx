@@ -1771,7 +1771,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
   };
 
   const hasAdded = config.kpisActifs.length>0||config.cards.length>0||config.tableCards.length>0;
-  const nbActifs = config.kpisActifs.length+config.cards.length+config.tableCards.length;
+  const nbActifs = onglet==="tables" ? config.tableCards.length : config.kpisActifs.length+config.cards.length;
 
   return (
     <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
