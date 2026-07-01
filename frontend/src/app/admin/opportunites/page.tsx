@@ -990,6 +990,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
 // ══════════════════════════════════════════════════════════════════════════════
 export default function OpportunitesAdminPage() {
   const [onglet, setOnglet] = useState<"projets"|"potentialites"|"avantages">("projets");
+  const [projetsCount, setProjetsCount] = useState(0);
   const [poles,       setPoles]       = useState<any[]>([]);
   // Noms géo pour le titre auto
   const [regionNom,   setRegionNom]   = useState("");
@@ -1064,6 +1065,7 @@ export default function OpportunitesAdminPage() {
   useEffect(()=>{chargerPots();},[chargerPots]);
   useEffect(()=>{chargerAvgs();},[chargerAvgs]);
   useEffect(()=>{ setSelectedSec(null); setSelectedNiveau(null); },[onglet]);
+  useEffect(()=>{ fetch(`${API}/projets?per_page=1&admin=true`).then(r=>r.json()).then(d=>setProjetsCount(d.total||0)).catch(()=>{}); },[onglet]);
 
   const deletePot=async(id:number)=>{
     if(!confirm("Supprimer cette fiche ?"))return;
@@ -1115,14 +1117,18 @@ export default function OpportunitesAdminPage() {
         <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Opportunités d'investissement</h1>
       </div>
 
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:28}}>
-        <div style={{display:"flex",gap:4,background:"#F2F0EF",borderRadius:12,padding:4,width:"fit-content"}}>
-          {TABS.map(t=>(
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",borderBottom:"1px solid #E8E5E3",marginBottom:28}}>
+        <div style={{display:"flex"}}>
+          {TABS.map(t=>{
+            const actif = onglet===t.key;
+            return (
             <button key={t.key} onClick={()=>setOnglet(t.key)}
-              style={{padding:"8px 20px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,background:onglet===t.key?"#fff":"transparent",color:onglet===t.key?"#1a1a2e":"#9aa5b4",boxShadow:onglet===t.key?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.2s"}}>
+              style={{padding:"14px 22px",border:"none",borderBottom:`2px solid ${actif?"#004f91":"transparent"}`,background:"transparent",color:actif?"#004f91":"#9aa5b4",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",transition:"all 0.15s"}}>
               {t.label}
+              {t.key==="projets" && projetsCount>0 && <span style={{marginLeft:7,fontSize:11,fontWeight:700,color:actif?"#004f91":"#9aa5b4",background:actif?"rgba(0,79,145,0.1)":"#F2F0EF",padding:"1px 7px",borderRadius:999}}>{projetsCount}</span>}
             </button>
-          ))}
+            );
+          })}
         </div>
         {onglet==="projets"&&(
           <button onClick={()=>openNewProjet.current?.()}
