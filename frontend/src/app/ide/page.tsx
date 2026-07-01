@@ -2549,13 +2549,13 @@ function OngletNational() {
                         const disabled = !epingle && kpisEpingles.length>=5;
                         return (
                           <div key={ind.code}
-                            style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:epingle?"rgba(0,79,145,0.04)":"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
+                            style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
                             onClick={()=>{ if(!disabled) setKpisEpingles(p=>epingle?p.filter(c=>c!==ind.code):[...p,ind.code]); }}
-                            onMouseEnter={ev=>{ if(!disabled) ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.07)":"#F8F7F6"; montrerTip(ev, defBdef(ind.code, ind.libelle)); }}
+                            onMouseEnter={ev=>{ if(!disabled) ev.currentTarget.style.background="#F8F7F6"; montrerTip(ev, defBdef(ind.code, ind.libelle)); }}
                             onMouseMove={ev=>montrerTip(ev, defBdef(ind.code, ind.libelle))}
-                            onMouseLeave={ev=>{ ev.currentTarget.style.background=epingle?"rgba(0,79,145,0.04)":"transparent"; setTip(null); }}>
+                            onMouseLeave={ev=>{ ev.currentTarget.style.background="transparent"; setTip(null); }}>
                             <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0 }}/>
-                            <span style={{ fontSize:12, color:epingle?"#1a1a2e":"#4a5568", flex:1, lineHeight:1.3, fontWeight:epingle?600:400, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{ind.libelle}</span>
+                            <span style={{ fontSize:12, color:"#4a5568", flex:1, lineHeight:1.3, fontWeight:epingle?700:400, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{ind.libelle}</span>
                             <span style={{ fontSize:9, color:"#9aa5b4", fontWeight:500, flexShrink:0 }}>{ind.unite}</span>
                           </div>
                         );
