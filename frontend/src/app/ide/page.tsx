@@ -814,8 +814,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               {/* Pays */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-                  {paysSelec!=="Sénégal"&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
-                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec!=="Sénégal"?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
                   {paysSelec!=="Sénégal"&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
                 </div>
                 {/* Sénégal épinglé */}
@@ -887,9 +886,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               {/* Période */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-                  {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024)))&&
-                    <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
-                  <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
                 </div>
                 <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
@@ -1137,8 +1134,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                    {(paysSelec.length>1||paysSelec[0]!=="Sénégal")&&<span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
-                    <span style={{ fontSize:11, fontWeight:700, color:(paysSelec.length>1||paysSelec[0]!=="Sénégal")?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
+                    <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
                   </div>
                   <span style={{ fontSize:11, fontWeight:700, color:paysSelec.length>=4?"#004f91":"#9aa5b4", background:paysSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{paysSelec.length}/4</span>
                 </div>
@@ -1215,9 +1211,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
               {/* Période */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-                  {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024)))&&
-                    <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
-                  <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
                 </div>
                 <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
@@ -1721,9 +1715,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
           {/* Période */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-              {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024)))&&
-                <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
-              <span style={{ fontSize:11, fontWeight:700, color:(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?"#004f91":"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+              <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
             <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
@@ -2483,8 +2475,6 @@ function OngletNational() {
           {/* Période */}
           <div style={{ marginBottom:8 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-              {((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==bornes[0]||anneeMax!==bornes[1])))&&
-                <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", display:"inline-block" }}/>}
               <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
             <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
