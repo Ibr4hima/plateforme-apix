@@ -1739,7 +1739,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
   config: DashConfig;
   onToggleTable:(tableId:string)=>void;
   onToggleKPI:(id:string)=>void;
-  onReset:()=>void;
+  onReset:(scope:"viz"|"tables")=>void;
   sidebarOpen: boolean; setSidebarOpen:(v:boolean)=>void;
   sidebarWidth: number; setSidebarWidth:(v:number)=>void;
   onglet: "viz"|"tables";
@@ -1770,7 +1770,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
-  const hasAdded = config.kpisActifs.length>0||config.cards.length>0||config.tableCards.length>0;
+  const hasAdded = onglet==="tables" ? config.tableCards.length>0 : (config.kpisActifs.length>0||config.cards.length>0);
   const nbActifs = onglet==="tables" ? config.tableCards.length : config.kpisActifs.length+config.cards.length;
 
   return (
@@ -1792,7 +1792,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
       {sidebarOpen&&<>
         {/* Tout réinitialiser (en haut, à la place de l'ancienne recherche) */}
         {hasAdded && <div style={{ padding:"12px 16px 6px", flexShrink:0 }}>
-          <button onClick={onReset}
+          <button onClick={()=>onReset(onglet)}
             style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:9, padding:"9px 12px", fontSize:12, fontWeight:600, cursor:"pointer" }}>
             <RotateCcw size={13}/> Tout réinitialiser
           </button>
@@ -1908,7 +1908,7 @@ export default function TableauDeBordPage() {
   const [zoneEcoOpen, setZoneEcoOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
-  const resetConfig = useCallback(() => setConfig(DEFAULT_CONFIG), []);
+  const resetConfig = useCallback((scope:"viz"|"tables") => setConfig(p=> scope==="tables" ? {...p, tableCards:[]} : {...p, kpisActifs:[], cards:[]}), []);
 
   return (
     <div style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
