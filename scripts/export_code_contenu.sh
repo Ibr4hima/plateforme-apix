@@ -34,18 +34,21 @@ if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
 fi
 
 dump() {
-  # --column-inserts : INSERT explicites en colonnes → indépendant de l'ordre
-  # physique des colonnes en prod (plus robuste que --inserts).
+  # Format COPY (défaut de pg_dump) : UNE ligne physique par ligne de données,
+  # les retours à la ligne du contenu HTML étant échappés en \n. Bien plus
+  # robuste que --inserts (dont les statements multi-lignes cassaient le filtrage).
+  # On extrait uniquement le bloc « COPY ... FROM stdin; ... \. ».
   docker exec -i "$CONTAINER" pg_dump -U "$PGUSER" -d "$PGDB" \
-    --data-only --column-inserts --no-owner --no-privileges -t "public.$1" \
-    | grep '^INSERT INTO' || true
+    --data-only --no-owner --no-privileges -t "public.$1" \
+    | awk '/^COPY /{p=1} p{print} /^\\\.$/{p=0}'
 }
 
 CH=$(dump code_chapitres)
 SE=$(dump code_sections)
 AR=$(dump code_articles)
 
-nb() { printf '%s' "$1" | grep -c '^INSERT' || true; }
+# Nombre de lignes de données = lignes du bloc COPY moins l'en-tête et le « \. »
+nb() { printf '%s' "$1" | grep -cvE '^COPY |^\\\.$' || true; }
 echo "  chapitres : $(nb "$CH") · sections : $(nb "$SE") · articles : $(nb "$AR")"
 
 if [ -z "$CH" ] && [ -z "$AR" ]; then
