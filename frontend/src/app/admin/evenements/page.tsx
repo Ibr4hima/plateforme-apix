@@ -557,11 +557,11 @@ export default function EvenementsPage() {
 
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:32 }}>
-        <div>
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Événements</h1>
-          <p style={{ color:"#9aa5b4", fontSize:13, marginTop:2 }}>{total} événement{total>1?"s":""} au total</p>
+          <span style={{ fontSize:14, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.1)", padding:"3px 12px", borderRadius:999 }}>{total}</span>
         </div>
-        <button onClick={openCreate} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#ca631f,#a0521a)", color:"#fff", fontWeight:700, fontSize:13, padding:"11px 20px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:"0 4px 14px rgba(202,99,31,0.3)" }}>
+        <button onClick={openCreate} style={{ display:"flex", alignItems:"center", gap:8, background:"#004f91", color:"#fff", fontWeight:700, fontSize:13, padding:"11px 20px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:"0 4px 14px rgba(0,79,145,0.3)" }}>
           <Plus size={15} /> Ajouter un événement
         </button>
       </div>
@@ -586,9 +586,9 @@ export default function EvenementsPage() {
             const statut = computeStatut(e);
             return (
               <div key={e.id} onClick={()=>setVue(e)}
-                style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
-                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
-                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+                style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #004f91",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
+                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(0,79,145,0.12)";ev.currentTarget.style.borderColor="#004f91";}}
+                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#004f91";}}>
 
                 <div style={{position:"absolute" as const,top:12,right:12}}>
                   {statut==="en_cours" ? <Badge variant="green"  size="xs" style={{color:"#188038",background:"rgba(24,128,56,0.06)",borderColor:"rgba(24,128,56,0.12)"}}>En cours</Badge>
@@ -614,7 +614,7 @@ export default function EvenementsPage() {
                     <Pencil size={12}/> Modifier
                   </button>
                   <button onClick={()=>handleTogglePublie(e)} disabled={togglingId===e.id}
-                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:e.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:e.est_publie?"#15803d":"#6b7280",fontWeight:600}}>
+                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:e.est_publie?"rgba(24,128,56,0.08)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:e.est_publie?"#188038":"#6b7280",fontWeight:600}}>
                     {togglingId===e.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:e.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                   </button>
                   <button onClick={()=>handleDelete(e.id)} disabled={deleting===e.id}
