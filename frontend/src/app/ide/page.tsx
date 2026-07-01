@@ -2304,8 +2304,15 @@ function OngletNational() {
     ...refs.secteur.filter(s=>s.libelle.toLowerCase().includes(q)||s.code.includes(q)).map(n=>({niveau:"secteur" as const,node:n})),
   ] : [];
 
-  const hasFilter = sel.niveau!=="global" || (modeAnnees==="specifiques"&&anneesSpec.length>0) || (modeAnnees==="plage"&&(anneeMin!==bornes[0]||anneeMax!==bornes[1]));
-  const reinit = () => { choisir("global",null); setModeAnnees("plage"); setAnneeMin(bornes[0]); setAnneeMax(bornes[1]); setAnneesSpec([]); setSearch(""); };
+  const periodeFiltree = (modeAnnees==="specifiques"&&anneesSpec.length>0) || (modeAnnees==="plage"&&(anneeMin!==bornes[0]||anneeMax!==bornes[1]));
+  const hasFilter = sousVue==="comparative"
+    ? compSelec.length>0 || periodeFiltree
+    : sel.niveau!=="global" || periodeFiltree;
+  const reinit = () => {
+    if (sousVue==="comparative") { setCompSelec([]); setCompData({}); setCompType("macro_secteur"); }
+    else { choisir("global",null); }
+    setModeAnnees("plage"); setAnneeMin(bornes[0]); setAnneeMax(bornes[1]); setAnneesSpec([]); setSearch("");
+  };
   const span = Math.max(1, bornes[1]-bornes[0]);
 
   return (
