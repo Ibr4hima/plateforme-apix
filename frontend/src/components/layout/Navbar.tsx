@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const modules = [
-  { label: "Investissements privés",        href: "/ide",          icon: "payments",               color: "#ca631f" },
+  { label: "Investissements privés",        href: "/ide",          icon: "finance_mode",           color: "#ca631f" },
   { label: "Intentions d'investissement",   href: "/intentions",   icon: "universal_currency_alt", color: "#366FE3" },
   { label: "Prospects",                     href: "/prospects",    icon: "frame_inspect",          color: "#ca631f" },
   { label: "Entreprises installées",        href: "/entreprises",  icon: "enterprise",             color: "#366FE3" },
