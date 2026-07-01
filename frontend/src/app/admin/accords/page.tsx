@@ -598,16 +598,16 @@ export default function AdminAccords() {
               {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
               <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                 <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#4a5568":"#C5BFBB",flexShrink:0}}/>
-                  <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4"}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#004f91":"#C5BFBB",flexShrink:0}}/>
+                  <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4",fontWeight:400}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
                 </div>
                 {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0}}/>
-                  <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a)}</span>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                  <span style={{color:"#4a5568",fontWeight:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a)}</span>
                 </div>}
               </div>
               <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
-                <button onClick={()=>openEdit(a)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(202,99,31,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}>
+                <button onClick={()=>openEdit(a)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#004f91",fontWeight:600}}>
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(a)} disabled={togglingId===a.id}
