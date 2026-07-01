@@ -356,4 +356,9 @@ async def telecharger_fichier(projet_id: int, fichier_id: int, db: AsyncSession 
     res = await db.execute(select(ProjetFichier).where(ProjetFichier.id == fichier_id, ProjetFichier.projet_id == projet_id))
     pf  = res.scalar_one_or_none()
     if not pf or not pf.fichier_path: raise HTTPException(404, "Fichier introuvable")
-    return FileResponse(pf.fichier_path, filename=pf.fichier_nom, media_type="application/pdf")
+    path = pf.fichier_path
+    if not os.path.exists(path):
+        path = os.path.join(UPLOAD_DIR, os.path.basename(pf.fichier_path))
+    if not os.path.exists(path):
+        raise HTTPException(404, "Fichier introuvable sur le serveur")
+    return FileResponse(path, filename=pf.fichier_nom, media_type="application/pdf")

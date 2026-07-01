@@ -41,6 +41,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      # Persiste les fichiers téléversés (PDF du code des investissements,
+      # fichiers des projets, zones…) à travers les rebuilds/redéploiements.
+      # Sans ce volume, l'image backend est reconstruite à chaque déploiement et
+      # les uploads sont perdus → téléchargements en « Internal Server Error ».
+      - backend_uploads:/app/uploads
     networks:
       - apix_net
     healthcheck:
@@ -107,5 +113,6 @@ networks:
 
 volumes:
   postgres_data:
+  backend_uploads:
   caddy_data:
   caddy_config:

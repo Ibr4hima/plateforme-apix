@@ -126,7 +126,15 @@ async def download_pdf(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(CodePdf).order_by(CodePdf.created_at.desc()).limit(1))
     p   = res.scalar_one_or_none()
     if not p or not p.fichier_path: raise HTTPException(404, "PDF non disponible")
-    return FileResponse(p.fichier_path, filename=p.fichier_nom, media_type="application/pdf")
+    # Le chemin enregistré peut être un chemin absolu propre à la machine où le
+    # PDF a été téléversé. On retombe sur le nom de fichier dans le dossier
+    # d'uploads courant pour rester indépendant de la machine et éviter un 500.
+    path = p.fichier_path
+    if not os.path.exists(path):
+        path = os.path.join(UPLOAD_DIR, os.path.basename(p.fichier_path))
+    if not os.path.exists(path):
+        raise HTTPException(404, "Fichier PDF introuvable sur le serveur")
+    return FileResponse(path, filename=p.fichier_nom, media_type="application/pdf")
 
 
 # ── Lecture complète ──────────────────────────────────────────────────────────
