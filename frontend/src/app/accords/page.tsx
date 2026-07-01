@@ -59,7 +59,7 @@ function SideFilter({ label, items, selected, onToggle, color, listMaxHeight }: 
                 onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                 <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                   </div>
-                <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{item.label}</span>
+                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{item.label}</span>
               </button>
             );
           })}
@@ -481,7 +481,7 @@ export default function AccordsPage() {
                         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                   </div>
-                        <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>Sénégal</span>
+                        <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>Sénégal</span>
                       </button>
                     );})()}
                     {/* APIX S.A */}
@@ -492,7 +492,7 @@ export default function AccordsPage() {
                         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                   </div>
-                        <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>APIX S.A</span>
+                        <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>APIX S.A</span>
                       </button>
                     );})()}
                     {/* Sous-section Pays */}
@@ -506,7 +506,7 @@ export default function AccordsPage() {
                             onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                             <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                           </div>
-                            <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{p.nom}</span>
+                            <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{p.nom}</span>
                           </button>
                         );})}
                       </div>
