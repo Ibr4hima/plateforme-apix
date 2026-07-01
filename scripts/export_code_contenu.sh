@@ -34,8 +34,10 @@ if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
 fi
 
 dump() {
+  # --column-inserts : INSERT explicites en colonnes → indépendant de l'ordre
+  # physique des colonnes en prod (plus robuste que --inserts).
   docker exec -i "$CONTAINER" pg_dump -U "$PGUSER" -d "$PGDB" \
-    --data-only --inserts --no-owner --no-privileges -t "public.$1" \
+    --data-only --column-inserts --no-owner --no-privileges -t "public.$1" \
     | grep '^INSERT INTO' || true
 }
 
@@ -58,6 +60,11 @@ fi
   echo "-- Rejoue le contenu (chapitres/sections/articles) tel qu'édité en local."
   echo "-- ============================================================================="
   echo "BEGIN;"
+  echo ""
+  echo "-- Garantit la présence de la colonne 'contenu' (le modèle l'utilise mais"
+  echo "-- aucune migration ne l'ajoutait sur code_chapitres/code_sections). Idempotent."
+  echo "ALTER TABLE code_chapitres ADD COLUMN IF NOT EXISTS contenu TEXT;"
+  echo "ALTER TABLE code_sections  ADD COLUMN IF NOT EXISTS contenu TEXT;"
   echo ""
   echo "-- On repart d'une table propre pour éviter les doublons (le PDF n'est pas touché)."
   echo "DELETE FROM code_articles;"
