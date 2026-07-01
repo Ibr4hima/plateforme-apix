@@ -75,7 +75,7 @@ export default function Sidebar() {
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(202,99,31,0.12)"; }}>
             Page publique
           </Link>
-          <div style={{ margin: "10px 4px 2px", borderTop: "1px solid rgba(255,255,255,0.12)" }} />
+          <div style={{ margin: "10px -12px 2px", borderTop: "1px solid rgba(255,255,255,0.12)" }} />
           {MODULES.map((item, i) => {
             if (item.type === "section") {
               return (
