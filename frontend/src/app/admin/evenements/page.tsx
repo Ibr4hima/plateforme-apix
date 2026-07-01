@@ -600,11 +600,11 @@ export default function EvenementsPage() {
                 {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinalEdition(e.edition)}</div>}
                 <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                   {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                    <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0}}/>
                     <span style={{color:"#4a5568"}}>{dateStr}</span>
                   </div>}
                   {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                    <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0}}/>
                     <span style={{color:"#4a5568"}}>{lieu}</span>
                   </div>}
                 </div>
