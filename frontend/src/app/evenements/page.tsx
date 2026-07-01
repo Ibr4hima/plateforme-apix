@@ -114,7 +114,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                     onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                     <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                           </div>
-                    <span style={{fontSize:12,color:sel?"#004f91":"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
+                    <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
                   </button>
                 );
               })}
@@ -133,7 +133,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                       onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                       <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                               </div>
-                      <span style={{fontSize:12,color:sel?"#ca631f":"#4a5568",fontWeight:sel?600:400}}>{b.nom}</span>
+                      <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{b.nom}</span>
                     </button>
                   );
                 })}
@@ -153,7 +153,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
                       onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                       <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                               </div>
-                      <span style={{fontSize:12,color:sel?"#188038":"#4a5568",fontWeight:sel?600:400}}>{a.nom}</span>
+                      <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{a.nom}</span>
                     </button>
                   );
                 })}
