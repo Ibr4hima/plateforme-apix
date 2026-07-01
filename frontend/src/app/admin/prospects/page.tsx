@@ -1824,7 +1824,7 @@ export default function ProspectsPage() {
         <div style={{ display:"flex" }}>
           {([["cibles","Investisseurs ciblés"],["historique","En contact"],["precedents","Terminés"]] as const).map(([key,label])=>(
             <button key={key} onClick={()=>setOnglet(key)}
-              style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${onglet===key?"#ca631f":"transparent"}`, background:"transparent", color:onglet===key?"#ca631f":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
+              style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${onglet===key?"#004f91":"transparent"}`, background:"transparent", color:onglet===key?"#004f91":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
               {label}
             </button>
           ))}
@@ -1897,7 +1897,7 @@ export default function ProspectsPage() {
                       </button>
                       {p.issue==="decline" && (
                         <button onClick={()=>handleRecontact(p.id)}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(24,128,56,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#188038", fontWeight:600 }}>
                           <MessageSquare size={12}/> Re-contacter
                         </button>
                       )}
@@ -1915,7 +1915,7 @@ export default function ProspectsPage() {
                         return (
                         <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
                         <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(24,128,56,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#188038", fontWeight:600 }}>
                           <MessageSquare size={12}/> Contacter
                         </button>
                         <button disabled={terminerDisabled} onClick={()=>{ if(!terminerDisabled){ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); } }}
@@ -1966,7 +1966,7 @@ export default function ProspectsPage() {
                       </button>
                       {!estFige(p) && (
                         <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(24,128,56,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#188038", fontWeight:600 }}>
                           <MessageSquare size={12}/> Contacter
                         </button>
                       )}
