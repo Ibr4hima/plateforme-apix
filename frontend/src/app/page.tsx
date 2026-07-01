@@ -189,7 +189,7 @@ export default function HomePage() {
                     : <Icon size={16} style={{color:"#fff"}}/>}
                 </div>
                 <div>
-                  <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{item.label}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:"#fff",whiteSpace:"nowrap"}}>{item.label}</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,0.65)"}}>{item.sub}</div>
                 </div>
                 <ChevronRight size={14} style={{color:"rgba(255,255,255,0.4)",marginLeft:"auto"}}/>
