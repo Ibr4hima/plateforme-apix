@@ -773,13 +773,13 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:12 }}>
           {projets.map(p=>(
             <div key={p.id} onClick={()=>setVue(p)}
-              style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", borderLeft:`3px solid ${p.est_publie?"#ca631f":"#C5BFBB"}`, cursor:"pointer", transition:"all 0.15s", position:"relative" as const }}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?"#ca631f":"#C5BFBB";}}>
+              style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", borderLeft:`3px solid ${p.est_publie?"#004f91":"#C5BFBB"}`, cursor:"pointer", transition:"all 0.15s", position:"relative" as const }}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(0,79,145,0.12)";ev.currentTarget.style.borderColor="#004f91";}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=p.est_publie?"#004f91":"#C5BFBB";}}>
               <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
               <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
-                {p.pole_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#188038", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.pole_nom}</span></div>}
-                {p.region_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#B7410E", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>Région de {p.region_nom}</span></div>}
+                {p.pole_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#4a5568", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>{p.pole_nom}</span></div>}
+                {p.region_nom&&<div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#4a5568", flexShrink:0 }}/><span style={{ color:"#4a5568" }}>Région de {p.region_nom}</span></div>}
               </div>
               <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={ev=>ev.stopPropagation()}>
                 <button onClick={()=>{ setEdit(p); setModal(true); }}
@@ -787,7 +787,7 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:p.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:p.est_publie?"#15803d":"#6b7280", fontWeight:600 }}>
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:p.est_publie?"rgba(24,128,56,0.08)":"rgba(156,163,175,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:p.est_publie?"#188038":"#6b7280", fontWeight:600 }}>
                   {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                 </button>
                 <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}

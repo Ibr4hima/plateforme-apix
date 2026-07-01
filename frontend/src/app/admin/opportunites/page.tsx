@@ -1132,19 +1132,19 @@ export default function OpportunitesAdminPage() {
         </div>
         {onglet==="projets"&&(
           <button onClick={()=>openNewProjet.current?.()}
-            style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
+            style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
             <Plus size={15}/> Nouveau projet
           </button>
         )}
         {onglet==="potentialites"&&(
           <button onClick={()=>{setPotEdit(null);setPotModal(true);}}
-            style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
+            style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
             <Plus size={15}/> Nouvelle fiche
           </button>
         )}
         {onglet==="avantages"&&(
           <button onClick={()=>{setAvgEdit(null);setAvgModal(true);}}
-            style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a0521a)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
+            style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
             <Plus size={15}/> Nouvel avantage
           </button>
         )}
