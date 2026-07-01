@@ -66,7 +66,6 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
   const [open, setOpen] = useState(true);
   const branches  = secteurs.filter(s=>secteursSel.includes(s.nom)).flatMap((s:any)=>s.branches||[]);
   const activites = branches.filter((b:any)=>branchesSel.includes(b.nom)).flatMap((b:any)=>b.activites||[]);
-  const hasFilter = secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   return (
     <div style={{marginBottom:18}}>
       <button onClick={()=>setOpen(o=>!o)}
@@ -119,10 +118,6 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
               </button>);})}
           </div>
         </div>}
-        {hasFilter&&<button onClick={()=>{secteursSel.slice().forEach(onSecteur);branchesSel.slice().forEach(onBranche);activitesSel.slice().forEach(onActivite);}}
-          style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0"}}>
-          <X size={10}/> Effacer thématiques
-        </button>}
       </div>}
     </div>
   );
@@ -135,7 +130,6 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
   const [open, setOpen] = useState(true);
   const departements    = regions.filter(r=>regionsSel.includes(r.nom)).flatMap((r:any)=>r.departements||[]);
   const arrondissements = departements.filter(d=>departementsSel.includes(d.nom)).flatMap((d:any)=>d.arrondissements||[]);
-  const hasFilter = regionsSel.length>0||departementsSel.length>0||arrondissementsSel.length>0;
   return (
     <div style={{marginBottom:18}}>
       <button onClick={()=>setOpen(o=>!o)}
@@ -185,10 +179,6 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
               </button>);})}
           </div>
         </div>}
-        {hasFilter&&<button onClick={()=>{regionsSel.slice().forEach(onRegion);departementsSel.slice().forEach(onDepartement);arrondissementsSel.slice().forEach(onArrond);}}
-          style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0"}}>
-          <X size={10}/> Effacer localisation
-        </button>}
       </div>}
     </div>
   );
