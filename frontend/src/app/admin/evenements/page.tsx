@@ -601,11 +601,11 @@ export default function EvenementsPage() {
                 <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                   {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
                     <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                    <span style={{color:"#4a5568",fontWeight:300}}>{dateStr}</span>
+                    <span style={{color:"#4a5568",fontWeight:400}}>{dateStr}</span>
                   </div>}
                   {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
                     <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                    <span style={{color:"#4a5568",fontWeight:300}}>{lieu}</span>
+                    <span style={{color:"#4a5568",fontWeight:400}}>{lieu}</span>
                   </div>}
                 </div>
                 <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
