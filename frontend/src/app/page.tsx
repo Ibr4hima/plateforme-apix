@@ -156,12 +156,12 @@ export default function HomePage() {
             <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#ca631f)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.4)",letterSpacing:"0.01em",transition:"all 0.2s"}}
               onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 32px rgba(202,99,31,0.5)";}}
               onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(202,99,31,0.4)";}}>
-              <BarChart2 size={16}/> Tableau de bord <ArrowRight size={15}/>
+              <BarChart2 size={16}/> Tableau de bord <ChevronRight size={15}/>
             </Link>
             <Link href="/ide" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(12px)",color:"rgba(255,255,255,0.85)",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.12)",transition:"all 0.2s"}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.1)";e.currentTarget.style.borderColor="rgba(255,255,255,0.2)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
-              Investissements Privés <ChevronRight size={15}/>
+              <span className="material-symbols-outlined" style={{fontSize:18,color:"rgba(255,255,255,0.85)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>finance_mode</span> Investissements Privés <ChevronRight size={15}/>
             </Link>
           </div>
 
