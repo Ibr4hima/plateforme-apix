@@ -5,9 +5,7 @@ import {
   ArrowRight,
   BarChart2,
   Building2,
-  Calendar,
   ChevronRight,
-  Handshake,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -175,18 +173,20 @@ export default function HomePage() {
       <section style={{background:"linear-gradient(135deg,#ca631f,#ca631f)",padding:"0"}}>
         <div className="lp-quick" style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"stretch"}}>
           {[
-            {icon:BarChart2, label:"Tableau de bord",     href:"/tableau-de-bord", sub:"KPIs & Analyses"},
-            {icon:Building2, label:"Entreprises",          href:"/entreprises",     sub:"Registre complet"},
-            {icon:Handshake, label:"Accords & Traités",    href:"/accords",         sub:"Coopération"},
-            {icon:Calendar,  label:"Événements",           href:"/evenements",      sub:"Agenda complet"},
-          ].map((item,i)=>{
+            {icon:BarChart2, label:"Tableau de bord",             href:"/tableau-de-bord", sub:"KPIs & Analyses"},
+            {icon:Building2, label:"Entreprises",                  href:"/entreprises",     sub:"Registre complet"},
+            {mat:"real_estate_agent", label:"Zones d'investissement",        href:"/zones",        sub:"ZES, ZAI, ZFI & pôles"},
+            {mat:"bookmark_stacks",   label:"Opportunités d'investissement", href:"/opportunites", sub:"Potentialités sectorielles"},
+          ].map((item:any,i)=>{
             const Icon=item.icon;
             return (
               <Link key={i} href={item.href} className="lp-quick-item" style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none",transition:"background 0.15s"}}
                 onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,0,0,0.1)";}}
                 onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                 <div style={{width:36,height:36,borderRadius:9,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <Icon size={16} style={{color:"#fff"}}/>
+                  {item.mat
+                    ? <span className="material-symbols-outlined" style={{fontSize:18,color:"#fff",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{item.mat}</span>
+                    : <Icon size={16} style={{color:"#fff"}}/>}
                 </div>
                 <div>
                   <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{item.label}</div>
