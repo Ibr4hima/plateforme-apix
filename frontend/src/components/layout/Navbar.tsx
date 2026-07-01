@@ -419,6 +419,13 @@ export default function Navbar() {
 
           {/* ── CTA Connexion ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            {/* Bouton temporaire vers l'espace d'administration */}
+            <Link href="/admin/evenements"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", padding: "9px 18px", borderRadius: 10, border: "1.5px solid rgba(202,99,31,0.45)", textDecoration: "none", transition: "all 0.2s", fontFamily: "var(--font-google-sans)" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.15)"; e.currentTarget.style.borderColor = "#ca631f"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(202,99,31,0.08)"; e.currentTarget.style.borderColor = "rgba(202,99,31,0.45)"; }}>
+              Page Admin
+            </Link>
             {/* Connexion temporairement inactif (login pas encore prêt) */}
             <button type="button" onClick={() => {}}
               style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #ca631f 0%, #a84e18 100%)", padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", boxShadow: "0 2px 12px rgba(202,99,31,0.35)", transition: "all 0.2s", letterSpacing: "0em", fontFamily: "var(--font-google-sans)" }}
