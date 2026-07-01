@@ -5,26 +5,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 type NavItem =
-  | { type: "link"; label: string; href: string }
-  | { type: "separator"; label?: string };
+  | { type: "link"; label: string; href: string; icon: string }
+  | { type: "section"; label: string };
 
 const MODULES: NavItem[] = [
-  { type: "link", label: "Événements",                     href: "/admin/evenements"          },
-  { type: "link", label: "Accords & Traités",              href: "/admin/accords"             },
-  { type: "link", label: "Entreprises",                    href: "/admin/entreprises"         },
-  { type: "link", label: "Pôles & Zones d'investissement", href: "/admin/gestion-zones"       },
-  { type: "link", label: "Opportunités d'investissement",  href: "/admin/opportunites"        },
-  { type: "link", label: "Intentions d'investissement",    href: "/admin/intentions"          },
-  { type: "link", label: "Prospects",                      href: "/admin/prospects"           },
-  { type: "link", label: "Analyse de données",             href: "/admin/analyse"             },
-  { type: "separator" },
-  { type: "link", label: "Pays & Groupements",             href: "/admin/ref-pays"            },
-  { type: "link", label: "Découpage administratif",        href: "/admin/geo"                 },
-  { type: "link", label: "Classification NAEMA",           href: "/admin/naema"               },
-  { type: "link", label: "Tableaux de correspondance",     href: "/admin/classifications"     },
-  { type: "link", label: "Données IDE",                    href: "/admin/ide"                 },
-  { type: "link", label: "Données BDEF",                   href: "/admin/bdef"                },
-  { type: "link", label: "Code des investissements",       href: "/admin/code-investissement" },
+  { type: "section", label: "Gestion des données" },
+  { type: "link", label: "Événements",                     href: "/admin/evenements",         icon: "event"                 },
+  { type: "link", label: "Accords & Traités",              href: "/admin/accords",            icon: "signature"             },
+  { type: "link", label: "Entreprises",                    href: "/admin/entreprises",        icon: "enterprise"            },
+  { type: "link", label: "Pôles & Zones d'investissement", href: "/admin/gestion-zones",      icon: "real_estate_agent"     },
+  { type: "link", label: "Opportunités d'investissement",  href: "/admin/opportunites",       icon: "bookmark_stacks"       },
+  { type: "link", label: "Intentions d'investissement",    href: "/admin/intentions",         icon: "universal_currency_alt"},
+  { type: "link", label: "Prospects",                      href: "/admin/prospects",          icon: "frame_inspect"         },
+  { type: "link", label: "Analyse de données",             href: "/admin/analyse",            icon: "show_chart"            },
+  { type: "section", label: "Référentiels" },
+  { type: "link", label: "Pays & Groupements",             href: "/admin/ref-pays",           icon: "public"                },
+  { type: "link", label: "Découpage administratif",        href: "/admin/geo",                icon: "map"                   },
+  { type: "link", label: "Classification NAEMA",           href: "/admin/naema",              icon: "account_tree"          },
+  { type: "link", label: "Tableaux de correspondance",     href: "/admin/classifications",    icon: "table_chart"           },
+  { type: "link", label: "Données IDE",                    href: "/admin/ide",                icon: "finance_mode"          },
+  { type: "link", label: "Données BDEF",                   href: "/admin/bdef",               icon: "database"              },
+  { type: "link", label: "Code des investissements",       href: "/admin/code-investissement",icon: "gavel"                 },
 ];
 
 const W = 260;
@@ -59,27 +60,33 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav style={{ flex: 1, padding: "12px 10px" }}>
+        <nav style={{ flex: 1, padding: "10px 10px 16px" }}>
           {MODULES.map((item, i) => {
-            if (item.type === "separator") {
-              return <div key={i} style={{ margin: "8px 4px", borderTop: "1px solid #F2F0EF" }} />;
+            if (item.type === "section") {
+              return (
+                <div key={i} style={{ padding: i === 0 ? "6px 12px 6px" : "16px 12px 6px", fontSize: 10, fontWeight: 700, color: "#b3bcc9", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                  {item.label}
+                </div>
+              );
             }
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link key={item.href} href={item.href} style={{ textDecoration: "none", display: "block", marginBottom: 2 }}>
                 <div
                   style={{
-                    display: "flex", alignItems: "center",
-                    width: "100%", padding: "8px 12px", textAlign: "left",
-                    borderRadius: 8, cursor: "pointer", transition: "all 0.15s",
+                    position: "relative", display: "flex", alignItems: "center", gap: 11,
+                    width: "100%", padding: "9px 12px", textAlign: "left",
+                    borderRadius: 9, cursor: "pointer", transition: "all 0.15s",
                     fontSize: 13, fontWeight: isActive ? 700 : 500,
                     color:      isActive ? "#004f91" : "#4a5568",
                     background:  isActive ? "rgba(0,79,145,0.08)" : "transparent",
                     fontFamily: "var(--font-google-sans)",
                   }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F8F7F6"; }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F5F4F3"; }}
                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
                 >
+                  {isActive && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 999, background: "#004f91" }} />}
+                  <span className="material-symbols-outlined" style={{ fontSize: 19, color: isActive ? "#004f91" : "#9aa5b4", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0, transition: "color 0.15s" }}>{item.icon}</span>
                   {item.label}
                 </div>
               </Link>
