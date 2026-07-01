@@ -102,8 +102,11 @@ async def upload_pdf(
     # Remplacer l'ancien PDF s'il existe
     res = await db.execute(select(CodePdf).order_by(CodePdf.created_at.desc()).limit(1))
     old = res.scalar_one_or_none()
-    if old and old.fichier_path and os.path.exists(old.fichier_path):
-        os.remove(old.fichier_path)
+    if old:
+        # Supprime toujours l'ancienne fiche, même si son fichier est déjà absent
+        # (sinon des lignes s'accumulent et l'ancienne peut rester servie).
+        if old.fichier_path and os.path.exists(old.fichier_path):
+            os.remove(old.fichier_path)
         await db.delete(old)
     pdf = CodePdf(titre=titre, version=version or None, fichier_nom=fichier.filename, fichier_path=dest)
     db.add(pdf)
@@ -134,7 +137,8 @@ async def download_pdf(db: AsyncSession = Depends(get_db)):
         path = os.path.join(UPLOAD_DIR, os.path.basename(p.fichier_path))
     if not os.path.exists(path):
         raise HTTPException(404, "Fichier PDF introuvable sur le serveur")
-    return FileResponse(path, filename=p.fichier_nom, media_type="application/pdf")
+    return FileResponse(path, filename=p.fichier_nom, media_type="application/pdf",
+                        headers={"Cache-Control": "no-store"})
 
 
 # ── Lecture complète ──────────────────────────────────────────────────────────

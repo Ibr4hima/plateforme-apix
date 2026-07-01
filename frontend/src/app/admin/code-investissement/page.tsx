@@ -326,7 +326,7 @@ export default function CodeInvestissementPage() {
                   <Pencil size={11} /> {pdfInfo.titre || "Code des investissements"}
                 </button>
               )}
-              <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer"
+              <a href={`${base}/pdf/download?v=${pdfInfo.id}`} target="_blank" rel="noopener noreferrer"
                 style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(202,99,31,0.08)", border:"1px solid rgba(202,99,31,0.2)", borderRadius:9, padding:"8px 14px", fontSize:12, color:"#ca631f", fontWeight:600, textDecoration:"none" }}>
                 <FileText size={13} /> Télécharger
               </a>
