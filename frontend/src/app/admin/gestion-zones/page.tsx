@@ -838,6 +838,7 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function GestionZonesPage() {
   const [zones,        setZones]        = useState<any[]>([]);
+  const [polesCount,   setPolesCount]   = useState(0);
   const [secteurs,     setSecteurs]     = useState<any[]>([]);
   const [branches,     setBranches]     = useState<any[]>([]);
   const [activites,    setActivites]    = useState<any[]>([]);
@@ -872,6 +873,10 @@ export default function GestionZonesPage() {
   }, []);
 
   useEffect(() => { charger(); }, [charger]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/zones-types/poles`).then(r => r.json()).then(d => setPolesCount(Array.isArray(d) ? d.length : 0)).catch(() => {});
+  }, [onglet]);
 
   useEffect(() => {
     Promise.all([
@@ -912,13 +917,17 @@ export default function GestionZonesPage() {
         <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Pôles &amp; Zones d&apos;investissement</h1>
       </div>
 
-      <div style={{ display: "flex", gap: 4, background: "#F2F0EF", borderRadius: 12, padding: 4, marginBottom: 28, width: "fit-content" }}>
-        {[{ key: "zones", label: "Zones d'investissement" }, { key: "poles", label: "Pôles territoires" }].map(o => (
+      <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #E8E5E3", marginBottom: 28 }}>
+        {[{ key: "zones", label: "Zones d'investissement", count: zones.length }, { key: "poles", label: "Pôles territoires", count: polesCount }].map(o => {
+          const actif = onglet === o.key;
+          return (
           <button key={o.key} onClick={() => setOnglet(o.key as any)}
-            style={{ padding: "8px 20px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, background: onglet === o.key ? "#fff" : "transparent", color: onglet === o.key ? "#1a1a2e" : "#9aa5b4", boxShadow: onglet === o.key ? "0 2px 8px rgba(0,0,0,0.08)" : "none", transition: "all 0.2s" }}>
+            style={{ padding: "14px 22px", border: "none", borderBottom: `2px solid ${actif ? "#004f91" : "transparent"}`, background: "transparent", color: actif ? "#004f91" : "#9aa5b4", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", transition: "all 0.15s" }}>
             {o.label}
+            {o.count > 0 && <span style={{ marginLeft: 7, fontSize: 11, fontWeight: 700, color: actif ? "#004f91" : "#9aa5b4", background: actif ? "rgba(0,79,145,0.1)" : "#F2F0EF", padding: "1px 7px", borderRadius: 999 }}>{o.count}</span>}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {onglet === "poles" ? <OngletPoles /> : (
