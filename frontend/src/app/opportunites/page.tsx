@@ -119,7 +119,6 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
   const [open, setOpen] = useState(true);
   const branches  = secteurs.filter(s=>secteursSel.includes(s.nom)).flatMap((s:any)=>s.branches||[]);
   const activites = branches.filter((b:any)=>branchesSel.includes(b.nom)).flatMap((b:any)=>b.activites||[]);
-  const hasFilter = secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   return (
     <div style={{marginBottom:18}}>
       <button onClick={()=>setOpen(o=>!o)}
@@ -172,10 +171,6 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
               </button>);})}
           </div>
         </div>}
-        {hasFilter&&<button onClick={()=>{secteursSel.slice().forEach(onSecteur);branchesSel.slice().forEach(onBranche);activitesSel.slice().forEach(onActivite);}}
-          style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0"}}>
-          <X size={10}/> Effacer thématiques
-        </button>}
       </div>}
     </div>
   );
@@ -189,7 +184,6 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
   const [open, setOpen] = useState(true);
   const departements    = regions.filter(r=>regionsSel.includes(r.nom)).flatMap((r:any)=>r.departements||[]);
   const arrondissements = departements.filter((d:any)=>departementsSel.includes(d.nom)).flatMap((d:any)=>d.arrondissements||[]);
-  const hasFilter = regionsSel.length>0||departementsSel.length>0||arrondissementsSel.length>0;
   return (
     <div style={{marginBottom:18}}>
       <button onClick={()=>setOpen(o=>!o)}
@@ -242,10 +236,6 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
               </button>);})}
           </div>
         </div>}
-        {hasFilter&&<button onClick={()=>{regionsSel.slice().forEach(onRegion);departementsSel.slice().forEach(onDepartement);arrondissementsSel.slice().forEach(onArrondissement);}}
-          style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0"}}>
-          <X size={10}/> Effacer localisation
-        </button>}
       </div>}
     </div>
   );
@@ -307,10 +297,6 @@ function AtotusFiltreFilter({ pots, refAvantages, selected, onToggle }: {
               </div>
             );
           })}
-          {hasFilter&&<button onClick={()=>selected.slice().forEach(onToggle)}
-            style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"2px 0"}}>
-            <X size={10}/> Effacer atouts
-          </button>}
         </div>
       )}
     </div>
@@ -1087,16 +1073,19 @@ export default function OpportunitesPage() {
             <div style={{padding:sidebarOpen?"20px 16px":"10px 8px",flex:1}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
                 {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
-                <button onClick={()=>setSidebarOpen(o=>!o)}
-                  style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
-                  <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
-                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
-                </button>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <button onClick={()=>setSidebarOpen(o=>!o)}
+                    style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
+                    <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
+                    {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
+                  </button>
+                  {sidebarOpen&&nbFiltres>0&&<button onClick={reinit} title="Tout réinitialiser"
+                    style={{background:"#fee2e2",border:"none",cursor:"pointer",borderRadius:8,padding:"6px",display:"flex",alignItems:"center"}}>
+                    <span className="material-symbols-outlined" style={{fontSize:16,color:"#dc2626",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>close</span>
+                  </button>}
+                </div>
               </div>
               {sidebarOpen&&<div>
-                  {nbFiltres>0&&<button onClick={reinit} style={{display:"flex",alignItems:"center",gap:5,width:"100%",background:"#fee2e2",color:"#dc2626",border:"none",borderRadius:8,padding:"7px 10px",fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:16}}>
-                    <X size={12}/> Effacer les filtres
-                  </button>}
 
                   {/* Filtres Projets */}
                   {onglet==="projets"&&<>
