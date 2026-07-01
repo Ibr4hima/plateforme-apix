@@ -10,9 +10,9 @@ import { useCallback, useEffect, useState } from "react";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const TYPE_ZONES = [
-  { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "#E35336" },
-  { key: "ZAI", label: "Zones Aménagées pour l'Investissement", code: "ZAI", color: "#366FE3" },
-  { key: "ZFI", label: "Zones Franches Industrielles",          code: "ZFI", color: "#188038" },
+  { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "#ca631f", bg: "rgba(202,99,31,0.06)", border: "rgba(202,99,31,0.2)" },
+  { key: "ZAI", label: "Zones Aménagées pour l'Investissement", code: "ZAI", color: "#004f91", bg: "rgba(0,79,145,0.06)",  border: "rgba(0,79,145,0.2)" },
+  { key: "ZFI", label: "Zones Franches Industrielles",          code: "ZFI", color: "#188038", bg: "rgba(24,128,56,0.06)",  border: "rgba(24,128,56,0.2)" },
 ];
 
 const POLE_PALETTE = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
@@ -843,6 +843,7 @@ export default function GestionZonesPage() {
   const [branches,     setBranches]     = useState<any[]>([]);
   const [activites,    setActivites]    = useState<any[]>([]);
   const [onglet,       setOnglet]       = useState<"zones"|"poles">("zones");
+  const [selectedType, setSelectedType] = useState<string | null>(null);
   const [loading,      setLoading]      = useState(true);
   const [vueId,        setVueId]        = useState<string | null>(null);
   const [zoneModal,    setZoneModal]    = useState(false);
@@ -931,92 +932,109 @@ export default function GestionZonesPage() {
       </div>
 
       {onglet === "poles" ? <OngletPoles /> : (
-        <div style={{ display: "flex", flexDirection: "column" as const, gap: 20 }}>
-          {TYPE_ZONES.map(t => {
-            const zDuT = zones.filter(z => z.type_zone === t.key);
-            const nbEnt = zDuT.reduce((a, z) => a + (z.entreprises?.length || 0), 0);
-            return (
-              <div key={t.key} style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-
-                {/* En-tête du bloc type */}
-                <div style={{ padding: "14px 20px", borderBottom: "1px solid #F2F0EF", background: `${t.color}05`, display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 4, alignSelf: "stretch", borderRadius: 2, background: t.color, flexShrink: 0 }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: t.color, background: `${t.color}12`, padding: "2px 9px", borderRadius: 999 }}>{t.code}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1a2e" }}>{t.label}</span>
+        <div>
+          {/* Cards types — style page publique */}
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(TYPE_ZONES.length, 3)},1fr)`, gap: 18, marginBottom: selectedType ? 32 : 0 }}>
+            {TYPE_ZONES.map(t => {
+              const zDuT = zones.filter(z => z.type_zone === t.key);
+              const nbEnt = zDuT.reduce((a, z) => a + (z.entreprises?.length || 0), 0);
+              const active = selectedType === t.key;
+              const c = t.color;
+              const Stat = ({ value, label }: { value: string; label: string }) => (
+                <div style={{ flex: 1, textAlign: "center" as const }}>
+                  <div style={{ fontSize: 25, fontWeight: 800, color: "#1a1a2e", lineHeight: 1.05, letterSpacing: "-0.015em" }}>{value}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginTop: 5 }}>{label}</div>
+                </div>
+              );
+              return (
+                <div key={t.key} onClick={() => setSelectedType(active ? null : t.key)}
+                  style={{ position: "relative" as const, borderRadius: 18, overflow: "hidden", cursor: "pointer", background: "#fff",
+                    border: `1px solid ${active ? c : "#EAE7E4"}`,
+                    boxShadow: active ? `0 16px 40px ${c}1f` : "0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)",
+                    transform: active ? "translateY(-3px)" : "none",
+                    transition: "box-shadow 0.2s, transform 0.2s, border-color 0.2s" }}
+                  onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.08)"; ev.currentTarget.style.transform = "translateY(-3px)"; } }}
+                  onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; } }}>
+                  <div style={{ height: 3, background: c, opacity: active ? 1 : 0.85 }} />
+                  <div style={{ padding: "20px 22px 0" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 22 }}>
+                      <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: t.bg, border: `1px solid ${t.border}` }}>
+                        <span style={{ fontSize: 19, fontWeight: 800, color: c, lineHeight: 1 }}>{zDuT.length}</span>
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e", lineHeight: 1.3 }}>{t.label}</div>
                     </div>
-                    <div style={{ fontSize: 12, color: "#9aa5b4" }}>
-                      <span style={{ fontWeight: 700, color: "#1a1a2e" }}>{zDuT.length}</span> zone{zDuT.length !== 1 ? "s" : ""}
-                      <span style={{ margin: "0 6px" }}>·</span>
-                      <span style={{ fontWeight: 700, color: "#1a1a2e" }}>{nbEnt}</span> entreprise{nbEnt !== 1 ? "s" : ""}
+                    <div style={{ display: "flex", alignItems: "stretch", paddingBottom: 4 }}>
+                      <Stat value={String(nbEnt)} label={nbEnt > 1 ? "Entreprises" : "Entreprise"} />
+                      <div style={{ width: 1, background: "#EEEBE8", margin: "4px 0" }} />
+                      <Stat value={String(zDuT.length)} label={zDuT.length > 1 ? "Sous-zones" : "Sous-zone"} />
                     </div>
                   </div>
-                  <button onClick={() => openAjouterZone(t.key)}
-                    style={{ display: "flex", alignItems: "center", gap: 5, background: `${t.color}12`, border: "none", cursor: "pointer", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700, color: t.color, flexShrink: 0 }}>
-                    <Plus size={12} /> Zone
-                  </button>
-                </div>
-
-                {/* Contenu : cards */}
-                <div style={{ padding: 20 }}>
-                  {zDuT.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "28px 0", color: "#9aa5b4", fontSize: 13 }}>
-                      Aucune zone {t.code} — cliquez sur &quot;+ Zone&quot; pour en ajouter.
-                    </div>
-                  ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-                      {zDuT.map(z => (
-                        <div key={z.id} onClick={() => setVueId(z.id)}
-                          style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 12, padding: "14px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", borderLeft: `3px solid ${t.color}`, cursor: "pointer", transition: "all 0.15s" }}
-                          onMouseEnter={ev => { ev.currentTarget.style.boxShadow = `0 4px 16px ${t.color}18`; ev.currentTarget.style.borderColor = t.color; ev.currentTarget.style.background = "#fff"; }}
-                          onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor = "#E8E5E3"; ev.currentTarget.style.borderLeftColor = t.color; ev.currentTarget.style.background = "#F8F7F6"; }}>
-
-                          {/* Nom */}
-                          <div style={{ fontWeight: 700, fontSize: 13, color: "#1a1a2e", lineHeight: 1.35, marginBottom: z.pole_nom ? 2 : 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{z.nom_zone}</div>
-
-                          {/* Pôle */}
-                          {z.pole_nom && <div style={{ fontSize: 11, color: "#9aa5b4", fontWeight: 500, marginBottom: 10 }}>{z.pole_nom}</div>}
-
-                          {/* Bullets */}
-                          <div style={{ display: "flex", flexDirection: "column" as const, gap: 3, marginBottom: 12 }}>
-                            {(z.region_nom || z.departement_nom) && (
-                              <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12 }}>
-                                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#B7410E", flexShrink: 0 }} />
-                                <span style={{ color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
-                              </div>
-                            )}
-                            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12 }} onClick={e => e.stopPropagation()}>
-                              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#188038", flexShrink: 0 }} />
-                              <span style={{ color: "#4a5568", flex: 1 }}>
-                                <span style={{ fontWeight: 600, color: "#1a1a2e" }}>{z.entreprises?.length || 0}</span> entreprise{(z.entreprises?.length || 0) !== 1 ? "s" : ""}
-                              </span>
-                              <button onClick={() => { setEntModalZone(z); setEntModal(true); }}
-                                style={{ display: "flex", alignItems: "center", gap: 3, background: `${t.color}12`, border: "none", cursor: "pointer", borderRadius: 5, padding: "2px 7px", fontSize: 10, fontWeight: 700, color: t.color }}>
-                                <Plus size={9} /> Ajouter
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Boutons */}
-                          <div style={{ display: "flex", gap: 5, borderTop: "1px solid #F2F0EF", paddingTop: 10 }} onClick={ev => ev.stopPropagation()}>
-                            <button onClick={() => openEditZone(z)}
-                              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, background: "rgba(202,99,31,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 0", fontSize: 11, color: "#ca631f", fontWeight: 600 }}>
-                              <Pencil size={12} /> Modifier
-                            </button>
-                            <button onClick={() => handleDeleteZone(z.id)} disabled={deleting === z.id}
-                              style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(220,38,38,0.07)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 9px" }}>
-                              {deleting === z.id ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                  <div style={{ display: "flex", justifyContent: "center", padding: "14px 22px 18px", marginTop: 16, borderTop: "1px solid #F4F2F0" }}>
+                    <button onClick={ev => { ev.stopPropagation(); openAjouterZone(t.key); }}
+                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 20px", borderRadius: 999, fontSize: 12.5, fontWeight: 700, background: `${c}12`, color: c, border: "none", cursor: "pointer", transition: "all 0.15s" }}>
+                      <Plus size={15} /> Zone
+                    </button>
+                  </div>
+                  {active && (
+                    <div style={{ position: "absolute" as const, top: 14, right: 14, width: 22, height: 22, borderRadius: "50%", background: c, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 2px 8px ${c}55` }}>
+                      <svg width="11" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </div>
                   )}
                 </div>
+              );
+            })}
+          </div>
+
+          {/* Zones du type sélectionné */}
+          {selectedType && (() => {
+            const t = TYPE_ZONES.find(x => x.key === selectedType)!;
+            const zDuT = zones.filter(z => z.type_zone === t.key);
+            return zDuT.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "28px 0", color: "#9aa5b4", fontSize: 13 }}>
+                Aucune zone {t.code} — cliquez sur &quot;+ Zone&quot; pour en ajouter.
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                {zDuT.map(z => (
+                  <div key={z.id} onClick={() => setVueId(z.id)}
+                    style={{ background: "#fff", border: "1px solid #E8E5E3", borderRadius: 12, padding: "14px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", borderLeft: `3px solid ${t.color}`, cursor: "pointer", transition: "all 0.15s" }}
+                    onMouseEnter={ev => { ev.currentTarget.style.boxShadow = `0 4px 16px ${t.color}18`; ev.currentTarget.style.borderColor = t.color; }}
+                    onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; ev.currentTarget.style.borderColor = "#E8E5E3"; ev.currentTarget.style.borderLeftColor = t.color; }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#1a1a2e", lineHeight: 1.35, marginBottom: z.pole_nom ? 2 : 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{z.nom_zone}</div>
+                    {z.pole_nom && <div style={{ fontSize: 11, color: "#9aa5b4", fontWeight: 500, marginBottom: 10 }}>{z.pole_nom}</div>}
+                    <div style={{ display: "flex", flexDirection: "column" as const, gap: 3, marginBottom: 12 }}>
+                      {(z.region_nom || z.departement_nom) && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12 }}>
+                          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#4a5568", flexShrink: 0 }} />
+                          <span style={{ color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ")}</span>
+                        </div>
+                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12 }} onClick={e => e.stopPropagation()}>
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#4a5568", flexShrink: 0 }} />
+                        <span style={{ color: "#4a5568", flex: 1 }}>
+                          <span style={{ fontWeight: 600, color: "#1a1a2e" }}>{z.entreprises?.length || 0}</span> entreprise{(z.entreprises?.length || 0) !== 1 ? "s" : ""}
+                        </span>
+                        <button onClick={() => { setEntModalZone(z); setEntModal(true); }}
+                          style={{ display: "flex", alignItems: "center", gap: 3, background: `${t.color}12`, border: "none", cursor: "pointer", borderRadius: 5, padding: "2px 7px", fontSize: 10, fontWeight: 700, color: t.color }}>
+                          <Plus size={9} /> Ajouter
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 5, borderTop: "1px solid #F2F0EF", paddingTop: 10 }} onClick={ev => ev.stopPropagation()}>
+                      <button onClick={() => openEditZone(z)}
+                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, background: "rgba(202,99,31,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 0", fontSize: 11, color: "#ca631f", fontWeight: 600 }}>
+                        <Pencil size={12} /> Modifier
+                      </button>
+                      <button onClick={() => handleDeleteZone(z.id)} disabled={deleting === z.id}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(220,38,38,0.07)", border: "none", cursor: "pointer", borderRadius: 7, padding: "6px 9px" }}>
+                        {deleting === z.id ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             );
-          })}
+          })()}
         </div>
       )}
 
