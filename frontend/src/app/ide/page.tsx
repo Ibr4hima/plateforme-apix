@@ -817,7 +817,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
-                  {paysSelec!=="Sénégal"&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
+                  <span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>
                 </div>
                 {/* Sénégal épinglé */}
                 {(()=>{
