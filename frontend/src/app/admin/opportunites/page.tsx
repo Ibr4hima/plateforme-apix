@@ -1323,8 +1323,8 @@ export default function OpportunitesAdminPage() {
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {([
                 {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
-                {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
-                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#188038"},
+                {key:"secondaire", label:"Secteur Secondaire", color:"#004f91"},
+                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#004f91"},
               ] as const).map(s=>{
                 const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
                 const count = items.length;
@@ -1344,17 +1344,17 @@ export default function OpportunitesAdminPage() {
                         <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:12}}>
                           {entCount!==null&&(
                             <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                              <span style={{color:"#4a5568"}}>{entCount} entreprise{entCount!==1?"s":""} spécialisée{entCount!==1?"s":""}</span>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                              <span style={{color:"#4a5568",fontWeight:400}}>{entCount} entreprise{entCount!==1?"s":""} spécialisée{entCount!==1?"s":""}</span>
                             </div>
                           )}
                           {branches.length>0&&(
                             <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#C04000",flexShrink:0}}/>
-                              <span style={{fontWeight:600,color:"#C04000"}}>{branches.length} branche{branches.length>1?"s":""}</span>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                              <span style={{color:"#4a5568",fontWeight:400}}>{branches.length} branche{branches.length>1?"s":""}</span>
                               <span style={{color:"#C5BFBB"}}>›</span>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                              <span style={{fontWeight:600,color:"#188038"}}>{actCount} activité{actCount>1?"s":""}</span>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                              <span style={{color:"#4a5568",fontWeight:400}}>{actCount} activité{actCount>1?"s":""}</span>
                             </div>
                           )}
                         </div>
