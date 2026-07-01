@@ -562,11 +562,11 @@ export default function AdminAccords() {
     <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
-        <div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
           <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Accords &amp; Traités</h1>
-          <p style={{color:"#9aa5b4",fontSize:13,marginTop:2}}>{total} accord{total>1?"s":""} au total</p>
+          <span style={{fontSize:14,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"3px 12px",borderRadius:999}}>{total}</span>
         </div>
-        <button onClick={openCreate} style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#a84e18)",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(202,99,31,0.3)"}}>
+        <button onClick={openCreate} style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
           <Plus size={15}/> Ajouter un accord
         </button>
       </div>
@@ -586,9 +586,9 @@ export default function AdminAccords() {
             const statut = computeStatut(a);
             return (
             <div key={a.id} onClick={()=>setVue(a)}
-              style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+              style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #004f91",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(0,79,145,0.12)";ev.currentTarget.style.borderColor="#004f91";}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#004f91";}}>
 
               {statut&&<div style={{position:"absolute" as const,top:12,right:12}}>
                 <Badge variant={STATUT_VARIANT[statut]||"gray"} size="xs">{STATUT_LABELS[statut]}</Badge>
@@ -598,11 +598,11 @@ export default function AdminAccords() {
               {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
               <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                 <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#188038":"#C5BFBB",flexShrink:0}}/>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#4a5568":"#C5BFBB",flexShrink:0}}/>
                   <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4"}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
                 </div>
                 {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0}}/>
                   <span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a)}</span>
                 </div>}
               </div>
@@ -611,7 +611,7 @@ export default function AdminAccords() {
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(a)} disabled={togglingId===a.id}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:a.est_publie?"#15803d":"#6b7280",fontWeight:600}}>
+                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgba(24,128,56,0.08)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:a.est_publie?"#188038":"#6b7280",fontWeight:600}}>
                   {togglingId===a.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:a.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                 </button>
                 <button onClick={()=>handleDelete(a.id)} disabled={deleting===a.id}
