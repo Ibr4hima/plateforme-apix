@@ -68,6 +68,13 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <nav style={{ flex: 1, padding: "10px 12px 16px" }}>
+          {/* Bouton vers le site public */}
+          <Link href="/"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "9px 14px", borderRadius: 10, marginBottom: 6, background: "rgba(202,99,31,0.12)", border: "1px solid rgba(202,99,31,0.5)", color: "#ca631f", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.22)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(202,99,31,0.12)"; }}>
+            Page publique
+          </Link>
           {MODULES.map((item, i) => {
             if (item.type === "section") {
               return (
@@ -121,16 +128,6 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Footer : bouton vers le site public */}
-        <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-          <Link href="/"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "9px 14px", borderRadius: 10, background: "rgba(202,99,31,0.15)", border: "1px solid rgba(202,99,31,0.5)", color: "#f0a878", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.28)"; e.currentTarget.style.color = "#ffb784"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(202,99,31,0.15)"; e.currentTarget.style.color = "#f0a878"; }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 17, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>public</span>
-            Page publique
-          </Link>
-        </div>
       </aside>
 
       {/* Spacer fixe */}
