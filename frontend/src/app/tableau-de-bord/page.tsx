@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
 import {
   Activity, BarChart2, Building2, Calendar, ChevronDown, ChevronUp,
-  DollarSign, Handshake, Layers, Loader2, MapPin, RotateCcw, Search,
+  DollarSign, Handshake, Layers, Loader2, MapPin, Search,
   SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
@@ -1783,20 +1783,18 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
       {/* En-tête */}
       <div style={{ padding:sidebarOpen?"14px 16px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
         {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-        <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-          <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
-          {sidebarOpen&&nbActifs>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbActifs}</span>}
-        </button>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+            <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
+            {sidebarOpen&&nbActifs>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbActifs}</span>}
+          </button>
+          {sidebarOpen&&hasAdded&&<button onClick={()=>onReset(onglet)} title="Tout réinitialiser" style={{ background:"#fee2e2", border:"none", cursor:"pointer", borderRadius:8, padding:"6px", display:"flex", alignItems:"center" }}>
+            <span className="material-symbols-outlined" style={{ fontSize:16, color:"#dc2626", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
+          </button>}
+        </div>
       </div>
 
       {sidebarOpen&&<>
-        {/* Tout réinitialiser (en haut, à la place de l'ancienne recherche) */}
-        {hasAdded && <div style={{ padding:"12px 16px 6px", flexShrink:0 }}>
-          <button onClick={()=>onReset(onglet)}
-            style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, width:"100%", background:"#fee2e2", color:"#dc2626", border:"none", borderRadius:9, padding:"9px 12px", fontSize:12, fontWeight:600, cursor:"pointer" }}>
-            <RotateCcw size={13}/> Tout réinitialiser
-          </button>
-        </div>}
 
         {/* Sections */}
         <div style={{ padding:"8px 16px 16px", overflowY:"auto" as const, flex:1 }}>
