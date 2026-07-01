@@ -433,15 +433,15 @@ export default function AccordsPage() {
             <div style={{padding:sidebarOpen?"14px 16px 10px":"12px 8px",borderBottom:"1px solid #F2F0EF",display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",flexShrink:0}}>
               {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
               <div style={{display:"flex",alignItems:"center",gap:6}}>
-                {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser"
-                  style={{background:"#fee2e2",border:"none",cursor:"pointer",borderRadius:8,padding:"6px",display:"flex",alignItems:"center"}}>
-                  <X size={14} style={{color:"#dc2626"}}/>
-                </button>}
                 <button onClick={()=>setSidebarOpen(o=>!o)}
                   style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
                   <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
                   {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
                 </button>
+                {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser"
+                  style={{background:"#fee2e2",border:"none",cursor:"pointer",borderRadius:8,padding:"6px",display:"flex",alignItems:"center"}}>
+                  <span className="material-symbols-outlined" style={{fontSize:16,color:"#dc2626",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>close</span>
+                </button>}
               </div>
             </div>
             {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
