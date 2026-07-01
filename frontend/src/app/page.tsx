@@ -163,7 +163,7 @@ export default function HomePage() {
             <Link href="/ide" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(12px)",color:"rgba(255,255,255,0.85)",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.12)",transition:"all 0.2s"}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.1)";e.currentTarget.style.borderColor="rgba(255,255,255,0.2)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
-              Investissements Directs Étrangers <ChevronRight size={15}/>
+              Investissements Privés <ChevronRight size={15}/>
             </Link>
           </div>
 
