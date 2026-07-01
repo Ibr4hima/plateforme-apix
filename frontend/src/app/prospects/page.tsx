@@ -51,7 +51,7 @@ function SideFilter({ label, items, selected, onToggle, color }: {
                 onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                 <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? color : "#C5BFBB"}`, background: sel ? color : "transparent", flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: sel ? "#1a1a2e" : "#4a5568", fontWeight: sel ? 600 : 400 }}>{item}</span>
+                <span style={{ fontSize: 12, color: "#4a5568", fontWeight: sel ? 700 : 400 }}>{item}</span>
               </button>
             );
           })}
