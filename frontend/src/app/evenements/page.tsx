@@ -445,13 +445,13 @@ export default function EvenementsPage() {
                         <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8,paddingRight:(statut&&statut!=="a_venir")||e.role_apix?90:0}}>{e.nom_event}</div>
                         {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinal(e.edition)}</div>}
                         <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                          {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                            <span style={{color:"#4a5568",fontWeight:400}}>{dateStr}</span>
+                          {dateStr&&<div style={{display:"flex",alignItems:"center",gap:6,fontSize:12}}>
+                            <span className="material-symbols-outlined" style={{fontSize:15,color:"#004f91",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1,flexShrink:0}}>event</span>
+                            <span style={{color:"#4a5568",fontWeight:500}}>{dateStr}</span>
                           </div>}
-                          {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                            <span style={{color:"#4a5568",fontWeight:400}}>{lieu}</span>
+                          {lieu&&<div style={{display:"flex",alignItems:"center",gap:6,fontSize:12}}>
+                            <span className="material-symbols-outlined" style={{fontSize:15,color:"#004f91",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1,flexShrink:0}}>location_on</span>
+                            <span style={{color:"#4a5568",fontWeight:500}}>{lieu}</span>
                           </div>}
                         </div>
                         <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
