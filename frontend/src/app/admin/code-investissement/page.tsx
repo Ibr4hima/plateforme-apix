@@ -220,8 +220,20 @@ export default function CodeInvestissementPage() {
     fd.append("fichier", file);
     fd.append("titre", pdfInfo?.titre || (onglet === "code" ? "Code des investissements du Sénégal" : "Modalités d'application du code des investissements"));
     fd.append("version", pdfInfo?.version || "");
-    await fetch(`${base}/pdf`, {method:"POST", body:fd});
-    charger(); e.target.value="";
+    try {
+      const res = await fetch(`${base}/pdf`, {method:"POST", body:fd});
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        alert(`Échec du téléversement du PDF (HTTP ${res.status}).\n${txt.slice(0, 300)}`);
+        return;
+      }
+    } catch (err: any) {
+      alert(`Échec du téléversement du PDF : ${err?.message || err}`);
+      return;
+    } finally {
+      e.target.value = "";
+    }
+    charger();
   };
 
   const savePdfTitre = async () => {
