@@ -30,6 +30,11 @@ const MODULES: NavItem[] = [
 
 const W = 260;
 
+// Les entrées « disabled » ne sont bloquées que sur le site DÉPLOYÉ (démo),
+// jamais en local (où l'API pointe vers localhost).
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const IS_DEPLOYED = !!API_URL && !API_URL.includes("localhost") && !API_URL.includes("127.0.0.1");
+
 export default function Sidebar() {
   const pathname = usePathname();
 
@@ -73,10 +78,11 @@ export default function Sidebar() {
             }
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
 
-            // Entrées temporairement indisponibles : non cliquables, grisées.
-            if (item.disabled) {
+            // Entrées temporairement indisponibles (uniquement sur la démo déployée) :
+            // non cliquables, grisées.
+            if (item.disabled && IS_DEPLOYED) {
               return (
-                <div key={item.href} title="Bientôt disponible"
+                <div key={item.href} title="Indisponible"
                   style={{
                     display: "flex", alignItems: "center", gap: 11,
                     width: "100%", padding: "9px 13px", marginBottom: 3, borderRadius: 10,
@@ -87,7 +93,6 @@ export default function Sidebar() {
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: 19, color: "rgba(255,255,255,0.45)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0 }}>{item.icon}</span>
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "1px 6px", flexShrink: 0 }}>Bientôt</span>
                 </div>
               );
             }
