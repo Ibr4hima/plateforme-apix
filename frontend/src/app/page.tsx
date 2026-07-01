@@ -38,7 +38,7 @@ function AnimatedCounter({ target, suffix="", decimals=0 }: { target:number; suf
 }
 
 const MODULES = [
-  { num:"01", icon:"payments",               label:"Investissements privés",        href:"/ide",          color:"#ca631f", desc:"Flux d'investissements directs entrants et sortants" },
+  { num:"01", icon:"finance_mode",           label:"Investissements privés",        href:"/ide",          color:"#ca631f", desc:"Flux d'investissements directs entrants et sortants" },
   { num:"02", icon:"universal_currency_alt", label:"Intentions d'investissement",   href:"/intentions",   color:"#004f91", desc:"Projets d'investissement déclarés à court et moyen terme" },
   { num:"03", icon:"frame_inspect",          label:"Prospects",                     href:"/prospects",    color:"#ca631f", desc:"Portefeuille d'entreprises internationales ciblées" },
   { num:"04", icon:"enterprise",             label:"Entreprises installées",        href:"/entreprises",  color:"#004f91", desc:"Cartographie des entreprises formalisées installées" },
