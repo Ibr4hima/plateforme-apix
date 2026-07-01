@@ -86,5 +86,5 @@ fi
   echo "COMMIT;"
 } > "$OUT"
 
-echo "✅ $OUT généré ($(grep -c '^INSERT' "$OUT") INSERT)."
+echo "✅ $OUT généré (chapitres $(nb "$CH") · sections $(nb "$SE") · articles $(nb "$AR"))."
 echo "   Vérifie, puis : git add $OUT && git commit -m \"Contenu du code des investissements\" && git push"
