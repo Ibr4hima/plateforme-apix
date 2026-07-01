@@ -38,55 +38,58 @@ export default function Sidebar() {
       <style>{`
         .apix-sidebar::-webkit-scrollbar       { width: 5px; }
         .apix-sidebar::-webkit-scrollbar-track { background: transparent; }
-        .apix-sidebar::-webkit-scrollbar-thumb { background: #E8E5E3; border-radius: 99px; }
-        .apix-sidebar::-webkit-scrollbar-thumb:hover { background: #C5BFBB; }
-        .apix-sidebar { scrollbar-color: #E8E5E3 transparent; scrollbar-width: thin; }
+        .apix-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 99px; }
+        .apix-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+        .apix-sidebar { scrollbar-color: rgba(255,255,255,0.22) transparent; scrollbar-width: thin; }
       `}</style>
 
       <aside className="apix-sidebar" style={{
-        width: W, flexShrink: 0, background: "#fff", borderRight: "1px solid #E8E5E3",
+        width: W, flexShrink: 0,
+        background: "linear-gradient(180deg,#01315d 0%,#013f74 40%,#004f91 100%)",
         height: "100vh", position: "fixed", top: 0, left: 0,
         display: "flex", flexDirection: "column",
         zIndex: 40, overflowY: "auto", overflowX: "hidden",
+        boxShadow: "1px 0 0 rgba(255,255,255,0.04), 4px 0 24px rgba(0,0,0,0.06)",
       }}>
 
         {/* Logo */}
-        <div style={{ padding: "20px 16px 16px", borderBottom: "1px solid #F2F0EF", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ padding: "22px 16px 18px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Image src="/logo_apix.png" alt="APIX" width={90} height={32}
-            style={{ height: 32, width: "auto", objectFit: "contain" }} />
-          <div style={{ marginTop: 8, fontSize: 9, fontWeight: 700, color: "#ca631f", letterSpacing: "0.15em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+            style={{ height: 32, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          <div style={{ marginTop: 9, fontSize: 9, fontWeight: 700, color: "#f0a878", letterSpacing: "0.15em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
             Espace Administration
           </div>
         </div>
 
         {/* Navigation */}
-        <nav style={{ flex: 1, padding: "10px 10px 16px" }}>
+        <nav style={{ flex: 1, padding: "10px 12px 16px" }}>
           {MODULES.map((item, i) => {
             if (item.type === "section") {
               return (
-                <div key={i} style={{ padding: i === 0 ? "6px 12px 6px" : "16px 12px 6px", fontSize: 10, fontWeight: 700, color: "#b3bcc9", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                <div key={i} style={{ padding: i === 0 ? "6px 12px 7px" : "18px 12px 7px", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.42)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
                   {item.label}
                 </div>
               );
             }
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
-              <Link key={item.href} href={item.href} style={{ textDecoration: "none", display: "block", marginBottom: 2 }}>
+              <Link key={item.href} href={item.href} style={{ textDecoration: "none", display: "block", marginBottom: 3 }}>
                 <div
                   style={{
                     position: "relative", display: "flex", alignItems: "center", gap: 11,
-                    width: "100%", padding: "9px 12px", textAlign: "left",
-                    borderRadius: 9, cursor: "pointer", transition: "all 0.15s",
+                    width: "100%", padding: "9px 13px", textAlign: "left",
+                    borderRadius: 10, cursor: "pointer", transition: "all 0.15s",
                     fontSize: 13, fontWeight: isActive ? 700 : 500,
-                    color:      isActive ? "#004f91" : "#4a5568",
-                    background:  isActive ? "rgba(0,79,145,0.08)" : "transparent",
+                    color:      isActive ? "#fff" : "rgba(255,255,255,0.66)",
+                    background:  isActive ? "rgba(255,255,255,0.13)" : "transparent",
+                    boxShadow:   isActive ? "inset 0 0 0 1px rgba(255,255,255,0.1)" : "none",
                     fontFamily: "var(--font-google-sans)",
                   }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F5F4F3"; }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = "rgba(255,255,255,0.92)"; (e.currentTarget.querySelector(".ms-ico") as HTMLElement).style.color = "rgba(255,255,255,0.92)"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.66)"; (e.currentTarget.querySelector(".ms-ico") as HTMLElement).style.color = "rgba(255,255,255,0.5)"; } }}
                 >
-                  {isActive && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 999, background: "#004f91" }} />}
-                  <span className="material-symbols-outlined" style={{ fontSize: 19, color: isActive ? "#004f91" : "#9aa5b4", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0, transition: "color 0.15s" }}>{item.icon}</span>
+                  {isActive && <span style={{ position: "absolute", left: -12, top: "50%", transform: "translateY(-50%)", width: 3, height: 20, borderRadius: 999, background: "#ca631f" }} />}
+                  <span className="material-symbols-outlined ms-ico" style={{ fontSize: 19, color: isActive ? "#fff" : "rgba(255,255,255,0.5)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0, transition: "color 0.15s" }}>{item.icon}</span>
                   {item.label}
                 </div>
               </Link>
@@ -95,11 +98,11 @@ export default function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div style={{ padding: "14px 16px", borderTop: "1px solid #F2F0EF", textAlign: "center" }}>
+        <div style={{ padding: "14px 16px", borderTop: "1px solid rgba(255,255,255,0.1)", textAlign: "center" }}>
           <Link href="/" style={{ textDecoration: "none" }}>
-            <div style={{ fontSize: 11, color: "#9aa5b4", cursor: "pointer" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "#004f91")}
-              onMouseLeave={e => (e.currentTarget.style.color = "#9aa5b4")}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", cursor: "pointer", transition: "color 0.15s" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}>
               ← Retour au site public
             </div>
           </Link>
