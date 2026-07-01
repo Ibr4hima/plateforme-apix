@@ -446,12 +446,12 @@ export default function EvenementsPage() {
                         {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinal(e.edition)}</div>}
                         <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
                           {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                            <span style={{color:"#4a5568"}}>{dateStr}</span>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                            <span style={{color:"#4a5568",fontWeight:400}}>{dateStr}</span>
                           </div>}
                           {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                            <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/>
-                            <span style={{color:"#4a5568"}}>{lieu}</span>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                            <span style={{color:"#4a5568",fontWeight:400}}>{lieu}</span>
                           </div>}
                         </div>
                         <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
