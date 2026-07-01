@@ -37,8 +37,8 @@ function ordinal(n: number) { return n === 1 ? "1ère édition" : `${n}ème édi
 
 const STATUT_OPTS = [
   { value:"",         label:"Tous",     bg:"#F2F0EF", text:"#4a5568" },
-  { value:"a_venir",  label:"À venir",  bg:"#dbeafe", text:"#1d4ed8" },
-  { value:"en_cours", label:"En cours", bg:"#dcfce7", text:"#15803d" },
+  { value:"a_venir",  label:"À venir",  bg:"rgba(0,79,145,0.08)", text:"#004f91" },
+  { value:"en_cours", label:"En cours", bg:"rgba(24,128,56,0.08)", text:"#188038" },
   { value:"termine",  label:"Terminés", bg:"#f3f4f6", text:"#6b7280" },
 ];
 
