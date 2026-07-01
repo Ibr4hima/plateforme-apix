@@ -56,7 +56,7 @@ export default function Sidebar() {
         <div style={{ padding: "22px 16px 18px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Image src="/logo_apix.png" alt="APIX" width={90} height={32}
             style={{ height: 32, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
-          <div style={{ marginTop: 9, fontSize: 9, fontWeight: 700, color: "#f0a878", letterSpacing: "0.15em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+          <div style={{ marginTop: 9, fontSize: 9, fontWeight: 700, color: "#ca631f", letterSpacing: "0.15em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
             Espace Administration
           </div>
         </div>
