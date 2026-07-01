@@ -1814,8 +1814,9 @@ export default function ProspectsPage() {
         [data-rte] *{font-family:var(--font-google-sans);font-size:13px}
       `}</style>
 
-      <div style={{ marginBottom:8 }}>
+      <div style={{ marginBottom:8, display:"flex", alignItems:"center", gap:12 }}>
         <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Prospects</h1>
+        <span style={{ fontSize:14, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.1)", padding:"3px 12px", borderRadius:999 }}>{total}</span>
       </div>
 
       {/* Onglets */}
@@ -1830,7 +1831,7 @@ export default function ProspectsPage() {
         </div>
         {onglet!=="precedents" && (
           <button onClick={()=>{ setEdit(null); setModal(true); }}
-            style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#ca631f,#e07a3a)", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(202,99,31,0.3)", marginBottom:4 }}>
+            style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(0,79,145,0.3)", marginBottom:4 }}>
             <Plus size={15}/> Nouveau prospect
           </button>
         )}
@@ -1847,7 +1848,6 @@ export default function ProspectsPage() {
         </div>
       ) : (
         <>
-          <p style={{ fontSize:13, color:"#9aa5b4", marginBottom:16 }}>{total} prospect{total>1?"s":""}</p>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
             {prospects.map(p=>{
               const displayName = p.nom;
@@ -1874,19 +1874,19 @@ export default function ProspectsPage() {
                   </div>
                   {p.siege_nom && <div style={{ fontSize:11, color:"#9aa5b4", fontWeight:500, marginBottom:10 }}>{p.siege_nom}</div>}
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
-                    {p.mails?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Mail : {p.mails[0]}</span></div>}
+                    {p.mails?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Mail : {p.mails[0]}</span></div>}
                     {onglet==="historique" ? (
                       activite?.label === "À recontacter"
-                        ? (lastCycle && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Cycle {lastCycle.cycle_num} : conclu le {lastCycle.conclu_le ? fmtJour(lastCycle.conclu_le) : "—"}</span></div>)
-                        : (dernierEch && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Dernier échange : {fmtJour(dernierEch.date_echange)}</span></div>)
+                        ? (lastCycle && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Cycle {lastCycle.cycle_num} : conclu le {lastCycle.conclu_le ? fmtJour(lastCycle.conclu_le) : "—"}</span></div>)
+                        : (dernierEch && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Dernier échange : {fmtJour(dernierEch.date_echange)}</span></div>)
                     ) : onglet==="precedents" ? (
                       p.issue==="installe"
-                        ? (p.issue_conclu_le && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#0D652D",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Accord conclu le {fmtJour(p.issue_conclu_le)}</span></div>)
+                        ? (p.issue_conclu_le && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Accord conclu le {fmtJour(p.issue_conclu_le)}</span></div>)
                         : p.issue==="decline"
-                          ? (p.issue_conclu_le && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#6b7280",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Décliné le {fmtJour(p.issue_conclu_le)}</span></div>)
+                          ? (p.issue_conclu_le && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Décliné le {fmtJour(p.issue_conclu_le)}</span></div>)
                           : null
                     ) : (
-                      p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>
+                      p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#4a5568",flexShrink:0 }}/><span style={{ color:"#4a5568", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>
                     )}
                   </div>
                   {onglet==="precedents" ? (
@@ -1954,14 +1954,14 @@ export default function ProspectsPage() {
                     // Prospect déjà contacté dans "Investisseurs ciblés" : Modifier uniquement, pas Contacter ni Delete
                     <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#ca631f", fontWeight:600 }}>
                         <Pencil size={12}/> Modifier
                       </button>
                     </div>
                   ) : (
                     <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:accent, fontWeight:600 }}>
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(202,99,31,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#ca631f", fontWeight:600 }}>
                         <Pencil size={12}/> Modifier
                       </button>
                       {!estFige(p) && (
