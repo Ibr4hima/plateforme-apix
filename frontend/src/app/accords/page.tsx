@@ -432,16 +432,19 @@ export default function AccordsPage() {
             {/* Header toggle */}
             <div style={{padding:sidebarOpen?"14px 16px 10px":"12px 8px",borderBottom:"1px solid #F2F0EF",display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",flexShrink:0}}>
               {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
-              <button onClick={()=>setSidebarOpen(o=>!o)}
-                style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
-                <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
-                {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
-              </button>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser"
+                  style={{background:"#fee2e2",border:"none",cursor:"pointer",borderRadius:8,padding:"6px",display:"flex",alignItems:"center"}}>
+                  <X size={14} style={{color:"#dc2626"}}/>
+                </button>}
+                <button onClick={()=>setSidebarOpen(o=>!o)}
+                  style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
+                  <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
+                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
+                </button>
+              </div>
             </div>
             {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
-                {hasFilter&&<button onClick={reinit} style={{display:"flex",alignItems:"center",gap:5,width:"100%",background:"#fee2e2",color:"#dc2626",border:"none",borderRadius:8,padding:"7px 10px",fontSize:12,fontWeight:600,cursor:"pointer",marginBottom:16}}>
-                  <X size={12}/> Effacer tous les filtres
-                </button>}
                 <div style={{position:"relative" as const,marginBottom:18}}>
                   <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
                   <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
