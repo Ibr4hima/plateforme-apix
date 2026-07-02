@@ -969,6 +969,16 @@ export default function OpportunitesAdminPage() {
     } finally{setAvgsLoad(false);}
   },[avgsQ]);
 
+  // Totaux du référentiel géographique (pour les compteurs « défini / total »)
+  const [geoTotaux, setGeoTotaux] = useState({ regions:0, departements:0, arrondissements:0 });
+  useEffect(()=>{
+    Promise.all([
+      fetch(`${API}/entreprises/ref/regions`).then(r=>r.json()),
+      fetch(`${API}/entreprises/ref/departements`).then(r=>r.json()),
+      fetch(`${API}/entreprises/ref/arrondissements`).then(r=>r.json()),
+    ]).then(([r,d,a])=>setGeoTotaux({ regions:r.length||0, departements:d.length||0, arrondissements:a.length||0 })).catch(()=>{});
+  },[]);
+
   useEffect(()=>{chargerPots();},[chargerPots]);
   useEffect(()=>{chargerAvgs();},[chargerAvgs]);
   useEffect(()=>{ setSelectedSec(null); setSelectedNiveau(null); },[onglet]);
@@ -1065,16 +1075,19 @@ export default function OpportunitesAdminPage() {
             <div style={{display:"flex",justifyContent:"center",padding:60}}><Loader2 size={28} style={{color:"#9aa5b4",animation:"spin 1s linear infinite"}}/></div>
           ) : selectedNiveau===null ? (
             /* ── Vue 4 cards de sélection ── */
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
               {([
-                {key:"pole",           label:"Pôles territoires", color:"#004f91"},
-                {key:"region",         label:"Régions",           color:"#ca631f"},
-                {key:"departement",    label:"Départements",      color:"#188038"},
-                {key:"arrondissement", label:"Arrondissements",   color:"#6A1B9A"},
+                {key:"pole",           label:"Pôles territoires", unit:"Pôles",           color:"#004f91"},
+                {key:"region",         label:"Régions",           unit:"Régions",         color:"#ca631f"},
+                {key:"departement",    label:"Départements",      unit:"Départements",    color:"#188038"},
+                {key:"arrondissement", label:"Arrondissements",   unit:"Arrondissements", color:"#6A1B9A"},
               ] as const).map(n=>{
                 const items = pots.filter((p:any)=>p.niveau===n.key);
                 const count = items.length;
-                const published = items.filter((p:any)=>p.est_publie).length;
+                const total = n.key==="pole" ? poles.length
+                  : n.key==="region" ? geoTotaux.regions
+                  : n.key==="departement" ? geoTotaux.departements
+                  : geoTotaux.arrondissements;
                 return (
                   <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
@@ -1090,12 +1103,12 @@ export default function OpportunitesAdminPage() {
                       {/* Compteurs libellés */}
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                         <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Fiche{count>1?"s":""}</p>
-                          <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{count}</p>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{n.unit}</p>
+                          <p style={{fontSize:14,fontWeight:800,color:total>0?"#1a1a2e":"#9aa5b4"}}>{total||"—"}</p>
                         </div>
                         <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Publiée{published>1?"s":""}</p>
-                          <p style={{fontSize:14,fontWeight:800,color:published>0?"#1a1a2e":"#9aa5b4"}}>{published}</p>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Fiches définies</p>
+                          <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{total>0?`${count}/${total}`:count}</p>
                         </div>
                       </div>
                     </div>

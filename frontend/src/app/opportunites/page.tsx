@@ -1239,26 +1239,50 @@ export default function OpportunitesPage() {
                   <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
                 ) : selectedNiveau===null ? (
                   /* ── Picker 4 cards ── */
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
                     {([
-                      {key:"pole",           label:"Pôles territoires", color:"#E35336", textColor:"#E35336"},
-                      {key:"region",         label:"Régions",           color:"#0F52BA", textColor:"#0F52BA"},
-                      {key:"departement",    label:"Départements",      color:"#0D652D", textColor:"#0D652D"},
-                      {key:"arrondissement", label:"Arrondissements",   color:"#FBBC04", textColor:"#8A6100"},
+                      {key:"pole",           label:"Pôles territoires", unit:"Pôles",           color:"#004f91"},
+                      {key:"region",         label:"Régions",           unit:"Régions",         color:"#ca631f"},
+                      {key:"departement",    label:"Départements",      unit:"Départements",    color:"#188038"},
+                      {key:"arrondissement", label:"Arrondissements",   unit:"Arrondissements", color:"#6A1B9A"},
                     ] as const).map(n=>{
                       const count=pots.filter((p:any)=>p.niveau===n.key).length;
+                      const total = n.key==="pole" ? poles.length
+                        : n.key==="region" ? regions.length
+                        : n.key==="departement" ? regions.reduce((s:number,r:any)=>s+(r.departements?.length||0),0)
+                        : regions.reduce((s:number,r:any)=>s+(r.departements||[]).reduce((s2:number,d:any)=>s2+(d.arrondissements?.length||0),0),0);
                       return (
                         <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
-                          style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:`3px solid ${count>0?n.color:"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",cursor:count>0?"pointer":"default",transition:"all 0.15s"}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${n.color}20`;ev.currentTarget.style.borderColor=n.color;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?n.color:"#C5BFBB";}}>
-                          <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
-                            <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:999,color:n.textColor,background:`${n.color}12`,border:`1px solid ${n.color}30`,whiteSpace:"nowrap" as const}}>{n.label}</span>
+                          style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}40`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+
+                          <div style={{padding:"14px 16px 14px",flex:1}}>
+                            {/* Niveau */}
+                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                              <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:n.color,background:`${n.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{n.label}</span>
+                            </div>
+
+                            {/* Compteurs libellés */}
+                            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                              <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{n.unit}</p>
+                                <p style={{fontSize:14,fontWeight:800,color:total>0?"#1a1a2e":"#9aa5b4"}}>{total||"—"}</p>
+                              </div>
+                              <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
+                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Fiches définies</p>
+                                <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{total>0?`${count}/${total}`:count}</p>
+                              </div>
+                            </div>
                           </div>
-                          <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
-                            <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${n.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:n.textColor,fontWeight:600,opacity:count>0?1:0.45}}>
+
+                          {/* Action */}
+                          <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
+                            <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:n.color,fontWeight:600,opacity:count>0?1:0.45,transition:"background 0.15s"}}
+                              onMouseEnter={ev=>{if(count>0)ev.currentTarget.style.background=`${n.color}0D`;}}
+                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                               Voir les détails →
-                            </button>
+                            </div>
                           </div>
                         </div>
                       );
