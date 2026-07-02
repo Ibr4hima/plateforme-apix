@@ -6,6 +6,7 @@ import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FButton, FButtonGhost, FError, fuiLabel } from "@/components/shared/FormUI";
 import { parsePhoneNumber } from "libphonenumber-js";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -212,9 +213,9 @@ function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-        <label style={LS}>Téléphone(s) *</label>
+        <label style={{ ...fuiLabel, marginBottom:0 }}>Téléphone(s) *</label>
         <button type="button" onClick={()=>onChange([...values,""])}
-          style={{ fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
+          style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontFamily:"var(--font-google-sans)" }}>
           <Plus size={11}/> Ajouter
         </button>
       </div>
@@ -242,18 +243,18 @@ function MultiMails({ values, onChange }: { values:string[]; onChange:(v:string[
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-        <label style={LS}>Email(s) *</label>
+        <label style={{ ...fuiLabel, marginBottom:0 }}>Email(s) *</label>
         <button type="button" onClick={()=>onChange([...values,""])}
-          style={{ fontSize:11, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
+          style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontFamily:"var(--font-google-sans)" }}>
           <Plus size={11}/> Ajouter
         </button>
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
         {values.map((mail,i) => (
           <div key={i} style={{ display:"flex", gap:6 }}>
-            <input type="email" value={mail} placeholder="contact@exemple.com"
+            <FInput type="email" value={mail} placeholder="contact@exemple.com"
               onChange={e=>{ const a=[...values]; a[i]=e.target.value; onChange(a); }}
-              style={{ ...IS, flex:1 }}/>
+              style={{ flex:1 }}/>
             {values.length > 1 && (
               <button type="button" onClick={()=>onChange(values.filter((_,j)=>j!==i))}
                 style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 8px", flexShrink:0 }}>
@@ -276,11 +277,11 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove, canRemove }: {
 }) {
   const upd = (k:keyof PointFocal, v:any) => onUpdate({ ...pf, [k]:v });
   return (
-    <div style={{ background:"#F8F7F6", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px" }}>
+    <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 16px" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <User size={13} style={{ color:"#ca631f" }}/>
-          <span style={{ fontSize:12, fontWeight:600, color:"#4a5568" }}>Contact {idx+1}</span>
+          <User size={13} style={{ color:"#004f91" }}/>
+          <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Contact {idx+1}</span>
         </div>
         {canRemove && (
           <button type="button" onClick={onRemove}
@@ -291,12 +292,12 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove, canRemove }: {
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
         <div>
-          <label style={{ ...LS, fontSize:11 }}>Prénom *</label>
-          <input value={pf.prenom} onChange={e=>upd("prenom",e.target.value)} placeholder="Prénom" style={IS}/>
+          <label style={{ ...fuiLabel, fontSize:11 }}>Prénom *</label>
+          <FInput value={pf.prenom} onChange={e=>upd("prenom",e.target.value)} placeholder="Prénom"/>
         </div>
         <div>
-          <label style={{ ...LS, fontSize:11 }}>Nom *</label>
-          <input value={pf.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom" style={IS}/>
+          <label style={{ ...fuiLabel, fontSize:11 }}>Nom *</label>
+          <FInput value={pf.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom"/>
         </div>
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
@@ -312,20 +313,20 @@ function ToggleField({ label, desc, value, onChange, children }: {
   label:string; desc?:string; value:boolean; onChange:(v:boolean)=>void; children?:React.ReactNode;
 }) {
   return (
-    <div style={{ border:"1px solid #E8E5E3", borderRadius:12, overflow:"hidden" }}>
+    <div style={{ border:"1px solid #E4E1DE", borderRadius:12, overflow:"hidden" }}>
       <button type="button" onClick={()=>onChange(!value)}
         style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center",
-          padding:"12px 16px", background:value?"rgba(202,99,31,0.05)":"#fff", border:"none", cursor:"pointer", textAlign:"left" as const }}>
+          padding:"12px 16px", background:value?"rgba(0,79,145,0.04)":"#fff", border:"none", cursor:"pointer", textAlign:"left" as const, fontFamily:"var(--font-google-sans)" }}>
         <div>
           <span style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{label}</span>
           {desc && <p style={{ fontSize:11, color:"#9aa5b4", marginTop:2 }}>{desc}</p>}
         </div>
-        <div style={{ flexShrink:0, marginLeft:12, width:36, height:20, borderRadius:10, background:value?"#ca631f":"#C5BFBB", position:"relative" as const, transition:"background 0.2s" }}>
+        <div style={{ flexShrink:0, marginLeft:12, width:36, height:20, borderRadius:10, background:value?"#004f91":"#D8D4D0", position:"relative" as const, transition:"background 0.2s" }}>
           <div style={{ position:"absolute" as const, top:2, left:value?18:2, width:16, height:16, borderRadius:8, background:"#fff", transition:"left 0.2s", boxShadow:"0 1px 3px rgba(0,0,0,0.2)" }}/>
         </div>
       </button>
       {value && children && (
-        <div style={{ padding:"12px 16px 16px", borderTop:"1px solid #F2F0EF", background:"rgba(202,99,31,0.02)" }}>
+        <div style={{ padding:"12px 16px 16px", borderTop:"1px solid #F2F0EF", background:"rgba(0,79,145,0.02)" }}>
           {children}
         </div>
       )}
@@ -341,10 +342,10 @@ function ProjetSelect({ value, onChange }: { value:number|null; onChange:(id:num
       .then(r=>r.json()).then(d=>setProjets(d.data||[])).catch(()=>{});
   }, []);
   return (
-    <select value={value??""} onChange={e=>onChange(e.target.value?Number(e.target.value):null)} style={IS}>
+    <FSelect value={value??""} onChange={e=>onChange(e.target.value?Number(e.target.value):null)}>
       <option value="">— Sélectionner un projet —</option>
       {projets.map((p:any)=><option key={p.id} value={p.id}>{p.titre_projet}</option>)}
-    </select>
+    </FSelect>
   );
 }
 
@@ -448,184 +449,152 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
 
   if (!open) return null;
   return (
-    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:820, maxHeight:"92vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,#ca631f,#e07a3a)", borderRadius:"20px 20px 0 0" }}/>
-        <div style={{ padding:"28px 32px 32px" }}>
+    <FModal open={open} onClose={onClose} maxWidth={820}
+      title={edit ? "Modifier le prospect" : "Nouveau prospect"}
+      footer={<>
+        <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
+        <FButton onClick={handleSave} disabled={saving||ok} loading={saving} success={ok}>
+          {ok ? "Enregistré !" : saving ? "Enregistrement…" : edit ? "Modifier" : "Créer le prospect"}
+        </FButton>
+      </>}>
 
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.15rem", color:"#1a1a2e" }}>
-              {edit ? "Modifier le prospect" : "Nouveau prospect"}
-            </h2>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="#4a5568"/></button>
+      {/* Identification */}
+      <FSection title="Identification">
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <div>
+            <FLabel>Dénomination sociale *</FLabel>
+            <FInput value={form.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom de l'entreprise / organisation" style={{ fontSize:14, fontWeight:600 }}/>
           </div>
-
-          <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
-
-              {/* Identification */}
-              <div>
-                <p style={SEC}>Identification</p>
-                <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                  <div>
-                    <label style={LS}>Dénomination sociale *</label>
-                    <input value={form.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom de l'entreprise / organisation" style={{ ...IS, fontSize:14, fontWeight:600 }}/>
-                  </div>
-                  <div>
-                    <label style={LS}>Pays du siège social</label>
-                    <PaysSelect value={form.siege_nom} onChange={nom=>upd("siege_nom",nom)} onChangeId={id=>upd("siege_id",id)} placeholder="Sélectionner le pays du siège social"/>
-                  </div>
-                </div>
-              </div>
-
-              {/* Contact */}
-              <div>
-                <p style={SEC}>Contact</p>
-                <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-                  <MultiPhones values={form.telephones} onChange={v=>upd("telephones",v)}/>
-                  <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                    <div>
-                      <label style={LS}>Site web</label>
-                      <input value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="ex. exemple.com" style={IS}/>
-                    </div>
-                    <div>
-                      <label style={LS}>LinkedIn</label>
-                      <input value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)} placeholder="linkedin.com/company/…" style={IS}/>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Activités NAEMA */}
-              <div>
-                <p style={SEC}>Activités spécialisées</p>
-                <NaemaSelect
-                  secteurIds={form.secteur_ids}   onChangeSecteurs={ids=>upd("secteur_ids",ids)}
-                  brancheIds={form.branche_ids}   onChangeBranches={ids=>upd("branche_ids",ids)}
-                  activiteIds={form.activite_ids} onChangeActivites={ids=>upd("activite_ids",ids)}
-                />
-              </div>
-
-              {/* Points focaux */}
-              <div>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                  <p style={{ ...SEC, marginBottom:0, paddingBottom:0, borderBottom:"none" }}>Points focaux</p>
-                  <button type="button"
-                    onClick={()=>upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL }])}
-                    style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:8, padding:"5px 10px", cursor:"pointer" }}>
-                    <Plus size={12}/> Ajouter un contact
-                  </button>
-                </div>
-                <div style={{ borderTop:"1px solid #E8E5E3", paddingTop:12, display:"flex", flexDirection:"column", gap:10 }}>
-                  {form.points_focaux.map((pf,i)=>(
-                    <PointFocalCard key={i} pf={pf} idx={i}
-                      onUpdate={v=>{ const arr=[...form.points_focaux]; arr[i]=v; upd("points_focaux",arr); }}
-                      onRemove={()=>upd("points_focaux",form.points_focaux.filter((_,j)=>j!==i))}
-                      canRemove={form.points_focaux.length>1}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Commentaires */}
-              <div>
-                <p style={SEC}>Commentaires</p>
-                <div style={{ minHeight:160 }}>
-                  <RichTextEditor value={form.details} onChange={v=>upd("details",v)}/>
-                </div>
-              </div>
-
-            </div>
-
-          {/* ── Objet du ciblage ── */}
-          <div style={{ marginTop:24, paddingTop:24, borderTop:"1px solid #E8E5E3" }}>
-            <p style={SEC}>Objet du ciblage</p>
-            <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
-
-              <ToggleField
-                label="Lié à un projet particulier ?"
-                desc="L'investisseur est ciblé dans le cadre d'un projet d'investissement spécifique"
-                value={form.objet_projet} onChange={v=>{ upd("objet_projet",v); if(!v) upd("objet_projet_id",null); }}>
-                <div style={{ marginTop:8 }}>
-                  <label style={LS}>Sélectionner le projet</label>
-                  <ProjetSelect value={form.objet_projet_id} onChange={id=>upd("objet_projet_id",id)}/>
-                </div>
-              </ToggleField>
-
-              <ToggleField
-                label="Intentions d'investissement à l'étranger ?"
-                desc="L'investisseur a exprimé des intentions d'investir hors de son pays d'origine"
-                value={form.objet_intentions_etranger} onChange={v=>upd("objet_intentions_etranger",v)}>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:12, marginTop:8 }}>
-                  <div>
-                    <label style={LS}>Activités visées</label>
-                    <NaemaSelect
-                      secteurIds={form.objet_intentions_secteur_ids} onChangeSecteurs={ids=>upd("objet_intentions_secteur_ids",ids)}
-                      brancheIds={form.objet_intentions_branche_ids} onChangeBranches={ids=>upd("objet_intentions_branche_ids",ids)}
-                      activiteIds={form.objet_intentions_activite_ids} onChangeActivites={ids=>upd("objet_intentions_activite_ids",ids)}
-                    />
-                  </div>
-                  <div>
-                    <label style={LS}>Détails</label>
-                    <div style={{ minHeight:120 }}>
-                      <RichTextEditor value={form.objet_intentions_details} onChange={v=>upd("objet_intentions_details",v)}/>
-                    </div>
-                  </div>
-                </div>
-              </ToggleField>
-
-              <ToggleField
-                label="Adéquation Profil Investisseur / Secteurs prioritaires"
-                desc="Le profil de l'investisseur correspond aux opportunités et secteurs prioritaires du Sénégal"
-                value={form.objet_adequation_senegal} onChange={v=>upd("objet_adequation_senegal",v)}>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:12, marginTop:8 }}>
-                  <div>
-                    <label style={LS}>Activités prioritaires pour le Sénégal en phase avec son profil</label>
-                    <NaemaSelect
-                      secteurIds={form.objet_adequation_secteur_ids} onChangeSecteurs={ids=>upd("objet_adequation_secteur_ids",ids)}
-                      brancheIds={form.objet_adequation_branche_ids} onChangeBranches={ids=>upd("objet_adequation_branche_ids",ids)}
-                      activiteIds={form.objet_adequation_activite_ids} onChangeActivites={ids=>upd("objet_adequation_activite_ids",ids)}
-                    />
-                  </div>
-                  <div>
-                    <label style={LS}>Commentaires</label>
-                    <div style={{ minHeight:120 }}>
-                      <RichTextEditor value={form.objet_adequation_details} onChange={v=>upd("objet_adequation_details",v)}/>
-                    </div>
-                  </div>
-                </div>
-              </ToggleField>
-
-              <div>
-                <label style={LS}>Commentaires sur le ciblage</label>
-                <div style={{ minHeight:120 }}>
-                  <RichTextEditor value={form.objet_commentaires} onChange={v=>upd("objet_commentaires",v)}/>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {error && <p style={{ fontSize:12, color:"#dc2626", marginTop:16 }}>{error}</p>}
-
-          <div style={{ display:"flex", gap:10, justifyContent:"flex-end", marginTop:24, paddingTop:20, borderTop:"1px solid #F2F0EF" }}>
-            <button onClick={onClose}
-              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>
-              Annuler
-            </button>
-            <button onClick={handleSave} disabled={saving||ok}
-              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none",
-                background: ok?"#059669":saving?"#ccc":"#ca631f",
-                color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13 }}>
-              {saving ? <><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/> Enregistrement…</>
-               : ok   ? <><Check size={14}/> Enregistré !</>
-               :         <><Check size={14}/> {edit?"Modifier":"Créer le prospect"}</>}
-            </button>
+          <div>
+            <FLabel>Pays du siège social</FLabel>
+            <PaysSelect value={form.siege_nom} onChange={nom=>upd("siege_nom",nom)} onChangeId={id=>upd("siege_id",id)} placeholder="Sélectionner le pays du siège social"/>
           </div>
         </div>
-      </div>
-    </div>
+      </FSection>
+
+      {/* Contact */}
+      <FSection title="Contact">
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          <MultiPhones values={form.telephones} onChange={v=>upd("telephones",v)}/>
+          <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
+          <FGrid cols={2}>
+            <div>
+              <FLabel>Site web</FLabel>
+              <FInput value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="ex. exemple.com"/>
+            </div>
+            <div>
+              <FLabel>LinkedIn</FLabel>
+              <FInput value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)} placeholder="linkedin.com/company/…"/>
+            </div>
+          </FGrid>
+        </div>
+      </FSection>
+
+      {/* Activités NAEMA */}
+      <FSection title="Activités spécialisées">
+        <NaemaSelect
+          secteurIds={form.secteur_ids}   onChangeSecteurs={ids=>upd("secteur_ids",ids)}
+          brancheIds={form.branche_ids}   onChangeBranches={ids=>upd("branche_ids",ids)}
+          activiteIds={form.activite_ids} onChangeActivites={ids=>upd("activite_ids",ids)}
+        />
+      </FSection>
+
+      {/* Points focaux */}
+      <FSection title="Points focaux" extra={
+        <button type="button"
+          onClick={()=>upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL }])}
+          style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:8, padding:"5px 10px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+          <Plus size={12}/> Ajouter un contact
+        </button>
+      }>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          {form.points_focaux.map((pf,i)=>(
+            <PointFocalCard key={i} pf={pf} idx={i}
+              onUpdate={v=>{ const arr=[...form.points_focaux]; arr[i]=v; upd("points_focaux",arr); }}
+              onRemove={()=>upd("points_focaux",form.points_focaux.filter((_,j)=>j!==i))}
+              canRemove={form.points_focaux.length>1}
+            />
+          ))}
+        </div>
+      </FSection>
+
+      {/* Commentaires */}
+      <FSection title="Commentaires">
+        <div style={{ minHeight:160 }}>
+          <RichTextEditor value={form.details} onChange={v=>upd("details",v)}/>
+        </div>
+      </FSection>
+
+      {/* Objet du ciblage */}
+      <FSection title="Objet du ciblage">
+        <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+
+          <ToggleField
+            label="Lié à un projet particulier ?"
+            desc="L'investisseur est ciblé dans le cadre d'un projet d'investissement spécifique"
+            value={form.objet_projet} onChange={v=>{ upd("objet_projet",v); if(!v) upd("objet_projet_id",null); }}>
+            <div style={{ marginTop:8 }}>
+              <FLabel>Sélectionner le projet</FLabel>
+              <ProjetSelect value={form.objet_projet_id} onChange={id=>upd("objet_projet_id",id)}/>
+            </div>
+          </ToggleField>
+
+          <ToggleField
+            label="Intentions d'investissement à l'étranger ?"
+            desc="L'investisseur a exprimé des intentions d'investir hors de son pays d'origine"
+            value={form.objet_intentions_etranger} onChange={v=>upd("objet_intentions_etranger",v)}>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:12, marginTop:8 }}>
+              <div>
+                <FLabel>Activités visées</FLabel>
+                <NaemaSelect
+                  secteurIds={form.objet_intentions_secteur_ids} onChangeSecteurs={ids=>upd("objet_intentions_secteur_ids",ids)}
+                  brancheIds={form.objet_intentions_branche_ids} onChangeBranches={ids=>upd("objet_intentions_branche_ids",ids)}
+                  activiteIds={form.objet_intentions_activite_ids} onChangeActivites={ids=>upd("objet_intentions_activite_ids",ids)}
+                />
+              </div>
+              <div>
+                <FLabel>Détails</FLabel>
+                <div style={{ minHeight:120 }}>
+                  <RichTextEditor value={form.objet_intentions_details} onChange={v=>upd("objet_intentions_details",v)}/>
+                </div>
+              </div>
+            </div>
+          </ToggleField>
+
+          <ToggleField
+            label="Adéquation Profil Investisseur / Secteurs prioritaires"
+            desc="Le profil de l'investisseur correspond aux opportunités et secteurs prioritaires du Sénégal"
+            value={form.objet_adequation_senegal} onChange={v=>upd("objet_adequation_senegal",v)}>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:12, marginTop:8 }}>
+              <div>
+                <FLabel>Activités prioritaires pour le Sénégal en phase avec son profil</FLabel>
+                <NaemaSelect
+                  secteurIds={form.objet_adequation_secteur_ids} onChangeSecteurs={ids=>upd("objet_adequation_secteur_ids",ids)}
+                  brancheIds={form.objet_adequation_branche_ids} onChangeBranches={ids=>upd("objet_adequation_branche_ids",ids)}
+                  activiteIds={form.objet_adequation_activite_ids} onChangeActivites={ids=>upd("objet_adequation_activite_ids",ids)}
+                />
+              </div>
+              <div>
+                <FLabel>Commentaires</FLabel>
+                <div style={{ minHeight:120 }}>
+                  <RichTextEditor value={form.objet_adequation_details} onChange={v=>upd("objet_adequation_details",v)}/>
+                </div>
+              </div>
+            </div>
+          </ToggleField>
+
+          <div>
+            <FLabel>Commentaires sur le ciblage</FLabel>
+            <div style={{ minHeight:120 }}>
+              <RichTextEditor value={form.objet_commentaires} onChange={v=>upd("objet_commentaires",v)}/>
+            </div>
+          </div>
+
+        </div>
+      </FSection>
+
+      {error && <FError>{error}</FError>}
+    </FModal>
   );
 }
 
