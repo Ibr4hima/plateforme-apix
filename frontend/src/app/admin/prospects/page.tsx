@@ -150,22 +150,22 @@ function echangesDuCycle(p:any, cy:any): any[] {
 // L'issue de la relation (installé / décliné) prime sur l'indicateur d'activité ;
 // sinon on retombe sur le délai depuis le dernier échange du cycle courant.
 function badgeProspect(p:any) {
-  if (p?.issue === "installe") return { label:"Installation à venir", color:"#0D652D", bg:"rgba(13,101,45,0.10)" };
-  if (p?.issue === "decline")  return { label:"Décliné",  color:"#6b7280", bg:"rgba(107,114,128,0.12)" };
+  if (p?.issue === "installe") return { label:"Installation à venir", color:"#188038", bg:"rgba(24,128,56,0.08)" };
+  if (p?.issue === "decline")  return { label:"Décliné",  color:"#6b7280", bg:"#F2F0EF" };
   // Après un re-contact, on ne mesure l'activité que sur le cycle courant ;
   // les échanges des cycles passés ne doivent pas faire paraître la fiche « Inactif ».
   const debut = cycleCourantDebut(p);
   let dateDernierEchange = p?.date_dernier_echange;
   if (debut) {
     const echangesCycle = (p?.echanges||[]).filter((e:any)=>e.date_echange >= debut);
-    if (!echangesCycle.length) return { label:"À recontacter", color:"#004f91", bg:"rgba(0,79,145,0.10)" };
+    if (!echangesCycle.length) return { label:"À recontacter", color:"#004f91", bg:"rgba(0,79,145,0.07)" };
     dateDernierEchange = echangesCycle.map((e:any)=>e.date_echange).sort().at(-1);
   }
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
-  if (jours <= 90)  return { label:"En cours",   color:"#059669", bg:"rgba(5,150,105,0.10)" };
-  if (jours <= 120) return { label:"En attente", color:"#ca631f", bg:"rgba(202,99,31,0.10)" };
-  return                  { label:"Inactif",    color:"#dc2626", bg:"rgba(220,38,38,0.10)" };
+  if (jours <= 90)  return { label:"En cours",   color:"#188038", bg:"rgba(24,128,56,0.08)" };
+  if (jours <= 120) return { label:"En attente", color:"#ca631f", bg:"rgba(202,99,31,0.08)" };
+  return                  { label:"Inactif",    color:"#dc2626", bg:"rgba(220,38,38,0.07)" };
 }
 
 // Une prospection conclue est aussitôt archivée dans « Précédents contacts »
@@ -1711,6 +1711,11 @@ export default function ProspectsPage() {
   const [terminerOpenId,  setTerminerOpenId]  = useState<number|null>(null);
   const [terminerForm,    setTerminerForm]    = useState<{ issue:string; commentaire:string }>({ issue:"", commentaire:"" });
   const [savingTerminer,  setSavingTerminer]  = useState(false);
+  // Référentiel des activités NAEMA (bloc « Activités spécialisées » des cards)
+  const [refActivites, setRefActivites] = useState<any[]>([]);
+  useEffect(()=>{
+    fetch(`${API}/entreprises/ref/activites`).then(r=>r.json()).then(a=>setRefActivites(a||[])).catch(()=>{});
+  },[]);
 
   const charger = useCallback(async()=>{
     setLoading(true);
@@ -1844,7 +1849,10 @@ export default function ProspectsPage() {
                     : p.issue==="decline"
                     ? { label:"Décliné le", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
                     : { label:"Conclusion", value: null })
-                : { label:"Site web", value: p.siteweb||null };
+                : { label:"Téléphone", value: p.telephones?.[0] ? fmtPhone(p.telephones[0]) : null };
+              // Bloc « Activités spécialisées » (onglet ciblés)
+              const actNoms = (p.activite_ids||[]).map((id:number)=>refActivites.find((a:any)=>a.id===id)?.nom).filter(Boolean);
+              const actStr = actNoms.length ? (actNoms.length>1 ? `${actNoms[0]} +${actNoms.length-1}` : actNoms[0]) : null;
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
                   style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
@@ -1852,14 +1860,21 @@ export default function ProspectsPage() {
                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
                   <div style={{ padding:"14px 16px 14px", flex:1 }}>
-                    {/* Statut + siège */}
+                    {/* Statut / email + siège */}
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:12 }}>
-                      {onglet==="cibles" && p.nb_echanges > 0 ? (
-                        <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>Contacté</span>
+                      {onglet==="cibles" ? (
+                        <span style={{ display:"flex", alignItems:"center", gap:6, minWidth:0 }}>
+                          {p.nb_echanges > 0 && (
+                            <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999, flexShrink:0 }}>Contacté</span>
+                          )}
+                          {p.mails?.[0] && (
+                            <span style={{ display:"inline-block", fontSize:10.5, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"3px 10px", borderRadius:999, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, minWidth:0 }}>{p.mails[0]}</span>
+                          )}
+                        </span>
                       ) : activite ? (
                         <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:activite.color, background:activite.bg, padding:"3px 10px", borderRadius:999 }}>{activite.label}</span>
                       ) : <span/>}
-                      {p.siege_nom && <span style={{ fontSize:10.5, fontWeight:600, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, maxWidth:"55%" }}>{p.siege_nom}</span>}
+                      {p.siege_nom && <span style={{ fontSize:10.5, fontWeight:600, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, maxWidth:"45%", flexShrink:0 }}>{p.siege_nom}</span>}
                     </div>
 
                     {/* Dénomination */}
@@ -1868,8 +1883,13 @@ export default function ProspectsPage() {
                     {/* Infos libellées */}
                     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
                       <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Email</p>
-                        <p style={{ fontSize:12, fontWeight:600, color:p.mails?.length?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.mails?.[0]||"—"}</p>
+                        {onglet==="cibles" ? <>
+                          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Activités spécialisées</p>
+                          <p style={{ fontSize:12, fontWeight:600, color:actStr?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{actStr||"—"}</p>
+                        </> : <>
+                          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Email</p>
+                          <p style={{ fontSize:12, fontWeight:600, color:p.mails?.length?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.mails?.[0]||"—"}</p>
+                        </>}
                       </div>
                       <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
                         <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>{info2.label}</p>
