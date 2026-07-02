@@ -1099,19 +1099,19 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
   // ── Système de design de la fiche
   const accent = "#004f91";
-  const TXT="#1a1a2e", SUB="#5b6472", MUT="#98a1ad", SURF="#F6F4F2", BRD="#EAE7E4", DIV="#EFECE9";
+  const TXT="#1a1a2e", SUB="#5b6472", MUT="#98a1ad", SURF="#FAFAF9", BRD="#F0EEEC", DIV="#F2F0EF";
   const card: any = { background:SURF, border:`1px solid ${BRD}`, borderRadius:12, padding:"14px 16px" };
   const linkStyle: any = { fontSize:13, fontWeight:600, color:"#004f91", wordBreak:"break-all" as const, textDecoration:"none" };
   const href = (u:string) => /^https?:\/\//.test(u) ? u : `https://${u}`;
 
   const LBL = ({children}:{children:string}) => (
-    <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
+    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",textTransform:"uppercase" as const,letterSpacing:"0.14em",marginBottom:10}}>{children}</p>
   );
 
   const Section = ({ title, count, action, first, children }:any) => (
     <section style={{ marginTop:first?0:22, paddingTop:first?0:22, borderTop:first?"none":`1px solid ${DIV}` }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:12, minHeight:24 }}>
-        <h3 style={{ fontSize:11, fontWeight:700, color:MUT, letterSpacing:"0.12em", textTransform:"uppercase" as const }}>
+        <h3 style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const }}>
           {title}{typeof count==="number" ? <span style={{ color:"#C5BFBB", fontWeight:700, marginLeft:7 }}>{count}</span> : null}
         </h3>
         {action || null}
@@ -1126,10 +1126,10 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
   // Carte d'information à en-tête icône (téléphone, mail, site, …).
   const InfoCard = ({ icon:Icon, label, children }:any) => (
-    <div style={{ background:"#F8F7F6", border:`1px solid ${BRD}`, borderRadius:12, padding:"11px 14px" }}>
-      <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:8 }}>
-        <Icon size={13} style={{ color:accent, flexShrink:0 }}/>
-        <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
+    <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"10px 13px", minWidth:0 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+        <Icon size={12} style={{ color:accent, flexShrink:0 }}/>
+        <span style={{ fontSize:9, fontWeight:800, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
       </div>
       {children}
     </div>
@@ -1144,15 +1144,15 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         return (
           <div key={secId}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:brasDuSec.length?5:0 }}>
-              <div style={{ width:8, height:8, borderRadius:"50%", background:"#ca631f", flexShrink:0 }}/><span style={{ fontSize:12, fontWeight:700, color:"#ca631f" }}>{sec.nom}</span>
+              <div style={{ width:8, height:8, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/><span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>{sec.nom}</span>
             </div>
-            {brasDuSec.length>0 && <div style={{ paddingLeft:20, borderLeft:"2px solid rgba(202,99,31,0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
+            {brasDuSec.length>0 && <div style={{ paddingLeft:20, borderLeft:"2px solid rgba(0,79,145,0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
               {brasDuSec.map((bra:any)=>{
                 const actsDeBra = activites.filter(a=>a.branche_id===bra.id && actIds.includes(a.id));
                 return (
                   <div key={bra.id}>
                     <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:actsDeBra.length?4:0 }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/><span style={{ fontSize:11, fontWeight:600, color:"#004f91" }}>{bra.nom}</span>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", flexShrink:0 }}/><span style={{ fontSize:11, fontWeight:600, color:"#ca631f" }}>{bra.nom}</span>
                     </div>
                     {actsDeBra.length>0 && <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3 }}>
                       {actsDeBra.map((act:any)=>(
@@ -1172,31 +1172,33 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   );
 
   return (
-    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>
-        <div style={{ height:5, background:"linear-gradient(90deg,#004f91,#1a6ab0,#366FE3)" }}/>
-        <div ref={scrollContainerRef} style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
+    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+        {/* Liseré d'accent */}
+        <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
 
-          {/* En-tête */}
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-            <div style={{ flex:1, paddingRight:16 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
-                <div style={{ width:38, height:38, borderRadius:10, background:`${accent}14`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Building2 size={18} style={{ color:accent }}/>
-                </div>
-                <div>
-                  <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:TXT, lineHeight:1.3, marginBottom:2 }}>{displayName}</h2>
-                  {p.siege_nom && <span style={{ fontSize:11, color:"#9aa5b4", fontWeight:500 }}>{p.siege_nom}</span>}
-                </div>
-              </div>
-              <div style={{ display:"flex", alignItems:"center", gap:7, flexWrap:"wrap" as const }}>
-                {(()=>{ const b=badgeProspect(p); return b ? (
-                  <span style={{ fontSize:11, fontWeight:700, color:b.color, background:b.bg, padding:"2px 9px", borderRadius:999 }}>{b.label}</span>
-                ) : null; })()}
-              </div>
+        {/* En-tête */}
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+          <div style={{ minWidth:0 }}>
+            <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:TXT, lineHeight:1.3 }}>{displayName}</h2>
+            <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
+              {(()=>{ const b=badgeProspect(p); return b ? (
+                <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:b.color, background:b.bg, padding:"3px 10px", borderRadius:999 }}>{b.label}</span>
+              ) : null; })()}
+              {p.siege_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{p.siege_nom}</span>}
             </div>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7, flexShrink:0 }}><X size={14} color="#4a5568"/></button>
           </div>
+          <button onClick={onClose}
+            style={{ background:"#F5F4F3", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
+            <X size={15} color="#4a5568"/>
+          </button>
+        </div>
+
+        {/* Corps */}
+        <div ref={scrollContainerRef} style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1 }}>
 
           {/* Identité, contacts, activités, commentaires — masqués en readOnly et historiqueOnly */}
           {!historiqueOnly && !readOnly && <><div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
@@ -1239,7 +1241,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   const tels  = pf.telephones?.filter(Boolean) || [];
                   const mails = pf.mails?.filter(Boolean) || [];
                   return (
-                    <div key={i} style={{ background:"#F8F7F6", border:`1px solid ${BRD}`, borderRadius:12, padding:"12px 14px", display:"flex", gap:11 }}>
+                    <div key={i} style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"12px 14px", display:"flex", gap:11 }}>
                       <div style={{ width:32, height:32, borderRadius:"50%", background:`${accent}12`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                         <User size={15} style={{ color:accent }}/>
                       </div>
@@ -1670,22 +1672,27 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             </div>
           )}
 
-          <div style={{ display:"flex", gap:8, marginTop:24, justifyContent:"space-between", borderTop:`1px solid ${DIV}`, paddingTop:18 }}>
-            {(!readOnly && !estFige(p)) ? (
-              <button onClick={onContacter}
-                style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13 }}>
-                <MessageSquare size={14}/> Contacter
+        </div>
+
+        {/* Pied */}
+        <div style={{ display:"flex", gap:10, justifyContent:"space-between", alignItems:"center", padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
+          {(!readOnly && !estFige(p)) ? (
+            <button onClick={onContacter}
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgba(24,128,56,0.08)", color:"#188038", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
+              <MessageSquare size={13}/> Contacter
+            </button>
+          ) : <span/>}
+          <div style={{ display:"flex", gap:10 }}>
+            <button onClick={onClose}
+              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+              Fermer
+            </button>
+            {!readOnly && !historiqueOnly && (
+              <button onClick={onEdit}
+                style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgba(0,79,145,0.25)" }}>
+                <Pencil size={13}/> Modifier
               </button>
-            ) : <span/>}
-            <div style={{ display:"flex", gap:8 }}>
-              {!readOnly && !historiqueOnly && (
-                <button onClick={onEdit}
-                  style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 18px", borderRadius:10, border:`1px solid ${BRD}`, background:"transparent", color:SUB, fontWeight:700, cursor:"pointer", fontSize:13 }}>
-                  <Pencil size={14}/> Modifier
-                </button>
-              )}
-              <button onClick={onClose} style={{ padding:"10px 18px", borderRadius:10, border:"none", background:"#1a1a2e", color:"#fff", fontWeight:600, cursor:"pointer", fontSize:13 }}>Fermer</button>
-            </div>
+            )}
           </div>
         </div>
       </div>
