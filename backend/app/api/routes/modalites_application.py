@@ -157,7 +157,7 @@ async def search_modalites(q: str, db: AsyncSession = Depends(get_db)):
     """), {"q": q})
     rows = res.fetchall()
     return [{"id": str(r[0]), "numero": r[1], "num_display": num_article(r[1]),
-             "titre": r[2], "extrait": r[6], "chapitre_id": str(r[3])} for r in rows]
+             "titre": r[2], "extrait": r[6], "chapitre_id": str(r[4])} for r in rows]
 
 
 # ── CRUD Chapitres ────────────────────────────────────────────────────────────

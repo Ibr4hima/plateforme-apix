@@ -320,13 +320,23 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                       const NavBtn = ({ chap, dir }: any) => (
                         <button onClick={() => goChap(chap.id)}
                           style={{ display:"flex", alignItems:"center", justifyContent: dir==="prev" ? "flex-start" : "space-between", gap:12, flex:1, minWidth:0, background:"transparent", border:"1px solid #EDEAE6", borderRadius:12, padding:"14px 18px", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", textAlign: dir==="prev" ? "left" as const : "right" as const }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.background="#FBF8F5"; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor="#EDEAE6"; e.currentTarget.style.background="transparent"; }}>
+                          onMouseEnter={e => {
+                            e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.background="#FBF8F5";
+                            // Titre trop long : glisse pour révéler la fin
+                            const box = e.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                            const span = box?.firstElementChild as HTMLElement | null;
+                            if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.borderColor="#EDEAE6"; e.currentTarget.style.background="transparent";
+                            const span = (e.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                            if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                          }}>
                           {dir === "prev" && <ChevronRight size={16} style={{ color:"#ca631f", flexShrink:0, transform:"rotate(180deg)" }} />}
                           <div style={{ minWidth:0, flex:1, textAlign: dir==="prev" ? "left" as const : "left" as const }}>
                             <div style={{ fontSize:10, color:"#9aa5b4", fontWeight:700, textTransform:"uppercase" as const, letterSpacing:"0.14em", marginBottom:3 }}>{dir === "prev" ? "Chapitre précédent" : "Chapitre suivant"}</div>
-                            <div style={{ fontSize:13, fontWeight:700, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
-                              {chap.numero === 1 ? "Chapitre Premier" : `Chapitre ${toRomanNum(chap.numero)}`} — {chap.titre}
+                            <div data-marquee style={{ fontSize:13, fontWeight:700, color:"#1a1a2e", overflow:"hidden", whiteSpace:"nowrap" as const }}>
+                              <span style={{ display:"inline-block" }}>{chap.numero === 1 ? "Chapitre Premier" : `Chapitre ${toRomanNum(chap.numero)}`} — {chap.titre}</span>
                             </div>
                           </div>
                           {dir === "next" && <ChevronRight size={16} style={{ color:"#ca631f", flexShrink:0 }} />}
