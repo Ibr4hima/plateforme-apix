@@ -537,33 +537,59 @@ export default function AccordsPage() {
                 {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
               </div>
             ) : (
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:12}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);
+                  const ST: any = {
+                    en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
+                    signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+                    expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
+                  };
+                  const st = statut ? ST[statut] : null;
                   return (
                   <div key={a.id} onClick={()=>setSelec(a)}
-                    style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #ca631f",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(202,99,31,0.12)";ev.currentTarget.style.borderColor="#ca631f";}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#ca631f";}}>
+                    style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
-                    {/* Badge statut — coin supérieur droit */}
-                    {statut&&<div style={{position:"absolute" as const,top:12,right:12}}>
-                      <Badge variant={STATUT_VARIANT[statut]||"gray"} size="xs">{STATUT_LABELS[statut]}</Badge>
-                    </div>}
-
-                    <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?2:8,paddingRight:90}}>{a.titre}</div>
-                    {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
-                    <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                        <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#188038":"#C5BFBB",flexShrink:0}}/>
-                        <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4"}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
+                    <div style={{padding:"14px 16px 14px",flex:1}}>
+                      {/* Statut + référence */}
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                        {st ? (
+                          <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
+                        ) : <span/>}
+                        {a.reference && <span style={{fontSize:10.5,fontWeight:600,color:"#9aa5b4"}}>{a.reference}</span>}
                       </div>
-                      {getPaysNoms(a,2)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                        <div style={{width:6,height:6,borderRadius:"50%",background:"#B7410E",flexShrink:0}}/><span style={{color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a,2)}</span>
-                      </div>}
+
+                      {/* Titre */}
+                      <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35}}>{a.titre}</div>
+
+                      {/* Dates libellées */}
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
+                        <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
+                          <p style={{fontSize:12,fontWeight:600,color:a.date_signature?"#1a1a2e":"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
+                        </div>
+                        <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
+                          <p style={{fontSize:12,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p>
+                        </div>
+                      </div>
+
+                      {/* Parties signataires */}
+                      {getPaysNoms(a,2)&&(
+                        <div style={{marginTop:8}}>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:3}}>Parties signataires</p>
+                          <p style={{fontSize:12,fontWeight:500,color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a,2)}</p>
+                        </div>
+                      )}
                     </div>
-                    <div style={{display:"flex",borderTop:"1px solid #F2F0EF",paddingTop:10}}>
-                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(202,99,31,0.08)",borderRadius:7,padding:"6px 0",fontSize:11,color:"#ca631f",fontWeight:600}}>
+
+                    {/* Action */}
+                    <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
+                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,transition:"background 0.15s"}}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         Voir les détails →
                       </div>
                     </div>
