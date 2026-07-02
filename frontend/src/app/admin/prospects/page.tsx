@@ -1319,7 +1319,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
           {/* Compte rendu des échanges du cycle courant : Historique + Contraintes exprimées (masqué en readOnly) */}
           {!hideHistorique && !readOnly && (echangesDuCycle(p,null).length > 0 || contraintesCycleCourant(p).length > 0) && (
-            <Section title="Compte rendu des échanges" count={echangesDuCycle(p,null).length}
+            <Section title="Compte rendu des échanges" count={echangesDuCycle(p,null).length} first={historiqueOnly}
               action={
                 <button onClick={()=>setShowEchanges(o=>!o)}
                   style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${BRD}`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontSize:11, fontWeight:600, color:SUB }}>
@@ -1445,7 +1445,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           {/* Cycles de prospection — un bloc repliable par cycle.
               En readOnly (onglet précédents), le cycle courant figé est aussi affiché en tête. */}
           {(p.cycles?.length > 0 || (readOnly && estFige(p))) && (
-            <div style={{ marginTop:22, display:"flex", flexDirection:"column" as const, gap:8 }}>
+            <div style={{ marginTop:readOnly?0:22, display:"flex", flexDirection:"column" as const, gap:8 }}>
               {/* Cycle courant figé : synthétique, affiché uniquement en readOnly */}
               {readOnly && estFige(p) && (()=>{
                 const currentNum = (p.cycles?.length || 0) + 1;
