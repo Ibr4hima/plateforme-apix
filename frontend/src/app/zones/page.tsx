@@ -188,60 +188,68 @@ function ZonesParType({ zones }: { zones: any[] }) {
   return (
     <div>
       {/* ── Cards types ── */}
-      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(types.length, 3)},1fr)`, gap:18, marginBottom: selectedType ? 32 : 0 }}>
+      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(types.length, 3)},1fr)`, gap:14, marginBottom: selectedType ? 32 : 0 }}>
         {types.map(t => {
           const active = selectedType === t.type;
           const c = t.meta.color;
           const entreprises = t.installed + t.eligible;
-          const Stat = ({ value, label, accent }: { value:string; label:string; accent?:boolean }) => (
-            <div style={{ flex:1, textAlign:"center" as const }}>
-              <div style={{ fontSize:25, fontWeight:800, color: accent?c:"#1a1a2e", lineHeight:1.05, letterSpacing:"-0.015em" }}>{value}</div>
-              <div style={{ fontSize:10, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginTop:5 }}>{label}</div>
-            </div>
-          );
           return (
             <div key={t.type} onClick={() => setSelectedType(active ? null : t.type)}
-              style={{ position:"relative" as const, borderRadius:18, overflow:"hidden", cursor:"pointer", background:"#fff",
-                border:`1px solid ${active ? c : "#EAE7E4"}`,
-                boxShadow: active ? `0 16px 40px ${c}1f` : "0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)",
-                transform: active ? "translateY(-3px)" : "none",
-                transition:"box-shadow 0.2s, transform 0.2s, border-color 0.2s" }}
-              onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow=`0 12px 30px rgba(0,0,0,0.08)`; ev.currentTarget.style.transform="translateY(-3px)"; } }}
-              onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform="none"; } }}>
+              style={{ background:"#fff", border:`1px solid ${active ? c : "#ECEAE7"}`, borderRadius:14, cursor:"pointer",
+                transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",
+                boxShadow: active ? `0 12px 28px ${c}1f` : "0 1px 3px rgba(0,0,0,0.03)",
+                transform: active ? "translateY(-2px)" : "none",
+                display:"flex", flexDirection:"column" as const, overflow:"hidden", minWidth:0 }}
+              onMouseEnter={ev => {
+                if (!active) { ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }
+                // Titre trop long : glisse pour révéler la fin
+                const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                const span = box?.firstElementChild as HTMLElement | null;
+                if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+              }}
+              onMouseLeave={ev => {
+                if (!active) { ev.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7"; }
+                const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+              }}>
 
-              {/* Liseré d'accent supérieur */}
-              <div style={{ height:3, background:c, opacity:active?1:0.85 }}/>
+              <div style={{ padding:"14px 16px 14px", flex:1 }}>
+                {/* Code du type + indicateur de sélection */}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+                  <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:800, letterSpacing:"0.04em", color:c, background:`${c}12`, padding:"3px 10px", borderRadius:999 }}>{t.type}</span>
+                  {active && (
+                    <span style={{ width:20, height:20, borderRadius:"50%", background:c, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <svg width="10" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </span>
+                  )}
+                </div>
 
-              <div style={{ padding:"20px 22px 0" }}>
-                {/* En-tête : chip acronyme + libellé */}
-                <div style={{ display:"flex", alignItems:"center", gap:13, marginBottom:22 }}>
-                  <div style={{ width:46, height:46, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:t.meta.bg, border:`1px solid ${t.meta.border}` }}>
-                    <span style={{ fontSize:19, fontWeight:800, color:c, lineHeight:1 }}>{t.zones.length}</span>
+                {/* Libellé du type (défile au survol si trop long) */}
+                <div data-marquee style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", lineHeight:1.35, overflow:"hidden", whiteSpace:"nowrap" as const }}>
+                  <span style={{ display:"inline-block" }}>{t.meta.label}</span>
+                </div>
+
+                {/* Compteurs libellés */}
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
+                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px" }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
+                    <p style={{ fontSize:14, fontWeight:800, color:entreprises>0?"#1a1a2e":"#9aa5b4" }}>{entreprises}</p>
                   </div>
-                  <div style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", lineHeight:1.3 }}>{t.meta.label}</div>
-                </div>
-
-                {/* Statistiques ouvertes */}
-                <div style={{ display:"flex", alignItems:"stretch", paddingBottom:4 }}>
-                  <Stat value={String(entreprises)} label={entreprises>1?"Entreprises":"Entreprise"} />
-                  <div style={{ width:1, background:"#EEEBE8", margin:"4px 0" }}/>
-                  <Stat value={t.superficie>0 ? Number(t.superficie).toLocaleString("fr-FR") : "—"} label="ha" />
+                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px" }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Zone{t.zones.length>1?"s":""}</p>
+                    <p style={{ fontSize:14, fontWeight:800, color:t.zones.length>0?"#1a1a2e":"#9aa5b4" }}>{t.zones.length}</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Pied : CTA centré */}
-              <div style={{ display:"flex", justifyContent:"center", padding:"14px 22px 18px", marginTop:16, borderTop:"1px solid #F4F2F0" }}>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"7px 20px", borderRadius:999, fontSize:12.5, fontWeight:700, background: active ? c : `${c}12`, color: active ? "#fff" : c, transition:"all 0.15s" }}>
-                  {active ? "Affiché" : "Voir les zones"} <ChevronRight size={15}/>
-                </span>
-              </div>
-
-              {/* Coche sélection */}
-              {active && (
-                <div style={{ position:"absolute" as const, top:14, right:14, width:22, height:22, borderRadius:"50%", background:c, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 2px 8px ${c}55` }}>
-                  <svg width="11" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              {/* Action */}
+              <div style={{ display:"flex", borderTop:"1px solid #F2F0EF" }}>
+                <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"10px 0", fontSize:11.5, color:c, fontWeight:700, transition:"background 0.15s" }}
+                  onMouseEnter={ev=>ev.currentTarget.style.background=`${c}0D`}
+                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                  {active ? "Affiché" : "Voir les zones"} <ChevronRight size={13}/>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
@@ -264,7 +272,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
               {selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}
             </span>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setDetailZone(z)} />)}
           </div>
         </div>
@@ -277,45 +285,44 @@ function ZonesParType({ zones }: { zones: any[] }) {
 
 // ── Grande card zone (ouvre le modal détail) ──────────────────────────────────
 function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
-  const meta = TYPE_META[zone.type_zone] || TYPE_META.ZES;
-  const c = meta.color;
   const entreprises = (zone.entreprises||[]).length;
-  const Stat = ({ value, label, color }: { value:string; label:string; color:string }) => (
-    <div style={{ flex:1, textAlign:"center" as const }}>
-      <div style={{ fontSize:22, fontWeight:800, color, lineHeight:1.05, letterSpacing:"-0.01em" }}>{value}</div>
-      <div style={{ fontSize:9.5, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.06em", marginTop:4 }}>{label}</div>
-    </div>
-  );
   return (
     <div onClick={onClick}
-      style={{ background:"#fff", border:"1px solid #EAE7E4", borderRadius:18, overflow:"hidden", cursor:"pointer",
-        boxShadow:"0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)", transition:"box-shadow 0.2s, transform 0.2s, border-color 0.2s" }}
-      onMouseEnter={e=>{ e.currentTarget.style.boxShadow=`0 14px 32px ${c}22`; e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.borderColor=c; }}
-      onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#EAE7E4"; }}>
-      <div style={{ height:4, background:c }}/>
-      <div style={{ padding:"20px 22px" }}>
-        {/* En-tête */}
-        <div style={{ display:"flex", alignItems:"center", gap:13, marginBottom:18 }}>
-          <div style={{ width:50,height:50,borderRadius:14,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:meta.bg,border:`1px solid ${meta.border}` }}>
-            <span style={{ fontSize:13, fontWeight:800, letterSpacing:"0.02em", color:c }}>{zone.type_zone}</span>
-          </div>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontWeight:800, fontSize:17, color:"#1a1a2e", lineHeight:1.25, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
-            {zone.pole_nom && (
-              <div style={{ fontSize:12.5, fontWeight:600, color:"#9aa5b4", marginTop:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.pole_nom}</div>
-            )}
-          </div>
+      style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
+      onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }}
+      onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7"; }}>
+
+      <div style={{ padding:"14px 16px 14px", flex:1 }}>
+        {/* Pôle */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+          {zone.pole_nom ? (
+            <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999, overflow:"hidden", whiteSpace:"nowrap" as const, maxWidth:"100%" }}>{zone.pole_nom}</span>
+          ) : <span/>}
         </div>
-        {/* Bande de stats */}
-        <div style={{ display:"flex", alignItems:"stretch", background:"#FAFAF9", border:"1px solid #F2F0EF", borderRadius:13, padding:"14px 4px" }}>
-          <Stat value={zone.superficie?Number(zone.superficie).toLocaleString("fr-FR"):"—"} label="ha" color="#1a1a2e" />
-          <div style={{ width:1, background:"#EEEBE8", margin:"3px 0" }}/>
-          <Stat value={String(entreprises)} label={entreprises>1?"Entreprises":"Entreprise"} color={entreprises>0?"#1a1a2e":"#C5BFBB"} />
+
+        {/* Nom de la zone */}
+        <div style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", lineHeight:1.35, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
+
+        {/* Infos libellées */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
+          <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+            <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Localisation</p>
+            <p style={{ fontSize:12, fontWeight:600, color:(zone.departement_nom||zone.region_nom)?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</p>
+          </div>
+          <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px" }}>
+            <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
+            <p style={{ fontSize:12, fontWeight:600, color:entreprises>0?"#1a1a2e":"#9aa5b4" }}>{entreprises}</p>
+          </div>
         </div>
       </div>
-      {/* Pied : CTA centré stylé */}
-      <div style={{ display:"flex", justifyContent:"center", padding:"13px 22px 16px", borderTop:"1px solid #F4F2F0" }}>
-        <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"7px 20px", borderRadius:999, fontSize:12.5, fontWeight:700, background:`${c}12`, color:c }}>Voir les détails <ChevronRight size={15}/></span>
+
+      {/* Action */}
+      <div style={{ display:"flex", borderTop:"1px solid #F2F0EF" }}>
+        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, transition:"background 0.15s" }}
+          onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+          onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+          Voir les détails →
+        </div>
       </div>
     </div>
   );
