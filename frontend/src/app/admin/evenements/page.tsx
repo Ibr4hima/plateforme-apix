@@ -728,9 +728,8 @@ export default function EvenementsPage() {
                 <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{vue.nom_event}</h2>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
                   {stV&&<Pill c={stV.c} bg={stV.bg}>{stV.label}</Pill>}
-                  {vue.edition!=null&&<Pill c="#ca631f" bg="rgba(202,99,31,0.08)">{ordinalEdition(vue.edition)}</Pill>}
+                  {vue.edition!=null&&<Pill c="#004f91" bg="rgba(0,79,145,0.07)">{ordinalEdition(vue.edition)}</Pill>}
                   {roleV&&<Pill c={roleV.c} bg={roleV.bg}>{ROLES_APIX_LABELS[vue.role_apix]||vue.role_apix}</Pill>}
-                  <Pill c={vue.est_publie?"#188038":"#6b7280"} bg={vue.est_publie?"rgba(24,128,56,0.08)":"#F2F0EF"}>{vue.est_publie?"Publié":"Non publié"}</Pill>
                 </div>
               </div>
               <button onClick={()=>setVue(null)}
