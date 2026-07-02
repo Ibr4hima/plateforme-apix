@@ -814,17 +814,6 @@ export default function OpportunitesPage() {
   const [expandedSec, setExpandedSec] = useState<number|null>(null);
   const [expandedBranch,setExpandedBranch] = useState<number|null>(null);
   const [selectedSecAvg, setSelectedSecAvg] = useState<string|null>(null);
-  const [secEntCounts,   setSecEntCounts]   = useState<Record<string,number>>({});
-
-  useEffect(()=>{
-    fetch(`${API}/dashboard/viz/entreprises-par-secteur`)
-      .then(r=>r.json())
-      .then((data:any[])=>{
-        const map: Record<string,number> = {};
-        data.forEach(d=>{ map[(d.label||"").toLowerCase()] = d.valeur||0; });
-        setSecEntCounts(map);
-      }).catch(()=>{});
-  },[]);
 
   useEffect(()=>{ setSelectedSecAvg(null); setSelectedNiveau(null); },[onglet]);
 
@@ -1067,8 +1056,8 @@ export default function OpportunitesPage() {
       {/* Layout sidebar + contenu */}
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
-          {/* Sidebar */}
-          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
+          {/* Sidebar (pas de filtres sur l'onglet Avantages) */}
+          {onglet!=="avantages"&&<aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
             <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
             <div style={{padding:sidebarOpen?"20px 16px":"10px 8px",flex:1}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
@@ -1150,27 +1139,10 @@ export default function OpportunitesPage() {
                     />
                   </>}
 
-                  {/* Filtres Avantages */}
-                  {onglet==="avantages"&&<>
-                    <div style={{position:"relative" as const,marginBottom:18}}>
-                      <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-                      <input value={avgsQ} onChange={e=>setAvgsQ(e.target.value)} placeholder="Rechercher…"
-                        style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                      {avgsQ&&<button onClick={()=>setAvgsQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
-                    </div>
-                    <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                    <ThematiquesCascadeFilter
-                      secteurs={secteurs}
-                      secteursSel={avgSects} branchesSel={avgBranches} activitesSel={avgActivites}
-                      onSecteur={v=>{setAvgSects(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setAvgBranches([]); setAvgActivites([]);}}
-                      onBranche={v=>{setAvgBranches(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setAvgActivites([]);}}
-                      onActivite={v=>setAvgActivites(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v])}
-                    />
-                  </>}
               </div>}
             </div>
             {sidebarOpen&&<div onMouseDown={startResize} style={{position:"absolute" as const,top:0,right:0,width:4,height:"100%",cursor:"col-resize",zIndex:10}} onMouseEnter={e=>(e.currentTarget.style.background="rgba(0,79,145,0.5)")} onMouseLeave={e=>(e.currentTarget.style.background="transparent")}/>}
-          </aside>
+          </aside>}
 
           {/* Contenu principal */}
           <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
@@ -1406,46 +1378,50 @@ export default function OpportunitesPage() {
                   <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
                 ) : selectedSecAvg===null ? (
                   /* ── Vue secteurs : 3 cards ── */
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
                     {([
-                      {key:"primaire",   label:"Secteur Primaire",   color:"#E35336"},
-                      {key:"secondaire", label:"Secteur Secondaire", color:"#0F52BA"},
-                      {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#0D652D"},
+                      {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
+                      {key:"secondaire", label:"Secteur Secondaire", color:"#004f91"},
+                      {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#004f91"},
                     ] as const).map(s=>{
                       const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
                       const count = items.length;
-                      const entCount = Object.entries(secEntCounts).find(([k])=>k.includes(s.key))?.[1] ?? null;
                       const sec = secteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
                       const secBranches = sec ? branches.filter((b:any)=>b.secteur_id===sec.id) : [];
                       const branchIds = new Set(secBranches.map((b:any)=>b.id));
                       const actCount = activites.filter((a:any)=>branchIds.has(a.branche_id)).length;
                       return (
                         <div key={s.key} onClick={()=>count>0&&setSelectedSecAvg(s.key)}
-                          style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${count>0?s.color:"#C5BFBB"}`,cursor:count>0?"pointer":"default",transition:"all 0.15s"}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${s.color}20`;ev.currentTarget.style.borderColor=s.color;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?s.color:"#C5BFBB";}}>
-                          <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{s.label}</div>
-                          <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:12}}>
-                            {entCount!==null&&(
-                              <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                                <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                <span style={{color:"#4a5568"}}>{entCount} entreprise{entCount!==1?"s":""} spécialisée{entCount!==1?"s":""}</span>
+                          style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}40`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+
+                          <div style={{padding:"14px 16px 14px",flex:1}}>
+                            {/* Secteur */}
+                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                              <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:s.color,background:`${s.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{s.label}</span>
+                            </div>
+
+                            {/* Compteurs libellés */}
+                            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                              <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Activités</p>
+                                <p style={{fontSize:14,fontWeight:800,color:actCount>0?"#1a1a2e":"#9aa5b4"}}>{actCount||"—"}</p>
                               </div>
-                            )}
-                            {secBranches.length>0&&(
-                              <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                                <div style={{width:6,height:6,borderRadius:"50%",background:"#C04000",flexShrink:0}}/>
-                                <span style={{fontWeight:600,color:"#C04000"}}>{secBranches.length} branche{secBranches.length>1?"s":""}</span>
-                                <span style={{color:"#C5BFBB"}}>›</span>
-                                <div style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                <span style={{fontWeight:600,color:"#188038"}}>{actCount} activité{actCount>1?"s":""}</span>
+                              <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
+                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Avantages définis</p>
+                                <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{actCount>0?`${count}/${actCount}`:count}</p>
                               </div>
-                            )}
+                            </div>
                           </div>
-                          <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
-                            <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${s.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:s.color,fontWeight:600,opacity:count>0?1:0.45}}>
+
+                          {/* Action */}
+                          <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
+                            <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:s.color,fontWeight:600,opacity:count>0?1:0.45,transition:"background 0.15s"}}
+                              onMouseEnter={ev=>{if(count>0)ev.currentTarget.style.background=`${s.color}0D`;}}
+                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                               Voir les détails →
-                            </button>
+                            </div>
                           </div>
                         </div>
                       );

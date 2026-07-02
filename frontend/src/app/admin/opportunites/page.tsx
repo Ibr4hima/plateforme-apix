@@ -1283,7 +1283,7 @@ export default function OpportunitesAdminPage() {
                           <p style={{fontSize:14,fontWeight:800,color:actCount>0?"#1a1a2e":"#9aa5b4"}}>{actCount||"—"}</p>
                         </div>
                         <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Fiches définies</p>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Avantages définis</p>
                           <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{actCount>0?`${count}/${actCount}`:count}</p>
                         </div>
                       </div>
