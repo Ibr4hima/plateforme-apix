@@ -1,7 +1,7 @@
 "use client";
 
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
-import { ArrondissementSelect, DepartementSelect, RegionSelect } from "@/components/shared/GeoSelect";
+import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -239,38 +239,16 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
 
       {/* Localisation — grisée si pas de pôle, restreinte aux régions du pôle */}
       <div style={{ opacity: localisationBloquee ? 0.45 : 1, pointerEvents: localisationBloquee ? "none" : "auto", transition: "opacity 0.2s" }}>
-        <FSection title="Localisation"
-          extra={localisationBloquee
-            ? <span style={{ fontSize: 11, color: "#ca631f" }}>← Sélectionnez un pôle d'abord</span>
-            : poleRegionIds.length > 0
-              ? <span style={{ fontSize: 11, color: "#9aa5b4" }}>Régions du pôle uniquement</span>
-              : undefined}>
-          <FGrid cols={3} gap={10}>
-            <div>
-              <FLabel>Région</FLabel>
-              <RegionSelect
-                value={form.region_id}
-                filterIds={poleRegionIds.length > 0 ? poleRegionIds : undefined}
-                onChange={id => { update("region_id", id || ""); update("departement_id", ""); update("arrondissement_id", ""); setRegionId(id); setDepId(null); }}
-              />
-            </div>
-            <div>
-              <FLabel>Département</FLabel>
-              <DepartementSelect
-                regionId={regionId}
-                value={form.departement_id}
-                onChange={id => { update("departement_id", id || ""); update("arrondissement_id", ""); setDepId(id); }}
-              />
-            </div>
-            <div>
-              <FLabel>Arrondissement</FLabel>
-              <ArrondissementSelect
-                departementId={depId}
-                value={form.arrondissement_id}
-                onChange={id => update("arrondissement_id", id || "")}
-              />
-            </div>
-          </FGrid>
+        <FSection title="Localisation">
+          <GeoCascadeSelect
+            regionId={form.region_id || null}
+            departementId={form.departement_id || null}
+            arrondissementId={form.arrondissement_id || null}
+            filterRegionIds={poleRegionIds.length > 0 ? poleRegionIds : undefined}
+            onChangeRegion={id => { update("region_id", id || ""); update("departement_id", ""); update("arrondissement_id", ""); setRegionId(id); setDepId(null); }}
+            onChangeDepartement={id => { update("departement_id", id || ""); update("arrondissement_id", ""); setDepId(id); }}
+            onChangeArrondissement={id => update("arrondissement_id", id || "")}
+          />
         </FSection>
       </div>
 

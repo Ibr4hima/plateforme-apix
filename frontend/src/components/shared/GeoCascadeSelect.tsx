@@ -17,6 +17,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 interface GeoItem { id: number; nom: string; region_id?: number; departement_id?: number; }
 
 interface Props {
+  /** Restreint la liste des régions (ex : régions du pôle sélectionné) */
+  filterRegionIds?:       number[];
   regionId:               number | null;
   departementId:          number | null;
   arrondissementId:       number | null;
@@ -57,7 +59,7 @@ function ColSection({ title, color, children, open, onToggle, count }: { title: 
   );
 }
 
-export default function GeoCascadeSelect({ regionId, departementId, arrondissementId, onChangeRegion, onChangeDepartement, onChangeArrondissement }: Props) {
+export default function GeoCascadeSelect({ filterRegionIds, regionId, departementId, arrondissementId, onChangeRegion, onChangeDepartement, onChangeArrondissement }: Props) {
   const [regions,         setRegions]         = useState<GeoItem[]>([]);
   const [departements,    setDepartements]    = useState<GeoItem[]>([]);
   const [arrondissements, setArrondissements] = useState<GeoItem[]>([]);
@@ -81,6 +83,9 @@ export default function GeoCascadeSelect({ regionId, departementId, arrondisseme
     setOpenArr(true);
   }, [departementId]);
 
+  const regionsAffichees = filterRegionIds && filterRegionIds.length > 0
+    ? regions.filter(r => filterRegionIds.includes(r.id))
+    : regions;
   const regNom = regions.find(r => r.id === regionId)?.nom;
   const depNom = departements.find(d => d.id === departementId)?.nom;
   const arrNom = arrondissements.find(a => a.id === arrondissementId)?.nom;
@@ -114,7 +119,7 @@ export default function GeoCascadeSelect({ regionId, departementId, arrondisseme
       {/* Colonnes cascade */}
       <div style={{ display: "flex", gap: 8 }}>
         <ColSection title="Région" color="#004f91" open={openReg} onToggle={() => setOpenReg(o => !o)} count={regionId ? 1 : 0}>
-          {regions.map(r => (
+          {regionsAffichees.map(r => (
             <RadioItem key={r.id} label={r.nom} selected={regionId === r.id} color="#004f91"
               onToggle={() => onChangeRegion(regionId === r.id ? null : r.id)} />
           ))}
