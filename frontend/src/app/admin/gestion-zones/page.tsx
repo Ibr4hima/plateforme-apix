@@ -3,6 +3,7 @@
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { ArrondissementSelect, DepartementSelect, RegionSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { Building2, Check, ChevronDown, ChevronRight, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -201,172 +202,151 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
     setFichiers(prev => prev.filter((f: any) => f.id !== fichId));
   };
 
-  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-  const LS: any = { fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 4, display: "block" };
   const t = TYPE_ZONES.find(tz => tz.key === typeZone)!;
-
   const localisationBloquee = !form.pole_id;
 
   return (
-    <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(5px)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 680, maxHeight: "90vh", overflowY: "auto", border: "1px solid #C5BFBB", boxShadow: "0 24px 64px rgba(0,0,0,0.2)" }}>
-        <div style={{ height: 5, background: `linear-gradient(90deg,${t.color},${t.color}99)`, borderRadius: "20px 20px 0 0" }} />
-        <div style={{ padding: "24px 28px" }}>
+    <FModal open={open} onClose={onClose} maxWidth={680}
+      title={editZone ? "Modifier la zone" : `Nouvelle zone ${typeZone}`}
+      subtitle={t.label}
+      footer={<>
+        <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
+        <FButton onClick={handleSave} disabled={saving || saveOk} loading={saving} success={saveOk}>
+          {saveOk ? "Enregistré !" : saving ? "Enregistrement…" : editZone ? "Modifier" : "Créer la zone"}
+        </FButton>
+      </>}>
 
-          {/* Header modal */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <div>
-              <h2 style={{ fontWeight: 700, fontSize: "1.05rem", color: "#1a1a2e" }}>{editZone ? "Modifier la zone" : `Nouvelle zone ${typeZone}`}</h2>
-              <p style={{ fontSize: 12, color: "#9aa5b4", marginTop: 2 }}>{t.label}</p>
-            </div>
-            <button onClick={onClose} style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: 8 }}><X size={15} color="#4a5568" /></button>
+      {/* Identification */}
+      <FSection title="Identification">
+        <FGrid cols="1fr 1fr">
+          <div>
+            <FLabel>Dénomination *</FLabel>
+            <FInput value={form.nom_zone} onChange={e => update("nom_zone", e.target.value)} placeholder={`Ex : ${typeZone} de Diamniadio`} />
           </div>
-
-          {/* Dénomination */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={LS}>Dénomination *</label>
-            <input value={form.nom_zone} onChange={e => update("nom_zone", e.target.value)} placeholder={`Ex : ${typeZone} de Diamniadio`} style={IS} />
-          </div>
-
-          {/* ── 1. Pôle territorial EN PREMIER ─────────────────────────────── */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={LS}>Pôle territorial *</label>
-            <select value={form.pole_id || ""} onChange={e => handlePoleChange(e.target.value)} style={IS}>
+          <div>
+            <FLabel>Pôle territorial *</FLabel>
+            <FSelect value={form.pole_id || ""} onChange={e => handlePoleChange(e.target.value)}>
               <option value="">— Sélectionner un pôle d'abord —</option>
               {poles.map((p: any) => (
                 <option key={p.id} value={p.id}>
                   {p.pole_territoire}{p.localisation ? ` — ${p.localisation}` : ""}
                 </option>
               ))}
-            </select>
+            </FSelect>
           </div>
+        </FGrid>
+      </FSection>
 
-          {/* ── 2. Localisation — grisée si pas de pôle, restreinte aux régions du pôle ── */}
-          <div style={{ marginBottom: 14, opacity: localisationBloquee ? 0.45 : 1, pointerEvents: localisationBloquee ? "none" : "auto", transition: "opacity 0.2s" }}>
-            <label style={LS}>
-              Localisation
-              {localisationBloquee
-                ? <span style={{ fontSize: 11, fontWeight: 400, color: "#ca631f", marginLeft: 8 }}>← Sélectionnez un pôle d'abord</span>
-                : poleRegionIds.length > 0
-                  ? <span style={{ fontSize: 11, fontWeight: 400, color: "#9aa5b4", marginLeft: 8 }}>Régions du pôle uniquement</span>
-                  : null
-              }
-            </label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-              <div>
-                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Région</label>
-                <RegionSelect
-                  value={form.region_id}
-                  filterIds={poleRegionIds.length > 0 ? poleRegionIds : undefined}
-                  onChange={id => { update("region_id", id || ""); update("departement_id", ""); update("arrondissement_id", ""); setRegionId(id); setDepId(null); }}
-                />
-              </div>
-              <div>
-                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Département</label>
-                <DepartementSelect
-                  regionId={regionId}
-                  value={form.departement_id}
-                  onChange={id => { update("departement_id", id || ""); update("arrondissement_id", ""); setDepId(id); }}
-                />
-              </div>
-              <div>
-                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Arrondissement</label>
-                <ArrondissementSelect
-                  departementId={depId}
-                  value={form.arrondissement_id}
-                  onChange={id => update("arrondissement_id", id || "")}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Infos officielles */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={LS}>Informations officielles</label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-              <div>
-                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Date de création</label>
-                <input type="date" value={form.date_creation} max={new Date().toISOString().split("T")[0]} onChange={e => update("date_creation", e.target.value)} style={IS} />
-              </div>
-              <div>
-                <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Superficie (hectares)</label>
-                <input type="text" inputMode="decimal" pattern="[0-9]*[.,]?[0-9]*" value={form.superficie} onChange={e => update("superficie", e.target.value)} placeholder="Ex: 1700.50" style={IS} />
-              </div>
+      {/* Localisation — grisée si pas de pôle, restreinte aux régions du pôle */}
+      <div style={{ opacity: localisationBloquee ? 0.45 : 1, pointerEvents: localisationBloquee ? "none" : "auto", transition: "opacity 0.2s" }}>
+        <FSection title="Localisation"
+          extra={localisationBloquee
+            ? <span style={{ fontSize: 11, color: "#ca631f" }}>← Sélectionnez un pôle d'abord</span>
+            : poleRegionIds.length > 0
+              ? <span style={{ fontSize: 11, color: "#9aa5b4" }}>Régions du pôle uniquement</span>
+              : undefined}>
+          <FGrid cols={3} gap={10}>
+            <div>
+              <FLabel>Région</FLabel>
+              <RegionSelect
+                value={form.region_id}
+                filterIds={poleRegionIds.length > 0 ? poleRegionIds : undefined}
+                onChange={id => { update("region_id", id || ""); update("departement_id", ""); update("arrondissement_id", ""); setRegionId(id); setDepId(null); }}
+              />
             </div>
             <div>
-              <label style={{ ...LS, fontSize: 11, color: "#9aa5b4" }}>Décret de création</label>
-              <input value={form.decret_creation} onChange={e => update("decret_creation", e.target.value)} placeholder="Ex: Décret n° 2002-1036 du 03/10/2002" style={IS} />
+              <FLabel>Département</FLabel>
+              <DepartementSelect
+                regionId={regionId}
+                value={form.departement_id}
+                onChange={id => { update("departement_id", id || ""); update("arrondissement_id", ""); setDepId(id); }}
+              />
             </div>
-          </div>
-
-          {/* Classification NAEMA */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={LS}>Activité(s) autorisées</label>
-            <NaemaSelect
-              secteurIds={form.secteur_ids || []}
-              brancheIds={form.branche_ids || []}
-              activiteIds={form.activite_ids || []}
-              onChangeSecteurs={ids => update("secteur_ids", ids)}
-              onChangeBranches={ids => update("branche_ids", ids)}
-              onChangeActivites={ids => update("activite_ids", ids)}
-            />
-          </div>
-
-          {/* Description */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={LS}>Description</label>
-            <RichTextEditor value={form.description} onChange={v => update("description", v)}/>
-          </div>
-
-          {/* PDFs */}
-          <div style={{ marginBottom: 20 }}>
-            <label style={LS}>Documents PDF</label>
-            {fichiers.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
-                {fichiers.map((f: any) => (
-                  <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 8, padding: "7px 12px" }}>
-                    <FileText size={13} style={{ color: "#004f91" }} />
-                    <span style={{ fontSize: 13, flex: 1, color: "#1a1a2e", fontWeight: 500 }}>{f.titre || f.fichier_nom}</span>
-                    <button onClick={() => supprimerFichier(f.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 8, cursor: "pointer", border: "2px dashed #C5BFBB", background: "#F2F0EF" }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = t.color}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "#C5BFBB"}>
-              <Upload size={14} color="#9aa5b4" />
-              <span style={{ fontSize: 13, color: "#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
-              <input type="file" accept=".pdf" multiple style={{ display: "none" }}
-                onChange={e => { const files = Array.from(e.target.files || []); setPdfQueue(prev => [...prev, ...files.map(f => ({ file: f, titre: f.name.replace(/\.pdf$/i, "") }))]); e.target.value = ""; }} />
-            </label>
-            {pdfQueue.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
-                {pdfQueue.map((p, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 8, padding: "7px 12px" }}>
-                    <FileText size={13} style={{ color: "#7c3aed" }} />
-                    <input value={p.titre} onChange={e => setPdfQueue(prev => prev.map((x, j) => j === i ? { ...x, titre: e.target.value } : x))} placeholder="Titre"
-                      style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgba(124,58,237,0.3)", outline: "none", fontSize: 12, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
-                    <button onClick={() => setPdfQueue(prev => prev.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {error && <p style={{ fontSize: 13, color: "#dc2626", marginBottom: 12 }}>{error}</p>}
-
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-            <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>Annuler</button>
-            <button onClick={handleSave} disabled={saving || saveOk}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 20px", borderRadius: 10, border: "none", background: saveOk ? "#059669" : t.color, color: "#fff", fontWeight: 700, cursor: saving || saveOk ? "not-allowed" : "pointer", fontSize: 13 }}>
-              {saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : saveOk ? <><Check size={13} /> Enregistré</> : editZone ? "Modifier" : "Créer"}
-            </button>
-          </div>
-        </div>
+            <div>
+              <FLabel>Arrondissement</FLabel>
+              <ArrondissementSelect
+                departementId={depId}
+                value={form.arrondissement_id}
+                onChange={id => update("arrondissement_id", id || "")}
+              />
+            </div>
+          </FGrid>
+        </FSection>
       </div>
-    </div>
+
+      {/* Informations officielles */}
+      <FSection title="Informations officielles">
+        <FGrid cols={2} gap={10} style={{ marginBottom: 10 }}>
+          <div>
+            <FLabel>Date de création</FLabel>
+            <FInput type="date" value={form.date_creation} max={new Date().toISOString().split("T")[0]} onChange={e => update("date_creation", e.target.value)} />
+          </div>
+          <div>
+            <FLabel>Superficie (hectares)</FLabel>
+            <FInput type="text" inputMode="decimal" pattern="[0-9]*[.,]?[0-9]*" value={form.superficie} onChange={e => update("superficie", e.target.value)} placeholder="Ex : 1700.50" />
+          </div>
+        </FGrid>
+        <div>
+          <FLabel>Décret de création</FLabel>
+          <FInput value={form.decret_creation} onChange={e => update("decret_creation", e.target.value)} placeholder="Ex : Décret n° 2002-1036 du 03/10/2002" />
+        </div>
+      </FSection>
+
+      {/* Classification NAEMA */}
+      <FSection title="Activité(s) autorisées">
+        <NaemaSelect
+          secteurIds={form.secteur_ids || []}
+          brancheIds={form.branche_ids || []}
+          activiteIds={form.activite_ids || []}
+          onChangeSecteurs={ids => update("secteur_ids", ids)}
+          onChangeBranches={ids => update("branche_ids", ids)}
+          onChangeActivites={ids => update("activite_ids", ids)}
+        />
+      </FSection>
+
+      {/* Description */}
+      <FSection title="Description">
+        <RichTextEditor value={form.description} onChange={v => update("description", v)}/>
+      </FSection>
+
+      {/* Documents */}
+      <FSection title="Documents">
+        {fichiers.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
+            {fichiers.map((f: any) => (
+              <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 10, padding: "8px 12px" }}>
+                <FileText size={13} style={{ color: "#004f91" }} />
+                <span style={{ fontSize: 13, flex: 1, color: "#1a1a2e", fontWeight: 500 }}>{f.titre || f.fichier_nom}</span>
+                <button onClick={() => supprimerFichier(f.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+              </div>
+            ))}
+          </div>
+        )}
+        <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 10, cursor: "pointer", border: "2px dashed #E4E1DE", background: "#FAFAF9", transition: "border-color 0.15s" }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = "#004f91"}
+          onMouseLeave={e => e.currentTarget.style.borderColor = "#E4E1DE"}>
+          <Upload size={14} color="#9aa5b4" />
+          <span style={{ fontSize: 13, color: "#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+          <input type="file" accept=".pdf" multiple style={{ display: "none" }}
+            onChange={e => { const files = Array.from(e.target.files || []); setPdfQueue(prev => [...prev, ...files.map(f => ({ file: f, titre: f.name.replace(/\.pdf$/i, "") }))]); e.target.value = ""; }} />
+        </label>
+        {pdfQueue.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
+            {pdfQueue.map((p, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(106,27,154,0.05)", border: "1px solid rgba(106,27,154,0.2)", borderRadius: 10, padding: "8px 12px" }}>
+                <FileText size={13} style={{ color: "#6A1B9A" }} />
+                <input value={p.titre} onChange={e => setPdfQueue(prev => prev.map((x, j) => j === i ? { ...x, titre: e.target.value } : x))} placeholder="Titre du document"
+                  style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgba(106,27,154,0.3)", outline: "none", fontSize: 12.5, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
+                <button onClick={() => setPdfQueue(prev => prev.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+              </div>
+            ))}
+            <p style={{ fontSize: 11, color: "#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+          </div>
+        )}
+      </FSection>
+
+      {error && <FError>{error}</FError>}
+    </FModal>
   );
 }
 
