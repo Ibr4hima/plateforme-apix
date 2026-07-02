@@ -683,73 +683,91 @@ function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
       .then(r=>r.json()).then(setData).catch(()=>{});
   },[a.id]);
 
-  const LBL = ({children}:{children:string}) => (
-    <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
+  const SecTitle = ({children}:{children:string}) => (
+    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
 
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
-      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.25)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#0D652D,#2d9a5c)"}}/>
-        <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
-          {/* Header */}
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
-            <div style={{flex:1,paddingRight:16}}>
-              <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{data.activite_nom}</h2>
-              <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
-                {data.secteur_nom&&<Badge variant="terracotta" size="xs">{data.secteur_nom}</Badge>}
-                {data.branche_nom&&<Badge variant="bleu" size="xs">{data.branche_nom}</Badge>}
-              </div>
-            </div>
-            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
-          </div>
+      style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+        {/* Liseré d'accent */}
+        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
-          {/* Avantages sélectionnés avec commentaires */}
+        {/* En-tête */}
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
+          <div style={{minWidth:0}}>
+            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{data.activite_nom}</h2>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
+              {data.secteur_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{data.secteur_nom}</span>}
+              {data.branche_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:999}}>{data.branche_nom}</span>}
+            </div>
+          </div>
+          <button onClick={onClose}
+            style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
+            <X size={15} color="#4a5568"/>
+          </button>
+        </div>
+
+        {/* Corps */}
+        <div style={{padding:"22px 28px",overflowY:"auto" as const,flex:1,display:"flex",flexDirection:"column" as const,gap:22}}>
+
+          {/* Avantages sélectionnés */}
           {(data.selections||[]).length>0&&(
-            <div style={{marginBottom:18}}>
-              <LBL>Avantages & incitations</LBL>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
+            <section>
+              <SecTitle>Avantages &amp; incitations</SecTitle>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
                 {(data.selections||[]).map((s:any)=>(
-                  <div key={s.id} style={{background:"rgba(124,58,237,0.04)",border:"1px solid rgba(124,58,237,0.15)",borderRadius:10,padding:"12px 14px"}}>
+                  <div key={s.id} style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"12px 14px"}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:s.commentaire?6:0}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:"#7c3aed",flexShrink:0}}/>
-                      <span style={{fontSize:13,fontWeight:700,color:"#7c3aed"}}>{s.type_libelle}</span>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                      <span style={{fontSize:13,fontWeight:700,color:"#188038"}}>{s.type_libelle}</span>
                     </div>
                     {s.commentaire&&<p style={{fontSize:13,color:"#4a5568",lineHeight:1.7,marginLeft:14,whiteSpace:"pre-wrap" as const}}>{s.commentaire}</p>}
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
           {/* Description */}
           {data.avantages&&(
-            <div style={{background:"#F8F7F6",border:"1px solid #E8E5E3",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
-              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-              <LBL>Description</LBL>
-              <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
-            </div>
+            <section>
+              <SecTitle>Description</SecTitle>
+              <div style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"13px 15px"}}>
+                <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
+                <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
+              </div>
+            </section>
           )}
 
           {/* Documents */}
           {(data.fichiers||[]).length>0&&(
-            <div style={{marginBottom:16}}>
-              <LBL>Documents</LBL>
-              <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+            <section>
+              <SecTitle>{(data.fichiers||[]).length>1?"Documents":"Document"}</SecTitle>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {(data.fichiers||[]).map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(251,188,4,0.12)",border:"1px solid rgba(251,188,4,0.35)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#8A6100",textDecoration:"none",fontWeight:600}}>
-                    <FileText size={11}/> {f.titre||f.fichier_nom}
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
+                    <span style={{fontSize:12.5,color:"#004f91",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          <div style={{display:"flex",justifyContent:"flex-end",marginTop:20,borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={onClose} style={{padding:"9px 20px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
-          </div>
+        </div>
+
+        {/* Pied */}
+        <div style={{display:"flex",justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+          <button onClick={onClose}
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+            Fermer
+          </button>
         </div>
       </div>
     </div>
@@ -1395,61 +1413,67 @@ export default function OpportunitesPage() {
                     })}
                   </div>
                 ) : (
-                  /* ── Vue cascade ── */
+                  /* ── Vue du secteur sélectionné : une card par branche ── */
                   <>
                     <button onClick={()=>setSelectedSecAvg(null)}
                       style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
-                      <ChevronDown size={14} style={{transform:"rotate(90deg)"}}/> Retour aux secteurs
+                      <ArrowLeft size={14}/> Retour aux secteurs
                     </button>
                     {(()=>{
-                      const cascadeSecColor=(_nom:string)=>"#E35336";
                       const filtered=avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg!));
-                      const secMap2=new Map<number,{id:number;nom:string;branches:Map<number,{id:number;nom:string;items:any[]}>}>();
+                      const secNom = filtered[0]?.secteur_nom || "";
+                      const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
                       filtered.forEach((a:any)=>{
-                        const sid=a.secteur_id||0; const bid=a.branche_id||0;
-                        if(!secMap2.has(sid)) secMap2.set(sid,{id:sid,nom:a.secteur_nom||"Sans secteur",branches:new Map()});
-                        const sec=secMap2.get(sid)!;
-                        if(!sec.branches.has(bid)) sec.branches.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
-                        sec.branches.get(bid)!.items.push(a);
+                        const bid=a.branche_id||0;
+                        if(!braMap.has(bid)) braMap.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
+                        braMap.get(bid)!.items.push(a);
                       });
-                      const cascadeSecList=Array.from(secMap2.values());
+                      const bras=Array.from(braMap.values());
                       return (
-                        <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
-                          {cascadeSecList.map(sec=>{
-                            const color=cascadeSecColor(sec.nom);
-                            const bras=Array.from(sec.branches.values());
-                            return (
-                              <div key={sec.id}>
-                                <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:12}}>
-                                  <div style={{width:8,height:8,borderRadius:"50%",background:color,flexShrink:0}}/>
-                                  <span style={{fontSize:14,fontWeight:700,color}}>{sec.nom}</span>
+                        <div>
+                          {/* En-tête du secteur */}
+                          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+                            <span style={{display:"inline-flex",alignItems:"center",fontSize:11,fontWeight:800,color:"#1a1a2e",background:"#fff",border:"1px solid #ECEAE7",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",padding:"5px 14px",borderRadius:999,whiteSpace:"nowrap" as const}}>{secNom}</span>
+                            <span style={{flex:1,height:1,background:"#ECEAE7"}}/>
+                          </div>
+
+                          {/* Une card par branche */}
+                          <div style={{display:"flex",flexDirection:"column" as const,gap:16}}>
+                            {bras.map(bra=>(
+                              <div key={bra.id} style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.03)"}}>
+                                {/* En-tête de branche */}
+                                <div style={{display:"flex",alignItems:"center",gap:9,padding:"12px 18px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA",minWidth:0}}>
+                                  <span style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+                                  <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</span>
                                 </div>
-                                <div style={{paddingLeft:20,borderLeft:`2px solid ${color}30`,display:"flex",flexDirection:"column" as const,gap:14}}>
-                                  {bras.map(bra=>(
-                                    <div key={bra.id}>
-                                      <div style={{display:"inline-flex",alignItems:"center",gap:7,marginBottom:8}}>
-                                        <div style={{width:7,height:7,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
-                                        <span style={{fontSize:13,fontWeight:600,color:"#0F52BA"}}>{bra.nom}</span>
+                                {/* Activités */}
+                                <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,padding:16}}>
+                                  {bra.items.map((a:any)=>(
+                                    <div key={a.id} onClick={()=>setAvgSel(a)}
+                                      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                      onMouseEnter={ev=>{
+                                        ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="0 8px 20px rgba(0,30,60,0.08)";
+                                        // Nom trop long : glisse pour révéler la fin
+                                        const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                                        const span = box?.firstElementChild as HTMLElement | null;
+                                        if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                                      }}
+                                      onMouseLeave={ev=>{
+                                        ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                                        const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                                        if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                                      }}>
+                                      <span style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                      <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                        <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                       </div>
-                                      <div style={{paddingLeft:18,borderLeft:"2px solid rgba(15,82,186,0.15)",display:"flex",flexDirection:"column" as const,gap:8}}>
-                                        {bra.items.map((a:any)=>(
-                                          <div key={a.id}
-                                            onClick={()=>setAvgSel(a)}
-                                            style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
-                                            onMouseEnter={ev=>{ev.currentTarget.style.borderColor="#0D652D40";ev.currentTarget.style.boxShadow="0 3px 10px rgba(13,101,45,0.10)";}}
-                                            onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
-                                            <div style={{width:6,height:6,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
-                                            <span style={{fontSize:12,color:"#0D652D",fontWeight:600,flex:1}}>{a.activite_nom}</span>
-                                            <span style={{fontSize:11,color:"#9aa5b4",fontWeight:600,flexShrink:0}}>Voir →</span>
-                                          </div>
-                                        ))}
-                                      </div>
+                                      <span style={{display:"flex",alignItems:"center",background:"rgba(0,79,145,0.07)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#004f91",fontWeight:600,flexShrink:0}}>Voir →</span>
                                     </div>
                                   ))}
                                 </div>
                               </div>
-                            );
-                          })}
+                            ))}
+                          </div>
                         </div>
                       );
                     })()}
