@@ -330,9 +330,9 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
 
 // ── Modal ajout entreprises avec statuts ─────────────────────────────────────
 const STATUT_CONFIG: Record<string,{label:string;color:string;bg:string;border:string}> = {
-  installee:    { label:"Installée",    color:"#059669", bg:"#dcfce7", border:"#86efac" },
-  eligible:     { label:"Éligible",     color:"#b45309", bg:"#fef9c3", border:"#fde68a" },
-  non_eligible: { label:"Non éligible", color:"#9aa5b4", bg:"#F2F0EF", border:"#E8E5E3" },
+  installee:    { label:"Installée",    color:"#188038", bg:"rgba(24,128,56,0.08)",  border:"rgba(24,128,56,0.2)"  },
+  eligible:     { label:"Éligible",     color:"#ca631f", bg:"rgba(202,99,31,0.08)",  border:"rgba(202,99,31,0.2)"  },
+  non_eligible: { label:"Non éligible", color:"#9aa5b4", bg:"#F2F0EF",               border:"#E8E5E3"              },
 };
 
 function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
@@ -685,60 +685,65 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
   const t = TYPE_ZONES.find(tz => tz.key === z.type_zone)!;
   const locStr = [z.departement_nom, z.region_nom].filter(Boolean).join(", ");
 
+  const SecTitle = ({children}:{children:React.ReactNode}) => (
+    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+  );
+  const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
+    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
+      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
+      {children}
+    </div>
+  );
+
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div onClick={ev => ev.stopPropagation()} style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 680, maxHeight: "90vh", display: "flex", flexDirection: "column" as const, border: "1px solid #E8E5E3", boxShadow: "0 32px 80px rgba(0,0,0,0.25)", overflow: "hidden" }}>
-        <div style={{ height: 5, background: `linear-gradient(90deg,${t.color},${t.color}99)`, flexShrink: 0 }} />
-        <div style={{ padding: "24px 28px 28px", overflowY: "auto" as const, flex: 1 }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={ev=>ev.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:680, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+        {/* Liseré d'accent */}
+        <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
 
-          {/* En-tête */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-            <div style={{ flex: 1, paddingRight: 16 }}>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const, marginBottom: 8 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: t.color, background: `${t.color}12`, padding: "2px 10px", borderRadius: 999 }}>{t.code}</span>
-                {z.pole_nom && <span style={{ fontSize: 11, fontWeight: 700, color: z.pole_id ? darken(getPoleColor(z.pole_nom)) : "#4a5568", background: z.pole_id ? getPoleColor(z.pole_nom) + "40" : "#F2F0EF", border: `1px solid ${z.pole_id ? getPoleColor(z.pole_nom) + "99" : "#E8E5E3"}`, padding: "2px 9px", borderRadius: 999 }}>{z.pole_nom}</span>}
-              </div>
-              <h2 style={{ fontWeight: 800, fontSize: "1.15rem", color: "#1a1a2e", lineHeight: 1.3 }}>{z.nom_zone}</h2>
+        {/* En-tête */}
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+          <div style={{ minWidth:0 }}>
+            <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3 }}>{z.nom_zone}</h2>
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
+              <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:800, letterSpacing:"0.04em", color:t.color, background:`${t.color}12`, padding:"3px 10px", borderRadius:999 }}>{t.code}</span>
+              {z.pole_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{z.pole_nom}</span>}
             </div>
-            <button onClick={onClose} style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: 7, flexShrink: 0 }}><X size={14} color="#4a5568" /></button>
           </div>
+          <button onClick={onClose}
+            style={{ background:"#F5F4F3", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
+            <X size={15} color="#4a5568"/>
+          </button>
+        </div>
 
-          {/* Infos officielles */}
+        {/* Corps */}
+        <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
+
+          {/* Informations */}
           {(z.date_creation || z.decret_creation || z.superficie || locStr) && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
-              {locStr && (
-                <div style={{ background: "#F8F7F6", borderRadius: 10, padding: "10px 14px" }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 4 }}>Localisation</p>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e" }}>{locStr}</p>
-                </div>
-              )}
-              {z.superficie && (
-                <div style={{ background: `${t.color}06`, borderRadius: 10, padding: "10px 14px" }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 4 }}>Superficie</p>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e" }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</p>
-                </div>
-              )}
-              {z.date_creation && (
-                <div style={{ background: "rgba(54,111,227,0.05)", borderRadius: 10, padding: "10px 14px" }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 4 }}>Date de création</p>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e" }}>{new Date(z.date_creation + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</p>
-                </div>
-              )}
-              {z.decret_creation && (
-                <div style={{ background: "#F8F7F6", borderRadius: 10, padding: "10px 14px" }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 4 }}>Décret</p>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e" }}>{z.decret_creation}</p>
-                </div>
-              )}
-            </div>
+            <section>
+              <SecTitle>Informations</SecTitle>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                {locStr && <Bloc label="Localisation"><p style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{locStr}</p></Bloc>}
+                {z.superficie && <Bloc label="Superficie"><p style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</p></Bloc>}
+                {z.date_creation && <Bloc label="Création"><p style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{new Date(z.date_creation + "T00:00:00").toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" })}</p></Bloc>}
+                {z.decret_creation && <Bloc label="Décret"><p style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{z.decret_creation}</p></Bloc>}
+              </div>
+            </section>
           )}
 
           {/* Description */}
           {z.description && (
-            <div style={{ marginBottom: 20 }}>
-              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-              <div data-rte dangerouslySetInnerHTML={{ __html: z.description }} style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.6, padding: "12px 16px", background: `${t.color}04`, borderRadius: 10, border: `1px solid ${t.color}15` }} />
-            </div>
+            <section>
+              <SecTitle>Description</SecTitle>
+              <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"13px 15px" }}>
+                <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
+                <div data-rte dangerouslySetInnerHTML={{ __html:z.description }} style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}/>
+              </div>
+            </section>
           )}
 
           {/* NAEMA */}
@@ -749,34 +754,34 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
             if (!secIds.length && !braIds.length && !actIds.length) return null;
             if (!secteurs.length) return null;
             return (
-              <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 8 }}>Activités autorisées</p>
-                <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+              <section>
+                <SecTitle>Activités autorisées</SecTitle>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                   {secIds.map((secId: number) => {
                     const sec = secteurs.find((s: any) => s.id === secId); if (!sec) return null;
                     const brasDuSec = branches.filter((b: any) => b.secteur_id === secId && braIds.includes(b.id));
                     return (
                       <div key={secId}>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: brasDuSec.length ? 5 : 0 }}>
-                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
-                          <span style={{ fontSize: 12, fontWeight: 700, color: t.color }}>{sec.nom}</span>
+                        <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:brasDuSec.length ? 5 : 0 }}>
+                          <div style={{ width:8, height:8, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/>
+                          <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>{sec.nom}</span>
                         </div>
                         {brasDuSec.length > 0 && (
-                          <div style={{ paddingLeft: 20, borderLeft: `2px solid ${t.color}30`, display: "flex", flexDirection: "column" as const, gap: 5 }}>
+                          <div style={{ paddingLeft:20, borderLeft:"2px solid rgba(0,79,145,0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
                             {brasDuSec.map((bra: any) => {
                               const actsDeBra = activites.filter((a: any) => a.branche_id === bra.id && actIds.includes(a.id));
                               return (
                                 <div key={bra.id}>
-                                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: actsDeBra.length ? 4 : 0 }}>
-                                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#366FE3", flexShrink: 0 }} />
-                                    <span style={{ fontSize: 11, fontWeight: 600, color: "#366FE3" }}>{bra.nom}</span>
+                                  <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:actsDeBra.length ? 4 : 0 }}>
+                                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", flexShrink:0 }}/>
+                                    <span style={{ fontSize:11, fontWeight:600, color:"#ca631f" }}>{bra.nom}</span>
                                   </div>
                                   {actsDeBra.length > 0 && (
-                                    <div style={{ paddingLeft: 18, display: "flex", flexDirection: "column" as const, gap: 3 }}>
+                                    <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3 }}>
                                       {actsDeBra.map((act: any) => (
-                                        <div key={act.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#188038", flexShrink: 0 }} />
-                                          <span style={{ fontSize: 11, color: "#188038", fontWeight: 500 }}>{act.nom}</span>
+                                        <div key={act.id} style={{ display:"flex", alignItems:"center", gap:6 }}>
+                                          <div style={{ width:5, height:5, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
+                                          <span style={{ fontSize:11, color:"#188038", fontWeight:500 }}>{act.nom}</span>
                                         </div>
                                       ))}
                                     </div>
@@ -790,84 +795,86 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
                     );
                   })}
                 </div>
-              </div>
+              </section>
             );
           })()}
 
           {/* Entreprises */}
-          <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 8 }}>Entreprises ({z.entreprises?.length || 0})</p>
+          <section>
+            <SecTitle>Entreprises ({z.entreprises?.length || 0})</SecTitle>
             {!z.entreprises?.length
-              ? <p style={{ fontSize: 13, color: "#9aa5b4", fontStyle: "italic" }}>Aucune entreprise installée.</p>
-              : <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
+              ? <p style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Aucune entreprise installée.</p>
+              : <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                 {z.entreprises.map((ze: any) => {
                   const curStatut = ze.statut || "installee";
                   const cfg = STATUT_CONFIG[curStatut as keyof typeof STATUT_CONFIG] || STATUT_CONFIG.installee;
                   const nextStatut = curStatut === "installee" ? "eligible" : "installee";
                   const nextCfg = STATUT_CONFIG[nextStatut];
                   return (
-                    <div key={ze.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#F8F7F6", borderRadius: 9, border: "1px solid #E8E5E3" }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: `${t.color}10`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Building2 size={14} style={{ color: t.color }} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ze.entreprise?.nom}</div>
-                        <div style={{ fontSize: 11, color: "#9aa5b4" }}>{ze.entreprise?.forme_juridique || "—"}</div>
+                    <div key={ze.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC" }}>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{ze.entreprise?.nom}</div>
+                        <div style={{ fontSize:11, color:"#9aa5b4" }}>{ze.entreprise?.forme_juridique || "—"}</div>
                       </div>
                       <button title={`Passer en "${nextCfg.label}"`}
                         onClick={async () => {
-                          await fetch(`${API_BASE}/zones-types/${z.id}/entreprises/${ze.entreprise?.id}`, { method: "POST", headers: {} });
-                          await fetch(`${API_BASE}/zones-types/${z.id}/entreprises?entreprise_id=${ze.entreprise?.id}&statut=${nextStatut}`, { method: "POST" });
+                          await fetch(`${API_BASE}/zones-types/${z.id}/entreprises/${ze.entreprise?.id}`, { method:"POST", headers:{} });
+                          await fetch(`${API_BASE}/zones-types/${z.id}/entreprises?entreprise_id=${ze.entreprise?.id}&statut=${nextStatut}`, { method:"POST" });
                           charger();
                         }}
-                        style={{ fontSize: 10, fontWeight: 700, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, padding: "3px 10px", borderRadius: 999, flexShrink: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, transition: "all 0.15s" }}
+                        style={{ fontSize:10, fontWeight:700, color:cfg.color, background:cfg.bg, border:`1px solid ${cfg.border}`, padding:"3px 10px", borderRadius:999, flexShrink:0, cursor:"pointer", display:"flex", alignItems:"center", gap:4, transition:"all 0.15s" }}
                         onMouseEnter={e => { e.currentTarget.style.background = nextCfg.bg; e.currentTarget.style.color = nextCfg.color; e.currentTarget.style.borderColor = nextCfg.border; }}
                         onMouseLeave={e => { e.currentTarget.style.background = cfg.bg; e.currentTarget.style.color = cfg.color; e.currentTarget.style.borderColor = cfg.border; }}>
                         {cfg.label}
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}><path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity:0.6 }}><path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
                       </button>
                       <button onClick={() => ouvrirFicheEnt(ze.entreprise?.id)}
-                        style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(54,111,227,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 10px", fontSize: 11, color: "#366FE3", fontWeight: 600 }}>
-                        <Eye size={12} /> Fiche
+                        style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(0,79,145,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 10px", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                        <Eye size={12}/> Fiche
                       </button>
                       <button onClick={() => onRetirerEntreprise(z.id, ze.entreprise?.id)} disabled={deletingEnt === ze.entreprise?.id}
-                        style={{ background: "rgba(220,38,38,0.07)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 7px" }}>
-                        {deletingEnt === ze.entreprise?.id ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+                        style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}>
+                        {deletingEnt === ze.entreprise?.id ? <Loader2 size={12} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/> : <Trash2 size={12} style={{ color:"#dc2626" }}/>}
                       </button>
                     </div>
                   );
                 })}
               </div>}
-          </div>
+          </section>
 
-          {/* Fichiers */}
+          {/* Documents */}
           {z.fichiers?.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 8 }}>Documents</p>
-              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
+            <section>
+              <SecTitle>{z.fichiers.length>1?"Documents":"Document"}</SecTitle>
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                 {z.fichiers.map((f: any) => (
                   <a key={f.id} href={`${API_BASE}/zones-types/${z.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, background: `${t.color}06`, border: `1px solid ${t.color}20`, borderRadius: 7, padding: "5px 12px", fontSize: 11, color: t.color, textDecoration: "none", fontWeight: 500 }}>
-                    <FileText size={11} /> {f.titre || f.fichier_nom}
+                    style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"9px 12px", textDecoration:"none" }}>
+                    <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+                    <span style={{ fontSize:12.5, color:"#004f91", fontWeight:600 }}>{f.titre || f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          {/* Footer actions */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, borderTop: "1px solid #F2F0EF", paddingTop: 18 }}>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={onAddEntreprise}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 9, border: "none", background: `${t.color}12`, color: t.color, fontWeight: 700, cursor: "pointer", fontSize: 12 }}>
-                <Plus size={13} /> Entreprise
-              </button>
-              <button onClick={onEdit}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 9, border: "none", background: "rgba(202,99,31,0.1)", color: "#ca631f", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>
-                <Pencil size={13} /> Modifier
-              </button>
-            </div>
-            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid #C5BFBB", background: "transparent", color: "#4a5568", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>Fermer</button>
+        </div>
+
+        {/* Pied */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
+          <button onClick={onAddEntreprise}
+            style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgba(24,128,56,0.08)", color:"#188038", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
+            <Plus size={13}/> Entreprise
+          </button>
+          <div style={{ display:"flex", gap:10 }}>
+            <button onClick={onClose}
+              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+              Fermer
+            </button>
+            <button onClick={onEdit}
+              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgba(0,79,145,0.25)" }}>
+              <Pencil size={13}/> Modifier
+            </button>
           </div>
         </div>
       </div>
