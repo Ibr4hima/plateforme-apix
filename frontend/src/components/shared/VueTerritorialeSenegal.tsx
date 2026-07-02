@@ -417,50 +417,61 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       {/* Modal pôle */}
       {!onPoleClick && activePole && (
         <div onClick={e=>{ if(e.target===e.currentTarget) setActivePole(null); }}
-          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-          <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>
-            <div style={{ height:5, background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)" }}/>
-            <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
-              {/* En-tête */}
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
-                <div style={{ flex:1, paddingRight:12 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                    <div style={{ width:12, height:12, borderRadius:3, background:activeColor, flexShrink:0 }}/>
-                    <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Pôle territorial</span>
-                  </div>
-                  <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3, marginBottom:10 }}>{activePole.pole_territoire}</h2>
-                  {/* Régions badgées */}
-                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const }}>
-                    {splitLocalisation(activePole.localisation).map((r:string) => (
-                      <span key={r} style={{ fontSize:11, fontWeight:600, color:"#1a1a2e", background:activeColor+"33", border:`1px solid ${activeColor}88`, padding:"3px 10px", borderRadius:999 }}>{r}</span>
-                    ))}
-                  </div>
+          style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+          <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+          <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+            {/* Liseré d'accent */}
+            <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
+
+            {/* En-tête */}
+            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+              <div style={{ minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
+                  <div style={{ width:12, height:12, borderRadius:3, background:activeColor, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
+                  <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Pôle territorial</span>
                 </div>
-                <button onClick={()=>setActivePole(null)} style={{ background:"rgba(0,0,0,0.06)", border:"none", borderRadius:99, width:28, height:28, cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>✕</button>
+                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3 }}>{activePole.pole_territoire}</h2>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
+                  {splitLocalisation(activePole.localisation).map((r:string) => (
+                    <span key={r} style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{r}</span>
+                  ))}
+                </div>
               </div>
+              <button onClick={()=>setActivePole(null)}
+                style={{ background:"#F5F4F3", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+                onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
+                onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
+                <span style={{ fontSize:14, color:"#4a5568", lineHeight:1 }}>✕</span>
+              </button>
+            </div>
+
+            {/* Corps */}
+            <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
 
               {/* Entreprises installées */}
-              <div style={{ background:"#F2F0EF", borderRadius:10, padding:"14px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:14, border:"1px solid #E8E5E3" }}>
-                <div style={{ fontSize:34, fontWeight:800, color:"#059669", lineHeight:1 }}>{nbInst}</div>
-                <div style={{ fontSize:13, color:"#1a1a2e", fontWeight:600, lineHeight:1.3 }}>entreprise{nbInst!==1?"s":""} installée{nbInst!==1?"s":""}</div>
+              <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"12px 14px" }}>
+                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{nbInst!==1?"s":""} installée{nbInst!==1?"s":""}</p>
+                <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"#188038":"#9aa5b4", lineHeight:1.1 }}>{nbInst}</p>
               </div>
 
               {/* Zones d'investissement */}
               {poleZones.length>0 && (
-                <div style={{ marginBottom:16 }}>
-                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Zones d&apos;investissement</p>
-                  {poleZones.map((z:any)=>{
-                    const tc=z.type_zone==="ZES"?"#E35336":z.type_zone==="ZAI"?"#366FE3":"#188038";
-                    const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
-                    return (
-                      <div key={z.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:"1px solid #E8E5E3", fontSize:12 }}>
-                        <span style={{ fontSize:9, fontWeight:700, color:tc, background:tc+"18", padding:"2px 6px", borderRadius:4, flexShrink:0 }}>{z.type_zone}</span>
-                        <span style={{ color:"#1a1a2e", flex:1 }}>{z.nom_zone}</span>
-                        <span style={{ fontSize:11, fontWeight:600, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 8px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
-                      </div>
-                    );
-                  })}
-                </div>
+                <section>
+                  <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>Zones d&apos;investissement</p>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                    {poleZones.map((z:any)=>{
+                      const tc=z.type_zone==="ZES"?"#ca631f":z.type_zone==="ZAI"?"#004f91":"#188038";
+                      const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+                      return (
+                        <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC", fontSize:12 }}>
+                          <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:tc+"12", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
+                          <span style={{ color:"#1a1a2e", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
+                          <span style={{ fontSize:11, fontWeight:700, color:nbEnts>0?"#188038":"#9aa5b4", background:nbEnts>0?"rgba(24,128,56,0.08)":"#F2F0EF", padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
               )}
 
               {/* Répartition sectorielle */}
@@ -476,13 +487,13 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                 });
                 const total = counts.primaire + counts.secondaire + counts.tertiaire || 1;
                 const rows=[
-                  {label:"Secteur primaire",   key:"primaire",   color:"#059669"},
-                  {label:"Secteur secondaire",  key:"secondaire", color:"#366FE3"},
-                  {label:"Secteur tertiaire",   key:"tertiaire",  color:"#E35336"},
-                ];
+                  {label:"Secteur primaire",    key:"primaire",   color:"#004f91"},
+                  {label:"Secteur secondaire",  key:"secondaire", color:"#ca631f"},
+                  {label:"Secteur tertiaire",   key:"tertiaire",  color:"#188038"},
+                ] as const;
                 return (
-                  <div>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Répartition sectorielle</p>
+                  <section>
+                    <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>Répartition sectorielle</p>
                     <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                       {rows.map(r=>{
                         const pct=Math.round(counts[r.key]/total*100);
@@ -492,32 +503,41 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                               <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
                               <span style={{ fontWeight:700, color:r.color, fontSize:12 }}>{pct}%</span>
                             </div>
-                            <div style={{ height:6, background:"#E8E5E3", borderRadius:99, overflow:"hidden" }}>
+                            <div style={{ height:6, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
                               <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99, transition:"width 0.4s ease" }}/>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                  </div>
+                  </section>
                 );
               })()}
 
               {/* Fichiers PDF du pôle */}
               {(activePole.fichiers || []).length > 0 && (
-                <div style={{ marginTop:16 }}>
-                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Fichier{activePole.fichiers.length>1?"s":""} PDF</p>
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                <section>
+                  <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{activePole.fichiers.length>1?"Documents":"Document"}</p>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                     {activePole.fichiers.map((fi: any) => (
                       <a key={fi.id} href={`${API_BASE}/zones-types/poles/${activePole.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
-                        style={{ display:"flex", alignItems:"center", gap:9, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:8, padding:"9px 13px", fontSize:12.5, fontWeight:600, color:"#004f91", textDecoration:"none" }}>
+                        style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"9px 12px", fontSize:12.5, fontWeight:600, color:"#004f91", textDecoration:"none" }}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         {fi.titre}
                       </a>
                     ))}
                   </div>
-                </div>
+                </section>
               )}
+
+            </div>
+
+            {/* Pied */}
+            <div style={{ display:"flex", justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
+              <button onClick={()=>setActivePole(null)}
+                style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+                Fermer
+              </button>
             </div>
           </div>
         </div>
@@ -529,60 +549,77 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         const regionColor = REGION_PALETTE[activeRegion] || "#E8E5E3";
         const total = stats?.total || 0;
         const rows = [
-          { label: "Secteur primaire",   key: "primaire",   color: "#059669" },
-          { label: "Secteur secondaire", key: "secondaire", color: "#366FE3" },
-          { label: "Secteur tertiaire",  key: "tertiaire",  color: "#E35336" },
+          { label: "Secteur primaire",   key: "primaire",   color: "#004f91" },
+          { label: "Secteur secondaire", key: "secondaire", color: "#ca631f" },
+          { label: "Secteur tertiaire",  key: "tertiaire",  color: "#188038" },
         ] as const;
         const base = (stats ? stats.primaire + stats.secondaire + stats.tertiaire : 0) || 1;
         return (
           <div onClick={e => { if (e.target === e.currentTarget) setActiveRegion(null); }}
-            style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-            <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:480, maxHeight:"90vh", border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.2)", overflow:"hidden" }}>
-              <div style={{ height:5, background:`linear-gradient(90deg,${regionColor},${regionColor}99,${regionColor}55)` }}/>
-              <div style={{ padding:"24px 28px 28px", overflowY:"auto" as const, maxHeight:"calc(90vh - 5px)" }}>
+            style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+            <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+            <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:480, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+              {/* Liseré d'accent */}
+              <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
 
-                {/* En-tête */}
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-                  <div style={{ flex:1, paddingRight:12 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                      <div style={{ width:12, height:12, borderRadius:3, background:regionColor, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
-                      <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Région</span>
-                    </div>
-                    <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:"#1a1a2e", lineHeight:1.3 }}>{activeRegion}</h2>
+              {/* En-tête */}
+              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+                <div style={{ minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
+                    <div style={{ width:12, height:12, borderRadius:3, background:regionColor, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
+                    <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Région</span>
                   </div>
-                  <button onClick={() => setActiveRegion(null)} style={{ background:"rgba(0,0,0,0.06)", border:"none", borderRadius:99, width:28, height:28, cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>✕</button>
+                  <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3 }}>{activeRegion}</h2>
                 </div>
+                <button onClick={() => setActiveRegion(null)}
+                  style={{ background:"#F5F4F3", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+                  onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
+                  onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
+                  <span style={{ fontSize:14, color:"#4a5568", lineHeight:1 }}>✕</span>
+                </button>
+              </div>
+
+              {/* Corps */}
+              <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
 
                 {/* Total entreprises */}
-                <div style={{ background:"#F2F0EF", borderRadius:10, padding:"14px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:14, border:"1px solid #E8E5E3" }}>
-                  <div style={{ fontSize:38, fontWeight:800, color:"#059669", lineHeight:1 }}>{total}</div>
-                  <div style={{ fontSize:13, color:"#1a1a2e", fontWeight:600, lineHeight:1.3 }}>entreprise{total !== 1 ? "s" : ""} formalisée{total !== 1 ? "s" : ""}</div>
+                <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"12px 14px" }}>
+                  <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</p>
+                  <p style={{ fontSize:26, fontWeight:800, color:total>0?"#188038":"#9aa5b4", lineHeight:1.1 }}>{total}</p>
                 </div>
 
                 {/* Répartition sectorielle */}
                 {stats && (
-                  <div>
-                    <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:12 }}>Répartition sectorielle</p>
-                    <div style={{ display:"flex", flexDirection:"column" as const, gap:12 }}>
+                  <section>
+                    <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>Répartition sectorielle</p>
+                    <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                       {rows.map(r => {
                         const count = stats[r.key];
                         const pct = Math.round(count / base * 100);
                         return (
                           <div key={r.key}>
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5, fontSize:12 }}>
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
                               <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
                               <span style={{ fontWeight:700, color:r.color, fontSize:12 }}>{pct}%</span>
                             </div>
-                            <div style={{ height:6, background:"#E8E5E3", borderRadius:0, overflow:"hidden" }}>
-                              <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:0, transition:"width 0.4s ease" }}/>
+                            <div style={{ height:6, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
+                              <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99, transition:"width 0.4s ease" }}/>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                  </div>
+                  </section>
                 )}
 
+              </div>
+
+              {/* Pied */}
+              <div style={{ display:"flex", justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
+                <button onClick={() => setActiveRegion(null)}
+                  style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+                  Fermer
+                </button>
               </div>
             </div>
           </div>
