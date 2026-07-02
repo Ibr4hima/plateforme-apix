@@ -295,7 +295,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                           )}
 
                           {/* Article */}
-                          <div id={`code-art-${a.id}`} style={{ marginBottom:30, scrollMarginTop:24, borderRadius:10, transition:"background 0.6s ease", padding:"4px 8px", margin:"0 -8px 30px" }}>
+                          <div id={`code-art-${a.id}`} style={{ scrollMarginTop:24, borderRadius:10, transition:"background 0.6s ease", padding:"4px 8px", margin:"0 -8px 30px" }}>
                             <p style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", margin:"0 0 10px", lineHeight:1.4 }}>
                               <span style={{ color:"#ca631f" }}>Article {a.num_display}</span>
                               {a.titre && <span style={{ fontWeight:600, color:"#4a5568" }}> — {a.titre}</span>}
