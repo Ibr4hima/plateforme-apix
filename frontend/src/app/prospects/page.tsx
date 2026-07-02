@@ -3,6 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import { Building2, ChevronDown, ChevronUp, Globe, Loader2, Mail, Phone, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { parsePhoneNumber } from "libphonenumber-js";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -15,13 +16,18 @@ function fmtDate(d: string) {
 }
 
 function badgeProspect(p: any) {
-  if (p?.issue === "installe") return { label: "Installation à venir", color: "#0D652D", bg: "rgba(13,101,45,0.10)" };
-  if (p?.issue === "decline")  return { label: "Décliné",  color: "#6b7280", bg: "rgba(107,114,128,0.12)" };
+  if (p?.issue === "installe") return { label: "Installation à venir", color: "#188038", bg: "rgba(24,128,56,0.08)" };
+  if (p?.issue === "decline")  return { label: "Décliné",  color: "#6b7280", bg: "#F2F0EF" };
   if (!p?.date_dernier_echange) return null;
   const jours = Math.floor((Date.now() - new Date(p.date_dernier_echange).getTime()) / 86400000);
-  if (jours <= 30) return { label: "En cours",   color: "#059669", bg: "rgba(5,150,105,0.10)" };
-  if (jours <= 60) return { label: "En attente", color: "#ca631f", bg: "rgba(202,99,31,0.10)" };
-  return                  { label: "Inactif",    color: "#dc2626", bg: "rgba(220,38,38,0.10)" };
+  if (jours <= 30) return { label: "En cours",   color: "#188038", bg: "rgba(24,128,56,0.08)" };
+  if (jours <= 60) return { label: "En attente", color: "#ca631f", bg: "rgba(202,99,31,0.08)" };
+  return                  { label: "Inactif",    color: "#dc2626", bg: "rgba(220,38,38,0.07)" };
+}
+
+function fmtPhone(raw: string): string {
+  if (!raw) return raw;
+  try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
 }
 
 // ── Filtre latéral générique ──────────────────────────────────────────────────
@@ -62,53 +68,64 @@ function SideFilter({ label, items, selected, onToggle, color }: {
 
 // ── Carte prospect ────────────────────────────────────────────────────────────
 
-function CarteProspect({ p }: { p: any }) {
+function CarteProspect({ p, onglet }: { p: any; onglet: "cibles" | "historique" | "termines" }) {
   const badge = badgeProspect(p);
-  const siege = p.siege_nom || "";
-  const secteurs = (p.secteur_noms || []).join(", ");
   const tel = p.telephones?.[0] || p.points_focaux?.[0]?.telephones?.[0] || "";
   const mail = p.mails?.[0] || p.points_focaux?.[0]?.mails?.[0] || "";
+  const nbActs = (p.activite_ids || []).length;
+  // Second bloc libellé, contextuel selon l'onglet
+  const info2 = onglet === "cibles"
+    ? { label: "Téléphone", value: tel ? fmtPhone(tel) : null }
+    : onglet === "historique"
+    ? { label: "Dernier échange", value: p.date_dernier_echange ? fmtDate(p.date_dernier_echange) : null }
+    : (p.issue === "installe"
+        ? { label: "Accord conclu", value: p.issue_conclu_le ? fmtDate(p.issue_conclu_le.slice(0, 10)) : null }
+        : p.issue === "decline"
+        ? { label: "Décliné le", value: p.issue_conclu_le ? fmtDate(p.issue_conclu_le.slice(0, 10)) : null }
+        : { label: "Conclusion", value: null });
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #E8E5E3", borderLeft: "3px solid #004f91", borderRadius: 12, padding: "14px 16px", cursor: "default", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", transition: "all 0.15s" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,79,145,0.12)"; e.currentTarget.style.borderColor = "#004f91"; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor = "#E8E5E3"; e.currentTarget.style.borderLeftColor = "#004f91"; }}>
-      {/* Nom + badge */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-        <div style={{ fontWeight: 700, fontSize: 13, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{p.nom}</div>
-        {badge && <span style={{ fontSize: 10, fontWeight: 700, color: badge.color, background: badge.bg, padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0 }}>{badge.label}</span>}
-      </div>
+    <div style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
 
-      {/* Pays siège */}
-      {siege && (
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#9aa5b4", marginBottom: 8 }}>
-          <Globe size={11} />
-          <span>{siege}</span>
+      <div style={{ padding: "14px 16px 14px", flex: 1 }}>
+        {/* Statut / email + siège */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          {onglet === "cibles" ? (
+            mail ? (
+              <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#6b7280", background: "#F2F0EF", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, minWidth: 0 }}>{mail}</span>
+            ) : <span />
+          ) : badge ? (
+            <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" as const }}>{badge.label}</span>
+          ) : <span />}
+          {p.siege_nom && <span style={{ fontSize: 10.5, fontWeight: 600, color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
         </div>
-      )}
 
-      {/* Secteurs */}
-      {secteurs && (
-        <div style={{ fontSize: 11, color: "#4a5568", background: "#F8F7F6", borderRadius: 6, padding: "3px 8px", marginBottom: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {secteurs}
-        </div>
-      )}
+        {/* Dénomination */}
+        <div style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</div>
 
-      {/* Contacts */}
-      <div style={{ display: "flex", flexDirection: "column" as const, gap: 3, marginBottom: 10 }}>
-        {tel && <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#6b7280" }}><Phone size={10} />{tel}</div>}
-        {mail && <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#6b7280" }}><Mail size={10} />{mail}</div>}
-        {p.date_dernier_echange && (
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#9aa5b4" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#9aa5b4", flexShrink: 0, display: "inline-block" }} />
-            Dernier contact : {fmtDate(p.date_dernier_echange)}
+        {/* Infos libellées */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
+          <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
+            {onglet === "cibles" ? <>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Activités spécialisées</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: nbActs > 0 ? "#1a1a2e" : "#9aa5b4" }}>{nbActs || "—"}</p>
+            </> : <>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Email</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: mail ? "#1a1a2e" : "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{mail || "—"}</p>
+            </>}
           </div>
-        )}
+          <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>{info2.label}</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: info2.value ? "#1a1a2e" : "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{info2.value || "—"}</p>
+          </div>
+        </div>
       </div>
 
       {/* Nb échanges */}
       {p.echanges?.length > 0 && (
-        <div style={{ borderTop: "1px solid #F2F0EF", paddingTop: 8, fontSize: 11, color: "#9aa5b4" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", borderTop: "1px solid #F2F0EF", padding: "10px 0", fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
           {p.echanges.length} échange{p.echanges.length > 1 ? "s" : ""} enregistré{p.echanges.length > 1 ? "s" : ""}
         </div>
       )}
@@ -282,8 +299,8 @@ export default function ProspectsPage() {
               {hasFilter && <button onClick={reinit} style={{ marginTop: 16, padding: "8px 18px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Effacer les filtres</button>}
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-              {listeCourante.map(p => <CarteProspect key={p.id} p={p} />)}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>
+              {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} />)}
             </div>
           )}
         </div>
