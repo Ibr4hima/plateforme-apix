@@ -70,9 +70,9 @@ export default function Sidebar() {
         <nav style={{ flex: 1, padding: "0 12px 20px" }}>
           {/* Bouton vers le site public */}
           <Link href="/"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "9px 14px", borderRadius: 10, background: "#fff", color: "#ca631f", fontSize: 12.5, fontWeight: 700, textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "0.01em", boxShadow: "0 4px 14px rgba(0,20,45,0.18)" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#FFF3EA"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "9px 14px", borderRadius: 10, background: "rgba(202,99,31,0.10)", border: "1px solid rgba(202,99,31,0.35)", color: "#ca631f", fontSize: 12.5, fontWeight: 700, textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "0.01em" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.20)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(202,99,31,0.10)"; }}>
             Page publique
           </Link>
           <div style={{ margin: "14px -12px 4px", borderTop: "1px solid rgba(255,255,255,0.1)" }} />
