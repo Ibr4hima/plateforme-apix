@@ -1034,7 +1034,7 @@ export default function GestionZonesPage() {
                 Aucune zone {t.code} — cliquez sur &quot;+ Zone&quot; pour en ajouter.
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
                 {zDuT.map(z => (
                   <div key={z.id} onClick={() => setVueId(z.id)}
                     style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
@@ -1045,7 +1045,7 @@ export default function GestionZonesPage() {
                       {/* Pôle */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                         {z.pole_nom ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: t.color, background: `${t.color}12`, padding: "3px 10px", borderRadius: 999, overflow: "hidden", whiteSpace: "nowrap" as const, maxWidth: "100%" }}>{z.pole_nom}</span>
+                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", whiteSpace: "nowrap" as const, maxWidth: "100%" }}>{z.pole_nom}</span>
                         ) : <span />}
                       </div>
 
