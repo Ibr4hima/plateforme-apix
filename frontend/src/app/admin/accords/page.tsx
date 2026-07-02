@@ -11,7 +11,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 
 const STATUT_LABELS:  Record<string,string>      = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
 const STATUT_VARIANT: Record<string,BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"gray" };
-const MOIS_ABR = ["JANV","FÉVR","MARS","AVR","MAI","JUIN","JUIL","AOÛT","SEPT","OCT","NOV","DÉC"];
 
 function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
   const today = new Date().toISOString().split("T")[0];
@@ -568,9 +567,6 @@ export default function AdminAccords() {
               expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
             };
             const st = statut ? ST[statut] : null;
-            // Tuile calendrier sur la date de signature
-            const ds = a.date_signature;
-            const tuile = ds ? { mois:MOIS_ABR[parseInt(ds.slice(5,7))-1], jour:String(parseInt(ds.slice(8,10))), annee:ds.slice(0,4) } : null;
             return (
               <div key={a.id} onClick={()=>setVue(a)}
                 style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
@@ -586,29 +582,28 @@ export default function AdminAccords() {
                     {a.reference && <span style={{fontSize:10.5,fontWeight:600,color:"#9aa5b4"}}>{a.reference}</span>}
                   </div>
 
-                  {/* Tuile signature + infos */}
-                  <div style={{display:"flex",gap:13,alignItems:"flex-start"}}>
-                    <div style={{width:52,flexShrink:0,borderRadius:12,border:"1px solid rgba(0,79,145,0.14)",background:"rgba(0,79,145,0.05)",display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"7px 4px 6px",minHeight:56}}>
-                      {tuile ? <>
-                        <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.08em",color:"#004f91"}}>{tuile.mois}</span>
-                        <span style={{fontSize:16,fontWeight:800,color:"#1a1a2e",lineHeight:1.25}}>{tuile.jour}</span>
-                        <span style={{fontSize:9.5,fontWeight:600,color:"#9aa5b4"}}>{tuile.annee}</span>
-                      </> : <FileText size={18} style={{color:"#004f91"}}/>}
+                  {/* Titre */}
+                  <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35}}>{a.titre}</div>
+
+                  {/* Dates libellées */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
+                    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
+                      <p style={{fontSize:12,fontWeight:600,color:a.date_signature?"#1a1a2e":"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                     </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35}}>{a.titre}</div>
-                      <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginTop:7}}>
-                        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                          <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#004f91":"#C5BFBB",flexShrink:0}}/>
-                          <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4",fontWeight:400}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
-                        </div>
-                        {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                          <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                          <span style={{color:"#4a5568",fontWeight:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a)}</span>
-                        </div>}
-                      </div>
+                    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
+                      <p style={{fontSize:12,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p>
                     </div>
                   </div>
+
+                  {/* Parties signataires */}
+                  {getPaysNoms(a)&&(
+                    <div style={{marginTop:8}}>
+                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:3}}>Parties signataires</p>
+                      <p style={{fontSize:12,fontWeight:500,color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a)}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
