@@ -393,15 +393,18 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
             {poles.map((p:any)=><option key={p.id} value={p.id}>{p.pole_territoire}</option>)}
           </FSelect>
         </div>
-        <GeoCascadeSelect
-          regionId={form.region_id || null}
-          departementId={form.departement_id || null}
-          arrondissementId={form.arrondissement_id || null}
-          filterRegionIds={poleRegionIds.length>0?poleRegionIds:undefined}
-          onChangeRegion={id=>{ upd("region_id",id||""); upd("departement_id",""); upd("arrondissement_id",""); }}
-          onChangeDepartement={id=>{ upd("departement_id",id||""); upd("arrondissement_id",""); }}
-          onChangeArrondissement={id=>upd("arrondissement_id",id||"")}
-        />
+        {/* Localisation grisée tant qu'aucun pôle n'est choisi (comme gestion-zones) */}
+        <div style={{ opacity: !form.pole_id ? 0.45 : 1, pointerEvents: !form.pole_id ? "none" : "auto", transition: "opacity 0.2s" }}>
+          <GeoCascadeSelect
+            regionId={form.region_id || null}
+            departementId={form.departement_id || null}
+            arrondissementId={form.arrondissement_id || null}
+            filterRegionIds={poleRegionIds.length>0?poleRegionIds:undefined}
+            onChangeRegion={id=>{ upd("region_id",id||""); upd("departement_id",""); upd("arrondissement_id",""); }}
+            onChangeDepartement={id=>{ upd("departement_id",id||""); upd("arrondissement_id",""); }}
+            onChangeArrondissement={id=>upd("arrondissement_id",id||"")}
+          />
+        </div>
       </FSection>
 
       {/* Thématiques */}
