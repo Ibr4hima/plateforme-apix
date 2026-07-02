@@ -1232,49 +1232,6 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             )}
           </div>
 
-          {/* Points focaux */}
-          {p.points_focaux?.length > 0 && (
-            <div style={{ marginBottom:16 }}>
-              <LBL>Points focaux</LBL>
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-                {p.points_focaux.map((pf:any,i:number)=>{
-                  const tels  = pf.telephones?.filter(Boolean) || [];
-                  const mails = pf.mails?.filter(Boolean) || [];
-                  return (
-                    <div key={i} style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"12px 14px", display:"flex", gap:11 }}>
-                      <div style={{ width:32, height:32, borderRadius:"50%", background:`${accent}12`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <User size={15} style={{ color:accent }}/>
-                      </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ display:"flex", alignItems:"baseline", gap:8, flexWrap:"wrap" as const, marginBottom:(tels.length||mails.length)?7:0 }}>
-                          <span style={{ fontSize:13, fontWeight:700, color:TXT }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
-                          {pf.est_principal && <span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"1px solid rgba(202,99,31,0.2)", borderRadius:999, padding:"1px 7px" }}>Principal</span>}
-                          {pf.poste && <span style={{ fontSize:11, color:MUT }}>{pf.poste}</span>}
-                        </div>
-                        {(tels.length>0 || mails.length>0) && (
-                          <div style={{ display:"flex", flexDirection:"column" as const, gap:4 }}>
-                            {tels.map((t:string,j:number)=>(
-                              <div key={`t${j}`} style={{ display:"flex", alignItems:"center", gap:7 }}>
-                                <Phone size={12} style={{ color:MUT, flexShrink:0 }}/>
-                                <span style={{ fontSize:12, color:SUB, fontWeight:500 }}>{fmtPhone(t)}</span>
-                              </div>
-                            ))}
-                            {mails.map((m:string,j:number)=>(
-                              <div key={`m${j}`} style={{ display:"flex", alignItems:"center", gap:7 }}>
-                                <Mail size={12} style={{ color:MUT, flexShrink:0 }}/>
-                                <a href={`mailto:${m}`} style={{ fontSize:12, color:SUB, fontWeight:500, wordBreak:"break-all" as const, textDecoration:"none" }}>{m}</a>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Activités spécialisées (Secteur → Branche → Activité) */}
           {(p.secteur_ids?.length>0 || p.branche_ids?.length>0 || p.activite_ids?.length>0) && (
             <div style={{ marginBottom:16 }}>
@@ -1329,6 +1286,37 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                     <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_commentaires }}/>
                   </div>
                 )}
+              </div>
+            </Section>
+          )}
+
+          {/* Points focaux */}
+          {p.points_focaux?.length > 0 && (
+            <Section title="Points focaux">
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                {p.points_focaux.map((pf:any, i:number) => {
+                  const pfTels  = (pf.telephones||[]).filter(Boolean);
+                  const pfMails = (pf.mails||[]).filter(Boolean);
+                  return (
+                    <div key={i} style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"11px 14px", fontSize:12 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
+                        <span style={{ fontWeight:700, color:"#1a1a2e" }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
+                        {pf.poste && <span style={{ fontSize:11, color:"#9aa5b4" }}>{pf.poste}</span>}
+                        {pf.est_principal && <span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", borderRadius:999, padding:"2px 8px" }}>Principal</span>}
+                      </div>
+                      {(pfTels.length > 0 || pfMails.length > 0) && (
+                        <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:7 }}>
+                          {pfTels.map((t:string, ti:number) => (
+                            <span key={`t${ti}`} style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{fmtPhone(t)}</span>
+                          ))}
+                          {pfMails.map((m:string, mi:number) => (
+                            <span key={`m${mi}`} style={{ fontSize:11, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.07)", padding:"3px 10px", borderRadius:999 }}>{m}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </Section>
           )}
