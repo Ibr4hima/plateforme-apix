@@ -180,16 +180,6 @@ function AddBtn({ label, onClick }: { label:string; onClick:()=>void }) {
 const DEVISE_SYMBOLE: Record<string,string> = { XOF:"FCFA", USD:"$", EUR:"€", GBP:"£", CNY:"¥", CAD:"CA$", CHF:"CHF", JPY:"¥" };
 const devSymbole = (code?:string, symbole?:string) => symbole || (code ? DEVISE_SYMBOLE[code]||code : "");
 
-// Montant d'investissement formaté (simple ou intervalle), null si absent.
-function fmtInvestProjet(p:any): string|null {
-  const sym = devSymbole(p.devise_code, p.devise_symbole);
-  if (!p.investissement_est_intervalle) return p.investissement ? `${Number(p.investissement).toLocaleString("fr-FR")} ${sym}` : null;
-  if (!p.investissement_min) return null;
-  const min = Number(p.investissement_min).toLocaleString("fr-FR");
-  const max = p.investissement_max ? Number(p.investissement_max).toLocaleString("fr-FR") : "…";
-  return `${min} — ${max} ${sym}`;
-}
-
 function MoneyInput({ value, onChange, placeholder }: { value:string; onChange:(v:string)=>void; placeholder?:string }) {
   const [display, setDisplay] = useState(() => value ? Number(value).toLocaleString("fr-FR") : "");
   useEffect(()=>{
@@ -753,7 +743,6 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:14 }}>
           {projets.map(p=>{
-            const invest = fmtInvestProjet(p);
             return (
             <div key={p.id} onClick={()=>setVue(p)}
               style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
@@ -774,12 +763,12 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
                 {/* Infos libellées */}
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
                   <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Investissement</p>
-                    <p style={{ fontSize:12, fontWeight:600, color:invest?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{invest||"—"}</p>
-                  </div>
-                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Région</p>
                     <p style={{ fontSize:12, fontWeight:600, color:p.region_nom?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.region_nom||"—"}</p>
+                  </div>
+                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Département</p>
+                    <p style={{ fontSize:12, fontWeight:600, color:p.departement_nom?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.departement_nom||"—"}</p>
                   </div>
                 </div>
               </div>
