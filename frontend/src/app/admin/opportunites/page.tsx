@@ -924,19 +924,11 @@ export default function OpportunitesAdminPage() {
   const [avgToggle, setAvgToggle] = useState<number|null>(null);
   const [selectedSec, setSelectedSec] = useState<string|null>(null);
   const [selectedNiveau, setSelectedNiveau] = useState<string|null>(null);
-  const [secEntCounts, setSecEntCounts] = useState<Record<string,number>>({});
   const [refSecteurs,  setRefSecteurs]  = useState<any[]>([]);
   const [refBranches,  setRefBranches]  = useState<any[]>([]);
   const [refActivites, setRefActivites] = useState<any[]>([]);
 
   useEffect(()=>{
-    fetch(`${API}/dashboard/viz/entreprises-par-secteur`)
-      .then(r=>r.json())
-      .then((data:any[])=>{
-        const map: Record<string,number> = {};
-        data.forEach(d=>{ map[(d.label||"").toLowerCase()] = d.valeur||0; });
-        setSecEntCounts(map);
-      }).catch(()=>{});
     const safe = (url:string) => fetch(url).then(r=>r.json()).catch(()=>[]);
     Promise.all([
       safe(`${API}/entreprises/ref/secteurs`),
@@ -1259,8 +1251,8 @@ export default function OpportunitesAdminPage() {
               <p style={{fontSize:13}}>Créez votre premier avantage ou incitation</p>
             </div>
           ) : selectedSec===null ? (
-            /* ── Vue secteurs : 3 cards style BanqueProjets ── */
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+            /* ── Vue secteurs : 3 cards ── */
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
               {([
                 {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
                 {key:"secondaire", label:"Secteur Secondaire", color:"#004f91"},
@@ -1268,42 +1260,42 @@ export default function OpportunitesAdminPage() {
               ] as const).map(s=>{
                 const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
                 const count = items.length;
+                const sec = refSecteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
+                const branches = sec ? refBranches.filter((b:any)=>b.secteur_id===sec.id) : [];
+                const branchIds = new Set(branches.map((b:any)=>b.id));
+                const actCount = refActivites.filter((a:any)=>branchIds.has(a.branche_id)).length;
                 return (
                   <div key={s.key} onClick={()=>count>0&&setSelectedSec(s.key)}
-                    style={{background:"#fff",border:"1px solid #E8E5E3",borderRadius:12,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",borderLeft:`3px solid ${count>0?s.color:"#C5BFBB"}`,cursor:count>0?"pointer":"default",transition:"all 0.15s"}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow=`0 4px 16px ${s.color}20`;ev.currentTarget.style.borderColor=s.color;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor=count>0?s.color:"#C5BFBB";}}>
-                    <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:8,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{s.label}</div>
-                    {(()=>{
-                      const entCount = Object.entries(secEntCounts).find(([k])=>k.includes(s.key))?.[1] ?? null;
-                      const sec = refSecteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
-                      const branches = sec ? refBranches.filter((b:any)=>b.secteur_id===sec.id) : [];
-                      const branchIds = new Set(branches.map((b:any)=>b.id));
-                      const actCount = refActivites.filter((a:any)=>branchIds.has(a.branche_id)).length;
-                      return (
-                        <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:12}}>
-                          {entCount!==null&&(
-                            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                              <span style={{color:"#4a5568",fontWeight:400}}>{entCount} entreprise{entCount!==1?"s":""} spécialisée{entCount!==1?"s":""}</span>
-                            </div>
-                          )}
-                          {branches.length>0&&(
-                            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                              <span style={{color:"#4a5568",fontWeight:400}}>{branches.length} branche{branches.length>1?"s":""}</span>
-                              <span style={{color:"#C5BFBB"}}>›</span>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                              <span style={{color:"#4a5568",fontWeight:400}}>{actCount} activité{actCount>1?"s":""}</span>
-                            </div>
-                          )}
+                    style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}40`;}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+
+                    <div style={{padding:"14px 16px 14px",flex:1}}>
+                      {/* Secteur */}
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                        <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:s.color,background:`${s.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{s.label}</span>
+                      </div>
+
+                      {/* Compteurs libellés */}
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                        <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Activités</p>
+                          <p style={{fontSize:14,fontWeight:800,color:actCount>0?"#1a1a2e":"#9aa5b4"}}>{actCount||"—"}</p>
                         </div>
-                      );
-                    })()}
-                    <div style={{borderTop:"1px solid #F2F0EF",paddingTop:10}}>
-                      <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:`${s.color}12`,border:"none",cursor:count>0?"pointer":"default",borderRadius:7,padding:"6px 0",fontSize:11,color:s.color,fontWeight:600,opacity:count>0?1:0.45}}>
+                        <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Fiches définies</p>
+                          <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{actCount>0?`${count}/${actCount}`:count}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action */}
+                    <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
+                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:s.color,fontWeight:600,opacity:count>0?1:0.45,transition:"background 0.15s"}}
+                        onMouseEnter={ev=>{if(count>0)ev.currentTarget.style.background=`${s.color}0D`;}}
+                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         Voir les détails →
-                      </button>
+                      </div>
                     </div>
                   </div>
                 );
