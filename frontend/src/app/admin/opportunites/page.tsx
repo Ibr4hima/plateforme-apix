@@ -1344,9 +1344,8 @@ export default function OpportunitesAdminPage() {
                   <div>
                     {/* En-tête du secteur */}
                     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-                      <span style={{display:"inline-flex",alignItems:"center",fontSize:11,fontWeight:800,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"5px 14px",borderRadius:999,whiteSpace:"nowrap" as const}}>{secNom}</span>
+                      <span style={{display:"inline-flex",alignItems:"center",fontSize:11,fontWeight:800,color:"#1a1a2e",background:"#fff",border:"1px solid #ECEAE7",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",padding:"5px 14px",borderRadius:999,whiteSpace:"nowrap" as const}}>{secNom}</span>
                       <span style={{flex:1,height:1,background:"#ECEAE7"}}/>
-                      <span style={{fontSize:11.5,fontWeight:600,color:"#9aa5b4",whiteSpace:"nowrap" as const}}>{filtered.length} avantage{filtered.length>1?"s":""} défini{filtered.length>1?"s":""}</span>
                     </div>
 
                     {/* Une card par branche */}
@@ -1359,7 +1358,6 @@ export default function OpportunitesAdminPage() {
                               <span style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
                               <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</span>
                             </div>
-                            <span style={{fontSize:10.5,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:999,flexShrink:0}}>{bra.items.length} activité{bra.items.length>1?"s":""}</span>
                           </div>
                           {/* Activités */}
                           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,padding:16}}>
@@ -1382,7 +1380,12 @@ export default function OpportunitesAdminPage() {
                                 <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                 </div>
-                                <span style={{display:"flex",alignItems:"center",background:"rgba(0,79,145,0.07)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#004f91",fontWeight:600,flexShrink:0}}>Voir →</span>
+                                <button onClick={ev=>{ev.stopPropagation();deleteAvg(a.id);}} disabled={avgDel===a.id}
+                                  style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 8px",flexShrink:0,transition:"background 0.15s"}}
+                                  onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.14)"}
+                                  onMouseLeave={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.07)"}>
+                                  {avgDel===a.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                                </button>
                               </div>
                             ))}
                           </div>
