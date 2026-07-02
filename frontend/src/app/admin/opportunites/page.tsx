@@ -7,26 +7,9 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FSegmented, FInfo, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
-import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const DEPT_TO_REGION: Record<string, string> = {
-  "Dakar":"Dakar","Guédiawaye":"Dakar","Pikine":"Dakar","Rufisque":"Dakar",
-  "Mbour":"Thiès","Thiès":"Thiès","Tivaouane":"Thiès",
-  "Bambey":"Diourbel","Diourbel":"Diourbel","Mbacké":"Diourbel",
-  "Dagana":"Saint-Louis","Podor":"Saint-Louis","Saint-Louis":"Saint-Louis",
-  "Kébémer":"Louga","Linguère":"Louga","Louga":"Louga",
-  "Fatick":"Fatick","Foundiougne":"Fatick","Gossas":"Fatick",
-  "Guinguinéo":"Kaolack","Kaolack":"Kaolack","Nioro du Rip":"Kaolack",
-  "Birkilane":"Kaffrine","Kaffrine":"Kaffrine","Koungheul":"Kaffrine","Malem Hoddar":"Kaffrine",
-  "Bakel":"Tambacounda","Goudiry":"Tambacounda","Koumpentoum":"Tambacounda","Tambacounda":"Tambacounda",
-  "Kédougou":"Kédougou","Salemata":"Kédougou","Saraya":"Kédougou",
-  "Kolda":"Kolda","Médina Yoro Foulah":"Kolda","Vélingara":"Kolda",
-  "Bounkiling":"Sédhiou","Goudomp":"Sédhiou","Sédhiou":"Sédhiou",
-  "Bignona":"Ziguinchor","Oussouye":"Ziguinchor","Ziguinchor":"Ziguinchor",
-  "Kanel":"Matam","Matam":"Matam","Ranérou":"Matam",
-};
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
@@ -686,7 +669,12 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
 function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
   pot:any; onClose:()=>void; onEdit:(p:any)=>void;
 }) {
-  const bandColor = "#E35336";
+  // Couleur du niveau (palette du site)
+  const NIVEAU_COLORS: Record<string,string> = {
+    pole:"#004f91", region:"#ca631f", departement:"#188038", arrondissement:"#6A1B9A",
+  };
+  const nivColor = NIVEAU_COLORS[p.niveau] || "#004f91";
+  const zoneNom = p.pole_nom||p.region_nom||p.departement_nom||p.arrondissement_nom||"";
   const [fichiers,  setFichiers]  = useState<any[]>(p.fichiers||[]);
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
   const [branches,  setBranches]  = useState<any[]>([]);
@@ -704,53 +692,71 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
       safe(`${API}/entreprises/ref/activites`),
     ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); });
   }, [p.id]);
-  const LBL = ({children}:{children:string}) => (
-    <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
+
+  const SecTitle = ({children}:{children:string}) => (
+    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
+
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
-      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:660,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#E3533699)"}}/>
-        <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
-            <div style={{flex:1,paddingRight:16}}>
-              <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{p.titre}</h2>
-            </div>
-            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
-          </div>
+      style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:660,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+        {/* Liseré d'accent */}
+        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
+        {/* En-tête */}
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
+          <div style={{minWidth:0}}>
+            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{p.titre}</h2>
+            {zoneNom&&(
+              <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
+                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:nivColor,background:`${nivColor}12`,padding:"3px 10px",borderRadius:999}}>{zoneNom}</span>
+              </div>
+            )}
+          </div>
+          <button onClick={onClose}
+            style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
+            <X size={15} color="#4a5568"/>
+          </button>
+        </div>
+
+        {/* Corps */}
+        <div style={{padding:"22px 28px",overflowY:"auto" as const,flex:1,display:"flex",flexDirection:"column" as const,gap:22}}>
+
+          {/* Activités porteuses */}
           {(p.secteur_ids?.length > 0 || p.branche_ids?.length > 0) && (
-            <div style={{marginBottom:16}}>
-              <LBL>Activités porteuses</LBL>
+            <section>
+              <SecTitle>Activités porteuses</SecTitle>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {(p.secteur_ids||[]).map((secId:number) => {
                   const sec = secteurs.find((s:any) => s.id === secId);
                   if (!sec) return null;
-                  const secC = "#E35336";
                   const brasDuSec = branches.filter((b:any) => b.secteur_id === secId && (p.branche_ids||[]).includes(b.id));
                   return (
                     <div key={secId}>
                       <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:secC,flexShrink:0}}/>
-                        <span style={{fontSize:12,fontWeight:700,color:secC}}>{sec.nom}</span>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                        <span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>{sec.nom}</span>
                       </div>
                       {brasDuSec.length > 0 && (
-                        <div style={{paddingLeft:20,borderLeft:`2px solid ${secC}25`,display:"flex",flexDirection:"column" as const,gap:4}}>
+                        <div style={{paddingLeft:20,borderLeft:"2px solid rgba(0,79,145,0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
                           {brasDuSec.map((bra:any) => {
                             const actsDeBra = activites.filter((a:any) => a.branche_id === bra.id && (p.activite_ids||[]).includes(a.id));
                             return (
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
-                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
-                                  <span style={{fontSize:11,fontWeight:600,color:"#0F52BA"}}>{bra.nom}</span>
+                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+                                  <span style={{fontSize:11,fontWeight:600,color:"#ca631f"}}>{bra.nom}</span>
                                 </div>
                                 {actsDeBra.length > 0 && (
-                                  <div style={{paddingLeft:18,borderLeft:"2px solid rgba(15,82,186,0.15)",display:"flex",flexDirection:"column" as const,gap:3}}>
+                                  <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
                                     {actsDeBra.map((act:any) => (
                                       <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
-                                        <span style={{fontSize:11,color:"#0D652D",fontWeight:500}}>{act.nom}</span>
+                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                        <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -764,37 +770,48 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
                   );
                 })}
               </div>
-            </div>
+            </section>
           )}
 
+          {/* Description */}
           {p.description&&(
-            <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
-              <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc} [data-rte] ol{padding-left:20px;list-style-type:decimal} [data-rte] li{margin-bottom:2px}`}</style>
-              <LBL>Description</LBL>
-              <div data-rte style={{fontSize:13,color:"#4a5568",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
-            </div>
+            <section>
+              <SecTitle>Description</SecTitle>
+              <div style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"13px 15px"}}>
+                <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc} [data-rte] ol{padding-left:20px;list-style-type:decimal} [data-rte] li{margin-bottom:2px}`}</style>
+                <div data-rte style={{fontSize:13,color:"#4a5568",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
+              </div>
+            </section>
           )}
 
+          {/* Documents */}
           {fichiers.length>0&&(
-            <div style={{marginBottom:16}}>
-              <LBL>Documents</LBL>
-              <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+            <section>
+              <SecTitle>{fichiers.length>1?"Documents":"Document"}</SecTitle>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {fichiers.map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(251,188,4,0.12)",border:"1px solid rgba(251,188,4,0.35)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#8A6100",textDecoration:"none",fontWeight:600}}>
-                    <FileText size={11}/> {f.titre||f.fichier_nom}
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
+                    <span style={{fontSize:12.5,color:"#004f91",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#E35336",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
-              <Pencil size={13}/> Modifier
-            </button>
-            <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
-          </div>
+        </div>
+
+        {/* Pied */}
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+          <button onClick={onClose}
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+            Fermer
+          </button>
+          <button onClick={()=>{onClose();onEdit(p);}}
+            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
+            <Pencil size={13}/> Modifier
+          </button>
         </div>
       </div>
     </div>
@@ -961,15 +978,16 @@ export default function OpportunitesAdminPage() {
     } finally{setAvgsLoad(false);}
   },[avgsQ]);
 
-  // Totaux du référentiel géographique (pour les compteurs « défini / total »)
-  const [geoTotaux, setGeoTotaux] = useState({ regions:0, departements:0, arrondissements:0 });
+  // Référentiel géographique (compteurs « défini / total » + rattachements des fiches)
+  const [geoRef, setGeoRef] = useState<{regions:any[];departements:any[];arrondissements:any[]}>({ regions:[], departements:[], arrondissements:[] });
   useEffect(()=>{
     Promise.all([
       fetch(`${API}/entreprises/ref/regions`).then(r=>r.json()),
       fetch(`${API}/entreprises/ref/departements`).then(r=>r.json()),
       fetch(`${API}/entreprises/ref/arrondissements`).then(r=>r.json()),
-    ]).then(([r,d,a])=>setGeoTotaux({ regions:r.length||0, departements:d.length||0, arrondissements:a.length||0 })).catch(()=>{});
+    ]).then(([r,d,a])=>setGeoRef({ regions:r||[], departements:d||[], arrondissements:a||[] })).catch(()=>{});
   },[]);
+  const geoTotaux = { regions:geoRef.regions.length, departements:geoRef.departements.length, arrondissements:geoRef.arrondissements.length };
 
   useEffect(()=>{chargerPots();},[chargerPots]);
   useEffect(()=>{chargerAvgs();},[chargerAvgs]);
@@ -1118,119 +1136,105 @@ export default function OpportunitesAdminPage() {
               })}
             </div>
           ) : (
-            /* ── Vue drill-down ── */
+            /* ── Fiches du niveau sélectionné ── */
             <>
               <button onClick={()=>setSelectedNiveau(null)}
                 style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
                 <ArrowLeft size={14}/> Retour aux zones
               </button>
-              {selectedNiveau==="pole" ? (
-                /* Carte interactive pôles */
-                <VueTerritorialeSenegal
-                  zones={[]}
-                  mode="pole"
-                  onPoleClick={(pole)=>{
-                    const pot = pots.find((p:any)=>p.pole_id===pole.id);
-                    if (pot) setPotVue(pot);
-                  }}
-                />
-              ) : selectedNiveau==="region" ? (
-                /* Carte interactive régions */
-                <VueTerritorialeSenegal
-                  zones={[]}
-                  mode="region"
-                  onRegionClick={(nom)=>{
-                    const pot = pots.find((p:any)=>p.region_nom===nom);
-                    if (pot) setPotVue(pot);
-                  }}
-                />
-              ) : (()=>{
+              {(()=>{
                 const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                 if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
+                // Rattachements géographiques via le référentiel déjà chargé
+                const regionDuDept = (nom:string) => {
+                  const dep = geoRef.departements.find((d:any)=>d.nom===nom);
+                  return geoRef.regions.find((r:any)=>r.id===dep?.region_id)?.nom || null;
+                };
+                const deptDeArr = (nom:string) => {
+                  const arr = geoRef.arrondissements.find((a:any)=>a.nom===nom);
+                  return geoRef.departements.find((d:any)=>d.id===arr?.departement_id)?.nom || null;
+                };
+                const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
+                return (
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+                    {items.map((p:any)=>{
+                      const nbActs = (p.activite_ids||[]).length;
+                      // Premier bloc contextuel selon le niveau
+                      const info1 = selectedNiveau==="pole"
+                        ? { label:(poles.find((x:any)=>x.id===p.pole_id)?.localisation||"").includes(",")?"Régions":"Région", value: poles.find((x:any)=>x.id===p.pole_id)?.localisation||null }
+                        : selectedNiveau==="region"
+                        ? { label:"Pôle", value: poleDeRegion(p.region_nom||"") }
+                        : selectedNiveau==="departement"
+                        ? { label:"Région", value: p.region_nom||regionDuDept(p.departement_nom||"") }
+                        : { label:"Département", value: p.departement_nom||deptDeArr(p.arrondissement_nom||"") };
+                      return (
+                        <div key={p.id} onClick={()=>setPotVue(p)}
+                          style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",minWidth:0}}
+                          onMouseEnter={ev=>{
+                            ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+                            // Contenus trop longs : glissent pour révéler la fin
+                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                              const span = box.firstElementChild as HTMLElement | null;
+                              if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                            });
+                          }}
+                          onMouseLeave={ev=>{
+                            ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                              const span = box.firstElementChild as HTMLElement | null;
+                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                            });
+                          }}>
 
-                const potActions=(p:any,dot:string,hoverBorder:string,hoverShadow:string)=>(
-                  <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
-                    onClick={()=>setPotVue(p)}
-                    onMouseEnter={ev=>{ev.currentTarget.style.borderColor=hoverBorder;ev.currentTarget.style.boxShadow=hoverShadow;}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
-                    <div style={{width:7,height:7,borderRadius:"50%",background:dot,flexShrink:0}}/>
-                    <span style={{fontSize:13,fontWeight:600,color:dot,flex:1}}>{potTitle(p)}</span>
-                    <div style={{display:"flex",gap:5,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
-                      <button onClick={()=>{setPotEdit(p);setPotModal(true);}} style={{display:"flex",alignItems:"center",gap:3,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:"#366FE3",fontWeight:600}}><Pencil size={11}/> Modifier</button>
-                      <button onClick={()=>togglePot(p)} disabled={potToggle===p.id} style={{display:"flex",alignItems:"center",gap:3,background:p.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 8px",fontSize:11,color:p.est_publie?"#059669":"#6b7280",fontWeight:600}}>{potToggle===p.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={11}/> Publié</>:<><Eye size={11}/> Publier</>}</button>
-                      <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id} style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"4px 7px"}}>{potDel===p.id?<Loader2 size={11} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"#dc2626"}}/>}</button>
-                    </div>
-                  </div>
-                );
+                          <div style={{padding:"14px 16px 14px",flex:1}}>
+                            {/* Titre (défile au survol si trop long) */}
+                            <div data-marquee style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                              <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                            </div>
 
-                /* ── Arbre Régions → Départements (tout déplié) ── */
-                if (selectedNiveau==="departement") {
-                  const getRegion=(p:any)=>p.region_nom||DEPT_TO_REGION[p.departement_nom]||null;
-                  const regMap=new Map<string,any[]>();
-                  items.forEach((p:any)=>{const r=getRegion(p)||"__none";if(!regMap.has(r))regMap.set(r,[]);regMap.get(r)!.push(p);});
-                  const sortedRegs=[...[...regMap.keys()].filter(k=>k!=="__none").sort(),...(regMap.has("__none")?["__none"]:[])];
-                  return (
-                    <div style={{display:"flex",flexDirection:"column" as const,gap:20}}>
-                      {sortedRegs.map(reg=>(
-                        <div key={reg}>
-                          <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:10}}>
-                            <div style={{width:8,height:8,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
-                            <span style={{fontSize:14,fontWeight:700,color:"#0F52BA"}}>{reg==="__none"?"Non classés":`Région de ${reg}`}</span>
+                            {/* Infos libellées */}
+                            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
+                              <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
+                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{info1.label}</p>
+                                <p data-marquee style={{fontSize:12,fontWeight:600,color:info1.value?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                  <span style={{display:"inline-block"}}>{info1.value||"—"}</span>
+                                </p>
+                              </div>
+                              <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Activités porteuses</p>
+                                <p style={{fontSize:14,fontWeight:800,color:nbActs>0?"#1a1a2e":"#9aa5b4"}}>{nbActs||"—"}</p>
+                              </div>
+                            </div>
                           </div>
-                          <div style={{paddingLeft:20,borderLeft:"2px solid rgba(15,82,186,0.18)",display:"flex",flexDirection:"column" as const,gap:8}}>
-                            {regMap.get(reg)!.map((p:any)=>potActions(p,"#0D652D","#0D652D40","0 3px 10px rgba(13,101,45,0.10)"))}
+
+                          {/* Actions */}
+                          <div style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
+                            <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
+                              style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
+                              onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                              <Pencil size={12}/> Modifier
+                            </button>
+                            <div style={{width:1,background:"#F2F0EF"}}/>
+                            <button onClick={()=>togglePot(p)} disabled={potToggle===p.id}
+                              style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:p.est_publie?"#188038":"#6b7280",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
+                              onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
+                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                              {potToggle===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Publié</>:<><Eye size={12}/> Publier</>}
+                            </button>
+                            <div style={{width:1,background:"#F2F0EF"}}/>
+                            <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
+                              style={{width:46,display:"flex",alignItems:"center",justifyContent:"center",background:"none",border:"none",cursor:"pointer",transition:"background 0.15s"}}
+                              onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
+                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                              {potDel===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                            </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  );
-                }
-
-                /* ── Arbre Régions → Départements → Arrondissements (tout déplié) ── */
-                if (selectedNiveau==="arrondissement") {
-                  const getRegion=(p:any)=>p.region_nom||DEPT_TO_REGION[p.departement_nom]||null;
-                  const regMap=new Map<string,Map<string,any[]>>();
-                  items.forEach((p:any)=>{
-                    const r=getRegion(p)||"__none";
-                    const d=p.departement_nom||"__none_dept";
-                    if(!regMap.has(r))regMap.set(r,new Map());
-                    const dm=regMap.get(r)!;
-                    if(!dm.has(d))dm.set(d,[]);
-                    dm.get(d)!.push(p);
-                  });
-                  const sortedRegs=[...[...regMap.keys()].filter(k=>k!=="__none").sort(),...(regMap.has("__none")?["__none"]:[])];
-                  return (
-                    <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
-                      {sortedRegs.map(reg=>{
-                        const deptMap=regMap.get(reg)!;
-                        const sortedDepts=[...[...deptMap.keys()].filter(k=>k!=="__none_dept").sort(),...(deptMap.has("__none_dept")?["__none_dept"]:[])];
-                        return (
-                          <div key={reg}>
-                            <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:12}}>
-                              <div style={{width:8,height:8,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
-                              <span style={{fontSize:14,fontWeight:700,color:"#0F52BA"}}>{reg==="__none"?"Non classés":`Région de ${reg}`}</span>
-                            </div>
-                            <div style={{paddingLeft:20,borderLeft:"2px solid rgba(15,82,186,0.18)",display:"flex",flexDirection:"column" as const,gap:14}}>
-                              {sortedDepts.map(dept=>(
-                                <div key={dept}>
-                                  <div style={{display:"inline-flex",alignItems:"center",gap:7,marginBottom:8}}>
-                                    <div style={{width:7,height:7,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
-                                    <span style={{fontSize:13,fontWeight:600,color:"#0D652D"}}>{dept==="__none_dept"?"Sans département":`Département de ${dept}`}</span>
-                                  </div>
-                                  <div style={{paddingLeft:18,borderLeft:"2px solid rgba(13,101,45,0.18)",display:"flex",flexDirection:"column" as const,gap:8}}>
-                                    {deptMap.get(dept)!.map((p:any)=>potActions(p,"#8A6100","#FBBC0450","0 3px 10px rgba(251,188,4,0.15)"))}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                }
-
-                return null;
+                      );
+                    })}
+                  </div>
+                );
               })()}
             </>
           )}
