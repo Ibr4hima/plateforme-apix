@@ -595,108 +595,128 @@ function OngletPoles() {
     charger();
   };
 
-  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-  const LS: any = { fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 4, display: "block" };
-
-  const PoleCard = ({ pole, isNew = false }: { pole?: any; isNew?: boolean }) => {
-    const id: number|"new" = isNew ? "new" : pole.id;
-    const isOpen = expanded === id;
-    const f = forms[id] || (isNew ? { pole_territoire: "", localisation: "", description: "", region_ids: [] } : {});
-    const pc = isNew ? null : getPoleColor(pole.pole_territoire);
-    const accentColor = isNew ? "#059669" : pc!;
-    const initial = (!isNew && (f.pole_territoire || pole.pole_territoire)?.[0]) || "P";
-    return (
-      <div style={{ background: "#fff", border: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderLeft: `4px solid ${accentColor}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", cursor: "pointer" }}
-          onClick={() => setExpanded(isOpen ? null : id)}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: isNew ? "rgba(5,150,105,0.1)" : accentColor, border: isNew ? "none" : "1px solid rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            {isNew ? <Plus size={14} style={{ color: "#059669" }} /> : <span style={{ fontSize: 13, fontWeight: 800, color: "#1a1a2e" }}>{initial}</span>}
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{isNew ? "Ajouter un nouveau pôle" : f.pole_territoire || pole.pole_territoire}</div>
-            {!isNew && (f.localisation || pole.localisation) && <div style={{ fontSize: 12, color: "#9aa5b4", marginTop: 1 }}>{f.localisation || pole.localisation}</div>}
-          </div>
-          {!isNew && <button onClick={e => { e.stopPropagation(); handleDelete(pole.id); }} style={{ background: "rgba(220,38,38,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}><Trash2 size={13} style={{ color: "#dc2626" }} /></button>}
-          {isOpen ? <ChevronDown size={15} style={{ color: "#9aa5b4" }} /> : <ChevronRight size={15} style={{ color: "#9aa5b4" }} />}
-        </div>
-        {isOpen && (
-          <div style={{ borderTop: `1px solid ${accentColor}30`, padding: "16px 18px", background: isNew ? "transparent" : `${accentColor}08`, display: "flex", flexDirection: "column", gap: 12 }}>
-            <div><label style={LS}>Nom du pôle *</label><input value={f.pole_territoire || ""} onChange={e => updateForm(id, "pole_territoire", e.target.value)} placeholder="Ex : Pôle Dakar" style={IS} /></div>
-            <div>
-              <label style={LS}>Régions composant ce pôle</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: 10, background: "#F8F7F6", borderRadius: 10, border: "1px solid #C5BFBB" }}>
-                {regions.map((r: any) => {
-                  const sel = (f.region_ids || []).includes(r.id);
-                  return <button key={r.id} onClick={() => toggleRegion(id, r.id)}
-                    style={{ padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${sel ? accentColor : "#C5BFBB"}`, background: sel ? accentColor : "#fff", color: sel ? "#1a1a2e" : "#4a5568", transition: "all 0.12s" }}>
-                    {r.nom}
-                  </button>;
-                })}
-              </div>
-              {(f.region_ids || []).length > 0 && <p style={{ fontSize: 11, color: "#9aa5b4", marginTop: 6 }}>Localisation : {regions.filter(r => f.region_ids.includes(r.id)).map((r: any) => r.nom).join(", ")}</p>}
-            </div>
-            <div><label style={LS}>Description</label><RichTextEditor value={f.description || ""} onChange={v => updateForm(id, "description", v)}/></div>
-
-            {/* Documents PDF */}
-            <div>
-              <label style={LS}>Documents PDF</label>
-              {!isNew && (pole.fichiers || []).length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
-                  {pole.fichiers.map((fi: any) => (
-                    <div key={fi.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 8, padding: "7px 12px" }}>
-                      <FileText size={13} style={{ color: "#004f91" }} />
-                      <a href={`${API_BASE}/zones-types/poles/${pole.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
-                        style={{ fontSize: 13, flex: 1, color: "#1a1a2e", fontWeight: 500, textDecoration: "none" }}>{fi.titre}</a>
-                      <button onClick={() => supprimerPoleFichier(pole.id, fi.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 8, cursor: "pointer", border: "2px dashed #C5BFBB", background: "#F8F7F6" }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = accentColor}
-                onMouseLeave={e => e.currentTarget.style.borderColor = "#C5BFBB"}>
-                <Upload size={14} color="#9aa5b4" />
-                <span style={{ fontSize: 13, color: "#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
-                <input type="file" accept=".pdf" multiple style={{ display: "none" }}
-                  onChange={e => { const files = Array.from(e.target.files || []); updateForm(id, "pdfQueue", [...(f.pdfQueue || []), ...files.map(file => ({ file, titre: file.name.replace(/\.pdf$/i, "") }))]); e.target.value = ""; }} />
-              </label>
-              {(f.pdfQueue || []).length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
-                  {f.pdfQueue.map((p: any, i: number) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 8, padding: "7px 12px" }}>
-                      <FileText size={13} style={{ color: "#7c3aed" }} />
-                      <input value={p.titre} onChange={e => updateForm(id, "pdfQueue", f.pdfQueue.map((x: any, j: number) => j === i ? { ...x, titre: e.target.value } : x))} placeholder="Titre"
-                        style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgba(124,58,237,0.3)", outline: "none", fontSize: 12, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
-                      <button onClick={() => updateForm(id, "pdfQueue", f.pdfQueue.filter((_: any, j: number) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
-                    </div>
-                  ))}
-                  <p style={{ fontSize: 11, color: "#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
-                </div>
-              )}
-            </div>
-
-            {error && <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>}
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <button onClick={() => setExpanded(null)} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
-              <button onClick={() => handleSave(id)} disabled={saving === id}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 18px", borderRadius: 9, border: "none", background: isNew ? "#059669" : "#1a1a2e", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                {saving === id ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Check size={13} /> {isNew ? "Créer" : "Enregistrer"}</>}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} /></div>;
   return (
     <div style={{ maxWidth: 720 }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {poles.map((p: any) => <PoleCard key={p.id} pole={p} />)}
+        {poles.map((p: any) => (
+          <PoleCard key={p.id} pole={p} form={forms[p.id] || {}} isOpen={expanded === p.id}
+            onToggleOpen={() => setExpanded(prev => prev === p.id ? null : p.id)}
+            updateForm={updateForm} toggleRegion={toggleRegion} regions={regions}
+            onSave={() => handleSave(p.id)} onCancel={() => setExpanded(null)}
+            onDelete={() => handleDelete(p.id)}
+            onDeleteFichier={(fid: number) => supprimerPoleFichier(p.id, fid)}
+            saving={saving === p.id} error={error} />
+        ))}
         <div style={{ height: 1, background: "#F2F0EF", margin: "8px 0" }} />
-        <PoleCard isNew />
+        <PoleCard isNew form={forms["new"] || { pole_territoire: "", localisation: "", description: "", region_ids: [] }} isOpen={expanded === "new"}
+          onToggleOpen={() => setExpanded(prev => prev === "new" ? null : "new")}
+          updateForm={updateForm} toggleRegion={toggleRegion} regions={regions}
+          onSave={() => handleSave("new")} onCancel={() => setExpanded(null)}
+          saving={saving === "new"} error={error} />
       </div>
+    </div>
+  );
+}
+
+// Composant au niveau module : son identité reste stable entre les re-rendus
+// d'OngletPoles. Défini à l'intérieur, il était recréé à chaque frappe → React
+// remontait tout le sous-arbre (perte de focus, touches mortes « ô » cassées,
+// scroll qui saute).
+function PoleCard({ pole, isNew = false, form, isOpen, onToggleOpen, updateForm, toggleRegion, regions, onSave, onCancel, onDelete, onDeleteFichier, saving, error }: {
+  pole?: any; isNew?: boolean; form: any; isOpen: boolean; onToggleOpen: () => void;
+  updateForm: (id: number | "new", k: string, v: any) => void;
+  toggleRegion: (id: number | "new", regionId: number) => void;
+  regions: any[]; onSave: () => void; onCancel: () => void; onDelete?: () => void;
+  onDeleteFichier?: (fid: number) => void; saving: boolean; error: string;
+}) {
+  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+  const LS: any = { fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 4, display: "block" };
+  const id: number | "new" = isNew ? "new" : pole.id;
+  const f = form;
+  const pc = isNew ? null : getPoleColor(pole.pole_territoire);
+  const accentColor = isNew ? "#059669" : pc!;
+  const initial = (!isNew && (f.pole_territoire || pole.pole_territoire)?.[0]) || "P";
+  return (
+    <div style={{ background: "#fff", border: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderLeft: `4px solid ${accentColor}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", cursor: "pointer" }}
+        onClick={onToggleOpen}>
+        <div style={{ width: 34, height: 34, borderRadius: 9, background: isNew ? "rgba(5,150,105,0.1)" : accentColor, border: isNew ? "none" : "1px solid rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {isNew ? <Plus size={14} style={{ color: "#059669" }} /> : <span style={{ fontSize: 13, fontWeight: 800, color: "#1a1a2e" }}>{initial}</span>}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{isNew ? "Ajouter un nouveau pôle" : f.pole_territoire || pole.pole_territoire}</div>
+          {!isNew && (f.localisation || pole.localisation) && <div style={{ fontSize: 12, color: "#9aa5b4", marginTop: 1 }}>{f.localisation || pole.localisation}</div>}
+        </div>
+        {!isNew && <button onClick={e => { e.stopPropagation(); onDelete?.(); }} style={{ background: "rgba(220,38,38,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}><Trash2 size={13} style={{ color: "#dc2626" }} /></button>}
+        {isOpen ? <ChevronDown size={15} style={{ color: "#9aa5b4" }} /> : <ChevronRight size={15} style={{ color: "#9aa5b4" }} />}
+      </div>
+      {isOpen && (
+        <div style={{ borderTop: `1px solid ${accentColor}30`, padding: "16px 18px", background: isNew ? "transparent" : `${accentColor}08`, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div><label style={LS}>Nom du pôle *</label><input value={f.pole_territoire || ""} onChange={e => updateForm(id, "pole_territoire", e.target.value)} placeholder="Ex : Pôle Dakar" style={IS} /></div>
+          <div>
+            <label style={LS}>Régions composant ce pôle</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: 10, background: "#F8F7F6", borderRadius: 10, border: "1px solid #C5BFBB" }}>
+              {regions.map((r: any) => {
+                const sel = (f.region_ids || []).includes(r.id);
+                return <button key={r.id} onClick={() => toggleRegion(id, r.id)}
+                  style={{ padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${sel ? accentColor : "#C5BFBB"}`, background: sel ? accentColor : "#fff", color: sel ? "#1a1a2e" : "#4a5568", transition: "all 0.12s" }}>
+                  {r.nom}
+                </button>;
+              })}
+            </div>
+            {(f.region_ids || []).length > 0 && <p style={{ fontSize: 11, color: "#9aa5b4", marginTop: 6 }}>Localisation : {regions.filter(r => f.region_ids.includes(r.id)).map((r: any) => r.nom).join(", ")}</p>}
+          </div>
+          <div><label style={LS}>Description</label><RichTextEditor value={f.description || ""} onChange={v => updateForm(id, "description", v)}/></div>
+
+          {/* Documents PDF */}
+          <div>
+            <label style={LS}>Documents PDF</label>
+            {!isNew && (pole.fichiers || []).length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
+                {pole.fichiers.map((fi: any) => (
+                  <div key={fi.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 8, padding: "7px 12px" }}>
+                    <FileText size={13} style={{ color: "#004f91" }} />
+                    <a href={`${API_BASE}/zones-types/poles/${pole.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 13, flex: 1, color: "#1a1a2e", fontWeight: 500, textDecoration: "none" }}>{fi.titre}</a>
+                    <button onClick={() => onDeleteFichier?.(fi.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 8, cursor: "pointer", border: "2px dashed #C5BFBB", background: "#F8F7F6" }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = accentColor}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "#C5BFBB"}>
+              <Upload size={14} color="#9aa5b4" />
+              <span style={{ fontSize: 13, color: "#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+              <input type="file" accept=".pdf" multiple style={{ display: "none" }}
+                onChange={e => { const files = Array.from(e.target.files || []); updateForm(id, "pdfQueue", [...(f.pdfQueue || []), ...files.map(file => ({ file, titre: file.name.replace(/\.pdf$/i, "") }))]); e.target.value = ""; }} />
+            </label>
+            {(f.pdfQueue || []).length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
+                {f.pdfQueue.map((p: any, i: number) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 8, padding: "7px 12px" }}>
+                    <FileText size={13} style={{ color: "#7c3aed" }} />
+                    <input value={p.titre} onChange={e => updateForm(id, "pdfQueue", f.pdfQueue.map((x: any, j: number) => j === i ? { ...x, titre: e.target.value } : x))} placeholder="Titre"
+                      style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgba(124,58,237,0.3)", outline: "none", fontSize: 12, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
+                    <button onClick={() => updateForm(id, "pdfQueue", f.pdfQueue.filter((_: any, j: number) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+                  </div>
+                ))}
+                <p style={{ fontSize: 11, color: "#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+              </div>
+            )}
+          </div>
+
+          {error && <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button onClick={onCancel} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+            <button onClick={onSave} disabled={saving}
+              style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 18px", borderRadius: 9, border: "none", background: isNew ? "#059669" : "#1a1a2e", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              {saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Check size={13} /> {isNew ? "Créer" : "Enregistrer"}</>}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

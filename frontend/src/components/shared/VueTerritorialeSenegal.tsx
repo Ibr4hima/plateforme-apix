@@ -457,6 +457,22 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                   </div>
                 );
               })()}
+
+              {/* Fichiers PDF du pôle */}
+              {(activePole.fichiers || []).length > 0 && (
+                <div style={{ marginTop:16 }}>
+                  <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:10 }}>Fichier{activePole.fichiers.length>1?"s":""} PDF</p>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                    {activePole.fichiers.map((fi: any) => (
+                      <a key={fi.id} href={`${API_BASE}/zones-types/poles/${activePole.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
+                        style={{ display:"flex", alignItems:"center", gap:9, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:8, padding:"9px 13px", fontSize:12.5, fontWeight:600, color:"#004f91", textDecoration:"none" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        {fi.titre}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
