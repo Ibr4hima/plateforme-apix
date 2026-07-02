@@ -111,18 +111,18 @@ export default function Sidebar() {
                   style={{
                     position: "relative", display: "flex", alignItems: "center", gap: 11,
                     width: "100%", padding: "8px 12px 8px 15px", textAlign: "left",
-                    borderRadius: 10, cursor: "pointer", transition: "background 0.15s, color 0.15s, box-shadow 0.15s",
+                    borderRadius: 10, cursor: "pointer", transition: "background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s",
                     fontSize: 13, fontWeight: isActive ? 700 : 500,
-                    color:      isActive ? "#004f91" : "rgba(255,255,255,0.66)",
-                    background:  isActive ? "#fff" : "transparent",
-                    boxShadow:   isActive ? "0 6px 18px rgba(0,20,45,0.28)" : "none",
+                    color:      isActive ? "#fff" : "rgba(255,255,255,0.66)",
+                    background:  isActive ? "rgba(255,255,255,0.14)" : "transparent",
+                    boxShadow:   isActive ? "inset 0 0 0 1px rgba(255,255,255,0.16), 0 4px 14px rgba(0,20,45,0.18)" : "none",
                     fontFamily: "var(--font-google-sans)",
                   }}
-                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#fff"; (e.currentTarget.querySelector(".ms-ico") as HTMLElement).style.color = "#fff"; } }}
-                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.66)"; (e.currentTarget.querySelector(".ms-ico") as HTMLElement).style.color = "rgba(255,255,255,0.5)"; } }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.transform = "translateX(2px)"; (e.currentTarget.querySelector(".ms-ico") as HTMLElement).style.color = "#fff"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.66)"; e.currentTarget.style.transform = "none"; (e.currentTarget.querySelector(".ms-ico") as HTMLElement).style.color = "rgba(255,255,255,0.5)"; } }}
                 >
                   {isActive && <span style={{ position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)", width: 3, height: 17, borderRadius: 999, background: "#ca631f" }} />}
-                  <span className="material-symbols-outlined ms-ico" style={{ fontSize: 18, color: isActive ? "#004f91" : "rgba(255,255,255,0.5)", fontVariationSettings: `'FILL' ${isActive ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 24`, lineHeight: 1, flexShrink: 0, transition: "color 0.15s" }}>{item.icon}</span>
+                  <span className="material-symbols-outlined ms-ico" style={{ fontSize: 18, color: isActive ? "#fff" : "rgba(255,255,255,0.5)", fontVariationSettings: `'FILL' ${isActive ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 24`, lineHeight: 1, flexShrink: 0, transition: "color 0.15s" }}>{item.icon}</span>
                   {item.label}
                 </div>
               </Link>
