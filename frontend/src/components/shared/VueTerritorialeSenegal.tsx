@@ -57,7 +57,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
   const [activePole, setActivePole] = useState<any>(null);
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [regionStats, setRegionStats] = useState<Record<string, { total: number; primaire: number; secondaire: number; tertiaire: number }>>({});
-  const [tooltip, setTooltip] = useState<{ nom: string; x: number; y: number; pole?: any } | null>(null);
+  const [tooltip, setTooltip] = useState<{ nom: string; x: number; y: number; pole?: any; region?: string } | null>(null);
   const [secteurRef, setSecteurRef] = useState<any[]>([]);
 
   useEffect(() => {
@@ -164,7 +164,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
            .on("mouseenter", function(event: MouseEvent) {
              d3.select(this).select("path").style("filter", "brightness(0.78)");
              const rect = container.getBoundingClientRect();
-             setTooltip({ nom, x: event.clientX - rect.left, y: event.clientY - rect.top });
+             setTooltip({ nom, x: event.clientX - rect.left, y: event.clientY - rect.top, region: nom });
            })
            .on("mousemove", function(event: MouseEvent) {
              const rect = container.getBoundingClientRect();
@@ -263,11 +263,56 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
           <div ref={containerRef} style={{ width:"100%" }}/>
-          {tooltip && !tooltip.pole && (
+          {tooltip && !tooltip.pole && !tooltip.region && (
             <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#FAFAF9", border:"1px solid #E8E5E3", borderRadius:8, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"0 4px 16px rgba(0,0,0,0.10)", whiteSpace:"nowrap" as const }}>
               {tooltip.nom}
             </div>
           )}
+          {tooltip && tooltip.region && (() => {
+            const nom = tooltip.region;
+            const color = REGION_PALETTE[nom] || "#E8E5E3";
+            const stats = regionStats[nom];
+            const total = stats ? stats.total : 0;
+            const base = (stats ? stats.primaire + stats.secondaire + stats.tertiaire : 0) || 1;
+            const rows = [
+              { label: "Primaire",   val: stats?.primaire ?? 0,   color: "#059669" },
+              { label: "Secondaire", val: stats?.secondaire ?? 0, color: "#366FE3" },
+              { label: "Tertiaire",  val: stats?.tertiaire ?? 0,  color: "#E35336" },
+            ];
+            const ch = containerRef.current?.clientHeight ?? 420;
+            return (
+              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-200)), width:224, background:"#FAFAF9", border:"1px solid #E8E5E3", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"0 8px 28px rgba(0,0,0,0.14)" }}>
+                {/* Nom */}
+                <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:9 }}>
+                  <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
+                  <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e", lineHeight:1.25 }}>{nom}</span>
+                </div>
+                {/* Entreprises formalisées */}
+                <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:10 }}>
+                  <span style={{ fontSize:20, fontWeight:800, color:"#059669", lineHeight:1 }}>{total}</span>
+                  <span style={{ fontSize:11.5, fontWeight:600, color:"#1a1a2e" }}>entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</span>
+                </div>
+                {/* Répartition sectorielle */}
+                <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                  {rows.map(r => {
+                    const pct = Math.round(r.val / base * 100);
+                    return (
+                      <div key={r.label}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:2, fontSize:10.5 }}>
+                          <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
+                          <span style={{ fontWeight:700, color:r.color }}>{pct}%</span>
+                        </div>
+                        <div style={{ height:4, background:"#E8E5E3", borderRadius:99, overflow:"hidden" }}>
+                          <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99 }}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
           {tooltip && tooltip.pole && (() => {
             const pole = tooltip.pole;
             const color = getPoleColor(pole.id);

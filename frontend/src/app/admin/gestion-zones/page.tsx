@@ -608,12 +608,6 @@ function OngletPoles() {
             onDeleteFichier={(fid: number) => supprimerPoleFichier(p.id, fid)}
             saving={saving === p.id} error={error} />
         ))}
-        <div style={{ height: 1, background: "#F2F0EF", margin: "8px 0" }} />
-        <PoleCard isNew form={forms["new"] || { pole_territoire: "", localisation: "", description: "", region_ids: [] }} isOpen={expanded === "new"}
-          onToggleOpen={() => setExpanded(prev => prev === "new" ? null : "new")}
-          updateForm={updateForm} toggleRegion={toggleRegion} regions={regions}
-          onSave={() => handleSave("new")} onCancel={() => setExpanded(null)}
-          saving={saving === "new"} error={error} />
       </div>
     </div>
   );
