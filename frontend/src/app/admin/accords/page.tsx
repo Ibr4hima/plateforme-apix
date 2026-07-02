@@ -11,6 +11,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 
 const STATUT_LABELS:  Record<string,string>      = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
 const STATUT_VARIANT: Record<string,BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"gray" };
+const MOIS_ABR = ["JANV","FÉVR","MARS","AVR","MAI","JUIN","JUIL","AOÛT","SEPT","OCT","NOV","DÉC"];
 
 function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
   const today = new Date().toISOString().split("T")[0];
@@ -558,45 +559,82 @@ export default function AdminAccords() {
           <p style={{fontSize:14,color:"#4a5568"}}>Aucun accord — cliquez sur "Ajouter un accord" pour commencer.</p>
         </div>
       ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))",gap:14}}>
           {accords.map(a=>{
             const statut = computeStatut(a);
+            const ST: any = {
+              en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
+              signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+              expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
+            };
+            const st = statut ? ST[statut] : null;
+            // Tuile calendrier sur la date de signature
+            const ds = a.date_signature;
+            const tuile = ds ? { mois:MOIS_ABR[parseInt(ds.slice(5,7))-1], jour:String(parseInt(ds.slice(8,10))), annee:ds.slice(0,4) } : null;
             return (
-            <div key={a.id} onClick={()=>setVue(a)}
-              style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #004f91",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(0,79,145,0.12)";ev.currentTarget.style.borderColor="#004f91";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#004f91";}}>
+              <div key={a.id} onClick={()=>setVue(a)}
+                style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
-              {statut&&<div style={{position:"absolute" as const,top:12,right:12}}>
-                <Badge variant={STATUT_VARIANT[statut]||"gray"} size="xs">{STATUT_LABELS[statut]}</Badge>
-              </div>}
+                <div style={{padding:"14px 16px 14px",flex:1}}>
+                  {/* Statut */}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                    {st ? (
+                      <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
+                    ) : <span/>}
+                    {a.reference && <span style={{fontSize:10.5,fontWeight:600,color:"#9aa5b4"}}>{a.reference}</span>}
+                  </div>
 
-              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:a.reference?2:8,paddingRight:statut?90:0}}>{a.titre}</div>
-              {a.reference&&<div style={{fontSize:11,fontWeight:600,color:"#9aa5b4",marginBottom:8}}>{a.reference}</div>}
-              <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#004f91":"#C5BFBB",flexShrink:0}}/>
-                  <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4",fontWeight:400}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
+                  {/* Tuile signature + infos */}
+                  <div style={{display:"flex",gap:13,alignItems:"flex-start"}}>
+                    <div style={{width:52,flexShrink:0,borderRadius:12,border:"1px solid rgba(0,79,145,0.14)",background:"rgba(0,79,145,0.05)",display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"7px 4px 6px",minHeight:56}}>
+                      {tuile ? <>
+                        <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.08em",color:"#004f91"}}>{tuile.mois}</span>
+                        <span style={{fontSize:16,fontWeight:800,color:"#1a1a2e",lineHeight:1.25}}>{tuile.jour}</span>
+                        <span style={{fontSize:9.5,fontWeight:600,color:"#9aa5b4"}}>{tuile.annee}</span>
+                      </> : <FileText size={18} style={{color:"#004f91"}}/>}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35}}>{a.titre}</div>
+                      <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginTop:7}}>
+                        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                          <div style={{width:6,height:6,borderRadius:"50%",background:a.date_expiration?"#004f91":"#C5BFBB",flexShrink:0}}/>
+                          <span style={{color:a.date_expiration?"#4a5568":"#9aa5b4",fontWeight:400}}>{a.date_expiration?"Expire le "+fmtDate(a.date_expiration):"Date d'expiration non définie"}</span>
+                        </div>
+                        {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                          <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                          <span style={{color:"#4a5568",fontWeight:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a)}</span>
+                        </div>}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                {getPaysNoms(a)&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                  <span style={{color:"#4a5568",fontWeight:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a)}</span>
-                </div>}
+
+                {/* Actions */}
+                <div style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
+                  <button onClick={()=>openEdit(a)}
+                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
+                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                    <Pencil size={12}/> Modifier
+                  </button>
+                  <div style={{width:1,background:"#F2F0EF"}}/>
+                  <button onClick={()=>handleTogglePublie(a)} disabled={togglingId===a.id}
+                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:a.est_publie?"#188038":"#6b7280",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
+                    onMouseEnter={ev=>ev.currentTarget.style.background=a.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
+                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                    {togglingId===a.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:a.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
+                  </button>
+                  <div style={{width:1,background:"#F2F0EF"}}/>
+                  <button onClick={()=>handleDelete(a.id)} disabled={deleting===a.id}
+                    style={{width:46,display:"flex",alignItems:"center",justifyContent:"center",background:"none",border:"none",cursor:"pointer",transition:"background 0.15s"}}
+                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
+                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                    {deleting===a.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                  </button>
+                </div>
               </div>
-              <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
-                <button onClick={()=>openEdit(a)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#004f91",fontWeight:600}}>
-                  <Pencil size={12}/> Modifier
-                </button>
-                <button onClick={()=>handleTogglePublie(a)} disabled={togglingId===a.id}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgba(24,128,56,0.08)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:a.est_publie?"#188038":"#6b7280",fontWeight:600}}>
-                  {togglingId===a.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:a.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
-                </button>
-                <button onClick={()=>handleDelete(a.id)} disabled={deleting===a.id}
-                  style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
-                  {deleting===a.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
-                </button>
-              </div>
-            </div>
             );
           })}
         </div>
