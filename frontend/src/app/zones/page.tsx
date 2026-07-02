@@ -289,8 +289,21 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
   return (
     <div onClick={onClick}
       style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
-      onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }}
-      onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7"; }}>
+      onMouseEnter={e=>{
+        e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+        // Contenus trop longs : glissent pour révéler la fin
+        e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+          const span = box.firstElementChild as HTMLElement | null;
+          if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+        });
+      }}
+      onMouseLeave={e=>{
+        e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7";
+        e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+          const span = box.firstElementChild as HTMLElement | null;
+          if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+        });
+      }}>
 
       <div style={{ padding:"14px 16px 14px", flex:1 }}>
         {/* Pôle */}
@@ -307,7 +320,9 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
           <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
             <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Localisation</p>
-            <p style={{ fontSize:12, fontWeight:600, color:(zone.departement_nom||zone.region_nom)?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</p>
+            <p data-marquee style={{ fontSize:12, fontWeight:600, color:(zone.departement_nom||zone.region_nom)?"#1a1a2e":"#9aa5b4", overflow:"hidden", whiteSpace:"nowrap" as const }}>
+              <span style={{ display:"inline-block" }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</span>
+            </p>
           </div>
           <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px" }}>
             <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
