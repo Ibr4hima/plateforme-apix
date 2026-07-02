@@ -33,6 +33,7 @@ const ROLES_APIX = [
 ];
 
 const MOIS_VIEW = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const MOIS_ABR  = ["JANV","FÉVR","MARS","AVR","MAI","JUIN","JUIL","AOÛT","SEPT","OCT","NOV","DÉC"];
 const ROLES_APIX_LABELS: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
 const ROLE_VARIANT: Record<string, BadgeVariant> = { "Organisateur":"green","Co-organisateur":"yellow","Participant":"orange","Partenaire":"teal","Sponsor":"lavender","Invité":"gray" };
 
@@ -585,7 +586,7 @@ export default function EvenementsPage() {
           <p style={{ fontSize:14 }}>Aucun événement — cliquez sur "+ Ajouter" pour commencer.</p>
         </div>
       ) : (
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))", gap:14 }}>
           {evenements.map(e => {
             const dateStr = e.date_debut
               ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDateFR(e.date_debut) : `${fmtDateFR(e.date_debut)} → ${fmtDateFR(e.date_fin)}`)
@@ -594,41 +595,89 @@ export default function EvenementsPage() {
             const statut = computeStatut(e);
             // Récurrents sans date fixe : la prochaine occurrence est à venir
             const statutAff = statut ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
+            const ST: any = {
+              a_venir:  { label:"À venir",  c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+              en_cours: { label:"En cours", c:"#188038", bg:"rgba(24,128,56,0.08)" },
+              termine:  { label:"Terminé",  c:"#6b7280", bg:"#F2F0EF"              },
+            };
+            const st = statutAff ? ST[statutAff] : null;
+            // Tuile calendrier : mois / jour(s) / année
+            let tuile: { mois:string; jour:string; annee:string } | null = null;
+            if (e.date_debut) {
+              const d1 = e.date_debut, d2 = e.date_fin;
+              const jour = d2 && d2!==d1 && d2.slice(5,7)===d1.slice(5,7) && d2.slice(0,4)===d1.slice(0,4)
+                ? `${parseInt(d1.slice(8,10))}–${parseInt(d2.slice(8,10))}`
+                : `${parseInt(d1.slice(8,10))}`;
+              tuile = { mois:MOIS_ABR[parseInt(d1.slice(5,7))-1], jour, annee:d1.slice(0,4) };
+            } else if (e.prochain_mois) {
+              tuile = { mois:MOIS_ABR[(e.prochain_mois||1)-1], jour:e.prochain_jour?String(e.prochain_jour):"·", annee:e.prochain_annee?String(e.prochain_annee):"" };
+            }
+            // La tuile ne montre que le début : afficher la période complète si elle déborde du mois
+            const moisDiff = !!(e.date_debut && e.date_fin && e.date_fin!==e.date_debut && (e.date_fin.slice(5,7)!==e.date_debut.slice(5,7) || e.date_fin.slice(0,4)!==e.date_debut.slice(0,4)));
             return (
               <div key={e.id} onClick={()=>setVue(e)}
-                style={{background:"#fff",border:"1px solid #E8E5E3",borderLeft:"3px solid #004f91",borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",position:"relative" as const}}
-                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 4px 16px rgba(0,79,145,0.12)";ev.currentTarget.style.borderColor="#004f91";}}
-                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.borderLeftColor="#004f91";}}>
+                style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
-                <div style={{position:"absolute" as const,top:12,right:12}}>
-                  {statutAff==="en_cours" ? <Badge variant="green" size="xs" style={{color:"#188038",background:"rgba(24,128,56,0.06)",borderColor:"rgba(24,128,56,0.12)"}}>En cours</Badge>
-                  :statutAff==="termine"  ? <Badge variant="gray"  size="xs">Terminé</Badge>
-                  :statutAff==="a_venir"  ? <Badge variant="blue"  size="xs" style={{color:"#004f91",background:"rgba(0,79,145,0.06)",borderColor:"rgba(0,79,145,0.12)"}}>À venir</Badge>
-                  :null}
+                <div style={{padding:"14px 16px 14px",flex:1}}>
+                  {/* Statut + état de publication */}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                    {st ? (
+                      <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
+                    ) : <span/>}
+                    <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:600,color:e.est_publie?"#188038":"#9aa5b4"}}>
+                      <span style={{width:6,height:6,borderRadius:"50%",background:e.est_publie?"#188038":"#D8D4D0"}}/>
+                      {e.est_publie?"Public":"Brouillon"}
+                    </span>
+                  </div>
+
+                  {/* Tuile calendrier + infos */}
+                  <div style={{display:"flex",gap:13,alignItems:"flex-start"}}>
+                    <div style={{width:52,flexShrink:0,borderRadius:12,border:"1px solid rgba(0,79,145,0.14)",background:"rgba(0,79,145,0.05)",display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"7px 4px 6px",minHeight:56}}>
+                      {tuile ? <>
+                        <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.08em",color:"#004f91"}}>{tuile.mois}</span>
+                        <span style={{fontSize:16,fontWeight:800,color:"#1a1a2e",lineHeight:1.25}}>{tuile.jour}</span>
+                        {tuile.annee && <span style={{fontSize:9.5,fontWeight:600,color:"#9aa5b4"}}>{tuile.annee}</span>}
+                      </> : <Calendar size={18} style={{color:"#004f91"}}/>}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35}}>{e.nom_event}</div>
+                      {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinalEdition(e.edition)}</div>}
+                      <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginTop:7}}>
+                        {moisDiff&&dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                          <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                          <span style={{color:"#4a5568",fontWeight:400}}>{dateStr}</span>
+                        </div>}
+                        {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+                          <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                          <span style={{color:"#4a5568",fontWeight:400}}>{lieu}</span>
+                        </div>}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",lineHeight:1.35,marginBottom:e.edition!=null?2:8,paddingRight:statutAff?90:0}}>{e.nom_event}</div>
-                {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginBottom:8}}>{ordinalEdition(e.edition)}</div>}
-                <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginBottom:12}}>
-                  {dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                    <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                    <span style={{color:"#4a5568",fontWeight:400}}>{dateStr}</span>
-                  </div>}
-                  {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                    <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                    <span style={{color:"#4a5568",fontWeight:400}}>{lieu}</span>
-                  </div>}
-                </div>
-                <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:10}} onClick={ev=>ev.stopPropagation()}>
+
+                {/* Actions */}
+                <div style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
                   <button onClick={()=>openEdit(e)}
-                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#004f91",fontWeight:600}}>
+                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
+                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                     <Pencil size={12}/> Modifier
                   </button>
+                  <div style={{width:1,background:"#F2F0EF"}}/>
                   <button onClick={()=>handleTogglePublie(e)} disabled={togglingId===e.id}
-                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:e.est_publie?"rgba(24,128,56,0.08)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:e.est_publie?"#188038":"#6b7280",fontWeight:600}}>
+                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:e.est_publie?"#188038":"#6b7280",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
+                    onMouseEnter={ev=>ev.currentTarget.style.background=e.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
+                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                     {togglingId===e.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:e.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                   </button>
+                  <div style={{width:1,background:"#F2F0EF"}}/>
                   <button onClick={()=>handleDelete(e.id)} disabled={deleting===e.id}
-                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
+                    style={{width:46,display:"flex",alignItems:"center",justifyContent:"center",background:"none",border:"none",cursor:"pointer",transition:"background 0.15s"}}
+                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
+                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                     {deleting===e.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
                   </button>
                 </div>
