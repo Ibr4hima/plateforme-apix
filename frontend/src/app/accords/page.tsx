@@ -576,13 +576,6 @@ export default function AccordsPage() {
                         </div>
                       </div>
 
-                      {/* Parties signataires */}
-                      {getPaysNoms(a,2)&&(
-                        <div style={{marginTop:8}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:3}}>Parties signataires</p>
-                          <p style={{fontSize:12,fontWeight:500,color:"#4a5568",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{getPaysNoms(a,2)}</p>
-                        </div>
-                      )}
                     </div>
 
                     {/* Action */}
