@@ -524,7 +524,7 @@ export default function AdminEntreprises() {
           <p style={{fontSize:14,color:"#4a5568"}}>Aucune entreprise — cliquez sur "Ajouter" pour commencer.</p>
         </div>
       ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
           {entreprises.map(e=>(
             <div key={e.id} onClick={()=>setVue(e)}
               style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
@@ -535,7 +535,7 @@ export default function AdminEntreprises() {
                 {/* Forme juridique */}
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
                   {e.forme_juridique ? (
-                    <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{e.forme_juridique}</span>
+                    <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#6b7280",background:"#F2F0EF",padding:"3px 10px",borderRadius:999}}>{e.forme_juridique}</span>
                   ) : <span/>}
                 </div>
 
@@ -549,8 +549,8 @@ export default function AdminEntreprises() {
                     <p style={{fontSize:12,fontWeight:600,color:e.date_creation?"#1a1a2e":"#9aa5b4"}}>{e.date_creation?fmtD(e.date_creation):"—"}</p>
                   </div>
                   <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Adresse</p>
-                    <p style={{fontSize:12,fontWeight:600,color:e.adresse?"#1a1a2e":"#9aa5b4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.adresse||"—"}</p>
+                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Région</p>
+                    <p style={{fontSize:12,fontWeight:600,color:e.region_nom?"#1a1a2e":"#9aa5b4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
                   </div>
                 </div>
               </div>
