@@ -1374,7 +1374,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {(e.canal || e.interlocuteur || e.contact_par) && (
                               <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                 {e.canal && (()=>{ const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"3px 10px", borderRadius:999 }}>
+                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#4a5568", background:"#F5F4F3", padding:"3px 10px", borderRadius:999 }}>
                                     <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                   </span>
                                 ); })()}
@@ -1389,7 +1389,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {/* Compte-rendu */}
                             {e.commentaire && (
                               <div style={{ background:"#fff", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
+                                <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                   dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                               </div>
                             )}
@@ -1487,7 +1487,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#4a5568", background:"#F5F4F3", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
@@ -1500,7 +1500,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       )}
                                       {e.commentaire && (
                                         <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                          <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
+                                          <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
                                       )}
@@ -1593,7 +1593,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#4a5568", background:"#F5F4F3", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
@@ -1606,7 +1606,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       )}
                                       {e.commentaire && (
                                         <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                          <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
+                                          <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
                                       )}
