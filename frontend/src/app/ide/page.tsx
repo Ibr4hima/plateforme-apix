@@ -2157,45 +2157,83 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   const isPos  = v !== null && v > 0;
   const isNeg  = v !== null && v < 0;
   const signalColor  = isTaux ? (isPos ? "#188038" : isNeg ? "#dc2626" : "#9aa5b4") : "#004f91";
+  const signalBg     = isTaux ? (isPos ? "rgba(24,128,56,0.06)" : isNeg ? "rgba(220,38,38,0.05)" : "#FAFAF9") : "rgba(0,79,145,0.04)";
+  const signalBorder = isTaux ? (isPos ? "rgba(24,128,56,0.18)" : isNeg ? "rgba(220,38,38,0.18)" : "#F0EEEC") : "rgba(0,79,145,0.10)";
   const definition = defBdef(ind.code, ind.libelle);
+  const historique = annees.filter(a=>ind.valeurs[a]!=null).slice(-5);
+  const SecTitle = ({ children }: { children: React.ReactNode }) => (
+    <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
+  );
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:540, border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
-        <div style={{ height:5, background:"linear-gradient(90deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)" }}/>
-        <div style={{ padding:"22px 24px 20px", background:"linear-gradient(180deg,rgba(0,79,145,0.04) 0%,transparent 100%)", borderBottom:"1px solid #F2F0EF" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-            <div style={{ flex:1, paddingRight:12 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-                <div style={{ width:7, height:7, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/>
-                <span style={{ fontSize:11, fontWeight:700, color:"#004f91" }}>{libelle}</span>
-                <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 8px", borderRadius:999 }}>{ind.categorie}</span>
-              </div>
-              <p style={{ fontSize:11, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>{ind.libelle}</p>
-              <div style={{ display:"flex", alignItems:"baseline", gap:10 }}>
-                <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtBdef(v, ind.unite)}</span>
-                {lastA && <span style={{ fontSize:13, color:"#9aa5b4", fontWeight:500 }}>en {lastA}</span>}
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+        <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
+
+        {/* En-tête fixe */}
+        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
+            <div style={{ flex:1, minWidth:0 }}>
+              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>{ind.libelle}</h2>
+              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"1px solid rgba(0,79,145,0.19)" }}>
+                  <span style={{ width:7, height:7, borderRadius:"50%", background:"#004f91", display:"inline-block" }} />
+                  {libelle}
+                </span>
+                <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"#4a5568", background:"#F5F4F3" }}>
+                  {ind.categorie}
+                </span>
+                {lastA && (
+                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"#4a5568", background:"#F5F4F3" }}>
+                    {lastA}
+                  </span>
+                )}
               </div>
             </div>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:9, padding:"7px 8px", display:"flex", alignItems:"center", flexShrink:0 }}>
-              <X size={14} color="#4a5568"/>
+            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
+              <X size={15} color="#4a5568" />
             </button>
           </div>
         </div>
-        <div style={{ padding:"20px 24px 24px" }}>
-          <div style={{ background:"rgba(0,79,145,0.05)", borderRadius:12, padding:"14px 16px", marginBottom:16 }}>
-            <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.08em", margin:"0 0 6px" }}>Définition</p>
-            <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.75, margin:0 }}>{definition}</p>
+
+        {/* Corps */}
+        <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
+          <div>
+            <SecTitle>Valeur</SecTitle>
+            <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:12, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
+              <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtBdef(v, ind.unite)}</span>
+              {lastA && <span style={{ fontSize:13, color:"#9aa5b4", fontWeight:500 }}>en {lastA}</span>}
+            </div>
           </div>
-          <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" as const }}>
-            {annees.filter(a=>ind.valeurs[a]!=null).slice(-5).map(a=>(
-              <div key={a} style={{ background:"#F2F0EF", borderRadius:8, padding:"6px 10px", textAlign:"center" as const }}>
-                <p style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, margin:0 }}>{a}</p>
-                <p style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", margin:0 }}>{fmtBdef(ind.valeurs[a]??null, ind.unite)}</p>
+          {historique.length > 0 && (
+            <div>
+              <SecTitle>Historique récent</SecTitle>
+              <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(historique.length,5)},1fr)`, gap:8 }}>
+                {historique.map(a=>(
+                  <div key={a} style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", margin:"0 0 3px" }}>{a}</p>
+                    <p style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{fmtBdef(ind.valeurs[a]??null, ind.unite)}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          )}
+          <div>
+            <SecTitle>Définition</SecTitle>
+            <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 18px" }}>
+              <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.75, margin:0 }}>{definition}</p>
+            </div>
           </div>
-          <p style={{ fontSize:11, color:"#C5BFBB", lineHeight:1.65, margin:0 }}>Unité : {ind.unite} · Source BDEF</p>
+        </div>
+
+        {/* Pied fixe */}
+        <div style={{ padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
+          <span style={{ fontSize:11, color:"#9aa5b4" }}>Unité : {ind.unite} · Source BDEF (ANSD)</span>
+          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+            Fermer
+          </button>
         </div>
       </div>
     </div>
@@ -2721,18 +2759,18 @@ function OngletNational() {
               const v = ind&&lastA!==null ? (ind.valeurs[lastA]??null) : null;
               return (
                 <div key={code} onClick={()=>ind&&setKpiActif(ind)}
-                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:`3px solid ${couleur}`, cursor:"pointer", transition:"box-shadow 0.15s, transform 0.15s", minWidth:0, overflow:"hidden" }}
-                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)"; if(ind) montrerTip(e, defBdef(ind.code, ind.libelle));}}
+                  style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0, overflow:"hidden" }}
+                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor=`${couleur}40`; if(ind) montrerTip(e, defBdef(ind.code, ind.libelle));}}
                   onMouseMove={e=>{ if(ind) montrerTip(e, defBdef(ind.code, ind.libelle)); }}
-                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)"; setTip(null);}}>
-                  <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{ind?.libelle??code}</p>
-                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:couleur, lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
-                  {lastA&&<p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>en {lastA}</p>}
+                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7"; setTip(null);}}>
+                  <p style={{ fontSize:9, fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{ind?.libelle??code}</p>
+                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"#1a1a2e", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
+                  {lastA&&<p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>en {lastA}</p>}
                 </div>
               );
             })}
             {Array.from({length:Math.max(0,5-kpisEpingles.length)}).map((_,i)=>(
-              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
+              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
                 <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
                 <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
               </div>
