@@ -151,106 +151,158 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
     ]).then(([s,b,ac])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(ac||[]); }).catch(()=>{});
   },[a.id]);
 
-  const LBL = ({children}:{children:string}) => (
-    <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
-  );
   const statut = computeStatut(a);
+  const ST_VUE: any = {
+    en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
+    signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+    expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
+  };
+  const stV = statut ? ST_VUE[statut] : null;
   const secIds:number[] = a.secteur_ids  || [];
   const braIds:number[] = a.branche_ids  || [];
   const actIds:number[] = a.activite_ids || [];
   const hasNaema = secIds.length>0||braIds.length>0||actIds.length>0;
+  const SecTitle = ({children}:{children:string}) => (
+    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+  );
+  const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
+    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
+      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
+      {children}
+    </div>
+  );
 
   return (
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div onClick={ev=>ev.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.25)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
-        <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
-            <div style={{flex:1,paddingRight:16}}>
-              <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{a.titre}</h2>
-              <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
-                {a.reference&&<span style={{fontSize:11,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",border:"1px solid rgba(202,99,31,0.2)",padding:"2px 9px",borderRadius:999}}>{a.reference}</span>}
-                {statut&&<Badge variant={STATUT_VARIANT[statut]||"gray"} size="xs">{STATUT_LABELS[statut]}</Badge>}
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={ev=>ev.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+        {/* Liseré d'accent */}
+        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
+
+        {/* En-tête */}
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
+          <div style={{minWidth:0}}>
+            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{a.titre}</h2>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
+              {stV&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:stV.c,background:stV.bg,padding:"3px 10px",borderRadius:999}}>{stV.label}</span>}
+              {a.reference&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{a.reference}</span>}
+            </div>
+          </div>
+          <button onClick={onClose}
+            style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
+            <X size={15} color="#4a5568"/>
+          </button>
+        </div>
+
+        {/* Corps */}
+        <div style={{padding:"22px 28px",overflowY:"auto" as const,flex:1,display:"flex",flexDirection:"column" as const,gap:22}}>
+
+          {/* Dates */}
+          <section>
+            <SecTitle>Dates</SecTitle>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <Bloc label="Signature"><p style={{fontSize:12.5,fontWeight:600,color:a.date_signature?"#1a1a2e":"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p></Bloc>
+              {a.date_entree_vigueur&&<Bloc label="Entrée en vigueur"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p></Bloc>}
+              <Bloc label="Expiration"><p style={{fontSize:12.5,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p></Bloc>
+            </div>
+          </section>
+
+          {/* Résumé */}
+          {a.commentaires&&(
+            <section>
+              <SecTitle>Résumé</SecTitle>
+              <div style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"13px 15px"}}>
+                <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
+                <div data-rte dangerouslySetInnerHTML={{__html:a.commentaires}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
               </div>
-            </div>
-            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
-          </div>
-          {a.commentaires&&<div style={{background:"rgba(202,99,31,0.04)",border:"1px solid rgba(202,99,31,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
-            <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-            <LBL>Résumé</LBL><div data-rte dangerouslySetInnerHTML={{__html:a.commentaires}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
-          </div>}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-            {a.date_signature&&<div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Date de signature</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_signature)}</p></div>}
-            {a.date_entree_vigueur&&<div style={{background:"rgba(24,128,56,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Entrée en vigueur</LBL><p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p></div>}
-            <div style={{background:"rgba(202,99,31,0.05)",borderRadius:10,padding:"12px 14px"}}><LBL>Expiration</LBL><p style={{fontSize:13,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Date d'expiration non définie"}</p></div>
-          </div>
-          {(a.parties_pays_ids?.length>0||a.parties_signataires)&&<div style={{marginBottom:16}}>
-            <LBL>Parties signataires</LBL>
-            <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
-              {(a.parties_pays_ids||[]).map((id:number)=>{
-                const p=allPays.find((r:any)=>r.id===id);
-                return <span key={id} style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:12,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.18)",padding:"3px 11px",borderRadius:999}}>
-                  {p?.nom_fr||`#${id}`}
-                </span>;
-              })}
-              {a.parties_signataires&&a.parties_signataires.split(", ").filter(Boolean).map((p:string)=>(
-                <span key={p} style={{fontSize:12,fontWeight:600,color:"#ca631f",background:"rgba(202,99,31,0.07)",border:"1px solid rgba(202,99,31,0.18)",padding:"3px 11px",borderRadius:999}}>{p}</span>
-              ))}
-            </div>
-          </div>}
-          {hasNaema&&<div style={{marginBottom:16}}>
-            <LBL>Thématiques</LBL>
-            <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
-              {secIds.map((secId:number)=>{
-                const secNom=secteurs.find(s=>s.id===secId)?.nom;
-                if (!secNom) return null;
-                const brasDuSec=branches.filter(b=>b.secteur_id===secId&&braIds.includes(b.id));
-                return (
-                  <div key={secId}>
-                    <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-                      <span style={{fontSize:12,fontWeight:700,color:"#ca631f"}}>{secNom}</span>
-                    </div>
-                    {brasDuSec.length>0&&<div style={{paddingLeft:20,borderLeft:"2px solid rgba(202,99,31,0.15)",display:"flex",flexDirection:"column" as const,gap:5}}>
-                      {brasDuSec.map((bra:any)=>{
-                        const actsDeBra=activites.filter(ac=>ac.branche_id===bra.id&&actIds.includes(ac.id));
-                        return (
-                          <div key={bra.id}>
-                            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?4:0}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                              <span style={{fontSize:11,fontWeight:600,color:"#004f91"}}>{bra.nom}</span>
+            </section>
+          )}
+
+          {/* Parties signataires */}
+          {(a.parties_pays_ids?.length>0||a.parties_signataires)&&(
+            <section>
+              <SecTitle>Parties signataires</SecTitle>
+              <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
+                {(a.parties_pays_ids||[]).map((id:number)=>{
+                  const p=allPays.find((r:any)=>r.id===id);
+                  return <span key={id} style={{fontSize:11,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{p?.nom_fr||`#${id}`}</span>;
+                })}
+                {a.parties_signataires&&a.parties_signataires.split(", ").filter(Boolean).map((p:string)=>(
+                  <span key={p} style={{fontSize:11,fontWeight:600,color:"#ca631f",background:"rgba(202,99,31,0.07)",padding:"3px 10px",borderRadius:999}}>{p}</span>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Thématiques */}
+          {hasNaema&&(
+            <section>
+              <SecTitle>Thématiques</SecTitle>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+                {secIds.map((secId:number)=>{
+                  const secNom=secteurs.find(s=>s.id===secId)?.nom;
+                  if (!secNom) return null;
+                  const brasDuSec=branches.filter(b=>b.secteur_id===secId&&braIds.includes(b.id));
+                  return (
+                    <div key={secId}>
+                      <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                        <span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>{secNom}</span>
+                      </div>
+                      {brasDuSec.length>0&&<div style={{paddingLeft:20,borderLeft:"2px solid rgba(0,79,145,0.15)",display:"flex",flexDirection:"column" as const,gap:5}}>
+                        {brasDuSec.map((bra:any)=>{
+                          const actsDeBra=activites.filter(ac=>ac.branche_id===bra.id&&actIds.includes(ac.id));
+                          return (
+                            <div key={bra.id}>
+                              <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?4:0}}>
+                                <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+                                <span style={{fontSize:11,fontWeight:600,color:"#ca631f"}}>{bra.nom}</span>
+                              </div>
+                              {actsDeBra.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
+                                {actsDeBra.map((act:any)=>(
+                                  <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
+                                    <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                    <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                  </div>
+                                ))}
+                              </div>}
                             </div>
-                            {actsDeBra.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
-                              {actsDeBra.map((act:any)=>(
-                                <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                                  <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                  <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
-                                </div>
-                              ))}
-                            </div>}
-                          </div>
-                        );
-                      })}
-                    </div>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>}
-          {fichiers.length>0&&<div style={{marginBottom:16}}>
-            <LBL>Documents</LBL>
-            <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
-              {fichiers.map((f:any)=>(
-                <a key={f.id} href={`${API_BASE}/accords/${a.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.06)",border:"1px solid rgba(202,99,31,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#ca631f",textDecoration:"none",fontWeight:500}}>
-                  <FileText size={11}/> {f.titre||f.fichier_nom}
-                </a>
-              ))}
-            </div>
-          </div>}
-          <div style={{display:"flex",justifyContent:"flex-end",marginTop:20,borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={onClose} style={{padding:"9px 20px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
-          </div>
+                          );
+                        })}
+                      </div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Documents */}
+          {fichiers.length>0&&(
+            <section>
+              <SecTitle>{fichiers.length>1?"Documents":"Document"}</SecTitle>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
+                {fichiers.map((f:any)=>(
+                  <a key={f.id} href={`${API_BASE}/accords/${a.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
+                    <span style={{fontSize:12.5,color:"#004f91",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+        </div>
+
+        {/* Pied */}
+        <div style={{display:"flex",justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+          <button onClick={onClose}
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+            Fermer
+          </button>
         </div>
       </div>
     </div>
