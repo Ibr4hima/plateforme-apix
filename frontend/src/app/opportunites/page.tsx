@@ -1235,19 +1235,27 @@ export default function OpportunitesPage() {
                       <ArrowLeft size={14}/> Retour aux zones
                     </button>
                     {(()=>{
-                      const NIV: Record<string,{color:string}> = {
-                        pole:{color:"#004f91"}, region:{color:"#ca631f"},
-                        departement:{color:"#188038"}, arrondissement:{color:"#6A1B9A"},
-                      };
-                      const nv = NIV[selectedNiveau!] || NIV.pole;
                       const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                       if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
+                      // Rattachements géographiques via le référentiel déjà chargé
+                      const regionDuDept = (nom:string) => regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.nom===nom))?.nom || null;
+                      const deptDeArr = (nom:string) => {
+                        for (const r of regions) for (const d of (r.departements||[])) if ((d.arrondissements||[]).some((a:any)=>a.nom===nom)) return d.nom;
+                        return null;
+                      };
+                      const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
                       return (
                         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
                           {items.map((p:any)=>{
-                            const zoneNom = p.pole_nom||p.region_nom||p.departement_nom||p.arrondissement_nom||"";
                             const nbActs = (p.activite_ids||[]).length;
-                            const nbAtouts = (p.avantage_ids||[]).length;
+                            // Premier bloc contextuel selon le niveau
+                            const info1 = selectedNiveau==="pole"
+                              ? { label:(poles.find((x:any)=>x.id===p.pole_id)?.localisation||"").includes(",")?"Régions":"Région", value: poles.find((x:any)=>x.id===p.pole_id)?.localisation||null }
+                              : selectedNiveau==="region"
+                              ? { label:"Pôle", value: poleDeRegion(p.region_nom||"") }
+                              : selectedNiveau==="departement"
+                              ? { label:"Région", value: p.region_nom||regionDuDept(p.departement_nom||"") }
+                              : { label:"Département", value: p.departement_nom||deptDeArr(p.arrondissement_nom||"") };
                             return (
                               <div key={p.id} onClick={()=>setPotSel(p)}
                                 style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",minWidth:0}}
@@ -1268,27 +1276,22 @@ export default function OpportunitesPage() {
                                 }}>
 
                                 <div style={{padding:"14px 16px 14px",flex:1}}>
-                                  {/* Zone */}
-                                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                                    {zoneNom ? (
-                                      <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:nv.color,background:`${nv.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{zoneNom}</span>
-                                    ) : <span/>}
-                                  </div>
-
                                   {/* Titre (défile au survol si trop long) */}
                                   <div data-marquee style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                     <span style={{display:"inline-block"}}>{potTitle(p)}</span>
                                   </div>
 
-                                  {/* Compteurs libellés */}
+                                  {/* Infos libellées */}
                                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
+                                    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
+                                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{info1.label}</p>
+                                      <p data-marquee style={{fontSize:12,fontWeight:600,color:info1.value?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                        <span style={{display:"inline-block"}}>{info1.value||"—"}</span>
+                                      </p>
+                                    </div>
                                     <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
                                       <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Activités porteuses</p>
                                       <p style={{fontSize:14,fontWeight:800,color:nbActs>0?"#1a1a2e":"#9aa5b4"}}>{nbActs||"—"}</p>
-                                    </div>
-                                    <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
-                                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Atouts</p>
-                                      <p style={{fontSize:14,fontWeight:800,color:nbAtouts>0?"#1a1a2e":"#9aa5b4"}}>{nbAtouts||"—"}</p>
                                     </div>
                                   </div>
                                 </div>
