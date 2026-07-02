@@ -208,9 +208,13 @@ async def liste_poles(db: AsyncSession = Depends(get_db)):
     from app.models.zone_types import PoleTerritoire
     res = await db.execute(select(PoleTerritoire).order_by(PoleTerritoire.id))
     rows = [pole_to_dict(p) for p in res.scalars()]
-    # Fichiers PDF attachés (chargés en une seule requête)
+    for r in rows:
+        r["fichiers"] = []
+    # Fichiers PDF attachés (chargés en une seule requête).
+    # to_regclass évite un 500 si la migration 096 n'est pas encore appliquée.
     ids = [r["id"] for r in rows]
-    if ids:
+    has_table = (await db.execute(text("SELECT to_regclass('public.pole_fichiers')"))).scalar()
+    if ids and has_table:
         fres = await db.execute(text(
             "SELECT id, pole_id, nom FROM pole_fichiers WHERE pole_id = ANY(:ids) ORDER BY created_at"
         ), {"ids": ids})
