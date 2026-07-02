@@ -987,8 +987,18 @@ export default function GestionZonesPage() {
                     boxShadow: active ? `0 12px 28px ${c}1f` : "0 1px 3px rgba(0,0,0,0.03)",
                     transform: active ? "translateY(-2px)" : "none",
                     display: "flex", flexDirection: "column" as const, overflow: "hidden", minWidth: 0 }}
-                  onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; } }}
-                  onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7"; } }}>
+                  onMouseEnter={ev => {
+                    if (!active) { ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }
+                    // Titre trop long : glisse pour révéler la fin
+                    const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                    const span = box?.firstElementChild as HTMLElement | null;
+                    if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                  }}
+                  onMouseLeave={ev => {
+                    if (!active) { ev.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7"; }
+                    const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                    if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                  }}>
 
                   <div style={{ padding: "14px 16px 14px", flex: 1 }}>
                     {/* Code du type + indicateur de sélection */}
@@ -1001,8 +1011,10 @@ export default function GestionZonesPage() {
                       )}
                     </div>
 
-                    {/* Libellé du type */}
-                    <div style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }} title={t.label}>{t.label}</div>
+                    {/* Libellé du type (défile au survol si trop long) */}
+                    <div data-marquee style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", whiteSpace: "nowrap" as const }}>
+                      <span style={{ display: "inline-block" }}>{t.label}</span>
+                    </div>
 
                     {/* Compteurs libellés */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
