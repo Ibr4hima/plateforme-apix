@@ -2,7 +2,6 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Badge from "@/components/shared/Badge";
-import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import { ArrowLeft, ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -10,22 +9,6 @@ import Fuse from "@/lib/fuse";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const DEPT_TO_REGION: Record<string, string> = {
-  "Dakar":"Dakar","Guédiawaye":"Dakar","Pikine":"Dakar","Rufisque":"Dakar",
-  "Mbour":"Thiès","Thiès":"Thiès","Tivaouane":"Thiès",
-  "Bambey":"Diourbel","Diourbel":"Diourbel","Mbacké":"Diourbel",
-  "Dagana":"Saint-Louis","Podor":"Saint-Louis","Saint-Louis":"Saint-Louis",
-  "Kébémer":"Louga","Linguère":"Louga","Louga":"Louga",
-  "Fatick":"Fatick","Foundiougne":"Fatick","Gossas":"Fatick",
-  "Guinguinéo":"Kaolack","Kaolack":"Kaolack","Nioro du Rip":"Kaolack",
-  "Birkilane":"Kaffrine","Kaffrine":"Kaffrine","Koungheul":"Kaffrine","Malem Hoddar":"Kaffrine",
-  "Bakel":"Tambacounda","Goudiry":"Tambacounda","Koumpentoum":"Tambacounda","Tambacounda":"Tambacounda",
-  "Kédougou":"Kédougou","Salemata":"Kédougou","Saraya":"Kédougou",
-  "Kolda":"Kolda","Médina Yoro Foulah":"Kolda","Vélingara":"Kolda",
-  "Bounkiling":"Sédhiou","Goudomp":"Sédhiou","Sédhiou":"Sédhiou",
-  "Bignona":"Ziguinchor","Oussouye":"Ziguinchor","Ziguinchor":"Ziguinchor",
-  "Kanel":"Matam","Matam":"Matam","Ranérou":"Matam",
-};
 
 const devSymbole = (code?:string, sym?:string) => sym || (code ? ({XOF:"FCFA",USD:"$",EUR:"€"}[code]||code) : "");
 function fmtPhone(raw:string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
@@ -1245,104 +1228,78 @@ export default function OpportunitesPage() {
                     })}
                   </div>
                 ) : (
-                  /* ── Vue drill-down ── */
+                  /* ── Fiches du niveau sélectionné ── */
                   <>
                     <button onClick={()=>setSelectedNiveau(null)}
                       style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
                       <ArrowLeft size={14}/> Retour aux zones
                     </button>
-                    {selectedNiveau==="pole" && (
-                      <VueTerritorialeSenegal
-                        zones={[]}
-                        mode="pole"
-                        onPoleClick={(pole)=>{
-                          const pot = pots.find((p:any)=>p.pole_id===pole.id);
-                          if (pot) setPotSel(pot);
-                        }}
-                      />
-                    )}
-                    {selectedNiveau==="region" && (
-                      <VueTerritorialeSenegal
-                        zones={[]}
-                        mode="region"
-                        onRegionClick={(nom)=>{
-                          const pot = pots.find((p:any)=>p.region_nom===nom);
-                          if (pot) setPotSel(pot);
-                        }}
-                      />
-                    )}
-                    {(selectedNiveau==="departement"||selectedNiveau==="arrondissement") && (()=>{
+                    {(()=>{
+                      const NIV: Record<string,{color:string}> = {
+                        pole:{color:"#004f91"}, region:{color:"#ca631f"},
+                        departement:{color:"#188038"}, arrondissement:{color:"#6A1B9A"},
+                      };
+                      const nv = NIV[selectedNiveau!] || NIV.pole;
                       const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                       if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
-                      const getRegion=(p:any)=>p.region_nom||DEPT_TO_REGION[p.departement_nom]||null;
-
-                      const potCard=(p:any,dot:string,hoverBorder:string,hoverShadow:string)=>(
-                        <div key={p.id} onClick={()=>setPotSel(p)}
-                          style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:9,border:"1px solid #E8E5E3",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:"pointer",transition:"all 0.15s"}}
-                          onMouseEnter={ev=>{ev.currentTarget.style.borderColor=hoverBorder;ev.currentTarget.style.boxShadow=hoverShadow;}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E8E5E3";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";}}>
-                          <div style={{width:7,height:7,borderRadius:"50%",background:dot,flexShrink:0}}/>
-                          <span style={{fontSize:13,fontWeight:600,color:dot,flex:1}}>{potTitle(p)}</span>
-                          <span style={{fontSize:11,color:"#9aa5b4",fontWeight:600,flexShrink:0}}>Voir →</span>
-                        </div>
-                      );
-
-                      /* ── Arbre Régions → Départements ── */
-                      if (selectedNiveau==="departement") {
-                        const regMap=new Map<string,any[]>();
-                        items.forEach((p:any)=>{const r=getRegion(p)||"__none";if(!regMap.has(r))regMap.set(r,[]);regMap.get(r)!.push(p);});
-                        const sortedRegs=[...[...regMap.keys()].filter(k=>k!=="__none").sort(),...(regMap.has("__none")?["__none"]:[])];
-                        return (
-                          <div style={{display:"flex",flexDirection:"column" as const,gap:20}}>
-                            {sortedRegs.map(reg=>(
-                              <div key={reg}>
-                                <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:10}}>
-                                  <div style={{width:8,height:8,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
-                                  <span style={{fontSize:14,fontWeight:700,color:"#0F52BA"}}>{reg==="__none"?"Non classés":`Région de ${reg}`}</span>
-                                </div>
-                                <div style={{paddingLeft:20,borderLeft:"2px solid rgba(15,82,186,0.18)",display:"flex",flexDirection:"column" as const,gap:8}}>
-                                  {regMap.get(reg)!.map((p:any)=>potCard(p,"#0D652D","#0D652D40","0 3px 10px rgba(13,101,45,0.10)"))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      }
-
-                      /* ── Arbre Régions → Départements → Arrondissements ── */
-                      const regMap=new Map<string,Map<string,any[]>>();
-                      items.forEach((p:any)=>{
-                        const r=getRegion(p)||"__none";
-                        const d=p.departement_nom||"__none_dept";
-                        if(!regMap.has(r))regMap.set(r,new Map());
-                        const dm=regMap.get(r)!;
-                        if(!dm.has(d))dm.set(d,[]);
-                        dm.get(d)!.push(p);
-                      });
-                      const sortedRegs=[...[...regMap.keys()].filter(k=>k!=="__none").sort(),...(regMap.has("__none")?["__none"]:[])];
                       return (
-                        <div style={{display:"flex",flexDirection:"column" as const,gap:24}}>
-                          {sortedRegs.map(reg=>{
-                            const deptMap=regMap.get(reg)!;
-                            const sortedDepts=[...[...deptMap.keys()].filter(k=>k!=="__none_dept").sort(),...(deptMap.has("__none_dept")?["__none_dept"]:[])];
+                        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+                          {items.map((p:any)=>{
+                            const zoneNom = p.pole_nom||p.region_nom||p.departement_nom||p.arrondissement_nom||"";
+                            const nbActs = (p.activite_ids||[]).length;
+                            const nbAtouts = (p.avantage_ids||[]).length;
                             return (
-                              <div key={reg}>
-                                <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:12}}>
-                                  <div style={{width:8,height:8,borderRadius:"50%",background:"#0F52BA",flexShrink:0}}/>
-                                  <span style={{fontSize:14,fontWeight:700,color:"#0F52BA"}}>{reg==="__none"?"Non classés":`Région de ${reg}`}</span>
-                                </div>
-                                <div style={{paddingLeft:20,borderLeft:"2px solid rgba(15,82,186,0.18)",display:"flex",flexDirection:"column" as const,gap:14}}>
-                                  {sortedDepts.map(dept=>(
-                                    <div key={dept}>
-                                      <div style={{display:"inline-flex",alignItems:"center",gap:7,marginBottom:8}}>
-                                        <div style={{width:7,height:7,borderRadius:"50%",background:"#0D652D",flexShrink:0}}/>
-                                        <span style={{fontSize:13,fontWeight:600,color:"#0D652D"}}>{dept==="__none_dept"?"Sans département":`Département de ${dept}`}</span>
-                                      </div>
-                                      <div style={{paddingLeft:18,borderLeft:"2px solid rgba(13,101,45,0.18)",display:"flex",flexDirection:"column" as const,gap:8}}>
-                                        {deptMap.get(dept)!.map((p:any)=>potCard(p,"#8A6100","#FBBC0450","0 3px 10px rgba(251,188,4,0.15)"))}
-                                      </div>
+                              <div key={p.id} onClick={()=>setPotSel(p)}
+                                style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",minWidth:0}}
+                                onMouseEnter={ev=>{
+                                  ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+                                  // Contenus trop longs : glissent pour révéler la fin
+                                  ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                                    const span = box.firstElementChild as HTMLElement | null;
+                                    if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                                  });
+                                }}
+                                onMouseLeave={ev=>{
+                                  ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                                  ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                                    const span = box.firstElementChild as HTMLElement | null;
+                                    if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                                  });
+                                }}>
+
+                                <div style={{padding:"14px 16px 14px",flex:1}}>
+                                  {/* Zone */}
+                                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                                    {zoneNom ? (
+                                      <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:nv.color,background:`${nv.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{zoneNom}</span>
+                                    ) : <span/>}
+                                  </div>
+
+                                  {/* Titre (défile au survol si trop long) */}
+                                  <div data-marquee style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                    <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                                  </div>
+
+                                  {/* Compteurs libellés */}
+                                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
+                                    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
+                                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Activités porteuses</p>
+                                      <p style={{fontSize:14,fontWeight:800,color:nbActs>0?"#1a1a2e":"#9aa5b4"}}>{nbActs||"—"}</p>
                                     </div>
-                                  ))}
+                                    <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
+                                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Atouts</p>
+                                      <p style={{fontSize:14,fontWeight:800,color:nbAtouts>0?"#1a1a2e":"#9aa5b4"}}>{nbAtouts||"—"}</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Action */}
+                                <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
+                                  <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,transition:"background 0.15s"}}
+                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                                    Voir les détails →
+                                  </div>
                                 </div>
                               </div>
                             );
