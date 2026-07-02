@@ -1355,12 +1355,12 @@ export default function OpportunitesAdminPage() {
                           {/* En-tête de branche */}
                           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,padding:"12px 18px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA"}}>
                             <div style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}>
-                              <span style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+                              <span style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
                               <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</span>
                             </div>
                           </div>
                           {/* Activités */}
-                          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,padding:16}}>
+                          <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSec==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
                             {bra.items.map((a:any)=>(
                               <div key={a.id} onClick={()=>setAvgVue(a)}
                                 style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
@@ -1376,7 +1376,7 @@ export default function OpportunitesAdminPage() {
                                   const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
                                   if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                                 }}>
-                                <span style={{width:6,height:6,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
+                                <span style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
                                 <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                 </div>
