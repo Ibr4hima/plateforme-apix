@@ -272,7 +272,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
               {selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}
             </span>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
             {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setDetailZone(z)} />)}
           </div>
         </div>
