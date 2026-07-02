@@ -1355,9 +1355,9 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                               {canAct && (
                                 <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
                                   <button onClick={()=>onEditEchange?.(e)}
-                                    style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(0,79,145,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"4px 10px", fontSize:10.5, color:"#004f91", fontWeight:600 }}
+                                    style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,79,145,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}
                                     title="Modifiable pendant 24h">
-                                    <Pencil size={10}/> Modifier
+                                    <Pencil size={11} style={{ color:"#004f91" }}/>
                                   </button>
                                   <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
                                     style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}
@@ -1374,7 +1374,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {(e.canal || e.interlocuteur || e.contact_par) && (
                               <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                 {e.canal && (()=>{ const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>
+                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"3px 10px", borderRadius:999 }}>
                                     <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                   </span>
                                 ); })()}
@@ -1432,7 +1432,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                     {contraintesCycleCourant(p).map((c:any) => (
                       <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
-                        <span style={{ color:"#004f91", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
+                        <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0, marginTop:6 }}/>
                         <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                       </div>
                     ))}
@@ -1487,7 +1487,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
@@ -1536,7 +1536,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                               {contrCourant.map((c:any) => (
                                 <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
-                                  <span style={{ color:"#004f91", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
+                                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0, marginTop:6 }}/>
                                   <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                                 </div>
                               ))}
@@ -1593,7 +1593,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
@@ -1644,7 +1644,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                               {contraintesCy.map((c:any) => (
                                 <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
-                                  <span style={{ color:"#004f91", fontWeight:900, fontSize:16, flexShrink:0, lineHeight:1.4 }}>•</span>
+                                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0, marginTop:6 }}/>
                                   <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                                 </div>
                               ))}
