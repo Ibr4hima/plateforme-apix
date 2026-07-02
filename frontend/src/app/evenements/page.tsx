@@ -2,7 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
-import { CalendarDays, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -228,6 +228,17 @@ function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
           )}
           {e.pays_invites_noms&&<div style={{marginBottom:14}}><LBL>Pays invités</LBL><div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>{e.pays_invites_noms.split(",").map((p:string)=>p.trim()).filter(Boolean).map((p:string)=><span key={p} style={{fontSize:11,color:"#004f91",background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.15)",padding:"2px 10px",borderRadius:999,fontWeight:500}}>{p}</span>)}</div></div>}
           {e.entreprises_invitees&&<div style={{marginBottom:14}}><LBL>Entreprises invitées</LBL><div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>{e.entreprises_invitees.split(",").map((ent:string)=>ent.trim()).filter(Boolean).map((ent:string)=><span key={ent} style={{fontSize:11,color:"#ca631f",background:"rgba(202,99,31,0.06)",border:"1px solid rgba(202,99,31,0.15)",padding:"2px 10px",borderRadius:999,fontWeight:500}}>{ent}</span>)}</div></div>}
+          {(e.fichiers||[]).length>0&&<div style={{marginBottom:4}}>
+            <LBL>{e.fichiers.length>1?"Documents":"Document"}</LBL>
+            <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+              {e.fichiers.map((fi:any)=>(
+                <a key={fi.id} href={`${API_BASE}/evenements/${e.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
+                  style={{display:"flex",alignItems:"center",gap:9,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:8,padding:"9px 13px",fontSize:12.5,fontWeight:600,color:"#004f91",textDecoration:"none"}}>
+                  <FileText size={13} style={{flexShrink:0}}/>{fi.titre}
+                </a>
+              ))}
+            </div>
+          </div>}
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:20,borderTop:"1px solid #F2F0EF",paddingTop:18}}>
             <button onClick={onClose} style={{padding:"9px 20px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
           </div>

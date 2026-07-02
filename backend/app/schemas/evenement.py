@@ -77,6 +77,7 @@ class EvenementResponse(EvenementBase):
     activite_noms:      Optional[List[str]] = []
     pays_invites_noms:  Optional[str]       = None
     thematiques_tree:   Optional[dict]      = None
+    fichiers:           Optional[List[dict]] = []
 
     model_config = {"from_attributes": True}
 

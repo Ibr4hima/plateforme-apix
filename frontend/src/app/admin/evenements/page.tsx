@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X, Check, Calendar } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, Check, Calendar } from "lucide-react";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { api } from "@/lib/api";
 import NaemaSelect from "@/components/shared/NaemaSelect";
@@ -76,6 +76,8 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [saveOk, setSaveOk] = useState(false);
   const [error,  setError]  = useState("");
+  const [fichiers, setFichiers] = useState<any[]>([]);
+  const [pdfQueue, setPdfQueue] = useState<{ file: File; titre: string }[]>([]);
 
   const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
@@ -123,6 +125,8 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
     } else {
       setForm({ ...EMPTY_FORM });
     }
+    setFichiers(editItem?.fichiers || []);
+    setPdfQueue([]);
     setError(""); setSaveOk(false);
   }, [open, editItem?.id]);
 
@@ -236,6 +240,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
           return null;
         })(),
       };
+      let evtId: number | null = editItem?.id ?? null;
       if (editItem) {
         const res = await fetch(`${API_BASE}/evenements/${editItem.id}`, {
           method: "PATCH", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload)
@@ -246,6 +251,16 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
           method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload)
         });
         if (!res.ok) { const d = await res.json(); throw d; }
+        const d = await res.json(); evtId = d.id;
+      }
+      // Téléverser les documents en attente
+      if (evtId) {
+        for (const pq of pdfQueue) {
+          const fd = new FormData();
+          fd.append("titre", pq.titre);
+          fd.append("fichier", pq.file);
+          await fetch(`${API_BASE}/evenements/${evtId}/fichiers`, { method: "POST", body: fd });
+        }
       }
       setSaveOk(true);
       setTimeout(() => { onClose(); onSaved(); }, 700);
@@ -255,12 +270,17 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
     } finally { setSaving(false); }
   };
 
+  const supprimerFichier = async (fid: number) => {
+    if (!editItem) return;
+    await fetch(`${API_BASE}/evenements/${editItem.id}/fichiers/${fid}`, { method: "DELETE" });
+    setFichiers(prev => prev.filter(f => f.id !== fid));
+  };
+
   const MOIS_FORM = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
   return (
     <FModal open={open} onClose={onClose}
       title={editItem ? "Modifier l'événement" : "Nouvel événement"}
-      subtitle="Forums, salons, missions de prospection et rencontres B2B"
       footer={<>
         <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
         <FButton onClick={handleSave} disabled={saving || saveOk} loading={saving} success={saveOk}>
@@ -276,7 +296,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
             <FInput value={form.nom_event} onChange={e=>update("nom_event",e.target.value)} placeholder="Intitulé de l'événement" />
           </div>
           <div>
-            <FLabel hint="(entier > 0)">Édition</FLabel>
+            <FLabel>Édition</FLabel>
             <FInput type="number" min={1} step={1} value={form.edition}
               onChange={e=>{ const v=e.target.value; if(v===""||/^[1-9][0-9]*$/.test(v)) update("edition",v); }}
               onKeyDown={e=>{ if(["e","E","+","-",".",","].includes(e.key)) e.preventDefault(); }}
@@ -350,9 +370,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
               )}
             </FPanel>
           );
-        })() : (
-          <p style={{ fontSize:12.5, color:"#9aa5b4" }}>Événement ponctuel — activez le bouton ci-dessus s'il se répète à intervalle régulier.</p>
-        )}
+        })() : null}
       </FSection>
 
       {/* Dates */}
@@ -414,7 +432,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
             <FInput value={form.organisateur} onChange={e=>update("organisateur",e.target.value)} placeholder="Nom de l'organisateur" />
           </div>
           <div>
-            <FLabel>Rôle APIX</FLabel>
+            <FLabel>Rôle de l&apos;APIX</FLabel>
             <FSelect value={form.role_apix} onChange={e=>update("role_apix",e.target.value)}>
               <option value="">— Sélectionner —</option>
               {ROLES_APIX.map(r=><option key={r.value} value={r.value}>{r.label}</option>)}
@@ -456,6 +474,43 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
       {/* Description */}
       <FSection title="Description">
         <RichTextEditor value={form.description} onChange={v=>update("description",v)}/>
+      </FSection>
+
+      {/* Documents */}
+      <FSection title="Documents">
+        {fichiers.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:8 }}>
+            {fichiers.map((fi: any) => (
+              <div key={fi.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"#004f91" }} />
+                <a href={`${API_BASE}/evenements/${editItem?.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize:13, flex:1, color:"#1a1a2e", fontWeight:500, textDecoration:"none" }}>{fi.titre}</a>
+                <button onClick={()=>supprimerFichier(fi.id)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }} /></button>
+              </div>
+            ))}
+          </div>
+        )}
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
+          <Upload size={14} color="#9aa5b4" />
+          <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+          <input type="file" accept=".pdf" multiple style={{ display:"none" }}
+            onChange={e=>{ const files=Array.from(e.target.files||[]); setPdfQueue(prev=>[...prev, ...files.map(f=>({ file:f, titre:f.name.replace(/\.pdf$/i,"") }))]); e.target.value=""; }} />
+        </label>
+        {pdfQueue.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column", gap:5, marginTop:8 }}>
+            {pdfQueue.map((pq, i) => (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"#6A1B9A" }} />
+                <input value={pq.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{ ...x, titre:e.target.value }:x))} placeholder="Titre du document"
+                  style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }} />
+                <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }} /></button>
+              </div>
+            ))}
+            <p style={{ fontSize:11, color:"#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+          </div>
+        )}
       </FSection>
 
       {error && <FError>{error}</FError>}

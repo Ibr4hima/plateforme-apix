@@ -126,8 +126,8 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
 
   // Tags de résumé
   const allSelected = [
-    ...secteurIds.map(id => ({ id, nom: secteurs.find(s=>s.id===id)?.nom||"", color:"#ca631f" })),
-    ...brancheIds.map(id => ({ id, nom: branches.find(b=>b.id===id)?.nom||"", color:"#004f91" })),
+    ...secteurIds.map(id => ({ id, nom: secteurs.find(s=>s.id===id)?.nom||"", color:"#004f91" })),
+    ...brancheIds.map(id => ({ id, nom: branches.find(b=>b.id===id)?.nom||"", color:"#ca631f" })),
     ...activiteIds.map(id => ({ id, nom: activites.find(a=>a.id===id)?.nom||"", color:"#188038" })),
   ].filter(t=>t.nom);
 
@@ -140,8 +140,8 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
             <span key={`${t.color}-${t.id}`} style={{ display:"inline-flex", alignItems:"center", gap:4, background:t.color+"10", color:t.color, border:`1px solid ${t.color}25`, borderRadius:999, padding:"2px 8px", fontSize:11, fontWeight:600 }}>
               {t.nom}
               <button onClick={()=>{
-                if (t.color==="#ca631f") toggleSec(t.id);
-                else if (t.color==="#004f91") toggleBra(t.id);
+                if (t.color==="#004f91") toggleSec(t.id);
+                else if (t.color==="#ca631f") toggleBra(t.id);
                 else toggleAct(t.id);
               }} style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex" }}>
                 <X size={10} style={{color:t.color}}/>
@@ -157,10 +157,10 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
 
       {/* Colonnes cascade */}
       <div style={{ display:"flex", gap:8 }}>
-        <ColSection title="Secteur" color="#ca631f" open={openSec} onToggle={()=>setOpenSec(o=>!o)} count={secteurIds.length}>
-          {secteurs.map(s => <CheckItem key={s.id} label={s.nom} selected={secteurIds.includes(s.id)} onToggle={()=>toggleSec(s.id)} color="#ca631f"/>)}
+        <ColSection title="Secteur" color="#004f91" open={openSec} onToggle={()=>setOpenSec(o=>!o)} count={secteurIds.length}>
+          {secteurs.map(s => <CheckItem key={s.id} label={s.nom} selected={secteurIds.includes(s.id)} onToggle={()=>toggleSec(s.id)} color="#004f91"/>)}
         </ColSection>
-        <ColSection title="Branche" color="#004f91" open={openBra} onToggle={()=>setOpenBra(o=>!o)} count={brancheIds.length}>
+        <ColSection title="Branche" color="#ca631f" open={openBra} onToggle={()=>setOpenBra(o=>!o)} count={brancheIds.length}>
           {brasDispo.length === 0
             ? <p style={{fontSize:11,color:"#9aa5b4",padding:"10px 12px"}}>Choisir un secteur d'abord</p>
             : secteurIds.map(secId => {
@@ -169,8 +169,8 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
                 if (!brasDuSec.length) return null;
                 return (
                   <div key={secId}>
-                    <div style={{fontSize:10,fontWeight:700,color:"#ca631f",padding:"6px 10px 3px",background:"rgba(202,99,31,0.05)",borderBottom:"1px solid rgba(202,99,31,0.1)"}}>{secNom}</div>
-                    {brasDuSec.map(b => <CheckItem key={b.id} label={b.nom} selected={brancheIds.includes(b.id)} onToggle={()=>toggleBra(b.id)} color="#004f91"/>)}
+                    <div style={{fontSize:10,fontWeight:700,color:"#004f91",padding:"6px 10px 3px",background:"rgba(0,79,145,0.05)",borderBottom:"1px solid rgba(0,79,145,0.1)"}}>{secNom}</div>
+                    {brasDuSec.map(b => <CheckItem key={b.id} label={b.nom} selected={brancheIds.includes(b.id)} onToggle={()=>toggleBra(b.id)} color="#ca631f"/>)}
                   </div>
                 );
               })
@@ -185,7 +185,7 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
                 if (!actsDeBra.length) return null;
                 return (
                   <div key={braId}>
-                    <div style={{fontSize:10,fontWeight:700,color:"#004f91",padding:"6px 10px 3px",background:"rgba(0,79,145,0.05)",borderBottom:"1px solid rgba(0,79,145,0.1)"}}>{braNom}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:"#ca631f",padding:"6px 10px 3px",background:"rgba(202,99,31,0.05)",borderBottom:"1px solid rgba(202,99,31,0.1)"}}>{braNom}</div>
                     {actsDeBra.map(a => <CheckItem key={a.id} label={a.nom} selected={activiteIds.includes(a.id)} onToggle={()=>toggleAct(a.id)} color="#188038"/>)}
                   </div>
                 );

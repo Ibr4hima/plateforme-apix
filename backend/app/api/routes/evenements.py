@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import os, shutil, uuid as uuid_lib
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_, extract
+from sqlalchemy import select, func, and_, or_, extract, text as sql_text
 from typing import Optional, List
 from datetime import date as date_type
 
@@ -14,6 +16,9 @@ from app.schemas.evenement import (
 )
 
 router = APIRouter(prefix="/evenements", tags=["Événements"])
+
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "../../../uploads/evenements")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 async def enrich_evenement(e: Evenement, db: AsyncSession) -> EvenementResponse:
@@ -63,6 +68,14 @@ async def enrich_evenement(e: Evenement, db: AsyncSession) -> EvenementResponse:
             if bra and act and act not in tree[sec][bra]:
                 tree[sec][bra].append(act)
         resp.thematiques_tree = tree  # type: ignore
+    # Fichiers PDF attachés (to_regclass évite un 500 avant la migration 097)
+    resp.fichiers = []
+    has_fich = (await db.execute(sql_text("SELECT to_regclass('public.evenement_fichiers')"))).scalar()
+    if has_fich:
+        r = await db.execute(sql_text(
+            "SELECT id, nom FROM evenement_fichiers WHERE evenement_id = :id ORDER BY created_at"
+        ), {"id": e.id})
+        resp.fichiers = [{"id": row[0], "titre": row[1]} for row in r.fetchall()]
     return resp
 
 
@@ -231,3 +244,59 @@ async def supprimer_evenement(evenement_id: int, db: AsyncSession = Depends(get_
     if not e: raise HTTPException(status_code=404, detail="Événement introuvable")
     await db.delete(e)
     await db.flush()
+
+
+# ── Fichiers PDF des événements ────────────────────────────────────────────────
+
+@router.post("/{evenement_id}/fichiers", status_code=201)
+async def ajouter_fichier_evenement(
+    evenement_id: int,
+    titre:   str        = Form(""),
+    fichier: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    ext = os.path.splitext(fichier.filename)[1].lower()
+    if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
+    unique_name = f"{uuid_lib.uuid4()}{ext}"
+    dest = os.path.join(UPLOAD_DIR, unique_name)
+    with open(dest, "wb") as f:
+        shutil.copyfileobj(fichier.file, f)
+    res = await db.execute(sql_text("""
+        INSERT INTO evenement_fichiers (evenement_id, nom, url, type_fichier)
+        VALUES (:eid, :nom, :url, 'PDF')
+        RETURNING id
+    """), {"eid": evenement_id, "nom": titre or fichier.filename, "url": dest})
+    fid = res.fetchone()[0]
+    await db.flush()
+    return {"id": fid, "titre": titre or fichier.filename}
+
+
+@router.delete("/{evenement_id}/fichiers/{fichier_id}", status_code=204)
+async def supprimer_fichier_evenement(evenement_id: int, fichier_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    res = await db.execute(sql_text(
+        "SELECT url FROM evenement_fichiers WHERE id = :id AND evenement_id = :eid"
+    ), {"id": fichier_id, "eid": evenement_id})
+    f = res.fetchone()
+    if not f: raise HTTPException(404, "Fichier introuvable")
+    if f[0] and os.path.exists(f[0]):
+        os.remove(f[0])
+    await db.execute(sql_text("DELETE FROM evenement_fichiers WHERE id = :id"), {"id": fichier_id})
+    await db.flush()
+
+
+@router.get("/{evenement_id}/fichiers/{fichier_id}/download")
+async def telecharger_fichier_evenement(evenement_id: int, fichier_id: int, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(sql_text(
+        "SELECT nom, url FROM evenement_fichiers WHERE id = :id AND evenement_id = :eid"
+    ), {"id": fichier_id, "eid": evenement_id})
+    f = res.fetchone()
+    if not f or not f[1]: raise HTTPException(404, "Fichier introuvable")
+    # Fallback machine-indépendant si le chemin absolu enregistré n'existe plus
+    path = f[1]
+    if not os.path.exists(path):
+        path = os.path.join(UPLOAD_DIR, os.path.basename(f[1]))
+    if not os.path.exists(path):
+        raise HTTPException(404, "Fichier introuvable sur le serveur")
+    nom = f[0] or "document.pdf"
+    return FileResponse(path, filename=nom if nom.lower().endswith(".pdf") else f"{nom}.pdf", media_type="application/pdf")
