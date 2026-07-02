@@ -61,7 +61,7 @@ export default function Sidebar() {
         <div style={{ padding: "24px 16px 18px", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Image src="/logo_apix.png" alt="APIX" width={90} height={32}
             style={{ height: 32, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
-          <div style={{ marginTop: 10, fontSize: 9, fontWeight: 700, color: "#e0813f", letterSpacing: "0.18em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+          <div style={{ marginTop: 10, fontSize: 9, fontWeight: 700, color: "#ca631f", letterSpacing: "0.18em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
             Espace Administration
           </div>
         </div>
@@ -70,9 +70,9 @@ export default function Sidebar() {
         <nav style={{ flex: 1, padding: "0 12px 20px" }}>
           {/* Bouton vers le site public */}
           <Link href="/"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "9px 14px", borderRadius: 10, background: "rgba(202,99,31,0.14)", border: "1px solid rgba(224,129,63,0.45)", color: "#e0813f", fontSize: 12.5, fontWeight: 700, textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "0.01em" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.26)"; e.currentTarget.style.borderColor = "rgba(224,129,63,0.7)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(202,99,31,0.14)"; e.currentTarget.style.borderColor = "rgba(224,129,63,0.45)"; }}>
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "9px 14px", borderRadius: 10, background: "#fff", color: "#ca631f", fontSize: 12.5, fontWeight: 700, textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "0.01em", boxShadow: "0 4px 14px rgba(0,20,45,0.18)" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#FFF3EA"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
             Page publique
           </Link>
           <div style={{ margin: "14px -12px 4px", borderTop: "1px solid rgba(255,255,255,0.1)" }} />
