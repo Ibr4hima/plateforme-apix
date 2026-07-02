@@ -8,7 +8,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const MOIS_ABR = ["JANV","FÉVR","MARS","AVR","MAI","JUIN","JUIL","AOÛT","SEPT","OCT","NOV","DÉC"];
 // Pilules teintées des rôles APIX sur les cards (palette du site)
 const ROLE_PILL: Record<string,{c:string;bg:string}> = {
   "Organisateur":    { c:"#188038", bg:"rgba(24,128,56,0.08)"  },
@@ -460,24 +459,24 @@ export default function EvenementsPage() {
                       termine:  { label:"Terminé",  c:"#6b7280", bg:"#F2F0EF"              },
                     };
                     const st = statutAff ? ST[statutAff] : null;
-                    // Tuile calendrier : mois / jour(s) / année
-                    let tuile: { mois:string; jour:string; annee:string } | null = null;
-                    if (e.date_debut) {
-                      const d1 = e.date_debut, d2 = e.date_fin;
-                      const jour = d2 && d2!==d1 && d2.slice(5,7)===d1.slice(5,7) && d2.slice(0,4)===d1.slice(0,4)
-                        ? `${parseInt(d1.slice(8,10))}–${parseInt(d2.slice(8,10))}`
-                        : `${parseInt(d1.slice(8,10))}`;
-                      tuile = { mois:MOIS_ABR[parseInt(d1.slice(5,7))-1], jour, annee:d1.slice(0,4) };
-                    } else if (e.prochain_mois) {
-                      tuile = { mois:MOIS_ABR[(e.prochain_mois||1)-1], jour:e.prochain_jour?String(e.prochain_jour):"·", annee:e.prochain_annee?String(e.prochain_annee):"" };
-                    }
-                    // La tuile ne montre que le début : afficher la période complète si elle déborde du mois
-                    const moisDiff = !!(e.date_debut && e.date_fin && e.date_fin!==e.date_debut && (e.date_fin.slice(5,7)!==e.date_debut.slice(5,7) || e.date_fin.slice(0,4)!==e.date_debut.slice(0,4)));
                     return (
                       <div key={e.id} onClick={()=>setSelec(e)}
                         style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
-                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+                        onMouseEnter={ev=>{
+                          ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+                          // Contenus trop longs : glissent pour révéler la fin
+                          ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                            const span = box.firstElementChild as HTMLElement | null;
+                            if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                          });
+                        }}
+                        onMouseLeave={ev=>{
+                          ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                          ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                            const span = box.firstElementChild as HTMLElement | null;
+                            if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                          });
+                        }}>
 
                         <div style={{padding:"14px 16px 14px",flex:1}}>
                           {/* Statut + rôle de l'APIX */}
@@ -492,28 +491,23 @@ export default function EvenementsPage() {
                             ) : <span/>}
                           </div>
 
-                          {/* Tuile calendrier + infos */}
-                          <div style={{display:"flex",gap:13,alignItems:"flex-start"}}>
-                            <div style={{width:52,flexShrink:0,borderRadius:12,border:"1px solid rgba(0,79,145,0.14)",background:"rgba(0,79,145,0.05)",display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"7px 4px 6px",minHeight:56}}>
-                              {tuile ? <>
-                                <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.08em",color:"#004f91"}}>{tuile.mois}</span>
-                                <span style={{fontSize:16,fontWeight:800,color:"#1a1a2e",lineHeight:1.25}}>{tuile.jour}</span>
-                                {tuile.annee && <span style={{fontSize:9.5,fontWeight:600,color:"#9aa5b4"}}>{tuile.annee}</span>}
-                              </> : <CalendarDays size={18} style={{color:"#004f91"}}/>}
+                          {/* Titre + édition */}
+                          <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
+                          {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinal(e.edition)}</div>}
+
+                          {/* Infos libellées */}
+                          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
+                            <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
+                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Date</p>
+                              <p data-marquee style={{fontSize:12,fontWeight:600,color:dateStr?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
+                              </p>
                             </div>
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35}}>{e.nom_event}</div>
-                              {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinal(e.edition)}</div>}
-                              <div style={{display:"flex",flexDirection:"column" as const,gap:3,marginTop:7}}>
-                                {moisDiff&&dateStr&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                                  <span style={{color:"#4a5568",fontWeight:400}}>{dateStr}</span>
-                                </div>}
-                                {lieu&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                                  <span style={{color:"#4a5568",fontWeight:400}}>{lieu}</span>
-                                </div>}
-                              </div>
+                            <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
+                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Lieu</p>
+                              <p data-marquee style={{fontSize:12,fontWeight:600,color:lieu?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                <span style={{display:"inline-block"}}>{lieu||"—"}</span>
+                              </p>
                             </div>
                           </div>
                         </div>
