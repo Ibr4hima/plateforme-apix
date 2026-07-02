@@ -8,6 +8,7 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import PaysSelect from "@/components/shared/PaysSelect";
 import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
+import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FSegmented, FToggle, FButton, FButtonGhost, FError, FInfo } from "@/components/shared/FormUI";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -254,259 +255,211 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
     } finally { setSaving(false); }
   };
 
-  const IS: any = { width:"100%", background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const };
-  const LS: any = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:4, display:"block" };
-  const SS: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid rgba(202,99,31,0.15)" };
+  const MOIS_FORM = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
-  if (!open) return null;
   return (
-    <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:760, maxHeight:"92vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <div style={{ height:5, background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)", borderRadius:"20px 20px 0 0" }} />
-        <div style={{ padding:"24px 32px 32px" }}>
+    <FModal open={open} onClose={onClose}
+      title={editItem ? "Modifier l'événement" : "Nouvel événement"}
+      subtitle="Forums, salons, missions de prospection et rencontres B2B"
+      footer={<>
+        <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
+        <FButton onClick={handleSave} disabled={saving || saveOk} loading={saving} success={saveOk}>
+          {saveOk ? "Enregistré !" : saving ? "Sauvegarde…" : editItem ? "Modifier" : "Créer l'événement"}
+        </FButton>
+      </>}>
 
-          {/* Header */}
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.15rem", color:"#1a1a2e" }}>
-              {editItem ? "Modifier l'événement" : "Nouvel événement"}
-            </h2>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="#4a5568" /></button>
+      {/* Identification */}
+      <FSection title="Identification">
+        <FGrid cols="2fr 1fr">
+          <div>
+            <FLabel>Nom de l'événement *</FLabel>
+            <FInput value={form.nom_event} onChange={e=>update("nom_event",e.target.value)} placeholder="Intitulé de l'événement" />
           </div>
+          <div>
+            <FLabel hint="(entier > 0)">Édition</FLabel>
+            <FInput type="number" min={1} step={1} value={form.edition}
+              onChange={e=>{ const v=e.target.value; if(v===""||/^[1-9][0-9]*$/.test(v)) update("edition",v); }}
+              onKeyDown={e=>{ if(["e","E","+","-",".",","].includes(e.key)) e.preventDefault(); }}
+              placeholder="Ex : 5"
+              style={form.edition&&(isNaN(parseInt(form.edition))||parseInt(form.edition)<=0)?{ borderColor:"#dc2626" }:undefined} />
+            {form.edition&&parseInt(form.edition)>0&&<span style={{ fontSize:11, color:"#188038", marginTop:3, display:"block" }}>{ordinalEdition(parseInt(form.edition))}</span>}
+          </div>
+        </FGrid>
+      </FSection>
 
-          <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
-
-            {/* Nom + Édition */}
-            <div>
-              <p style={SS}>Identification</p>
-              <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:12 }}>
+      {/* Récurrence */}
+      <FSection title="Récurrence" extra={<FToggle checked={form.est_recurrent} onChange={()=>update("est_recurrent",!form.est_recurrent)} label="Événement récurrent" />}>
+        {form.est_recurrent ? (() => {
+          const prochainsComplet = form.prochain_jour && form.prochain_mois && form.prochain_annee;
+          return (
+            <FPanel>
+              <FGrid cols={2} style={{ marginBottom:12 }}>
                 <div>
-                  <label style={LS}>Nom de l'événement *</label>
-                  <input value={form.nom_event} onChange={e=>update("nom_event",e.target.value)} placeholder="Intitulé de l'événement" style={IS} />
+                  <FLabel>Récurrence</FLabel>
+                  <FSelect value={form.frequence_type} onChange={e=>update("frequence_type",e.target.value)}>
+                    <option value="mois">Tous les mois</option>
+                    <option value="ans">Tous les ans</option>
+                  </FSelect>
                 </div>
                 <div>
-                  <label style={LS}>Édition <span style={{ fontWeight:400, color:"#9aa5b4" }}>(entier &gt; 0)</span></label>
-                  <input type="number" min={1} step={1} value={form.edition}
-                    onChange={e=>{ const v=e.target.value; if(v===""||/^[1-9][0-9]*$/.test(v)) update("edition",v); }}
+                  <FLabel>Chaque</FLabel>
+                  <FInput type="number" min={1} step={1} value={form.frequence_valeur}
+                    onChange={e=>{ const v=e.target.value; if(v===""||/^[1-9][0-9]*$/.test(v)) update("frequence_valeur",v); }}
                     onKeyDown={e=>{ if(["e","E","+","-",".",","].includes(e.key)) e.preventDefault(); }}
-                    placeholder="Ex : 5"
-                    style={{ ...IS, borderColor: form.edition&&(isNaN(parseInt(form.edition))||parseInt(form.edition)<=0)?"#dc2626":"#C5BFBB" }} />
-                  {form.edition&&parseInt(form.edition)>0&&<span style={{ fontSize:11, color:"#15803d", marginTop:2, display:"block" }}>{ordinalEdition(parseInt(form.edition))}</span>}
+                    placeholder="Ex : 4" />
                 </div>
+              </FGrid>
+
+              <div style={{ marginBottom:12 }}>
+                <FLabel hint="(Jour optionnel)">Prochain événement</FLabel>
+                <FGrid cols="80px 1fr 1fr" gap={8}>
+                  <FInput type="number" min={1} max={31} value={form.prochain_jour}
+                    onChange={e=>{ update("prochain_jour",e.target.value); if(e.target.value && form.prochain_mois && form.prochain_annee){ update("date_debut",""); update("date_fin",""); } }}
+                    placeholder="Jour" style={{ textAlign:"center" as const }} />
+                  <FSelect value={form.prochain_mois} onChange={e=>{ update("prochain_mois",e.target.value); if(form.prochain_jour && e.target.value && form.prochain_annee){ update("date_debut",""); update("date_fin",""); } }}>
+                    <option value="">— Mois —</option>
+                    {MOIS_FORM.map((m,i)=><option key={i+1} value={i+1}>{m}</option>)}
+                  </FSelect>
+                  <FInput type="number" min={2024} max={2099} value={form.prochain_annee}
+                    onChange={e=>{ update("prochain_annee",e.target.value); if(form.prochain_jour && form.prochain_mois && e.target.value){ update("date_debut",""); update("date_fin",""); } }}
+                    placeholder="Année" />
+                </FGrid>
               </div>
-            </div>
 
-            {/* ── RÉCURRENCE ─────────────────────────────────────── */}
-            <div>
-              <p style={SS}>Récurrence</p>
-              <label style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", fontSize:13, color:"#4a5568", marginBottom:12 }}>
-                <div onClick={()=>update("est_recurrent",!form.est_recurrent)}
-                  style={{ width:36, height:20, borderRadius:999, background:form.est_recurrent?"#ca631f":"#C5BFBB", position:"relative", cursor:"pointer", transition:"background 0.2s", flexShrink:0 }}>
-                  <div style={{ position:"absolute", top:2, left:form.est_recurrent?18:2, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s", boxShadow:"0 1px 3px rgba(0,0,0,0.2)" }} />
+              {prochainsComplet && (
+                <div style={{ marginBottom:12 }}>
+                  <FLabel hint="(en jours)">Durée</FLabel>
+                  <FInput type="number" min={1} step={1} value={form.duree_jours}
+                    onChange={e=>{ const v=e.target.value; if(v===""||/^[1-9][0-9]*$/.test(v)) update("duree_jours",v); }}
+                    onKeyDown={e=>{ if(["e","E","+","-",".",","].includes(e.key)) e.preventDefault(); }}
+                    placeholder="Ex : 3" style={{ maxWidth:120 }} />
                 </div>
-                <span style={{ fontWeight:form.est_recurrent?600:400 }}>Événement récurrent</span>
-              </label>
+              )}
 
-              {form.est_recurrent && (() => {
-                // Prochain complet = J+M+A renseignés
-                const prochainsComplet = form.prochain_jour && form.prochain_mois && form.prochain_annee;
-                return (
-                  <div style={{ background:"#F8F7F6", borderRadius:12, padding:"16px" }}>
-                    {/* Ligne 1 : Récurrence + Chaque */}
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
-                      <div>
-                        <label style={LS}>Récurrence</label>
-                        <select value={form.frequence_type} onChange={e=>update("frequence_type",e.target.value)} style={{ ...IS, cursor:"pointer" }}>
-                          <option value="mois">Tous les mois</option>
-                          <option value="ans">Tous les ans</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label style={LS}>Chaque</label>
-                        <input type="number" min={1} step={1} value={form.frequence_valeur}
-                          onChange={e=>{ const v=e.target.value; if(v===""||/^[1-9][0-9]*$/.test(v)) update("frequence_valeur",v); }}
-                          onKeyDown={e=>{ if(["e","E","+","-",".",","].includes(e.key)) e.preventDefault(); }}
-                          placeholder="Ex : 4" style={IS} />
-                      </div>
-                    </div>
-
-                    {/* Ligne 2 : Prochain événement (J/M/A séparés) */}
-                    <div style={{ marginBottom:12 }}>
-                      <label style={LS}>Prochain événement <span style={{ fontWeight:400, color:"#9aa5b4" }}>(Jour optionnel)</span></label>
-                      <div style={{ display:"grid", gridTemplateColumns:"80px 1fr 1fr", gap:8 }}>
-                        <input type="number" min={1} max={31} value={form.prochain_jour}
-                          onChange={e=>{ update("prochain_jour",e.target.value); if(e.target.value && form.prochain_mois && form.prochain_annee){ update("date_debut",""); update("date_fin",""); } }} placeholder="Jour"
-                          style={{ ...IS, textAlign:"center" as const }} />
-                        <select value={form.prochain_mois} onChange={e=>{ update("prochain_mois",e.target.value); if(form.prochain_jour && e.target.value && form.prochain_annee){ update("date_debut",""); update("date_fin",""); } }} style={{ ...IS, cursor:"pointer" }}>
-                          <option value="">— Mois —</option>
-                          {["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"].map((m,i)=>(
-                            <option key={i+1} value={i+1}>{m}</option>
-                          ))}
-                        </select>
-                        <input type="number" min={2024} max={2099} value={form.prochain_annee}
-                          onChange={e=>{ update("prochain_annee",e.target.value); if(form.prochain_jour && form.prochain_mois && e.target.value){ update("date_debut",""); update("date_fin",""); } }} placeholder="Année"
-                          style={IS} />
-                      </div>
-                    </div>
-
-                    {/* Ligne 3 : Durée (seulement si prochain complet) */}
-                    {prochainsComplet && (
-                      <div style={{ marginBottom:12 }}>
-                        <label style={LS}>Durée <span style={{ fontWeight:400, color:"#9aa5b4" }}>(en jours)</span></label>
-                        <input type="number" min={1} step={1} value={form.duree_jours}
-                          onChange={e=>{ const v=e.target.value; if(v===""||/^[1-9][0-9]*$/.test(v)) update("duree_jours",v); }}
-                          onKeyDown={e=>{ if(["e","E","+","-",".",","].includes(e.key)) e.preventDefault(); }}
-                          placeholder="Ex : 3" style={{ ...IS, maxWidth:120 }} />
-                      </div>
-                    )}
-
-                    {/* Indicatif */}
-                    {form.frequence_valeur && parseInt(form.frequence_valeur) > 0 && (
-                      <div style={{ fontSize:12, color:"#ca631f", background:"rgba(202,99,31,0.06)", border:"1px solid rgba(202,99,31,0.15)", borderRadius:8, padding:"8px 12px" }}>
-                        ℹ️ Tous les <strong>{form.frequence_valeur} {form.frequence_type==="mois"?"mois":`an${parseInt(form.frequence_valeur)>1?"s":""}`}</strong>
-                        {form.prochain_mois && form.prochain_annee && (
-                          <span> — Prochain : <strong>
-                            {form.prochain_jour && `${form.prochain_jour} `}
-                            {["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"][parseInt(form.prochain_mois)-1]} {form.prochain_annee}
-                          </strong></span>
-                        )}
-                        {prochainsComplet && form.duree_jours && <span> · <strong>{form.duree_jours} jour{parseInt(form.duree_jours)>1?"s":""}</strong></span>}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* ── DATES ──────────────────────────────────────────── */}
-            {(() => {
-              // Grisé si récurrent ET prochain complet
-              const grise = form.est_recurrent && form.prochain_jour && form.prochain_mois && form.prochain_annee;
-              const obligatoire = !form.est_recurrent;
-              return (
-                <div style={{ opacity: grise ? 0.4 : 1, pointerEvents: grise ? "none" : "auto", transition:"opacity 0.2s" }}>
-                  <p style={SS}>Dates {grise && <span style={{ fontSize:10, fontWeight:400, color:"#9aa5b4", marginLeft:8 }}>calculées depuis le prochain événement</span>}</p>
-                  <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-                    {[{val:true,label:"Date unique"},{val:false,label:"Sur plusieurs jours"}].map(opt=>(
-                      <button key={String(opt.val)} onClick={()=>{ update("date_unique",opt.val); if(opt.val) update("date_fin",""); }}
-                        style={{ padding:"7px 16px", borderRadius:8, fontSize:13, fontWeight:600, border:"none", cursor:"pointer",
-                          background:form.date_unique===opt.val?"#ca631f":"#E8E5E3",
-                          color:form.date_unique===opt.val?"#fff":"#4a5568" }}>
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                  {form.date_unique ? (
-                    <div>
-                      <label style={LS}>Date {obligatoire?"*":""}</label>
-                      <input type="date" value={form.date_debut} min={new Date().toISOString().split("T")[0]} onChange={e=>update("date_debut",e.target.value)} style={{ ...IS, maxWidth:200 }} />
-                    </div>
-                  ) : (
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                      <div>
-                        <label style={LS}>Date de début {obligatoire?"*":""}</label>
-                        <input type="date" value={form.date_debut} min={new Date().toISOString().split("T")[0]} onChange={e=>update("date_debut",e.target.value)} style={IS} />
-                      </div>
-                      <div>
-                        <label style={LS}>Date de fin {obligatoire?"*":""} <span style={{ fontWeight:400, color:"#9aa5b4" }}>(après le début)</span></label>
-                        <input type="date" value={form.date_fin} min={form.date_debut||undefined}
-                          onChange={e=>update("date_fin",e.target.value)}
-                          style={{ ...IS, borderColor:form.date_fin&&form.date_fin<=form.date_debut?"#dc2626":"#C5BFBB" }} />
-                        {form.date_fin&&form.date_fin<=form.date_debut&&<span style={{ fontSize:11, color:"#dc2626", marginTop:3, display:"block" }}>La date de fin doit être après la date de début</span>}
-                      </div>
-                    </div>
+              {form.frequence_valeur && parseInt(form.frequence_valeur) > 0 && (
+                <FInfo>
+                  Tous les <strong>{form.frequence_valeur} {form.frequence_type==="mois"?"mois":`an${parseInt(form.frequence_valeur)>1?"s":""}`}</strong>
+                  {form.prochain_mois && form.prochain_annee && (
+                    <span> — Prochain : <strong>
+                      {form.prochain_jour && `${form.prochain_jour} `}
+                      {MOIS_FORM[parseInt(form.prochain_mois)-1]} {form.prochain_annee}
+                    </strong></span>
                   )}
-                </div>
-              );
-            })()}
+                  {prochainsComplet && form.duree_jours && <span> · <strong>{form.duree_jours} jour{parseInt(form.duree_jours)>1?"s":""}</strong></span>}
+                </FInfo>
+              )}
+            </FPanel>
+          );
+        })() : (
+          <p style={{ fontSize:12.5, color:"#9aa5b4" }}>Événement ponctuel — activez le bouton ci-dessus s'il se répète à intervalle régulier.</p>
+        )}
+      </FSection>
 
-            {/* Lieu */}
-            <div>
-              <p style={SS}>Lieu</p>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                <div>
-                  <label style={LS}>Pays hôte</label>
-                  <PaysSelect value={form.pays_hote_nom} onChange={nom=>update("pays_hote_nom",nom)} onChangeId={id=>update("pays_hote_id",id||"")} />
-                </div>
-                <div>
-                  <label style={LS}>Ville</label>
-                  <input value={form.ville} onChange={e=>update("ville",e.target.value)} placeholder="Ex: Dakar" style={IS} />
-                </div>
+      {/* Dates */}
+      {(() => {
+        const grise = form.est_recurrent && form.prochain_jour && form.prochain_mois && form.prochain_annee;
+        const obligatoire = !form.est_recurrent;
+        return (
+          <div style={{ opacity: grise ? 0.4 : 1, pointerEvents: grise ? "none" : "auto", transition:"opacity 0.2s" }}>
+            <FSection title="Dates"
+              extra={grise ? <span style={{ fontSize:11, color:"#9aa5b4" }}>calculées depuis le prochain événement</span> : undefined}>
+              <div style={{ marginBottom:12 }}>
+                <FSegmented options={[{value:true,label:"Date unique"},{value:false,label:"Sur plusieurs jours"}]}
+                  value={form.date_unique} onChange={v=>{ update("date_unique",v); if(v) update("date_fin",""); }} />
               </div>
-            </div>
-
-            {/* Organisateur + Rôle APIX */}
-            <div>
-              <p style={SS}>Organisation</p>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+              {form.date_unique ? (
                 <div>
-                  <label style={LS}>Organisateur</label>
-                  <input value={form.organisateur} onChange={e=>update("organisateur",e.target.value)} placeholder="Nom de l'organisateur" style={IS} />
+                  <FLabel>Date {obligatoire?"*":""}</FLabel>
+                  <FInput type="date" value={form.date_debut} min={new Date().toISOString().split("T")[0]} onChange={e=>update("date_debut",e.target.value)} style={{ maxWidth:200 }} />
                 </div>
-                <div>
-                  <label style={LS}>Rôle APIX</label>
-                  <select value={form.role_apix} onChange={e=>update("role_apix",e.target.value)} style={{ ...IS, cursor:"pointer" }}>
-                    <option value="">— Sélectionner —</option>
-                    {ROLES_APIX.map(r=><option key={r.value} value={r.value}>{r.label}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Thématiques */}
-            <div>
-              <p style={SS}>Thématiques</p>
-              <NaemaSelect
-                secteurIds={form.secteur_ids||[]}
-                brancheIds={form.branche_ids||[]}
-                activiteIds={form.activite_ids||[]}
-                onChangeSecteurs={ids=>update("secteur_ids",ids)}
-                onChangeBranches={ids=>update("branche_ids",ids)}
-                onChangeActivites={ids=>update("activite_ids",ids)}
-              />
-            </div>
-
-            {/* Participants */}
-            <div>
-              <p style={SS}>Participants</p>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                <div>
-                  <label style={LS}>Pays invités</label>
-                  <PaysMultiSelect
-                    value={form.pays_invites_noms || ""}
-                    onChange={(noms: string) => update("pays_invites_noms", noms)}
-                    placeholder="Sélectionner les pays invités"
-                  />
-                </div>
-                <div>
-                  <label style={LS}>Entreprises invitées</label>
-                  <input value={form.entreprises_invitees} onChange={e=>update("entreprises_invitees",e.target.value)} placeholder="TotalEnergies, Orange..." style={IS} />
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <p style={SS}>Description</p>
-              <RichTextEditor value={form.description} onChange={v=>update("description",v)}/>
-            </div>
-
-            {error && <div style={{ background:"#fee2e2", color:"#dc2626", padding:"10px 14px", borderRadius:8, fontSize:13 }}>{error}</div>}
-
-            <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-              <button onClick={onClose} style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #C5BFBB", background:"transparent", color:"#4a5568", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-                Annuler
-              </button>
-              <button onClick={handleSave} disabled={saving||saveOk}
-                style={{ padding:"10px 24px", borderRadius:10, border:"none", background:saveOk?"#dcfce7":"linear-gradient(135deg,#ca631f,#a0521a)", color:saveOk?"#15803d":"#fff", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:8, fontFamily:"var(--font-google-sans)" }}>
-                <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-                {saveOk?<><Check size={14}/> Enregistré !</>:saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/> Sauvegarde...</>:editItem?"Modifier":"Créer l'événement"}
-              </button>
-            </div>
+              ) : (
+                <FGrid cols={2}>
+                  <div>
+                    <FLabel>Date de début {obligatoire?"*":""}</FLabel>
+                    <FInput type="date" value={form.date_debut} min={new Date().toISOString().split("T")[0]} onChange={e=>update("date_debut",e.target.value)} />
+                  </div>
+                  <div>
+                    <FLabel hint="(après le début)">Date de fin {obligatoire?"*":""}</FLabel>
+                    <FInput type="date" value={form.date_fin} min={form.date_debut||undefined}
+                      onChange={e=>update("date_fin",e.target.value)}
+                      style={form.date_fin&&form.date_fin<=form.date_debut?{ borderColor:"#dc2626" }:undefined} />
+                    {form.date_fin&&form.date_fin<=form.date_debut&&<span style={{ fontSize:11, color:"#dc2626", marginTop:3, display:"block" }}>La date de fin doit être après la date de début</span>}
+                  </div>
+                </FGrid>
+              )}
+            </FSection>
           </div>
-        </div>
-      </div>
-    </div>
+        );
+      })()}
+
+      {/* Lieu */}
+      <FSection title="Lieu">
+        <FGrid cols={2}>
+          <div>
+            <FLabel>Pays hôte</FLabel>
+            <PaysSelect value={form.pays_hote_nom} onChange={nom=>update("pays_hote_nom",nom)} onChangeId={id=>update("pays_hote_id",id||"")} />
+          </div>
+          <div>
+            <FLabel>Ville</FLabel>
+            <FInput value={form.ville} onChange={e=>update("ville",e.target.value)} placeholder="Ex : Dakar" />
+          </div>
+        </FGrid>
+      </FSection>
+
+      {/* Organisation */}
+      <FSection title="Organisation">
+        <FGrid cols={2}>
+          <div>
+            <FLabel>Organisateur</FLabel>
+            <FInput value={form.organisateur} onChange={e=>update("organisateur",e.target.value)} placeholder="Nom de l'organisateur" />
+          </div>
+          <div>
+            <FLabel>Rôle APIX</FLabel>
+            <FSelect value={form.role_apix} onChange={e=>update("role_apix",e.target.value)}>
+              <option value="">— Sélectionner —</option>
+              {ROLES_APIX.map(r=><option key={r.value} value={r.value}>{r.label}</option>)}
+            </FSelect>
+          </div>
+        </FGrid>
+      </FSection>
+
+      {/* Thématiques */}
+      <FSection title="Thématiques">
+        <NaemaSelect
+          secteurIds={form.secteur_ids||[]}
+          brancheIds={form.branche_ids||[]}
+          activiteIds={form.activite_ids||[]}
+          onChangeSecteurs={ids=>update("secteur_ids",ids)}
+          onChangeBranches={ids=>update("branche_ids",ids)}
+          onChangeActivites={ids=>update("activite_ids",ids)}
+        />
+      </FSection>
+
+      {/* Participants */}
+      <FSection title="Participants">
+        <FGrid cols={2}>
+          <div>
+            <FLabel>Pays invités</FLabel>
+            <PaysMultiSelect
+              value={form.pays_invites_noms || ""}
+              onChange={(noms: string) => update("pays_invites_noms", noms)}
+              placeholder="Sélectionner les pays invités"
+            />
+          </div>
+          <div>
+            <FLabel>Entreprises invitées</FLabel>
+            <FInput value={form.entreprises_invitees} onChange={e=>update("entreprises_invitees",e.target.value)} placeholder="TotalEnergies, Orange…" />
+          </div>
+        </FGrid>
+      </FSection>
+
+      {/* Description */}
+      <FSection title="Description">
+        <RichTextEditor value={form.description} onChange={v=>update("description",v)}/>
+      </FSection>
+
+      {error && <FError>{error}</FError>}
+    </FModal>
   );
 }
 
