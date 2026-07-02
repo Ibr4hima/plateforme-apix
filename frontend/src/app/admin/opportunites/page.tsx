@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FSegmented, FInfo, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
@@ -192,162 +193,138 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
     finally { setSaving(false); }
   };
 
-  if (!open) return null;
   return (
-    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:800, maxHeight:"92vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,#059669,#34d399)", borderRadius:"20px 20px 0 0" }}/>
-        <div style={{ padding:"24px 32px 32px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.15rem", color:"#1a1a2e" }}>
-              {edit ? "Modifier la fiche" : "Nouvelle fiche de potentialités"}
-            </h2>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="#4a5568"/></button>
-          </div>
+    <FModal open={open} onClose={onClose} maxWidth={800}
+      title={edit ? "Modifier la fiche" : "Nouvelle fiche de potentialités"}
+      footer={<>
+        <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
+        <FButton onClick={handleSave} disabled={saving || ok} loading={saving} success={ok}>
+          {ok ? "Enregistré !" : saving ? "Enregistrement…" : edit ? "Modifier" : "Créer la fiche"}
+        </FButton>
+      </>}>
 
-          {/* Zone géographique — titre fixe en mode édition, sélection en mode création */}
-          {edit ? (
-            <div style={{ marginBottom:22, padding:"14px 18px", background:"rgba(5,150,105,0.05)", border:"1px solid rgba(5,150,105,0.2)", borderRadius:12 }}>
-              <div style={{ fontSize:10, fontWeight:700, color:"#059669", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Fiche de potentialités</div>
-              <div style={{ fontSize:16, fontWeight:700, color:"#1a1a2e" }}>{titreAuto() || edit.titre}</div>
-            </div>
-          ) : (
-            <div style={{ marginBottom:22 }}>
-              <p style={SEC}>Zone géographique</p>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:14 }}>
-                {NIVEAUX.map(n=>(
-                  <button key={n.value} onClick={()=>{ upd("niveau",n.value); upd("pole_id",""); upd("region_id",""); upd("departement_id",""); upd("arrondissement_id",""); }}
-                    style={{ padding:"9px 6px", borderRadius:9, border:`2px solid ${form.niveau===n.value?"#059669":"#C5BFBB"}`, background:form.niveau===n.value?"rgba(5,150,105,0.06)":"#fff", color:form.niveau===n.value?"#059669":"#4a5568", fontWeight:600, fontSize:12, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-                    {n.label}
-                  </button>
-                ))}
-              </div>
-              {form.niveau==="pole" && (
-                <div>
-                  <select value={form.pole_id||""} onChange={e=>upd("pole_id",e.target.value?parseInt(e.target.value):"")} style={IS}>
-                    <option value="">— Sélectionner un pôle —</option>
-                    {poles.filter((p:any)=>!usedGeo.pole_ids.includes(p.id)).map((p:any)=><option key={p.id} value={p.id}>{p.pole_territoire}</option>)}
-                  </select>
-                  {usedGeo.pole_ids.length>0 && (
-                    <p style={{fontSize:11,color:"#9aa5b4",marginTop:4}}>
-                      {usedGeo.pole_ids.length} pôle{usedGeo.pole_ids.length>1?"s":""} déjà défini{usedGeo.pole_ids.length>1?"s":""} — modifiables depuis la liste
-                    </p>
-                  )}
-                </div>
-              )}
-              {form.niveau==="region" && (
-                <RegionSelect value={form.region_id} onChange={v=>upd("region_id",v)} />
-              )}
-              {form.niveau==="departement" && (
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-                  <div><label style={LS}>Région</label>
-                    <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); }} />
-                  </div>
-                  <div><label style={LS}>Département</label>
-                    <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>upd("departement_id",v)} />
-                  </div>
-                </div>
-              )}
-              {form.niveau==="arrondissement" && (
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 }}>
-                  <div><label style={LS}>Région</label>
-                    <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); upd("arrondissement_id",""); }} />
-                  </div>
-                  <div><label style={LS}>Département</label>
-                    <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>{ upd("departement_id",v); upd("arrondissement_id",""); }} />
-                  </div>
-                  <div><label style={LS}>Arrondissement</label>
-                    <ArrondissementSelect departementId={form.departement_id} value={form.arrondissement_id} onChange={v=>upd("arrondissement_id",v)} />
-                  </div>
-                </div>
-              )}
-              {(form.pole_id || form.region_id || form.departement_id || form.arrondissement_id) && (
-                <div style={{ marginTop:10, padding:"8px 12px", background:"rgba(5,150,105,0.06)", border:"1px solid rgba(5,150,105,0.2)", borderRadius:8, fontSize:12, color:"#059669", fontWeight:500 }}>
-                  Titre généré : <strong>{titreAuto()}</strong>
-                </div>
+      {/* Zone géographique — titre fixe en mode édition, sélection en mode création */}
+      {edit ? (
+        <div style={{ padding:"14px 18px", background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:12 }}>
+          <div style={{ fontSize:10, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Fiche de potentialités</div>
+          <div style={{ fontSize:16, fontWeight:700, color:"#1a1a2e" }}>{titreAuto() || edit.titre}</div>
+        </div>
+      ) : (
+        <FSection title="Zone géographique">
+          <div style={{ marginBottom:14 }}>
+            <FSegmented options={NIVEAUX.map(n=>({ value:n.value, label:n.label }))}
+              value={form.niveau}
+              onChange={v=>{ upd("niveau",v); upd("pole_id",""); upd("region_id",""); upd("departement_id",""); upd("arrondissement_id",""); }} />
+          </div>
+          {form.niveau==="pole" && (
+            <div>
+              <FSelect value={form.pole_id||""} onChange={e=>upd("pole_id",e.target.value?parseInt(e.target.value):"")}>
+                <option value="">— Sélectionner un pôle —</option>
+                {poles.filter((p:any)=>!usedGeo.pole_ids.includes(p.id)).map((p:any)=><option key={p.id} value={p.id}>{p.pole_territoire}</option>)}
+              </FSelect>
+              {usedGeo.pole_ids.length>0 && (
+                <p style={{fontSize:11,color:"#9aa5b4",marginTop:4}}>
+                  {usedGeo.pole_ids.length} pôle{usedGeo.pole_ids.length>1?"s":""} déjà défini{usedGeo.pole_ids.length>1?"s":""} — modifiables depuis la liste
+                </p>
               )}
             </div>
           )}
-
-          {/* Activités porteuses */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Activités porteuses</p>
-            <NaemaSelect
-              secteurIds={form.secteur_ids} brancheIds={form.branche_ids} activiteIds={form.activite_ids}
-              onChangeSecteurs={ids=>upd("secteur_ids",ids)}
-              onChangeBranches={ids=>upd("branche_ids",ids)}
-              onChangeActivites={ids=>upd("activite_ids",ids)}
-            />
-          </div>
-
-          {/* Description */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Description</p>
-            <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
-          </div>
-
-          {/* Documents PDF */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Documents PDF</p>
-            {fichiers.length > 0 && (
-              <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, marginBottom:8 }}>
-                {fichiers.map((f:any)=>(
-                  <div key={f.id} style={{ display:"inline-flex", alignItems:"center", gap:5 }}>
-                    <a href={`${API}/opportunites/potentialites/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(5,150,105,0.06)", border:"1px solid rgba(5,150,105,0.2)", borderRadius:7, padding:"4px 10px", fontSize:11, color:"#059669", textDecoration:"none", fontWeight:500 }}>
-                      <FileText size={11}/> {f.titre||f.fichier_nom}
-                    </a>
-                    <button onClick={async()=>{
-                      if (edit?.id) await fetch(`${API}/opportunites/potentialites/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
-                      setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
-                    }} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:5, padding:"3px 5px", display:"flex", alignItems:"center" }}>
-                      <X size={10} style={{color:"#dc2626"}}/>
-                    </button>
-                  </div>
-                ))}
+          {form.niveau==="region" && (
+            <RegionSelect value={form.region_id} onChange={v=>upd("region_id",v)} />
+          )}
+          {form.niveau==="departement" && (
+            <FGrid cols={2} gap={10}>
+              <div><FLabel>Région</FLabel>
+                <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); }} />
               </div>
-            )}
-            {pdfQueue.length > 0 && (
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
-                {pdfQueue.map((p,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(13,101,45,0.05)", border:"1px solid rgba(13,101,45,0.2)", borderRadius:8, padding:"7px 12px" }}>
-                    <FileText size={13} style={{color:"#0D652D",flexShrink:0}}/>
-                    <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                      placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(13,101,45,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
-                    <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
-                      <X size={13} style={{color:"#dc2626"}}/>
-                    </button>
-                  </div>
-                ))}
+              <div><FLabel>Département</FLabel>
+                <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>upd("departement_id",v)} />
               </div>
-            )}
-            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed #C5BFBB", background:"#F2F0EF" }}
-              onMouseEnter={e=>e.currentTarget.style.borderColor="#059669"}
-              onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
-              <Upload size={14} color="#9aa5b4"/>
-              <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
-              <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
-                const files = Array.from(e.target.files||[]);
-                setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
-                e.target.value="";
-              }}/>
-            </label>
-          </div>
+            </FGrid>
+          )}
+          {form.niveau==="arrondissement" && (
+            <FGrid cols={3} gap={10}>
+              <div><FLabel>Région</FLabel>
+                <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); upd("arrondissement_id",""); }} />
+              </div>
+              <div><FLabel>Département</FLabel>
+                <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>{ upd("departement_id",v); upd("arrondissement_id",""); }} />
+              </div>
+              <div><FLabel>Arrondissement</FLabel>
+                <ArrondissementSelect departementId={form.departement_id} value={form.arrondissement_id} onChange={v=>upd("arrondissement_id",v)} />
+              </div>
+            </FGrid>
+          )}
+          {(form.pole_id || form.region_id || form.departement_id || form.arrondissement_id) && (
+            <div style={{ marginTop:12 }}>
+              <FInfo>Titre généré : <strong>{titreAuto()}</strong></FInfo>
+            </div>
+          )}
+        </FSection>
+      )}
 
-          {error && <p style={{ fontSize:12, color:"#dc2626", marginBottom:12 }}>{error}</p>}
-          <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-            <button onClick={onClose} style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>Annuler</button>
-            <button onClick={handleSave} disabled={saving||ok}
-              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:ok?"#059669":"#059669", color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13 }}>
-              {saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>Enregistrement…</>
-               :ok?<><Check size={14}/>Enregistré!</>
-               :<><Check size={14}/>{edit?"Modifier":"Créer"}</>}
-            </button>
+      {/* Activités porteuses */}
+      <FSection title="Activités porteuses">
+        <NaemaSelect
+          secteurIds={form.secteur_ids} brancheIds={form.branche_ids} activiteIds={form.activite_ids}
+          onChangeSecteurs={ids=>upd("secteur_ids",ids)}
+          onChangeBranches={ids=>upd("branche_ids",ids)}
+          onChangeActivites={ids=>upd("activite_ids",ids)}
+        />
+      </FSection>
+
+      {/* Description */}
+      <FSection title="Description">
+        <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
+      </FSection>
+
+      {/* Documents */}
+      <FSection title="Documents">
+        {fichiers.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
+            {fichiers.map((f:any)=>(
+              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+                <a href={`${API}/opportunites/potentialites/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize:13, flex:1, color:"#1a1a2e", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
+                <button onClick={async()=>{
+                  if (edit?.id) await fetch(`${API}/opportunites/potentialites/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
+                  setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
+                }} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{color:"#dc2626"}}/></button>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
-    </div>
+        )}
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
+          <Upload size={14} color="#9aa5b4"/>
+          <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+          <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
+            const files = Array.from(e.target.files||[]);
+            setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
+            e.target.value="";
+          }}/>
+        </label>
+        {pdfQueue.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginTop:8 }}>
+            {pdfQueue.map((p,i)=>(
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{color:"#6A1B9A",flexShrink:0}}/>
+                <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
+                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
+                  <X size={13} style={{color:"#dc2626"}}/>
+                </button>
+              </div>
+            ))}
+            <p style={{ fontSize:11, color:"#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+          </div>
+        )}
+      </FSection>
+
+      {error && <FError>{error}</FError>}
+    </FModal>
   );
 }
 
