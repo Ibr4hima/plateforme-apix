@@ -397,7 +397,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
                     <FInput type="date" value={form.date_debut} min={new Date().toISOString().split("T")[0]} onChange={e=>update("date_debut",e.target.value)} />
                   </div>
                   <div>
-                    <FLabel hint="(après le début)">Date de fin {obligatoire?"*":""}</FLabel>
+                    <FLabel>Date de fin {obligatoire?"*":""}</FLabel>
                     <FInput type="date" value={form.date_fin} min={form.date_debut||undefined}
                       onChange={e=>update("date_fin",e.target.value)}
                       style={form.date_fin&&form.date_fin<=form.date_debut?{ borderColor:"#dc2626" }:undefined} />
