@@ -1313,7 +1313,7 @@ export default function OpportunitesPage() {
                                       </p>
                                     </div>
                                     <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Activités porteuses</p>
+                                      <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Activités porteuses</span></p>
                                       <p style={{fontSize:14,fontWeight:800,color:nbActs>0?"#1a1a2e":"#9aa5b4"}}>{nbActs||"—"}</p>
                                     </div>
                                   </div>
