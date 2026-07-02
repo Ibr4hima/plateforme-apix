@@ -602,6 +602,15 @@ function interpreterKpi(k: KpiResult, pays: string, couleur: string): string {
   }
 }
 
+// ── Découpe du libellé KPI : titre principal + précision (« dernière année », « période »…)
+function splitKpiTitre(label: string): { main: string; suffix: string | null } {
+  const dashMatch = label.match(/^(.+?)\s*—\s*(.+)$/);
+  if (dashMatch) return { main: dashMatch[1], suffix: dashMatch[2] };
+  const parenMatch = label.match(/^(.+?)\s*\(([^)]+)\)$/);
+  if (parenMatch) return { main: parenMatch[1], suffix: parenMatch[2] };
+  return { main: label, suffix: null };
+}
+
 // ── Mini modal KPI ────────────────────────────────────────────────────────────
 function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pays: string; couleur: string; onClose: ()=>void }) {
   if (!kpi) return null;
@@ -613,6 +622,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pa
   const signalBg    = isTrend ? (isPos?"rgba(24,128,56,0.06)":isNeg?"rgba(220,38,38,0.05)":"#FAFAF9") : "rgba(0,79,145,0.04)";
   const signalBorder= isTrend ? (isPos?"rgba(24,128,56,0.18)":isNeg?"rgba(220,38,38,0.18)":"#F0EEEC") : "rgba(0,79,145,0.10)";
   const trendLabel  = isTrend ? (isPos?"Positif":isNeg?"Négatif":"Neutre") : null;
+  const { main: titreMain, suffix: titreSuffix } = splitKpiTitre(kpi.label);
   const SecTitle = ({ children }: { children: React.ReactNode }) => (
     <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
   );
@@ -627,12 +637,17 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pa
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
             <div style={{ flex:1, minWidth:0 }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>{kpi.label}</h2>
+              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>{titreMain}</h2>
               <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
                 <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:couleur, background:`${couleur}12`, border:`1px solid ${couleur}30` }}>
                   <span style={{ width:7, height:7, borderRadius:"50%", background:couleur, display:"inline-block" }} />
                   {pays}
                 </span>
+                {titreSuffix && (
+                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"#4a5568", background:"#F5F4F3" }}>
+                    {titreSuffix}
+                  </span>
+                )}
                 {trendLabel && (
                   <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}` }}>
                     {trendLabel}
@@ -1026,13 +1041,14 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               return (
                 <div key={k.id} onClick={()=>setKpiActif(k)}
                   style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}
-                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
-                    e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; const d=span.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ span.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; span.style.transform=`translateX(-${d}px)`; } }); }}
-                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7";
-                    e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; span.style.transition="transform 0.4s ease"; span.style.transform="translateX(0)"; }); }}>
-                  <div data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, marginBottom:7 }}>
-                    <span style={{ display:"inline-block", fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{k.label}</span>
-                  </div>
+                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7"; }}>
+                  {(()=>{ const { main, suffix } = splitKpiTitre(k.label); return (
+                    <div style={{ marginBottom:7 }}>
+                      <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{main}</p>
+                      {suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:"#9aa5b4", textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
+                    </div>
+                  ); })()}
                   <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{fmtKpi(k)}</p>
                   {indicatif && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{indicatif}</p>}
                 </div>
