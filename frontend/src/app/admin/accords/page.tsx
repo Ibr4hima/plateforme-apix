@@ -206,7 +206,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             </div>
             {/* Recherche pays */}
             <div style={{position:"relative",marginBottom:8}}>
-              <FInput value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…" style={{ paddingLeft:32 }} />
+              <FInput value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…" style={{ padding:"10px 13px 10px 32px" }} />
               <svg style={{position:"absolute",left:11,top:"50%",transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               {searchPays&&<button onClick={()=>setSearchPays("")} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>}
             </div>
