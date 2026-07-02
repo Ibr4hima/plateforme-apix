@@ -15,8 +15,21 @@ const TYPE_ZONES = [
   { key: "ZFI", label: "Zones Franches Industrielles",          code: "ZFI", color: "#188038", bg: "rgba(24,128,56,0.06)",  border: "rgba(24,128,56,0.2)" },
 ];
 
-const POLE_PALETTE = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
-const getPoleColor = (poleId: number) => POLE_PALETTE[(poleId - 1) % POLE_PALETTE.length];
+// Couleurs des pôles territoriaux — identiques à la page publique
+// (VueTerritorialeSenegal), indexées par nom normalisé.
+const POLE_COULEURS: Record<string, string> = {
+  "dakar": "#9DC3E6",          // bleu clair
+  "thies": "#9DD3DE",          // bleu-teal
+  "diourbel louga": "#9DDEC2", // menthe
+  "centre": "#B4DE9D",         // vert tendre
+  "nord": "#D2DE9D",           // vert-jaune
+  "nord est": "#E6DE9D",       // jaune doux
+  "sud": "#E6C79D",            // pêche
+  "sud est": "#E6AC9D",        // corail clair
+};
+const normPole = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/pole/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+const getPoleColor = (nom: string) => POLE_COULEURS[normPole(nom)] || "#E8E5E3";
 // Assombrit une couleur pastel pour obtenir un texte lisible de la même teinte
 const darken = (hex: string, f = 0.42) => {
   const n = parseInt(hex.slice(1), 16);
@@ -552,12 +565,28 @@ function OngletPoles() {
     setSaving(id); setError("");
     try {
       const url = id === "new" ? `${API_BASE}/zones-types/poles` : `${API_BASE}/zones-types/poles/${id}`;
-      await fetch(url, { method: id === "new" ? "POST" : "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
+      const res = await fetch(url, { method: id === "new" ? "POST" : "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
+      const saved = await res.json().catch(() => null);
+      // Téléverser les PDF en attente
+      const poleId = id === "new" ? saved?.id : id;
+      if (poleId) {
+        for (const p of (f.pdfQueue || [])) {
+          const fd = new FormData();
+          fd.append("titre", p.titre);
+          fd.append("fichier", p.file);
+          await fetch(`${API_BASE}/zones-types/poles/${poleId}/fichiers`, { method: "POST", body: fd });
+        }
+      }
       setExpanded(null);
       setForms(prev => { const n = { ...prev }; if (id === "new") delete n["new"]; return n; });
       charger();
     } catch (e: any) { setError(e.message); }
     finally { setSaving(null); }
+  };
+
+  const supprimerPoleFichier = async (poleId: number, fichierId: number) => {
+    await fetch(`${API_BASE}/zones-types/poles/${poleId}/fichiers/${fichierId}`, { method: "DELETE" });
+    charger();
   };
 
   const handleDelete = async (id: number) => {
@@ -573,7 +602,7 @@ function OngletPoles() {
     const id: number|"new" = isNew ? "new" : pole.id;
     const isOpen = expanded === id;
     const f = forms[id] || (isNew ? { pole_territoire: "", localisation: "", description: "", region_ids: [] } : {});
-    const pc = isNew ? null : getPoleColor(pole.id);
+    const pc = isNew ? null : getPoleColor(pole.pole_territoire);
     const accentColor = isNew ? "#059669" : pc!;
     const initial = (!isNew && (f.pole_territoire || pole.pole_territoire)?.[0]) || "P";
     return (
@@ -607,6 +636,45 @@ function OngletPoles() {
               {(f.region_ids || []).length > 0 && <p style={{ fontSize: 11, color: "#9aa5b4", marginTop: 6 }}>Localisation : {regions.filter(r => f.region_ids.includes(r.id)).map((r: any) => r.nom).join(", ")}</p>}
             </div>
             <div><label style={LS}>Description</label><RichTextEditor value={f.description || ""} onChange={v => updateForm(id, "description", v)}/></div>
+
+            {/* Documents PDF */}
+            <div>
+              <label style={LS}>Documents PDF</label>
+              {!isNew && (pole.fichiers || []).length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
+                  {pole.fichiers.map((fi: any) => (
+                    <div key={fi.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 8, padding: "7px 12px" }}>
+                      <FileText size={13} style={{ color: "#004f91" }} />
+                      <a href={`${API_BASE}/zones-types/poles/${pole.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
+                        style={{ fontSize: 13, flex: 1, color: "#1a1a2e", fontWeight: 500, textDecoration: "none" }}>{fi.titre}</a>
+                      <button onClick={() => supprimerPoleFichier(pole.id, fi.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 8, cursor: "pointer", border: "2px dashed #C5BFBB", background: "#F8F7F6" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = accentColor}
+                onMouseLeave={e => e.currentTarget.style.borderColor = "#C5BFBB"}>
+                <Upload size={14} color="#9aa5b4" />
+                <span style={{ fontSize: 13, color: "#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+                <input type="file" accept=".pdf" multiple style={{ display: "none" }}
+                  onChange={e => { const files = Array.from(e.target.files || []); updateForm(id, "pdfQueue", [...(f.pdfQueue || []), ...files.map(file => ({ file, titre: file.name.replace(/\.pdf$/i, "") }))]); e.target.value = ""; }} />
+              </label>
+              {(f.pdfQueue || []).length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
+                  {f.pdfQueue.map((p: any, i: number) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 8, padding: "7px 12px" }}>
+                      <FileText size={13} style={{ color: "#7c3aed" }} />
+                      <input value={p.titre} onChange={e => updateForm(id, "pdfQueue", f.pdfQueue.map((x: any, j: number) => j === i ? { ...x, titre: e.target.value } : x))} placeholder="Titre"
+                        style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgba(124,58,237,0.3)", outline: "none", fontSize: 12, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
+                      <button onClick={() => updateForm(id, "pdfQueue", f.pdfQueue.filter((_: any, j: number) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+                    </div>
+                  ))}
+                  <p style={{ fontSize: 11, color: "#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+                </div>
+              )}
+            </div>
+
             {error && <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>}
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
               <button onClick={() => setExpanded(null)} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
@@ -656,7 +724,7 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
             <div style={{ flex: 1, paddingRight: 16 }}>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const, marginBottom: 8 }}>
                 <span style={{ fontSize: 11, fontWeight: 800, color: t.color, background: `${t.color}12`, padding: "2px 10px", borderRadius: 999 }}>{t.code}</span>
-                {z.pole_nom && <span style={{ fontSize: 11, fontWeight: 700, color: z.pole_id ? darken(getPoleColor(z.pole_id)) : "#4a5568", background: z.pole_id ? getPoleColor(z.pole_id) + "40" : "#F2F0EF", border: `1px solid ${z.pole_id ? getPoleColor(z.pole_id) + "99" : "#E8E5E3"}`, padding: "2px 9px", borderRadius: 999 }}>{z.pole_nom}</span>}
+                {z.pole_nom && <span style={{ fontSize: 11, fontWeight: 700, color: z.pole_id ? darken(getPoleColor(z.pole_nom)) : "#4a5568", background: z.pole_id ? getPoleColor(z.pole_nom) + "40" : "#F2F0EF", border: `1px solid ${z.pole_id ? getPoleColor(z.pole_nom) + "99" : "#E8E5E3"}`, padding: "2px 9px", borderRadius: 999 }}>{z.pole_nom}</span>}
               </div>
               <h2 style={{ fontWeight: 800, fontSize: "1.15rem", color: "#1a1a2e", lineHeight: 1.3 }}>{z.nom_zone}</h2>
             </div>

@@ -207,7 +207,19 @@ def pole_to_dict(p) -> dict:
 async def liste_poles(db: AsyncSession = Depends(get_db)):
     from app.models.zone_types import PoleTerritoire
     res = await db.execute(select(PoleTerritoire).order_by(PoleTerritoire.id))
-    return [pole_to_dict(p) for p in res.scalars()]
+    rows = [pole_to_dict(p) for p in res.scalars()]
+    # Fichiers PDF attachés (chargés en une seule requête)
+    ids = [r["id"] for r in rows]
+    if ids:
+        fres = await db.execute(text(
+            "SELECT id, pole_id, nom FROM pole_fichiers WHERE pole_id = ANY(:ids) ORDER BY created_at"
+        ), {"ids": ids})
+        fmap: dict = {}
+        for f in fres.fetchall():
+            fmap.setdefault(f._mapping["pole_id"], []).append({"id": f._mapping["id"], "titre": f._mapping["nom"]})
+        for r in rows:
+            r["fichiers"] = fmap.get(r["id"], [])
+    return rows
 
 
 @router.post("/poles", status_code=201)
@@ -260,7 +272,68 @@ async def supprimer_pole(pole_id: int, db: AsyncSession = Depends(get_db), curre
     res = await db.execute(select(PoleTerritoire).where(PoleTerritoire.id == pole_id))
     p = res.scalar_one_or_none()
     if not p: raise HTTPException(404, "Pôle introuvable")
+    # Fichiers physiques attachés au pôle
+    fres = await db.execute(text("SELECT url FROM pole_fichiers WHERE pole_id = :id"), {"id": pole_id})
+    for f in fres.fetchall():
+        if f[0] and os.path.exists(f[0]):
+            try: os.remove(f[0])
+            except OSError: pass
     await db.delete(p); await db.flush()
+
+
+# ── Fichiers PDF des pôles ─────────────────────────────────────────────────────
+
+@router.post("/poles/{pole_id}/fichiers", status_code=201)
+async def ajouter_fichier_pole(
+    pole_id: int,
+    titre:   str        = Form(""),
+    fichier: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    ext = os.path.splitext(fichier.filename)[1].lower()
+    if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
+    unique_name = f"{uuid_lib.uuid4()}{ext}"
+    dest = os.path.join(UPLOAD_DIR, unique_name)
+    with open(dest, "wb") as f:
+        shutil.copyfileobj(fichier.file, f)
+    res = await db.execute(text("""
+        INSERT INTO pole_fichiers (pole_id, nom, url, type_fichier)
+        VALUES (:pole_id, :nom, :url, 'PDF')
+        RETURNING id
+    """), {"pole_id": pole_id, "nom": titre or fichier.filename, "url": dest})
+    fid = res.fetchone()[0]
+    await db.flush()
+    return {"id": fid, "titre": titre or fichier.filename}
+
+
+@router.delete("/poles/{pole_id}/fichiers/{fichier_id}", status_code=204)
+async def supprimer_fichier_pole(pole_id: int, fichier_id: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    res = await db.execute(text(
+        "SELECT url FROM pole_fichiers WHERE id = :id AND pole_id = :pole_id"
+    ), {"id": fichier_id, "pole_id": pole_id})
+    f = res.fetchone()
+    if not f: raise HTTPException(404, "Fichier introuvable")
+    if f[0] and os.path.exists(f[0]):
+        os.remove(f[0])
+    await db.execute(text("DELETE FROM pole_fichiers WHERE id = :id"), {"id": fichier_id})
+    await db.flush()
+
+
+@router.get("/poles/{pole_id}/fichiers/{fichier_id}/download")
+async def telecharger_fichier_pole(pole_id: int, fichier_id: int, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(text(
+        "SELECT nom, url FROM pole_fichiers WHERE id = :id AND pole_id = :pole_id"
+    ), {"id": fichier_id, "pole_id": pole_id})
+    f = res.fetchone()
+    if not f or not f[1]: raise HTTPException(404, "Fichier introuvable")
+    # Fallback machine-indépendant si le chemin absolu enregistré n'existe plus
+    path = f[1]
+    if not os.path.exists(path):
+        path = os.path.join(UPLOAD_DIR, os.path.basename(f[1]))
+    if not os.path.exists(path):
+        raise HTTPException(404, "Fichier introuvable sur le serveur")
+    return FileResponse(path, filename=f"{f[0]}.pdf" if not f[0].lower().endswith(".pdf") else f[0], media_type="application/pdf")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
