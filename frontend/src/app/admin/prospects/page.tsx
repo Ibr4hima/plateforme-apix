@@ -1162,7 +1162,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}\n.cr-rte, .cr-rte *{font-size:12px !important; line-height:1.6 !important;}`}</style>
       <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
         {/* Liseré d'accent */}
         <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
@@ -1389,7 +1389,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {/* Compte-rendu */}
                             {e.commentaire && (
                               <div style={{ background:"#fff", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
+                                <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                   dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                               </div>
                             )}
@@ -1500,7 +1500,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       )}
                                       {e.commentaire && (
                                         <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                          <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
+                                          <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
                                       )}
@@ -1606,7 +1606,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       )}
                                       {e.commentaire && (
                                         <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                          <div data-rte style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
+                                          <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
                                       )}
