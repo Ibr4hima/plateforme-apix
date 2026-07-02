@@ -56,11 +56,6 @@ export default function PaysSelect({
     width: "100%", boxSizing: "border-box" as const,
   };
 
-  const flag = (code: string) => {
-    try { return String.fromCodePoint(...code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
-    catch { return "🌍"; }
-  };
-
   return (
     <div ref={ref} style={{ position: "relative", ...style }}>
       <div onClick={() => setOpen(o => !o)}
@@ -106,7 +101,6 @@ export default function PaysSelect({
                     display: "flex", alignItems: "center", gap: 8, transition: "background 0.1s" }}
                   onMouseEnter={e => { if (value !== p.nom_fr) e.currentTarget.style.background = "#F8F7F6"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = value === p.nom_fr ? "rgba(0,79,145,0.06)" : "transparent"; }}>
-                  <span style={{ fontSize: 16 }}>{p.code_iso2 ? flag(p.code_iso2) : "🌍"}</span>
                   {p.nom_fr}
                 </div>
               ))}

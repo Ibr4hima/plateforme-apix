@@ -60,11 +60,6 @@ export default function PaysMultiSelect({
     width: "100%", boxSizing: "border-box" as const,
   };
 
-  const flag = (code: string) => {
-    try { return String.fromCodePoint(...code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
-    catch { return "🌍"; }
-  };
-
   return (
     <div ref={ref} style={{ position: "relative", ...style }}>
       <div onClick={() => setOpen(o => !o)}
@@ -77,12 +72,11 @@ export default function PaysMultiSelect({
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4, flex: 1 }}>
             {selected.map(nom => {
-              const p = pays.find(x => x.nom_fr === nom);
               return (
                 <span key={nom} style={{ display: "inline-flex", alignItems: "center", gap: 4,
                   background: "rgba(0,79,145,0.08)", color: "#004f91",
                   borderRadius: 6, padding: "2px 8px", fontSize: 12, fontWeight: 500 }}>
-                  {p?.code_iso2 ? flag(p.code_iso2) : "🌍"} {nom}
+                  {nom}
                   <button onClick={e => { e.stopPropagation(); toggle(nom); }}
                     style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: "#004f91", marginLeft: 2 }}>
                     <X size={11} />
@@ -147,7 +141,6 @@ export default function PaysMultiSelect({
                         </svg>
                       )}
                     </div>
-                    <span style={{ fontSize: 16 }}>{p.code_iso2 ? flag(p.code_iso2) : "🌍"}</span>
                     <span style={{ color: isSelected ? "#004f91" : "#1a1a2e", fontWeight: isSelected ? 600 : 400 }}>{p.nom_fr}</span>
                   </div>
                 );

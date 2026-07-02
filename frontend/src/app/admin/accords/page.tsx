@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
@@ -43,6 +43,15 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
   });
   const [saisieOrg,  setSaisieOrg]  = useState("");
   const [searchPays, setSearchPays] = useState("");
+  const [paysOpen,   setPaysOpen]   = useState(false);
+  const paysRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (paysRef.current && !paysRef.current.contains(e.target as Node)) { setPaysOpen(false); setSearchPays(""); }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
   const [fichiers,   setFichiers]   = useState<any[]>([]);
   const [pdfQueue,  setPdfQueue]  = useState<{file:File;titre:string}[]>([]);
   const [saving,    setSaving]    = useState(false);
@@ -197,21 +206,19 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
               {(form.pays_ids as number[]).map((id:number)=>{
                 const p=allPays.find((r:any)=>r.id===id);
                 const isSen=p?.nom_fr===SENEGAL;
-                const fl=p?.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
                 return p?<span key={id} style={{display:"inline-flex",alignItems:"center",gap:5,background:isSen?"rgba(0,79,145,0.1)":"rgba(202,99,31,0.1)",color:isSen?"#004f91":"#ca631f",border:`1px solid ${isSen?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
-                  {fl&&<span style={{fontSize:14}}>{fl}</span>}{p.nom_fr}
+                  {p.nom_fr}
                   {!isSen&&<button onClick={()=>update("pays_ids",(form.pays_ids as number[]).filter((x:number)=>x!==id))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>}
                 </span>:null;
               })}
             </div>
-            {/* Recherche pays */}
-            <div style={{position:"relative",marginBottom:8}}>
-              <FInput value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…" style={{ padding:"10px 13px 10px 32px" }} />
-              <svg style={{position:"absolute",left:11,top:"50%",transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              {searchPays&&<button onClick={()=>setSearchPays("")} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>}
-            </div>
-            {/* Liste groupée par continent */}
-            <div style={{border:"1px solid #E4E1DE",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff"}}>
+            {/* Recherche + liste en popover (replié par défaut) */}
+            <div ref={paysRef} style={{position:"relative"}}>
+              <FInput value={searchPays} onChange={e=>setSearchPays(e.target.value)} onFocus={()=>setPaysOpen(true)}
+                placeholder="Rechercher et ajouter un pays…" style={{ padding:"10px 13px 10px 32px" }} />
+              <svg style={{position:"absolute",left:11,top:20,transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              {paysOpen && (
+              <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,zIndex:210,border:"1px solid #E4E1DE",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff",boxShadow:"0 8px 32px rgba(0,0,0,0.12)"}}>
               {Object.entries(
                 allPays
                   .filter((p:any)=>!(form.pays_ids as number[]).includes(p.id) && (!searchPays||p.nom_fr.toLowerCase().includes(searchPays.toLowerCase())))
@@ -225,21 +232,20 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                 <div key={continent}>
                   <div style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.04)",padding:"5px 12px",letterSpacing:"0.1em",textTransform:"uppercase" as const,position:"sticky" as const,top:0}}>{continent}</div>
                   {pays.map((p:any)=>{
-                    const fl=p.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
                     return (
                       <button key={p.id} onClick={()=>update("pays_ids",[...(form.pays_ids as number[]),p.id])}
                         style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 14px",background:"transparent",border:"none",cursor:"pointer",textAlign:"left" as const,borderBottom:"1px solid #F2F0EF",transition:"background 0.1s"}}
                         onMouseEnter={e=>e.currentTarget.style.background="rgba(0,79,145,0.05)"}
                         onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        {fl&&<span style={{fontSize:16,flexShrink:0}}>{fl}</span>}
                         <span style={{fontSize:12,color:"#1a1a2e",fontWeight:500}}>{p.nom_fr}</span>
                       </button>
                     );
                   })}
                 </div>
               ))}
+              </div>
+              )}
             </div>
-            <span style={{fontSize:11,color:"#9aa5b4",marginTop:4,display:"block"}}>Le Sénégal est toujours inclus. Cliquez sur un pays pour l'ajouter.</span>
           </>
         ) : (
           <>
