@@ -6,7 +6,7 @@ import PhoneInput from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import NaemaSelect from "@/components/shared/NaemaSelect";
-import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FButton, FButtonGhost, FError, fuiLabel } from "@/components/shared/FormUI";
+import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FButtonGhost, FError, FInfo, fuiLabel, fuiInput } from "@/components/shared/FormUI";
 import { parsePhoneNumber } from "libphonenumber-js";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -802,281 +802,268 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
   if (!open) return null;
   return (
-    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(6px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:620, maxHeight:"90vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.2)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,#004f91,#1a6ab0)", borderRadius:"20px 20px 0 0" }}/>
-        <div style={{ padding:"24px 28px 28px" }}>
+    <FModal open={open} onClose={onClose} maxWidth={620}
+      title={isEdit ? "Modifier l'échange" : "Enregistrer un échange"}
+      subtitle={nomProspect}
+      footer={<>
+        <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
+        <FButton onClick={handleSave} disabled={saving||ok} loading={saving} success={ok}>
+          {ok ? "Enregistré !" : saving ? "Enregistrement…" : isEdit ? "Modifier l'échange" : "Enregistrer l'échange"}
+        </FButton>
+      </>}>
 
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-            <div>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e" }}>{isEdit ? "Modifier l'échange" : "Enregistrer un échange"}</h2>
-              <p style={{ fontSize:12, color:"#9aa5b4", marginTop:3 }}>{nomProspect}</p>
-              {!isEdit && dernierEchangeCourant && (
-                <p style={{ fontSize:11, color:"#ca631f", marginTop:4, fontWeight:600 }}>
-                  Dernier échange enregistré : {new Date(dernierEchangeCourant.date_echange).toLocaleDateString("fr-FR")}
-                </p>
-              )}
-            </div>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={14} color="#4a5568"/></button>
+      {/* Échange */}
+      <FSection title="Échange" extra={!isEdit && dernierEchangeCourant ? (
+        <span style={{ fontSize:11, color:"#ca631f", fontWeight:600 }}>
+          Dernier échange : {new Date(dernierEchangeCourant.date_echange).toLocaleDateString("fr-FR")}
+        </span>
+      ) : undefined}>
+        <div style={{ display:"flex", flexDirection:"column" as const, gap:14 }}>
+
+          <div>
+            <FLabel>{estPremier ? "Date du premier contact *" : "Date de l'échange *"}</FLabel>
+            <FInput type="date" value={form.date_echange}
+              max={dateMax} min={dateMin}
+              onChange={e=>upd("date_echange",e.target.value)}/>
           </div>
 
-          <div style={{ display:"flex", flexDirection:"column" as const, gap:16 }}>
-
-            {/* Date */}
+          {/* Participants */}
+          <FGrid cols={2} gap={12}>
+            {/* Côté investisseur */}
             <div>
-              <label style={LS}>{estPremier ? "Date du premier contact *" : "Date de l'échange *"}</label>
-              <input type="date" value={form.date_echange}
-                max={dateMax} min={dateMin}
-                onChange={e=>upd("date_echange",e.target.value)} style={IS}/>
-            </div>
-
-            {/* Participants */}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-              {/* Côté investisseur */}
-              <div>
-                <label style={LS}>Interlocuteur</label>
-                {estMorale && pointsFocaux.length > 0 ? (
-                  <>
-                    <select value={form.point_focal_id} onChange={e=>{ upd("point_focal_id",e.target.value); if(e.target.value!=="__autre") upd("interlocuteur",""); }}
-                      style={{ ...IS, cursor:"pointer" }}>
-                      <option value="">— Sélectionner —</option>
-                      {pointsFocaux.map((pf:any)=>(
-                        <option key={pf.id} value={String(pf.id)}>{`${pf.prenom||""} ${pf.nom||""}`.trim()}</option>
-                      ))}
-                      <option value="__autre">Autre (préciser)</option>
-                    </select>
-                    {form.point_focal_id === "__autre" && (
-                      <input value={form.interlocuteur} onChange={e=>upd("interlocuteur",e.target.value)}
-                        placeholder="Nom de l'interlocuteur" style={{ ...IS, marginTop:6 }}/>
-                    )}
-                  </>
-                ) : (
-                  <input value={form.interlocuteur} onChange={e=>upd("interlocuteur",e.target.value)}
-                    placeholder={estMorale ? "Nom de l'interlocuteur" : nomProspect}
-                    style={IS}/>
-                )}
-              </div>
-              {/* Côté APIX */}
-              <div>
-                <label style={LS}>Agent de l'APIX</label>
-                <input value={form.contact_par} onChange={e=>upd("contact_par",e.target.value)}
-                  placeholder="Votre nom" style={IS}/>
-              </div>
-            </div>
-
-            {/* Canal de contact + coordonnée associée */}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-              <div>
-                <label style={LS}>Canal utilisé</label>
-                <select value={form.canal} onChange={e=>{ upd("canal",e.target.value); upd("canal_contact",""); setEmailError(""); }}
-                  style={{ ...IS, cursor:"pointer" }}>
-                  <option value="">— Sélectionner —</option>
-                  {CANAUX.map(c=>(<option key={c} value={c}>{c}</option>))}
-                </select>
-              </div>
-              {form.canal && (()=>{
-                const meta = canalContactMeta(form.canal);
-                const isPhone = PHONE_CANAUX.includes(form.canal);
-                return (
-                  <div>
-                    <label style={LS}>{meta?.label || "Coordonnée"}</label>
-                    {isPhone ? (
-                      <PhoneInput value={form.canal_contact} onChange={v=>upd("canal_contact",v)}/>
-                    ) : form.canal === "Mail" ? (
-                      <>
-                        <input type="email" value={form.canal_contact}
-                          onChange={e=>{ upd("canal_contact",e.target.value); if(emailError) setEmailError(""); }}
-                          onBlur={()=>{ if(form.canal_contact && !isValidEmail(form.canal_contact)) setEmailError("Adresse e-mail invalide"); }}
-                          placeholder={meta?.placeholder || ""} style={{ ...IS, borderColor: emailError?"#dc2626":undefined }}/>
-                        {emailError && <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>{emailError}</p>}
-                      </>
-                    ) : (
-                      <input value={form.canal_contact} onChange={e=>upd("canal_contact",e.target.value)}
-                        placeholder={meta?.placeholder || ""} style={IS}/>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Commentaires */}
-            <div>
-              <label style={LS}>Commentaires</label>
-              <div style={{ minHeight:160 }}>
-                <RichTextEditor value={form.commentaire} onChange={v=>upd("commentaire",v)}/>
-              </div>
-            </div>
-
-            {/* Compte rendu (obligatoire — un seul) */}
-            <div>
-              <label style={LS}>Compte rendu <span style={{ color:"#dc2626" }}>*</span></label>
-              {crExistant && !compteRendu && (
-                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, marginBottom:10 }}>
-                  <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${crExistant.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:12, color:"#4a5568" }}>
-                    <FileText size={12} style={{ color:"#ca631f" }}/>{crExistant.titre}
-                  </a>
-                </div>
-              )}
-              {compteRendu ? (
-                <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:8, padding:"7px 12px" }}>
-                  <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
-                  <input value={compteRendu.titre} onChange={e=>setCompteRendu(cr=>cr?{...cr,titre:e.target.value}:cr)}
-                    placeholder="Titre du compte rendu"
-                    style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(0,79,145,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
-                  <button onClick={()=>setCompteRendu(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
-                </div>
+              <FLabel>Interlocuteur</FLabel>
+              {estMorale && pointsFocaux.length > 0 ? (
+                <>
+                  <FSelect value={form.point_focal_id} onChange={e=>{ upd("point_focal_id",e.target.value); if(e.target.value!=="__autre") upd("interlocuteur",""); }}>
+                    <option value="">— Sélectionner —</option>
+                    {pointsFocaux.map((pf:any)=>(
+                      <option key={pf.id} value={String(pf.id)}>{`${pf.prenom||""} ${pf.nom||""}`.trim()}</option>
+                    ))}
+                    <option value="__autre">Autre (préciser)</option>
+                  </FSelect>
+                  {form.point_focal_id === "__autre" && (
+                    <FInput value={form.interlocuteur} onChange={e=>upd("interlocuteur",e.target.value)}
+                      placeholder="Nom de l'interlocuteur" style={{ marginTop:6 }}/>
+                  )}
+                </>
               ) : (
-                <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed #C5BFBB", background:"#F2F0EF" }}
-                  onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
-                  onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
-                  <Upload size={14} color="#9aa5b4"/>
-                  <span style={{ fontSize:13, color:"#9aa5b4" }}>{crExistant ? "Remplacer le compte rendu (PDF)" : "Ajouter le compte rendu (PDF)"}</span>
-                  <input type="file" accept=".pdf" style={{ display:"none" }} onChange={e=>{
-                    const file = e.target.files?.[0]; if (!file) return;
-                    setCompteRendu({ file, titre:file.name.replace(/\.pdf$/i,"") });
-                    e.target.value="";
-                  }}/>
-                </label>
+                <FInput value={form.interlocuteur} onChange={e=>upd("interlocuteur",e.target.value)}
+                  placeholder={estMorale ? "Nom de l'interlocuteur" : nomProspect}/>
               )}
             </div>
-
-            {/* Autres documents (facultatif — un ou plusieurs) */}
+            {/* Côté APIX */}
             <div>
-              <label style={LS}>Autres documents <span style={{ fontWeight:400, color:"#9aa5b4" }}>(facultatif)</span></label>
-              {autresExistants.length > 0 && (
-                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, marginBottom:10 }}>
-                  {autresExistants.map((f:any) => (
-                    <a key={f.id} href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:12, color:"#4a5568" }}>
-                      <FileText size={12} style={{ color:"#ca631f" }}/>{f.titre}
-                    </a>
-                  ))}
+              <FLabel>Agent de l'APIX</FLabel>
+              <FInput value={form.contact_par} onChange={e=>upd("contact_par",e.target.value)} placeholder="Votre nom"/>
+            </div>
+          </FGrid>
+
+          {/* Canal de contact + coordonnée associée */}
+          <FGrid cols={2} gap={12}>
+            <div>
+              <FLabel>Canal utilisé</FLabel>
+              <FSelect value={form.canal} onChange={e=>{ upd("canal",e.target.value); upd("canal_contact",""); setEmailError(""); }}>
+                <option value="">— Sélectionner —</option>
+                {CANAUX.map(c=>(<option key={c} value={c}>{c}</option>))}
+              </FSelect>
+            </div>
+            {form.canal && (()=>{
+              const meta = canalContactMeta(form.canal);
+              const isPhone = PHONE_CANAUX.includes(form.canal);
+              return (
+                <div>
+                  <FLabel>{meta?.label || "Coordonnée"}</FLabel>
+                  {isPhone ? (
+                    <PhoneInput value={form.canal_contact} onChange={v=>upd("canal_contact",v)}/>
+                  ) : form.canal === "Mail" ? (
+                    <>
+                      <FInput type="email" value={form.canal_contact}
+                        onChange={e=>{ upd("canal_contact",e.target.value); if(emailError) setEmailError(""); }}
+                        onBlur={()=>{ if(form.canal_contact && !isValidEmail(form.canal_contact)) setEmailError("Adresse e-mail invalide"); }}
+                        placeholder={meta?.placeholder || ""} style={{ borderColor: emailError?"#dc2626":undefined }}/>
+                      {emailError && <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>{emailError}</p>}
+                    </>
+                  ) : (
+                    <FInput value={form.canal_contact} onChange={e=>upd("canal_contact",e.target.value)}
+                      placeholder={meta?.placeholder || ""}/>
+                  )}
                 </div>
-              )}
-              {pdfQueue.length > 0 && (
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
-                  {pdfQueue.map((p,i) => (
-                    <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:8, padding:"7px 12px" }}>
-                      <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
-                      <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                        placeholder="Titre du document"
-                        style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(0,79,145,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
-                      <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed #C5BFBB", background:"#F2F0EF" }}
+              );
+            })()}
+          </FGrid>
+
+        </div>
+      </FSection>
+
+      {/* Commentaires */}
+      <FSection title="Commentaires">
+        <div style={{ minHeight:160 }}>
+          <RichTextEditor value={form.commentaire} onChange={v=>upd("commentaire",v)}/>
+        </div>
+      </FSection>
+
+      {/* Documents */}
+      <FSection title="Documents">
+        <div style={{ display:"flex", flexDirection:"column" as const, gap:16 }}>
+
+          {/* Compte rendu (obligatoire — un seul) */}
+          <div>
+            <FLabel>Compte rendu <span style={{ color:"#dc2626" }}>*</span></FLabel>
+            {crExistant && !compteRendu && (
+              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px", marginBottom:8 }}>
+                <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+                <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${crExistant.id}/download`} target="_blank" rel="noopener noreferrer"
+                  style={{ flex:1, fontSize:12.5, color:"#004f91", fontWeight:600, textDecoration:"none" }}>
+                  {crExistant.titre}
+                </a>
+              </div>
+            )}
+            {compteRendu ? (
+              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"#6A1B9A", flexShrink:0 }}/>
+                <input value={compteRendu.titre} onChange={e=>setCompteRendu(cr=>cr?{...cr,titre:e.target.value}:cr)}
+                  placeholder="Titre du compte rendu"
+                  style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                <button onClick={()=>setCompteRendu(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
+              </div>
+            ) : (
+              <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
                 onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
-                onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
+                onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
                 <Upload size={14} color="#9aa5b4"/>
-                <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
-                <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
-                  const files = Array.from(e.target.files||[]);
-                  setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
+                <span style={{ fontSize:13, color:"#9aa5b4" }}>{crExistant ? "Remplacer le compte rendu (PDF)" : "Ajouter le compte rendu (PDF)"}</span>
+                <input type="file" accept=".pdf" style={{ display:"none" }} onChange={e=>{
+                  const file = e.target.files?.[0]; if (!file) return;
+                  setCompteRendu({ file, titre:file.name.replace(/\.pdf$/i,"") });
                   e.target.value="";
                 }}/>
               </label>
-            </div>
-
-            {/* Contraintes exprimées */}
-            <div>
-              <label style={LS}>Contraintes exprimées</label>
-              {localContraintes.length > 0 && (
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:6, marginBottom:8 }}>
-                  {localContraintes.map((c:any) => (
-                    <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(220,38,38,0.04)", border:"1px solid rgba(220,38,38,0.15)", borderRadius:8, padding:"9px 12px" }}>
-                      <div style={{ flex:1, fontSize:12, color:"#1a1a2e", lineHeight:1.5 }}>
-                        {c.description.replace(/<[^>]+>/g,"").trim() || "—"}
-                      </div>
-                      <button type="button" onClick={()=>ouvrirContrainte(c)}
-                        style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
-                        <Pencil size={12} style={{ color:"#9aa5b4" }}/>
-                      </button>
-                      <button type="button" onClick={()=>supprimerContrainte(c.id)}
-                        style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
-                        <Trash2 size={12} style={{ color:"#dc2626" }}/>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {showContrainteForm ? (
-                <div style={{ border:"1px solid #E8E5E3", borderRadius:10, padding:"12px 14px", background:"#F8F7F6", display:"flex", flexDirection:"column" as const, gap:10 }}>
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
-                    {bulletContraintes.map((b,i) => (
-                      <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                        <span style={{ color:"#ca631f", fontWeight:900, fontSize:18, flexShrink:0, lineHeight:1, userSelect:"none" as const }}>•</span>
-                        <input
-                          ref={el=>{ bulletRefs.current[i]=el; }}
-                          value={b}
-                          onChange={e=>{ const arr=[...bulletContraintes]; arr[i]=e.target.value; setBulletContraintes(arr); }}
-                          onKeyDown={e=>{
-                            if (e.key==="Enter") {
-                              e.preventDefault();
-                              const arr=[...bulletContraintes]; arr.splice(i+1,0,""); setBulletContraintes(arr);
-                              setTimeout(()=>bulletRefs.current[i+1]?.focus(),0);
-                            } else if (e.key==="Backspace" && b==="" && bulletContraintes.length>1) {
-                              e.preventDefault();
-                              const arr=bulletContraintes.filter((_,j)=>j!==i); setBulletContraintes(arr);
-                              setTimeout(()=>bulletRefs.current[Math.max(0,i-1)]?.focus(),0);
-                            }
-                          }}
-                          placeholder={i===0 ? "Décrire la contrainte…" : ""}
-                          style={{ ...IS, flex:1 }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {contrainteError && <p style={{ fontSize:12, color:"#dc2626" }}>{contrainteError}</p>}
-                  <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
-                    <button type="button" onClick={annulerContrainte}
-                      style={{ padding:"7px 14px", borderRadius:8, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:12 }}>Annuler</button>
-                    <button type="button" onClick={enregistrerContrainte} disabled={savingContrainte}
-                      style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:8, border:"none",
-                        background:savingContrainte?"#ccc":"#ca631f", color:"#fff", fontWeight:700, cursor:savingContrainte?"not-allowed":"pointer", fontSize:12 }}>
-                      {savingContrainte?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:<Check size={12}/>}
-                      {savingContrainte?"Enregistrement…":editContrainteId?"Modifier":"Ajouter"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button type="button" onClick={()=>ouvrirContrainte(null)}
-                  style={{ width:"100%", border:"2px dashed #C5BFBB", background:"transparent", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"#9aa5b4", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s" }}
-                  onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#ca631f"; (e.currentTarget as HTMLButtonElement).style.color="#ca631f"; }}
-                  onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#C5BFBB"; (e.currentTarget as HTMLButtonElement).style.color="#9aa5b4"; }}>
-                  <Plus size={14}/> Ajouter
-                </button>
-              )}
-            </div>
-
-            {/* Note anti-fraude */}
-            <div style={{ background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.12)", borderRadius:10, padding:"10px 14px", display:"flex", gap:8, alignItems:"flex-start" }}>
-              <span style={{ fontSize:15, flexShrink:0 }}>🔒</span>
-              <p style={{ fontSize:11, color:"#4a5568", lineHeight:1.6 }}>
-                La date et l'heure de saisie réelles sont tracées automatiquement. L'échange reste <strong>modifiable pendant 24h</strong> après son enregistrement, puis devient définitivement immuable.
-              </p>
-            </div>
-
+            )}
           </div>
 
-          {error && <p style={{ fontSize:12, color:"#dc2626", marginTop:14 }}>{error}</p>}
-
-          <div style={{ display:"flex", gap:10, justifyContent:"flex-end", marginTop:20 }}>
-            <button onClick={onClose} style={{ padding:"9px 18px", borderRadius:9, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13 }}>Annuler</button>
-            <button onClick={handleSave} disabled={saving||ok}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 20px", borderRadius:9, border:"none",
-                background:ok?"#059669":saving?"#ccc":"#004f91",
-                color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13 }}>
-              {saving?<Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/>:<Check size={13}/>}
-              {ok?"Enregistré !":saving?"Enregistrement…":isEdit?"Modifier l'échange":"Enregistrer l'échange"}
-            </button>
+          {/* Autres documents (facultatif — un ou plusieurs) */}
+          <div>
+            <FLabel>Autres documents <span style={{ fontWeight:400, color:"#9aa5b4" }}>(facultatif)</span></FLabel>
+            {autresExistants.length > 0 && (
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
+                {autresExistants.map((f:any) => (
+                  <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px" }}>
+                    <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+                    <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                      style={{ flex:1, fontSize:12.5, color:"#004f91", fontWeight:600, textDecoration:"none" }}>
+                      {f.titre}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+            {pdfQueue.length > 0 && (
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
+                {pdfQueue.map((p,i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
+                    <FileText size={13} style={{ color:"#6A1B9A", flexShrink:0 }}/>
+                    <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
+                      placeholder="Titre du document"
+                      style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                    <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+              onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
+              <Upload size={14} color="#9aa5b4"/>
+              <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+              <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
+                const files = Array.from(e.target.files||[]);
+                setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
+                e.target.value="";
+              }}/>
+            </label>
+            {(compteRendu || pdfQueue.length > 0) && (
+              <p style={{ fontSize:11, color:"#9aa5b4", marginTop:6 }}>Les fichiers seront téléversés à l'enregistrement.</p>
+            )}
           </div>
+
         </div>
-      </div>
-    </div>
+      </FSection>
+
+      {/* Contraintes exprimées */}
+      <FSection title="Contraintes exprimées">
+        {localContraintes.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:6, marginBottom:8 }}>
+            {localContraintes.map((c:any) => (
+              <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(220,38,38,0.04)", border:"1px solid rgba(220,38,38,0.15)", borderRadius:10, padding:"9px 12px" }}>
+                <div style={{ flex:1, fontSize:12, color:"#1a1a2e", lineHeight:1.5 }}>
+                  {c.description.replace(/<[^>]+>/g,"").trim() || "—"}
+                </div>
+                <button type="button" onClick={()=>ouvrirContrainte(c)}
+                  style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
+                  <Pencil size={12} style={{ color:"#9aa5b4" }}/>
+                </button>
+                <button type="button" onClick={()=>supprimerContrainte(c.id)}
+                  style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
+                  <Trash2 size={12} style={{ color:"#dc2626" }}/>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        {showContrainteForm ? (
+          <FPanel style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
+              {bulletContraintes.map((b,i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ color:"#004f91", fontWeight:900, fontSize:18, flexShrink:0, lineHeight:1, userSelect:"none" as const }}>•</span>
+                  <input
+                    className="fui-input"
+                    ref={el=>{ bulletRefs.current[i]=el; }}
+                    value={b}
+                    onChange={e=>{ const arr=[...bulletContraintes]; arr[i]=e.target.value; setBulletContraintes(arr); }}
+                    onKeyDown={e=>{
+                      if (e.key==="Enter") {
+                        e.preventDefault();
+                        const arr=[...bulletContraintes]; arr.splice(i+1,0,""); setBulletContraintes(arr);
+                        setTimeout(()=>bulletRefs.current[i+1]?.focus(),0);
+                      } else if (e.key==="Backspace" && b==="" && bulletContraintes.length>1) {
+                        e.preventDefault();
+                        const arr=bulletContraintes.filter((_,j)=>j!==i); setBulletContraintes(arr);
+                        setTimeout(()=>bulletRefs.current[Math.max(0,i-1)]?.focus(),0);
+                      }
+                    }}
+                    placeholder={i===0 ? "Décrire la contrainte…" : ""}
+                    style={{ ...fuiInput, flex:1 }}
+                  />
+                </div>
+              ))}
+            </div>
+            {contrainteError && <p style={{ fontSize:12, color:"#dc2626" }}>{contrainteError}</p>}
+            <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
+              <FButtonGhost type="button" onClick={annulerContrainte} style={{ padding:"7px 14px", fontSize:12 }}>Annuler</FButtonGhost>
+              <FButton type="button" onClick={enregistrerContrainte} disabled={savingContrainte} loading={savingContrainte}
+                style={{ padding:"7px 16px", fontSize:12 }}>
+                {savingContrainte?"Enregistrement…":editContrainteId?"Modifier":"Ajouter"}
+              </FButton>
+            </div>
+          </FPanel>
+        ) : (
+          <button type="button" onClick={()=>ouvrirContrainte(null)}
+            style={{ width:"100%", border:"2px dashed #E4E1DE", background:"#FAFAF9", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"#9aa5b4", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s", fontFamily:"var(--font-google-sans)" }}
+            onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#004f91"; (e.currentTarget as HTMLButtonElement).style.color="#004f91"; }}
+            onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#E4E1DE"; (e.currentTarget as HTMLButtonElement).style.color="#9aa5b4"; }}>
+            <Plus size={14}/> Ajouter
+          </button>
+        )}
+      </FSection>
+
+      {/* Note anti-fraude */}
+      <FInfo>
+        La date et l'heure de saisie réelles sont tracées automatiquement. L'échange reste <strong>modifiable pendant 24h</strong> après son enregistrement, puis devient définitivement immuable.
+      </FInfo>
+
+      {error && <FError>{error}</FError>}
+    </FModal>
   );
 }
 
