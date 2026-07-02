@@ -264,7 +264,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
           <div ref={containerRef} style={{ width:"100%" }}/>
           {tooltip && !tooltip.pole && !tooltip.region && (
-            <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#FAFAF9", border:"1px solid #E8E5E3", borderRadius:8, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"0 4px 16px rgba(0,0,0,0.10)", whiteSpace:"nowrap" as const }}>
+            <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#fff", border:"1px solid #ECEAE7", borderRadius:10, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"0 8px 24px rgba(0,30,60,0.12)", whiteSpace:"nowrap" as const }}>
               {tooltip.nom}
             </div>
           )}
@@ -275,13 +275,13 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             const total = stats ? stats.total : 0;
             const base = (stats ? stats.primaire + stats.secondaire + stats.tertiaire : 0) || 1;
             const rows = [
-              { label: "Primaire",   val: stats?.primaire ?? 0,   color: "#059669" },
-              { label: "Secondaire", val: stats?.secondaire ?? 0, color: "#366FE3" },
-              { label: "Tertiaire",  val: stats?.tertiaire ?? 0,  color: "#E35336" },
+              { label: "Primaire",   val: stats?.primaire ?? 0,   color: "#004f91" },
+              { label: "Secondaire", val: stats?.secondaire ?? 0, color: "#ca631f" },
+              { label: "Tertiaire",  val: stats?.tertiaire ?? 0,  color: "#188038" },
             ];
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-200)), width:224, background:"#FAFAF9", border:"1px solid #E8E5E3", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"0 8px 28px rgba(0,0,0,0.14)" }}>
+              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-200)), width:224, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"0 12px 28px rgba(0,30,60,0.14)" }}>
                 {/* Nom */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:9 }}>
                   <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
@@ -289,11 +289,11 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                 </div>
                 {/* Entreprises formalisées */}
                 <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:10 }}>
-                  <span style={{ fontSize:20, fontWeight:800, color:"#059669", lineHeight:1 }}>{total}</span>
+                  <span style={{ fontSize:20, fontWeight:800, color:"#004f91", lineHeight:1 }}>{total}</span>
                   <span style={{ fontSize:11.5, fontWeight:600, color:"#1a1a2e" }}>entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</span>
                 </div>
                 {/* Répartition sectorielle */}
-                <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
+                <p style={{ fontSize:9, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                   {rows.map(r => {
                     const pct = Math.round(r.val / base * 100);
@@ -303,7 +303,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                           <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
                           <span style={{ fontWeight:700, color:r.color }}>{pct}%</span>
                         </div>
-                        <div style={{ height:4, background:"#E8E5E3", borderRadius:99, overflow:"hidden" }}>
+                        <div style={{ height:4, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
                           <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99 }}/>
                         </div>
                       </div>
@@ -335,13 +335,13 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             });
             const total = counts.primaire + counts.secondaire + counts.tertiaire || 1;
             const rows = [
-              { label: "Primaire",   val: counts.primaire,   color: "#059669" },
-              { label: "Secondaire", val: counts.secondaire, color: "#366FE3" },
-              { label: "Tertiaire",  val: counts.tertiaire,  color: "#E35336" },
+              { label: "Primaire",   val: counts.primaire,   color: "#004f91" },
+              { label: "Secondaire", val: counts.secondaire, color: "#ca631f" },
+              { label: "Tertiaire",  val: counts.tertiaire,  color: "#188038" },
             ];
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-235)), width:238, background:"#FAFAF9", border:"1px solid #E8E5E3", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"0 8px 28px rgba(0,0,0,0.14)" }}>
+              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-235)), width:238, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"0 12px 28px rgba(0,30,60,0.14)" }}>
                 {/* Nom + régions */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7 }}>
                   <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
@@ -349,16 +349,16 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                 </div>
                 <div style={{ display:"flex", gap:4, flexWrap:"wrap" as const, marginBottom:10 }}>
                   {regions.map(r => (
-                    <span key={r} style={{ fontSize:10, fontWeight:600, color:"#1a1a2e", background:color+"33", border:`1px solid ${color}88`, padding:"1px 8px", borderRadius:999 }}>{r}</span>
+                    <span key={r} style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"2px 8px", borderRadius:999 }}>{r}</span>
                   ))}
                 </div>
                 {/* Entreprises installées */}
                 <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:10 }}>
-                  <span style={{ fontSize:20, fontWeight:800, color:"#059669", lineHeight:1 }}>{nb}</span>
+                  <span style={{ fontSize:20, fontWeight:800, color:"#004f91", lineHeight:1 }}>{nb}</span>
                   <span style={{ fontSize:11.5, fontWeight:600, color:"#1a1a2e" }}>entreprise{nb!==1?"s":""} installée{nb!==1?"s":""}</span>
                 </div>
                 {/* Répartition sectorielle */}
-                <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
+                <p style={{ fontSize:9, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                   {rows.map(r => {
                     const pct = Math.round(r.val / total * 100);
@@ -368,7 +368,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                           <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
                           <span style={{ fontWeight:700, color:r.color }}>{pct}%</span>
                         </div>
-                        <div style={{ height:4, background:"#E8E5E3", borderRadius:99, overflow:"hidden" }}>
+                        <div style={{ height:4, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
                           <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99 }}/>
                         </div>
                       </div>
@@ -451,7 +451,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
               {/* Entreprises installées */}
               <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"12px 14px" }}>
                 <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{nbInst!==1?"s":""} installée{nbInst!==1?"s":""}</p>
-                <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"#188038":"#9aa5b4", lineHeight:1.1 }}>{nbInst}</p>
+                <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{nbInst}</p>
               </div>
 
               {/* Zones d'investissement */}
@@ -466,7 +466,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                         <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC", fontSize:12 }}>
                           <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:tc+"12", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
                           <span style={{ color:"#1a1a2e", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
-                          <span style={{ fontSize:11, fontWeight:700, color:nbEnts>0?"#188038":"#9aa5b4", background:nbEnts>0?"rgba(24,128,56,0.08)":"#F2F0EF", padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
+                          <span style={{ fontSize:11, fontWeight:700, color:tc, background:tc+"12", padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
                         </div>
                       );
                     })}
@@ -585,7 +585,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                 {/* Total entreprises */}
                 <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"12px 14px" }}>
                   <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</p>
-                  <p style={{ fontSize:26, fontWeight:800, color:total>0?"#188038":"#9aa5b4", lineHeight:1.1 }}>{total}</p>
+                  <p style={{ fontSize:26, fontWeight:800, color:total>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{total}</p>
                 </div>
 
                 {/* Répartition sectorielle */}
