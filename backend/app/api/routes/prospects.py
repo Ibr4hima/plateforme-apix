@@ -174,7 +174,8 @@ def prospect_to_dict(p: Prospect, projet_titre: str | None = None) -> dict:
         "activite_ids":    p.activite_ids or [],
         "points_focaux": [
             {"id": pf.id, "prenom": pf.prenom, "nom": pf.nom,
-             "telephones": pf.telephones or [], "mails": pf.mails or []}
+             "telephones": pf.telephones or [], "mails": pf.mails or [],
+             "est_principal": pf.est_principal or False}
             for pf in (p.points_focaux or [])
         ],
         "telephones":      p.telephones or [],
@@ -324,6 +325,7 @@ async def creer_prospect(payload: dict, db: AsyncSession = Depends(get_db), curr
             nom         = pf_data["nom"].strip(),
             telephones  = pf_data.get("telephones") or [],
             mails       = pf_data.get("mails") or [],
+            est_principal = bool(pf_data.get("est_principal")),
         ))
     await ecrire_contacts(db, p.id, contacts)
     try:
@@ -409,6 +411,7 @@ async def modifier_prospect(prospect_id: int, payload: dict, db: AsyncSession = 
                 nom         = pf_data["nom"].strip(),
                 telephones  = pf_data.get("telephones") or [],
                 mails       = pf_data.get("mails") or [],
+                est_principal = bool(pf_data.get("est_principal")),
             ))
     await ecrire_contacts(db, prospect_id, contacts)
     try:

@@ -103,6 +103,7 @@ class ProspectPointFocal(Base):
     nom         = Column(String(150), nullable=False)
     telephones  = Column(ARRAY(String), default=[])
     mails       = Column(ARRAY(String), default=[])
+    est_principal = Column(Boolean, default=False)
     created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     prospect = relationship("Prospect", back_populates="points_focaux")

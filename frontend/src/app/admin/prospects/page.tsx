@@ -174,8 +174,8 @@ function estFige(p:any) {
   return !!p?.issue;
 }
 
-type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string[] };
-const EMPTY_FOCAL: PointFocal = { prenom:"", nom:"", telephones:[""], mails:[""] };
+type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string[]; est_principal:boolean };
+const EMPTY_FOCAL: PointFocal = { prenom:"", nom:"", telephones:[""], mails:[""], est_principal:false };
 
 const EMPTY_FORM = {
   // morale
@@ -185,7 +185,7 @@ const EMPTY_FORM = {
   secteur_ids:      [] as number[],
   branche_ids:      [] as number[],
   activite_ids:     [] as number[],
-  points_focaux:    [{ ...EMPTY_FOCAL }] as PointFocal[],
+  points_focaux:    [] as PointFocal[],
   // commun
   telephones:       [""] as string[],
   mails:            [""] as string[],
@@ -269,11 +269,10 @@ function MultiMails({ values, onChange }: { values:string[]; onChange:(v:string[
 }
 
 // ── Carte point focal ─────────────────────────────────────────────────────────
-function PointFocalCard({ pf, idx, onUpdate, onRemove, canRemove }: {
+function PointFocalCard({ pf, idx, onUpdate, onRemove }: {
   pf:PointFocal; idx:number;
   onUpdate:(v:PointFocal)=>void;
   onRemove:()=>void;
-  canRemove:boolean;
 }) {
   const upd = (k:keyof PointFocal, v:any) => onUpdate({ ...pf, [k]:v });
   return (
@@ -281,14 +280,17 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove, canRemove }: {
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <User size={13} style={{ color:"#004f91" }}/>
-          <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Contact {idx+1}</span>
+          <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Point focal {idx+1}</span>
         </div>
-        {canRemove && (
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <label style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"#4a5568", cursor:"pointer" }}>
+            <input type="checkbox" checked={pf.est_principal} onChange={e=>upd("est_principal",e.target.checked)}/> Principal
+          </label>
           <button type="button" onClick={onRemove}
             style={{ background:"none", border:"none", cursor:"pointer", padding:4 }}>
             <Trash2 size={13} style={{ color:"#dc2626" }}/>
           </button>
-        )}
+        </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
         <div>
@@ -370,9 +372,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         secteur_ids:      edit.secteur_ids||[],
         branche_ids:      edit.branche_ids||[],
         activite_ids:     edit.activite_ids||[],
-        points_focaux:    edit.points_focaux?.length
-          ? edit.points_focaux.map((pf:any) => ({ prenom:pf.prenom||"", nom:pf.nom||"", telephones:pf.telephones?.length?pf.telephones:[""], mails:pf.mails?.length?pf.mails:[""] }))
-          : [{ ...EMPTY_FOCAL }],
+        points_focaux:    (edit.points_focaux||[]).map((pf:any) => ({ prenom:pf.prenom||"", nom:pf.nom||"", telephones:pf.telephones?.length?pf.telephones:[""], mails:pf.mails?.length?pf.mails:[""], est_principal:pf.est_principal||false })),
         telephones:       edit.telephones?.length ? edit.telephones : [""],
         mails:            edit.mails?.length ? edit.mails : [""],
         siteweb:          edit.siteweb||"",
@@ -393,7 +393,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         objet_commentaires:             edit.objet_commentaires||"",
       });
     } else {
-      setForm({ ...EMPTY_FORM, points_focaux:[{ ...EMPTY_FOCAL }] });
+      setForm({ ...EMPTY_FORM, points_focaux:[] });
     }
     setError(""); setOk(false);
   }, [open, edit?.id]);
@@ -421,7 +421,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         activite_ids: form.activite_ids,
         points_focaux: form.points_focaux
           .filter(pf=>pf.nom.trim())
-          .map(pf=>({ prenom:pf.prenom.trim()||null, nom:pf.nom.trim(), telephones:pf.telephones.filter(Boolean), mails:pf.mails.filter(Boolean) })),
+          .map(pf=>({ prenom:pf.prenom.trim()||null, nom:pf.nom.trim(), telephones:pf.telephones.filter(Boolean), mails:pf.mails.filter(Boolean), est_principal:pf.est_principal||false })),
         // objet du ciblage
         objet_projet:              form.objet_projet,
         objet_projet_id:           form.objet_projet && form.objet_projet_id ? form.objet_projet_id : null,
@@ -500,22 +500,25 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
       </FSection>
 
       {/* Points focaux */}
-      <FSection title="Points focaux" extra={
+      <FSection title="Points focaux">
+        {form.points_focaux.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:10 }}>
+            {form.points_focaux.map((pf,i)=>(
+              <PointFocalCard key={i} pf={pf} idx={i}
+                onUpdate={v=>{ const arr=[...form.points_focaux]; arr[i]=v; upd("points_focaux",arr); }}
+                onRemove={()=>upd("points_focaux",form.points_focaux.filter((_,j)=>j!==i))}
+              />
+            ))}
+          </div>
+        )}
         <button type="button"
-          onClick={()=>upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL }])}
-          style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:8, padding:"5px 10px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-          <Plus size={12}/> Ajouter un contact
+          onClick={()=>upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL, est_principal: form.points_focaux.length===0 }])}
+          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s", fontFamily:"var(--font-google-sans)" }}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
+          <Plus size={14} color="#9aa5b4"/>
+          <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un point focal</span>
         </button>
-      }>
-        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-          {form.points_focaux.map((pf,i)=>(
-            <PointFocalCard key={i} pf={pf} idx={i}
-              onUpdate={v=>{ const arr=[...form.points_focaux]; arr[i]=v; upd("points_focaux",arr); }}
-              onRemove={()=>upd("points_focaux",form.points_focaux.filter((_,j)=>j!==i))}
-              canRemove={form.points_focaux.length>1}
-            />
-          ))}
-        </div>
       </FSection>
 
       {/* Commentaires */}
@@ -1256,6 +1259,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ display:"flex", alignItems:"baseline", gap:8, flexWrap:"wrap" as const, marginBottom:(tels.length||mails.length)?7:0 }}>
                           <span style={{ fontSize:13, fontWeight:700, color:TXT }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
+                          {pf.est_principal && <span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"1px solid rgba(202,99,31,0.2)", borderRadius:999, padding:"1px 7px" }}>Principal</span>}
                           {pf.poste && <span style={{ fontSize:11, color:MUT }}>{pf.poste}</span>}
                         </div>
                         {(tels.length>0 || mails.length>0) && (
