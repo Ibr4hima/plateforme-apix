@@ -1229,10 +1229,9 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
           {/* Activités spécialisées (Secteur → Branche → Activité) */}
           {(p.secteur_ids?.length>0 || p.branche_ids?.length>0 || p.activite_ids?.length>0) && (
-            <div style={{ marginBottom:16 }}>
-              <LBL>Activités spécialisées</LBL>
+            <Section title="Activités spécialisées">
               <NaemaCascade secIds={p.secteur_ids||[]} braIds={p.branche_ids||[]} actIds={p.activite_ids||[]}/>
-            </div>
+            </Section>
           )}
 
           {/* Détails / Commentaires */}
