@@ -1056,8 +1056,8 @@ export default function OpportunitesPage() {
       {/* Layout sidebar + contenu */}
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
-          {/* Sidebar (pas de filtres sur l'onglet Avantages) */}
-          {onglet!=="avantages"&&<aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
+          {/* Sidebar (filtres uniquement sur la Banque de projets) */}
+          {onglet==="projets"&&<aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
             <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
             <div style={{padding:sidebarOpen?"20px 16px":"10px 8px",flex:1}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
@@ -1103,39 +1103,6 @@ export default function OpportunitesPage() {
                       onRegion={v=>{setProjRegions(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setProjDepts([]); setProjArrs([]);}}
                       onDepartement={v=>{setProjDepts(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setProjArrs([]);}}
                       onArrondissement={v=>setProjArrs(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v])}
-                    />
-                  </>}
-
-                  {/* Filtres Potentialités */}
-                  {onglet==="potentialites"&&<>
-                    <div style={{position:"relative" as const,marginBottom:18}}>
-                      <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-                      <input value={potsQ} onChange={e=>setPotsQ(e.target.value)} placeholder="Rechercher…"
-                        style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                      {potsQ&&<button onClick={()=>setPotsQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
-                    </div>
-                    <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                    <SideFilter label="Zone" color="#004f91"
-                      items={[{value:"pole",label:"Pôles"},{value:"region",label:"Régions"},{value:"departement",label:"Départements"},{value:"arrondissement",label:"Arrondissements"}]}
-                      selected={potsNiveau} onToggle={toggle(potsNiveau,setPotsNiveau)}/>
-                    <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                    <SideFilter label="Pôle territoire" color="#004f91"
-                      items={poles.map((p:any)=>({value:p.pole_territoire,label:p.pole_territoire}))}
-                      selected={potsPoles} onToggle={toggle(potsPoles,setPotsPoles)}/>
-                    <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                    <ThematiquesCascadeFilter
-                      secteurs={secteurs}
-                      secteursSel={potsSects} branchesSel={potsBranches} activitesSel={potsActivites}
-                      onSecteur={v=>{setPotsSects(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setPotsBranches([]); setPotsActivites([]);}}
-                      onBranche={v=>{setPotsBranches(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]); setPotsActivites([]);}}
-                      onActivite={v=>setPotsActivites(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v])}
-                    />
-                    <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                    <AtotusFiltreFilter
-                      pots={pots}
-                      refAvantages={refAvantages}
-                      selected={potsAtouts}
-                      onToggle={v=>setPotsAtouts(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v])}
                     />
                   </>}
 
@@ -1211,7 +1178,7 @@ export default function OpportunitesPage() {
                   <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
                 ) : selectedNiveau===null ? (
                   /* ── Picker 4 cards ── */
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
                     {([
                       {key:"pole",           label:"Pôles territoires", unit:"Pôles",           color:"#004f91"},
                       {key:"region",         label:"Régions",           unit:"Régions",         color:"#ca631f"},
