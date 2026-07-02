@@ -68,7 +68,7 @@ function SideFilter({ label, items, selected, onToggle, color }: {
 
 // ── Carte prospect ────────────────────────────────────────────────────────────
 
-function CarteProspect({ p, onglet }: { p: any; onglet: "cibles" | "historique" | "termines" }) {
+function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "historique" | "termines"; onOpen?: () => void }) {
   const badge = badgeProspect(p);
   const tel = p.telephones?.[0] || p.points_focaux?.[0]?.telephones?.[0] || "";
   const mail = p.mails?.[0] || p.points_focaux?.[0]?.mails?.[0] || "";
@@ -85,7 +85,8 @@ function CarteProspect({ p, onglet }: { p: any; onglet: "cibles" | "historique" 
         : { label: "Conclusion", value: null });
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+    <div onClick={onOpen}
+      style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
       onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
 
@@ -129,6 +130,193 @@ function CarteProspect({ p, onglet }: { p: any; onglet: "cibles" | "historique" 
           {p.echanges.length} échange{p.echanges.length > 1 ? "s" : ""} enregistré{p.echanges.length > 1 ? "s" : ""}
         </div>
       )}
+
+      {/* Action */}
+      {onOpen && !(p.echanges?.length > 0) && (
+        <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, transition: "background 0.15s" }}
+            onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+            onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+            Voir la fiche →
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Modal fiche prospect (lecture seule) ──────────────────────────────────────
+
+function ProspectPublicVue({ p, onClose }: { p: any; onClose: () => void }) {
+  const [secteurs,  setSecteurs]  = useState<any[]>([]);
+  const [branches,  setBranches]  = useState<any[]>([]);
+  const [activites, setActivites] = useState<any[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
+      fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
+      fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
+    ]).then(([s, b, a]) => { setSecteurs(s || []); setBranches(b || []); setActivites(a || []); }).catch(() => {});
+  }, [p.id]);
+
+  const secIds: number[] = p.secteur_ids || [];
+  const braIds: number[] = p.branche_ids || [];
+  const actIds: number[] = p.activite_ids || [];
+  const hasNaema = secIds.length > 0 || braIds.length > 0 || actIds.length > 0;
+  const tels = (p.telephones || []).filter(Boolean);
+  const mails = (p.mails || []).filter(Boolean);
+
+  const SecTitle = ({ children }: { children: string }) => (
+    <p style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", letterSpacing: "0.14em", textTransform: "uppercase" as const, marginBottom: 10 }}>{children}</p>
+  );
+  const Bloc = ({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) => (
+    <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "9px 12px", minWidth: 0, gridColumn: full ? "1/-1" : undefined }}>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>{label}</p>
+      {children}
+    </div>
+  );
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={ev => ev.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 640, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
+        {/* Liseré d'accent */}
+        <div style={{ height: 4, background: "#004f91", flexShrink: 0 }}/>
+
+        {/* En-tête */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
+          <div style={{ minWidth: 0 }}>
+            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", lineHeight: 1.3 }}>{p.nom}</h2>
+            {p.siege_nom && (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const, marginTop: 8 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999 }}>{p.siege_nom}</span>
+              </div>
+            )}
+          </div>
+          <button onClick={onClose}
+            style={{ background: "#F5F4F3", border: "none", cursor: "pointer", borderRadius: 99, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+            onMouseEnter={ev => (ev.currentTarget.style.background = "#ECEAE8")}
+            onMouseLeave={ev => (ev.currentTarget.style.background = "#F5F4F3")}>
+            <X size={15} color="#4a5568"/>
+          </button>
+        </div>
+
+        {/* Corps */}
+        <div style={{ padding: "22px 28px", overflowY: "auto" as const, flex: 1, display: "flex", flexDirection: "column" as const, gap: 22 }}>
+
+          {/* Contact */}
+          {(tels.length > 0 || mails.length > 0 || p.siteweb || p.linkedin) && (
+            <section>
+              <SecTitle>Contact</SecTitle>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {tels.length > 0 && (
+                  <Bloc label={tels.length > 1 ? "Téléphones" : "Téléphone"}>
+                    {tels.map((t: string, i: number) => <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e" }}>{fmtPhone(t)}</p>)}
+                  </Bloc>
+                )}
+                {mails.length > 0 && (
+                  <Bloc label={mails.length > 1 ? "Emails" : "Email"}>
+                    {mails.map((m: string, i: number) => <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e", wordBreak: "break-all" as const }}>{m}</p>)}
+                  </Bloc>
+                )}
+                {p.siteweb && (
+                  <Bloc label="Site web"><a href={p.siteweb.startsWith("http") ? p.siteweb : `https://${p.siteweb}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, fontWeight: 600, color: "#004f91", textDecoration: "none", wordBreak: "break-all" as const }}>{p.siteweb}</a></Bloc>
+                )}
+                {p.linkedin && (
+                  <Bloc label="LinkedIn"><a href={p.linkedin.startsWith("http") ? p.linkedin : `https://${p.linkedin}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, fontWeight: 600, color: "#004f91", textDecoration: "none", wordBreak: "break-all" as const }}>{p.linkedin}</a></Bloc>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Activités spécialisées */}
+          {hasNaema && secteurs.length > 0 && (
+            <section>
+              <SecTitle>Activités spécialisées</SecTitle>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+                {secIds.map((secId: number) => {
+                  const sec = secteurs.find((s: any) => s.id === secId); if (!sec) return null;
+                  const brasDuSec = branches.filter((b: any) => b.secteur_id === secId && braIds.includes(b.id));
+                  return (
+                    <div key={secId}>
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: brasDuSec.length ? 5 : 0 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#004f91", flexShrink: 0 }}/>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#004f91" }}>{sec.nom}</span>
+                      </div>
+                      {brasDuSec.length > 0 && (
+                        <div style={{ paddingLeft: 20, borderLeft: "2px solid rgba(0,79,145,0.15)", display: "flex", flexDirection: "column" as const, gap: 5 }}>
+                          {brasDuSec.map((bra: any) => {
+                            const actsDeBra = activites.filter((a: any) => a.branche_id === bra.id && actIds.includes(a.id));
+                            return (
+                              <div key={bra.id}>
+                                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: actsDeBra.length ? 4 : 0 }}>
+                                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ca631f", flexShrink: 0 }}/>
+                                  <span style={{ fontSize: 11, fontWeight: 600, color: "#ca631f" }}>{bra.nom}</span>
+                                </div>
+                                {actsDeBra.length > 0 && (
+                                  <div style={{ paddingLeft: 18, display: "flex", flexDirection: "column" as const, gap: 3 }}>
+                                    {actsDeBra.map((act: any) => (
+                                      <div key={act.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                        <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#188038", flexShrink: 0 }}/>
+                                        <span style={{ fontSize: 11, color: "#188038", fontWeight: 500 }}>{act.nom}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Points focaux */}
+          {p.points_focaux?.length > 0 && (
+            <section>
+              <SecTitle>Points focaux</SecTitle>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+                {p.points_focaux.map((pf: any, i: number) => {
+                  const pfTels = (pf.telephones || []).filter(Boolean);
+                  const pfMails = (pf.mails || []).filter(Boolean);
+                  return (
+                    <div key={i} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "11px 14px", fontSize: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+                        <span style={{ fontWeight: 700, color: "#1a1a2e" }}>{[pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
+                        {pf.est_principal && <span style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", borderRadius: 999, padding: "2px 8px" }}>Principal</span>}
+                      </div>
+                      {(pfTels.length > 0 || pfMails.length > 0) && (
+                        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 5, marginTop: 7 }}>
+                          {pfTels.map((t: string, ti: number) => (
+                            <span key={`t${ti}`} style={{ fontSize: 11, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999 }}>{fmtPhone(t)}</span>
+                          ))}
+                          {pfMails.map((m: string, mi: number) => (
+                            <span key={`m${mi}`} style={{ fontSize: 11, fontWeight: 600, color: "#188038", background: "rgba(24,128,56,0.07)", padding: "3px 10px", borderRadius: 999 }}>{m}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+        </div>
+
+        {/* Pied */}
+        <div style={{ display: "flex", justifyContent: "flex-end", padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", flexShrink: 0 }}>
+          <button onClick={onClose}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)" }}>
+            Fermer
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -143,6 +331,7 @@ export default function ProspectsPage() {
   const [enContact, setEnContact] = useState<any[]>([]);
   const [termines,  setTermines]  = useState<any[]>([]);
   const [loading,   setLoading]   = useState(true);
+  const [selec,     setSelec]     = useState<any>(null);
 
   // Filtres
   const [recherche,   setRecherche]   = useState("");
@@ -300,11 +489,13 @@ export default function ProspectsPage() {
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>
-              {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} />)}
+              {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onOpen={onglet === "cibles" ? () => setSelec(p) : undefined} />)}
             </div>
           )}
         </div>
       </div>
+
+      {selec && <ProspectPublicVue p={selec} onClose={() => setSelec(null)} />}
     </main>
   );
 }
