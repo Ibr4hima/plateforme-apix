@@ -401,20 +401,41 @@ export default function AccordsPage() {
       <Navbar/>
 
       {/* Hero */}
-      <section style={{padding:"100px 40px 40px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
+      <section style={{padding:"104px 40px 46px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
+        {/* Décor */}
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,top:"-45%",right:"-8%",width:560,height:560,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 62%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-35%",left:"-6%",width:440,height:440,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,bottom:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)"}}/>
         </div>
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
-            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
+          {/* Surtitre */}
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
+            <span style={{width:26,height:2,borderRadius:999,background:"#ca631f",flexShrink:0}}/>
+            <span style={{fontSize:10.5,fontWeight:700,color:"#e0813f",letterSpacing:"0.18em",textTransform:"uppercase" as const}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Accords &amp; Traités</h1>
-          <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
-            {stats.total>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.total} accord{stats.total>1?"s":""}</span>}
-            {stats.en_vigueur>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(21,128,61,0.25)",border:"1px solid rgba(21,128,61,0.4)",padding:"6px 14px",borderRadius:999}}>{stats.en_vigueur} en vigueur</span>}
-            {stats.expire>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(107,114,128,0.25)",border:"1px solid rgba(107,114,128,0.4)",padding:"6px 14px",borderRadius:999}}>{stats.expire} expiré{stats.expire>1?"s":""}</span>}
-          </div>
+          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.08,letterSpacing:"-0.015em",marginBottom:12}}>Accords &amp; Traités</h1>
+          <p style={{fontSize:14.5,color:"rgba(255,255,255,0.72)",lineHeight:1.6,maxWidth:560}}>
+            Les accords bilatéraux et conventions d&apos;investissement signés par le Sénégal avec ses partenaires.
+          </p>
+          {/* Barre de stats */}
+          {stats.total>0&&(
+            <div style={{display:"inline-flex",alignItems:"stretch",marginTop:28,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.14)",borderRadius:14,padding:"13px 6px",backdropFilter:"blur(4px)"}}>
+              {[
+                {value:stats.total,      label:`Accord${stats.total>1?"s":""}`,  dot:null as string|null},
+                {value:stats.en_vigueur, label:"En vigueur",                     dot:"#4ade80"},
+                {value:stats.expire,     label:`Expiré${stats.expire>1?"s":""}`, dot:"#9aa5b4"},
+              ].filter(s=>s.value>0).map((s,i)=>(
+                <div key={s.label} style={{padding:"0 26px",borderLeft:i>0?"1px solid rgba(255,255,255,0.13)":"none"}}>
+                  <div style={{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.1,letterSpacing:"-0.01em"}}>{s.value}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:5,marginTop:4}}>
+                    {s.dot&&<span style={{width:6,height:6,borderRadius:"50%",background:s.dot,flexShrink:0}}/>}
+                    <span style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.12em",textTransform:"uppercase" as const,whiteSpace:"nowrap" as const}}>{s.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
