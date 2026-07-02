@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
+import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -159,207 +160,177 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     finally { setSaving(false); }
   };
 
-  const IS:any = { width:"100%", background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const };
-  const LS:any = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:4, display:"block" };
-  const SS:any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
-
-  if (!open) return null;
   return (
-    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
-      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",backdropFilter:"blur(6px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:820,maxHeight:"92vh",overflowY:"auto",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.18)"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)",borderRadius:"20px 20px 0 0"}}/>
-        <div style={{padding:"24px 32px 32px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
-            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e"}}>{editItem?"Modifier l'accord":"Nouvel accord / traité"}</h2>
-            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7}}><X size={15} color="#4a5568"/></button>
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:20}}>
+    <FModal open={open} onClose={onClose} maxWidth={820}
+      title={editItem ? "Modifier l'accord" : "Nouvel accord / traité"}
+      footer={<>
+        <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
+        <FButton onClick={handleSave} disabled={saving || saveOk} loading={saving} success={saveOk}>
+          {saveOk ? "Enregistré !" : saving ? "Sauvegarde…" : editItem ? "Modifier" : "Créer l'accord"}
+        </FButton>
+      </>}>
 
-            {/* Identification */}
-            <div>
-              <p style={SS}>Identification</p>
-              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:12,marginBottom:12}}>
-                <div><label style={LS}>Titre *</label><input value={form.titre} onChange={e=>update("titre",e.target.value)} placeholder="Intitulé complet de l'accord" style={IS}/></div>
-                <div><label style={LS}>Référence *</label><input value={form.reference} onChange={e=>update("reference",e.target.value)} placeholder="Ex : APIX/2024/ACC-001" style={IS}/></div>
-              </div>
-            </div>
+      {/* Identification */}
+      <FSection title="Identification">
+        <FGrid cols="2fr 1fr">
+          <div><FLabel>Titre *</FLabel><FInput value={form.titre} onChange={e=>update("titre",e.target.value)} placeholder="Intitulé complet de l'accord" /></div>
+          <div><FLabel>Référence *</FLabel><FInput value={form.reference} onChange={e=>update("reference",e.target.value)} placeholder="Ex : APIX/2024/ACC-001" /></div>
+        </FGrid>
+      </FSection>
 
-            {/* Parties signataires */}
-            <div>
-              <p style={SS}>Parties signataires</p>
-              <div style={{display:"flex",gap:0,marginBottom:14,border:"1px solid #C5BFBB",borderRadius:8,overflow:"hidden",width:"fit-content"}}>
-                {(["pays","organisation"] as const).map(mode=>(
-                  <button key={mode} onClick={()=>{
-                    update("mode_signataire",mode);
-                    if (mode==="pays") { const senId=allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id; update("pays_ids",senId?[senId]:[]); update("orgs",[]); }
-                    else { update("pays_ids",[]); update("orgs",[]); }
-                    setSaisieOrg("");
-                  }} style={{padding:"7px 18px",border:"none",fontSize:12,fontWeight:700,cursor:"pointer",background:form.mode_signataire===mode?"#ca631f":"#F2F0EF",color:form.mode_signataire===mode?"#fff":"#9aa5b4"}}>
-                    {mode==="pays"?"Pays signataires":"Organisation / Entreprise"}
-                  </button>
-                ))}
-              </div>
-              {form.mode_signataire==="pays" ? (
-                <>
-                  {/* Tags des pays sélectionnés */}
-                  <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
-                    {(form.pays_ids as number[]).map((id:number)=>{
-                      const p=allPays.find((r:any)=>r.id===id);
-                      const isSen=p?.nom_fr===SENEGAL;
-                      const fl=p?.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
-                      return p?<span key={id} style={{display:"inline-flex",alignItems:"center",gap:5,background:isSen?"rgba(0,79,145,0.1)":"rgba(202,99,31,0.1)",color:isSen?"#004f91":"#ca631f",border:`1px solid ${isSen?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
-                        {fl&&<span style={{fontSize:14}}>{fl}</span>}{p.nom_fr}
-                        {!isSen&&<button onClick={()=>update("pays_ids",(form.pays_ids as number[]).filter((x:number)=>x!==id))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>}
-                      </span>:null;
-                    })}
-                  </div>
-                  {/* Recherche pays */}
-                  <div style={{position:"relative",marginBottom:8}}>
-                    <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
-                      style={{width:"100%",padding:"7px 10px 7px 30px",borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                    <svg style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                    {searchPays&&<button onClick={()=>setSearchPays("")} style={{position:"absolute",right:7,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>}
-                  </div>
-                  {/* Liste groupée par continent */}
-                  <div style={{border:"1px solid #E8E5E3",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff"}}>
-                    {Object.entries(
-                      allPays
-                        .filter((p:any)=>!(form.pays_ids as number[]).includes(p.id) && (!searchPays||p.nom_fr.toLowerCase().includes(searchPays.toLowerCase())))
-                        .reduce((acc:any,p:any)=>{
-                          const cont=p.region_monde||"Autre";
-                          if(!acc[cont]) acc[cont]=[];
-                          acc[cont].push(p);
-                          return acc;
-                        },{})
-                    ).sort(([a],[b])=>a.localeCompare(b)).map(([continent,pays]:any)=>(
-                      <div key={continent}>
-                        <div style={{fontSize:10,fontWeight:700,color:"#9aa5b4",background:"#F8F7F6",padding:"5px 12px",letterSpacing:"0.1em",textTransform:"uppercase" as const,position:"sticky" as const,top:0}}>{continent}</div>
-                        {pays.map((p:any)=>{
-                          const fl=p.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
-                          return (
-                            <button key={p.id} onClick={()=>update("pays_ids",[...(form.pays_ids as number[]),p.id])}
-                              style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 14px",background:"transparent",border:"none",cursor:"pointer",textAlign:"left" as const,borderBottom:"1px solid #F2F0EF",transition:"background 0.1s"}}
-                              onMouseEnter={e=>e.currentTarget.style.background="rgba(202,99,31,0.06)"}
-                              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                              {fl&&<span style={{fontSize:16,flexShrink:0}}>{fl}</span>}
-                              <span style={{fontSize:12,color:"#1a1a2e",fontWeight:500}}>{p.nom_fr}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                  <span style={{fontSize:11,color:"#9aa5b4",marginTop:4,display:"block"}}>Le Sénégal est toujours inclus. Cliquez sur un pays pour l'ajouter.</span>
-                </>
-              ) : (
-                <>
-                  <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:8}}>
-                    <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(0,79,145,0.1)",color:"#004f91",border:"1px solid rgba(0,79,145,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>APIX S.A</span>
-                    {(form.orgs as string[]).map((org:string)=>(
-                      <span key={org} style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.1)",color:"#ca631f",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
-                        {org}<button onClick={()=>update("orgs",(form.orgs as string[]).filter((x:string)=>x!==org))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>
-                      </span>
-                    ))}
-                  </div>
-                  <div style={{display:"flex",gap:8}}>
-                    <input value={saisieOrg} onChange={e=>setSaisieOrg(e.target.value)} placeholder="Ex : Organisation Mondiale du Commerce" style={{...IS,flex:1}}
-                      onKeyDown={e=>{ if(e.key==="Enter"&&saisieOrg.trim()){ e.preventDefault(); const v=saisieOrg.trim(); if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}}/>
-                    <button onClick={()=>{ const v=saisieOrg.trim(); if(!v) return; if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}
-                      style={{padding:"9px 16px",background:"#ca631f",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer"}}>Ajouter</button>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Dates */}
-            <div>
-              <p style={SS}>Dates</p>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
-                <div><label style={LS}>Date de signature *</label><input type="date" value={form.date_signature} max={new Date().toISOString().split("T")[0]} onChange={e=>update("date_signature",e.target.value)} style={IS}/></div>
-                <div><label style={LS}>Entrée en vigueur</label><input type="date" value={form.date_entree_vigueur} min={form.date_signature||undefined} onChange={e=>update("date_entree_vigueur",e.target.value)} style={IS}/></div>
-                <div><label style={LS}>Date d'expiration</label><input type="date" value={form.date_expiration} onChange={e=>update("date_expiration",e.target.value)} style={IS}/></div>
-              </div>
-            </div>
-
-            {/* Thématiques NAEMA */}
-            <div>
-              <p style={SS}>Thématiques NAEMA</p>
-              <NaemaSelect
-                secteurIds={form.secteur_ids||[]}
-                brancheIds={form.branche_ids||[]}
-                activiteIds={form.activite_ids||[]}
-                onChangeSecteurs={ids=>update("secteur_ids",ids)}
-                onChangeBranches={ids=>update("branche_ids",ids)}
-                onChangeActivites={ids=>update("activite_ids",ids)}
-              />
-            </div>
-
-            {/* Commentaires */}
-            <div>
-              <p style={SS}>Résumé / Commentaires</p>
-              <RichTextEditor value={form.commentaires} onChange={v=>update("commentaires",v)}/>
-            </div>
-
-            {/* PDFs */}
-            <div>
-              <p style={SS}>Fichiers PDF</p>
-              {fichiers.length>0&&(
-                <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:10}}>
-                  {fichiers.map((f:any)=>(
-                    <div key={f.id} style={{display:"inline-flex",alignItems:"center",gap:5}}>
-                      <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                        style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.06)",border:"1px solid rgba(202,99,31,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#ca631f",textDecoration:"none",fontWeight:500}}>
-                        <FileText size={11}/> {f.titre||f.fichier_nom}
-                      </a>
-                      <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE"}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
-                        style={{background:"rgba(220,38,38,0.08)",border:"none",cursor:"pointer",borderRadius:5,padding:"3px 5px",display:"flex",alignItems:"center"}}>
-                        <X size={10} style={{color:"#dc2626"}}/>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {pdfQueue.length>0&&(
-                <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
-                  {pdfQueue.map((p,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.05)",border:"1px solid rgba(202,99,31,0.2)",borderRadius:8,padding:"7px 12px"}}>
-                      <FileText size={13} style={{color:"#ca631f",flexShrink:0}}/>
-                      <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                        placeholder="Titre du document"
-                        style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(202,99,31,0.3)",outline:"none",fontSize:12,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
-                      <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <label style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:8,cursor:"pointer",border:"2px dashed #C5BFBB",background:"#F2F0EF"}}
-                onMouseEnter={e=>e.currentTarget.style.borderColor="#ca631f"}
-                onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
-                <Upload size={14} color="#9aa5b4"/>
-                <span style={{fontSize:13,color:"#9aa5b4"}}>Ajouter un ou plusieurs PDF</span>
-                <input type="file" accept=".pdf" multiple style={{display:"none"}} onChange={e=>{
-                  const files=Array.from(e.target.files||[]);
-                  setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
-                  e.target.value="";
-                }}/>
-              </label>
-            </div>
-
-            {error&&<div style={{background:"#fee2e2",color:"#dc2626",padding:"10px 14px",borderRadius:8,fontSize:13}}>{error}</div>}
-
-            <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
-              <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontSize:13,fontWeight:600,cursor:"pointer"}}>Annuler</button>
-              <button onClick={handleSave} disabled={saving||saveOk}
-                style={{padding:"10px 24px",borderRadius:10,border:"none",background:saveOk?"#dcfce7":"linear-gradient(135deg,#ca631f,#a84e18)",color:saveOk?"#15803d":"#fff",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
-                <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-                {saveOk?<><Check size={14}/> Enregistré</>:saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/> Sauvegarde...</>:editItem?"Modifier":"Créer l'accord"}
-              </button>
-            </div>
-          </div>
+      {/* Parties signataires */}
+      <FSection title="Parties signataires">
+        <div style={{ marginBottom:14 }}>
+          <FSegmented options={[{value:"pays",label:"Pays signataires"},{value:"organisation",label:"Organisation / Entreprise"}]}
+            value={form.mode_signataire}
+            onChange={mode=>{
+              update("mode_signataire",mode);
+              if (mode==="pays") { const senId=allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id; update("pays_ids",senId?[senId]:[]); update("orgs",[]); }
+              else { update("pays_ids",[]); update("orgs",[]); }
+              setSaisieOrg("");
+            }} />
         </div>
-      </div>
-    </div>
+        {form.mode_signataire==="pays" ? (
+          <>
+            {/* Tags des pays sélectionnés */}
+            <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
+              {(form.pays_ids as number[]).map((id:number)=>{
+                const p=allPays.find((r:any)=>r.id===id);
+                const isSen=p?.nom_fr===SENEGAL;
+                const fl=p?.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
+                return p?<span key={id} style={{display:"inline-flex",alignItems:"center",gap:5,background:isSen?"rgba(0,79,145,0.1)":"rgba(202,99,31,0.1)",color:isSen?"#004f91":"#ca631f",border:`1px solid ${isSen?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
+                  {fl&&<span style={{fontSize:14}}>{fl}</span>}{p.nom_fr}
+                  {!isSen&&<button onClick={()=>update("pays_ids",(form.pays_ids as number[]).filter((x:number)=>x!==id))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>}
+                </span>:null;
+              })}
+            </div>
+            {/* Recherche pays */}
+            <div style={{position:"relative",marginBottom:8}}>
+              <FInput value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…" style={{ paddingLeft:32 }} />
+              <svg style={{position:"absolute",left:11,top:"50%",transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              {searchPays&&<button onClick={()=>setSearchPays("")} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>}
+            </div>
+            {/* Liste groupée par continent */}
+            <div style={{border:"1px solid #E4E1DE",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff"}}>
+              {Object.entries(
+                allPays
+                  .filter((p:any)=>!(form.pays_ids as number[]).includes(p.id) && (!searchPays||p.nom_fr.toLowerCase().includes(searchPays.toLowerCase())))
+                  .reduce((acc:any,p:any)=>{
+                    const cont=p.region_monde||"Autre";
+                    if(!acc[cont]) acc[cont]=[];
+                    acc[cont].push(p);
+                    return acc;
+                  },{})
+              ).sort(([a],[b])=>a.localeCompare(b)).map(([continent,pays]:any)=>(
+                <div key={continent}>
+                  <div style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.04)",padding:"5px 12px",letterSpacing:"0.1em",textTransform:"uppercase" as const,position:"sticky" as const,top:0}}>{continent}</div>
+                  {pays.map((p:any)=>{
+                    const fl=p.code_iso2?String.fromCodePoint(...p.code_iso2.toUpperCase().split("").map((c:string)=>127397+c.charCodeAt(0))):"";
+                    return (
+                      <button key={p.id} onClick={()=>update("pays_ids",[...(form.pays_ids as number[]),p.id])}
+                        style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 14px",background:"transparent",border:"none",cursor:"pointer",textAlign:"left" as const,borderBottom:"1px solid #F2F0EF",transition:"background 0.1s"}}
+                        onMouseEnter={e=>e.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        {fl&&<span style={{fontSize:16,flexShrink:0}}>{fl}</span>}
+                        <span style={{fontSize:12,color:"#1a1a2e",fontWeight:500}}>{p.nom_fr}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            <span style={{fontSize:11,color:"#9aa5b4",marginTop:4,display:"block"}}>Le Sénégal est toujours inclus. Cliquez sur un pays pour l'ajouter.</span>
+          </>
+        ) : (
+          <>
+            <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:8}}>
+              <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(0,79,145,0.1)",color:"#004f91",border:"1px solid rgba(0,79,145,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>APIX S.A</span>
+              {(form.orgs as string[]).map((org:string)=>(
+                <span key={org} style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.1)",color:"#ca631f",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
+                  {org}<button onClick={()=>update("orgs",(form.orgs as string[]).filter((x:string)=>x!==org))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>
+                </span>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <FInput value={saisieOrg} onChange={e=>setSaisieOrg(e.target.value)} placeholder="Ex : Organisation Mondiale du Commerce" style={{flex:1}}
+                onKeyDown={e=>{ if(e.key==="Enter"&&saisieOrg.trim()){ e.preventDefault(); const v=saisieOrg.trim(); if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}}/>
+              <FButton onClick={()=>{ const v=saisieOrg.trim(); if(!v) return; if(!(form.orgs as string[]).includes(v)) update("orgs",[...(form.orgs as string[]),v]); setSaisieOrg(""); }}
+                style={{ padding:"10px 18px", boxShadow:"none" }}>Ajouter</FButton>
+            </div>
+          </>
+        )}
+      </FSection>
+
+      {/* Dates */}
+      <FSection title="Dates">
+        <FGrid cols={3}>
+          <div><FLabel>Date de signature *</FLabel><FInput type="date" value={form.date_signature} max={new Date().toISOString().split("T")[0]} onChange={e=>update("date_signature",e.target.value)} /></div>
+          <div><FLabel>Entrée en vigueur</FLabel><FInput type="date" value={form.date_entree_vigueur} min={form.date_signature||undefined} onChange={e=>update("date_entree_vigueur",e.target.value)} /></div>
+          <div><FLabel>Date d'expiration</FLabel><FInput type="date" value={form.date_expiration} onChange={e=>update("date_expiration",e.target.value)} /></div>
+        </FGrid>
+      </FSection>
+
+      {/* Thématiques */}
+      <FSection title="Thématiques">
+        <NaemaSelect
+          secteurIds={form.secteur_ids||[]}
+          brancheIds={form.branche_ids||[]}
+          activiteIds={form.activite_ids||[]}
+          onChangeSecteurs={ids=>update("secteur_ids",ids)}
+          onChangeBranches={ids=>update("branche_ids",ids)}
+          onChangeActivites={ids=>update("activite_ids",ids)}
+        />
+      </FSection>
+
+      {/* Commentaires */}
+      <FSection title="Résumé / Commentaires">
+        <RichTextEditor value={form.commentaires} onChange={v=>update("commentaires",v)}/>
+      </FSection>
+
+      {/* Documents */}
+      <FSection title="Documents">
+        {fichiers.length>0&&(
+          <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
+            {fichiers.map((f:any)=>(
+              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"8px 12px"}}>
+                <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
+                <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  style={{fontSize:13,flex:1,color:"#1a1a2e",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
+                <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE"}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
+                  style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
+              </div>
+            ))}
+          </div>
+        )}
+        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:10,cursor:"pointer",border:"2px dashed #E4E1DE",background:"#FAFAF9",transition:"border-color 0.15s"}}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
+          <Upload size={14} color="#9aa5b4"/>
+          <span style={{fontSize:13,color:"#9aa5b4"}}>Ajouter un ou plusieurs PDF</span>
+          <input type="file" accept=".pdf" multiple style={{display:"none"}} onChange={e=>{
+            const files=Array.from(e.target.files||[]);
+            setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
+            e.target.value="";
+          }}/>
+        </label>
+        {pdfQueue.length>0&&(
+          <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginTop:8}}>
+            {pdfQueue.map((p,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(106,27,154,0.05)",border:"1px solid rgba(106,27,154,0.2)",borderRadius:10,padding:"8px 12px"}}>
+                <FileText size={13} style={{color:"#6A1B9A",flexShrink:0}}/>
+                <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
+                  placeholder="Titre du document"
+                  style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(106,27,154,0.3)",outline:"none",fontSize:12.5,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
+                <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
+              </div>
+            ))}
+            <p style={{fontSize:11,color:"#9aa5b4"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+          </div>
+        )}
+      </FSection>
+
+      {error && <FError>{error}</FError>}
+    </FModal>
   );
 }
 
