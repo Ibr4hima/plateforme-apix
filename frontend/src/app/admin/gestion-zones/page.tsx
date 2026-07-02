@@ -986,7 +986,7 @@ export default function GestionZonesPage() {
                     transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s",
                     boxShadow: active ? `0 12px 28px ${c}1f` : "0 1px 3px rgba(0,0,0,0.03)",
                     transform: active ? "translateY(-2px)" : "none",
-                    display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+                    display: "flex", flexDirection: "column" as const, overflow: "hidden", minWidth: 0 }}
                   onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; } }}
                   onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7"; } }}>
 
@@ -1002,7 +1002,7 @@ export default function GestionZonesPage() {
                     </div>
 
                     {/* Libellé du type */}
-                    <div style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35 }}>{t.label}</div>
+                    <div style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }} title={t.label}>{t.label}</div>
 
                     {/* Compteurs libellés */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
