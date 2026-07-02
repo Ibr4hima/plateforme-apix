@@ -1328,7 +1328,6 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               }>
               {showEchanges && echangesDuCycle(p,null).length > 0 && (
                 <>
-                <SubLabel>Historique</SubLabel>
                 <div style={{ position:"relative" as const }}>
                   {/* Ligne verticale du fil */}
                   <div style={{ position:"absolute" as const, left:5, top:10, bottom:10, width:2, background:BRD, borderRadius:2 }}/>
@@ -1345,73 +1344,72 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       return (
                         <Fragment key={e.id}>
                         <div style={{ paddingLeft:22, position:"relative" as const }}>
-                          <div style={{ position:"absolute" as const, left:1, top:15, width:8, height:8, borderRadius:"50%", background:"#fff", border:`2px solid ${accent}` }}/>
-                          <div style={card}>
+                          <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid #fff", boxShadow:`0 0 0 1px ${accent}44` }}/>
+                          <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"13px 15px" }}>
 
-                            {/* Ligne 1 : date déclarée + actions */}
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:(e.interlocuteur||e.contact_par)?6:8 }}>
+                            {/* En-tête : date déclarée + actions */}
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
                               <span style={{ fontSize:13, fontWeight:800, color:TXT }}>
                                 {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                               </span>
                               {canAct && (
                                 <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
                                   <button onClick={()=>onEditEchange?.(e)}
-                                    style={{ display:"flex", alignItems:"center", gap:3, background:"transparent", border:`1px solid ${BRD}`, cursor:"pointer", borderRadius:7, padding:"3px 9px", fontSize:10, color:SUB, fontWeight:600 }}
+                                    style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(0,79,145,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"4px 10px", fontSize:10.5, color:"#004f91", fontWeight:600 }}
                                     title="Modifiable pendant 24h">
                                     <Pencil size={10}/> Modifier
                                   </button>
                                   <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
-                                    style={{ background:"transparent", border:`1px solid ${BRD}`, cursor:"pointer", borderRadius:7, padding:"4px 6px" }}
+                                    style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}
                                     title="Supprimer">
                                     {deletingEchange===e.id
                                       ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
-                                      : <Trash2 size={11} style={{ color:"#9aa5b4" }}/>}
+                                      : <Trash2 size={11} style={{ color:"#dc2626" }}/>}
                                   </button>
                                 </div>
                               )}
                             </div>
 
-                            {/* Ligne 2 : interlocuteurs */}
-                            {(e.interlocuteur || e.contact_par) && (
-                              <p style={{ fontSize:11, color:MUT, marginBottom:(e.canal||e.canal_contact)?6:8 }}>
-                                {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
-                              </p>
-                            )}
-
-                            {/* Ligne 3 : canal de contact */}
-                            {e.canal && (()=>{ const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-                              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
-                                <CIcon size={13} style={{ color:accent, flexShrink:0 }}/>
-                                <span style={{ fontSize:12, fontWeight:600, color:TXT }}>{e.canal}</span>
-                                {coord && <>
-                                  <span style={{ width:3, height:3, borderRadius:"50%", background:MUT, flexShrink:0 }}/>
-                                  <span style={{ fontSize:12, color:SUB }}>{coord}</span>
-                                </>}
+                            {/* Méta : canal + participants */}
+                            {(e.canal || e.interlocuteur || e.contact_par) && (
+                              <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
+                                {e.canal && (()=>{ const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
+                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>
+                                    <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
+                                  </span>
+                                ); })()}
+                                {(e.interlocuteur || e.contact_par) && (
+                                  <span style={{ fontSize:11, color:MUT, fontWeight:500 }}>
+                                    {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
+                                  </span>
+                                )}
                               </div>
-                            ); })()}
+                            )}
 
                             {/* Compte-rendu */}
                             {e.commentaire && (
-                              <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
-                                dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
+                              <div style={{ background:"#fff", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
+                                <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7 }}
+                                  dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
+                              </div>
                             )}
 
                             {/* Documents attachés */}
                             {e.fichiers?.length > 0 && (
-                              <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:e.commentaire?6:0 }}>
+                              <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:8 }}>
                                 {e.fichiers.map((f:any) => (
                                   <a key={f.id}
                                     href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                     target="_blank" rel="noopener noreferrer"
-                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"3px 10px", borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", textDecoration:"none", fontSize:11, color:"#4a5568", fontWeight:500 }}>
-                                    <FileText size={11} style={{ color:"#ca631f", flexShrink:0 }}/>{f.titre}
+                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgba(0,79,145,0.06)", textDecoration:"none", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                                    <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                   </a>
                                 ))}
                               </div>
                             )}
 
                             {/* Pied : horodatage serveur */}
-                            <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:8, borderTop:`1px solid ${DIV}` }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:9, borderTop:`1px solid ${DIV}` }}>
                               <Clock size={11} style={{ flexShrink:0 }}/>
                               <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {retardLabel}</span>
                             </div>
