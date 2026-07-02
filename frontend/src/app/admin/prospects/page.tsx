@@ -1826,62 +1826,84 @@ export default function ProspectsPage() {
         </div>
       ) : (
         <>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))", gap:14 }}>
             {prospects.map(p=>{
-              const displayName = p.nom;
-              const accent = "#004f91";
               const activite = badgeProspect(p);
               const fmtJour = (d:string) => new Date(d).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});
               const lastCycle = [...(p.cycles||[])].sort((a:any,b:any)=>b.cycle_num-a.cycle_num)[0];
               const echsCourant = echangesDuCycle(p, null);
               const dernierEch = echsCourant.length ? [...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1) : null;
+              // Second bloc libellé, contextuel selon l'onglet
+              const info2 = onglet==="historique"
+                ? (activite?.label==="À recontacter"
+                    ? { label:`Cycle ${lastCycle?.cycle_num??""} conclu`, value: lastCycle?.conclu_le ? fmtJour(lastCycle.conclu_le) : null }
+                    : { label:"Dernier échange", value: dernierEch ? fmtJour(dernierEch.date_echange) : null })
+                : onglet==="precedents"
+                ? (p.issue==="installe"
+                    ? { label:"Accord conclu", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
+                    : p.issue==="decline"
+                    ? { label:"Décliné le", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
+                    : { label:"Conclusion", value: null })
+                : { label:"Site web", value: p.siteweb||null };
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
-                  style={{ background:"#fff", borderTop:"1px solid #E8E5E3", borderRight:"1px solid #E8E5E3", borderBottom:"1px solid #E8E5E3", borderLeft:`3px solid ${accent}`, borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"all 0.15s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}
-                  onMouseEnter={ev=>{ ev.currentTarget.style.boxShadow=`0 4px 16px ${accent}22`; }}
-                  onMouseLeave={ev=>{ ev.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:p.siege_nom?2:10 }}>
-                    <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", flex:1 }}>{displayName}</div>
-                    {onglet==="cibles" && p.nb_echanges > 0 ? (
-                      <span style={{ flexShrink:0, fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.10)", border:"1px solid rgba(0,79,145,0.2)", padding:"2px 8px", borderRadius:999 }}>Contacté</span>
-                    ) : activite ? (
-                      <span style={{ flexShrink:0, fontSize:10, fontWeight:700, color:activite.color, background:activite.bg, border:`1px solid ${activite.color}33`, padding:"2px 8px", borderRadius:999 }}>
-                        {activite.label}
-                      </span>
-                    ) : null}
+                  style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
+                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+
+                  <div style={{ padding:"14px 16px 14px", flex:1 }}>
+                    {/* Statut + siège */}
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:12 }}>
+                      {onglet==="cibles" && p.nb_echanges > 0 ? (
+                        <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>Contacté</span>
+                      ) : activite ? (
+                        <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:activite.color, background:activite.bg, padding:"3px 10px", borderRadius:999 }}>{activite.label}</span>
+                      ) : <span/>}
+                      {p.siege_nom && <span style={{ fontSize:10.5, fontWeight:600, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, maxWidth:"55%" }}>{p.siege_nom}</span>}
+                    </div>
+
+                    {/* Dénomination */}
+                    <div style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", lineHeight:1.35, overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.nom}</div>
+
+                    {/* Infos libellées */}
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
+                      <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Email</p>
+                        <p style={{ fontSize:12, fontWeight:600, color:p.mails?.length?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.mails?.[0]||"—"}</p>
+                      </div>
+                      <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>{info2.label}</p>
+                        <p style={{ fontSize:12, fontWeight:600, color:info2.value?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{info2.value||"—"}</p>
+                      </div>
+                    </div>
                   </div>
-                  {p.siege_nom && <div style={{ fontSize:11, color:"#9aa5b4", fontWeight:500, marginBottom:10 }}>{p.siege_nom}</div>}
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12 }}>
-                    {p.mails?.length > 0 && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Mail : {p.mails[0]}</span></div>}
-                    {onglet==="historique" ? (
-                      activite?.label === "À recontacter"
-                        ? (lastCycle && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Cycle {lastCycle.cycle_num} : conclu le {lastCycle.conclu_le ? fmtJour(lastCycle.conclu_le) : "—"}</span></div>)
-                        : (dernierEch && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Dernier échange : {fmtJour(dernierEch.date_echange)}</span></div>)
-                    ) : onglet==="precedents" ? (
-                      p.issue==="installe"
-                        ? (p.issue_conclu_le && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Accord conclu le {fmtJour(p.issue_conclu_le)}</span></div>)
-                        : p.issue==="decline"
-                          ? (p.issue_conclu_le && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Décliné le {fmtJour(p.issue_conclu_le)}</span></div>)
-                          : null
-                    ) : (
-                      p.siteweb && <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}><div style={{ width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0 }}/><span style={{ color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Site web : {p.siteweb}</span></div>
-                    )}
-                  </div>
+
+                  {/* Actions */}
                   {onglet==="precedents" ? (
-                    <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                    <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>setVue(p)}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#4a5568", fontWeight:600 }}>
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#4a5568", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(156,163,175,0.07)"}
+                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         Consulter
                       </button>
                       {p.issue==="decline" && (
-                        <button onClick={()=>handleRecontact(p.id)}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(24,128,56,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#188038", fontWeight:600 }}>
-                          <MessageSquare size={12}/> Re-contacter
-                        </button>
+                        <>
+                          <div style={{ width:1, background:"#F2F0EF" }}/>
+                          <button onClick={()=>handleRecontact(p.id)}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#188038", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            onMouseEnter={ev=>ev.currentTarget.style.background="rgba(24,128,56,0.05)"}
+                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                            <MessageSquare size={12}/> Re-contacter
+                          </button>
+                        </>
                       )}
+                      <div style={{ width:1, background:"#F2F0EF" }}/>
                       <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
-                        style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}
-                        title="Supprimer définitivement (test)">
+                        style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
+                        title="Supprimer définitivement (test)"
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
+                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
                       </button>
                     </div>
@@ -1891,24 +1913,29 @@ export default function ProspectsPage() {
                         const nbEchangesCourants = echangesDuCycle(p, null).length;
                         const terminerDisabled = nbEchangesCourants === 0;
                         return (
-                        <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }}>
-                        <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(24,128,56,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#188038", fontWeight:600 }}>
-                          <MessageSquare size={12}/> Contacter
-                        </button>
-                        <button disabled={terminerDisabled} onClick={()=>{ if(!terminerDisabled){ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); } }}
-                          title={terminerDisabled?"Au moins un échange est requis pour terminer ce cycle":undefined}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:terminerDisabled?"#F2F0EF":"rgba(202,99,31,0.08)", border:"none", cursor:terminerDisabled?"not-allowed":"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:terminerDisabled?"#9aa5b4":"#ca631f", fontWeight:600 }}>
-                          <Check size={12}/> Terminer
-                        </button>
+                        <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }}>
+                          <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#188038", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            onMouseEnter={ev=>ev.currentTarget.style.background="rgba(24,128,56,0.05)"}
+                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                            <MessageSquare size={12}/> Contacter
+                          </button>
+                          <div style={{ width:1, background:"#F2F0EF" }}/>
+                          <button disabled={terminerDisabled} onClick={()=>{ if(!terminerDisabled){ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); } }}
+                            title={terminerDisabled?"Au moins un échange est requis pour terminer ce cycle":undefined}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:terminerDisabled?"not-allowed":"pointer", padding:"10px 0", fontSize:11.5, color:terminerDisabled?"#9aa5b4":"#ca631f", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            onMouseEnter={ev=>{if(!terminerDisabled)ev.currentTarget.style.background="rgba(202,99,31,0.05)";}}
+                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                            <Check size={12}/> Terminer
+                          </button>
                         </div>
                         );
                       })()}
                       {terminerOpenId===p.id && (
-                        <div style={{ marginTop:10, padding:"12px 14px", background:"#F8F7F6", borderRadius:10, border:"1px solid #E8E5E3" }}>
+                        <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"#FAFAF9", borderRadius:10, border:"1px solid #F0EEEC" }}>
                           <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
                           <div style={{ display:"flex", gap:6, marginBottom:10 }}>
-                            {[{val:"installe",lbl:"Installation au Sénégal",col:"#0D652D"},{val:"decline",lbl:"Possibilité écartée",col:"#6b7280"}].map(({val,lbl,col})=>(
+                            {[{val:"installe",lbl:"Installation au Sénégal",col:"#188038"},{val:"decline",lbl:"Possibilité écartée",col:"#6b7280"}].map(({val,lbl,col})=>(
                               <button key={val} type="button" onClick={()=>setTerminerForm(f=>({ ...f, issue:val }))}
                                 style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"#E8E5E3"}`, background:terminerForm.issue===val?`${col}18`:"transparent", color:terminerForm.issue===val?col:"#9aa5b4", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
                                 {lbl}
@@ -1930,26 +1957,38 @@ export default function ProspectsPage() {
                     </div>
                   ) : onglet==="cibles" && p.nb_echanges > 0 ? (
                     // Prospect déjà contacté dans "Investisseurs ciblés" : Modifier uniquement, pas Contacter ni Delete
-                    <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                    <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         <Pencil size={12}/> Modifier
                       </button>
                     </div>
                   ) : (
-                    <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={e=>e.stopPropagation()}>
+                    <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         <Pencil size={12}/> Modifier
                       </button>
                       {!estFige(p) && (
-                        <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(24,128,56,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#188038", fontWeight:600 }}>
-                          <MessageSquare size={12}/> Contacter
-                        </button>
+                        <>
+                          <div style={{ width:1, background:"#F2F0EF" }}/>
+                          <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#188038", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            onMouseEnter={ev=>ev.currentTarget.style.background="rgba(24,128,56,0.05)"}
+                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                            <MessageSquare size={12}/> Contacter
+                          </button>
+                        </>
                       )}
+                      <div style={{ width:1, background:"#F2F0EF" }}/>
                       <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
-                        style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
+                        style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
+                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
                       </button>
                     </div>
