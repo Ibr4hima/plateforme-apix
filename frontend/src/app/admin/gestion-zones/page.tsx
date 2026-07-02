@@ -811,13 +811,17 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
                   const nextStatut = curStatut === "installee" ? "eligible" : "installee";
                   const nextCfg = STATUT_CONFIG[nextStatut];
                   return (
-                    <div key={ze.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC" }}>
+                    <div key={ze.id} onClick={() => ouvrirFicheEnt(ze.entreprise?.id)}
+                      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC", cursor:"pointer", transition:"border-color 0.15s, background 0.15s" }}
+                      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";ev.currentTarget.style.background="#fff";}}
+                      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";}}>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{ze.entreprise?.nom}</div>
                         <div style={{ fontSize:11, color:"#9aa5b4" }}>{ze.entreprise?.forme_juridique || "—"}</div>
                       </div>
                       <button title={`Passer en "${nextCfg.label}"`}
-                        onClick={async () => {
+                        onClick={async (e) => {
+                          e.stopPropagation();
                           await fetch(`${API_BASE}/zones-types/${z.id}/entreprises/${ze.entreprise?.id}`, { method:"POST", headers:{} });
                           await fetch(`${API_BASE}/zones-types/${z.id}/entreprises?entreprise_id=${ze.entreprise?.id}&statut=${nextStatut}`, { method:"POST" });
                           charger();
@@ -828,11 +832,11 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
                         {cfg.label}
                         <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity:0.6 }}><path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
                       </button>
-                      <button onClick={() => ouvrirFicheEnt(ze.entreprise?.id)}
+                      <button onClick={(e) => { e.stopPropagation(); ouvrirFicheEnt(ze.entreprise?.id); }}
                         style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(0,79,145,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 10px", fontSize:11, color:"#004f91", fontWeight:600 }}>
                         <Eye size={12}/> Fiche
                       </button>
-                      <button onClick={() => onRetirerEntreprise(z.id, ze.entreprise?.id)} disabled={deletingEnt === ze.entreprise?.id}
+                      <button onClick={(e) => { e.stopPropagation(); onRetirerEntreprise(z.id, ze.entreprise?.id); }} disabled={deletingEnt === ze.entreprise?.id}
                         style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}>
                         {deletingEnt === ze.entreprise?.id ? <Loader2 size={12} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/> : <Trash2 size={12} style={{ color:"#dc2626" }}/>}
                       </button>

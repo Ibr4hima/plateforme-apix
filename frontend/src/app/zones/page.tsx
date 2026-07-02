@@ -384,16 +384,18 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
       {children}
     </div>
   );
-  const LigneEnt = ({ze,accent}:{ze:any;accent:string}) => (
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"#FAFAF9",borderRadius:12,border:"1px solid #F0EEEC"}}>
+  const LigneEnt = ({ze}:{ze:any}) => (
+    <div onClick={()=>ouvrirFiche(ze.entreprise?.id)}
+      style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"#FAFAF9",borderRadius:12,border:"1px solid #F0EEEC",cursor:"pointer",transition:"border-color 0.15s, background 0.15s"}}
+      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";ev.currentTarget.style.background="#fff";}}
+      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";}}>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ze.entreprise?.nom}</div>
         {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"#9aa5b4"}}>{ze.entreprise.forme_juridique}</div>}
       </div>
-      <button onClick={()=>ouvrirFiche(ze.entreprise?.id)}
-        style={{display:"flex",alignItems:"center",gap:4,background:`${accent}12`,border:"none",cursor:"pointer",borderRadius:7,padding:"5px 10px",fontSize:11,color:accent,fontWeight:600}}>
+      <span style={{display:"flex",alignItems:"center",gap:4,background:"rgba(0,79,145,0.07)",borderRadius:7,padding:"5px 10px",fontSize:11,color:"#004f91",fontWeight:600,flexShrink:0}}>
         Fiche →
-      </button>
+      </span>
     </div>
   );
 
@@ -500,7 +502,7 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
               <section>
                 <SecTitle>Entreprises installées ({installes.length})</SecTitle>
                 <div style={{display:"flex",flexDirection:"column" as const,gap:6,maxHeight:installes.length>3?200:undefined,overflowY:installes.length>3?"auto" as const:undefined,paddingRight:installes.length>3?4:undefined}}>
-                  {installes.map((ze:any)=><LigneEnt key={ze.id||ze.entreprise?.id} ze={ze} accent="#188038"/>)}
+                  {installes.map((ze:any)=><LigneEnt key={ze.id||ze.entreprise?.id} ze={ze}/>)}
                 </div>
               </section>
             )}
@@ -510,7 +512,7 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
               <section>
                 <SecTitle>Entreprises éligibles ({eligibles.length})</SecTitle>
                 <div style={{display:"flex",flexDirection:"column" as const,gap:6,maxHeight:eligibles.length>3?200:undefined,overflowY:eligibles.length>3?"auto" as const:undefined,paddingRight:eligibles.length>3?4:undefined}}>
-                  {eligibles.map((ze:any)=><LigneEnt key={ze.id||ze.entreprise?.id} ze={ze} accent="#ca631f"/>)}
+                  {eligibles.map((ze:any)=><LigneEnt key={ze.id||ze.entreprise?.id} ze={ze}/>)}
                 </div>
               </section>
             )}
