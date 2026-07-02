@@ -5,13 +5,14 @@ import { Pencil, Trash2, Loader2, X, Check, Eye, EyeOff, FileText, Upload, Plus 
 import { parsePhoneNumber } from "libphonenumber-js";
 
 function fmtPhone(raw: string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
-import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
+import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
+import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FToggle, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import PhoneInput from "@/components/shared/PhoneInput";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const IS: any  = { background:"#fff", border:"1px solid #E4E1DE", borderRadius:10, padding:"10px 13px", fontSize:13.5, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
 
@@ -27,9 +28,9 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
 }) {
   const upd = (k:string, v:any) => onChange({...pf, [k]:v});
   return (
-    <div style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:10, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-        <span style={{ fontSize:12, fontWeight:700, color:"#ca631f" }}>Point focal {idx+1}</span>
+        <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Point focal {idx+1}</span>
         <button onClick={onRemove} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
           <X size={12} style={{ color:"#dc2626" }}/>
         </button>
@@ -50,7 +51,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Téléphone(s)</label>
             <button onClick={()=>upd("telephones",[...(pf.telephones||[""]), ""])}
-              style={{ fontSize:10, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:5, padding:"2px 7px", cursor:"pointer" }}>
+              style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
               + Ajouter
             </button>
           </div>
@@ -73,14 +74,14 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Mail(s)</label>
             <button onClick={()=>upd("mails",[...(pf.mails||[""]), ""])}
-              style={{ fontSize:10, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:5, padding:"2px 7px", cursor:"pointer" }}>
+              style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
               + Ajouter
             </button>
           </div>
           {(pf.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
               <input type="text" value={mail} onChange={e=>{ const arr=[...(pf.mails||[""])]; arr[mi]=e.target.value; upd("mails",arr); }}
-                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"#dc2626":"#C5BFBB"}}/>
+                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"#dc2626":"#E4E1DE"}}/>
               {(pf.mails||[""]).length>1&&(
                 <button onClick={()=>upd("mails",(pf.mails||[""]).filter((_:any,i:number)=>i!==mi))}
                   style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
@@ -102,7 +103,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 }) {
   const upd = (k:string, v:any) => onChange({...porteur, [k]:v});
   return (
-    <div style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:10, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Porteur {idx+1}</span>
         <button onClick={onRemove} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
@@ -119,7 +120,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Téléphone(s)</label>
             <button onClick={()=>upd("telephones",[...(porteur.telephones||[""]), ""])}
-              style={{ fontSize:10, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:5, padding:"2px 7px", cursor:"pointer" }}>
+              style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
               + Ajouter
             </button>
           </div>
@@ -142,14 +143,14 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Mail(s)</label>
             <button onClick={()=>upd("mails",[...(porteur.mails||[""]), ""])}
-              style={{ fontSize:10, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:5, padding:"2px 7px", cursor:"pointer" }}>
+              style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
               + Ajouter
             </button>
           </div>
           {(porteur.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
               <input type="text" value={mail} onChange={e=>{ const arr=[...(porteur.mails||[""])]; arr[mi]=e.target.value; upd("mails",arr); }}
-                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"#dc2626":"#C5BFBB"}}/>
+                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"#dc2626":"#E4E1DE"}}/>
               {(porteur.mails||[""]).length>1&&(
                 <button onClick={()=>upd("mails",(porteur.mails||[""]).filter((_:any,i:number)=>i!==mi))}
                   style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
@@ -168,9 +169,9 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 function AddBtn({ label, onClick }: { label:string; onClick:()=>void }) {
   return (
     <button onClick={onClick}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:9, border:"2px dashed #C5BFBB", background:"transparent", color:"#9aa5b4", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}
-      onMouseEnter={e=>{ e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.color="#ca631f"; }}
-      onMouseLeave={e=>{ e.currentTarget.style.borderColor="#C5BFBB"; e.currentTarget.style.color="#9aa5b4"; }}>
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed #E4E1DE", background:"#FAFAF9", color:"#9aa5b4", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
+      onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E4E1DE"; e.currentTarget.style.color="#9aa5b4"; }}>
       <Plus size={13}/> {label}
     </button>
   );
@@ -325,186 +326,153 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
     finally { setSaving(false); }
   };
 
-  if (!open) return null;
   return (
-    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:820, maxHeight:"92vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <div style={{ height:5, background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)" }}/>
-        <div style={{ padding:"24px 32px 32px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:"#1a1a2e" }}>{edit?"Modifier le projet":"Nouveau projet"}</h2>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="#4a5568"/></button>
-          </div>
+    <FModal open={open} onClose={onClose} maxWidth={820}
+      title={edit ? "Modifier le projet" : "Nouveau projet"}
+      footer={<>
+        <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
+        <FButton onClick={handleSave} disabled={saving || ok} loading={saving} success={ok}>
+          {ok ? "Enregistré !" : saving ? "Enregistrement…" : edit ? "Modifier" : "Créer le projet"}
+        </FButton>
+      </>}>
 
-          {/* Informations générales */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Informations générales</p>
-            <div style={{ marginBottom:10 }}>
-              <label style={LS}>Intitulé du projet *</label>
-              <input value={form.titre_projet} onChange={e=>upd("titre_projet",e.target.value)} placeholder="Intitulé du projet" style={{...IS,fontSize:14,fontWeight:600}}/>
-            </div>
-            <div style={{ marginBottom:10 }}>
-              <label style={LS}>Description</label>
-              <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
-            </div>
-            <div style={{ maxWidth:220 }}>
-              <label style={LS}>Date de début</label>
-              <input type="date" value={form.date_debut} onChange={e=>upd("date_debut",e.target.value)} style={IS}/>
-            </div>
-          </div>
-
-          {/* Investissement */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Investissement</p>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-              <button onClick={()=>upd("est_intervalle",!form.est_intervalle)}
-                style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, color:form.est_intervalle?"#ca631f":"#9aa5b4", background:"none", border:"none", cursor:"pointer", padding:0 }}>
-                <div style={{ width:16, height:16, borderRadius:4, border:`2px solid ${form.est_intervalle?"#ca631f":"#C5BFBB"}`, background:form.est_intervalle?"#ca631f":"#fff", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  {form.est_intervalle && <Check size={10} color="#fff" strokeWidth={3}/>}
-                </div>
-                Montant sous forme d'intervalle
-              </button>
-            </div>
-            {!form.est_intervalle ? (
-              <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:10 }}>
-                <div><label style={LS}>Montant</label><MoneyInput value={form.investissement} onChange={v=>upd("investissement",v)} placeholder="Ex : 5 000 000"/></div>
-                <div><label style={LS}>Devise</label>
-                  <select value={form.devise_id||""} onChange={e=>upd("devise_id",e.target.value?parseInt(e.target.value):"")} style={IS}>
-                    <option value="">—</option>
-                    {devises.map((d:any)=><option key={d.id} value={d.id}>{devSymbole(d.code,d.symbole)}</option>)}
-                  </select>
-                </div>
-              </div>
-            ) : (
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 }}>
-                <div><label style={LS}>Montant minimum</label><MoneyInput value={form.investissement_min} onChange={v=>upd("investissement_min",v)} placeholder="Ex : 1 000 000"/></div>
-                <div><label style={LS}>Montant maximum</label><MoneyInput value={form.investissement_max} onChange={v=>upd("investissement_max",v)} placeholder="Ex : 5 000 000"/></div>
-                <div><label style={LS}>Devise</label>
-                  <select value={form.devise_id||""} onChange={e=>upd("devise_id",e.target.value?parseInt(e.target.value):"")} style={IS}>
-                    <option value="">—</option>
-                    {devises.map((d:any)=><option key={d.id} value={d.id}>{devSymbole(d.code,d.symbole)}</option>)}
-                  </select>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Zone d'implantation */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Zone d'implantation</p>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-              <div>
-                <label style={LS}>Pôle territoire</label>
-                <select value={form.pole_id||""} onChange={e=>{
-                  const pId = e.target.value ? parseInt(e.target.value) : "";
-                  upd("pole_id",pId); upd("region_id",""); upd("departement_id",""); upd("arrondissement_id","");
-                  if (pId) { const pole=poles.find((p:any)=>p.id===pId); setPoleRegionIds(pole?.region_ids||[]); }
-                  else setPoleRegionIds([]);
-                }} style={IS}>
-                  <option value="">— Sélectionner —</option>
-                  {poles.map((p:any)=><option key={p.id} value={p.id}>{p.pole_territoire}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={LS}>Région</label>
-                <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); upd("arrondissement_id",""); }} filterIds={poleRegionIds.length>0?poleRegionIds:undefined}/>
-              </div>
-              <div>
-                <label style={LS}>Département</label>
-                <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>{ upd("departement_id",v); upd("arrondissement_id",""); }}/>
-              </div>
-              <div>
-                <label style={LS}>Arrondissement</label>
-                <ArrondissementSelect departementId={form.departement_id} value={form.arrondissement_id} onChange={v=>upd("arrondissement_id",v)}/>
-              </div>
-            </div>
-          </div>
-
-          {/* Thématiques */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Thématiques</p>
-            <NaemaSelect
-              secteurIds={form.secteur_ids||[]} brancheIds={form.branche_ids||[]} activiteIds={form.activite_ids||[]}
-              onChangeSecteurs={ids=>upd("secteur_ids",ids)} onChangeBranches={ids=>upd("branche_ids",ids)} onChangeActivites={ids=>upd("activite_ids",ids)}/>
-          </div>
-
-          {/* Porteur du projet */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Porteur du projet</p>
-            {form.porteurs.map((porteur:any,i:number)=>(
-              <PorteurRow key={i} p={porteur} idx={i} onChange={v=>updList("porteurs",i,v)} onRemove={()=>remItem("porteurs",i)}/>
-            ))}
-            <AddBtn label="Ajouter un porteur de projet" onClick={()=>addItem("porteurs",{nom:"",telephones:[""],mails:[""]})}/>
-          </div>
-
-          {/* Points focaux */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Points focaux</p>
-            {form.points_focaux.map((pf:any,i:number)=>(
-              <PointFocalRow key={i} pf={pf} idx={i} onChange={v=>updList("points_focaux",i,v)} onRemove={()=>remItem("points_focaux",i)}/>
-            ))}
-            <AddBtn label="Ajouter un point focal" onClick={()=>addItem("points_focaux",{civilite:"",nom:"",prenom:"",telephones:[""],mails:[""]})}/>
-          </div>
-
-          {/* Documents PDF */}
-          <div style={{ marginBottom:22 }}>
-            <p style={SEC}>Documents PDF</p>
-            {fichiers.length > 0 && (
-              <div style={{ display:"flex", flexWrap:"wrap" as const, gap:6, marginBottom:8 }}>
-                {fichiers.map((f:any)=>(
-                  <div key={f.id} style={{ display:"inline-flex", alignItems:"center", gap:5 }}>
-                    <a href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(202,99,31,0.06)", border:"1px solid rgba(202,99,31,0.18)", borderRadius:7, padding:"4px 10px", fontSize:11, color:"#ca631f", textDecoration:"none", fontWeight:500 }}>
-                      <FileText size={11}/> {f.titre||f.fichier_nom}
-                    </a>
-                    <button onClick={async()=>{
-                      if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
-                      setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
-                    }} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:5, padding:"3px 5px", display:"flex", alignItems:"center" }}>
-                      <X size={10} style={{ color:"#dc2626" }}/>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            {pdfQueue.length > 0 && (
-              <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
-                {pdfQueue.map((p,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(124,58,237,0.05)", border:"1px solid rgba(124,58,237,0.2)", borderRadius:8, padding:"7px 12px" }}>
-                    <FileText size={13} style={{ color:"#7c3aed", flexShrink:0 }}/>
-                    <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                      placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(124,58,237,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
-                    <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
-                      <X size={13} style={{ color:"#dc2626" }}/>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed #C5BFBB", background:"#F2F0EF" }}
-              onMouseEnter={e=>e.currentTarget.style.borderColor="#ca631f"} onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
-              <Upload size={14} color="#9aa5b4"/>
-              <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
-              <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
-                const files = Array.from(e.target.files||[]);
-                setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"") }))]);
-                e.target.value="";
-              }}/>
-            </label>
-          </div>
-
-          {error && <p style={{ fontSize:12, color:"#dc2626", marginBottom:12 }}>{error}</p>}
-          <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-            <button onClick={onClose} style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>Annuler</button>
-            <button onClick={handleSave} disabled={saving||ok}
-              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:ok?"#059669":"#ca631f", color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
-              {saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>Enregistrement…</>:ok?<><Check size={14}/>Enregistré!</>:<><Check size={14}/>{edit?"Modifier":"Créer le projet"}</>}
-            </button>
-          </div>
+      {/* Informations générales */}
+      <FSection title="Informations générales">
+        <div style={{ marginBottom:12 }}>
+          <FLabel>Intitulé du projet *</FLabel>
+          <FInput value={form.titre_projet} onChange={e=>upd("titre_projet",e.target.value)} placeholder="Intitulé du projet" style={{ fontSize:14, fontWeight:600 }}/>
         </div>
-      </div>
-    </div>
+        <div style={{ marginBottom:12 }}>
+          <FLabel>Description</FLabel>
+          <RichTextEditor value={form.description} onChange={v=>upd("description",v)}/>
+        </div>
+        <div style={{ maxWidth:220 }}>
+          <FLabel>Date de début</FLabel>
+          <FInput type="date" value={form.date_debut} onChange={e=>upd("date_debut",e.target.value)}/>
+        </div>
+      </FSection>
+
+      {/* Investissement */}
+      <FSection title="Investissement"
+        extra={<FToggle checked={form.est_intervalle} onChange={()=>upd("est_intervalle",!form.est_intervalle)} label="Montant sous forme d'intervalle" />}>
+        {!form.est_intervalle ? (
+          <FGrid cols="2fr 1fr" gap={10}>
+            <div><FLabel>Montant</FLabel><MoneyInput value={form.investissement} onChange={v=>upd("investissement",v)} placeholder="Ex : 5 000 000"/></div>
+            <div><FLabel>Devise</FLabel>
+              <FSelect value={form.devise_id||""} onChange={e=>upd("devise_id",e.target.value?parseInt(e.target.value):"")}>
+                <option value="">—</option>
+                {devises.map((d:any)=><option key={d.id} value={d.id}>{devSymbole(d.code,d.symbole)}</option>)}
+              </FSelect>
+            </div>
+          </FGrid>
+        ) : (
+          <FGrid cols={3} gap={10}>
+            <div><FLabel>Montant minimum</FLabel><MoneyInput value={form.investissement_min} onChange={v=>upd("investissement_min",v)} placeholder="Ex : 1 000 000"/></div>
+            <div><FLabel>Montant maximum</FLabel><MoneyInput value={form.investissement_max} onChange={v=>upd("investissement_max",v)} placeholder="Ex : 5 000 000"/></div>
+            <div><FLabel>Devise</FLabel>
+              <FSelect value={form.devise_id||""} onChange={e=>upd("devise_id",e.target.value?parseInt(e.target.value):"")}>
+                <option value="">—</option>
+                {devises.map((d:any)=><option key={d.id} value={d.id}>{devSymbole(d.code,d.symbole)}</option>)}
+              </FSelect>
+            </div>
+          </FGrid>
+        )}
+      </FSection>
+
+      {/* Zone d'implantation */}
+      <FSection title="Zone d'implantation">
+        <div style={{ marginBottom:12, maxWidth:340 }}>
+          <FLabel>Pôle territoire</FLabel>
+          <FSelect value={form.pole_id||""} onChange={e=>{
+            const pId = e.target.value ? parseInt(e.target.value) : "";
+            upd("pole_id",pId); upd("region_id",""); upd("departement_id",""); upd("arrondissement_id","");
+            if (pId) { const pole=poles.find((p:any)=>p.id===pId); setPoleRegionIds(pole?.region_ids||[]); }
+            else setPoleRegionIds([]);
+          }}>
+            <option value="">— Sélectionner —</option>
+            {poles.map((p:any)=><option key={p.id} value={p.id}>{p.pole_territoire}</option>)}
+          </FSelect>
+        </div>
+        <GeoCascadeSelect
+          regionId={form.region_id || null}
+          departementId={form.departement_id || null}
+          arrondissementId={form.arrondissement_id || null}
+          filterRegionIds={poleRegionIds.length>0?poleRegionIds:undefined}
+          onChangeRegion={id=>{ upd("region_id",id||""); upd("departement_id",""); upd("arrondissement_id",""); }}
+          onChangeDepartement={id=>{ upd("departement_id",id||""); upd("arrondissement_id",""); }}
+          onChangeArrondissement={id=>upd("arrondissement_id",id||"")}
+        />
+      </FSection>
+
+      {/* Thématiques */}
+      <FSection title="Thématiques">
+        <NaemaSelect
+          secteurIds={form.secteur_ids||[]} brancheIds={form.branche_ids||[]} activiteIds={form.activite_ids||[]}
+          onChangeSecteurs={ids=>upd("secteur_ids",ids)} onChangeBranches={ids=>upd("branche_ids",ids)} onChangeActivites={ids=>upd("activite_ids",ids)}/>
+      </FSection>
+
+      {/* Porteur du projet */}
+      <FSection title="Porteur du projet">
+        {form.porteurs.map((porteur:any,i:number)=>(
+          <PorteurRow key={i} p={porteur} idx={i} onChange={v=>updList("porteurs",i,v)} onRemove={()=>remItem("porteurs",i)}/>
+        ))}
+        <AddBtn label="Ajouter un porteur de projet" onClick={()=>addItem("porteurs",{nom:"",telephones:[""],mails:[""]})}/>
+      </FSection>
+
+      {/* Points focaux */}
+      <FSection title="Points focaux">
+        {form.points_focaux.map((pf:any,i:number)=>(
+          <PointFocalRow key={i} pf={pf} idx={i} onChange={v=>updList("points_focaux",i,v)} onRemove={()=>remItem("points_focaux",i)}/>
+        ))}
+        <AddBtn label="Ajouter un point focal" onClick={()=>addItem("points_focaux",{civilite:"",nom:"",prenom:"",telephones:[""],mails:[""]})}/>
+      </FSection>
+
+      {/* Documents */}
+      <FSection title="Documents">
+        {fichiers.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
+            {fichiers.map((f:any)=>(
+              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+                <a href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize:13, flex:1, color:"#1a1a2e", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
+                <button onClick={async()=>{
+                  if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
+                  setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
+                }} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
+              </div>
+            ))}
+          </div>
+        )}
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"} onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
+          <Upload size={14} color="#9aa5b4"/>
+          <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+          <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
+            const files = Array.from(e.target.files||[]);
+            setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"") }))]);
+            e.target.value="";
+          }}/>
+        </label>
+        {pdfQueue.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginTop:8 }}>
+            {pdfQueue.map((p,i)=>(
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"#6A1B9A", flexShrink:0 }}/>
+                <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
+                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
+                  <X size={13} style={{ color:"#dc2626" }}/>
+                </button>
+              </div>
+            ))}
+            <p style={{ fontSize:11, color:"#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+          </div>
+        )}
+      </FSection>
+
+      {error && <FError>{error}</FError>}
+    </FModal>
   );
 }
 
