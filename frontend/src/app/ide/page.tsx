@@ -263,54 +263,63 @@ function GrapheMultiPays({ series, height=280, type="line", titre="", fmt, showD
 
 // ── Modal graphe plein écran ──────────────────────────────────────────────────
 function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, series, grapheId }: any) {
-  const svgRef = useRef<SVGSVGElement|null>(null);
-
-  // Trouver le SVG dans le contenu rendu
   const modalRef = useRef<HTMLDivElement>(null);
   const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement|null;
 
   if (!open) return null;
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:32 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:1100, maxHeight:"90vh", overflowY:"auto", border:"1px solid #E8E5E3", boxShadow:"0 40px 100px rgba(0,0,0,0.25)" }}>
-        <div style={{ height:3, background:`linear-gradient(90deg,#188038,#3b6bcc,#e07a2e)`, borderRadius:"20px 20px 0 0" }} />
-        <div style={{ padding:"22px 28px 28px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
-            <div style={{ flex:1 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" as const, marginBottom:4 }}>
-                <h3 style={{ fontWeight:800, fontSize:"1.05rem", color:"#1a1a2e", margin:0 }}>{titre}</h3>
-                {series?.length > 0 && (
-                  <div style={{ display:"flex", gap:10 }}>
-                    {series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
-                      <div key={s.nom} style={{ display:"flex", alignItems:"center", gap:5 }}>
-                        <div style={{ width:14, height:3, borderRadius:2, background:s.couleur }} />
-                        <span style={{ fontSize:12, color:"#4a5568", fontWeight:500 }}>{s.nom}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:32 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+        <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
+
+        {/* En-tête fixe */}
+        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
+            <div style={{ flex:1, minWidth:0 }}>
+              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>{titre}</h2>
+              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
+                {series?.length > 0 && series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
+                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:s.couleur, background:`${s.couleur}12`, border:`1px solid ${s.couleur}30` }}>
+                    <span style={{ width:10, height:3, borderRadius:2, background:s.couleur, display:"inline-block" }} />
+                    {s.nom}
+                  </span>
+                ))}
+                {sous_titre && <span style={{ fontSize:11.5, color:"#9aa5b4", fontWeight:500 }}>{sous_titre}</span>}
               </div>
-              {sous_titre && <p style={{ fontSize:12, color:"#9aa5b4" }}>{sous_titre}</p>}
             </div>
-            {/* Boutons download + fermer */}
-            <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0, marginLeft:16 }}>
-              <button onClick={()=>{ const svg=getSvg(); if(svg) downloadPNG(svg, grapheId||titre||"graphe"); }}
-                style={{ fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:8, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Télécharger
-              </button>
-              <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:8 }}><X size={15} color="#4a5568" /></button>
-            </div>
+            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
+              <X size={15} color="#4a5568" />
+            </button>
           </div>
+        </div>
+
+        {/* Corps */}
+        <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1 }}>
           <div ref={modalRef}>
             {children}
           </div>
           {analyse && (
-            <div style={{ marginTop:18, background:"rgba(0,79,145,0.03)", border:"1px solid rgba(0,79,145,0.1)", borderLeft:`3px solid #3b6bcc`, borderRadius:"0 10px 10px 0", padding:"14px 18px" }}>
-              <p style={{ fontSize:13, fontWeight:700, color:"#3b6bcc", marginBottom:6 }}>{analyse.titre}</p>
-              <p style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}>{analyse.commentaire}</p>
+            <div style={{ marginTop:22 }}>
+              <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{analyse.titre}</p>
+              <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 18px" }}>
+                <p style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}>{analyse.commentaire}</p>
+              </div>
             </div>
           )}
+        </div>
+
+        {/* Pied fixe */}
+        <div style={{ padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", display:"flex", justifyContent:"flex-end", gap:10, flexShrink:0 }}>
+          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+            Fermer
+          </button>
+          <button onClick={()=>{ const svg=getSvg(); if(svg) downloadPNG(svg, grapheId||titre||"graphe"); }}
+            style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgba(0,79,145,0.25)", fontFamily:"var(--font-google-sans)" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger
+          </button>
         </div>
       </div>
     </div>
@@ -323,32 +332,35 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series
   return (
     <>
       <div onClick={()=>setOpen(true)}
-        style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", padding:"16px 18px", cursor:"pointer", transition:"all 0.18s", boxShadow:"0 1px 4px rgba(0,0,0,0.05)" }}
-        onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="#d4d0cd"; }}
-        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#E8E5E3"; }}>
+        style={{ background:"#fff", borderRadius:14, border:"1px solid #ECEAE7", padding:"16px 18px", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}
+        onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; const d=span.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ span.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; span.style.transform=`translateX(-${d}px)`; } }); }}
+        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7";
+          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; span.style.transition="transform 0.4s ease"; span.style.transform="translateX(0)"; }); }}>
 
-        {/* Header avec titre + légende + expand */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+        {/* Header : titre + légende + expand */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10, gap:8 }}>
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
-              <h3 style={{ fontWeight:700, fontSize:12, color:"#1a1a2e", margin:0 }}>{titre}</h3>
-              {/* Légende inline */}
-              {!hideLegend && series?.length > 0 && (
-                <div style={{ display:"flex", gap:8, flexWrap:"wrap" as const }}>
-                  {series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
-                    <div key={s.nom} style={{ display:"flex", alignItems:"center", gap:4 }}>
-                      <div style={{ width:10, height:3, borderRadius:2, background:s.couleur }} />
-                      <span style={{ fontSize:10, color:"#6b7280", fontWeight:500 }}>{s.nom}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const }}>
+              <h3 style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0, display:"inline-block" }}>{titre}</h3>
             </div>
-            {!hideSousTitre && sous_titre && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:3 }}>{sous_titre}</p>}
+            {!hideLegend && series?.length > 0 && (
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:5 }}>
+                {series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
+                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:999, color:s.couleur, background:`${s.couleur}12` }}>
+                    <span style={{ width:9, height:3, borderRadius:2, background:s.couleur, display:"inline-block" }} />
+                    {s.nom}
+                  </span>
+                ))}
+              </div>
+            )}
+            {!hideSousTitre && sous_titre && <p style={{ fontSize:10.5, color:"#9aa5b4", marginTop:4 }}>{sous_titre}</p>}
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0, marginLeft:8 }}>
-            {analyse && <span style={{ fontSize:9, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"2px 6px", borderRadius:999, letterSpacing:"0.05em" }}>ANALYSE</span>}
-            <Maximize2 size={11} style={{ color:"#C5BFBB" }} />
+          <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
+            {analyse && <span style={{ fontSize:9, fontWeight:800, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"2px 8px", borderRadius:999, letterSpacing:"0.08em" }}>ANALYSE</span>}
+            <span style={{ width:26, height:26, borderRadius:8, background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
+              <Maximize2 size={11} style={{ color:"#9aa5b4" }} />
+            </span>
           </div>
         </div>
         <div style={{ pointerEvents:"none" }}>{children}</div>
@@ -598,51 +610,74 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pa
   const isPos = kpi.valeur !== null && kpi.valeur > 0;
   const isNeg = kpi.valeur !== null && kpi.valeur < 0;
   const signalColor = isTrend ? (isPos?"#188038":isNeg?"#dc2626":"#9aa5b4") : couleur;
-  const signalBg    = isTrend ? (isPos?"rgba(24,128,56,0.07)":isNeg?"rgba(220,38,38,0.07)":"rgba(0,0,0,0.04)") : "rgba(0,79,145,0.06)";
-  const signalBorder= isTrend ? (isPos?"rgba(24,128,56,0.2)":isNeg?"rgba(220,38,38,0.2)":"#E8E5E3") : "rgba(0,79,145,0.2)";
+  const signalBg    = isTrend ? (isPos?"rgba(24,128,56,0.06)":isNeg?"rgba(220,38,38,0.05)":"#FAFAF9") : "rgba(0,79,145,0.04)";
+  const signalBorder= isTrend ? (isPos?"rgba(24,128,56,0.18)":isNeg?"rgba(220,38,38,0.18)":"#F0EEEC") : "rgba(0,79,145,0.10)";
   const trendLabel  = isTrend ? (isPos?"Positif":isNeg?"Négatif":"Neutre") : null;
+  const SecTitle = ({ children }: { children: React.ReactNode }) => (
+    <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
+  );
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:540, border:"1px solid #E8E5E3", boxShadow:"0 32px 80px rgba(0,0,0,0.25)", overflow:"hidden" }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+        <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
 
-        {/* Bande gradient hero */}
-        <div style={{ height:5, background:"linear-gradient(90deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)" }} />
-
-        {/* Zone valeur + en-tête */}
-        <div style={{ padding:"22px 24px 20px", background:"linear-gradient(180deg,rgba(0,79,145,0.04) 0%,transparent 100%)", borderBottom:"1px solid #F2F0EF" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-            <div style={{ flex:1, paddingRight:12 }}>
-              {/* Pays badge */}
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-                <div style={{ width:7, height:7, borderRadius:"50%", background:couleur, flexShrink:0 }} />
-                <span style={{ fontSize:11, fontWeight:700, color:couleur }}>{pays}</span>
+        {/* En-tête fixe */}
+        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
+            <div style={{ flex:1, minWidth:0 }}>
+              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>{kpi.label}</h2>
+              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:couleur, background:`${couleur}12`, border:`1px solid ${couleur}30` }}>
+                  <span style={{ width:7, height:7, borderRadius:"50%", background:couleur, display:"inline-block" }} />
+                  {pays}
+                </span>
                 {trendLabel && (
-                  <span style={{ fontSize:10, fontWeight:700, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}`, padding:"1px 8px", borderRadius:999 }}>
+                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}` }}>
                     {trendLabel}
                   </span>
                 )}
-              </div>
-              {/* Label KPI */}
-              <p style={{ fontSize:11, fontWeight:600, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>{kpi.label}</p>
-              {/* Valeur principale */}
-              <div style={{ display:"flex", alignItems:"baseline", gap:10 }}>
-                <span style={{ fontSize:"2.4rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtKpi(kpi)}</span>
-                {kpi.annee && <span style={{ fontSize:13, color:"#9aa5b4", fontWeight:500 }}>en {kpi.annee}</span>}
+                {kpi.annee && (
+                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"#4a5568", background:"#F5F4F3" }}>
+                    {kpi.annee}
+                  </span>
+                )}
               </div>
             </div>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:9, padding:"7px 8px", display:"flex", alignItems:"center", flexShrink:0 }}>
-              <X size={14} color="#4a5568"/>
+            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
+              <X size={15} color="#4a5568" />
             </button>
           </div>
         </div>
 
-        {/* Interprétation */}
-        <div style={{ padding:"20px 24px 22px" }}>
-          <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderLeft:`3px solid ${signalColor}`, borderRadius:"0 12px 12px 0", padding:"14px 18px", marginBottom:16 }}>
-            <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.75 }}>{interp}</p>
+        {/* Corps */}
+        <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
+          <div>
+            <SecTitle>Valeur</SecTitle>
+            <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:12, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
+              <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtKpi(kpi)}</span>
+              {kpi.annee && <span style={{ fontSize:13, color:"#9aa5b4", fontWeight:500 }}>en {kpi.annee}</span>}
+            </div>
           </div>
-          <p style={{ fontSize:11, color:"#C5BFBB", lineHeight:1.65 }}>{kpi.description}</p>
+          <div>
+            <SecTitle>Interprétation</SecTitle>
+            <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 18px" }}>
+              <p style={{ fontSize:13, color:"#1a1a2e", lineHeight:1.75 }}>{interp}</p>
+            </div>
+          </div>
+          <div>
+            <SecTitle>Définition</SecTitle>
+            <p style={{ fontSize:12, color:"#9aa5b4", lineHeight:1.65 }}>{kpi.description}</p>
+          </div>
+        </div>
+
+        {/* Pied fixe */}
+        <div style={{ padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", display:"flex", justifyContent:"flex-end", flexShrink:0 }}>
+          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+            Fermer
+          </button>
         </div>
       </div>
     </div>
@@ -990,17 +1025,21 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const indicatif = getIndicatif(k);
               return (
                 <div key={k.id} onClick={()=>setKpiActif(k)}
-                  style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:"3px solid #004f91", cursor:"pointer", transition:"all 0.15s" }}
-                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)"; e.currentTarget.style.transform="translateY(-1px)"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; }}>
-                  <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{k.label}</p>
-                  <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#004f91", lineHeight:1 }}>{fmtKpi(k)}</p>
-                  {indicatif && <p style={{ fontSize:10, color:"#C5BFBB", marginTop:4, lineHeight:1 }}>{indicatif}</p>}
+                  style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}
+                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+                    e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; const d=span.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ span.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; span.style.transform=`translateX(-${d}px)`; } }); }}
+                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7";
+                    e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; span.style.transition="transform 0.4s ease"; span.style.transform="translateX(0)"; }); }}>
+                  <div data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, marginBottom:7 }}>
+                    <span style={{ display:"inline-block", fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{k.label}</span>
+                  </div>
+                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{fmtKpi(k)}</p>
+                  {indicatif && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{indicatif}</p>}
                 </div>
               );
             })}
             {Array.from({length:Math.max(0,5-kpisCards.length)}).map((_,i)=>(
-              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
+              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
                 <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
                 <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
               </div>
