@@ -266,9 +266,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             {focaux.map((pf,i)=>(
               <FPanel key={i}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"#004f91"}}/><span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>Point focal {i+1}</span>
-                    {pf.est_principal && <span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 8px",borderRadius:999}}>Principal</span>}
-                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"#004f91"}}/><span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>Point focal {i+1}</span></div>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
                     <label style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"#4a5568",cursor:"pointer"}}>
                       <input type="checkbox" checked={pf.est_principal} onChange={e=>updFocal(i,"est_principal",e.target.checked)}/> Principal

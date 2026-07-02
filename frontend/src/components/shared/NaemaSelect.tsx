@@ -32,9 +32,7 @@ function CheckItem({ label, selected, onToggle, color }: { label:string; selecte
       style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:7, border:"none", cursor:"pointer", background:selected?color+"12":"transparent", width:"100%", textAlign:"left" as const, transition:"background 0.12s" }}
       onMouseEnter={e=>{ if(!selected) e.currentTarget.style.background="#F8F7F6"; }}
       onMouseLeave={e=>{ e.currentTarget.style.background=selected?color+"12":"transparent"; }}>
-      <div style={{ width:15, height:15, borderRadius:3, border:`2px solid ${selected?color:"#C5BFBB"}`, background:selected?color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
-        {selected && <svg width="8" height="6" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-      </div>
+      <div style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${selected?color:"#C5BFBB"}`, background:selected?color:"transparent", flexShrink:0, transition:"all 0.12s" }} />
       <span style={{ fontSize:12, color:selected?"#1a1a2e":"#4a5568", fontWeight:selected?600:400 }}>{label}</span>
     </button>
   );

@@ -7,11 +7,6 @@ import examples from "libphonenumber-js/mobile/examples";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-function flag(iso2: string) {
-  try { return String.fromCodePoint(...iso2.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0))); }
-  catch { return "🌍"; }
-}
-
 // Indicatifs depuis libphonenumber-js (on importe getCountryCallingCode)
 function getIndicatif(iso2: string): string {
   try {
@@ -114,8 +109,8 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
           // Détecter le type
           const type = getNumberType(parsed);
           const typeLabels: Record<string, string> = {
-            MOBILE: "📱 Mobile", FIXED_LINE: "☎️ Fixe", FIXED_LINE_OR_MOBILE: "📱 Mobile / ☎️ Fixe",
-            TOLL_FREE: "🆓 Numéro vert", VOIP: "🌐 VoIP", PREMIUM_RATE: "💰 Surtaxé",
+            MOBILE: "Mobile", FIXED_LINE: "Fixe", FIXED_LINE_OR_MOBILE: "Mobile / Fixe",
+            TOLL_FREE: "Numéro vert", VOIP: "VoIP", PREMIUM_RATE: "Surtaxé",
           };
           setNumType(typeLabels[type as string] || "");
         } else {
@@ -156,7 +151,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
   const selectedPays = pays.find(p => p.code_iso2 === iso2);
 
   const IS: React.CSSProperties = {
-    background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8,
+    background: "#fff", border: "1px solid #E4E1DE", borderRadius: 10,
     padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none",
     fontFamily: "var(--font-google-sans)", width: "100%", boxSizing: "border-box",
   };
@@ -168,12 +163,9 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
       <div ref={ref} style={{ position:"relative", flexShrink:0, width:180 }}>
         <div onClick={() => setOpen(o => !o)}
           style={{ ...IS, display:"flex", alignItems:"center", gap:8, cursor:"pointer",
-            border:`1px solid ${open?"#004f91":"#C5BFBB"}`, paddingRight:32, height:42 }}>
+            border:`1px solid ${open?"#004f91":"#E4E1DE"}`, boxShadow: open?"0 0 0 3px rgba(0,79,145,0.10)":"none", paddingRight:32, height:42, transition:"border-color 0.15s, box-shadow 0.15s" }}>
           {selectedPays ? (
-            <>
-              <span style={{ fontSize:18, lineHeight:1, flexShrink:0 }}>{flag(selectedPays.code_iso2)}</span>
-              <span style={{ fontSize:13, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", flex:1 }}>{selectedPays.nom_fr}</span>
-            </>
+            <span style={{ fontSize:13, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", flex:1 }}>{selectedPays.nom_fr}</span>
           ) : (
             <span style={{ fontSize:13, color:"#9aa5b4" }}>Pays</span>
           )}
@@ -184,8 +176,8 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
 
         {open && (
           <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, width:280, zIndex:500,
-            background:"#fff", border:"1px solid #C5BFBB", borderRadius:10,
-            boxShadow:"0 8px 32px rgba(0,0,0,0.14)", maxHeight:280, display:"flex", flexDirection:"column" }}>
+            background:"#fff", border:"1px solid #E4E1DE", borderRadius:12,
+            boxShadow:"0 12px 40px rgba(0,30,60,0.16)", maxHeight:280, display:"flex", flexDirection:"column" }}>
             <div style={{ padding:"8px 10px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
               <div style={{ position:"relative" }}>
                 <Search size={12} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }} />
@@ -206,9 +198,8 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
                       fontWeight: p.code_iso2===iso2 ? 600 : 400 }}
                     onMouseEnter={e => { if(p.code_iso2!==iso2) e.currentTarget.style.background="#F8F7F6"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = p.code_iso2===iso2?"rgba(0,79,145,0.06)":"transparent"; }}>
-                    <span style={{ fontSize:18, lineHeight:1, flexShrink:0 }}>{flag(p.code_iso2)}</span>
                     <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.nom_fr}</span>
-                    {ind !== "+" && <span style={{ fontSize:11, color:"#9aa5b4", flexShrink:0 }}>{ind}</span>}
+                    {ind !== "+" && <span style={{ fontSize:11, fontWeight:600, color:"#9aa5b4", flexShrink:0 }}>{ind}</span>}
                   </div>
                 );
               })}
@@ -220,9 +211,9 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
 
       {/* Champ numéro */}
       <div style={{ flex:1 }}>
-        <div style={{ display:"flex", alignItems:"center", background:"#F2F0EF", height:42,
-          border:`1px solid ${isValid===false?"#dc2626":isValid===true?"#188038":"#C5BFBB"}`,
-          borderRadius:8, overflow:"hidden", transition:"border-color 0.2s" }}>
+        <div style={{ display:"flex", alignItems:"center", background:"#fff", height:42,
+          border:`1px solid ${isValid===false?"#dc2626":isValid===true?"#188038":"#E4E1DE"}`,
+          borderRadius:10, overflow:"hidden", transition:"border-color 0.2s" }}>
           {indicatif && indicatif !== "+" && (
             <span style={{ padding:"0 10px 0 12px", fontSize:13, fontWeight:700, color:"#004f91",
               background:"rgba(0,79,145,0.07)", borderRight:"1px solid rgba(0,79,145,0.15)",
