@@ -638,7 +638,7 @@ function PoleCard({ pole, isNew = false, form, isOpen, onToggleOpen, updateForm,
   const accentColor = isNew ? "#059669" : pc!;
   const initial = (!isNew && (f.pole_territoire || pole.pole_territoire)?.[0]) || "P";
   return (
-    <div style={{ background: "#fff", border: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderLeft: `4px solid ${accentColor}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
+    <div style={{ background: "#fff", borderTop: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderRight: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderBottom: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderLeft: `4px solid ${accentColor}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", cursor: "pointer" }}
         onClick={onToggleOpen}>
         <div style={{ width: 34, height: 34, borderRadius: 9, background: isNew ? "rgba(5,150,105,0.1)" : accentColor, border: isNew ? "none" : "1px solid rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
