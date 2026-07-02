@@ -90,6 +90,8 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
   const toggleSec = (id: number) => {
     const next = secteurIds.includes(id) ? secteurIds.filter(x=>x!==id) : [...secteurIds, id];
     onChangeSecteurs(next);
+    // Sélection d'un secteur → ouvrir automatiquement la colonne Branche
+    if (!secteurIds.includes(id)) setOpenBra(true);
     // Si on désélectionne un secteur, retirer ses branches et activités
     if (secteurIds.includes(id)) {
       const brasDuSec = branches.filter(b=>b.secteur_id===id).map(b=>b.id);
@@ -102,6 +104,8 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
   const toggleBra = (id: number) => {
     const next = brancheIds.includes(id) ? brancheIds.filter(x=>x!==id) : [...brancheIds, id];
     onChangeBranches(next);
+    // Sélection d'une branche → ouvrir automatiquement la colonne Activité
+    if (!brancheIds.includes(id)) setOpenAct(true);
     if (brancheIds.includes(id)) {
       const actsDeBra = activites.filter(a=>a.branche_id===id).map(a=>a.id);
       onChangeActivites(activiteIds.filter(a=>!actsDeBra.includes(a)));
