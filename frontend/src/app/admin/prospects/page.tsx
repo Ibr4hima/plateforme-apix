@@ -1124,17 +1124,6 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
     <p style={{ fontSize:10, fontWeight:700, color:color||MUT, letterSpacing:"0.08em", textTransform:"uppercase" as const, marginBottom:6 }}>{children}</p>
   );
 
-  // Carte d'information à en-tête icône (téléphone, mail, site, …).
-  const InfoCard = ({ icon:Icon, label, children }:any) => (
-    <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"10px 13px", minWidth:0 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
-        <Icon size={12} style={{ color:accent, flexShrink:0 }}/>
-        <span style={{ fontSize:9, fontWeight:800, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
-      </div>
-      {children}
-    </div>
-  );
-
   // Affichage en cascade Secteur → Branche → Activité (style entreprises)
   const NaemaCascade = ({ secIds, braIds, actIds }:{ secIds:number[]; braIds:number[]; actIds:number[] }) => (
     <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
@@ -1201,36 +1190,42 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         <div ref={scrollContainerRef} style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1 }}>
 
           {/* Identité, contacts, activités, commentaires — masqués en readOnly et historiqueOnly */}
-          {!historiqueOnly && !readOnly && <><div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
-            {p.telephones?.length > 0 && (
-              <InfoCard icon={Phone} label="Téléphone">
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:3 }}>
-                  {p.telephones.map((t:string,i:number)=>(
-                    <p key={i} style={{ fontSize:13, fontWeight:600, color:TXT }}>{fmtPhone(t)}</p>
-                  ))}
-                </div>
-              </InfoCard>
-            )}
-            {p.mails?.length > 0 && (
-              <InfoCard icon={Mail} label="Email">
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:3 }}>
-                  {p.mails.map((m:string,i:number)=>(
-                    <a key={i} href={`mailto:${m}`} style={{ fontSize:13, fontWeight:600, color:TXT, wordBreak:"break-all" as const, textDecoration:"none" }}>{m}</a>
-                  ))}
-                </div>
-              </InfoCard>
-            )}
-            {p.siteweb && (
-              <InfoCard icon={Globe} label="Site web">
-                <a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:accent, wordBreak:"break-all" as const, textDecoration:"none" }}>{p.siteweb}</a>
-              </InfoCard>
-            )}
-            {p.linkedin && (
-              <InfoCard icon={Link2} label="LinkedIn">
-                <a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:accent, wordBreak:"break-all" as const, textDecoration:"none" }}>{p.linkedin}</a>
-              </InfoCard>
-            )}
-          </div>
+          {!historiqueOnly && !readOnly && <>
+          {/* Contact */}
+          {(p.telephones?.length > 0 || p.mails?.length > 0 || p.siteweb || p.linkedin) && (
+            <Section title="Contact" first>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                {p.telephones?.length > 0 && (
+                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>{p.telephones.length > 1 ? "Téléphones" : "Téléphone"}</p>
+                    {p.telephones.map((t:string,i:number)=>(
+                      <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{fmtPhone(t)}</p>
+                    ))}
+                  </div>
+                )}
+                {p.mails?.length > 0 && (
+                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>{p.mails.length > 1 ? "Emails" : "Email"}</p>
+                    {p.mails.map((m:string,i:number)=>(
+                      <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e", wordBreak:"break-all" as const }}>{m}</p>
+                    ))}
+                  </div>
+                )}
+                {p.siteweb && (
+                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Site web</p>
+                    <a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"#004f91", textDecoration:"none", wordBreak:"break-all" as const }}>{p.siteweb}</a>
+                  </div>
+                )}
+                {p.linkedin && (
+                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>LinkedIn</p>
+                    <a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"#004f91", textDecoration:"none", wordBreak:"break-all" as const }}>{p.linkedin}</a>
+                  </div>
+                )}
+              </div>
+            </Section>
+          )}
 
           {/* Activités spécialisées (Secteur → Branche → Activité) */}
           {(p.secteur_ids?.length>0 || p.branche_ids?.length>0 || p.activite_ids?.length>0) && (
