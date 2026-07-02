@@ -1119,8 +1119,18 @@ export default function OpportunitesAdminPage() {
                 return (
                   <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}40`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}40`;}
+                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                              const span = box.firstElementChild as HTMLElement | null;
+                              if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                            });
+                          }}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                              const span = box.firstElementChild as HTMLElement | null;
+                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                            });
+                          }}>
 
                     <div style={{padding:"14px 16px 14px",flex:1}}>
                       {/* Niveau */}
@@ -1135,7 +1145,7 @@ export default function OpportunitesAdminPage() {
                           <p style={{fontSize:14,fontWeight:800,color:total>0?"#1a1a2e":"#9aa5b4"}}>{total||"—"}</p>
                         </div>
                         <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Fiches définies</p>
+                          <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Fiches définies</span></p>
                           <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{total>0?`${count}/${total}`:count}</p>
                         </div>
                       </div>
@@ -1289,8 +1299,18 @@ export default function OpportunitesAdminPage() {
                 return (
                   <div key={s.key} onClick={()=>count>0&&setSelectedSec(s.key)}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}40`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}40`;}
+                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                              const span = box.firstElementChild as HTMLElement | null;
+                              if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                            });
+                          }}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                              const span = box.firstElementChild as HTMLElement | null;
+                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                            });
+                          }}>
 
                     <div style={{padding:"14px 16px 14px",flex:1}}>
                       {/* Secteur */}
@@ -1305,7 +1325,7 @@ export default function OpportunitesAdminPage() {
                           <p style={{fontSize:14,fontWeight:800,color:actCount>0?"#1a1a2e":"#9aa5b4"}}>{actCount||"—"}</p>
                         </div>
                         <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3}}>Avantages définis</p>
+                          <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Avantages définis</span></p>
                           <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{actCount>0?`${count}/${actCount}`:count}</p>
                         </div>
                       </div>
