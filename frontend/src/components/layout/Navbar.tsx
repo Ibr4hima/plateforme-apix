@@ -42,7 +42,23 @@ function CodeModal({ onClose }: { onClose: () => void }) {
   const [results,      setResults]     = useState<any[] | null>(null);
   const [searching,    setSearching]   = useState(false);
   const [loading,      setLoading]     = useState(true);
+  const [pendingArtId, setPendingArtId]= useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Après un clic sur un résultat de recherche : défiler jusqu'à l'article et le surligner.
+  useEffect(() => {
+    if (!pendingArtId || q.length >= 2) return;
+    const t = setTimeout(() => {
+      const el = document.getElementById(`code-art-${pendingArtId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        el.style.background = "rgba(202,99,31,0.09)";
+        setTimeout(() => { el.style.background = "transparent"; }, 1800);
+      }
+      setPendingArtId(null);
+    }, 120);
+    return () => clearTimeout(t);
+  }, [pendingArtId, activeChapId, q]);
 
   useEffect(() => {
     setLoading(true);
@@ -146,7 +162,8 @@ function CodeModal({ onClose }: { onClose: () => void }) {
         <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
 
           {/* ── Sidebar ── */}
-          <div style={{ width:258, borderRight:"1px solid #EDEAE6", overflowY:"auto", flexShrink:0, padding:"14px 0" }}>
+          <div style={{ width:258, borderRight:"1px solid #EDEAE6", overflowY:"auto", flexShrink:0, padding:"16px 0" }}>
+            <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.16em", padding:"0 22px", marginBottom:10 }}>Sommaire</p>
             {loading ? (
               <div style={{ padding:"20px 20px", color:"#9aa5b4", fontSize:12.5 }}>Chargement…</div>
             ) : chapitres.length === 0 ? (
@@ -156,7 +173,9 @@ function CodeModal({ onClose }: { onClose: () => void }) {
               return (
                 <div key={c.id} style={{ marginBottom:1 }}>
                   <button onClick={() => goChap(c.id)}
-                    style={{ width:"100%", textAlign:"left" as const, display:"flex", alignItems:"baseline", gap:9, padding:"9px 20px", background:"transparent", border:"none", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"color 0.12s" }}>
+                    style={{ width:"calc(100% - 20px)", textAlign:"left" as const, display:"flex", alignItems:"baseline", gap:9, padding:"9px 10px 9px 12px", margin:"0 10px", borderRadius:10, background: isChapActive ? "#FBF8F5" : "transparent", border:"none", borderLeft: isChapActive ? "3px solid #ca631f" : "3px solid transparent", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"background 0.12s, color 0.12s" }}
+                    onMouseEnter={e => { if (!isChapActive) e.currentTarget.style.background = "#FAFAF9"; }}
+                    onMouseLeave={e => { if (!isChapActive) e.currentTarget.style.background = "transparent"; }}>
                     <span style={{ fontSize:10, fontWeight:700, color: isChapActive ? "#ca631f" : "#C5BFBB", flexShrink:0, fontVariantNumeric:"tabular-nums", minWidth:18 }}>
                       {c.numero === 1 ? "I" : toRomanNum(c.numero)}
                     </span>
@@ -166,7 +185,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                   </button>
 
                   {isChapActive && c.sections.length > 0 && (
-                    <div style={{ marginLeft:27, borderLeft:"1px solid #EDEAE6", paddingLeft:0 }}>
+                    <div style={{ margin:"2px 10px 6px 32px", borderLeft:"1px solid #EDEAE6", paddingLeft:0 }}>
                       {c.sections.map((s: any) => {
                         const isSecActive = activeSecId === s.id;
                         return (
@@ -193,19 +212,32 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                 <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.14em", marginBottom:22 }}>
                   {searching ? "Recherche…" : `${results?.length || 0} résultat${(results?.length||0)>1?"s":""} pour « ${q} »`}
                 </p>
-                {results?.map(r => (
-                  <div key={r.id}
-                    onClick={() => { const chap = chapitres.find(c => c.id === r.chapitre_id); if (chap) goChap(chap.id); }}
-                    style={{ borderBottom:"1px solid #F2F0EF", padding:"16px 0", cursor:"pointer", transition:"opacity 0.15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.opacity="0.6"; }}
-                    onMouseLeave={e => { e.currentTarget.style.opacity="1"; }}>
-                    <div style={{ fontSize:12.5, fontWeight:700, color:"#ca631f", marginBottom:6 }}>
-                      Article {numArt(r.numero)}{r.titre ? ` — ${r.titre}` : ""}
-                    </div>
-                    <div data-rte style={{ fontSize:13, color:"#6b7280", lineHeight:1.7 }}
-                      dangerouslySetInnerHTML={{ __html: r.extrait || "" }} />
-                  </div>
-                ))}
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
+                  {results?.map(r => {
+                    const chap = chapitres.find(c => c.id === r.chapitre_id);
+                    return (
+                      <div key={r.id}
+                        onClick={() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setResults(null); setPendingArtId(r.id); if (contentRef.current) contentRef.current.scrollTop = 0; } }}
+                        style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(202,99,31,0.35)"; e.currentTarget.style.background="#fff"; e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 8px 20px rgba(0,30,60,0.07)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor="#F0EEEC"; e.currentTarget.style.background="#FAFAF9"; e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="none"; }}>
+                        {chap && (
+                          <p style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", margin:"0 0 5px" }}>
+                            Chapitre {chap.numero === 1 ? "Premier" : toRomanNum(chap.numero)} · {chap.titre}
+                          </p>
+                        )}
+                        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, marginBottom:6 }}>
+                          <span style={{ fontSize:12.5, fontWeight:700, color:"#ca631f" }}>
+                            Article {numArt(r.numero)}{r.titre ? ` — ${r.titre}` : ""}
+                          </span>
+                          <ChevronRight size={14} style={{ color:"#C5BFBB", flexShrink:0 }} />
+                        </div>
+                        <div data-rte style={{ fontSize:13, color:"#6b7280", lineHeight:1.7 }}
+                          dangerouslySetInnerHTML={{ __html: r.extrait || "" }} />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               /* Vue chapitre / articles */
@@ -263,7 +295,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                           )}
 
                           {/* Article */}
-                          <div style={{ marginBottom:30 }}>
+                          <div id={`code-art-${a.id}`} style={{ marginBottom:30, scrollMarginTop:24, borderRadius:10, transition:"background 0.6s ease", padding:"4px 8px", margin:"0 -8px 30px" }}>
                             <p style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", margin:"0 0 10px", lineHeight:1.4 }}>
                               <span style={{ color:"#ca631f" }}>Article {a.num_display}</span>
                               {a.titre && <span style={{ fontWeight:600, color:"#4a5568" }}> — {a.titre}</span>}
@@ -279,24 +311,33 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                       );
                     })}
 
-                    {/* ── Navigation chapitre suivant ── */}
+                    {/* ── Navigation chapitres précédent / suivant ── */}
                     {!activeSecId && (() => {
                       const idx  = chapitres.findIndex(c => c.id === activeChapId);
+                      const prev = idx > 0 ? chapitres[idx - 1] : null;
                       const next = chapitres[idx + 1];
-                      return next ? (
-                        <button onClick={() => goChap(next.id)}
-                          style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, width:"100%", marginTop:24, background:"transparent", border:"1px solid #EDEAE6", borderRadius:12, padding:"16px 20px", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
+                      if (!prev && !next) return null;
+                      const NavBtn = ({ chap, dir }: any) => (
+                        <button onClick={() => goChap(chap.id)}
+                          style={{ display:"flex", alignItems:"center", justifyContent: dir==="prev" ? "flex-start" : "space-between", gap:12, flex:1, minWidth:0, background:"transparent", border:"1px solid #EDEAE6", borderRadius:12, padding:"14px 18px", cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", textAlign: dir==="prev" ? "left" as const : "right" as const }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.background="#FBF8F5"; }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor="#EDEAE6"; e.currentTarget.style.background="transparent"; }}>
-                          <div style={{ textAlign:"left" as const, minWidth:0 }}>
-                            <div style={{ fontSize:10, color:"#9aa5b4", fontWeight:700, textTransform:"uppercase" as const, letterSpacing:"0.14em", marginBottom:3 }}>Chapitre suivant</div>
-                            <div style={{ fontSize:13.5, fontWeight:700, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
-                              {next.numero === 1 ? "Chapitre Premier" : `Chapitre ${toRomanNum(next.numero)}`} — {next.titre}
+                          {dir === "prev" && <ChevronRight size={16} style={{ color:"#ca631f", flexShrink:0, transform:"rotate(180deg)" }} />}
+                          <div style={{ minWidth:0, flex:1, textAlign: dir==="prev" ? "left" as const : "left" as const }}>
+                            <div style={{ fontSize:10, color:"#9aa5b4", fontWeight:700, textTransform:"uppercase" as const, letterSpacing:"0.14em", marginBottom:3 }}>{dir === "prev" ? "Chapitre précédent" : "Chapitre suivant"}</div>
+                            <div style={{ fontSize:13, fontWeight:700, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
+                              {chap.numero === 1 ? "Chapitre Premier" : `Chapitre ${toRomanNum(chap.numero)}`} — {chap.titre}
                             </div>
                           </div>
-                          <ChevronRight size={17} style={{ color:"#ca631f", flexShrink:0 }} />
+                          {dir === "next" && <ChevronRight size={16} style={{ color:"#ca631f", flexShrink:0 }} />}
                         </button>
-                      ) : null;
+                      );
+                      return (
+                        <div style={{ display:"flex", gap:12, marginTop:28 }}>
+                          {prev ? <NavBtn chap={prev} dir="prev"/> : <span style={{ flex:1 }}/>}
+                          {next ? <NavBtn chap={next} dir="next"/> : <span style={{ flex:1 }}/>}
+                        </div>
+                      );
                     })()}
                   </>
                 )}
