@@ -36,6 +36,15 @@ const MOIS_VIEW = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct"
 const MOIS_ABR  = ["JANV","FÉVR","MARS","AVR","MAI","JUIN","JUIL","AOÛT","SEPT","OCT","NOV","DÉC"];
 const ROLES_APIX_LABELS: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
 const ROLE_VARIANT: Record<string, BadgeVariant> = { "Organisateur":"green","Co-organisateur":"yellow","Participant":"orange","Partenaire":"teal","Sponsor":"lavender","Invité":"gray" };
+// Pilules teintées des rôles APIX sur les cards (palette du site)
+const ROLE_PILL: Record<string,{c:string;bg:string}> = {
+  "Organisateur":    { c:"#188038", bg:"rgba(24,128,56,0.08)"  },
+  "Co-organisateur": { c:"#188038", bg:"rgba(24,128,56,0.08)"  },
+  "Participant":     { c:"#004f91", bg:"rgba(0,79,145,0.07)"   },
+  "Partenaire":      { c:"#6A1B9A", bg:"rgba(106,27,154,0.07)" },
+  "Sponsor":         { c:"#ca631f", bg:"rgba(202,99,31,0.08)"  },
+  "Invité":          { c:"#6b7280", bg:"#F2F0EF"               },
+};
 
 function computeStatut(e: any): "a_venir"|"en_cours"|"termine"|null {
   if (!e.date_debut) return null;
@@ -626,10 +635,11 @@ export default function EvenementsPage() {
                     {st ? (
                       <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
                     ) : <span/>}
-                    <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:600,color:e.est_publie?"#188038":"#9aa5b4"}}>
-                      <span style={{width:6,height:6,borderRadius:"50%",background:e.est_publie?"#188038":"#D8D4D0"}}/>
-                      {e.est_publie?"Public":"Brouillon"}
-                    </span>
+                    {e.role_apix ? (
+                      <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:(ROLE_PILL[e.role_apix]||ROLE_PILL["Invité"]).c,background:(ROLE_PILL[e.role_apix]||ROLE_PILL["Invité"]).bg,padding:"3px 10px",borderRadius:999}}>
+                        {ROLES_APIX_LABELS[e.role_apix]||e.role_apix}
+                      </span>
+                    ) : <span/>}
                   </div>
 
                   {/* Tuile calendrier + infos */}
