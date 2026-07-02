@@ -409,15 +409,10 @@ export default function AccordsPage() {
           <div style={{position:"absolute" as const,bottom:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)"}}/>
         </div>
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          {/* Surtitre */}
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
-            <span style={{width:26,height:2,borderRadius:999,background:"#ca631f",flexShrink:0}}/>
-            <span style={{fontSize:10.5,fontWeight:700,color:"#e0813f",letterSpacing:"0.18em",textTransform:"uppercase" as const}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
+            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.08,letterSpacing:"-0.015em",marginBottom:12}}>Accords &amp; Traités</h1>
-          <p style={{fontSize:14.5,color:"rgba(255,255,255,0.72)",lineHeight:1.6,maxWidth:560}}>
-            Les accords bilatéraux et conventions d&apos;investissement signés par le Sénégal avec ses partenaires.
-          </p>
+          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.08,letterSpacing:"-0.015em"}}>Accords &amp; Traités</h1>
           {/* Barre de stats */}
           {stats.total>0&&(
             <div style={{display:"inline-flex",alignItems:"stretch",marginTop:28,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.14)",borderRadius:14,padding:"13px 6px",backdropFilter:"blur(4px)"}}>
