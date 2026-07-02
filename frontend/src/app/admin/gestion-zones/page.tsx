@@ -974,52 +974,58 @@ export default function GestionZonesPage() {
       {onglet === "poles" ? <OngletPoles /> : (
         <div>
           {/* Cards types — style page publique */}
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(TYPE_ZONES.length, 3)},1fr)`, gap: 18, marginBottom: selectedType ? 32 : 0 }}>
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(TYPE_ZONES.length, 3)},1fr)`, gap: 14, marginBottom: selectedType ? 32 : 0 }}>
             {TYPE_ZONES.map(t => {
               const zDuT = zones.filter(z => z.type_zone === t.key);
               const nbEnt = zDuT.reduce((a, z) => a + (z.entreprises?.length || 0), 0);
               const active = selectedType === t.key;
               const c = t.color;
-              const Stat = ({ value, label }: { value: string; label: string }) => (
-                <div style={{ flex: 1, textAlign: "center" as const }}>
-                  <div style={{ fontSize: 25, fontWeight: 800, color: "#1a1a2e", lineHeight: 1.05, letterSpacing: "-0.015em" }}>{value}</div>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginTop: 5 }}>{label}</div>
-                </div>
-              );
               return (
                 <div key={t.key} onClick={() => setSelectedType(active ? null : t.key)}
-                  style={{ position: "relative" as const, borderRadius: 18, overflow: "hidden", cursor: "pointer", background: "#fff",
-                    border: `1px solid ${active ? c : "#EAE7E4"}`,
-                    boxShadow: active ? `0 16px 40px ${c}1f` : "0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)",
-                    transform: active ? "translateY(-3px)" : "none",
-                    transition: "box-shadow 0.2s, transform 0.2s, border-color 0.2s" }}
-                  onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.08)"; ev.currentTarget.style.transform = "translateY(-3px)"; } }}
-                  onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; } }}>
-                  <div style={{ height: 3, background: c, opacity: active ? 1 : 0.85 }} />
-                  <div style={{ padding: "20px 22px 0" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 22 }}>
-                      <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: t.bg, border: `1px solid ${t.border}` }}>
-                        <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.02em", color: c, lineHeight: 1 }}>{t.code}</span>
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e", lineHeight: 1.3 }}>{t.label}</div>
+                  style={{ background: "#fff", border: `1px solid ${active ? c : "#ECEAE7"}`, borderRadius: 14, cursor: "pointer",
+                    transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s",
+                    boxShadow: active ? `0 12px 28px ${c}1f` : "0 1px 3px rgba(0,0,0,0.03)",
+                    transform: active ? "translateY(-2px)" : "none",
+                    display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+                  onMouseEnter={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; } }}
+                  onMouseLeave={ev => { if (!active) { ev.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7"; } }}>
+
+                  <div style={{ padding: "14px 16px 14px", flex: 1 }}>
+                    {/* Code du type + indicateur de sélection */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.04em", color: c, background: `${c}12`, padding: "3px 10px", borderRadius: 999 }}>{t.code}</span>
+                      {active && (
+                        <span style={{ width: 20, height: 20, borderRadius: "50%", background: c, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <svg width="10" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </span>
+                      )}
                     </div>
-                    <div style={{ display: "flex", alignItems: "stretch", paddingBottom: 4 }}>
-                      <Stat value={String(nbEnt)} label={nbEnt > 1 ? "Entreprises" : "Entreprise"} />
-                      <div style={{ width: 1, background: "#EEEBE8", margin: "4px 0" }} />
-                      <Stat value={String(zDuT.length)} label={zDuT.length > 1 ? "Zones" : "Zone"} />
+
+                    {/* Libellé du type */}
+                    <div style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35 }}>{t.label}</div>
+
+                    {/* Compteurs libellés */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
+                      <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px" }}>
+                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: nbEnt > 0 ? "#1a1a2e" : "#9aa5b4" }}>{nbEnt}</p>
+                      </div>
+                      <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px" }}>
+                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Zone{zDuT.length > 1 ? "s" : ""}</p>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: zDuT.length > 0 ? "#1a1a2e" : "#9aa5b4" }}>{zDuT.length}</p>
+                      </div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "center", padding: "14px 22px 18px", marginTop: 16, borderTop: "1px solid #F4F2F0" }}>
+
+                  {/* Action */}
+                  <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
                     <button onClick={ev => { ev.stopPropagation(); openAjouterZone(t.key); }}
-                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 20px", borderRadius: 999, fontSize: 12.5, fontWeight: 700, background: `${c}12`, color: c, border: "none", cursor: "pointer", transition: "all 0.15s" }}>
-                      <Plus size={15} /> Zone
+                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: c, fontWeight: 700, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+                      onMouseEnter={ev => ev.currentTarget.style.background = `${c}0D`}
+                      onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+                      <Plus size={13} /> Zone
                     </button>
                   </div>
-                  {active && (
-                    <div style={{ position: "absolute" as const, top: 14, right: 14, width: 22, height: 22, borderRadius: "50%", background: c, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 2px 8px ${c}55` }}>
-                      <svg width="11" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -1038,7 +1044,7 @@ export default function GestionZonesPage() {
                 {zDuT.map(z => (
                   <div key={z.id} onClick={() => setVueId(z.id)}
                     style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
-                    onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${t.color}40`; }}
+                    onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
                     onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7"; }}>
 
                     <div style={{ padding: "14px 16px 14px", flex: 1 }}>
