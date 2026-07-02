@@ -1711,11 +1711,6 @@ export default function ProspectsPage() {
   const [terminerOpenId,  setTerminerOpenId]  = useState<number|null>(null);
   const [terminerForm,    setTerminerForm]    = useState<{ issue:string; commentaire:string }>({ issue:"", commentaire:"" });
   const [savingTerminer,  setSavingTerminer]  = useState(false);
-  // Référentiel des activités NAEMA (bloc « Activités spécialisées » des cards)
-  const [refActivites, setRefActivites] = useState<any[]>([]);
-  useEffect(()=>{
-    fetch(`${API}/entreprises/ref/activites`).then(r=>r.json()).then(a=>setRefActivites(a||[])).catch(()=>{});
-  },[]);
 
   const charger = useCallback(async()=>{
     setLoading(true);
@@ -1850,9 +1845,8 @@ export default function ProspectsPage() {
                     ? { label:"Décliné le", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
                     : { label:"Conclusion", value: null })
                 : { label:"Téléphone", value: p.telephones?.[0] ? fmtPhone(p.telephones[0]) : null };
-              // Bloc « Activités spécialisées » (onglet ciblés)
-              const actNoms = (p.activite_ids||[]).map((id:number)=>refActivites.find((a:any)=>a.id===id)?.nom).filter(Boolean);
-              const actStr = actNoms.length ? (actNoms.length>1 ? `${actNoms[0]} +${actNoms.length-1}` : actNoms[0]) : null;
+              // Bloc « Activités spécialisées » (onglet ciblés) : juste le nombre
+              const nbActs = (p.activite_ids||[]).length;
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
                   style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
@@ -1885,7 +1879,7 @@ export default function ProspectsPage() {
                       <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
                         {onglet==="cibles" ? <>
                           <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Activités spécialisées</p>
-                          <p style={{ fontSize:12, fontWeight:600, color:actStr?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{actStr||"—"}</p>
+                          <p style={{ fontSize:12, fontWeight:600, color:nbActs>0?"#1a1a2e":"#9aa5b4" }}>{nbActs||"—"}</p>
                         </> : <>
                           <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Email</p>
                           <p style={{ fontSize:12, fontWeight:600, color:p.mails?.length?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.mails?.[0]||"—"}</p>
