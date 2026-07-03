@@ -34,12 +34,14 @@ export default function LoginPage() {
     <main style={{
       height: "100vh", overflow: "hidden",
       display: "flex", flexDirection: "column",
-      background: "radial-gradient(115% 85% at 50% -18%, #00294f 0%, #003a6e 32%, #004f91 52%, rgba(0,79,145,0) 76%), #F6F5F3",
+      background: "radial-gradient(120% 92% at 50% -24%, #001f3d 0%, #00325c 30%, #004f91 54%, rgba(0,79,145,0.35) 66%, rgba(0,79,145,0) 74%), #F6F5F3",
       position: "relative", fontFamily: "var(--font-google-sans)",
     }}>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes cardIn{from{opacity:0;transform:translateY(12px) scale(0.99)}to{opacity:1;transform:none}}
+        @keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(26px,14px,0)}}
+        @keyframes driftInv{from{transform:translate3d(0,0,0)}to{transform:translate3d(-22px,-12px,0)}}
         @keyframes riseIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
         .login-brand{animation:riseIn 0.4s ease both}
         .login-card{animation:cardIn 0.45s 0.08s ease both}
@@ -48,12 +50,17 @@ export default function LoginPage() {
         .login-input::placeholder{color:#b8b2ad}
         .login-input:focus{outline:none;border-color:rgba(0,79,145,0.45);box-shadow:0 0 0 3px rgba(0,79,145,0.10);background:#fff}
         .login-cta{transition:transform .18s,box-shadow .18s}
-        .login-cta:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(202,99,31,.45)}
+        .login-cta:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(0,79,145,.45)}
         .login-cta:disabled{opacity:.65;transform:none;cursor:not-allowed}
       `}</style>
 
-      {/* Trame fine sur la partie bleue */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,255,255,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.045) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(100% 55% at 50% -8%,rgba(0,0,0,0.9) 0%,transparent 78%)", WebkitMaskImage: "radial-gradient(100% 55% at 50% -8%,rgba(0,0,0,0.9) 0%,transparent 78%)" }} />
+      {/* Trame fine + halos dérivants sur la partie bleue */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.045) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(100% 55% at 50% -8%,rgba(0,0,0,0.9) 0%,transparent 78%)", WebkitMaskImage: "radial-gradient(100% 55% at 50% -8%,rgba(0,0,0,0.9) 0%,transparent 78%)" }} />
+        <div style={{ position: "absolute", top: "-24%", left: "6%", width: 560, height: 560, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)", animation: "drift 11s ease-in-out infinite alternate" }} />
+        <div style={{ position: "absolute", top: "-16%", right: "2%", width: 640, height: 640, borderRadius: "50%", background: "radial-gradient(circle,rgba(26,106,176,0.45) 0%,transparent 62%)", animation: "driftInv 13s ease-in-out infinite alternate" }} />
+        <div style={{ position: "absolute", top: "22%", left: "50%", transform: "translateX(-50%)", width: 720, height: 480, borderRadius: "50%", background: "radial-gradient(ellipse,rgba(255,255,255,0.10) 0%,transparent 60%)" }} />
+      </div>
 
       {/* ── Contenu centré ── */}
       <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px" }}>
@@ -70,7 +77,7 @@ export default function LoginPage() {
         </div>
 
         {/* Carte */}
-        <div className="login-card" style={{ width: "100%", maxWidth: 400, background: "#fff", borderRadius: 18, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,25,50,0.28), 0 2px 8px rgba(0,25,50,0.10)" }}>
+        <div className="login-card" style={{ width: "100%", maxWidth: 400, background: "#fff", borderRadius: 18, overflow: "hidden", border: "1px solid rgba(0,79,145,0.10)", boxShadow: "0 24px 64px rgba(0,25,50,0.30), 0 2px 8px rgba(0,25,50,0.10)" }}>
           <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
           <div style={{ padding: "28px 32px 26px" }}>
             <h1 style={{ fontWeight: 800, fontSize: "1.4rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: 0 }}>Connexion</h1>
@@ -122,7 +129,7 @@ export default function LoginPage() {
               )}
 
               <button type="submit" disabled={loading} className="login-cta"
-                style={{ width: "100%", padding: "12px 0", borderRadius: 11, border: "none", cursor: "pointer", background: "#ca631f", color: "#fff", fontWeight: 700, fontSize: 14.5, letterSpacing: "0.01em", boxShadow: "0 4px 18px rgba(202,99,31,0.35)", fontFamily: "var(--font-google-sans)", marginTop: 2 }}>
+                style={{ width: "100%", padding: "12px 0", borderRadius: 11, border: "none", cursor: "pointer", background: "#004f91", color: "#fff", fontWeight: 700, fontSize: 14.5, letterSpacing: "0.01em", boxShadow: "0 4px 18px rgba(0,79,145,0.35)", fontFamily: "var(--font-google-sans)", marginTop: 2 }}>
                 {loading ? (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
                     <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Connexion…
