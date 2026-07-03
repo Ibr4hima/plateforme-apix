@@ -520,6 +520,9 @@ export default function EvenementsPage() {
   const [stats,       setStats]       = useState<any>({a_venir:0,en_cours:0,total:0});
 
   const [recherche,    setRecherche]    = useState("");
+  const [heroReduit,   setHeroReduit]   = useState(false);
+  useEffect(()=>{ try { setHeroReduit(localStorage.getItem("apix-hero-reduit")==="1"); } catch {} },[]);
+  const toggleHero = () => setHeroReduit(r=>{ const n=!r; try { localStorage.setItem("apix-hero-reduit", n?"1":"0"); } catch {} return n; });
   const [vueMode,      setVueMode]      = useState<"liste"|"frise">("liste");
   const [statutFiltre, setStatutFiltre] = useState("");
   const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
@@ -618,9 +621,9 @@ export default function EvenementsPage() {
 @keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgba(24,128,56,0.45)}70%{box-shadow:0 0 0 9px rgba(24,128,56,0)}100%{box-shadow:0 0 0 0 rgba(24,128,56,0)}}`}</style>
       <Navbar/>
 
-      {/* Hero */}
-      <section style={{padding:"104px 40px 46px",background:"#004f91",position:"relative" as const,overflow:"hidden"}}>
-        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
+      {/* Hero — repliable */}
+      <section style={{padding:heroReduit?"78px 40px 14px":"104px 40px 46px",background:"#004f91",position:"relative" as const,overflow:"hidden",transition:"padding 0.35s ease"}}>
+        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none",opacity:heroReduit?0.45:1,transition:"opacity 0.35s ease"}}>
           {/* Trame fine estompée */}
           <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)"}}/>
           {/* Halos lumineux */}
@@ -629,18 +632,48 @@ export default function EvenementsPage() {
           {/* Liseré lumineux en bas */}
           <div style={{position:"absolute" as const,left:0,right:0,bottom:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)"}}/>
         </div>
+        <style>{`@keyframes heroIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}`}</style>
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"rgba(202,99,31,0.08)",border:"1.5px solid rgba(202,99,31,0.45)",borderRadius:999,padding:"9px 18px",marginBottom:17}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.5)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-            <span style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
-          </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Événements</h1>
-          <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
-  {(stats.total||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.total} événement{stats.total>1?"s":""}</span>}
-  {(stats.en_cours||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(202,99,31,0.18)",border:"1px solid rgba(202,99,31,0.35)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.en_cours} en cours</span>}
-  {(stats.a_venir||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(54,111,227,0.18)",border:"1px solid rgba(54,111,227,0.35)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.a_venir} à venir</span>}
-  {(stats.termine||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.termine} terminé{stats.termine>1?"s":""}</span>}
-</div>
+          {heroReduit ? (
+            <div key="mini" style={{display:"flex",alignItems:"center",gap:14,animation:"heroIn 0.3s ease"}}>
+              <span style={{width:7,height:7,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.5)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+              <h1 style={{fontWeight:800,fontSize:"1.15rem",color:"#fff",lineHeight:1.2,margin:0,whiteSpace:"nowrap" as const}}>Événements</h1>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap" as const,alignItems:"center",minWidth:0}}>
+                {(stats.total||0)>0&&<span style={{fontSize:11.5,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"3px 11px",borderRadius:999}}>{stats.total} événement{stats.total>1?"s":""}</span>}
+                {(stats.en_cours||0)>0&&<span style={{fontSize:11.5,fontWeight:700,color:"#fff",background:"rgba(202,99,31,0.18)",border:"1px solid rgba(202,99,31,0.35)",padding:"3px 11px",borderRadius:999}}>{stats.en_cours} en cours</span>}
+                {(stats.a_venir||0)>0&&<span style={{fontSize:11.5,fontWeight:700,color:"#fff",background:"rgba(54,111,227,0.18)",border:"1px solid rgba(54,111,227,0.35)",padding:"3px 11px",borderRadius:999}}>{stats.a_venir} à venir</span>}
+                {(stats.termine||0)>0&&<span style={{fontSize:11.5,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",padding:"3px 11px",borderRadius:999}}>{stats.termine} terminé{stats.termine>1?"s":""}</span>}
+              </div>
+              <button onClick={toggleHero} title="Déployer l'en-tête" aria-label="Déployer l'en-tête"
+                style={{marginLeft:"auto",width:30,height:30,borderRadius:"50%",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.20)";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";}}>
+                <ChevronDown size={15} color="#fff"/>
+              </button>
+            </div>
+          ) : (
+            <div key="full" style={{animation:"heroIn 0.3s ease"}}>
+              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16}}>
+                <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"rgba(202,99,31,0.08)",border:"1.5px solid rgba(202,99,31,0.45)",borderRadius:999,padding:"9px 18px",marginBottom:17}}>
+                  <span style={{width:7,height:7,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.5)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                  <span style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
+                </div>
+                <button onClick={toggleHero} title="Réduire l'en-tête" aria-label="Réduire l'en-tête"
+                  style={{width:30,height:30,borderRadius:"50%",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.20)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";}}>
+                  <ChevronUp size={15} color="#fff"/>
+                </button>
+              </div>
+              <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Événements</h1>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
+                {(stats.total||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.total} événement{stats.total>1?"s":""}</span>}
+                {(stats.en_cours||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(202,99,31,0.18)",border:"1px solid rgba(202,99,31,0.35)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.en_cours} en cours</span>}
+                {(stats.a_venir||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(54,111,227,0.18)",border:"1px solid rgba(54,111,227,0.35)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.a_venir} à venir</span>}
+                {(stats.termine||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.termine} terminé{stats.termine>1?"s":""}</span>}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
