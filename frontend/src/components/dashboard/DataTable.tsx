@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpDown, ChevronDown, ChevronUp, FileSpreadsheet, Loader2, X } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Search, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -211,27 +211,43 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
     <div style={{
       display: "flex", flexDirection: "column" as const,
       background: "#fff", width: "100%",
-      borderRadius: embedded ? 0 : 20,
-      border: embedded ? "none" : "1px solid #e2e8f0",
-      boxShadow: embedded ? "none" : "0 8px 32px rgba(0,0,0,0.12)",
+      borderRadius: embedded ? 0 : 14,
+      border: embedded ? "none" : "1px solid #ECEAE7",
+      boxShadow: embedded ? "none" : "0 1px 3px rgba(0,0,0,0.03)",
       overflow: "hidden",
     }}>
 
       {/* ── Header ── */}
-      <div style={{ padding: "18px 20px 14px", background: "#fff", borderBottom: "1px solid #f1f5f9" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b" }}>{titre}</h2>
-          <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+      <div style={{ padding: "16px 20px 14px", background: "#fff", borderBottom: "1px solid #F2F0EF" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#1a1a2e", margin: 0 }}>{titre}</h2>
+            {description && <p style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 3, lineHeight: 1.45 }}>{description}</p>}
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+            <div style={{ position: "relative" as const }}>
+              <Search size={12} style={{ position: "absolute" as const, left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…"
+                style={{ width: 150, paddingLeft: 27, paddingRight: 22, paddingTop: 6, paddingBottom: 6, borderRadius: 9, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 11.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const, transition: "border-color 0.15s, background 0.15s" }}
+                onFocus={e => { e.currentTarget.style.borderColor = "rgba(0,79,145,0.45)"; e.currentTarget.style.background = "#fff"; }}
+                onBlur={e => { e.currentTarget.style.borderColor = "#E8E5E3"; e.currentTarget.style.background = "#F8F7F6"; }} />
+              {search && <button onClick={() => setSearch("")}
+                style={{ position: "absolute" as const, right: 7, top: "50%", transform: "translateY(-50%)", background: "#ECEAE8", border: "none", cursor: "pointer", padding: 2, borderRadius: "50%", display: "flex" }}>
+                <X size={8} style={{ color: "#4a5568" }} />
+              </button>}
+            </div>
             <button onClick={exportXLSX} title={`Exporter ${sorted.length} lignes en Excel`}
-              style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px",
-                background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8,
-                cursor: "pointer", fontSize: 11, color: "#15803d", fontWeight: 600 }}>
-              <FileSpreadsheet size={11} /> Excel
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px",
+                background: "#004f91", border: "none", borderRadius: 9, boxShadow: "0 3px 12px rgba(0,79,145,0.25)",
+                cursor: "pointer", fontSize: 11.5, color: "#fff", fontWeight: 700, fontFamily: "var(--font-google-sans)" }}>
+              <FileSpreadsheet size={12} /> Excel
             </button>
             {onClose && (
               <button onClick={onClose}
-                style={{ background: "#f1f5f9", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}>
-                <X size={13} color="#64748b" />
+                style={{ width: 28, height: 28, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
+                <X size={13} color="#4a5568" />
               </button>
             )}
           </div>
@@ -241,7 +257,7 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
       {/* ── Tableau ── */}
       <div style={{ overflowX: "auto" }}>
         {loading ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 50, gap: 10, color: "#94a3b8" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 50, gap: 10, color: "#9aa5b4" }}>
             <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
             <span style={{ fontSize: 13 }}>Chargement…</span>
           </div>
@@ -251,37 +267,38 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
           </div>
         ) : sorted.length === 0 ? (
           <div style={{ padding: 50, textAlign: "center" as const }}>
-            <p style={{ fontSize: 13, color: "#94a3b8" }}>
+            <p style={{ fontSize: 13, color: "#9aa5b4" }}>
               {search ? `Aucun résultat pour "${search}"` : "Aucune donnée disponible."}
             </p>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 600 }}>
             <thead>
-              <tr style={{ background: "#f8fafc" }}>
+              <tr style={{ background: "#FAFAF9" }}>
                 {columns.map(col => {
                   const { alignRight } = colMeta[col] || {};
+                  const active = sortCol === col;
                   return (
                     <th key={col} onClick={() => toggleSort(col)}
                       style={{
-                        padding: "10px 16px",
-                        // Aligner header selon type de colonne
+                        padding: "11px 16px",
                         textAlign: alignRight ? "center" as const : "left" as const,
-                        fontSize: 11, fontWeight: 700, color: "#64748b",
-                        textTransform: "uppercase" as const, letterSpacing: "0.05em",
+                        fontSize: 10, fontWeight: 800, color: active ? "#004f91" : "#4a5568",
+                        textTransform: "uppercase" as const, letterSpacing: "0.1em",
                         whiteSpace: "nowrap", cursor: "pointer", userSelect: "none" as const,
-                        background: sortCol === col ? "#f0f7ff" : "#f8fafc",
-                        borderBottom: sortCol === col ? "2px solid #004f91" : "2px solid #e2e8f0",
+                        background: active ? "rgba(0,79,145,0.04)" : "#FAFAF9",
+                        borderBottom: active ? "2px solid #004f91" : "1px solid #F0EEEC",
                         position: "sticky" as const, top: 0, zIndex: 1,
+                        transition: "background 0.12s, color 0.12s",
                       }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 5,
                         justifyContent: alignRight ? "center" as const : "flex-start" as const }}>
                         <span>{col}</span>
-                        {sortCol === col
+                        {active
                           ? (sortDir === "asc"
                             ? <ChevronUp size={11} color="#004f91" />
                             : <ChevronDown size={11} color="#004f91" />)
-                          : <ArrowUpDown size={10} color="#cbd5e1" />}
+                          : <ArrowUpDown size={10} color="#C5BFBB" />}
                       </div>
                     </th>
                   );
@@ -291,20 +308,20 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
             <tbody>
               {displayed.map((row, i) => (
                 <tr key={i}
-                  style={{ borderBottom: "1px solid #f1f5f9", background: i % 2 === 0 ? "#fff" : "#fafbfc", transition: "background 0.1s" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "#f0f7ff")}
-                  onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "#fafbfc")}>
-                  {columns.map((col, ci) => {
+                  style={{ borderBottom: "1px solid #F6F4F3", background: "#fff", transition: "background 0.1s" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "#fff")}>
+                  {columns.map(col => {
                     const v = row[col];
                     const { isNum, isRank, isBadge, alignRight } = colMeta[col] || {};
+                    const negatif = isNum && isNumeric(v) && Number(v) < 0;
                     return (
                       <td key={col} style={{
                         padding: "9px 16px",
                         textAlign: alignRight ? "center" as const : "left" as const,
-                        color: isNum ? "#004f91" : isRank ? "#334155" : "#334155",
-                        fontWeight: isNum || isRank ? 700 : 400,
+                        color: negatif ? "#dc2626" : "#4a5568",
+                        fontWeight: isNum || isRank ? 600 : 500,
                         whiteSpace: "nowrap",
-                        borderLeft: ci === 0 ? "3px solid transparent" : "none",
                         fontVariantNumeric: (isNum || isRank) ? "tabular-nums" : "normal",
                       }}>
                         {isBadge && v ? <Badge value={String(v)} /> : formatValue(v, col)}
@@ -320,23 +337,27 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
 
       {/* ── Footer ── */}
       {!loading && !error && sorted.length > 0 && (
-        <div style={{ padding: "10px 20px", borderTop: "1px solid #f1f5f9",
-          display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fafbfc" }}>
-          <span style={{ fontSize: 11, color: "#94a3b8" }}>
+        <div style={{ padding: "10px 20px", borderTop: "1px solid #F2F0EF",
+          display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FCFBFA" }}>
+          <span style={{ fontSize: 11, color: "#9aa5b4" }}>
             {displayed.length.toLocaleString("fr-FR")} / {sorted.length.toLocaleString("fr-FR")} ligne{sorted.length !== 1 ? "s" : ""}
             {search ? ` · filtrées sur ${data.length.toLocaleString("fr-FR")}` : ""}
           </span>
           {rowsLimit !== "Tout" && sorted.length > (rowsLimit as number) && (
             <button onClick={() => setRowsLimit("Tout")}
-              style={{ fontSize: 11, fontWeight: 600, color: "#004f91",
-                background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+              style={{ fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.06)",
+                border: "1px solid rgba(0,79,145,0.18)", borderRadius: 999, padding: "4px 12px", cursor: "pointer",
+                fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.12)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,79,145,0.06)"; }}>
               Voir tout ({sorted.length.toLocaleString("fr-FR")})
             </button>
           )}
           {rowsLimit === "Tout" && (
             <button onClick={() => setRowsLimit(7)}
-              style={{ fontSize: 11, fontWeight: 600, color: "#64748b",
-                background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+              style={{ fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#fff",
+                border: "1px solid #E4E1DE", borderRadius: 999, padding: "4px 12px", cursor: "pointer",
+                fontFamily: "var(--font-google-sans)" }}>
               Réduire
             </button>
           )}
