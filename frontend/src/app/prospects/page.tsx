@@ -147,27 +147,25 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
         ? { label: "Décliné le", value: p.issue_conclu_le ? fmtDate(p.issue_conclu_le.slice(0, 10)) : null }
         : { label: "Conclusion", value: null });
 
-  // Bandeau de statut (onglet En contact) — même style que « Prochain événement »
-  const ACCENTS: Record<string, { grad:string; b:string; b2:string; sh:string; sh2:string }> = {
-    "En cours":      { grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", b:"rgba(24,128,56,0.45)",   b2:"rgba(24,128,56,0.6)",   sh:"0 4px 18px rgba(24,128,56,0.15)",   sh2:"0 12px 28px rgba(24,128,56,0.18)" },
-    "En attente":    { grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)", b:"rgba(107,114,128,0.45)", b2:"rgba(107,114,128,0.6)", sh:"0 4px 18px rgba(107,114,128,0.15)", sh2:"0 12px 28px rgba(107,114,128,0.18)" },
-    "Inactif":       { grad:"linear-gradient(90deg,#991b1b 0%,#dc2626 60%,#ef4444 100%)", b:"rgba(220,38,38,0.45)",   b2:"rgba(220,38,38,0.6)",   sh:"0 4px 18px rgba(220,38,38,0.15)",   sh2:"0 12px 28px rgba(220,38,38,0.18)" },
-    "À recontacter": { grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", b:"rgba(0,79,145,0.45)",    b2:"rgba(0,79,145,0.6)",    sh:"0 4px 18px rgba(0,79,145,0.15)",    sh2:"0 12px 28px rgba(0,79,145,0.18)" },
+  // Statut (onglet En contact) : liseré haut + pilule pleine avec point pulsant, contenu teinté
+  const ACCENTS: Record<string, { c:string; grad:string }> = {
+    "En cours":      { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)" },
+    "En attente":    { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
+    "Inactif":       { c:"#dc2626", grad:"linear-gradient(90deg,#991b1b 0%,#dc2626 60%,#ef4444 100%)" },
+    "À recontacter": { c:"#004f91", grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" },
   };
   const accent = onglet === "historique" && badge ? (ACCENTS[badge.label] || null) : null;
+  const blocC  = accent ? accent.c : "#004f91";
+  const blocBg = accent ? `${accent.c}0A` : "rgba(0,79,145,0.04)";
+  const blocBd = accent ? `${accent.c}1F` : "rgba(0,79,145,0.10)";
 
   return (
     <div onClick={onOpen}
-      style={{ background: "#fff", border: accent ? `1.5px solid ${accent.b}` : "1px solid #ECEAE7", borderRadius: 14, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: accent ? accent.sh : "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = accent ? accent.sh2 : "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = accent ? accent.b2 : "rgba(0,79,145,0.25)"; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = accent ? accent.sh : "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = accent ? accent.b : "#ECEAE7"; }}>
+      style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = accent ? `${accent.c}40` : "rgba(0,79,145,0.25)"; }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
 
-      {accent && badge && (
-        <div style={{ display: "flex", alignItems: "center", gap: 7, background: accent.grad, padding: "6px 16px" }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }}/>
-          <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{badge.label}</span>
-        </div>
-      )}
+      {accent && <div style={{ height: 3, background: accent.grad, flexShrink: 0 }}/>}
       <div style={{ padding: "14px 16px 14px", flex: 1 }}>
         {/* Statut / email + siège */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -175,8 +173,15 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
             mail ? (
               <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, minWidth: 0 }}>{mail}</span>
             ) : <span />
-          ) : badge && !accent ? (
-            <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" as const }}>{badge.label}</span>
+          ) : badge ? (
+            accent ? (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: "#fff", background: accent.grad, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" as const }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }}/>
+                {badge.label}
+              </span>
+            ) : (
+              <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" as const }}>{badge.label}</span>
+            )
           ) : <span />}
           {p.siege_nom && <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
         </div>
@@ -186,17 +191,17 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
 
         {/* Infos libellées */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-          <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
+          <div style={{ background: blocBg, border: `1px solid ${blocBd}`, borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
             {onglet === "cibles" ? <>
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Activités spécialisées</p>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: blocC, textTransform: "uppercase" as const, marginBottom: 3 }}>Activités spécialisées</p>
               <p style={{ fontSize: 12, fontWeight: 600, color: nbActs > 0 ? "#1a1a2e" : "#9aa5b4" }}>{nbActs || "—"}</p>
             </> : <>
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Email</p>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: blocC, textTransform: "uppercase" as const, marginBottom: 3 }}>Email</p>
               <p style={{ fontSize: 12, fontWeight: 600, color: mail ? "#1a1a2e" : "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{mail || "—"}</p>
             </>}
           </div>
-          <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>{info2.label}</p>
+          <div style={{ background: blocBg, border: `1px solid ${blocBd}`, borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: blocC, textTransform: "uppercase" as const, marginBottom: 3 }}>{info2.label}</p>
             <p style={{ fontSize: 12, fontWeight: 600, color: info2.value ? "#1a1a2e" : "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{info2.value || "—"}</p>
           </div>
         </div>
@@ -204,7 +209,7 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
 
       {/* Nb échanges */}
       {p.echanges?.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", borderTop: "1px solid #F2F0EF", padding: "10px 0", fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", borderTop: "1px solid #F2F0EF", padding: "10px 0", fontSize: 11.5, color: accent ? accent.c : "#9aa5b4", fontWeight: 600 }}>
           {p.echanges.length} échange{p.echanges.length > 1 ? "s" : ""} enregistré{p.echanges.length > 1 ? "s" : ""}
         </div>
       )}
