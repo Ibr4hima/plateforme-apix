@@ -280,7 +280,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
             </span>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
-            {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} onClick={()=>setDetailZone(z)} />)}
+            {selectedInfo.zones.map((z: any) => <ZoneBigCard key={z.id} zone={z} color={selectedInfo.meta.color} onClick={()=>setDetailZone(z)} />)}
           </div>
         </div>
       )}
@@ -291,13 +291,14 @@ function ZonesParType({ zones }: { zones: any[] }) {
 }
 
 // ── Grande card zone (ouvre le modal détail) ──────────────────────────────────
-function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
+function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:string; onClick:()=>void }) {
   const entreprises = (zone.entreprises||[]).length;
+  const c = color;
   return (
     <div onClick={onClick}
       style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
       onMouseEnter={e=>{
-        e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+        e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor=`${c}40`;
         // Contenus trop longs : glissent pour révéler la fin
         e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
           const span = box.firstElementChild as HTMLElement | null;
@@ -312,11 +313,12 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
         });
       }}>
 
+      <div style={{ height:3, background:`linear-gradient(90deg,${c}CC 0%,${c} 50%,${c}99 100%)`, flexShrink:0 }}/>
       <div style={{ padding:"14px 16px 14px", flex:1 }}>
         {/* Pôle */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           {zone.pole_nom ? (
-            <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999, overflow:"hidden", whiteSpace:"nowrap" as const, maxWidth:"100%" }}>{zone.pole_nom}</span>
+            <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:c, background:`${c}12`, padding:"3px 10px", borderRadius:999, overflow:"hidden", whiteSpace:"nowrap" as const, maxWidth:"100%" }}>{zone.pole_nom}</span>
           ) : <span/>}
         </div>
 
@@ -325,14 +327,14 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
 
         {/* Infos libellées */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
-          <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-            <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Localisation</p>
+          <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+            <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Localisation</p>
             <p data-marquee style={{ fontSize:12, fontWeight:600, color:(zone.departement_nom||zone.region_nom)?"#1a1a2e":"#9aa5b4", overflow:"hidden", whiteSpace:"nowrap" as const }}>
               <span style={{ display:"inline-block" }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</span>
             </p>
           </div>
-          <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px" }}>
-            <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
+          <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px" }}>
+            <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
             <p style={{ fontSize:12, fontWeight:600, color:entreprises>0?"#1a1a2e":"#9aa5b4" }}>{entreprises}</p>
           </div>
         </div>
@@ -340,8 +342,8 @@ function ZoneBigCard({ zone, onClick }: { zone:any; onClick:()=>void }) {
 
       {/* Action */}
       <div style={{ display:"flex", borderTop:"1px solid #F2F0EF" }}>
-        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, transition:"background 0.15s" }}
-          onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"10px 0", fontSize:11.5, color:c, fontWeight:600, transition:"background 0.15s" }}
+          onMouseEnter={ev=>ev.currentTarget.style.background=`${c}0D`}
           onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
           Voir les détails →
         </div>
