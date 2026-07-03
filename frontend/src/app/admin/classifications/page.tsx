@@ -316,7 +316,7 @@ export default function AdminClassifications() {
   const [onglet, setOnglet] = useState<"citi" | "nace">("citi");
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", fontFamily: "var(--font-google-sans)", background: "#F2F0EF" }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", fontFamily: "var(--font-google-sans)", background: "#F6F5F3" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       {/* Header */}

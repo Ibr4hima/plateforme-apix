@@ -1067,7 +1067,7 @@ export default function OpportunitesPage() {
     .replace(/^(.)/, (_:string,c:string) => c.toUpperCase());
 
   return (
-    <main style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <Navbar/>
 

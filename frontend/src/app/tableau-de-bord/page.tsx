@@ -1941,7 +1941,7 @@ export default function TableauDeBordPage() {
   const resetConfig = useCallback((scope:"viz"|"tables") => setConfig(p=> scope==="tables" ? {...p, tableCards:[]} : {...p, kpisActifs:[], cards:[]}), []);
 
   return (
-    <div style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
+    <div style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div id="d3-tooltip" style={{position:"fixed",pointerEvents:"none",background:"rgba(26,26,46,0.92)",color:"#fff",borderRadius:8,padding:"8px 12px",fontSize:12,lineHeight:1.5,opacity:0,zIndex:9999,backdropFilter:"blur(4px)"}}/>
       <Navbar/>
