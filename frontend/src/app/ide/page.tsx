@@ -461,8 +461,8 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
           <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
             <thead style={{ position:"sticky" as const, top:0, zIndex:2 }}>
               <tr style={{ background:"#FAFAF9" }}>
-                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"#FAFAF9", borderRight:"1px solid #F0EEEC", borderBottom:"1px solid #F0EEEC", whiteSpace:"nowrap" as const, minWidth:170 }}>Indicateur</th>
-                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:10, fontWeight:800, color:"#004f91", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid #F0EEEC" }}>{a}</th>)}
+                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"#4a5568", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"#FAFAF9", borderRight:"1px solid #F0EEEC", borderBottom:"1px solid #F0EEEC", whiteSpace:"nowrap" as const, minWidth:170 }}>Indicateur</th>
+                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:10, fontWeight:800, color:"#4a5568", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid #F0EEEC" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -488,7 +488,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
                         const r = donnees.find((d:any)=>d.pays===pays.nom&&d.direction===s.dir&&d.indicateur===s.ind&&d.annee===a);
                         const v = r?.valeur;
                         const display = v!==null&&v!==undefined ? fmtVal(v) : "—";
-                        const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#dc2626" : "#353839";
+                        const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#dc2626" : "#4a5568";
                         return (
                           <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
                             {display}
