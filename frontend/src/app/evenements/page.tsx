@@ -520,9 +520,6 @@ export default function EvenementsPage() {
   const [stats,       setStats]       = useState<any>({a_venir:0,en_cours:0,total:0});
 
   const [recherche,    setRecherche]    = useState("");
-  const [heroReduit,   setHeroReduit]   = useState(false);
-  useEffect(()=>{ try { setHeroReduit(localStorage.getItem("apix-hero-reduit")==="1"); } catch {} },[]);
-  const toggleHero = () => setHeroReduit(r=>{ const n=!r; try { localStorage.setItem("apix-hero-reduit", n?"1":"0"); } catch {} return n; });
   const [vueMode,      setVueMode]      = useState<"liste"|"frise">("liste");
   const [statutFiltre, setStatutFiltre] = useState("");
   const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
@@ -621,63 +618,29 @@ export default function EvenementsPage() {
 @keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgba(24,128,56,0.45)}70%{box-shadow:0 0 0 9px rgba(24,128,56,0)}100%{box-shadow:0 0 0 0 rgba(24,128,56,0)}}`}</style>
       <Navbar/>
 
-      {/* Hero — repliable */}
-      <section style={{padding:heroReduit?"78px 40px 14px":"104px 40px 46px",background:"#004f91",position:"relative" as const,overflow:"hidden",transition:"padding 0.35s ease"}}>
-        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none",opacity:heroReduit?0.45:1,transition:"opacity 0.35s ease"}}>
+      {/* Barre de titre */}
+      <section style={{padding:"82px 40px 18px",background:"#004f91",position:"relative" as const,overflow:"hidden"}}>
+        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none",opacity:0.5}}>
           {/* Trame fine estompée */}
           <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)"}}/>
           {/* Halos lumineux */}
-          <div style={{position:"absolute" as const,top:"-45%",right:"-6%",width:580,height:580,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.06) 0%,transparent 60%)"}}/>
-          <div style={{position:"absolute" as const,bottom:"-35%",left:"-8%",width:460,height:460,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,106,176,0.45) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,top:"-140%",right:"-6%",width:580,height:580,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-160%",left:"-8%",width:460,height:460,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,106,176,0.45) 0%,transparent 65%)"}}/>
           {/* Liseré lumineux en bas */}
           <div style={{position:"absolute" as const,left:0,right:0,bottom:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)"}}/>
         </div>
-        <style>{`@keyframes heroIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}`}</style>
-        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          {heroReduit ? (
-            <div key="mini" style={{display:"flex",alignItems:"center",gap:14,animation:"heroIn 0.3s ease"}}>
-              <span style={{width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
-              <h1 style={{fontWeight:800,fontSize:"1.15rem",color:"#fff",lineHeight:1.2,margin:0,whiteSpace:"nowrap" as const}}>Événements</h1>
-              <div style={{display:"inline-flex",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:999,padding:3,gap:3}}>
-                {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
-                  <button key={o.v} onClick={()=>setVueMode(o.v)}
-                    style={{padding:"4px 14px",borderRadius:999,border:"none",cursor:"pointer",fontSize:11.5,fontWeight:700,background:vueMode===o.v?"#fff":"transparent",color:vueMode===o.v?"#004f91":"rgba(255,255,255,0.85)",fontFamily:"var(--font-google-sans)",transition:"all 0.15s",whiteSpace:"nowrap" as const}}>
-                    {o.l}
-                  </button>
-                ))}
-              </div>
-              <button onClick={toggleHero} title="Déployer l'en-tête" aria-label="Déployer l'en-tête"
-                style={{marginLeft:"auto",width:30,height:30,borderRadius:"50%",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.20)";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";}}>
-                <ChevronDown size={15} color="#fff"/>
+        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1,display:"flex",alignItems:"center",gap:16}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
+          <h1 style={{fontWeight:800,fontSize:"1.3rem",color:"#fff",lineHeight:1.2,margin:0,whiteSpace:"nowrap" as const,letterSpacing:"-0.01em"}}>Événements</h1>
+          <div style={{display:"inline-flex",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:999,padding:3,gap:3}}>
+            {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
+              <button key={o.v} onClick={()=>setVueMode(o.v)}
+                style={{padding:"5px 15px",borderRadius:999,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:vueMode===o.v?"#fff":"transparent",color:vueMode===o.v?"#004f91":"rgba(255,255,255,0.85)",fontFamily:"var(--font-google-sans)",transition:"all 0.15s",whiteSpace:"nowrap" as const}}>
+                {o.l}
               </button>
-            </div>
-          ) : (
-            <div key="full" style={{animation:"heroIn 0.3s ease"}}>
-              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16}}>
-                <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"rgba(202,99,31,0.08)",border:"1.5px solid rgba(202,99,31,0.45)",borderRadius:999,padding:"9px 18px",marginBottom:17}}>
-                  <span style={{width:7,height:7,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.5)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                  <span style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
-                </div>
-                <button onClick={toggleHero} title="Réduire l'en-tête" aria-label="Réduire l'en-tête"
-                  style={{width:30,height:30,borderRadius:"50%",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.20)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";}}>
-                  <ChevronUp size={15} color="#fff"/>
-                </button>
-              </div>
-              <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Événements</h1>
-              <div style={{display:"inline-flex",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:999,padding:3,gap:3,backdropFilter:"blur(10px)"}}>
-                {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
-                  <button key={o.v} onClick={()=>setVueMode(o.v)}
-                    style={{padding:"7px 18px",borderRadius:999,border:"none",cursor:"pointer",fontSize:12.5,fontWeight:700,background:vueMode===o.v?"#fff":"transparent",color:vueMode===o.v?"#004f91":"rgba(255,255,255,0.85)",fontFamily:"var(--font-google-sans)",transition:"all 0.15s",whiteSpace:"nowrap" as const}}>
-                    {o.l}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
+          <span style={{marginLeft:"auto",fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.55)",letterSpacing:"0.12em",textTransform:"uppercase" as const,whiteSpace:"nowrap" as const}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
         </div>
       </section>
 
