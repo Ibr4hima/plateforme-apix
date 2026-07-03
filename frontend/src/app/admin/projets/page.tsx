@@ -613,7 +613,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
     return `${min} — ${max} ${sym}`;
   };
   const invest = fmtInvest();
-  const LBL = ({children}:{children:string}) => (
+  const LBL = ({children}:{children:React.ReactNode}) => (
     <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
   );
 
