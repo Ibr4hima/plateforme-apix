@@ -570,7 +570,8 @@ export default function EvenementsPage() {
 
   return (
     <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
 
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:32 }}>
@@ -595,7 +596,16 @@ export default function EvenementsPage() {
         </div>
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))", gap:14 }}>
-          {evenements.map(e => {
+          {(()=>{
+            // Prochain événement à venir (date la plus proche dans le futur) — même logique que la page publique
+            const today = new Date(); today.setHours(0,0,0,0);
+            let prochainId: number|null = null; let bestD: Date|null = null;
+            evenements.forEach(e=>{
+              const d = e.date_debut ? new Date(e.date_debut+"T00:00:00")
+                : e.prochain_annee ? new Date(e.prochain_annee,(e.prochain_mois||1)-1,e.prochain_jour||1) : null;
+              if (d && d>today && (!bestD || d<bestD)) { bestD=d; prochainId=e.id; }
+            });
+            return evenements.map(e => {
             const dateStr = e.date_debut
               ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDateFR(e.date_debut) : `${fmtDateFR(e.date_debut)} → ${fmtDateFR(e.date_fin)}`)
               : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS_VIEW[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
@@ -609,11 +619,25 @@ export default function EvenementsPage() {
               termine:  { label:"Terminé",  c:"#6b7280", bg:"#F2F0EF"              },
             };
             const st = statutAff ? ST[statutAff] : null;
+            const estProchain = prochainId!=null && e.id===prochainId;
+            const estEnCours = statutAff==="en_cours";
+            const estPasse = statutAff==="termine";
+            const accent = estProchain
+              ? { c:"#004f91", grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", label:"Prochain événement", bg:"rgba(0,79,145,0.07)" }
+              : estEnCours
+              ? { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label:"Événement en cours", bg:"rgba(24,128,56,0.08)" }
+              : null;
+            const blocC  = estPasse ? "#6b7280" : estEnCours ? "#188038" : "#004f91";
+            const blocBg = estPasse ? "#F5F4F3" : estEnCours ? "rgba(24,128,56,0.05)" : "rgba(0,79,145,0.04)";
+            const blocBd = estPasse ? "#E8E5E3" : estEnCours ? "rgba(24,128,56,0.12)" : "rgba(0,79,145,0.10)";
+            // Rôle APIX : bleu par défaut, vert quand l'événement est en cours, gris pour les passés
+            const roleC  = estPasse ? { c:"#6b7280", bg:"#F2F0EF" } : estEnCours ? { c:"#188038", bg:"rgba(24,128,56,0.08)" } : { c:"#004f91", bg:"rgba(0,79,145,0.07)" };
+            const txtC   = estPasse ? "#4a5568" : "#1a1a2e";
             return (
               <div key={e.id} onClick={()=>setVue(e)}
-                style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                style={{background:estPasse?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                 onMouseEnter={ev=>{
-                  ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+                  ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?`${accent.c}40`:estPasse?"#D8D4D0":"rgba(0,79,145,0.25)";
                   // Contenus trop longs : glissent pour révéler la fin
                   ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                     const span = box.firstElementChild as HTMLElement | null;
@@ -628,34 +652,40 @@ export default function EvenementsPage() {
                   });
                 }}>
 
+                <div style={{height:3,background:accent?accent.grad:estPasse?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
                 <div style={{padding:"14px 16px 14px",flex:1}}>
-                  {/* Statut + état de publication */}
+                  {/* Statut + rôle de l'APIX */}
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                    {st ? (
+                    {accent ? (
+                      <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:accent.c,background:accent.bg,padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const}}>
+                        <span style={{width:6,height:6,borderRadius:"50%",background:accent.c,["--pc" as any]:accent.c+"66",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                        {accent.label}
+                      </span>
+                    ) : st ? (
                       <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
                     ) : <span/>}
                     {e.role_apix ? (
-                      <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:(ROLE_PILL[e.role_apix]||ROLE_PILL["Invité"]).c,background:(ROLE_PILL[e.role_apix]||ROLE_PILL["Invité"]).bg,padding:"3px 10px",borderRadius:999}}>
+                      <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999}}>
                         {ROLES_APIX_LABELS[e.role_apix]||e.role_apix}
                       </span>
                     ) : <span/>}
                   </div>
 
                   {/* Titre + édition */}
-                  <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
+                  <div style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
                   {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinalEdition(e.edition)}</div>}
 
                   {/* Infos libellées */}
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Date</p>
-                      <p data-marquee style={{fontSize:12,fontWeight:600,color:dateStr?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                    <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px",minWidth:0}}>
+                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Date</p>
+                      <p data-marquee style={{fontSize:12,fontWeight:600,color:dateStr?txtC:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                         <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
                       </p>
                     </div>
-                    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Lieu</p>
-                      <p data-marquee style={{fontSize:12,fontWeight:600,color:lieu?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                    <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px",minWidth:0}}>
+                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Lieu</p>
+                      <p data-marquee style={{fontSize:12,fontWeight:600,color:lieu?txtC:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                         <span style={{display:"inline-block"}}>{lieu||"—"}</span>
                       </p>
                     </div>
@@ -687,7 +717,8 @@ export default function EvenementsPage() {
                 </div>
               </div>
             );
-          })}
+          });
+          })()}
         </div>
       )}
 
