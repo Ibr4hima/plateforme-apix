@@ -165,7 +165,8 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
       onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = accent ? `${accent.c}40` : "rgba(0,79,145,0.25)"; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
 
-      {accent && <div style={{ height: 3, background: accent.grad, flexShrink: 0 }}/>}
+      {accent ? <div style={{ height: 3, background: accent.grad, flexShrink: 0 }}/>
+        : onglet === "cibles" ? <div style={{ height: 3, background: "linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink: 0 }}/> : null}
       <div style={{ padding: "14px 16px 14px", flex: 1 }}>
         {/* Statut / email + siège */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -174,14 +175,10 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
               <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, minWidth: 0 }}>{mail}</span>
             ) : <span />
           ) : badge ? (
-            accent ? (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: "#fff", background: accent.grad, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" as const }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }}/>
-                {badge.label}
-              </span>
-            ) : (
-              <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" as const }}>{badge.label}</span>
-            )
+            <span style={{ display: "inline-flex", alignItems: "center", gap: accent ? 7 : 0, fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" as const }}>
+              {accent && <span style={{ width: 6, height: 6, borderRadius: "50%", background: badge.color, ["--pc" as any]: badge.color + "66", animation: "pulseDotC 1.6s ease-out infinite", flexShrink: 0 }}/>}
+              {badge.label}
+            </span>
           ) : <span />}
           {p.siege_nom && <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
         </div>
@@ -657,7 +654,7 @@ export default function ProspectsPage() {
   return (
     <main style={{ minHeight: "100vh", background: "#F2F0EF", fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
+@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
       <Navbar />
 
       {/* ── Hero ── */}
