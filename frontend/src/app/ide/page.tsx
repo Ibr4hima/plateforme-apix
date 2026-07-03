@@ -436,17 +436,33 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
             <div style={{ flex:1, minWidth:0 }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>Tableau de données</h2>
-              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
-                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:10.5, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
+                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35, flexShrink:0 }}>Tableau de données</h2>
+                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:10.5, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
                   {annees[0]} — {annees[annees.length-1]}
                 </span>}
-                {paysSelectionnes.map((p:any)=>(
-                  <span key={p.nom} title={p.label||p.nom} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:10.5, fontWeight:700, color:p.couleur }}>
-                    <span style={{ width:7, height:7, borderRadius:"50%", background:p.couleur, display:"inline-block", flexShrink:0 }} />
-                    {p.abrege||p.nom}
-                  </span>
-                ))}
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, minWidth:0 }}>
+                {paysSelectionnes.map((p:any)=>{
+                  const marquee = (e:React.MouseEvent, reset:boolean) => {
+                    const box = e.currentTarget.querySelector("[data-marquee]") as HTMLElement|null;
+                    const sp = box?.firstElementChild as HTMLElement|null;
+                    if (!box || !sp) return;
+                    if (reset) { sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; return; }
+                    const d = sp.scrollWidth - box.clientWidth;
+                    if (d>0) { sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; }
+                  };
+                  return (
+                    <span key={p.nom} title={p.label||p.nom}
+                      onMouseEnter={e=>marquee(e,false)} onMouseLeave={e=>marquee(e,true)}
+                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:10.5, fontWeight:700, color:p.couleur, minWidth:0 }}>
+                      <span style={{ width:7, height:7, borderRadius:"50%", background:p.couleur, display:"inline-block", flexShrink:0 }} />
+                      <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
+                        <span style={{ display:"inline-block" }}>{p.abrege||p.nom}</span>
+                      </span>
+                    </span>
+                  );
+                })}
               </div>
             </div>
             <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
@@ -2108,17 +2124,33 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
             <div style={{ flex:1, minWidth:0 }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>Tableau de données</h2>
-              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
-                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:10.5, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
+                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35, flexShrink:0 }}>Tableau de données</h2>
+                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:10.5, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
                   {annees.length===1 ? `${annees[0]}` : `${annees[0]} — ${annees[annees.length-1]}`}
                 </span>}
-                {blocs.map(b=>(
-                  <span key={b.libelle} title={b.libelle} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${b.couleur}0D`, border:`1px solid ${b.couleur}2E`, fontSize:10.5, fontWeight:700, color:b.couleur, minWidth:0 }}>
-                    <span style={{ width:7, height:7, borderRadius:"50%", background:b.couleur, display:"inline-block", flexShrink:0 }} />
-                    <span style={{ maxWidth:240, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{b.libelle}</span>
-                  </span>
-                ))}
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, minWidth:0 }}>
+                {blocs.map(b=>{
+                  const marquee = (e:React.MouseEvent, reset:boolean) => {
+                    const box = e.currentTarget.querySelector("[data-marquee]") as HTMLElement|null;
+                    const sp = box?.firstElementChild as HTMLElement|null;
+                    if (!box || !sp) return;
+                    if (reset) { sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; return; }
+                    const d = sp.scrollWidth - box.clientWidth;
+                    if (d>0) { sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; }
+                  };
+                  return (
+                    <span key={b.libelle} title={b.libelle}
+                      onMouseEnter={e=>marquee(e,false)} onMouseLeave={e=>marquee(e,true)}
+                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${b.couleur}0D`, border:`1px solid ${b.couleur}2E`, fontSize:10.5, fontWeight:700, color:b.couleur, minWidth:0 }}>
+                      <span style={{ width:7, height:7, borderRadius:"50%", background:b.couleur, display:"inline-block", flexShrink:0 }} />
+                      <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
+                        <span style={{ display:"inline-block" }}>{b.libelle}</span>
+                      </span>
+                    </span>
+                  );
+                })}
               </div>
             </div>
             <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
