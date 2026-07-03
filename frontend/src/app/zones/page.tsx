@@ -3,7 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
-import { ZONE_TYPE_META } from "@/components/shared/zoneTypes";
+import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import { Building2, ChevronRight, FileText, X } from "lucide-react";
@@ -174,6 +174,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
     byType[z.type_zone].push(z);
   });
 
+  const ordreType = (t: string) => { const i = ZONE_TYPE_ORDER.indexOf(t); return i === -1 ? ZONE_TYPE_ORDER.length : i; };
   const types = Object.entries(byType).map(([type, zs]) => ({
     type,
     meta: TYPE_META[type] || { label: type, color: "#64748b", bg: "rgba(100,116,139,0.06)", border: "rgba(100,116,139,0.2)" },
@@ -181,7 +182,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
     installed: zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length, 0),
     eligible:  zs.reduce((s, z) => s + (z.entreprises || []).filter((ze: any) => ze.statut === "eligible").length, 0),
     superficie: zs.reduce((s, z) => s + (Number(z.superficie) || 0), 0),
-  }));
+  })).sort((a, b) => ordreType(a.type) - ordreType(b.type));
 
   const selectedInfo = selectedType ? types.find(t => t.type === selectedType) : null;
 

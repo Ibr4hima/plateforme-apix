@@ -460,7 +460,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                   <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>Zones d&apos;investissement</p>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                     {poleZones.map((z:any)=>{
-                      const tc=z.type_zone==="ZES"?"#ca631f":z.type_zone==="ZAI"?"#004f91":"#188038";
+                      const tc=z.type_zone==="ZES"?"#004f91":z.type_zone==="ZAI"?"#ca631f":"#188038";
                       const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
                       return (
                         <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC", fontSize:12 }}>

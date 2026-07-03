@@ -11,8 +11,8 @@ import { useCallback, useEffect, useState } from "react";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const TYPE_ZONES = [
-  { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "#ca631f", bg: "rgba(202,99,31,0.06)", border: "rgba(202,99,31,0.2)" },
-  { key: "ZAI", label: "Zones Aménagées pour l'Investissement", code: "ZAI", color: "#004f91", bg: "rgba(0,79,145,0.06)",  border: "rgba(0,79,145,0.2)" },
+  { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "#004f91", bg: "rgba(0,79,145,0.06)",  border: "rgba(0,79,145,0.2)" },
+  { key: "ZAI", label: "Zones Aménagées pour l'Investissement", code: "ZAI", color: "#ca631f", bg: "rgba(202,99,31,0.06)", border: "rgba(202,99,31,0.2)" },
   { key: "ZFI", label: "Zones Franches Industrielles",          code: "ZFI", color: "#188038", bg: "rgba(24,128,56,0.06)",  border: "rgba(24,128,56,0.2)" },
 ];
 
