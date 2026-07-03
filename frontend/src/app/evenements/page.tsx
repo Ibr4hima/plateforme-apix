@@ -2,7 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
-import { CalendarDays, ChevronDown, ChevronUp, FileText, Loader2, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, ChevronUp, FileText, Loader2, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -51,6 +51,31 @@ const STATUT_OPTS = [
   { value:"termine",  label:"Terminés", bg:"#f3f4f6", text:"#6b7280" },
 ];
 
+// ── Primitives du design des filtres ──────────────────────────────────────────
+function FiltreTitre({ children }: { children: React.ReactNode }) {
+  return <span style={{fontSize:10.5,fontWeight:800,color:"#004f91",textTransform:"uppercase" as const,letterSpacing:"0.12em"}}>{children}</span>;
+}
+function FiltreChevron({ open }: { open:boolean }) {
+  return (
+    <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+      {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
+    </span>
+  );
+}
+function FiltreRow({ sel, color, label, onClick }: { sel:boolean; color:string; label:string; onClick:()=>void }) {
+  return (
+    <button onClick={onClick}
+      style={{display:"flex",alignItems:"center",gap:9,padding:"7px 10px",borderRadius:9,border:"none",cursor:"pointer",background:sel?`${color}0D`:"transparent",textAlign:"left" as const,transition:"background 0.12s",width:"100%"}}
+      onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+      onMouseLeave={e=>{e.currentTarget.style.background=sel?`${color}0D`:"transparent";}}>
+      <span style={{width:15,height:15,borderRadius:"50%",border:`1.5px solid ${sel?color:"#D8D4D0"}`,background:sel?color:"#fff",flexShrink:0,display:"inline-flex",alignItems:"center",justifyContent:"center",transition:"all 0.12s"}}>
+        {sel&&<Check size={9} strokeWidth={3.5} color="#fff"/>}
+      </span>
+      <span style={{fontSize:12,color:sel?color:"#4a5568",fontWeight:sel?700:500,lineHeight:1.35}}>{label}</span>
+    </button>
+  );
+}
+
 function SideFilter({ label, items, selected, onToggle, color }: {
   label:string; items:{value:string;label:string}[];
   selected:string[]; onToggle:(v:string)=>void; color:string;
@@ -59,28 +84,18 @@ function SideFilter({ label, items, selected, onToggle, color }: {
   return (
     <div style={{marginBottom:20}}>
       <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
-          {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"18",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
+        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?9:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:7}}>
+          <FiltreTitre>{label}</FiltreTitre>
+          {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#fff",background:color,padding:"1px 7px",borderRadius:999}}>{selected.length}</span>}
         </div>
-        {open?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+        <FiltreChevron open={open}/>
       </button>
       {open&&(
-        <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-          {items.map(item=>{
-            const sel=selected.includes(item.value);
-            return (
-              <button key={item.value} onClick={()=>onToggle(item.value)}
-                style={{display:"flex",alignItems:"center",gap:9,padding:"6px 8px",borderRadius:8,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{item.label}</span>
-              </button>
-            );
-          })}
+        <div style={{display:"flex",flexDirection:"column" as const,gap:3}}>
+          {items.map(item=>(
+            <FiltreRow key={item.value} sel={selected.includes(item.value)} color={color} label={item.label} onClick={()=>onToggle(item.value)}/>
+          ))}
         </div>
       )}
     </div>
@@ -97,75 +112,51 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
   const branches = secteurs.filter(s=>secteursSel.includes(s.nom)).flatMap((s:any)=>s.branches||[]);
   const activites = branches.filter((b:any)=>branchesSel.includes(b.nom)).flatMap((b:any)=>b.activites||[]);
 
+  const Niveau = ({ label, color }: { label:string; color:string }) => (
+    <p style={{fontSize:9.5,fontWeight:800,color,marginBottom:5,textTransform:"uppercase" as const,letterSpacing:"0.1em",display:"flex",alignItems:"center",gap:6}}>
+      <span style={{width:6,height:6,borderRadius:"50%",background:color,display:"inline-block"}}/>{label}
+    </p>
+  );
+
   return (
     <div>
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
-          {secteursSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{secteursSel.length}</span>}
-          {branchesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{branchesSel.length}</span>}
-          {activitesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{activitesSel.length}</span>}
+        <div style={{display:"flex",alignItems:"center",gap:7}}>
+          <FiltreTitre>Thématiques</FiltreTitre>
+          {secteursSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#fff",background:"#004f91",padding:"1px 7px",borderRadius:999}}>{secteursSel.length}</span>}
+          {branchesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#fff",background:"#ca631f",padding:"1px 7px",borderRadius:999}}>{branchesSel.length}</span>}
+          {activitesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#fff",background:"#188038",padding:"1px 7px",borderRadius:999}}>{activitesSel.length}</span>}
         </div>
-        {open?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+        <FiltreChevron open={open}/>
       </button>
       {open&&(
-        <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+        <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
           <div>
-            <p style={{fontSize:10,fontWeight:700,color:"#004f91",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</p>
-            <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-              {secteurs.map((s:any)=>{
-                const sel=secteursSel.includes(s.nom);
-                return (
-                  <button key={s.nom} onClick={()=>onSecteur(s.nom)}
-                    style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                    onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
-                    onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                    <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                          </div>
-                    <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
-                  </button>
-                );
-              })}
+            <Niveau label="Secteur" color="#004f91"/>
+            <div style={{display:"flex",flexDirection:"column" as const,gap:3}}>
+              {secteurs.map((s:any)=>(
+                <FiltreRow key={s.nom} sel={secteursSel.includes(s.nom)} color="#004f91" label={s.nom} onClick={()=>onSecteur(s.nom)}/>
+              ))}
             </div>
           </div>
           {secteursSel.length>0&&branches.length>0&&(
             <div style={{paddingLeft:12,borderLeft:"2px solid rgba(0,79,145,0.15)"}}>
-              <p style={{fontSize:10,fontWeight:700,color:"#ca631f",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</p>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-                {branches.map((b:any)=>{
-                  const sel=branchesSel.includes(b.nom);
-                  return (
-                    <button key={b.nom} onClick={()=>onBranche(b.nom)}
-                      style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                      onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
-                      onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                      <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                              </div>
-                      <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{b.nom}</span>
-                    </button>
-                  );
-                })}
+              <Niveau label="Branche" color="#ca631f"/>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:3}}>
+                {branches.map((b:any)=>(
+                  <FiltreRow key={b.nom} sel={branchesSel.includes(b.nom)} color="#ca631f" label={b.nom} onClick={()=>onBranche(b.nom)}/>
+                ))}
               </div>
             </div>
           )}
           {branchesSel.length>0&&activites.length>0&&(
             <div style={{paddingLeft:24,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
-              <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</p>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-                {activites.map((a:any)=>{
-                  const sel=activitesSel.includes(a.nom);
-                  return (
-                    <button key={a.nom} onClick={()=>onActivite(a.nom)}
-                      style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                      onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
-                      onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                      <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                              </div>
-                      <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{a.nom}</span>
-                    </button>
-                  );
-                })}
+              <Niveau label="Activité" color="#188038"/>
+              <div style={{display:"flex",flexDirection:"column" as const,gap:3}}>
+                {activites.map((a:any)=>(
+                  <FiltreRow key={a.nom} sel={activitesSel.includes(a.nom)} color="#188038" label={a.nom} onClick={()=>onActivite(a.nom)}/>
+                ))}
               </div>
             </div>
           )}
@@ -649,25 +640,29 @@ export default function EvenementsPage() {
                   {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
                 </button>
                 {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser"
-                  style={{background:"#fee2e2",border:"none",cursor:"pointer",borderRadius:8,padding:"6px",display:"flex",alignItems:"center"}}>
-                  <span className="material-symbols-outlined" style={{fontSize:16,color:"#dc2626",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>close</span>
+                  style={{background:"rgba(220,38,38,0.08)",border:"1px solid rgba(220,38,38,0.20)",cursor:"pointer",borderRadius:999,padding:"5px",display:"flex",alignItems:"center",transition:"background 0.15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(220,38,38,0.15)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(220,38,38,0.08)";}}>
+                  <span className="material-symbols-outlined" style={{fontSize:15,color:"#dc2626",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>close</span>
                 </button>}
               </div>
             </div>
             {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
               <>
                 <div style={{position:"relative" as const,marginBottom:18}}>
-                  <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
-                    style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                  {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                  <Search size={13} style={{position:"absolute" as const,left:11,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher un événement…"
+                    style={{width:"100%",paddingLeft:32,paddingRight:26,paddingTop:9,paddingBottom:9,borderRadius:10,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const,transition:"border-color 0.15s, box-shadow 0.15s, background 0.15s"}}
+                    onFocus={e=>{e.currentTarget.style.borderColor="rgba(0,79,145,0.45)";e.currentTarget.style.boxShadow="0 0 0 3px rgba(0,79,145,0.10)";e.currentTarget.style.background="#fff";}}
+                    onBlur={e=>{e.currentTarget.style.borderColor="#E8E5E3";e.currentTarget.style.boxShadow="none";e.currentTarget.style.background="#F8F7F6";}}/>
+                  {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:9,top:"50%",transform:"translateY(-50%)",background:"#ECEAE8",border:"none",cursor:"pointer",padding:3,borderRadius:"50%",display:"flex"}}><X size={9} style={{color:"#4a5568"}}/></button>}
                 </div>
                 <div style={{marginBottom:18}}>
-                  <p style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Vue</p>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+                  <p style={{marginBottom:9}}><FiltreTitre>Vue</FiltreTitre></p>
+                  <div style={{display:"flex",gap:3,background:"#F2F0EF",borderRadius:10,padding:3}}>
                     {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
                       <button key={o.v} onClick={()=>setVueMode(o.v)}
-                        style={{textAlign:"left" as const,padding:"7px 10px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:vueMode===o.v?700:500,background:vueMode===o.v?"rgba(0,79,145,0.08)":"transparent",color:vueMode===o.v?"#004f91":"#4a5568",fontFamily:"var(--font-google-sans)"}}>
+                        style={{flex:1,padding:"7px 2px",borderRadius:8,border:"none",cursor:"pointer",fontSize:11.5,fontWeight:vueMode===o.v?700:500,background:vueMode===o.v?"#fff":"transparent",color:vueMode===o.v?"#004f91":"#9aa5b4",boxShadow:vueMode===o.v?"0 1px 4px rgba(0,0,0,0.10)":"none",fontFamily:"var(--font-google-sans)",transition:"all 0.15s",whiteSpace:"nowrap" as const}}>
                         {o.l}
                       </button>
                     ))}
@@ -675,15 +670,20 @@ export default function EvenementsPage() {
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <div style={{marginBottom:18}}>
-                  <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-                    {STATUT_OPTS.map(b=>(
-                      <button key={b.value} onClick={()=>setStatutFiltre(b.value)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",background:"transparent",cursor:"pointer",textAlign:"left" as const,fontSize:12,fontWeight:statutFiltre===b.value?700:400,color:statutFiltre===b.value?b.text:"#4a5568"}}
-                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                        <div style={{width:7,height:7,borderRadius:"50%",background:b.text,opacity:statutFiltre===b.value?1:0.3,flexShrink:0}}/>{b.label}
-                      </button>
-                    ))}
+                  <p style={{marginBottom:9}}><FiltreTitre>Statut</FiltreTitre></p>
+                  <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+                    {STATUT_OPTS.map(b=>{
+                      const sel = statutFiltre===b.value;
+                      return (
+                        <button key={b.value} onClick={()=>setStatutFiltre(b.value)}
+                          style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 11px",borderRadius:999,border:`1px solid ${sel?b.text+"55":"#E8E5E3"}`,background:sel?b.bg:"#fff",color:sel?b.text:"#4a5568",fontSize:11.5,fontWeight:sel?700:500,cursor:"pointer",fontFamily:"var(--font-google-sans)",transition:"all 0.12s"}}
+                          onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#F8F7F6";}}
+                          onMouseLeave={e=>{e.currentTarget.style.background=sel?b.bg:"#fff";}}>
+                          <span style={{width:6,height:6,borderRadius:"50%",background:b.text,opacity:sel?1:0.35,flexShrink:0}}/>
+                          {b.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
