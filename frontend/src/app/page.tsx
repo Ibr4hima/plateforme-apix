@@ -66,7 +66,7 @@ export default function HomePage() {
   },[]);
 
   return (
-    <main style={{minHeight:"100vh",background:"linear-gradient(135deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)",overflowX:"hidden",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{minHeight:"100vh",background:"#F6F5F3",overflowX:"hidden",fontFamily:"var(--font-google-sans)"}}>
       <style>{`
         @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:0.8}}
@@ -93,75 +93,46 @@ export default function HomePage() {
       <Navbar/>
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{minHeight:"100vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 0px",position:"relative" as const,background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",overflow:"hidden"}}>
+      <section className="lp-pad" style={{minHeight:"88vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 70px",position:"relative" as const,background:"#004f91",overflow:"hidden"}}>
 
-        {/* Déco fond */}
-<div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-
-  {/* Halo haut droite */}
-  <div style={{
-    position:"absolute" as const,
-    top:"-20%",
-    right:"-5%",
-    width:500,
-    height:500,
-    borderRadius:"50%",
-    background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"
-  }}/>
-
-  {/* Halo bas gauche */}
-  <div style={{
-    position:"absolute" as const,
-    bottom:"-20%",
-    left:"-5%",
-    width:400,
-    height:400,
-    borderRadius:"50%",
-    background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"
-  }}/>
-
-  {/* Grille subtile */}
-  <div style={{
-    position:"absolute" as const,
-    inset:0,
-    opacity:0.03,
-    backgroundImage:
-      "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)",
-    backgroundSize:"80px 80px"
-  }}/>
-
-</div>
+        {/* Déco fond — même langage que les barres de titre */}
+        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
+          <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)"}}/>
+          <div style={{position:"absolute" as const,top:"-30%",right:"-8%",width:720,height:720,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-35%",left:"-10%",width:560,height:560,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,106,176,0.5) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,left:0,right:0,bottom:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)"}}/>
+        </div>
 
         <div style={{maxWidth:1200,margin:"0 auto",width:"100%",position:"relative" as const,zIndex:1}}>
 
           {/* Tag institutionnel */}
-          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:28}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
-            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
+          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:9,background:"rgba(202,99,31,0.08)",border:"1.5px solid rgba(202,99,31,0.45)",borderRadius:999,padding:"8px 17px",marginBottom:28}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:"#ca631f",animation:"pulse 2s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           {/* Titre */}
           <h1 className="hero-h1" style={{fontWeight:800,fontSize:"clamp(2.8rem,5.5vw,5rem)",lineHeight:1.05,letterSpacing:"-0.025em",color:"#fff",marginBottom:24,maxWidth:800}}>
             Intelligence<br/>
-            <span style={{background:"linear-gradient(135deg,#ca631f,#FFB0A1)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
+            <span style={{background:"linear-gradient(135deg,#E8823C 0%,#FFC08A 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
             <br/>Sénégal
           </h1>
 
-          <p className="hero-p" style={{color:"rgba(255,255,255,0.55)",fontSize:"1.1rem",maxWidth:520,lineHeight:1.75,marginBottom:40}}>
+          <p className="hero-p" style={{color:"rgba(255,255,255,0.65)",fontSize:"1.1rem",maxWidth:520,lineHeight:1.75,marginBottom:40}}>
             Plateforme de suivi, d'analyse et de gestion des investissements au Sénégal.
           </p>
 
           {/* CTAs */}
           <div className="hero-cta" style={{display:"flex",flexWrap:"wrap" as const,gap:12,marginBottom:72}}>
-            <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#ca631f)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.4)",letterSpacing:"0.01em",transition:"all 0.2s"}}
+            <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"#ca631f",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.4)",letterSpacing:"0.01em",transition:"all 0.2s"}}
               onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 32px rgba(202,99,31,0.5)";}}
               onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(202,99,31,0.4)";}}>
               <BarChart2 size={16}/> Tableau de bord <ChevronRight size={15}/>
             </Link>
-            <Link href="/ide" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(12px)",color:"rgba(255,255,255,0.85)",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.12)",transition:"all 0.2s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.1)";e.currentTarget.style.borderColor="rgba(255,255,255,0.2)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
-              <span className="material-symbols-outlined" style={{fontSize:18,color:"rgba(255,255,255,0.85)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>finance_mode</span> Investissements Privés <ChevronRight size={15}/>
+            <Link href="/ide" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.10)",backdropFilter:"blur(12px)",color:"#fff",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.25)",transition:"all 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.18)";e.currentTarget.style.borderColor="rgba(255,255,255,0.4)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";e.currentTarget.style.borderColor="rgba(255,255,255,0.25)";}}>
+              <span className="material-symbols-outlined" style={{fontSize:18,color:"#fff",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>finance_mode</span> Investissements Privés <ChevronRight size={15}/>
             </Link>
           </div>
 
@@ -170,7 +141,7 @@ export default function HomePage() {
         </section>
 
       {/* ── BANDE ACCÈS RAPIDE ────────────────────────────────────────────────── */}
-      <section style={{background:"linear-gradient(135deg,#ca631f,#ca631f)",padding:"0"}}>
+      <section style={{background:"#ca631f",padding:"0"}}>
         <div className="lp-quick" style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"stretch"}}>
           {[
             {icon:BarChart2, label:"Tableau de bord",             href:"/tableau-de-bord", sub:"KPIs & Analyses"},
@@ -200,7 +171,7 @@ export default function HomePage() {
       </section>
 
       {/* ── MODULES ──────────────────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{background:"#F2F0EF",padding:"80px 60px"}}>
+      <section className="lp-pad" style={{background:"#F6F5F3",padding:"80px 60px"}}>
         <div style={{maxWidth:1200,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48,flexWrap:"wrap" as const,gap:20}}>
             <div>
@@ -213,7 +184,7 @@ export default function HomePage() {
               Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
             </p>
           </div>
-          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#E8E5E3",border:"1px solid #E8E5E3",borderRadius:16,overflow:"hidden"}}>
+          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#ECEAE7",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.03)"}}>
             {MODULES.map((m,i)=>(
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,transition:"background 0.15s",position:"relative" as const}}
                   onMouseEnter={e=>{e.currentTarget.style.background="#FAFAF9";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="1";(e.currentTarget.querySelector(".mod-num") as HTMLElement)!.style.color=m.color;}}
@@ -238,24 +209,26 @@ export default function HomePage() {
       </section>
 
       {/* ── TABLEAU DE BORD CTA ───────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
+      <section className="lp-pad" style={{background:"#004f91",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 20% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 20% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-30%",left:"-8%",width:520,height:520,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,106,176,0.5) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,left:0,right:0,top:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.25) 50%,transparent 100%)"}}/>
         </div>
         <div className="lp-cta-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
           <div>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"5px 14px",marginBottom:24}}>
               <BarChart2 size={12} style={{color:"#ca631f"}}/>
-              <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
+              <span style={{fontSize:11,fontWeight:700,color:"#E8823C",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
             </div>
             <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.8rem)",color:"#fff",lineHeight:1.1,marginBottom:16}}>
               KPIs, visualisations<br/>et analyses en temps réel
             </h2>
-            <p style={{color:"rgba(255,255,255,0.45)",fontSize:14,lineHeight:1.75,marginBottom:32,maxWidth:460}}>
+            <p style={{color:"rgba(255,255,255,0.6)",fontSize:14,lineHeight:1.75,marginBottom:32,maxWidth:460}}>
               Vue consolidée de l'attractivité de la Destination Sénégal — Tendances sectorielles, répartition géographique, taux d'occupation des zones d'investissement et flux d'IDE
             </p>
             <div style={{display:"flex",gap:10}}>
-              <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#ca631f,#ca631f)",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.35)",transition:"all 0.2s"}}
+              <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"#ca631f",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.35)",transition:"all 0.2s"}}
                 onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 28px rgba(202,99,31,0.45)";}}
                 onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(202,99,31,0.35)";}}>
                 Ouvrir le tableau de bord <ArrowRight size={15}/>
@@ -270,14 +243,14 @@ export default function HomePage() {
               {label:"Événements à venir",       val:stats.evenements_a_venir, icon:"event"},
               {label:"Zones d'investissement",   val:stats.zones,              icon:"real_estate_agent"},
             ].map((k,i)=>(
-                <div key={i} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:"20px",backdropFilter:"blur(12px)"}}>
+                <div key={i} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.14)",borderRadius:14,padding:"20px",backdropFilter:"blur(12px)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                    <span className="material-symbols-outlined" style={{fontSize:16,color:"#ca631f",opacity:0.8,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{k.icon}</span>
+                    <span className="material-symbols-outlined" style={{fontSize:16,color:"#E8823C",opacity:0.9,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{k.icon}</span>
                   </div>
                   <div style={{fontWeight:800,fontSize:"1.8rem",color:"#fff",lineHeight:1,marginBottom:6}}>
                     <AnimatedCounter target={k.val}/>
                   </div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,0.3)"}}>{k.label}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,0.55)"}}>{k.label}</div>
                 </div>
             ))}
           </div>
@@ -285,11 +258,11 @@ export default function HomePage() {
       </section>
 
       {/* ── IDENTITÉ INSTITUTIONNELLE ─────────────────────────────────────────── */}
-      <section className="lp-pad" style={{background:"#E8E5E3",padding:"64px 60px"}}>
+      <section className="lp-pad" style={{background:"#fff",borderTop:"1px solid #ECEAE7",padding:"56px 60px"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap" as const,gap:40}}>
           <div style={{display:"flex",alignItems:"center",gap:20}}>
             <Image src="/logo_apix.png" alt="APIX Sénégal" width={80} height={40} style={{height:40,width:"auto",objectFit:"contain"}}/>
-            <div style={{width:1,height:36,background:"#C5BFBB"}}/>
+            <div style={{width:1,height:36,background:"#E4E1DE"}}/>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:"#1a1a2e"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
               <div style={{fontSize:12,color:"#9aa5b4",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
@@ -301,7 +274,7 @@ export default function HomePage() {
               {icon:"security",      label:"Données sécurisées"},
               {icon:"show_chart",    label:"Mise à jour continue"},
             ].map((item,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:"rgba(255,255,255,0.7)",border:"1px solid #C5BFBB",borderRadius:999}}>
+                <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:"#F6F5F3",border:"1px solid #E4E1DE",borderRadius:999}}>
                   <span className="material-symbols-outlined" style={{fontSize:15,color:"#4a5568",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
                   <span style={{fontSize:12,fontWeight:600,color:"#4a5568"}}>{item.label}</span>
                 </div>
@@ -311,7 +284,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
-      <footer className="lp-pad" style={{borderTop:"1px solid #C5BFBB",padding:"24px 60px",background:"#E8E5E3"}}>
+      <footer className="lp-pad" style={{borderTop:"1px solid #ECEAE7",padding:"24px 60px",background:"#fff"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:12}}>
           <p style={{color:"#9aa5b4",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
           <p style={{color:"#9aa5b4",fontSize:12}}>Plateforme à usage institutionnel</p>
