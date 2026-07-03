@@ -150,12 +150,12 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12 }}>
           {onglet === "cibles" ? (
             mail ? (
-              <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#6b7280", background: "#F2F0EF", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, minWidth: 0 }}>{mail}</span>
+              <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, minWidth: 0 }}>{mail}</span>
             ) : <span />
           ) : badge ? (
             <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" as const }}>{badge.label}</span>
           ) : <span />}
-          {p.siege_nom && <span style={{ fontSize: 10.5, fontWeight: 600, color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
+          {p.siege_nom && <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
         </div>
 
         {/* Dénomination */}
