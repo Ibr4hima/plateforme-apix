@@ -2156,11 +2156,21 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   const isTaux = ind.unite === "%" || ind.unite === "ratio";
   const isPos  = v !== null && v > 0;
   const isNeg  = v !== null && v < 0;
-  const signalColor  = isTaux ? (isPos ? "#188038" : isNeg ? "#dc2626" : "#9aa5b4") : "#004f91";
-  const signalBg     = isTaux ? (isPos ? "rgba(24,128,56,0.06)" : isNeg ? "rgba(220,38,38,0.05)" : "#FAFAF9") : "rgba(0,79,145,0.04)";
-  const signalBorder = isTaux ? (isPos ? "rgba(24,128,56,0.18)" : isNeg ? "rgba(220,38,38,0.18)" : "#F0EEEC") : "rgba(0,79,145,0.10)";
+  const signalColor  = isNeg ? "#dc2626" : "#004f91";
+  const signalBg     = isNeg ? "rgba(220,38,38,0.05)" : "rgba(0,79,145,0.04)";
+  const signalBorder = isNeg ? "rgba(220,38,38,0.18)" : "rgba(0,79,145,0.10)";
   const definition = defBdef(ind.code, ind.libelle);
   const historique = annees.filter(a=>ind.valeurs[a]!=null).slice(-5);
+  // Échelle commune de l'historique : unité affichée à côté du titre, valeurs nues dans les blocs
+  const estMontant = !isTaux && ind.unite !== "jours";
+  const histMax = Math.max(0, ...historique.map(a=>Math.abs(ind.valeurs[a] as number)));
+  const histScale = estMontant ? (histMax>=1e9 ? 1e9 : histMax>=1e6 ? 1e6 : histMax>=1e3 ? 1e3 : 1) : 1;
+  const histUnite = estMontant ? (histScale===1e9 ? "Md FCFA" : histScale===1e6 ? "M FCFA" : histScale===1e3 ? "k FCFA" : "FCFA") : ind.unite;
+  const fmtHist = (val:number) =>
+    ind.unite==="%" ? val.toFixed(2)
+    : ind.unite==="ratio" ? val.toFixed(3)
+    : ind.unite==="jours" ? val.toFixed(0)
+    : (val/histScale).toFixed(histScale>=1e9?2:histScale>=1e6?1:0);
   const SecTitle = ({ children }: { children: React.ReactNode }) => (
     <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
   );
@@ -2209,12 +2219,15 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
           </div>
           {historique.length > 0 && (
             <div>
-              <SecTitle>Historique récent</SecTitle>
+              <div style={{ display:"flex", alignItems:"baseline", gap:8, marginBottom:10 }}>
+                <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, margin:0 }}>Historique récent</p>
+                <span style={{ fontSize:10.5, fontWeight:600, color:"#9aa5b4" }}>en {histUnite}</span>
+              </div>
               <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(historique.length,5)},1fr)`, gap:8 }}>
                 {historique.map(a=>(
                   <div key={a} style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", margin:"0 0 3px" }}>{a}</p>
-                    <p style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{fmtBdef(ind.valeurs[a]??null, ind.unite)}</p>
+                    <p style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{fmtHist(ind.valeurs[a] as number)}</p>
                   </div>
                 ))}
               </div>
