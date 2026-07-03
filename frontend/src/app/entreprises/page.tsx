@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import BarreTitre from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import Badge from "@/components/shared/Badge";
@@ -367,32 +367,13 @@ export default function EntreprisesPage() {
 .drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
 .drs-thumb::-moz-range-thumb{background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <Navbar/>
-      <BarreTitre titre="Entreprises formalisées"/>
-
-      {/* Onglets sticky */}
-      <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:0,zIndex:10}}>
-        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
-          {([
-            {key:"liste",      label:"Liste des entreprises", color:"#004f91"},
-            {key:"territoire", label:"Vue territoriale",      color:"#004f91"},
-          ] as const).map(t=>(
-            <button key={t.key} onClick={()=>setOnglet(t.key)}
-              style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
-              {t.label}
-            </button>
-          ))}
-          {onglet==="liste"&&(
-            <button onClick={()=>setTriDate(t=>t==="desc"?"asc":"desc")}
-              title={triDate==="desc"?"Année de création descendante — cliquer pour inverser":"Année de création ascendante — cliquer pour inverser"}
-              style={{marginLeft:"auto",alignSelf:"center",display:"flex",alignItems:"center",gap:7,padding:"7px 13px",borderRadius:9,border:"1px solid rgba(0,79,145,0.18)",background:"rgba(0,79,145,0.05)",color:"#004f91",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.10)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,79,145,0.05)";}}>
-              <span className="material-symbols-outlined" style={{fontSize:16,lineHeight:1,transform:triDate==="asc"?"scaleY(-1)":"none",transition:"transform 0.18s"}}>sort</span>
-              Année de création · {triDate==="desc"?"Descendante":"Ascendante"}
-            </button>
-          )}
-        </div>
-      </div>
+      <BarreTitre titre="Entreprises formalisées"
+        droite={onglet==="liste" ? (
+          <BarreTitreBadge label="Année de création" detail={triDate==="desc"?"Descendante":"Ascendante"}
+            onClick={()=>setTriDate(t=>t==="desc"?"asc":"desc")}/>
+        ) : null}>
+        <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises"},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
+      </BarreTitre>
 
       {/* Vue territoriale */}
       {onglet==="territoire" && (

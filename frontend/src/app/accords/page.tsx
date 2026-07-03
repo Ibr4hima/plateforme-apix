@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import BarreTitre from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -457,7 +457,9 @@ export default function AccordsPage() {
       <Navbar/>
 
       {/* Hero */}
-      <BarreTitre titre={"Accords & Traités"}/>
+      <BarreTitre titre={"Accords & Traités"}>
+        <BarreTitreSegment options={[{v:"",l:"Tous"},{v:"en_vigueur",l:"En vigueur"},{v:"expire",l:"Expirés"}]} value={statutFiltre} onChange={setStatutFiltre}/>
+      </BarreTitre>
 
       {/* Layout sidebar + contenu */}
       <div style={{display:"flex",alignItems:"flex-start"}}>
@@ -494,20 +496,6 @@ export default function AccordsPage() {
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
-                <div style={{marginBottom:18}}>
-                  <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-                    {STATUT_OPTS.map(b=>(
-                      <button key={b.value} onClick={()=>setStatutFiltre(b.value)}
-                        className="sb-item-row"
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",background:"transparent",cursor:"pointer",textAlign:"left" as const,fontSize:12,fontWeight:statutFiltre===b.value?700:400,color:statutFiltre===b.value?b.text:"#4a5568"}}
-                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                        <div style={{width:7,height:7,borderRadius:"50%",background:b.text,opacity:statutFiltre===b.value?1:0.3,flexShrink:0}}/>{b.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 {/* Parties signataires — section personnalisée */}
                 <div style={{marginBottom:18}}>
                   <button onClick={()=>setPartiesOpen(o=>!o)}

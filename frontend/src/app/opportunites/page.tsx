@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import BarreTitre from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge from "@/components/shared/Badge";
 import { ArrowLeft, ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
@@ -1072,23 +1072,9 @@ export default function OpportunitesPage() {
       <Navbar/>
 
       {/* Hero */}
-      <BarreTitre titre={"Opportunités d'investissement"}/>
-
-      {/* Onglets sticky */}
-      <div style={{background:"#fff",borderBottom:"1px solid #E8E5E3",position:"sticky" as const,top:0,zIndex:10}}>
-        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 40px",display:"flex",gap:0}}>
-          {([
-            {key:"projets",       label:"Banque de projets",      color:"#004f91"},
-            {key:"potentialites", label:"Potentialités par zone",  color:"#004f91"},
-            {key:"avantages",     label:"Avantages & incitations", color:"#004f91"},
-          ] as const).map(t=>(
-            <button key={t.key} onClick={()=>setOnglet(t.key)}
-              style={{padding:"16px 22px",border:"none",background:"transparent",cursor:"pointer",fontFamily:"var(--font-google-sans)",fontSize:13,fontWeight:600,color:onglet===t.key?t.color:"#9aa5b4",borderBottom:`2px solid ${onglet===t.key?t.color:"transparent"}`,transition:"all 0.15s"}}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <BarreTitre titre={"Opportunités d'investissement"}>
+        <BarreTitreSegment options={[{v:"projets",l:"Banque de projets"},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
+      </BarreTitre>
 
       {/* Layout sidebar + contenu */}
       <div style={{display:"flex",alignItems:"flex-start"}}>

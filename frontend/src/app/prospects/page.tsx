@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import BarreTitre from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Building2, ChevronDown, ChevronUp, Clock, FileText, Globe, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Phone, Search, Send, SlidersHorizontal, User, Video, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { parsePhoneNumber } from "libphonenumber-js";
@@ -671,26 +671,13 @@ export default function ProspectsPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <BarreTitre titre="Prospects"/>
-
-      {/* ── Onglets sticky ── */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #E8E5E3", position: "sticky" as const, top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", display: "flex", gap: 0 }}>
-          {([
-            { key: "cibles",     label: "Investisseurs ciblés",   count: cibles.length    },
-            { key: "historique", label: enContact.length > 1 ? "Investisseurs en contact" : "Investisseur en contact", count: enContact.length },
-            { key: "termines",   label: termines.length  > 1 ? "Investisseurs transformés" : "Investisseur transformé", count: termines.length  },
-          ] as const).map(t => (
-            <button key={t.key} onClick={() => setOnglet(t.key)}
-              style={{ padding: "16px 22px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", fontSize: 13, fontWeight: 600, color: onglet === t.key ? "#004f91" : "#9aa5b4", borderBottom: `2px solid ${onglet === t.key ? "#004f91" : "transparent"}`, transition: "all 0.15s" }}>
-              {t.label}
-              {t.count > 0 && (
-                <span style={{ marginLeft: 7, fontSize: 11, fontWeight: 700, color: onglet === t.key ? "#004f91" : "#9aa5b4", background: onglet === t.key ? "rgba(0,79,145,0.1)" : "#F2F0EF", padding: "1px 7px", borderRadius: 999 }}>{t.count}</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+      <BarreTitre titre="Prospects">
+        <BarreTitreSegment options={[
+          { v:"cibles",     l:"Investisseurs ciblés" },
+          { v:"historique", l: enContact.length > 1 ? "Investisseurs en contact" : "Investisseur en contact" },
+          { v:"termines",   l: termines.length  > 1 ? "Investisseurs transformés" : "Investisseur transformé" },
+        ]} value={onglet} onChange={setOnglet}/>
+      </BarreTitre>
 
       {/* ── Corps : sidebar + grille ── */}
       <div style={{ display: "flex", alignItems: "flex-start" }}>

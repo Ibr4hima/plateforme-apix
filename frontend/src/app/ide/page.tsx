@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
@@ -3044,7 +3044,10 @@ export default function IdePage() {
       <Navbar />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <BarreTitre titre="Investissements Privés">
+      <BarreTitre titre="Investissements Privés"
+        droite={ongletPrincipal==="ide" && section==="realises" ? (
+          <BarreTitreBadge label="Tableau de données" onClick={()=>setShowTable(true)}/>
+        ) : null}>
         <BarreTitreSegment options={[{v:"ide",l:"Investissements Directs Étrangers"},{v:"national",l:"Investissements nationaux"}]} value={ongletPrincipal} onChange={setOngletPrincipal}/>
       </BarreTitre>
 
@@ -3066,14 +3069,6 @@ export default function IdePage() {
                   </button>
                 ))}
               </div>
-              {section==="realises" && (
-                <button onClick={()=>setShowTable(true)}
-                  style={{ display:"flex", alignItems:"center", gap:6, padding:"0 18px", height:44, border:"none", background:"transparent", fontSize:12, fontWeight:600, color:"#4a5568", cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, transition:"all 0.15s" }}
-                  onMouseEnter={e=>{ e.currentTarget.style.color="#004f91"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.color="#4a5568"; }}>
-                  <Table size={14}/> Tableau de données
-                </button>
-              )}
             </div>
 
           </div>
