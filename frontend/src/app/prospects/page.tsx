@@ -131,7 +131,7 @@ function SideFilter({ label, items, selected, onToggle, color }: {
 
 // ── Carte prospect ────────────────────────────────────────────────────────────
 
-function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "historique" | "termines"; onOpen?: () => void }) {
+function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "cibles" | "historique" | "termines"; onOpen?: () => void; onOpenInfos?: () => void }) {
   const badge = badgeProspect(p);
   const tel = p.telephones?.[0] || p.points_focaux?.[0]?.telephones?.[0] || "";
   const mail = p.mails?.[0] || p.points_focaux?.[0]?.mails?.[0] || "";
@@ -206,15 +206,24 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
         </div>
       </div>
 
-      {/* Nb échanges */}
-      {p.echanges?.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", borderTop: "1px solid #F2F0EF", padding: "10px 0", fontSize: 11.5, color: accent ? accent.c : "#9aa5b4", fontWeight: 600 }}>
-          Voir les échanges →
+      {/* Actions */}
+      {(onglet === "historique" || onglet === "termines") ? (
+        <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
+          <div onClick={ev => { ev.stopPropagation(); onOpenInfos?.(); }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: accent ? accent.c : "#004f91", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
+            onMouseEnter={ev => ev.currentTarget.style.background = accent ? `${accent.c}0D` : "rgba(0,79,145,0.05)"}
+            onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+            Infos investisseur
+          </div>
+          <div style={{ width: 1, background: "#F2F0EF" }}/>
+          <div onClick={ev => { ev.stopPropagation(); onOpen?.(); }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: accent ? accent.c : "#004f91", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
+            onMouseEnter={ev => ev.currentTarget.style.background = accent ? `${accent.c}0D` : "rgba(0,79,145,0.05)"}
+            onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+            Voir les échanges
+          </div>
         </div>
-      )}
-
-      {/* Action */}
-      {onOpen && !(p.echanges?.length > 0) && (
+      ) : onOpen && (
         <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, transition: "background 0.15s" }}
             onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
@@ -583,6 +592,7 @@ export default function ProspectsPage() {
   const [termines,  setTermines]  = useState<any[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [selec,     setSelec]     = useState<any>(null);
+  const [selecInfos, setSelecInfos] = useState(false);
 
   // Filtres
   const [recherche,   setRecherche]   = useState("");
@@ -743,13 +753,13 @@ export default function ProspectsPage() {
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>
-              {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onOpen={() => setSelec(p)} />)}
+              {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onOpen={() => { setSelecInfos(false); setSelec(p); }} onOpenInfos={() => { setSelecInfos(true); setSelec(p); }} />)}
             </div>
           )}
         </div>
       </div>
 
-      {selec && <ProspectPublicVue p={selec} onglet={onglet} onClose={() => setSelec(null)} />}
+      {selec && <ProspectPublicVue p={selec} onglet={selecInfos ? "cibles" : onglet} onClose={() => setSelec(null)} />}
     </main>
   );
 }
