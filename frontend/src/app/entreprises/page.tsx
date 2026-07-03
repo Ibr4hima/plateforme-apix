@@ -476,11 +476,15 @@ export default function EntreprisesPage() {
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
+                    <div style={{height:3,background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
                     <div style={{padding:"14px 16px 14px",flex:1}}>
-                      {/* Forme juridique */}
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                      {/* Forme juridique + pôle territoire */}
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:12,minWidth:0}}>
                         {e.forme_juridique ? (
-                          <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#6b7280",background:"#F2F0EF",padding:"3px 10px",borderRadius:999}}>{e.forme_juridique}</span>
+                          <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</span>
+                        ) : <span/>}
+                        {e.pole_territoire_nom ? (
+                          <span title={e.pole_territoire_nom} style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#6b7280",background:"#F2F0EF",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>{e.pole_territoire_nom}</span>
                         ) : <span/>}
                       </div>
 
