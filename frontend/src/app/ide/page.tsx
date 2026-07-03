@@ -2056,68 +2056,128 @@ function BdefRow({ label, niveau, selected, onSelect, expandable, expanded, onTo
 }
 
 // ── Modal tableau BDEF ────────────────────────────────────────────────────────
-function ModalBdefTable({ open, onClose, libelle, indicateurs, annees }: {
-  open:boolean; onClose:()=>void; libelle:string; indicateurs:BdefIndic[]; annees:number[];
+function ModalBdefTable({ open, onClose, blocs, annees }: {
+  open:boolean; onClose:()=>void; blocs:{libelle:string; couleur:string; indicateurs:BdefIndic[]}[]; annees:number[];
 }) {
   if (!open) return null;
-  const parCat: {cat:string; inds:BdefIndic[]}[] = [];
-  indicateurs.forEach(ind=>{ let g=parCat.find(x=>x.cat===ind.categorie); if(!g){g={cat:ind.categorie,inds:[]};parCat.push(g);} g.inds.push(ind); });
+  const parCatDe = (indicateurs:BdefIndic[]) => {
+    const parCat: {cat:string; inds:BdefIndic[]}[] = [];
+    indicateurs.forEach(ind=>{ let g=parCat.find(x=>x.cat===ind.categorie); if(!g){g={cat:ind.categorie,inds:[]};parCat.push(g);} g.inds.push(ind); });
+    return parCat;
+  };
+  const multi = blocs.length > 1;
+  const nbInds = blocs.reduce((n,b)=>n+b.indicateurs.length,0);
 
   const exporter = () => {
-    const header = ["Catégorie","Indicateur","Unité",...annees.map(String)];
-    const rows:(string|number|null)[][] = [header];
-    parCat.forEach(({cat,inds})=>inds.forEach(ind=>{
-      rows.push([cat, ind.libelle, ind.unite, ...annees.map(a=>{ const v=ind.valeurs[a]; return v!==null&&v!==undefined?Number(v):null; })]);
-    }));
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws["!cols"] = header.map((_,ci)=>({ wch: Math.min(Math.max(...rows.map(r=>String(r[ci]??"").length))+2,50) }));
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "BDEF");
-    XLSX.writeFile(wb, `BDEF_${libelle.replace(/[^\w]/g,"_").slice(0,40)}.xlsx`);
+    blocs.forEach((b,bi)=>{
+      const header = ["Catégorie","Indicateur","Unité",...annees.map(String)];
+      const rows:(string|number|null)[][] = [header];
+      parCatDe(b.indicateurs).forEach(({cat,inds})=>inds.forEach(ind=>{
+        rows.push([cat, ind.libelle, ind.unite, ...annees.map(a=>{ const v=ind.valeurs[a]; return v!==null&&v!==undefined?Number(v):null; })]);
+      }));
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ws["!cols"] = header.map((_,ci)=>({ wch: Math.min(Math.max(...rows.map(r=>String(r[ci]??"").length))+2,50) }));
+      const nomFeuille = ((multi?`${bi+1}. `:"") + b.libelle.replace(/[\\\/\?\*\[\]:]/g," ")).slice(0,31);
+      XLSX.utils.book_append_sheet(wb, ws, nomFeuille);
+    });
+    XLSX.writeFile(wb, `BDEF_${blocs.map(b=>b.libelle.replace(/[^\w]/g,"_").slice(0,20)).join("_").slice(0,80)}.xlsx`);
   };
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, border:"1px solid #E8E5E3", boxShadow:"0 40px 100px rgba(0,0,0,0.25)", overflow:"hidden" }}>
-        <div style={{ height:5, background:"linear-gradient(90deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)", flexShrink:0 }} />
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"18px 26px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
-          <span style={{ fontSize:"1rem", fontWeight:800, color:"#1a1a2e" }}>{libelle}</span>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <button onClick={exporter} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
-              <FileSpreadsheet size={13}/> Excel
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+        <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
+
+        {/* En-tête fixe */}
+        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
+            <div style={{ flex:1, minWidth:0 }}>
+              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>Tableau de données</h2>
+              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
+                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:10.5, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em" }}>
+                  {annees.length===1 ? `${annees[0]}` : `${annees[0]} — ${annees[annees.length-1]}`}
+                </span>}
+                {blocs.map(b=>(
+                  <span key={b.libelle} title={b.libelle} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${b.couleur}0D`, border:`1px solid ${b.couleur}2E`, fontSize:10.5, fontWeight:700, color:b.couleur, minWidth:0 }}>
+                    <span style={{ width:7, height:7, borderRadius:"50%", background:b.couleur, display:"inline-block", flexShrink:0 }} />
+                    <span style={{ maxWidth:240, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{b.libelle}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
+              <X size={15} color="#4a5568" />
             </button>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 8px", display:"flex" }}><X size={14} color="#4a5568"/></button>
           </div>
         </div>
+
+        {/* Tableau */}
         <div style={{ overflowY:"auto" as const, flex:1, overflowX:"auto" as const }}>
           <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
-            <thead style={{ position:"sticky" as const, top:0, zIndex:1 }}>
-              <tr style={{ background:"#F8F7F6" }}>
-                <th style={{ padding:"10px 16px", textAlign:"left" as const, fontSize:11, fontWeight:700, color:"#9aa5b4", position:"sticky" as const, left:0, background:"#F8F7F6", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const, minWidth:200 }}>Indicateur</th>
-                {annees.map(a=><th key={a} style={{ padding:"10px 12px", fontSize:11, fontWeight:700, color:"#9aa5b4", textAlign:"right" as const, minWidth:80 }}>{a}</th>)}
+            <thead style={{ position:"sticky" as const, top:0, zIndex:2 }}>
+              <tr style={{ background:"#FAFAF9" }}>
+                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"#4a5568", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"#FAFAF9", borderRight:"1px solid #F0EEEC", borderBottom:"1px solid #F0EEEC", whiteSpace:"nowrap" as const, minWidth:200 }}>Indicateur</th>
+                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:10, fontWeight:800, color:"#4a5568", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid #F0EEEC" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
-              {parCat.map(({cat,inds})=>(
-                <Fragment key={cat}>
-                  <tr><td colSpan={annees.length+1} style={{ padding:"10px 16px 4px", fontSize:11, fontWeight:700, color:"#004f91", letterSpacing:"0.06em", textTransform:"uppercase" as const, background:"#fff" }}>{cat}</td></tr>
-                  {inds.map(ind=>(
-                    <tr key={ind.code} style={{ borderBottom:"1px solid #F2F0EF", background:"#fff" }}>
-                      <td style={{ padding:"9px 16px", position:"sticky" as const, left:0, background:"#fff", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const, color:"#4a5568" }}>
-                        {ind.libelle} <span style={{ fontSize:10, color:"#C5BFBB" }}>· {ind.unite}</span>
+              {blocs.map(b=>(
+                <Fragment key={b.libelle}>
+                  {multi&&(
+                    <tr>
+                      <td colSpan={annees.length+1} style={{ padding:"14px 28px 6px", background:"#fff" }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                          <span style={{ width:8, height:8, borderRadius:"50%", background:b.couleur, flexShrink:0 }} />
+                          <span style={{ fontSize:12.5, fontWeight:800, color:b.couleur }}>{b.libelle}</span>
+                        </div>
                       </td>
-                      {annees.map(a=>{ const v=ind.valeurs[a]; const display=v!==null&&v!==undefined?fmtBdef(v,ind.unite):"—"; return (
-                        <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color:v===null||v===undefined?"#C5BFBB":"#1a1a2e", fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums" as const, whiteSpace:"nowrap" as const }}>{display}</td>
-                      ); })}
                     </tr>
+                  )}
+                  {parCatDe(b.indicateurs).map(({cat,inds})=>(
+                    <Fragment key={`${b.libelle}-${cat}`}>
+                      <tr><td colSpan={annees.length+1} style={{ padding:multi?"9px 28px 4px 44px":"10px 28px 4px", fontSize:10, fontWeight:800, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const, background:"#fff" }}>{cat}</td></tr>
+                      {inds.map(ind=>(
+                        <tr key={ind.code} style={{ borderBottom:"1px solid #F6F4F3", background:"#fff", transition:"background 0.1s" }}
+                          onMouseEnter={e=>e.currentTarget.style.background="#FAFAF9"}
+                          onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
+                          <td style={{ padding:multi?"9px 28px 9px 58px":"9px 28px 9px 44px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid #F0EEEC", whiteSpace:"nowrap" as const }}>
+                            <span style={{ fontSize:12, color:"#4a5568", fontWeight:500 }}>{ind.libelle}</span> <span style={{ fontSize:10, color:"#C5BFBB" }}>· {ind.unite}</span>
+                          </td>
+                          {annees.map(a=>{
+                            const v = ind.valeurs[a];
+                            const display = v!==null&&v!==undefined ? fmtBdef(v,ind.unite) : "—";
+                            const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#dc2626" : "#4a5568";
+                            return (
+                              <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums" as const, whiteSpace:"nowrap" as const }}>{display}</td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </Fragment>
                   ))}
                 </Fragment>
               ))}
             </tbody>
           </table>
         </div>
-        <div style={{ padding:"11px 26px", borderTop:"1px solid #F2F0EF", flexShrink:0, background:"#FAFAF9" }}>
-          <p style={{ fontSize:11, color:"#9aa5b4" }}>{indicateurs.length} indicateurs · {annees.length} année{annees.length>1?"s":""} · Source BDEF (ANSD)</p>
+
+        {/* Pied fixe */}
+        <div style={{ padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0, gap:10 }}>
+          <span style={{ fontSize:11, color:"#9aa5b4" }}>
+            {multi?`${blocs.length} éléments · `:""}{nbInds} indicateurs · {annees.length} année{annees.length>1?"s":""} · Source BDEF (ANSD)
+          </span>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+              Fermer
+            </button>
+            <button onClick={exporter}
+              style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgba(0,79,145,0.25)", fontFamily:"var(--font-google-sans)" }}>
+              <FileSpreadsheet size={13}/> Excel
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -2364,6 +2424,9 @@ function OngletNational() {
   const anneesAffichees = (modeAnnees==="specifiques" && anneesSpec.length>0)
     ? anneesSpec.filter(a=>anneesData.includes(a))
     : anneesData.filter(a=>a>=anneeMin && a<=anneeMax);
+  const anneesCompAff = (modeAnnees==="specifiques" && anneesSpec.length>0)
+    ? anneesSpec.filter(a=>compAnneesData.includes(a))
+    : compAnneesData.filter(a=>a>=anneeMin && a<=anneeMax);
 
   // Regroupement des indicateurs par catégorie (ordre conservé)
   const parCategorie: {cat:string; inds:BdefIndic[]}[] = [];
@@ -2707,16 +2770,19 @@ function OngletNational() {
           const nodeDe = (id:number)=>compNodes.find(n=>n.id===id);
           const typeLabel = compType==="groupe" ? "par groupe" : compType==="secteur" ? "par secteur d'activité" : "par macro-secteur";
           const typePluriel = compType==="groupe" ? "groupes" : compType==="secteur" ? "secteurs" : "macro-secteurs";
-          const anneesComp = (modeAnnees==="specifiques"&&anneesSpec.length>0)
-            ? anneesSpec.filter(a=>compAnneesData.includes(a))
-            : compAnneesData.filter(a=>a>=anneeMin && a<=anneeMax);
+          const anneesComp = anneesCompAff;
           return (
           <div>
-            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:compSelec.length>0?10:20, flexWrap:"wrap" as const }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative {typeLabel}</h2>
-              {anneesComp.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
-                {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
-              </span>}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:compSelec.length>0?10:20, flexWrap:"wrap" as const }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
+                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative {typeLabel}</h2>
+                {anneesComp.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+                  {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
+                </span>}
+              </div>
+              {compSelec.length>0&&!loadingComp&&<button onClick={()=>setShowTable(true)} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
+                <Table size={14}/> Tableau de données
+              </button>}
             </div>
             {compSelec.length>0&&(
               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, minWidth:0 }}>
@@ -2866,7 +2932,15 @@ function OngletNational() {
         )}
       </div>
 
-      <ModalBdefTable open={showTable} onClose={()=>setShowTable(false)} libelle={sel.libelle} indicateurs={indicateurs} annees={anneesAffichees} />
+      <ModalBdefTable open={showTable} onClose={()=>setShowTable(false)}
+        annees={sousVue==="comparative" ? anneesCompAff : anneesAffichees}
+        blocs={sousVue==="comparative"
+          ? compSelec.map((id,ci)=>{
+              const nodes = compType==="groupe" ? (refs?.groupe||[]) : compType==="secteur" ? (refs?.secteur||[]) : (refs?.macro_secteur||[]);
+              const n = nodes.find(x=>x.id===id);
+              return { libelle:n?.libelle||String(id), couleur:BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length], indicateurs:compData[id]||[] };
+            })
+          : [{ libelle:sel.libelle, couleur, indicateurs }]} />
       <MiniModalBdefKpi ind={kpiActif} annees={anneesAffichees} libelle={sel.libelle} onClose={()=>setKpiActif(null)} />
 
       {/* Tooltip de définition au survol */}
