@@ -613,6 +613,7 @@ export default function EvenementsPage() {
     <main style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
 @keyframes pulseHalo{0%{box-shadow:0 0 0 0 rgba(0,79,145,0.45)}70%{box-shadow:0 0 0 9px rgba(0,79,145,0)}100%{box-shadow:0 0 0 0 rgba(0,79,145,0)}}
 @keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgba(24,128,56,0.45)}70%{box-shadow:0 0 0 9px rgba(24,128,56,0)}100%{box-shadow:0 0 0 0 rgba(24,128,56,0)}}`}</style>
       <Navbar/>
@@ -741,9 +742,9 @@ export default function EvenementsPage() {
                     const estEnCours = statutAff==="en_cours";
                     const estPasse = statutAff==="termine";
                     const accent = estProchain
-                      ? { grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", label:"Prochain événement", b:"rgba(0,79,145,0.45)", b2:"rgba(0,79,145,0.6)", sh:"0 4px 18px rgba(0,79,145,0.15)", sh2:"0 12px 28px rgba(0,79,145,0.18)" }
+                      ? { c:"#004f91", grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", label:"Prochain événement", bg:"rgba(0,79,145,0.07)" }
                       : estEnCours
-                      ? { grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label:"Événement en cours", b:"rgba(24,128,56,0.45)", b2:"rgba(24,128,56,0.6)", sh:"0 4px 18px rgba(24,128,56,0.15)", sh2:"0 12px 28px rgba(24,128,56,0.18)" }
+                      ? { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label:"Événement en cours", bg:"rgba(24,128,56,0.08)" }
                       : null;
                     const blocC  = estPasse ? "#6b7280" : estEnCours ? "#188038" : "#004f91";
                     const blocBg = estPasse ? "#F5F4F3" : estEnCours ? "rgba(24,128,56,0.05)" : "rgba(0,79,145,0.04)";
@@ -753,9 +754,9 @@ export default function EvenementsPage() {
                     const txtC   = estPasse ? "#4a5568" : "#1a1a2e";
                     return (
                       <div key={e.id} onClick={()=>setSelec(e)}
-                        style={{background:estPasse?"#FAFAF9":"#fff",border:accent?`1.5px solid ${accent.b}`:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                        style={{background:estPasse?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                         onMouseEnter={ev=>{
-                          ev.currentTarget.style.boxShadow=accent?accent.sh2:"0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?accent.b2:estPasse?"#D8D4D0":"rgba(0,79,145,0.25)";
+                          ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?`${accent.c}40`:estPasse?"#D8D4D0":"rgba(0,79,145,0.25)";
                           // Contenus trop longs : glissent pour révéler la fin
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
@@ -763,25 +764,23 @@ export default function EvenementsPage() {
                           });
                         }}
                         onMouseLeave={ev=>{
-                          ev.currentTarget.style.boxShadow=accent?accent.sh:"0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=accent?accent.b:"#ECEAE7";
+                          ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
                             if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                           });
                         }}>
 
-                        {accent ? (
-                          <div style={{display:"flex",alignItems:"center",gap:7,background:accent.grad,padding:"6px 16px"}}>
-                            <span style={{width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
-                            <span style={{fontSize:10,fontWeight:800,color:"#fff",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
-                          </div>
-                        ) : (
-                          <div style={{height:3,background:estPasse?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-                        )}
+                        <div style={{height:3,background:accent?accent.grad:estPasse?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
                         <div style={{padding:"14px 16px 14px",flex:1}}>
                           {/* Statut + rôle de l'APIX */}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                            {st&&!estEnCours ? (
+                            {accent ? (
+                              <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:accent.c,background:accent.bg,padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const}}>
+                                <span style={{width:6,height:6,borderRadius:"50%",background:accent.c,["--pc" as any]:accent.c+"66",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                                {accent.label}
+                              </span>
+                            ) : st ? (
                               <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
                             ) : <span/>}
                             {e.role_apix ? (
