@@ -3053,22 +3053,20 @@ export default function IdePage() {
 
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
       {ongletPrincipal === "ide" && (
-        <div style={{ background:"#fff", position:"sticky" as const, top:0, zIndex:10, flexShrink:0, boxShadow:"0 1px 0 #E8E5E3" }}>
-          <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 40px" }}>
+        <div style={{ background:"#fff", position:"sticky" as const, top:0, zIndex:10, flexShrink:0, borderBottom:"1px solid #ECEAE7" }}>
+          <div style={{ maxWidth:1400, margin:"0 auto", padding:"10px 40px" }}>
 
-            {/* Niveau 1 : Réalisés / Projetés */}
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:"1px solid #F2F0EF" }}>
-              <div style={{ display:"flex" }}>
-                {([
-                  {v:"realises", l:"Investissements réalisés"},
-                  {v:"projetes", l:"Investissements projetés"},
-                ] as const).map(s=>(
-                  <button key={s.v} onClick={()=>setSection(s.v)}
-                    style={{ padding:"13px 22px", border:"none", borderBottom:`2px solid ${section===s.v?"#004f91":"transparent"}`, background:"transparent", fontSize:13, fontWeight:600, color:section===s.v?"#004f91":"#9aa5b4", cursor:"pointer", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
-                    {s.l}
-                  </button>
-                ))}
-              </div>
+            {/* Niveau 1 : Réalisés / Projetés — segmented control du site */}
+            <div style={{ display:"inline-flex", background:"#F2F0EF", borderRadius:999, padding:3, gap:3 }}>
+              {([
+                {v:"realises", l:"Investissements réalisés"},
+                {v:"projetes", l:"Investissements projetés"},
+              ] as const).map(s=>(
+                <button key={s.v} onClick={()=>setSection(s.v)}
+                  style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, background:section===s.v?"#fff":"transparent", color:section===s.v?"#004f91":"#9aa5b4", boxShadow:section===s.v?"0 1px 4px rgba(0,0,0,0.10)":"none", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", whiteSpace:"nowrap" as const }}>
+                  {s.l}
+                </button>
+              ))}
             </div>
 
           </div>
