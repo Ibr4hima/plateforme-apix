@@ -153,8 +153,10 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
     "En attente":    { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
     "Inactif":       { c:"#dc2626", grad:"linear-gradient(90deg,#991b1b 0%,#dc2626 60%,#ef4444 100%)" },
     "À recontacter": { c:"#004f91", grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" },
+    "Installation à venir": { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)" },
+    "Décliné":       { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
   };
-  const accent = onglet === "historique" && badge ? (ACCENTS[badge.label] || null) : null;
+  const accent = (onglet === "historique" || onglet === "termines") && badge ? (ACCENTS[badge.label] || null) : null;
   const blocC  = accent ? accent.c : "#004f91";
   const blocBg = accent ? `${accent.c}0A` : "rgba(0,79,145,0.04)";
   const blocBd = accent ? `${accent.c}1F` : "rgba(0,79,145,0.10)";
@@ -180,7 +182,7 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
               {badge.label}
             </span>
           ) : <span />}
-          {p.siege_nom && <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
+          {p.siege_nom && <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: accent ? accent.c : "#004f91", background: accent ? `${accent.c}0D` : "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
         </div>
 
         {/* Dénomination */}
@@ -207,7 +209,7 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
       {/* Nb échanges */}
       {p.echanges?.length > 0 && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", borderTop: "1px solid #F2F0EF", padding: "10px 0", fontSize: 11.5, color: accent ? accent.c : "#9aa5b4", fontWeight: 600 }}>
-          {p.echanges.length} échange{p.echanges.length > 1 ? "s" : ""} enregistré{p.echanges.length > 1 ? "s" : ""}
+          Voir les échanges →
         </div>
       )}
 
