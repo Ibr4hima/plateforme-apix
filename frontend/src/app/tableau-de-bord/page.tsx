@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
 import {
   Activity, BarChart2, Building2, Calendar, ChevronDown, ChevronUp,
-  DollarSign, Handshake, Layers, Loader2, MapPin, Search,
+  DollarSign, Handshake, Layers, Loader2, MapPin, Maximize2, Search,
   SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
@@ -1161,22 +1161,35 @@ function VizModal({ open, onClose, titre, vizId, children }: { open:boolean; onC
   const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement|null;
   if (!open) return null;
   return (
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:32}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:1100,maxHeight:"90vh",overflowY:"auto",border:"1px solid #E8E5E3",boxShadow:"0 40px 100px rgba(0,0,0,0.25)"}}>
-        <div style={{height:3,background:"linear-gradient(90deg,#ca631f,#004f91)",borderRadius:"20px 20px 0 0"}}/>
-        <div style={{padding:"22px 28px 28px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-            <h3 style={{fontWeight:800,fontSize:"1.05rem",color:"#1a1a2e",margin:0}}>{titre}</h3>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <button onClick={()=>{const svg=getSvg();if(svg)downloadPNG(svg,vizId);}}
-                style={{fontSize:12,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #E8E5E3",background:"#fff",color:"#4a5568",cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Télécharger
-              </button>
-              <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:8}}><X size={15} color="#4a5568"/></button>
-            </div>
-          </div>
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:32}}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:1100,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
+
+        {/* En-tête fixe */}
+        <div style={{padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
+          <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",margin:0,lineHeight:1.35}}>{titre}</h2>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",background:"#F5F4F3",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
+            <X size={15} color="#4a5568"/>
+          </button>
+        </div>
+
+        {/* Corps */}
+        <div style={{padding:"22px 28px",overflowY:"auto" as const,flex:1}}>
           <div ref={modalRef}>{children}</div>
+        </div>
+
+        {/* Pied fixe */}
+        <div style={{padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",display:"flex",justifyContent:"flex-end",gap:10,flexShrink:0}}>
+          <button onClick={onClose} style={{padding:"9px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontSize:12.5,fontWeight:600,cursor:"pointer",fontFamily:"var(--font-google-sans)"}}>
+            Fermer
+          </button>
+          <button onClick={()=>{const svg=getSvg();if(svg)downloadPNG(svg,vizId);}}
+            style={{padding:"9px 20px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:7,boxShadow:"0 3px 12px rgba(0,79,145,0.25)",fontFamily:"var(--font-google-sans)"}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger
+          </button>
         </div>
       </div>
     </div>
@@ -1200,14 +1213,19 @@ function VizCard({ card, viz, onRemove }: {
   return (
     <>
       <div onClick={()=>!loading&&data.length>0&&setOpen(true)}
-        style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",padding:"16px 18px",cursor:loading||data.length===0?"default":"pointer",transition:"all 0.18s",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}
-        onMouseEnter={e=>{if(!loading&&data.length>0){e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="#d4d0cd";}}}
-        onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#E8E5E3";}}>
+        style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",padding:"16px 18px",cursor:loading||data.length===0?"default":"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",minWidth:0}}
+        onMouseEnter={e=>{if(!loading&&data.length>0){e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}
+          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; const d=sp.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; } });}}
+        onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";
+          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; });}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-          <div style={{flex:1,minWidth:0}}>
-            <p style={{fontWeight:700,fontSize:12,color:"#1a1a2e",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{viz.titre}</p>
+          <div data-marquee style={{flex:1,minWidth:0,overflow:"hidden",whiteSpace:"nowrap" as const}}>
+            <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:0,display:"inline-block"}}>{viz.titre}</p>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0,marginLeft:8}}>
+            <span style={{width:26,height:26,borderRadius:8,background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
+              <Maximize2 size={11} style={{color:"#9aa5b4"}}/>
+            </span>
             <button onClick={e=>{e.stopPropagation();onRemove();}} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
           </div>
         </div>
@@ -1268,12 +1286,12 @@ function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any })
     : def.unit==="jours" ? `${nb} jours`
     : nb;
   return (
-    <div style={{ background:"#fff", borderRadius:12, padding:"13px 14px", border:"1px solid #E8E5E3", borderLeft:`3px solid ${KPI_ACCENT}`, transition:"all 0.15s" }}
-      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(-1px)";}}
-      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";}}>
-      <p style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.07em", marginBottom:6, lineHeight:1.4 }}>{def.label}</p>
+    <div style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";}}>
+      <p style={{ fontSize:9, fontWeight:800, color:KPI_ACCENT, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{def.label}</p>
       <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
-        <p style={{ fontSize:"1.1rem", fontWeight:800, color:KPI_ACCENT, lineHeight:1 }}>{display}</p>
+        <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{display}</p>
         {def.unit==="jours" && <span style={{ fontSize:8.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:5, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>moy.</span>}
       </div>
     </div>
@@ -1676,17 +1694,26 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   return (
     <>
       <div onClick={()=>!loading&&colored.length>0&&setOpen(true)}
-        style={{ background:"#fff", borderRadius:16, border:"1px solid #E8E5E3", boxShadow:"0 1px 4px rgba(0,0,0,0.05)", overflow:"hidden", cursor:loading||colored.length===0?"default":"pointer", transition:"all 0.18s" }}
-        onMouseEnter={e=>{ if(!loading&&colored.length>0){ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)"; e.currentTarget.style.transform="translateY(-2px)"; } }}
-        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)"; e.currentTarget.style.transform="translateY(0)"; }}>
+        style={{ background:"#fff", borderRadius:14, border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", overflow:"hidden", cursor:loading||colored.length===0?"default":"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+        onMouseEnter={e=>{ if(!loading&&colored.length>0){ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }
+          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; const d=sp.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; } }); }}
+        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7";
+          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; }); }}>
         <div style={{ padding:"16px 18px" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, marginBottom:14 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0, flexWrap:"wrap" as const }}>
-              <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0 }}>{ind.label}</p>
-              <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>{dim.label}</span>
-              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>Top {cardN}</span>}
+            <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
+              <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
+                <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0, display:"inline-block" }}>{ind.label}</p>
+              </span>
+              <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>{dim.label}</span>
+              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>Top {cardN}</span>}
             </div>
-            <button onClick={e=>{e.stopPropagation();onRemove();}} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB", flexShrink:0 }}><X size={13}/></button>
+            <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
+              <span style={{ width:26, height:26, borderRadius:8, background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
+                <Maximize2 size={11} style={{ color:"#9aa5b4" }}/>
+              </span>
+              <button onClick={e=>{e.stopPropagation();onRemove();}} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB" }}><X size={13}/></button>
+            </div>
           </div>
           <div style={{ pointerEvents:"none" as const }}>{body(cardH)}</div>
         </div>
@@ -1718,7 +1745,9 @@ function SbSection({ title, count, accent="#004f91", defaultOpen=true, children 
           <span style={{ fontSize:11, fontWeight:700, color:on?accent:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{title}</span>
           {on&&<span style={{ fontSize:10, fontWeight:700, color:accent, background:`${accent}26`, padding:"1px 6px", borderRadius:999 }}>{count}</span>}
         </div>
-        {open?<ChevronUp size={13} style={{ color:"#9aa5b4" }}/>:<ChevronDown size={13} style={{ color:"#9aa5b4" }}/>}
+        <span style={{ width:20, height:20, borderRadius:"50%", background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          {open?<ChevronUp size={11} style={{ color:"#4a5568" }}/>:<ChevronDown size={11} style={{ color:"#4a5568" }}/>}
+        </span>
       </button>
       {open&&children}
     </div>
@@ -1788,8 +1817,10 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
             <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
             {sidebarOpen&&nbActifs>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbActifs}</span>}
           </button>
-          {sidebarOpen&&hasAdded&&<button onClick={()=>onReset(onglet)} title="Tout réinitialiser" style={{ background:"#fee2e2", border:"none", cursor:"pointer", borderRadius:8, padding:"6px", display:"flex", alignItems:"center" }}>
-            <span className="material-symbols-outlined" style={{ fontSize:16, color:"#dc2626", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
+          {sidebarOpen&&hasAdded&&<button onClick={()=>onReset(onglet)} title="Tout réinitialiser" style={{ background:"rgba(220,38,38,0.08)", border:"1px solid rgba(220,38,38,0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(220,38,38,0.15)";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="rgba(220,38,38,0.08)";}}>
+            <span className="material-symbols-outlined" style={{ fontSize:15, color:"#dc2626", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
           </button>}
         </div>
       </div>
