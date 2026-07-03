@@ -26,7 +26,7 @@ export default function AuthShell({
         minHeight: "100vh",
         display: "flex",
         fontFamily: "var(--font-google-sans)",
-        background: "#FAFAF9",
+        background: "#F6F5F3",
         overflow: "hidden",
       }}
     >
@@ -59,47 +59,16 @@ export default function AuthShell({
           flexDirection: "column",
           justifyContent: "center",
           padding: "52px 72px 96px",
-          background:
-            "linear-gradient(160deg,#003a6e 0%,#004f91 58%,#1a6ab0 100%)",
+          background: "#004f91",
           overflow: "hidden",
         }}
       >
         {/* Déco fond */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          <div
-            style={{
-              position: "absolute",
-              top: "-18%",
-              right: "-8%",
-              width: 520,
-              height: 520,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle,rgba(255,255,255,0.06) 0%,transparent 65%)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              bottom: "-22%",
-              left: "-10%",
-              width: 480,
-              height: 480,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle,rgba(202,99,31,0.14) 0%,transparent 65%)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              opacity: 0.035,
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)",
-              backgroundSize: "80px 80px",
-            }}
-          />
+          <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)", WebkitMaskImage: "radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)" }} />
+          <div style={{ position: "absolute", top: "-25%", right: "-10%", width: 640, height: 640, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)" }} />
+          <div style={{ position: "absolute", bottom: "-30%", left: "-10%", width: 520, height: 520, borderRadius: "50%", background: "radial-gradient(circle,rgba(26,106,176,0.5) 0%,transparent 65%)" }} />
+          <div style={{ position: "absolute", top: 0, bottom: 0, right: 0, width: 1, background: "linear-gradient(180deg,transparent 0%,rgba(255,255,255,0.28) 50%,transparent 100%)" }} />
         </div>
 
         {/* Contenu groupé */}
@@ -137,9 +106,9 @@ export default function AuthShell({
             marginBottom: 32,
           }}
         >
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(202,99,31,0.1)", border: "1px solid rgba(202,99,31,0.25)", borderRadius: 999, padding: "6px 14px", marginBottom: 28 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ca631f", animation: "authPulse 2s infinite" }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#D96D3B", letterSpacing: "0.15em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Plateforme de Gestion des Investissements et des Investisseurs</span>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(202,99,31,0.08)", border: "1.5px solid rgba(202,99,31,0.45)", borderRadius: 999, padding: "8px 17px", marginBottom: 28 }}>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#ca631f", animation: "authPulse 2s infinite" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#ca631f", letterSpacing: "0.15em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           <h1
@@ -155,7 +124,7 @@ export default function AuthShell({
             Intelligence<br />
             <span
               style={{
-                background: "linear-gradient(135deg,#ca631f,#FFB0A1)",
+                background: "linear-gradient(135deg,#E8823C 0%,#FFC08A 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
@@ -166,7 +135,7 @@ export default function AuthShell({
             <br />Sénégal
           </h1>
 
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.95rem", lineHeight: 1.75, margin: "22px 0 0", maxWidth: 460 }}>
+          <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.95rem", lineHeight: 1.75, margin: "22px 0 0", maxWidth: 460 }}>
             KPIs, visualisations et analyses en temps réel des tendances d&apos;investissement dans tout le territoire national
           </p>
         </div>
@@ -185,8 +154,8 @@ export default function AuthShell({
                 alignItems: "center",
                 gap: 8,
                 padding: "8px 14px",
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.12)",
+                background: "rgba(255,255,255,0.10)",
+                border: "1px solid rgba(255,255,255,0.22)",
                 borderRadius: 999,
                 whiteSpace: "nowrap",
               }}
@@ -331,7 +300,7 @@ export const authButtonStyle: React.CSSProperties = {
   borderRadius: 12,
   border: "none",
   cursor: "pointer",
-  background: "linear-gradient(135deg,#ca631f,#e07b35)",
+  background: "#ca631f",
   color: "#fff",
   fontWeight: 700,
   fontSize: 15,
