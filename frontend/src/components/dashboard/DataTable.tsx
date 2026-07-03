@@ -220,10 +220,7 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
       {/* ── Header ── */}
       <div style={{ padding: "16px 20px 14px", background: "#fff", borderBottom: "1px solid #F2F0EF" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-          <div style={{ minWidth: 0 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#1a1a2e", margin: 0 }}>{titre}</h2>
-            {description && <p style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 3, lineHeight: 1.45 }}>{description}</p>}
-          </div>
+          <h2 style={{ fontSize: 14, fontWeight: 800, color: "#1a1a2e", margin: 0, minWidth: 0 }}>{titre}</h2>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
             <div style={{ position: "relative" as const }}>
               <Search size={12} style={{ position: "absolute" as const, left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
