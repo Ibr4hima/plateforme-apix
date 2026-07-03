@@ -36,16 +36,22 @@ export default function BarreTitre({ titre, children, droite }: {
 
 // ── Sélecteur segmenté en verre dépoli (vues, onglets…) ───────────────────────
 export function BarreTitreSegment<T extends string>({ options, value, onChange }: {
-  options: { v: T; l: string }[]; value: T; onChange: (v: T) => void;
+  options: { v: T; l: string; count?: number }[]; value: T; onChange: (v: T) => void;
 }) {
   return (
     <div style={{ display: "inline-flex", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: 3, gap: 3 }}>
-      {options.map(o => (
-        <button key={o.v} onClick={() => onChange(o.v)}
-          style={{ padding: "5px 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: value === o.v ? "#fff" : "transparent", color: value === o.v ? "#004f91" : "rgba(255,255,255,0.85)", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
-          {o.l}
-        </button>
-      ))}
+      {options.map(o => {
+        const actif = value === o.v;
+        return (
+          <button key={o.v} onClick={() => onChange(o.v)}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: actif ? "#fff" : "transparent", color: actif ? "#004f91" : "rgba(255,255,255,0.85)", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+            {o.l}
+            {o.count != null && o.count > 0 && (
+              <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1, padding: "2px 7px", borderRadius: 999, background: actif ? "rgba(0,79,145,0.10)" : "rgba(255,255,255,0.16)", color: actif ? "#004f91" : "rgba(255,255,255,0.85)", transition: "all 0.15s" }}>{o.count}</span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

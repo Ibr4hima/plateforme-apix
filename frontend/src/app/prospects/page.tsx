@@ -673,9 +673,9 @@ export default function ProspectsPage() {
       {/* ── Hero ── */}
       <BarreTitre titre="Prospects">
         <BarreTitreSegment options={[
-          { v:"cibles",     l:"Investisseurs ciblés" },
-          { v:"historique", l: enContact.length > 1 ? "Investisseurs en contact" : "Investisseur en contact" },
-          { v:"termines",   l: termines.length  > 1 ? "Investisseurs transformés" : "Investisseur transformé" },
+          { v:"cibles",     l:"Investisseurs ciblés", count: cibles.length },
+          { v:"historique", l: enContact.length > 1 ? "Investisseurs en contact" : "Investisseur en contact", count: enContact.length },
+          { v:"termines",   l: termines.length  > 1 ? "Investisseurs transformés" : "Investisseur transformé", count: termines.length },
         ]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
