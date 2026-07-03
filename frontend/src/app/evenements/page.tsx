@@ -610,9 +610,18 @@ export default function EvenementsPage() {
       <Navbar/>
 
       {/* Hero */}
-      <section style={{padding:"100px 40px 40px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
+      <section style={{padding:"104px 40px 46px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
+          {/* Trame fine estompée */}
+          <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)"}}/>
+          {/* Halos lumineux */}
+          <div style={{position:"absolute" as const,top:"-45%",right:"-6%",width:580,height:580,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.10) 0%,transparent 60%)"}}/>
+          <div style={{position:"absolute" as const,bottom:"-35%",left:"-8%",width:460,height:460,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,106,176,0.55) 0%,transparent 65%)"}}/>
+          <div style={{position:"absolute" as const,top:"5%",left:"40%",width:320,height:320,borderRadius:"50%",background:"radial-gradient(circle,rgba(202,99,31,0.13) 0%,transparent 65%)",filter:"blur(12px)"}}/>
+          {/* Filigrane calendrier */}
+          <CalendarDays size={300} strokeWidth={0.5} style={{position:"absolute" as const,right:"4%",top:"-12%",color:"rgba(255,255,255,0.07)",transform:"rotate(8deg)"}}/>
+          {/* Liseré lumineux en bas */}
+          <div style={{position:"absolute" as const,left:0,right:0,bottom:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)"}}/>
         </div>
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
