@@ -164,7 +164,7 @@ function badgeProspect(p:any) {
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
   if (jours <= 90)  return { label:"En cours",   color:"#188038", bg:"rgba(24,128,56,0.08)" };
-  if (jours <= 120) return { label:"En attente", color:"#ca631f", bg:"rgba(202,99,31,0.08)" };
+  if (jours <= 120) return { label:"En attente", color:"#6b7280", bg:"#F2F0EF" };
   return                  { label:"Inactif",    color:"#dc2626", bg:"rgba(220,38,38,0.07)" };
 }
 

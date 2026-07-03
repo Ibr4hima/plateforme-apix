@@ -18,11 +18,19 @@ function fmtDate(d: string) {
 function badgeProspect(p: any) {
   if (p?.issue === "installe") return { label: "Installation à venir", color: "#188038", bg: "rgba(24,128,56,0.08)" };
   if (p?.issue === "decline")  return { label: "Décliné",  color: "#6b7280", bg: "#F2F0EF" };
-  if (!p?.date_dernier_echange) return null;
-  const jours = Math.floor((Date.now() - new Date(p.date_dernier_echange).getTime()) / 86400000);
-  if (jours <= 30) return { label: "En cours",   color: "#188038", bg: "rgba(24,128,56,0.08)" };
-  if (jours <= 60) return { label: "En attente", color: "#ca631f", bg: "rgba(202,99,31,0.08)" };
-  return                  { label: "Inactif",    color: "#dc2626", bg: "rgba(220,38,38,0.07)" };
+  // Après un re-contact, seule l'activité du cycle courant compte (même logique que l'admin).
+  const debut = cycleCourantDebut(p);
+  let dateDernierEchange = p?.date_dernier_echange;
+  if (debut) {
+    const echangesCycle = (p?.echanges||[]).filter((e:any)=>e.date_echange >= debut);
+    if (!echangesCycle.length) return { label: "À recontacter", color: "#004f91", bg: "rgba(0,79,145,0.07)" };
+    dateDernierEchange = echangesCycle.map((e:any)=>e.date_echange).sort().at(-1);
+  }
+  if (!dateDernierEchange) return null;
+  const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
+  if (jours <= 90)  return { label: "En cours",   color: "#188038", bg: "rgba(24,128,56,0.08)" };
+  if (jours <= 120) return { label: "En attente", color: "#6b7280", bg: "#F2F0EF" };
+  return                   { label: "Inactif",    color: "#dc2626", bg: "rgba(220,38,38,0.07)" };
 }
 
 // Début du cycle de prospection courant : date du dernier re-contact.
@@ -139,12 +147,27 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
         ? { label: "Décliné le", value: p.issue_conclu_le ? fmtDate(p.issue_conclu_le.slice(0, 10)) : null }
         : { label: "Conclusion", value: null });
 
+  // Bandeau de statut (onglet En contact) — même style que « Prochain événement »
+  const ACCENTS: Record<string, { grad:string; b:string; b2:string; sh:string; sh2:string }> = {
+    "En cours":      { grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", b:"rgba(24,128,56,0.45)",   b2:"rgba(24,128,56,0.6)",   sh:"0 4px 18px rgba(24,128,56,0.15)",   sh2:"0 12px 28px rgba(24,128,56,0.18)" },
+    "En attente":    { grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)", b:"rgba(107,114,128,0.45)", b2:"rgba(107,114,128,0.6)", sh:"0 4px 18px rgba(107,114,128,0.15)", sh2:"0 12px 28px rgba(107,114,128,0.18)" },
+    "Inactif":       { grad:"linear-gradient(90deg,#991b1b 0%,#dc2626 60%,#ef4444 100%)", b:"rgba(220,38,38,0.45)",   b2:"rgba(220,38,38,0.6)",   sh:"0 4px 18px rgba(220,38,38,0.15)",   sh2:"0 12px 28px rgba(220,38,38,0.18)" },
+    "À recontacter": { grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", b:"rgba(0,79,145,0.45)",    b2:"rgba(0,79,145,0.6)",    sh:"0 4px 18px rgba(0,79,145,0.15)",    sh2:"0 12px 28px rgba(0,79,145,0.18)" },
+  };
+  const accent = onglet === "historique" && badge ? (ACCENTS[badge.label] || null) : null;
+
   return (
     <div onClick={onOpen}
-      style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
+      style={{ background: "#fff", border: accent ? `1.5px solid ${accent.b}` : "1px solid #ECEAE7", borderRadius: 14, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: accent ? accent.sh : "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = accent ? accent.sh2 : "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = accent ? accent.b2 : "rgba(0,79,145,0.25)"; }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = accent ? accent.sh : "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = accent ? accent.b : "#ECEAE7"; }}>
 
+      {accent && badge && (
+        <div style={{ display: "flex", alignItems: "center", gap: 7, background: accent.grad, padding: "6px 16px" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }}/>
+          <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{badge.label}</span>
+        </div>
+      )}
       <div style={{ padding: "14px 16px 14px", flex: 1 }}>
         {/* Statut / email + siège */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -152,7 +175,7 @@ function CarteProspect({ p, onglet, onOpen }: { p: any; onglet: "cibles" | "hist
             mail ? (
               <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, minWidth: 0 }}>{mail}</span>
             ) : <span />
-          ) : badge ? (
+          ) : badge && !accent ? (
             <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" as const }}>{badge.label}</span>
           ) : <span />}
           {p.siege_nom && <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
@@ -628,7 +651,8 @@ export default function ProspectsPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#F2F0EF", fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
       <Navbar />
 
       {/* ── Hero ── */}
