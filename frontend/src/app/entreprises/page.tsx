@@ -384,12 +384,12 @@ export default function EntreprisesPage() {
           ))}
           {onglet==="liste"&&(
             <button onClick={()=>setTriDate(t=>t==="desc"?"asc":"desc")}
-              title={triDate==="desc"?"Les plus récentes d'abord — cliquer pour inverser":"Les plus anciennes d'abord — cliquer pour inverser"}
+              title={triDate==="desc"?"Année de création descendante — cliquer pour inverser":"Année de création ascendante — cliquer pour inverser"}
               style={{marginLeft:"auto",alignSelf:"center",display:"flex",alignItems:"center",gap:7,padding:"7px 13px",borderRadius:9,border:"1px solid rgba(0,79,145,0.18)",background:"rgba(0,79,145,0.05)",color:"#004f91",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.10)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,79,145,0.05)";}}>
               <span className="material-symbols-outlined" style={{fontSize:16,lineHeight:1,transform:triDate==="asc"?"scaleY(-1)":"none",transition:"transform 0.18s"}}>sort</span>
-              Création · {triDate==="desc"?"récentes d'abord":"anciennes d'abord"}
+              Année de création · {triDate==="desc"?"Descendante":"Ascendante"}
             </button>
           )}
         </div>
