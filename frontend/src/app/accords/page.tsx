@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import BarreTitre from "@/components/shared/BarreTitre";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -456,22 +457,7 @@ export default function AccordsPage() {
       <Navbar/>
 
       {/* Hero */}
-      <section style={{padding:"100px 40px 40px",background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",position:"relative" as const,overflow:"hidden"}}>
-        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
-          <div style={{position:"absolute" as const,bottom:"-20%",left:"-5%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 65%)"}}/>
-        </div>
-        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(202,99,31,0.1)",border:"1px solid rgba(202,99,31,0.25)",borderRadius:999,padding:"6px 14px",marginBottom:17}}>
-            <span style={{fontSize:11,fontWeight:700,color:"#D96D3B",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
-          </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Accords &amp; Traités</h1>
-          <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
-            {stats.total>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.total} accord{stats.total>1?"s":""}</span>}
-            {stats.en_vigueur>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(54,111,227,0.18)",border:"1px solid rgba(54,111,227,0.35)",padding:"6px 14px",borderRadius:999}}>{stats.en_vigueur} en vigueur</span>}
-            {stats.expire>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(107,114,128,0.25)",border:"1px solid rgba(107,114,128,0.4)",padding:"6px 14px",borderRadius:999}}>{stats.expire} expiré{stats.expire>1?"s":""}</span>}
-          </div>
-        </div>
-      </section>
+      <BarreTitre titre={"Accords & Traités"}/>
 
       {/* Layout sidebar + contenu */}
       <div style={{display:"flex",alignItems:"flex-start"}}>

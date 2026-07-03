@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import BarreTitre from "@/components/shared/BarreTitre";
 import { Building2, ChevronDown, ChevronUp, Clock, FileText, Globe, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Phone, Search, Send, SlidersHorizontal, User, Video, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { parsePhoneNumber } from "libphonenumber-js";
@@ -670,17 +671,7 @@ export default function ProspectsPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section style={{ padding: "100px 40px 40px", background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", position: "relative" as const, overflow: "hidden" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative" as const, zIndex: 1 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(202,99,31,0.1)", border: "1px solid rgba(202,99,31,0.25)", borderRadius: 999, padding: "6px 14px", marginBottom: 17 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#D96D3B", letterSpacing: "0.15em", textTransform: "uppercase" }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
-          </div>
-          <h1 style={{ fontWeight: 800, fontSize: "clamp(2.2rem,4vw,3.2rem)", color: "#fff", lineHeight: 1.1, marginBottom: 16 }}>Prospects</h1>
-          {total > 0 && <span style={{ display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", padding: "6px 14px", borderRadius: 999 }}>
-            {total} prospect{total > 1 ? "s" : ""}
-          </span>}
-        </div>
-      </section>
+      <BarreTitre titre="Prospects"/>
 
       {/* ── Onglets sticky ── */}
       <div style={{ background: "#fff", borderBottom: "1px solid #E8E5E3", position: "sticky" as const, top: 0, zIndex: 10 }}>

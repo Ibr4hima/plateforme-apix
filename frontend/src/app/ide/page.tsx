@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
@@ -3043,29 +3044,9 @@ export default function IdePage() {
       <Navbar />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section style={{ background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"100px 40px 32px" }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(202,99,31,0.1)", border:"1px solid rgba(202,99,31,0.25)", borderRadius:999, padding:"6px 14px", marginBottom:16 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:"#D96D3B", letterSpacing:"0.15em", textTransform:"uppercase" as const }}>Plateforme de Promotion des Investissements et des Investisseurs</span>
-          </div>
-          <h1 style={{ fontWeight:800, fontSize:"clamp(2.2rem,4vw,3.2rem)", color:"#fff", lineHeight:1.1, marginBottom:20 }}>Investissements Privés</h1>
-          <div style={{ display:"flex", gap:10 }}>
-            {([
-              {v:"ide",      l:"Investissements Directs Étrangers"},
-              {v:"national", l:"Investissements nationaux"},
-            ] as const).map(o=>(
-              <button key={o.v} onClick={()=>setOngletPrincipal(o.v)}
-                style={{ display:"inline-flex", alignItems:"center", fontSize:13, fontWeight:700, cursor:"pointer", border:"none", padding:"8px 18px", borderRadius:999, transition:"all 0.15s", fontFamily:"var(--font-google-sans)",
-                  color: ongletPrincipal===o.v ? "#fff" : "rgba(255,255,255,0.55)",
-                  background: ongletPrincipal===o.v ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.06)",
-                  outline: ongletPrincipal===o.v ? "1.5px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.12)",
-                }}>
-                {o.l}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+      <BarreTitre titre="Investissements Privés">
+        <BarreTitreSegment options={[{v:"ide",l:"Investissements Directs Étrangers"},{v:"national",l:"Investissements nationaux"}]} value={ongletPrincipal} onChange={setOngletPrincipal}/>
+      </BarreTitre>
 
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
       {ongletPrincipal === "ide" && (
