@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
 
 // ── Page de connexion — carte unique centrée, plein écran sans défilement ─────
 export default function LoginPage() {
@@ -54,21 +54,14 @@ export default function LoginPage() {
         .login-cta:disabled{opacity:.65;transform:none;cursor:not-allowed}
         .login-cta .cta-arrow{transition:transform .18s;opacity:.85}
         .login-cta:hover .cta-arrow{transform:translateX(4px)}
-        .login-back{transition:color .15s}
-        .login-back:hover{color:#fff!important}
       `}</style>
 
-      {/* Trame fine + halos dérivants sur la partie bleue */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+      {/* Trame fine + halos dérivants, contenus dans la zone bleue */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", maskImage: "linear-gradient(180deg,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 42%,transparent 60%)", WebkitMaskImage: "linear-gradient(180deg,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 42%,transparent 60%)" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.045) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(100% 55% at 50% -8%,rgba(0,0,0,0.9) 0%,transparent 78%)", WebkitMaskImage: "radial-gradient(100% 55% at 50% -8%,rgba(0,0,0,0.9) 0%,transparent 78%)" }} />
         <div style={{ position: "absolute", top: "-24%", left: "6%", width: 560, height: 560, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)", animation: "drift 11s ease-in-out infinite alternate" }} />
         <div style={{ position: "absolute", top: "-16%", right: "2%", width: 640, height: 640, borderRadius: "50%", background: "radial-gradient(circle,rgba(26,106,176,0.45) 0%,transparent 62%)", animation: "driftInv 13s ease-in-out infinite alternate" }} />
       </div>
-
-      {/* Retour au site */}
-      <Link href="/" className="login-back" style={{ position: "absolute", top: 24, left: 32, zIndex: 2, display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,0.65)", textDecoration: "none" }}>
-        <ArrowLeft size={14} /> Retour au site
-      </Link>
 
       {/* ── Contenu centré ── */}
       <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px" }}>
@@ -90,13 +83,9 @@ export default function LoginPage() {
 
         {/* Carte */}
         <div className="login-card" style={{ width: "100%", maxWidth: 400, background: "#fff", borderRadius: 18, overflow: "hidden", border: "1px solid rgba(0,79,145,0.10)", boxShadow: "0 24px 64px rgba(0,25,50,0.30), 0 2px 8px rgba(0,25,50,0.10)" }}>
-          <div style={{ height: 4, display: "flex", flexShrink: 0 }}>
-            <div style={{ flex: 62, background: "#004f91" }} />
-            <div style={{ flex: 23, background: "#ca631f" }} />
-            <div style={{ flex: 15, background: "#188038" }} />
-          </div>
+          <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
           <div style={{ padding: "28px 32px 26px" }}>
-            <h1 style={{ fontWeight: 800, fontSize: "1.4rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: 0 }}>Connexion</h1>
+            <h1 style={{ fontWeight: 800, fontSize: "1.45rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: 0 }}>Connexion</h1>
             <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 6, marginBottom: 0, lineHeight: 1.55 }}>
               Accédez à votre espace avec votre compte <span style={{ color: "#4a5568", fontWeight: 600 }}>@apix.sn</span>
             </p>
@@ -111,7 +100,7 @@ export default function LoginPage() {
                     type="email"
                     required
                     autoComplete="email"
-                    placeholder="prenom.nom@apix.sn"
+                    placeholder="Entrez votre adresse email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     style={{ width: "100%", padding: "12px 14px 12px 40px", border: "1.5px solid #E8E5E3", borderRadius: 11, fontSize: 14, color: "#1a1a2e", background: "#F8F7F6", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }}
