@@ -630,7 +630,7 @@ export default function EvenementsPage() {
           <div style={{position:"absolute" as const,left:0,right:0,bottom:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)"}}/>
         </div>
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"rgba(202,99,31,0.08)",border:"1.5px solid rgba(202,99,31,0.45)",borderRadius:10,padding:"9px 18px",marginBottom:17}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:9,background:"rgba(202,99,31,0.08)",border:"1.5px solid rgba(202,99,31,0.45)",borderRadius:999,padding:"9px 18px",marginBottom:17}}>
             <span style={{width:7,height:7,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.5)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
             <span style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
           </div>
