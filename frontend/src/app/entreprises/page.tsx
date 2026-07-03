@@ -236,6 +236,7 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function EntreprisesPage() {
   const [onglet,      setOnglet]      = useState<"liste"|"territoire">("liste");
+  const [triDate,     setTriDate]     = useState<"desc"|"asc">("desc");
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [selec,       setSelec]       = useState<any>(null);
@@ -328,6 +329,11 @@ export default function EntreprisesPage() {
     if (polesSel.length>0&&!polesSel.includes(e.pole_territoire_nom||""))return false;
     if (isDateFiltered&&e.date_creation){const y=parseInt(e.date_creation.split("-")[0]);if(!isNaN(y)&&(y<dateStart||y>dateEnd))return false;}
     return true;
+  }).sort((a,b)=>{
+    // Tri par date de création — entreprises sans date en fin de liste
+    const da=a.date_creation||"", db_=b.date_creation||"";
+    if(!da&&!db_) return 0; if(!da) return 1; if(!db_) return -1;
+    return triDate==="asc" ? da.localeCompare(db_) : db_.localeCompare(da);
   });
 
   const hasFilter=!!recherche||formesSel.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0||arrondsSel.length>0||polesSel.length>0||isDateFiltered;
@@ -376,6 +382,16 @@ export default function EntreprisesPage() {
               {t.label}
             </button>
           ))}
+          {onglet==="liste"&&(
+            <button onClick={()=>setTriDate(t=>t==="desc"?"asc":"desc")}
+              title={triDate==="desc"?"Les plus récentes d'abord — cliquer pour inverser":"Les plus anciennes d'abord — cliquer pour inverser"}
+              style={{marginLeft:"auto",alignSelf:"center",display:"flex",alignItems:"center",gap:7,padding:"7px 13px",borderRadius:9,border:"1px solid rgba(0,79,145,0.18)",background:"rgba(0,79,145,0.05)",color:"#004f91",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.10)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,79,145,0.05)";}}>
+              <span className="material-symbols-outlined" style={{fontSize:16,lineHeight:1,transform:triDate==="asc"?"scaleY(-1)":"none",transition:"transform 0.18s"}}>sort</span>
+              Création · {triDate==="desc"?"récentes d'abord":"anciennes d'abord"}
+            </button>
+          )}
         </div>
       </div>
 
