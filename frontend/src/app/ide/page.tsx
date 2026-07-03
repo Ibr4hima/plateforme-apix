@@ -371,54 +371,6 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series
   );
 }
 
-// ── Tableau de données ────────────────────────────────────────────────────────
-function TableauDonnees({ donnees, paysSelectionnes }: any) {
-  const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
-  const series_list = [
-    {dir:"entrant",ind:"flux",label:"Flux entrants"},
-    {dir:"sortant",ind:"flux",label:"Flux sortants"},
-    {dir:"entrant",ind:"stock",label:"Stock entrant"},
-    {dir:"sortant",ind:"stock",label:"Stock sortant"},
-  ];
-  const get = (pays:string, dir:string, ind:string, annee:number) => {
-    const r = donnees.find((d:any)=>d.pays===pays && d.direction===dir && d.indicateur===ind && d.annee===annee);
-    return r?.valeur !== null && r?.valeur !== undefined ? fmtVal(r.valeur) : "—";
-  };
-  return (
-    <div style={{ overflowX:"auto" as const }}>
-      <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
-        <thead>
-          <tr style={{ background:"#F8F7F6" }}>
-            <th style={{ padding:"8px 12px", textAlign:"left" as const, fontSize:11, fontWeight:700, color:"#9aa5b4", position:"sticky" as const, left:0, background:"#F8F7F6", borderRight:"1px solid #E8E5E3" }}>Pays / Indicateur</th>
-            {annees.map(a=><th key={a} style={{ padding:"8px 10px", fontSize:11, fontWeight:700, color:"#9aa5b4", textAlign:"center" as const, minWidth:70 }}>{a}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {paysSelectionnes.map((pays:any, pi:number) =>
-            series_list.map((s,si) => (
-              <tr key={`${pays.nom}-${s.dir}-${s.ind}`} style={{ borderBottom:"1px solid #F2F0EF", background:pi%2===0?"#fff":"#FAFAF9" }}>
-                <td style={{ padding:"7px 12px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    {si===0 && <div style={{ width:8, height:8, borderRadius:"50%", background:pays.couleur, flexShrink:0 }} />}
-                    {si===0 && <span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e" }}>{pays.nom}</span>}
-                    {si>0 && <span style={{ width:8, flexShrink:0 }} />}
-                    <span style={{ fontSize:11, color:"#4a5568" }}>{s.label}</span>
-                  </div>
-                </td>
-                {annees.map(a=>(
-                  <td key={a} style={{ padding:"7px 10px", textAlign:"center" as const, fontSize:12, color:"#1a1a2e", whiteSpace:"nowrap" as const }}>
-                    {get(pays.nom, s.dir, s.ind, a)}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
 // ── Export Excel (XLSX) ───────────────────────────────────────────────────────
 function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string) {
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
@@ -467,88 +419,104 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
+  const SERIES = [
+    {dir:"entrant",ind:"flux",label:"Flux entrants"},
+    {dir:"sortant",ind:"flux",label:"Flux sortants"},
+    {dir:"entrant",ind:"stock",label:"Stock entrant"},
+    {dir:"sortant",ind:"stock",label:"Stock sortant"},
+  ];
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, border:"1px solid #E8E5E3", boxShadow:"0 40px 100px rgba(0,0,0,0.25)", overflow:"hidden" }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+        <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
 
-        {/* Bande gradient hero */}
-        <div style={{ height:5, background:"linear-gradient(90deg,#003a6e 0%,#004f91 50%,#1a6ab0 100%)", flexShrink:0 }} />
-
-        {/* Header */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"18px 26px", borderBottom:"1px solid #F2F0EF", flexShrink:0, background:"linear-gradient(180deg,rgba(0,79,145,0.03) 0%,transparent 100%)" }}>
-          {/* Titre : bullet(s) pays */}
-          <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
-            {paysSelectionnes.map((p:any)=>(
-              <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <div style={{ width:8, height:8, borderRadius:"50%", background:p.couleur, flexShrink:0 }} />
-                <span style={{ fontSize:"1rem", fontWeight:800, color:"#1a1a2e" }}>{p.nom}</span>
+        {/* En-tête fixe */}
+        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
+            <div style={{ flex:1, minWidth:0 }}>
+              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>Tableau de données</h2>
+              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
+                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:10.5, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em" }}>
+                  {annees[0]} — {annees[annees.length-1]}
+                </span>}
+                {paysSelectionnes.map((p:any)=>(
+                  <span key={p.nom} title={p.label||p.nom} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:10.5, fontWeight:700, color:p.couleur }}>
+                    <span style={{ width:7, height:7, borderRadius:"50%", background:p.couleur, display:"inline-block", flexShrink:0 }} />
+                    {p.abrege||p.nom}
+                  </span>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Actions */}
-          <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0, marginLeft:16 }}>
-            <button onClick={()=>exportXLSX(donnees,paysSelectionnes,periode)}
-              title="Télécharger en Excel"
-              style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}
-              onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E8E5E3"; e.currentTarget.style.color="#4a5568"; }}>
-              <FileSpreadsheet size={13}/> Excel
+            </div>
+            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
+              <X size={15} color="#4a5568" />
             </button>
-            <div style={{ width:1, height:22, background:"#E8E5E3" }} />
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:"7px 8px", display:"flex" }}><X size={14} color="#4a5568"/></button>
           </div>
         </div>
 
         {/* Tableau */}
         <div style={{ overflowY:"auto" as const, flex:1, overflowX:"auto" as const }}>
           <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
-            <thead style={{ position:"sticky" as const, top:0, zIndex:1 }}>
-              <tr style={{ background:"#F8F7F6" }}>
-                <th style={{ padding:"10px 16px", textAlign:"left" as const, fontSize:11, fontWeight:700, color:"#9aa5b4", position:"sticky" as const, left:0, background:"#F8F7F6", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const, minWidth:160 }}>Indicateur</th>
-                {annees.map(a=><th key={a} style={{ padding:"10px 12px", fontSize:11, fontWeight:700, color:"#9aa5b4", textAlign:"right" as const, minWidth:80 }}>{a}</th>)}
+            <thead style={{ position:"sticky" as const, top:0, zIndex:2 }}>
+              <tr style={{ background:"#FAFAF9" }}>
+                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"#FAFAF9", borderRight:"1px solid #F0EEEC", borderBottom:"1px solid #F0EEEC", whiteSpace:"nowrap" as const, minWidth:170 }}>Indicateur</th>
+                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:10, fontWeight:800, color:"#004f91", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid #F0EEEC" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
-              {paysSelectionnes.map((pays:any, pi:number) => {
-                const series = [
-                  {dir:"entrant",ind:"flux",label:"Flux entrants"},
-                  {dir:"sortant",ind:"flux",label:"Flux sortants"},
-                  {dir:"entrant",ind:"stock",label:"Stock entrant"},
-                  {dir:"sortant",ind:"stock",label:"Stock sortant"},
-                ];
-                return series.map((s,si)=>(
-                  <tr key={`${pays.nom}-${s.dir}-${s.ind}`}
-                    style={{ borderBottom: si===series.length-1?"2px solid #E8E5E3":"1px solid #F2F0EF", background:"#fff" }}
-                    onMouseEnter={e=>e.currentTarget.style.background="#F8F7F6"}
-                    onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
-                    <td style={{ padding:"9px 16px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid #E8E5E3", whiteSpace:"nowrap" as const }}>
-                      <span style={{ fontSize:12, color:"#4a5568" }}>{s.label}</span>
+              {paysSelectionnes.map((pays:any) => (
+                <Fragment key={pays.nom}>
+                  <tr>
+                    <td colSpan={annees.length+1} style={{ padding:"12px 28px 6px", background:"#fff" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ width:8, height:8, borderRadius:"50%", background:pays.couleur, flexShrink:0 }} />
+                        <span style={{ fontSize:12.5, fontWeight:800, color:pays.couleur }}>{pays.abrege||pays.nom}</span>
+                      </div>
                     </td>
-                    {annees.map(a=>{
-                      const r = donnees.find((d:any)=>d.pays===pays.nom&&d.direction===s.dir&&d.indicateur===s.ind&&d.annee===a);
-                      const v = r?.valeur;
-                      const display = v!==null&&v!==undefined ? fmtVal(v) : "—";
-                      const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#ca631f" : "#004f91";
-                      return (
-                        <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
-                          {display}
-                        </td>
-                      );
-                    })}
                   </tr>
-                ));
-              })}
+                  {SERIES.map((s,si)=>(
+                    <tr key={`${pays.nom}-${s.dir}-${s.ind}`}
+                      style={{ borderBottom: si===SERIES.length-1?"1px solid #ECEAE7":"1px solid #F6F4F3", background:"#fff", transition:"background 0.1s" }}
+                      onMouseEnter={e=>e.currentTarget.style.background="#FAFAF9"}
+                      onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
+                      <td style={{ padding:"9px 28px 9px 44px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid #F0EEEC", whiteSpace:"nowrap" as const }}>
+                        <span style={{ fontSize:12, color:"#4a5568", fontWeight:500 }}>{s.label}</span>
+                      </td>
+                      {annees.map(a=>{
+                        const r = donnees.find((d:any)=>d.pays===pays.nom&&d.direction===s.dir&&d.indicateur===s.ind&&d.annee===a);
+                        const v = r?.valeur;
+                        const display = v!==null&&v!==undefined ? fmtVal(v) : "—";
+                        const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#dc2626" : "#353839";
+                        return (
+                          <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
+                            {display}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </Fragment>
+              ))}
             </tbody>
           </table>
         </div>
 
-        {/* Footer */}
-        <div style={{ padding:"11px 26px", borderTop:"1px solid #F2F0EF", flexShrink:0, background:"#FAFAF9", borderRadius:"0 0 20px 20px" }}>
-          <p style={{ fontSize:11, color:"#9aa5b4" }}>
+        {/* Pied fixe */}
+        <div style={{ padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0, gap:10 }}>
+          <span style={{ fontSize:11, color:"#9aa5b4" }}>
             {paysSelectionnes.length} pays · {annees.length} années · valeurs en M$ USD · Source CNUCED
-          </p>
+          </span>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+              Fermer
+            </button>
+            <button onClick={()=>exportXLSX(donnees,paysSelectionnes,periode)}
+              style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgba(0,79,145,0.25)", fontFamily:"var(--font-google-sans)" }}>
+              <FileSpreadsheet size={13}/> Excel
+            </button>
+          </div>
         </div>
       </div>
     </div>
