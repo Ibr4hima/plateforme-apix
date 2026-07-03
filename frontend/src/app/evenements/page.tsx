@@ -619,28 +619,34 @@ export default function EvenementsPage() {
       <Navbar/>
 
       {/* Barre de titre */}
-      <section style={{padding:"82px 40px 18px",background:"#004f91",position:"relative" as const,overflow:"hidden"}}>
-        <div style={{position:"absolute" as const,inset:0,pointerEvents:"none",opacity:0.5}}>
-          {/* Trame fine estompée */}
-          <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)"}}/>
-          {/* Halos lumineux */}
-          <div style={{position:"absolute" as const,top:"-140%",right:"-6%",width:580,height:580,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)"}}/>
-          <div style={{position:"absolute" as const,bottom:"-160%",left:"-8%",width:460,height:460,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,106,176,0.45) 0%,transparent 65%)"}}/>
-          {/* Liseré lumineux en bas */}
-          <div style={{position:"absolute" as const,left:0,right:0,bottom:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)"}}/>
-        </div>
-        <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1,display:"flex",alignItems:"center",gap:16}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
-          <h1 style={{fontWeight:800,fontSize:"1.3rem",color:"#fff",lineHeight:1.2,margin:0,whiteSpace:"nowrap" as const,letterSpacing:"-0.01em"}}>Événements</h1>
-          <div style={{display:"inline-flex",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:999,padding:3,gap:3}}>
+      <section style={{padding:"82px 40px 16px",background:"#fff",borderBottom:"1px solid #E8E5E3",position:"relative" as const}}>
+        <div style={{maxWidth:1280,margin:"0 auto",display:"flex",alignItems:"center",gap:16,minWidth:0}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:"#004f91",["--pc" as any]:"rgba(0,79,145,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+          <h1 style={{fontWeight:800,fontSize:"1.3rem",color:"#1a1a2e",lineHeight:1.2,margin:0,whiteSpace:"nowrap" as const,letterSpacing:"-0.01em"}}>Événements</h1>
+          <div style={{display:"inline-flex",background:"#F2F0EF",borderRadius:999,padding:3,gap:3}}>
             {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
               <button key={o.v} onClick={()=>setVueMode(o.v)}
-                style={{padding:"5px 15px",borderRadius:999,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:vueMode===o.v?"#fff":"transparent",color:vueMode===o.v?"#004f91":"rgba(255,255,255,0.85)",fontFamily:"var(--font-google-sans)",transition:"all 0.15s",whiteSpace:"nowrap" as const}}>
+                style={{padding:"5px 15px",borderRadius:999,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:vueMode===o.v?"#fff":"transparent",color:vueMode===o.v?"#004f91":"#9aa5b4",boxShadow:vueMode===o.v?"0 1px 4px rgba(0,0,0,0.10)":"none",fontFamily:"var(--font-google-sans)",transition:"all 0.15s",whiteSpace:"nowrap" as const}}>
                 {o.l}
               </button>
             ))}
           </div>
-          <span style={{marginLeft:"auto",fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.55)",letterSpacing:"0.12em",textTransform:"uppercase" as const,whiteSpace:"nowrap" as const}}>Plateforme de Promotion des Investissements et des Investisseurs</span>
+          {(()=>{
+            const prochain = prochainId!=null ? tous.find(e=>e.id===prochainId) : null;
+            if (!prochain) return null;
+            return (
+              <button onClick={()=>setSelec(prochain)}
+                style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",gap:8,padding:"6px 14px",borderRadius:999,border:"1px solid rgba(0,79,145,0.20)",background:"rgba(0,79,145,0.06)",cursor:"pointer",minWidth:0,maxWidth:420,transition:"background 0.15s",fontFamily:"var(--font-google-sans)"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.11)";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,79,145,0.06)";}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",["--pc" as any]:"rgba(0,79,145,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                <span style={{fontSize:10.5,fontWeight:800,color:"#004f91",letterSpacing:"0.1em",textTransform:"uppercase" as const,whiteSpace:"nowrap" as const,flexShrink:0}}>Prochain événement</span>
+                <span style={{fontSize:12,fontWeight:600,color:"#4a5568",whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>
+                  {prochain.nom_event}{prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}
+                </span>
+              </button>
+            );
+          })()}
         </div>
       </section>
 
