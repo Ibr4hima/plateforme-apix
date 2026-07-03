@@ -2734,24 +2734,38 @@ function OngletNational() {
             : compAnneesData.filter(a=>a>=anneeMin && a<=anneeMax);
           return (
           <div>
-            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, flexWrap:"wrap" as const }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:compSelec.length>0?10:20, flexWrap:"wrap" as const }}>
               <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative {typeLabel}</h2>
-              <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:8 }}>
-                {anneesComp.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
-                  {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
-                </span>}
+              {anneesComp.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+                {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
+              </span>}
+            </div>
+            {compSelec.length>0&&(
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, minWidth:0 }}>
                 {compSelec.map((id,ci)=>{
                   const node = nodeDe(id);
                   const col = BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length];
+                  const marquee = (e:React.MouseEvent, reset:boolean) => {
+                    const box = e.currentTarget.querySelector("[data-marquee]") as HTMLElement|null;
+                    const sp = box?.firstElementChild as HTMLElement|null;
+                    if (!box || !sp) return;
+                    if (reset) { sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; return; }
+                    const d = sp.scrollWidth - box.clientWidth;
+                    if (d>0) { sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; }
+                  };
                   return (
-                    <span key={id} title={node?.libelle} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${col}0D`, border:`1px solid ${col}2E`, fontSize:12, fontWeight:700, color:col }}>
+                    <span key={id} title={node?.libelle}
+                      onMouseEnter={e=>marquee(e,false)} onMouseLeave={e=>marquee(e,true)}
+                      style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${col}0D`, border:`1px solid ${col}2E`, fontSize:12, fontWeight:700, color:col, minWidth:0 }}>
                       <span style={{ width:7, height:7, borderRadius:"50%", background:col, display:"inline-block", flexShrink:0 }} />
-                      <span style={{ maxWidth:240, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{node?.libelle}</span>
+                      <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
+                        <span style={{ display:"inline-block" }}>{node?.libelle}</span>
+                      </span>
                     </span>
                   );
                 })}
               </div>
-            </div>
+            )}
 
             {compSelec.length===0 ? (
               <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"#9aa5b4" }}>
