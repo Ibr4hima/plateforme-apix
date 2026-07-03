@@ -2518,6 +2518,45 @@ function OngletNational() {
                 }
                 return <div style={{ maxHeight:420, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:1 }}>{sections}</div>;
               })()}
+
+              <div style={{ height:1, background:"#F2F0EF", margin:"18px 0" }}/>
+
+              {/* Période */}
+              <div style={{ marginBottom:8 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                </div>
+                <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
+                  {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
+                    <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
+                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none" }}>
+                      {m.l}
+                    </button>
+                  ))}
+                </div>
+                {modeAnnees==="plage" ? (
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                    <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
+                      <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-bornes[0])/span)*100}%`, width:`${Math.max(0,((anneeMax-bornes[0])/span)*100-((anneeMin-bornes[0])/span)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax?4:2} as React.CSSProperties}/>
+                      <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                      <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:3 }}>
+                    {(compAnneesData.length?compAnneesData:anneesData).map(a=>{ const s=anneesSpec.includes(a); return (
+                      <button key={a} onClick={()=>setAnneesSpec(prev=>s?prev.filter(x=>x!==a):[...prev,a].sort())}
+                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${s?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:11, fontWeight:s?700:400, textAlign:"center" as const, background:s?"#004f91":"#F8F7F6", color:s?"#fff":"#4a5568" }}>{a}</button>
+                    ); })}
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <>
@@ -2690,20 +2729,25 @@ function OngletNational() {
           const nodeDe = (id:number)=>compNodes.find(n=>n.id===id);
           const typeLabel = compType==="groupe" ? "par groupe" : compType==="secteur" ? "par secteur d'activité" : "par macro-secteur";
           const typePluriel = compType==="groupe" ? "groupes" : compType==="secteur" ? "secteurs" : "macro-secteurs";
+          const anneesComp = (modeAnnees==="specifiques"&&anneesSpec.length>0)
+            ? anneesSpec.filter(a=>compAnneesData.includes(a))
+            : compAnneesData.filter(a=>a>=anneeMin && a<=anneeMax);
           return (
           <div>
             <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, flexWrap:"wrap" as const }}>
               <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative {typeLabel}</h2>
-              {compSelec.length>0&&<span style={{ fontSize:14, fontWeight:700, color:"#9aa5b4" }}>:</span>}
-              <div style={{ display:"flex", flexWrap:"wrap" as const, gap:8 }}>
+              <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:8 }}>
+                {anneesComp.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+                  {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
+                </span>}
                 {compSelec.map((id,ci)=>{
                   const node = nodeDe(id);
                   const col = BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length];
                   return (
-                    <div key={id} title={node?.libelle} style={{ display:"flex", alignItems:"center", gap:7, background:"#fff", border:`1.5px solid ${col}33`, borderLeft:`3px solid ${col}`, borderRadius:8, padding:"5px 11px", fontSize:13 }}>
-                      <div style={{ width:8, height:8, borderRadius:"50%", background:col, flexShrink:0 }}/>
-                      <span style={{ fontWeight:700, color:"#1a1a2e" }}>{node?.code}</span>
-                    </div>
+                    <span key={id} title={node?.libelle} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${col}0D`, border:`1px solid ${col}2E`, fontSize:12, fontWeight:700, color:col }}>
+                      <span style={{ width:7, height:7, borderRadius:"50%", background:col, display:"inline-block", flexShrink:0 }} />
+                      <span style={{ maxWidth:240, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{node?.libelle}</span>
+                    </span>
                   );
                 })}
               </div>
