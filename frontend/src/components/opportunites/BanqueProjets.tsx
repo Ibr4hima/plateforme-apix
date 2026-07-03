@@ -767,6 +767,7 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
               onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
               onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
+              <div style={{ height:3, background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}/>
               <div style={{ padding:"14px 16px 14px", flex:1 }}>
                 {/* Pôle territoire */}
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>

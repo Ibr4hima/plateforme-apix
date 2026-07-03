@@ -1056,7 +1056,8 @@ export default function OpportunitesAdminPage() {
 
   return (
     <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
 
       <div style={{marginBottom:12}}>
         <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Opportunités d'investissement</h1>
@@ -1132,10 +1133,14 @@ export default function OpportunitesAdminPage() {
                             });
                           }}>
 
+                    <div style={{height:3,background:`linear-gradient(90deg,${n.color}CC 0%,${n.color} 50%,${n.color}99 100%)`,flexShrink:0}}/>
                     <div style={{padding:"14px 16px 14px",flex:1}}>
                       {/* Niveau */}
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                        <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:n.color,background:`${n.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{n.label}</span>
+                        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:n.color,background:`${n.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>
+                          <span style={{width:6,height:6,borderRadius:"50%",background:n.color,["--pc" as any]:`${n.color}66`,animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                          {n.label}
+                        </span>
                       </div>
 
                       {/* Compteurs libellés */}
@@ -1214,6 +1219,7 @@ export default function OpportunitesAdminPage() {
                             });
                           }}>
 
+                          <div style={{height:3,background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
                           <div style={{padding:"14px 16px 14px",flex:1}}>
                             {/* Titre (défile au survol si trop long) */}
                             <div data-marquee style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
@@ -1312,10 +1318,14 @@ export default function OpportunitesAdminPage() {
                             });
                           }}>
 
+                    <div style={{height:3,background:`linear-gradient(90deg,${s.color}CC 0%,${s.color} 50%,${s.color}99 100%)`,flexShrink:0}}/>
                     <div style={{padding:"14px 16px 14px",flex:1}}>
                       {/* Secteur */}
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                        <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:s.color,background:`${s.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{s.label}</span>
+                        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:s.color,background:`${s.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>
+                          <span style={{width:6,height:6,borderRadius:"50%",background:s.color,["--pc" as any]:`${s.color}66`,animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                          {s.label}
+                        </span>
                       </div>
 
                       {/* Compteurs libellés */}
@@ -1347,8 +1357,10 @@ export default function OpportunitesAdminPage() {
             /* ── Vue du secteur sélectionné : une card par branche ── */
             <>
               <button onClick={()=>setSelectedSec(null)}
-                style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
-                <ArrowLeft size={14}/> Retour aux secteurs
+                style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:24,background:"#fff",border:"1px solid #E4E1DE",borderRadius:999,cursor:"pointer",color:"#4a5568",fontSize:12.5,fontWeight:600,padding:"8px 16px",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",transition:"border-color 0.15s, color 0.15s, box-shadow 0.15s",fontFamily:"var(--font-google-sans)"}}
+                onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.35)";ev.currentTarget.style.color="#004f91";ev.currentTarget.style.boxShadow="0 4px 12px rgba(0,30,60,0.08)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="translateX(-3px)";}}
+                onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E4E1DE";ev.currentTarget.style.color="#4a5568";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="none";}}>
+                <ArrowLeft size={14} style={{transition:"transform 0.18s"}}/> Retour aux secteurs
               </button>
               {(()=>{
                 const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSec!));
@@ -1364,7 +1376,10 @@ export default function OpportunitesAdminPage() {
                   <div>
                     {/* En-tête du secteur */}
                     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-                      <span style={{display:"inline-flex",alignItems:"center",fontSize:11,fontWeight:800,color:"#1a1a2e",background:"#fff",border:"1px solid #ECEAE7",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",padding:"5px 14px",borderRadius:999,whiteSpace:"nowrap" as const}}>{secNom}</span>
+                      <span style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:11,fontWeight:800,color:"#1a1a2e",background:"#fff",border:"1px solid #ECEAE7",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",padding:"5px 14px",borderRadius:999,whiteSpace:"nowrap" as const}}>
+                        <span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",["--pc" as any]:"rgba(0,79,145,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                        {secNom}
+                      </span>
                       <span style={{flex:1,height:1,background:"#ECEAE7"}}/>
                     </div>
 
@@ -1375,7 +1390,7 @@ export default function OpportunitesAdminPage() {
                           {/* En-tête de branche */}
                           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,padding:"12px 18px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA"}}>
                             <div style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}>
-                              <span style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                              <span style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
                               <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</span>
                             </div>
                           </div>
@@ -1396,7 +1411,7 @@ export default function OpportunitesAdminPage() {
                                   const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
                                   if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                                 }}>
-                                <span style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
+                                <span style={{width:6,height:6,borderRadius:"50%",background:"#188038",["--pc" as any]:"rgba(24,128,56,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
                                 <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                 </div>
