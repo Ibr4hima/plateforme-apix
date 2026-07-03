@@ -963,7 +963,8 @@ export default function GestionZonesPage() {
 
   return (
     <div style={{ padding: "36px 40px 80px", fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
 
       <div style={{ marginBottom: 16 }}>
         <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Pôles &amp; Zones d&apos;investissement</h1>
@@ -991,37 +992,44 @@ export default function GestionZonesPage() {
               const nbEnt = zDuT.reduce((a, z) => a + (z.entreprises?.length || 0), 0);
               const active = selectedType === t.key;
               const c = t.color;
+              const GRADS: Record<string,string> = {
+                "#004f91":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",
+                "#ca631f":"linear-gradient(90deg,#9c4a15 0%,#ca631f 60%,#e07a2e 100%)",
+                "#188038":"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)",
+              };
+              const grad = GRADS[c] || `linear-gradient(90deg,${c} 0%,${c} 100%)`;
               return (
                 <div key={t.key} onClick={() => setSelectedType(active ? null : t.key)}
-                  style={{ background: "#fff", border: `1px solid ${active ? c : "#ECEAE7"}`, borderRadius: 14, cursor: "pointer",
+                  style={{ background: "#fff", border: `1.5px solid ${c}${active ? "99" : "73"}`, borderRadius: 14, cursor: "pointer",
                     transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s",
-                    boxShadow: active ? `0 12px 28px ${c}1f` : "0 1px 3px rgba(0,0,0,0.03)",
+                    boxShadow: active ? `0 12px 28px ${c}2e` : `0 4px 18px ${c}26`,
                     transform: active ? "translateY(-2px)" : "none",
                     display: "flex", flexDirection: "column" as const, overflow: "hidden", minWidth: 0 }}
                   onMouseEnter={ev => {
-                    if (!active) { ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }
+                    if (!active) { ev.currentTarget.style.boxShadow = `0 12px 28px ${c}2e`; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${c}99`; }
                     // Titre trop long : glisse pour révéler la fin
                     const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                     const span = box?.firstElementChild as HTMLElement | null;
                     if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
                   }}
                   onMouseLeave={ev => {
-                    if (!active) { ev.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7"; }
+                    if (!active) { ev.currentTarget.style.boxShadow = `0 4px 18px ${c}26`; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = `${c}73`; }
                     const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
                     if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                   }}>
 
-                  <div style={{ padding: "14px 16px 14px", flex: 1 }}>
-                    {/* Code du type + indicateur de sélection */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.04em", color: c, background: `${c}12`, padding: "3px 10px", borderRadius: 999 }}>{t.code}</span>
-                      {active && (
-                        <span style={{ width: 20, height: 20, borderRadius: "50%", background: c, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <svg width="10" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        </span>
-                      )}
-                    </div>
+                  {/* Bandeau du type — même style que la page publique */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, background: grad, padding: "6px 16px" }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }}/>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{t.code}</span>
+                    {active && (
+                      <span style={{ marginLeft: "auto", width: 16, height: 16, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </span>
+                    )}
+                  </div>
 
+                  <div style={{ padding: "14px 16px 14px", flex: 1 }}>
                     {/* Libellé du type (défile au survol si trop long) */}
                     <div data-marquee style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", whiteSpace: "nowrap" as const }}>
                       <span style={{ display: "inline-block" }}>{t.label}</span>
@@ -1029,12 +1037,12 @@ export default function GestionZonesPage() {
 
                     {/* Compteurs libellés */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                      <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px" }}>
-                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
+                      <div style={{ background: `${c}0A`, border: `1px solid ${c}1F`, borderRadius: 10, padding: "8px 11px" }}>
+                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: c, textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
                         <p style={{ fontSize: 14, fontWeight: 800, color: nbEnt > 0 ? "#1a1a2e" : "#9aa5b4" }}>{nbEnt}</p>
                       </div>
-                      <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px" }}>
-                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Zone{zDuT.length > 1 ? "s" : ""}</p>
+                      <div style={{ background: `${c}0A`, border: `1px solid ${c}1F`, borderRadius: 10, padding: "8px 11px" }}>
+                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: c, textTransform: "uppercase" as const, marginBottom: 3 }}>Zone{zDuT.length > 1 ? "s" : ""}</p>
                         <p style={{ fontSize: 14, fontWeight: 800, color: zDuT.length > 0 ? "#1a1a2e" : "#9aa5b4" }}>{zDuT.length}</p>
                       </div>
                     </div>
@@ -1068,7 +1076,7 @@ export default function GestionZonesPage() {
                   <div key={z.id} onClick={() => setVueId(z.id)}
                     style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
                     onMouseEnter={ev => {
-                      ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)";
+                      ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${t.color}40`;
                       // Contenus trop longs : glissent pour révéler la fin
                       ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
                         const span = box.firstElementChild as HTMLElement | null;
@@ -1083,11 +1091,12 @@ export default function GestionZonesPage() {
                       });
                     }}>
 
+                    <div style={{ height: 3, background: `linear-gradient(90deg,${t.color}CC 0%,${t.color} 50%,${t.color}99 100%)`, flexShrink: 0 }}/>
                     <div style={{ padding: "14px 16px 14px", flex: 1 }}>
                       {/* Pôle */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                         {z.pole_nom ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", whiteSpace: "nowrap" as const, maxWidth: "100%" }}>{z.pole_nom}</span>
+                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: t.color, background: `${t.color}12`, padding: "3px 10px", borderRadius: 999, overflow: "hidden", whiteSpace: "nowrap" as const, maxWidth: "100%" }}>{z.pole_nom}</span>
                         ) : <span />}
                       </div>
 
@@ -1096,14 +1105,14 @@ export default function GestionZonesPage() {
 
                       {/* Infos libellées */}
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                        <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Localisation</p>
+                        <div style={{ background: `${t.color}0A`, border: `1px solid ${t.color}1F`, borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
+                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: t.color, textTransform: "uppercase" as const, marginBottom: 3 }}>Localisation</p>
                           <p data-marquee style={{ fontSize: 12, fontWeight: 600, color: (z.departement_nom || z.region_nom) ? "#1a1a2e" : "#9aa5b4", overflow: "hidden", whiteSpace: "nowrap" as const }}>
                             <span style={{ display: "inline-block" }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ") || "—"}</span>
                           </p>
                         </div>
-                        <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "8px 11px" }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}</p>
+                        <div style={{ background: `${t.color}0A`, border: `1px solid ${t.color}1F`, borderRadius: 10, padding: "8px 11px" }}>
+                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: t.color, textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}</p>
                           <p style={{ fontSize: 12, fontWeight: 600, color: (z.entreprises?.length || 0) > 0 ? "#1a1a2e" : "#9aa5b4" }}>{z.entreprises?.length || 0}</p>
                         </div>
                       </div>
