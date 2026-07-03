@@ -1325,13 +1325,16 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
         {/* Zone graphes */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"wrap" as const }}>
-            <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"#F5F4F3", fontSize:12, fontWeight:700, color:"#4a5568", letterSpacing:"0.02em", flexShrink:0 }}>
+            <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                 : `${anneeMin} — ${anneeMax}`}
             </span>
             {paysAvecCouleur.map(p=>(
-              <span key={p.nom} style={{ fontSize:12.5, fontWeight:700, color:p.couleur, padding:"4px 2px" }}>{p.nom}</span>
+              <span key={p.nom} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:12, fontWeight:700, color:p.couleur }}>
+                <span style={{ width:7, height:7, borderRadius:"50%", background:p.couleur, display:"inline-block" }} />
+                {p.nom}
+              </span>
             ))}
           </div>
 
@@ -1918,13 +1921,16 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
       {/* Zone graphes */}
       <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"wrap" as const }}>
-          <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"#F5F4F3", fontSize:12, fontWeight:700, color:"#4a5568", letterSpacing:"0.02em", flexShrink:0 }}>
+          <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
             {modeAnnees==="specifiques"&&anneesSpec.length>0
               ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
               : `${anneeMin} — ${anneeMax}`}
           </span>
           {grpAvecCouleur.map(g=>(
-            <span key={g.nom} style={{ fontSize:12.5, fontWeight:700, color:g.couleur, padding:"4px 2px" }}>{g.label}</span>
+            <span key={g.nom} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${g.couleur}0D`, border:`1px solid ${g.couleur}2E`, fontSize:12, fontWeight:700, color:g.couleur }}>
+              <span style={{ width:7, height:7, borderRadius:"50%", background:g.couleur, display:"inline-block" }} />
+              {g.label}
+            </span>
           ))}
         </div>
 
