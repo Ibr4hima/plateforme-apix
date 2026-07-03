@@ -164,12 +164,15 @@ def raison_erreur_borne(code: str, val: float) -> str | None:
 FACTEUR_FCFA = 1_000_000
 
 
-def valeur_stockee(unite: str | None, val: float) -> float:
+def valeur_stockee(unite: str | None, val: float, code: str | None = None) -> float:
     """Convertit une valeur source (millions de FCFA) en valeur réelle stockée.
 
     Seuls les montants en FCFA sont mis à l'échelle ; les ratios, %, jours
-    restent inchangés.
+    restent inchangés. Exception : le taux de vétusté, lu en ratio dans le
+    fichier source mais stocké et affiché en pourcentage.
     """
+    if code == "eff_vetuste":
+        return val * 100
     return val * FACTEUR_FCFA if unite == "FCFA" else val
 
 # Tolérances de recalcul (les valeurs sont stockées en Numeric(20,4))

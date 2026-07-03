@@ -128,7 +128,7 @@ async def _ecrire_valeurs(
                 continue
             unite = indicateur_unites.get(code_ind)
             for va in vals:
-                valeur = valeur_stockee(unite, va.valeur)
+                valeur = valeur_stockee(unite, va.valeur, code_ind)
                 raison = raison_erreur_borne(code_ind, valeur)
                 if raison:
                     # valeur non importée — stockée pour correction manuelle
@@ -278,7 +278,7 @@ async def _controle_fidelite(
         for code, vals in m.valeurs.valeurs.items():
             unite = indicateur_unites.get(code)
             for va in vals:
-                valeur = valeur_stockee(unite, va.valeur)
+                valeur = valeur_stockee(unite, va.valeur, code)
                 if raison_erreur_borne(code, valeur) is None:
                     attendu[(code, m.niveau, m.cible_id, va.annee)] = valeur
 

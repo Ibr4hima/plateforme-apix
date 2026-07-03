@@ -2067,6 +2067,20 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
   };
   const multi = blocs.length > 1;
   const nbInds = blocs.reduce((n,b)=>n+b.indicateurs.length,0);
+  // Unité affichée à côté du libellé (échelle commune par indicateur) — valeurs nues dans les cellules
+  const uniteEtEchelle = (ind: BdefIndic): { unite:string; scale:number } => {
+    if (ind.unite==="%"||ind.unite==="ratio"||ind.unite==="jours") return { unite:ind.unite, scale:1 };
+    const m = Math.max(0, ...annees.map(a=>Math.abs((ind.valeurs[a] as number)||0)));
+    if (m>=1e9) return { unite:"Md FCFA", scale:1e9 };
+    if (m>=1e6) return { unite:"M FCFA", scale:1e6 };
+    if (m>=1e3) return { unite:"k FCFA", scale:1e3 };
+    return { unite:"FCFA", scale:1 };
+  };
+  const fmtNu = (ind: BdefIndic, v: number, scale: number) =>
+    ind.unite==="%" ? v.toFixed(2)
+    : ind.unite==="ratio" ? v.toFixed(3)
+    : ind.unite==="jours" ? v.toFixed(0)
+    : (v/scale).toFixed(scale>=1e9?2:scale>=1e6?1:0);
 
   const exporter = () => {
     const wb = XLSX.utils.book_new();
@@ -2138,24 +2152,27 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                   )}
                   {parCatDe(b.indicateurs).map(({cat,inds})=>(
                     <Fragment key={`${b.libelle}-${cat}`}>
-                      <tr><td colSpan={annees.length+1} style={{ padding:multi?"9px 28px 4px 44px":"10px 28px 4px", fontSize:10, fontWeight:800, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const, background:"#fff" }}>{cat}</td></tr>
-                      {inds.map(ind=>(
+                      <tr><td colSpan={annees.length+1} style={{ padding:multi?"9px 28px 4px 44px":"10px 28px 4px", fontSize:10, fontWeight:800, color:b.couleur, letterSpacing:"0.1em", textTransform:"uppercase" as const, background:"#fff" }}>{cat}</td></tr>
+                      {inds.map(ind=>{
+                        const { unite:uAff, scale } = uniteEtEchelle(ind);
+                        return (
                         <tr key={ind.code} style={{ borderBottom:"1px solid #F6F4F3", background:"#fff", transition:"background 0.1s" }}
                           onMouseEnter={e=>e.currentTarget.style.background="#FAFAF9"}
                           onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
                           <td style={{ padding:multi?"9px 28px 9px 58px":"9px 28px 9px 44px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid #F0EEEC", whiteSpace:"nowrap" as const }}>
-                            <span style={{ fontSize:12, color:"#4a5568", fontWeight:500 }}>{ind.libelle}</span> <span style={{ fontSize:10, color:"#C5BFBB" }}>· {ind.unite}</span>
+                            <span style={{ fontSize:12, color:"#4a5568", fontWeight:500 }}>{ind.libelle}</span> <span style={{ fontSize:10, color:"#C5BFBB" }}>· {uAff}</span>
                           </td>
                           {annees.map(a=>{
                             const v = ind.valeurs[a];
-                            const display = v!==null&&v!==undefined ? fmtBdef(v,ind.unite) : "—";
+                            const display = v!==null&&v!==undefined ? fmtNu(ind, v, scale) : "—";
                             const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#dc2626" : "#4a5568";
                             return (
                               <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums" as const, whiteSpace:"nowrap" as const }}>{display}</td>
                             );
                           })}
                         </tr>
-                      ))}
+                        );
+                      })}
                     </Fragment>
                   ))}
                 </Fragment>
