@@ -1325,15 +1325,13 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
         {/* Zone graphes */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"wrap" as const }}>
-            <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em", flexShrink:0 }}>
+            <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"#F5F4F3", fontSize:12, fontWeight:700, color:"#4a5568", letterSpacing:"0.02em", flexShrink:0 }}>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                 : `${anneeMin} — ${anneeMax}`}
             </span>
             {paysAvecCouleur.map(p=>(
-              <div key={p.nom} style={{ display:"inline-flex", alignItems:"center", background:`${p.couleur}12`, border:`1.5px solid ${p.couleur}35`, borderRadius:999, padding:"4px 12px" }}>
-                <span style={{ fontSize:12, fontWeight:700, color:p.couleur }}>{p.nom}</span>
-              </div>
+              <span key={p.nom} style={{ fontSize:12.5, fontWeight:700, color:p.couleur, padding:"4px 2px" }}>{p.nom}</span>
             ))}
           </div>
 
@@ -1920,15 +1918,13 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
       {/* Zone graphes */}
       <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"wrap" as const }}>
-          <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em", flexShrink:0 }}>
+          <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"#F5F4F3", fontSize:12, fontWeight:700, color:"#4a5568", letterSpacing:"0.02em", flexShrink:0 }}>
             {modeAnnees==="specifiques"&&anneesSpec.length>0
               ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
               : `${anneeMin} — ${anneeMax}`}
           </span>
           {grpAvecCouleur.map(g=>(
-            <div key={g.nom} style={{ display:"inline-flex", alignItems:"center", background:`${g.couleur}12`, border:`1.5px solid ${g.couleur}35`, borderRadius:999, padding:"4px 12px" }}>
-              <span style={{ fontSize:12, fontWeight:700, color:g.couleur }}>{g.label}</span>
-            </div>
+            <span key={g.nom} style={{ fontSize:12.5, fontWeight:700, color:g.couleur, padding:"4px 2px" }}>{g.label}</span>
           ))}
         </div>
 
