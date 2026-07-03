@@ -1838,12 +1838,22 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
               return (
                 <button key={g.code} onClick={()=>toggle(g.code)}
                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:1 }}
-                  onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
+                  onMouseEnter={e=>{
+                    if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";
+                    const box=e.currentTarget.querySelector("[data-marquee]") as HTMLElement|null; const sp=box?.firstElementChild as HTMLElement|null;
+                    if(box&&sp){ const d=sp.scrollWidth-box.clientWidth; if(d>0){ sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; } }
+                  }}
+                  onMouseLeave={e=>{
+                    (e.currentTarget as HTMLElement).style.background="transparent";
+                    const box=e.currentTarget.querySelector("[data-marquee]") as HTMLElement|null; const sp=box?.firstElementChild as HTMLElement|null;
+                    if(box&&sp){ sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; }
+                  }}>
                   <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    
+
                   </div>
-                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{g.nom_fr}</span>
+                  <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0, flex:1 }}>
+                    <span style={{ display:"inline-block", fontSize:12, color:"#4a5568", fontWeight:sel?700:400 }}>{g.nom_fr}</span>
+                  </span>
                 </button>
               );
             };
