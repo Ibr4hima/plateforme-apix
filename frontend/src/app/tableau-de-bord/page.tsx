@@ -1256,8 +1256,8 @@ function TableCard({ card, onRemove }: {
   const def = TABLES_ANALYTIQUES.find(t=>t.id===card.tableId);
   if(!def) return null;
   return (
-    <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",
-      boxShadow:"0 1px 6px rgba(0,0,0,0.05)",overflow:"hidden",
+    <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",
+      boxShadow:"0 1px 3px rgba(0,0,0,0.03)",overflow:"hidden",
       gridColumn:"span 2"}}>
       <AnalyticTable tableId={card.tableId} titre={def.titre} description={def.description} embedded onClose={onRemove}/>
     </div>
