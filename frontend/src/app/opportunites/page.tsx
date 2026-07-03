@@ -1068,7 +1068,8 @@ export default function OpportunitesPage() {
 
   return (
     <main style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
       <Navbar/>
 
       {/* Hero */}
@@ -1162,6 +1163,7 @@ export default function OpportunitesPage() {
                             });
                           }}>
 
+                        <div style={{height:3,background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
                         <div style={{padding:"14px 16px 14px",flex:1}}>
                           {/* Pôle territoire */}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -1236,10 +1238,14 @@ export default function OpportunitesPage() {
                             });
                           }}>
 
+                          <div style={{height:3,background:`linear-gradient(90deg,${n.color}CC 0%,${n.color} 50%,${n.color}99 100%)`,flexShrink:0}}/>
                           <div style={{padding:"14px 16px 14px",flex:1}}>
                             {/* Niveau */}
                             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                              <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:n.color,background:`${n.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{n.label}</span>
+                              <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:n.color,background:`${n.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>
+                                <span style={{width:6,height:6,borderRadius:"50%",background:n.color,["--pc" as any]:`${n.color}66`,animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                                {n.label}
+                              </span>
                             </div>
 
                             {/* Compteurs libellés */}
@@ -1315,6 +1321,7 @@ export default function OpportunitesPage() {
                                   });
                                 }}>
 
+                                <div style={{height:3,background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
                                 <div style={{padding:"14px 16px 14px",flex:1}}>
                                   {/* Titre (défile au survol si trop long) */}
                                   <div data-marquee style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
@@ -1390,10 +1397,14 @@ export default function OpportunitesPage() {
                             });
                           }}>
 
+                          <div style={{height:3,background:`linear-gradient(90deg,${s.color}CC 0%,${s.color} 50%,${s.color}99 100%)`,flexShrink:0}}/>
                           <div style={{padding:"14px 16px 14px",flex:1}}>
                             {/* Secteur */}
                             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                              <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:s.color,background:`${s.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>{s.label}</span>
+                              <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:s.color,background:`${s.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>
+                                <span style={{width:6,height:6,borderRadius:"50%",background:s.color,["--pc" as any]:`${s.color}66`,animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                                {s.label}
+                              </span>
                             </div>
 
                             {/* Compteurs libellés */}
