@@ -174,6 +174,16 @@ function estFige(p:any) {
   return !!p?.issue;
 }
 
+// Accents des cartes (liseré haut + point pulsant), alignés sur la page publique.
+const CARD_ACCENTS: Record<string, { c:string; grad:string }> = {
+  "En cours":      { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)" },
+  "En attente":    { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
+  "Inactif":       { c:"#dc2626", grad:"linear-gradient(90deg,#991b1b 0%,#dc2626 60%,#ef4444 100%)" },
+  "À recontacter": { c:"#004f91", grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" },
+  "Installation à venir": { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)" },
+  "Décliné":       { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
+};
+
 type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string[]; est_principal:boolean };
 const EMPTY_FOCAL: PointFocal = { prenom:"", nom:"", telephones:[""], mails:[""], est_principal:false };
 
@@ -1776,6 +1786,7 @@ export default function ProspectsPage() {
     <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
       <style>{`
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
         [data-rte] ul{padding-left:20px;list-style-type:disc}
         [data-rte] ol{padding-left:20px;list-style-type:decimal}
         [data-rte] li{margin-bottom:2px}
@@ -1842,12 +1853,19 @@ export default function ProspectsPage() {
                 : { label:"Téléphone", value: p.telephones?.[0] ? fmtPhone(p.telephones[0]) : null };
               // Bloc « Activités spécialisées » (onglet ciblés) : juste le nombre
               const nbActs = (p.activite_ids||[]).length;
+              // Accent visuel (liseré + teintes), même logique que la page publique
+              const accent = (onglet==="historique"||onglet==="precedents") && activite ? (CARD_ACCENTS[activite.label]||null) : null;
+              const blocC  = accent ? accent.c : "#004f91";
+              const blocBg = accent ? `${accent.c}0A` : "rgba(0,79,145,0.04)";
+              const blocBd = accent ? `${accent.c}1F` : "rgba(0,79,145,0.10)";
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
                   style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
-                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?`${accent.c}40`:"rgba(0,79,145,0.25)";}}
                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
+                  {accent ? <div style={{ height:3, background:accent.grad, flexShrink:0 }}/>
+                    : <div style={{ height:3, background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}/>}
                   <div style={{ padding:"14px 16px 14px", flex:1 }}>
                     {/* Statut / email + siège */}
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:12 }}>
@@ -1861,9 +1879,12 @@ export default function ProspectsPage() {
                           )}
                         </span>
                       ) : activite ? (
-                        <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:activite.color, background:activite.bg, padding:"3px 10px", borderRadius:999 }}>{activite.label}</span>
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:accent?7:0, fontSize:10.5, fontWeight:700, color:activite.color, background:activite.bg, padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
+                          {accent && <span style={{ width:6, height:6, borderRadius:"50%", background:activite.color, ["--pc" as any]:activite.color+"66", animation:"pulseDotC 1.6s ease-out infinite", flexShrink:0 }}/>}
+                          {activite.label}
+                        </span>
                       ) : <span/>}
-                      {p.siege_nom && <span style={{ fontSize:10.5, fontWeight:600, color:"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, maxWidth:"45%", flexShrink:0 }}>{p.siege_nom}</span>}
+                      {p.siege_nom && <span style={{ display:"inline-block", fontSize:10.5, fontWeight:700, color:accent?accent.c:"#004f91", background:accent?`${accent.c}0D`:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, maxWidth:"45%", flexShrink:0 }}>{p.siege_nom}</span>}
                     </div>
 
                     {/* Dénomination */}
@@ -1871,17 +1892,17 @@ export default function ProspectsPage() {
 
                     {/* Infos libellées */}
                     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
-                      <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                      <div style={{ background:blocBg, border:`1px solid ${blocBd}`, borderRadius:10, padding:"8px 11px", minWidth:0 }}>
                         {onglet==="cibles" ? <>
-                          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Activités spécialisées</p>
+                          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:blocC, textTransform:"uppercase" as const, marginBottom:3 }}>Activités spécialisées</p>
                           <p style={{ fontSize:12, fontWeight:600, color:nbActs>0?"#1a1a2e":"#9aa5b4" }}>{nbActs||"—"}</p>
                         </> : <>
-                          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Email</p>
+                          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:blocC, textTransform:"uppercase" as const, marginBottom:3 }}>Email</p>
                           <p style={{ fontSize:12, fontWeight:600, color:p.mails?.length?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.mails?.[0]||"—"}</p>
                         </>}
                       </div>
-                      <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>{info2.label}</p>
+                      <div style={{ background:blocBg, border:`1px solid ${blocBd}`, borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:blocC, textTransform:"uppercase" as const, marginBottom:3 }}>{info2.label}</p>
                         <p style={{ fontSize:12, fontWeight:600, color:info2.value?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{info2.value||"—"}</p>
                       </div>
                     </div>
