@@ -636,13 +636,15 @@ export default function EvenementsPage() {
         <div style={{maxWidth:1280,margin:"0 auto",position:"relative" as const,zIndex:1}}>
           {heroReduit ? (
             <div key="mini" style={{display:"flex",alignItems:"center",gap:14,animation:"heroIn 0.3s ease"}}>
-              <span style={{width:7,height:7,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.5)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+              <span style={{width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
               <h1 style={{fontWeight:800,fontSize:"1.15rem",color:"#fff",lineHeight:1.2,margin:0,whiteSpace:"nowrap" as const}}>Événements</h1>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap" as const,alignItems:"center",minWidth:0}}>
-                {(stats.total||0)>0&&<span style={{fontSize:11.5,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"3px 11px",borderRadius:999}}>{stats.total} événement{stats.total>1?"s":""}</span>}
-                {(stats.en_cours||0)>0&&<span style={{fontSize:11.5,fontWeight:700,color:"#fff",background:"rgba(202,99,31,0.18)",border:"1px solid rgba(202,99,31,0.35)",padding:"3px 11px",borderRadius:999}}>{stats.en_cours} en cours</span>}
-                {(stats.a_venir||0)>0&&<span style={{fontSize:11.5,fontWeight:700,color:"#fff",background:"rgba(54,111,227,0.18)",border:"1px solid rgba(54,111,227,0.35)",padding:"3px 11px",borderRadius:999}}>{stats.a_venir} à venir</span>}
-                {(stats.termine||0)>0&&<span style={{fontSize:11.5,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",padding:"3px 11px",borderRadius:999}}>{stats.termine} terminé{stats.termine>1?"s":""}</span>}
+              <div style={{display:"inline-flex",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:999,padding:3,gap:3}}>
+                {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
+                  <button key={o.v} onClick={()=>setVueMode(o.v)}
+                    style={{padding:"4px 14px",borderRadius:999,border:"none",cursor:"pointer",fontSize:11.5,fontWeight:700,background:vueMode===o.v?"#fff":"transparent",color:vueMode===o.v?"#004f91":"rgba(255,255,255,0.85)",fontFamily:"var(--font-google-sans)",transition:"all 0.15s",whiteSpace:"nowrap" as const}}>
+                    {o.l}
+                  </button>
+                ))}
               </div>
               <button onClick={toggleHero} title="Déployer l'en-tête" aria-label="Déployer l'en-tête"
                 style={{marginLeft:"auto",width:30,height:30,borderRadius:"50%",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
@@ -666,11 +668,13 @@ export default function EvenementsPage() {
                 </button>
               </div>
               <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Événements</h1>
-              <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
-                {(stats.total||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.total} événement{stats.total>1?"s":""}</span>}
-                {(stats.en_cours||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(202,99,31,0.18)",border:"1px solid rgba(202,99,31,0.35)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.en_cours} en cours</span>}
-                {(stats.a_venir||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(54,111,227,0.18)",border:"1px solid rgba(54,111,227,0.35)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.a_venir} à venir</span>}
-                {(stats.termine||0)>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",padding:"6px 14px",borderRadius:999,backdropFilter:"blur(10px)"}}>{stats.termine} terminé{stats.termine>1?"s":""}</span>}
+              <div style={{display:"inline-flex",background:"rgba(255,255,255,0.10)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:999,padding:3,gap:3,backdropFilter:"blur(10px)"}}>
+                {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
+                  <button key={o.v} onClick={()=>setVueMode(o.v)}
+                    style={{padding:"7px 18px",borderRadius:999,border:"none",cursor:"pointer",fontSize:12.5,fontWeight:700,background:vueMode===o.v?"#fff":"transparent",color:vueMode===o.v?"#004f91":"rgba(255,255,255,0.85)",fontFamily:"var(--font-google-sans)",transition:"all 0.15s",whiteSpace:"nowrap" as const}}>
+                    {o.l}
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -707,18 +711,6 @@ export default function EvenementsPage() {
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
-                <div style={{marginBottom:18}}>
-                  <p style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Vue</p>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-                    {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
-                      <button key={o.v} onClick={()=>setVueMode(o.v)}
-                        style={{textAlign:"left" as const,padding:"7px 10px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:vueMode===o.v?700:500,background:vueMode===o.v?"rgba(0,79,145,0.08)":"transparent",color:vueMode===o.v?"#004f91":"#4a5568",fontFamily:"var(--font-google-sans)"}}>
-                        {o.l}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <div style={{marginBottom:18}}>
                   <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
                   <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
