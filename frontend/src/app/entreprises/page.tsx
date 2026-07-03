@@ -15,8 +15,8 @@ function fmtDate(d: string) {
   return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
 }
 
-function SideFilter({ label, items, selected, onToggle, color, searchable=false }: {
-  label:string; items:string[]; selected:string[]; onToggle:(v:string)=>void; color:string; searchable?:boolean;
+function SideFilter({ label, items, selected, onToggle, color, searchable=false, format }: {
+  label:string; items:string[]; selected:string[]; onToggle:(v:string)=>void; color:string; searchable?:boolean; format?:(v:string)=>string;
 }) {
   const [open, setOpen]     = useState(true);
   const [search, setSearch] = useState("");
@@ -48,7 +48,7 @@ function SideFilter({ label, items, selected, onToggle, color, searchable=false 
                   onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                   <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                       </div>
-                  <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item}</span>
+                  <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{format?format(item):item}</span>
                 </button>
               );
             })}
@@ -434,7 +434,7 @@ export default function EntreprisesPage() {
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Forme juridique" color="#004f91" items={formeOpts} selected={formesSel} onToggle={toggleForme}/>
+                <SideFilter label="Forme juridique" color="#004f91" items={formeOpts} selected={formesSel} onToggle={toggleForme} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 {dateMin<dateMax&&<DateRangeFilter minYear={dateMin} maxYear={dateMax} startYear={dateStart} endYear={dateEnd} onChange={(s,e)=>{setDateStart(s);setDateEnd(e);}}/>}
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
