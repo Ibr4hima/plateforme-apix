@@ -623,7 +623,7 @@ export default function AccordsPage() {
                         {st ? (
                           <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
                         ) : <span/>}
-                        {a.reference && <span style={{fontSize:10.5,fontWeight:600,color:"#9aa5b4"}}>{a.reference}</span>}
+                        {a.reference && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:estExpire?"#6b7280":"#004f91",background:estExpire?"#F2F0EF":"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{a.reference}</span>}
                       </div>
 
                       {/* Titre */}
