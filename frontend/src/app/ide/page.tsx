@@ -280,8 +280,7 @@ function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, seri
               <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>{titre}</h2>
               <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
                 {series?.length > 0 && series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
-                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:s.couleur, background:`${s.couleur}12`, border:`1px solid ${s.couleur}30` }}>
-                    <span style={{ width:10, height:3, borderRadius:2, background:s.couleur, display:"inline-block" }} />
+                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:s.couleur, background:`${s.couleur}12`, border:`1px solid ${s.couleur}30` }}>
                     {s.nom}
                   </span>
                 ))}
@@ -347,8 +346,7 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series
             {!hideLegend && series?.length > 0 && (
               <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:5 }}>
                 {series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
-                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:999, color:s.couleur, background:`${s.couleur}12` }}>
-                    <span style={{ width:9, height:3, borderRadius:2, background:s.couleur, display:"inline-block" }} />
+                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:999, color:s.couleur, background:`${s.couleur}12` }}>
                     {s.nom}
                   </span>
                 ))}
