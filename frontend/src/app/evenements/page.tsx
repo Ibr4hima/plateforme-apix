@@ -354,7 +354,7 @@ function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 // ── Frise chronologique des événements ────────────────────────────────────────
-function FriseChronologique({ evenements, onOpen }: { evenements:any[]; onOpen:(e:any)=>void }) {
+function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any[]; onOpen:(e:any)=>void; prochainId:number|null }) {
   const ST: any = {
     a_venir:  { label:"À venir",  c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
     en_cours: { label:"En cours", c:"#188038", bg:"rgba(24,128,56,0.08)" },
@@ -389,14 +389,25 @@ function FriseChronologique({ evenements, onOpen }: { evenements:any[]; onOpen:(
   const Carte = ({ e }: { e:any }) => {
     const statut = computeStatutEvenement(e) ?? ((e.prochain_annee||e.prochain_mois) ? "a_venir" : null);
     const st = statut ? ST[statut] : null;
+    const estProchain = prochainId!=null && e.id===prochainId;
+    const estPasse = statut==="termine";
     const dateStr = e.date_debut
       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
       : e.prochain_mois||e.prochain_annee ? `${e.prochain_jour?e.prochain_jour+" ":""}${e.prochain_mois?MOIS[(e.prochain_mois||1)-1]+" ":""}${e.prochain_annee||""}`.trim() : null;
     const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
     const role = e.role_apix ? (ROLE_PILL[e.role_apix]||ROLE_PILL["Invité"]) : null;
     return (
-      <div onClick={()=>onOpen(e)} onMouseEnter={hoverIn} onMouseLeave={hoverOut}
-        style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",padding:"14px 16px",minWidth:0}}>
+      <div onClick={()=>onOpen(e)}
+        onMouseEnter={ev=>{ hoverIn(ev); if(estPasse){ ev.currentTarget.style.opacity="1"; ev.currentTarget.style.filter="none"; } if(estProchain){ ev.currentTarget.style.borderColor="rgba(202,99,31,0.6)"; } }}
+        onMouseLeave={ev=>{ hoverOut(ev); if(estPasse){ ev.currentTarget.style.opacity="0.68"; ev.currentTarget.style.filter="grayscale(0.4)"; } if(estProchain){ ev.currentTarget.style.borderColor="rgba(202,99,31,0.45)"; ev.currentTarget.style.boxShadow="0 4px 18px rgba(202,99,31,0.15)"; } }}
+        style={{background:estPasse?"#FAFAF9":"#fff",border:estProchain?"1.5px solid rgba(202,99,31,0.45)":"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s, opacity 0.18s, filter 0.18s",boxShadow:estProchain?"0 4px 18px rgba(202,99,31,0.15)":"0 1px 3px rgba(0,0,0,0.03)",overflow:"hidden",minWidth:0,opacity:estPasse?0.68:1,filter:estPasse?"grayscale(0.4)":"none"}}>
+        {estProchain&&(
+          <div style={{display:"flex",alignItems:"center",gap:7,background:"linear-gradient(90deg,#ca631f 0%,#e07a2e 100%)",padding:"6px 16px"}}>
+            <span style={{width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
+            <span style={{fontSize:10,fontWeight:800,color:"#fff",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>Prochain événement</span>
+          </div>
+        )}
+        <div style={{padding:"14px 16px"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9,minWidth:0}}>
           {dateStr
             ? <span style={{fontSize:10.5,fontWeight:800,color:st?st.c:"#004f91",letterSpacing:"0.07em",textTransform:"uppercase" as const,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis"}}>{dateStr}</span>
@@ -418,6 +429,7 @@ function FriseChronologique({ evenements, onOpen }: { evenements:any[]; onOpen:(
             </span>
           </div>
         )}
+        </div>
       </div>
     );
   };
@@ -445,7 +457,9 @@ function FriseChronologique({ evenements, onOpen }: { evenements:any[]; onOpen:(
                   {/* Puce sur la ligne + connecteur */}
                   <div style={{position:"relative" as const,alignSelf:"stretch",display:"flex",alignItems:"center",justifyContent:"center"}}>
                     <div style={{position:"absolute" as const,top:"50%",height:2,background:"rgba(0,79,145,0.15)",width:24,...(gauche?{right:"50%",marginRight:6}:{left:"50%",marginLeft:6})}}/>
-                    <div style={{width:13,height:13,borderRadius:"50%",background:st?st.c:"#004f91",border:"3px solid #F2F0EF",boxShadow:`0 0 0 1px ${st?st.c:"#004f91"}44`,position:"relative" as const,zIndex:1}}/>
+                    {prochainId!=null&&e.id===prochainId
+                      ? <div style={{width:15,height:15,borderRadius:"50%",background:"#ca631f",border:"3px solid #F2F0EF",animation:"pulseHalo 1.8s ease-out infinite",position:"relative" as const,zIndex:1}}/>
+                      : <div style={{width:13,height:13,borderRadius:"50%",background:st?st.c:"#004f91",border:"3px solid #F2F0EF",boxShadow:`0 0 0 1px ${st?st.c:"#004f91"}44`,position:"relative" as const,zIndex:1}}/>}
                   </div>
                   <div style={{minWidth:0}}>{!gauche&&<Carte e={e}/>}</div>
                 </div>
@@ -558,6 +572,18 @@ export default function EvenementsPage() {
     return true;
   });
 
+  // Prochain événement à venir (date la plus proche dans le futur)
+  const prochainId: number|null = (()=>{
+    const today = new Date(); today.setHours(0,0,0,0);
+    let best: any = null, bestD: Date|null = null;
+    evenements.forEach(e=>{
+      const d = e.date_debut ? new Date(e.date_debut+"T00:00:00")
+        : e.prochain_annee ? new Date(e.prochain_annee,(e.prochain_mois||1)-1,e.prochain_jour||1) : null;
+      if (d && d>today && (!bestD || d<bestD)) { bestD=d; best=e; }
+    });
+    return best?.id ?? null;
+  })();
+
   const hasFilter = !!recherche||!!statutFiltre||paysFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit = ()=>{ setRecherche(""); setStatutFiltre(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
   const nbFiltres = (recherche?1:0)+(statutFiltre?1:0)+paysFiltres.length+secteursSel.length+branchesSel.length+activitesSel.length;
@@ -569,7 +595,9 @@ export default function EvenementsPage() {
 
   return (
     <main style={{minHeight:"100vh",background:"#F2F0EF",fontFamily:"var(--font-google-sans)"}}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@keyframes pulseHalo{0%{box-shadow:0 0 0 0 rgba(202,99,31,0.45)}70%{box-shadow:0 0 0 9px rgba(202,99,31,0)}100%{box-shadow:0 0 0 0 rgba(202,99,31,0)}}`}</style>
       <Navbar/>
 
       {/* Hero */}
@@ -666,7 +694,7 @@ export default function EvenementsPage() {
                 {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#ca631f",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
               </div>
             ):vueMode==="frise"?(
-              <FriseChronologique evenements={evenements} onOpen={setSelec}/>
+              <FriseChronologique evenements={evenements} onOpen={setSelec} prochainId={prochainId}/>
             ):(
               <>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
@@ -684,11 +712,14 @@ export default function EvenementsPage() {
                       termine:  { label:"Terminé",  c:"#6b7280", bg:"#F2F0EF"              },
                     };
                     const st = statutAff ? ST[statutAff] : null;
+                    const estProchain = prochainId!=null && e.id===prochainId;
+                    const estPasse = statutAff==="termine";
                     return (
                       <div key={e.id} onClick={()=>setSelec(e)}
-                        style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                        style={{background:estPasse?"#FAFAF9":"#fff",border:estProchain?"1.5px solid rgba(202,99,31,0.45)":"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s, opacity 0.18s, filter 0.18s",boxShadow:estProchain?"0 4px 18px rgba(202,99,31,0.15)":"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:estPasse?0.68:1,filter:estPasse?"grayscale(0.4)":"none"}}
                         onMouseEnter={ev=>{
-                          ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+                          ev.currentTarget.style.boxShadow=estProchain?"0 12px 28px rgba(202,99,31,0.18)":"0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=estProchain?"rgba(202,99,31,0.6)":"rgba(0,79,145,0.25)";
+                          if(estPasse){ev.currentTarget.style.opacity="1";ev.currentTarget.style.filter="none";}
                           // Contenus trop longs : glissent pour révéler la fin
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
@@ -696,13 +727,20 @@ export default function EvenementsPage() {
                           });
                         }}
                         onMouseLeave={ev=>{
-                          ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                          ev.currentTarget.style.boxShadow=estProchain?"0 4px 18px rgba(202,99,31,0.15)":"0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=estProchain?"rgba(202,99,31,0.45)":"#ECEAE7";
+                          if(estPasse){ev.currentTarget.style.opacity="0.68";ev.currentTarget.style.filter="grayscale(0.4)";}
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
                             if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                           });
                         }}>
 
+                        {estProchain&&(
+                          <div style={{display:"flex",alignItems:"center",gap:7,background:"linear-gradient(90deg,#ca631f 0%,#e07a2e 100%)",padding:"6px 16px"}}>
+                            <span style={{width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
+                            <span style={{fontSize:10,fontWeight:800,color:"#fff",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>Prochain événement</span>
+                          </div>
+                        )}
                         <div style={{padding:"14px 16px 14px",flex:1}}>
                           {/* Statut + rôle de l'APIX */}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
