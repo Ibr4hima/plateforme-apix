@@ -22,13 +22,12 @@ function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
   return null;
 }
 
-const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"gray" };
+const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"blue", signe:"blue", expire:"gray" };
 const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
 
 const STATUT_OPTS = [
   { value:"",           label:"Tous",        bg:"#F2F0EF",             text:"#4a5568" },
-  { value:"en_vigueur", label:"En vigueur",  bg:"#dcfce7",             text:"#15803d" },
-  { value:"signe",      label:"Signé",       bg:"rgba(0,79,145,0.08)", text:"#004f91" },
+  { value:"en_vigueur", label:"En vigueur",  bg:"rgba(0,79,145,0.08)", text:"#004f91" },
   { value:"expire",     label:"Expirés",     bg:"#f3f4f6",             text:"#6b7280" },
 ];
 
@@ -157,7 +156,7 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
 
   const statut = computeStatut(a);
   const ST_VUE: any = {
-    en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
+    en_vigueur: { label:"En vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
     signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
     expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
   };
@@ -468,7 +467,7 @@ export default function AccordsPage() {
           <h1 style={{fontWeight:800,fontSize:"clamp(2.2rem,4vw,3.2rem)",color:"#fff",lineHeight:1.1,marginBottom:24}}>Accords &amp; Traités</h1>
           <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
             {stats.total>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",padding:"6px 14px",borderRadius:999}}>{stats.total} accord{stats.total>1?"s":""}</span>}
-            {stats.en_vigueur>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(21,128,61,0.25)",border:"1px solid rgba(21,128,61,0.4)",padding:"6px 14px",borderRadius:999}}>{stats.en_vigueur} en vigueur</span>}
+            {stats.en_vigueur>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(54,111,227,0.18)",border:"1px solid rgba(54,111,227,0.35)",padding:"6px 14px",borderRadius:999}}>{stats.en_vigueur} en vigueur</span>}
             {stats.expire>0&&<span style={{fontSize:13,fontWeight:700,color:"#fff",background:"rgba(107,114,128,0.25)",border:"1px solid rgba(107,114,128,0.4)",padding:"6px 14px",borderRadius:999}}>{stats.expire} expiré{stats.expire>1?"s":""}</span>}
           </div>
         </div>
@@ -601,17 +600,23 @@ export default function AccordsPage() {
                 {accords.map(a=>{
                   const statut = computeStatut(a);
                   const ST: any = {
-                    en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
+                    en_vigueur: { label:"En vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
                     signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
                     expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
                   };
                   const st = statut ? ST[statut] : null;
+                  const estExpire = statut==="expire";
+                  const blocC  = estExpire ? "#6b7280" : "#004f91";
+                  const blocBg = estExpire ? "#F5F4F3" : "rgba(0,79,145,0.04)";
+                  const blocBd = estExpire ? "#E8E5E3" : "rgba(0,79,145,0.10)";
+                  const txtC   = estExpire ? "#4a5568" : "#1a1a2e";
                   return (
                   <div key={a.id} onClick={()=>setSelec(a)}
-                    style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+                    style={{background:estExpire?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=estExpire?"#D8D4D0":"rgba(0,79,145,0.25)";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
+                    <div style={{height:3,background:estExpire?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
                     <div style={{padding:"14px 16px 14px",flex:1}}>
                       {/* Statut + référence */}
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -622,17 +627,17 @@ export default function AccordsPage() {
                       </div>
 
                       {/* Titre */}
-                      <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35}}>{a.titre}</div>
+                      <div style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35}}>{a.titre}</div>
 
                       {/* Dates libellées */}
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                        <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
-                          <p style={{fontSize:12,fontWeight:600,color:a.date_signature?"#1a1a2e":"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
+                        <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
+                          <p style={{fontSize:12,fontWeight:600,color:a.date_signature?txtC:"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                         </div>
-                        <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
-                          <p style={{fontSize:12,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p>
+                        <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
+                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
+                          <p style={{fontSize:12,fontWeight:600,color:a.date_expiration?txtC:"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p>
                         </div>
                       </div>
 
@@ -640,8 +645,8 @@ export default function AccordsPage() {
 
                     {/* Action */}
                     <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
-                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,transition:"background 0.15s"}}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:blocC,fontWeight:600,transition:"background 0.15s"}}
+                        onMouseEnter={ev=>ev.currentTarget.style.background=estExpire?"#F2F0EF":"rgba(0,79,145,0.05)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         Voir les détails →
                       </div>
