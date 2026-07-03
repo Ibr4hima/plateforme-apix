@@ -366,25 +366,21 @@ export default function Navbar() {
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [modulesOpen, setModulesOpen] = useState(false);
   const [codeOpen,    setCodeOpen]    = useState(false);
-  const [isDark,      setIsDark]      = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn);
-    setIsDark(document.querySelector("main")?.style.background?.includes("0e0e1a") || false);
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
   const openModules  = () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); setModulesOpen(true); };
   const closeModules = () => { timeoutRef.current = setTimeout(() => setModulesOpen(false), 120); };
 
-  const textColor = scrolled ? "#4a5568" : (isDark ? "rgba(255,255,255,0.85)" : "#4a5568");
-  const textHover = scrolled ? "#004f91" : (isDark ? "#fff" : "#004f91");
-  const bg = scrolled
-    ? "rgba(255,255,255,0.96)"
-    : isDark ? "rgba(14,14,26,0.7)" : "rgba(242,240,239,0.7)";
-  const border = scrolled ? "1px solid #C5BFBB" : isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent";
+  const textColor = "#4a5568";
+  const textHover = "#004f91";
+  const bg = scrolled ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.88)";
+  const border = "1px solid #ECEAE7";
 
   return (
     <>
