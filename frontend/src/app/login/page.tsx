@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Eye, EyeOff, Loader2, Lock } from "lucide-react"
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
 
 // ── Page de connexion — carte unique centrée, plein écran sans défilement ─────
 export default function LoginPage() {
@@ -34,7 +34,7 @@ export default function LoginPage() {
     <main style={{
       height: "100vh", overflow: "hidden",
       display: "flex", flexDirection: "column",
-      background: "radial-gradient(120% 92% at 50% -24%, #001f3d 0%, #00325c 30%, #004f91 54%, rgba(0,79,145,0.35) 66%, rgba(0,79,145,0) 74%), #F6F5F3",
+      background: "radial-gradient(130% 100% at 50% -30%, #001f3d 0%, #00325c 28%, #004f91 52%, rgba(0,79,145,0) 70%), #F6F5F3",
       position: "relative", fontFamily: "var(--font-google-sans)",
     }}>
       <style>{`
@@ -52,6 +52,10 @@ export default function LoginPage() {
         .login-cta{transition:transform .18s,box-shadow .18s}
         .login-cta:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(0,79,145,.45)}
         .login-cta:disabled{opacity:.65;transform:none;cursor:not-allowed}
+        .login-cta .cta-arrow{transition:transform .18s;opacity:.85}
+        .login-cta:hover .cta-arrow{transform:translateX(4px)}
+        .login-back{transition:color .15s}
+        .login-back:hover{color:#fff!important}
       `}</style>
 
       {/* Trame fine + halos dérivants sur la partie bleue */}
@@ -59,8 +63,12 @@ export default function LoginPage() {
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.045) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(100% 55% at 50% -8%,rgba(0,0,0,0.9) 0%,transparent 78%)", WebkitMaskImage: "radial-gradient(100% 55% at 50% -8%,rgba(0,0,0,0.9) 0%,transparent 78%)" }} />
         <div style={{ position: "absolute", top: "-24%", left: "6%", width: 560, height: 560, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)", animation: "drift 11s ease-in-out infinite alternate" }} />
         <div style={{ position: "absolute", top: "-16%", right: "2%", width: 640, height: 640, borderRadius: "50%", background: "radial-gradient(circle,rgba(26,106,176,0.45) 0%,transparent 62%)", animation: "driftInv 13s ease-in-out infinite alternate" }} />
-        <div style={{ position: "absolute", top: "22%", left: "50%", transform: "translateX(-50%)", width: 720, height: 480, borderRadius: "50%", background: "radial-gradient(ellipse,rgba(255,255,255,0.10) 0%,transparent 60%)" }} />
       </div>
+
+      {/* Retour au site */}
+      <Link href="/" className="login-back" style={{ position: "absolute", top: 24, left: 32, zIndex: 2, display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,0.65)", textDecoration: "none" }}>
+        <ArrowLeft size={14} /> Retour au site
+      </Link>
 
       {/* ── Contenu centré ── */}
       <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px" }}>
@@ -71,14 +79,22 @@ export default function LoginPage() {
             <Image src="/logo_apix.png" alt="APIX Sénégal" width={130} height={52}
               style={{ height: 44, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} priority />
           </Link>
-          <p style={{ margin: "14px 0 0", fontSize: 10.5, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: "0.16em", textTransform: "uppercase", textAlign: "center" }}>
-            Plateforme de Gestion des Investissements et des Investisseurs
-          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 15 }}>
+            <span style={{ width: 44, height: 1, background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.4))" }} />
+            <p style={{ margin: 0, fontSize: 10.5, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: "0.16em", textTransform: "uppercase", textAlign: "center" }}>
+              Plateforme de Gestion des Investissements et des Investisseurs
+            </p>
+            <span style={{ width: 44, height: 1, background: "linear-gradient(90deg,rgba(255,255,255,0.4),transparent)" }} />
+          </div>
         </div>
 
         {/* Carte */}
         <div className="login-card" style={{ width: "100%", maxWidth: 400, background: "#fff", borderRadius: 18, overflow: "hidden", border: "1px solid rgba(0,79,145,0.10)", boxShadow: "0 24px 64px rgba(0,25,50,0.30), 0 2px 8px rgba(0,25,50,0.10)" }}>
-          <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
+          <div style={{ height: 4, display: "flex", flexShrink: 0 }}>
+            <div style={{ flex: 62, background: "#004f91" }} />
+            <div style={{ flex: 23, background: "#ca631f" }} />
+            <div style={{ flex: 15, background: "#188038" }} />
+          </div>
           <div style={{ padding: "28px 32px 26px" }}>
             <h1 style={{ fontWeight: 800, fontSize: "1.4rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: 0 }}>Connexion</h1>
             <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 6, marginBottom: 0, lineHeight: 1.55 }}>
@@ -88,21 +104,25 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 22 }}>
               <div>
                 <label style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", marginBottom: 6 }}>Adresse email</label>
-                <input
-                  className="login-input"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  placeholder="prenom.nom@apix.sn"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #E8E5E3", borderRadius: 11, fontSize: 14, color: "#1a1a2e", background: "#F8F7F6", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }}
-                />
+                <div style={{ position: "relative" }}>
+                  <Mail size={15} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4", pointerEvents: "none" }} />
+                  <input
+                    className="login-input"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="prenom.nom@apix.sn"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    style={{ width: "100%", padding: "12px 14px 12px 40px", border: "1.5px solid #E8E5E3", borderRadius: 11, fontSize: 14, color: "#1a1a2e", background: "#F8F7F6", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }}
+                  />
+                </div>
               </div>
 
               <div>
                 <label style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", marginBottom: 6 }}>Mot de passe</label>
                 <div style={{ position: "relative" }}>
+                  <Lock size={15} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4", pointerEvents: "none" }} />
                   <input
                     className="login-input"
                     type={showPwd ? "text" : "password"}
@@ -111,7 +131,7 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    style={{ width: "100%", padding: "12px 42px 12px 14px", border: "1.5px solid #E8E5E3", borderRadius: 11, fontSize: 14, color: "#1a1a2e", background: "#F8F7F6", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "12px 42px 12px 40px", border: "1.5px solid #E8E5E3", borderRadius: 11, fontSize: 14, color: "#1a1a2e", background: "#F8F7F6", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }}
                   />
                   <button type="button" onClick={() => setShowPwd(v => !v)} aria-label={showPwd ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                     style={{ position: "absolute", right: 7, top: "50%", transform: "translateY(-50%)", width: 30, height: 30, borderRadius: "50%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#9aa5b4", transition: "background 0.15s" }}
@@ -135,7 +155,9 @@ export default function LoginPage() {
                     <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Connexion…
                   </span>
                 ) : (
-                  "Se connecter"
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+                    Se connecter <ArrowRight size={15} className="cta-arrow" />
+                  </span>
                 )}
               </button>
             </form>
