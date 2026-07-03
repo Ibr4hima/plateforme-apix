@@ -1675,7 +1675,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
 
   const grpAvecCouleur = grpSelec.map((code, i) => {
     const g = groupements.find(x => x.code === code);
-    return { nom: code, label: g?.nom_fr || code, couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] };
+    return { nom: code, label: g?.nom_fr || code, abrege: code.replace(/_/g, " "), couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] };
   });
 
   const charger = useCallback(async () => {
@@ -1697,7 +1697,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
   useEffect(() => { charger(); }, [charger]);
 
   const buildSeries = (dir:string, ind:string) =>
-    grpAvecCouleur.map(g => ({ nom:g.nom, couleur:g.couleur, data:donnees.filter(d=>d.pays===g.nom&&d.direction===dir&&d.indicateur===ind) }));
+    grpAvecCouleur.map(g => ({ nom:g.abrege, couleur:g.couleur, data:donnees.filter(d=>d.pays===g.nom&&d.direction===dir&&d.indicateur===ind) }));
 
   const GRAPHES = [
     { id:"fe", titre:"Flux d'IDE entrants",  series: buildSeries("entrant","flux") },
@@ -1927,9 +1927,9 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
               : `${anneeMin} — ${anneeMax}`}
           </span>
           {grpAvecCouleur.map(g=>(
-            <span key={g.nom} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${g.couleur}0D`, border:`1px solid ${g.couleur}2E`, fontSize:12, fontWeight:700, color:g.couleur }}>
+            <span key={g.nom} title={g.label} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${g.couleur}0D`, border:`1px solid ${g.couleur}2E`, fontSize:12, fontWeight:700, color:g.couleur }}>
               <span style={{ width:7, height:7, borderRadius:"50%", background:g.couleur, display:"inline-block" }} />
-              {g.label}
+              {g.abrege}
             </span>
           ))}
         </div>
@@ -1957,11 +1957,11 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
 
           {modeDetail && (
             <div style={{ marginTop:28, display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-              <GrapheCard titre={`Flux entrant — Top 10 · ${grpAvecCouleur[0]?.nom ?? ''}`} sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
+              <GrapheCard titre={`Flux entrant — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
                 <HBarChart donnees={donneesDetail} mini/>
               </GrapheCard>
-              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.nom ?? ''}`} sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar"
+              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar"
                 fullChildren={<DivergingBars donnees={donneesDetail}/>}>
                 <DivergingBars donnees={donneesDetail} mini/>
               </GrapheCard>
