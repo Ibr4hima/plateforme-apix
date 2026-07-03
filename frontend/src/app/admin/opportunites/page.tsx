@@ -707,8 +707,13 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
 
         {/* En-tête */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
-          <div style={{minWidth:0}}>
-            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{p.titre}</h2>
+          <div style={{minWidth:0,flex:1}}>
+            <h2 title={p.titre}
+              onMouseEnter={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;const d=sp.scrollWidth-ev.currentTarget.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
+              onMouseLeave={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
+              style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
+              <span style={{display:"inline-block"}}>{p.titre}</span>
+            </h2>
             {zoneNom&&(
               <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
                 <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:nivColor,background:`${nivColor}12`,padding:"3px 10px",borderRadius:999}}>{zoneNom}</span>
@@ -845,11 +850,25 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
 
         {/* En-tête */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
-          <div style={{minWidth:0}}>
-            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{data.activite_nom}</h2>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-              {data.secteur_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{data.secteur_nom}</span>}
-              {data.branche_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:999}}>{data.branche_nom}</span>}
+          <div style={{minWidth:0,flex:1}}>
+            <h2 title={data.activite_nom}
+              onMouseEnter={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;const d=sp.scrollWidth-ev.currentTarget.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
+              onMouseLeave={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
+              style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
+              <span style={{display:"inline-block"}}>{data.activite_nom}</span>
+            </h2>
+            <div style={{display:"flex",gap:6,marginTop:8,minWidth:0}}>
+              {data.secteur_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>{data.secteur_nom}</span>}
+              {data.branche_nom&&(
+                <span title={data.branche_nom}
+                  onMouseEnter={ev=>{const box=ev.currentTarget.querySelector("[data-marquee]") as HTMLElement|null;const sp=box?.firstElementChild as HTMLElement|null;if(!box||!sp)return;const d=sp.scrollWidth-box.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
+                  onMouseLeave={ev=>{const sp=(ev.currentTarget.querySelector("[data-marquee]") as HTMLElement|null)?.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
+                  style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:999,minWidth:0}}>
+                  <span data-marquee style={{overflow:"hidden",whiteSpace:"nowrap" as const,minWidth:0}}>
+                    <span style={{display:"inline-block"}}>{data.branche_nom}</span>
+                  </span>
+                </span>
+              )}
             </div>
           </div>
           <button onClick={onClose}
