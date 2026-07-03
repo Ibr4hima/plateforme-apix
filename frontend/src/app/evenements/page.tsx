@@ -2,7 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
-import { CalendarDays, ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronUp, FileText, Loader2, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -353,6 +353,121 @@ function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
 }
 
 // ── Page principale ───────────────────────────────────────────────────────────
+// ── Frise chronologique des événements ────────────────────────────────────────
+function FriseChronologique({ evenements, onOpen }: { evenements:any[]; onOpen:(e:any)=>void }) {
+  const ST: any = {
+    a_venir:  { label:"À venir",  c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+    en_cours: { label:"En cours", c:"#188038", bg:"rgba(24,128,56,0.08)" },
+    termine:  { label:"Terminé",  c:"#6b7280", bg:"#F2F0EF"              },
+  };
+  const dateDe = (e:any): Date|null => {
+    if (e.date_debut) return new Date(e.date_debut+"T00:00:00");
+    if (e.prochain_annee) return new Date(e.prochain_annee, (e.prochain_mois||1)-1, e.prochain_jour||1);
+    return null;
+  };
+  const avecDate = evenements.map(e=>({ e, d:dateDe(e) })).filter(x=>x.d) as {e:any;d:Date}[];
+  const sansDate = evenements.filter(e=>!dateDe(e));
+  avecDate.sort((a,b)=>b.d.getTime()-a.d.getTime());
+  const parAnnee: {annee:number; items:{e:any;d:Date}[]}[] = [];
+  avecDate.forEach(x=>{ const y=x.d.getFullYear(); let g=parAnnee.find(p=>p.annee===y); if(!g){g={annee:y,items:[]};parAnnee.push(g);} g.items.push(x); });
+
+  const hoverIn = (ev:React.MouseEvent<HTMLDivElement>) => {
+    ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform="translateY(-2px)"; ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+    ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+      const span = box.firstElementChild as HTMLElement|null;
+      if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d/40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+    });
+  };
+  const hoverOut = (ev:React.MouseEvent<HTMLDivElement>) => {
+    ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform="none"; ev.currentTarget.style.borderColor="#ECEAE7";
+    ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+      const span = box.firstElementChild as HTMLElement|null;
+      if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+    });
+  };
+
+  const Carte = ({ e }: { e:any }) => {
+    const statut = computeStatutEvenement(e) ?? ((e.prochain_annee||e.prochain_mois) ? "a_venir" : null);
+    const st = statut ? ST[statut] : null;
+    const dateStr = e.date_debut
+      ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
+      : e.prochain_mois||e.prochain_annee ? `${e.prochain_jour?e.prochain_jour+" ":""}${e.prochain_mois?MOIS[(e.prochain_mois||1)-1]+" ":""}${e.prochain_annee||""}`.trim() : null;
+    const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
+    const role = e.role_apix ? (ROLE_PILL[e.role_apix]||ROLE_PILL["Invité"]) : null;
+    return (
+      <div onClick={()=>onOpen(e)} onMouseEnter={hoverIn} onMouseLeave={hoverOut}
+        style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",padding:"14px 16px",minWidth:0}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9,minWidth:0}}>
+          {dateStr
+            ? <span style={{fontSize:10.5,fontWeight:800,color:st?st.c:"#004f91",letterSpacing:"0.07em",textTransform:"uppercase" as const,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis"}}>{dateStr}</span>
+            : <span/>}
+          <div style={{display:"flex",gap:6,flexShrink:0}}>
+            {st&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>}
+            {role&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:role.c,background:role.bg,padding:"3px 10px",borderRadius:999}}>{ROLES_APIX[e.role_apix]||e.role_apix}</span>}
+          </div>
+        </div>
+        <div data-marquee style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
+          <span style={{display:"inline-block"}}>{e.nom_event}</span>
+        </div>
+        {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinal(e.edition)}</div>}
+        {lieu&&(
+          <div style={{display:"flex",alignItems:"center",gap:5,marginTop:7,minWidth:0}}>
+            <MapPin size={11} style={{color:"#9aa5b4",flexShrink:0}}/>
+            <span data-marquee style={{fontSize:11.5,color:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const,minWidth:0}}>
+              <span style={{display:"inline-block"}}>{lieu}</span>
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  let idx = 0;
+  return (
+    <div style={{maxWidth:1020,margin:"0 auto"}}>
+      <div style={{position:"relative" as const}}>
+        {/* Ligne centrale */}
+        <div style={{position:"absolute" as const,top:8,bottom:8,left:"50%",width:2,transform:"translateX(-1px)",background:"linear-gradient(180deg,rgba(0,79,145,0.30) 0%,rgba(0,79,145,0.12) 60%,rgba(0,79,145,0.04) 100%)",borderRadius:2}}/>
+
+        {parAnnee.map(({annee,items})=>(
+          <div key={annee}>
+            {/* Jalon année */}
+            <div style={{display:"flex",justifyContent:"center",padding:"6px 0 20px",position:"relative" as const,zIndex:1}}>
+              <span style={{background:"#004f91",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:"0.06em",padding:"7px 22px",borderRadius:999,boxShadow:"0 4px 14px rgba(0,79,145,0.30)"}}>{annee}</span>
+            </div>
+            {items.map(({e})=>{
+              const statut = computeStatutEvenement(e) ?? ((e.prochain_annee||e.prochain_mois) ? "a_venir" : null);
+              const st = statut ? ST[statut] : null;
+              const gauche = idx++ % 2 === 0;
+              return (
+                <div key={e.id} style={{display:"grid",gridTemplateColumns:"1fr 64px 1fr",alignItems:"center",marginBottom:16}}>
+                  <div style={{minWidth:0}}>{gauche&&<Carte e={e}/>}</div>
+                  {/* Puce sur la ligne + connecteur */}
+                  <div style={{position:"relative" as const,alignSelf:"stretch",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{position:"absolute" as const,top:"50%",height:2,background:"rgba(0,79,145,0.15)",width:24,...(gauche?{right:"50%",marginRight:6}:{left:"50%",marginLeft:6})}}/>
+                    <div style={{width:13,height:13,borderRadius:"50%",background:st?st.c:"#004f91",border:"3px solid #F2F0EF",boxShadow:`0 0 0 1px ${st?st.c:"#004f91"}44`,position:"relative" as const,zIndex:1}}/>
+                  </div>
+                  <div style={{minWidth:0}}>{!gauche&&<Carte e={e}/>}</div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* Événements récurrents sans date fixée */}
+      {sansDate.length>0&&(
+        <div style={{marginTop:36}}>
+          <p style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",letterSpacing:"0.14em",textTransform:"uppercase" as const,textAlign:"center" as const,marginBottom:14}}>Date à confirmer</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
+            {sansDate.map(e=><Carte key={e.id} e={e}/>)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EvenementsPage() {
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -375,6 +490,7 @@ export default function EvenementsPage() {
   const [stats,       setStats]       = useState<any>({a_venir:0,en_cours:0,total:0});
 
   const [recherche,    setRecherche]    = useState("");
+  const [vueMode,      setVueMode]      = useState<"liste"|"frise">("liste");
   const [statutFiltre, setStatutFiltre] = useState("");
   const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
   const [secteursSel,  setSecteursSel]  = useState<string[]>([]);
@@ -504,6 +620,18 @@ export default function EvenementsPage() {
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
                 <div style={{marginBottom:18}}>
+                  <p style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Vue</p>
+                  <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+                    {([{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}] as const).map(o=>(
+                      <button key={o.v} onClick={()=>setVueMode(o.v)}
+                        style={{textAlign:"left" as const,padding:"7px 10px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:vueMode===o.v?700:500,background:vueMode===o.v?"rgba(0,79,145,0.08)":"transparent",color:vueMode===o.v?"#004f91":"#4a5568",fontFamily:"var(--font-google-sans)"}}>
+                        {o.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                <div style={{marginBottom:18}}>
                   <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
                   <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
                     {STATUT_OPTS.map(b=>(
@@ -537,6 +665,8 @@ export default function EvenementsPage() {
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#ca631f",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
               </div>
+            ):vueMode==="frise"?(
+              <FriseChronologique evenements={evenements} onOpen={setSelec}/>
             ):(
               <>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
