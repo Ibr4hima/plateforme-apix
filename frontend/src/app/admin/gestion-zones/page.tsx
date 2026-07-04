@@ -266,7 +266,20 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
         </FGrid>
         <div>
           <FLabel>Décret de création</FLabel>
-          <FInput value={form.decret_creation} onChange={e => update("decret_creation", e.target.value)} placeholder="Ex : Décret n° 2002-1036 du 03/10/2002" />
+          {(() => {
+            // Préfixe « Décret n° » figé : l'utilisateur ne saisit que le numéro et la date.
+            const DECRET_RE = /^\s*d[ée]cret\s*n[°o]?\s*/i;
+            const suffixe = (form.decret_creation || "").replace(DECRET_RE, "");
+            return (
+              <div style={{ display: "flex", alignItems: "stretch" }}>
+                <span style={{ display: "flex", alignItems: "center", padding: "0 13px", background: "#F5F4F3", border: "1px solid #E4E1DE", borderRight: "none", borderRadius: "10px 0 0 10px", fontSize: 13, fontWeight: 600, color: "#4a5568", whiteSpace: "nowrap" as const, flexShrink: 0 }}>Décret n°</span>
+                <FInput value={suffixe}
+                  onChange={e => { const v = e.target.value.replace(DECRET_RE, ""); update("decret_creation", v.trim() ? `Décret n° ${v}` : ""); }}
+                  placeholder="2002-1036 du 03/10/2002"
+                  style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }} />
+              </div>
+            );
+          })()}
         </div>
       </FSection>
 
@@ -388,27 +401,33 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
 
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
-      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(5px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:720,maxHeight:"90vh",display:"flex",flexDirection:"column",border:"1px solid #C5BFBB",boxShadow:"0 24px 64px rgba(0,0,0,0.2)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)",flexShrink:0}}/>
+      style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:720,maxHeight:"90vh",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",overflow:"hidden",animation:"vueIn 0.22s ease"}}>
+        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
         {/* Header */}
-        <div style={{padding:"18px 24px 14px",borderBottom:"1px solid #F2F0EF"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-            <div>
-              <h2 style={{fontWeight:700,fontSize:"1rem",color:"#1a1a2e"}}>Entreprises — {zoneNom}</h2>
-              <p style={{fontSize:12,color:"#9aa5b4",marginTop:2}}>
-                {nbI>0&&<span style={{color:"#059669",fontWeight:600,marginRight:10}}>✓ {nbI} installée{nbI>1?"s":""}</span>}
-                <span style={{color:"#b45309",fontWeight:600,marginRight:10}}>{nbE} éligible{nbE>1?"s":""}</span>
-                <span style={{color:"#9aa5b4"}}>{nbN} non éligible{nbN>1?"s":""}</span>
-              </p>
+        <div style={{padding:"18px 28px 14px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16,marginBottom:12}}>
+            <div style={{minWidth:0}}>
+              <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>Entreprises — {zoneNom}</h2>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
+                {nbI>0&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.08)",padding:"3px 10px",borderRadius:999}}>{nbI} installée{nbI>1?"s":""}</span>}
+                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:999}}>{nbE} éligible{nbE>1?"s":""}</span>
+                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#6b7280",background:"#F2F0EF",padding:"3px 10px",borderRadius:999}}>{nbN} non éligible{nbN>1?"s":""}</span>
+              </div>
             </div>
-            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:8}}><X size={15} color="#4a5568"/></button>
+            <button onClick={onClose}
+              style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+              onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
+              onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
+              <X size={15} color="#4a5568"/>
+            </button>
           </div>
           {/* Légende */}
-          <div style={{display:"flex",gap:12,marginBottom:12,padding:"7px 12px",background:"#F8F7F6",borderRadius:8,fontSize:11,color:"#4a5568",flexWrap:"wrap" as const}}>
-            <span>1 clic → <span style={{fontWeight:700,color:"#b45309"}}>Éligible</span></span>
+          <div style={{display:"flex",gap:12,marginBottom:12,padding:"7px 12px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:9,fontSize:11,color:"#4a5568",flexWrap:"wrap" as const}}>
+            <span>1 clic → <span style={{fontWeight:700,color:"#ca631f"}}>Éligible</span></span>
             <span style={{color:"#C5BFBB"}}>·</span>
-            <span>2 clics → <span style={{fontWeight:700,color:"#059669"}}>Installée</span></span>
+            <span>2 clics → <span style={{fontWeight:700,color:"#188038"}}>Installée</span></span>
             <span style={{color:"#C5BFBB"}}>·</span>
             <span>3 clics → Désélectionner</span>
           </div>
@@ -416,7 +435,7 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
           <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap" as const}}>
             {([{v:"eligible",l:`Éligibles (${nbE})`},{v:"installee",l:`Installées (${nbI})`},{v:"non_eligible",l:`Non éligibles (${nbN})`},{v:"tous",l:"Toutes"}] as {v:string;l:string}[]).map(f=>(
               <button key={f.v} onClick={()=>setFiltre(f.v as any)}
-                style={{padding:"4px 11px",borderRadius:999,fontSize:11,fontWeight:600,cursor:"pointer",border:`1.5px solid ${filtre===f.v?"#1a1a2e":"#E8E5E3"}`,background:filtre===f.v?"#1a1a2e":"#fff",color:filtre===f.v?"#fff":"#9aa5b4"}}>
+                style={{padding:"4px 12px",borderRadius:999,fontSize:11,fontWeight:filtre===f.v?700:600,cursor:"pointer",border:`1.5px solid ${filtre===f.v?"#004f91":"#E8E5E3"}`,background:filtre===f.v?"#004f91":"#fff",color:filtre===f.v?"#fff":"#9aa5b4",transition:"all 0.15s",fontFamily:"var(--font-google-sans)"}}>
                 {f.l}
               </button>
             ))}
@@ -424,11 +443,11 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
           <div style={{position:"relative"}}>
             <Search size={13} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
-              style={{width:"100%",background:"#F2F0EF",border:"1px solid #C5BFBB",borderRadius:9,padding:"8px 12px 8px 32px",fontSize:13,outline:"none",boxSizing:"border-box" as const,fontFamily:"var(--font-google-sans)"}}/>
+              style={{width:"100%",background:"#F8F7F6",border:"1px solid #E8E5E3",borderRadius:9,padding:"8px 12px 8px 32px",fontSize:13,color:"#1a1a2e",outline:"none",boxSizing:"border-box" as const,fontFamily:"var(--font-google-sans)"}}/>
           </div>
         </div>
         {/* Liste */}
-        <div style={{flex:1,overflowY:"auto",padding:"10px 24px"}}>
+        <div style={{flex:1,overflowY:"auto",padding:"12px 28px"}}>
           {loading
             ?<div style={{display:"flex",justifyContent:"center",padding:40}}><Loader2 size={22} style={{color:"#9aa5b4",animation:"spin 1s linear infinite"}}/></div>
             :filtered.length===0
@@ -463,14 +482,14 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
               </div>}
         </div>
         {/* Footer */}
-        <div style={{padding:"12px 24px",borderTop:"1px solid #F2F0EF",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
           <span style={{fontSize:12,color:nbChoix>0?"#1a1a2e":"#9aa5b4"}}>
             {nbChoix>0?<span style={{fontWeight:600}}>{nbChoix} à enregistrer</span>:`${filtered.length} affiché${filtered.length>1?"s":""}`}
           </span>
           <div style={{display:"flex",gap:10}}>
-            <button onClick={onClose} style={{padding:"8px 16px",borderRadius:9,border:"1px solid #C5BFBB",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
+            <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>Fermer</button>
             <button onClick={handleSauvegarder} disabled={!nbChoix||saving||saveOk}
-              style={{display:"flex",alignItems:"center",gap:6,padding:"8px 18px",borderRadius:9,border:"none",background:saveOk?"#059669":nbChoix?"#1a1a2e":"#C5BFBB",color:"#fff",fontWeight:700,cursor:!nbChoix||saving||saveOk?"not-allowed":"pointer",fontSize:13}}>
+              style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:saveOk?"#188038":nbChoix?"#004f91":"#C5BFBB",color:"#fff",fontWeight:700,cursor:!nbChoix||saving||saveOk?"not-allowed":"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:saveOk?"0 3px 12px rgba(24,128,56,0.25)":nbChoix?"0 3px 12px rgba(0,79,145,0.25)":"none"}}>
               {saving?<><Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/> Enregistrement…</>:saveOk?<><Check size={13}/> Enregistré</>:`Enregistrer (${nbChoix})`}
             </button>
           </div>
