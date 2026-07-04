@@ -275,7 +275,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
                 <span style={{ display: "flex", alignItems: "center", padding: "0 13px", background: "#F5F4F3", border: "1px solid #E4E1DE", borderRight: "none", borderRadius: "10px 0 0 10px", fontSize: 13, fontWeight: 600, color: "#4a5568", whiteSpace: "nowrap" as const, flexShrink: 0 }}>Décret n°</span>
                 <FInput value={suffixe}
                   onChange={e => { const v = e.target.value.replace(DECRET_RE, ""); update("decret_creation", v.trim() ? `Décret n° ${v}` : ""); }}
-                  placeholder="2002-1036 du 03/10/2002"
+                  placeholder="2002-1036"
                   style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }} />
               </div>
             );
@@ -422,14 +422,6 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
               onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
               <X size={15} color="#4a5568"/>
             </button>
-          </div>
-          {/* Légende */}
-          <div style={{display:"flex",gap:12,marginBottom:12,padding:"7px 12px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:9,fontSize:11,color:"#4a5568",flexWrap:"wrap" as const}}>
-            <span>1 clic → <span style={{fontWeight:700,color:"#ca631f"}}>Éligible</span></span>
-            <span style={{color:"#C5BFBB"}}>·</span>
-            <span>2 clics → <span style={{fontWeight:700,color:"#188038"}}>Installée</span></span>
-            <span style={{color:"#C5BFBB"}}>·</span>
-            <span>3 clics → Désélectionner</span>
           </div>
           {/* Filtres */}
           <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap" as const}}>
