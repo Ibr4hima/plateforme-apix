@@ -41,7 +41,7 @@ function downloadSVG(svgEl: SVGSVGElement, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-function downloadPNG(svgEl: SVGSVGElement, filename: string) {
+function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: string; annees?: string; legende?: { nom: string; couleur: string }[] }) {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
   const W = svgEl.viewBox.baseVal.width || 800;
@@ -50,15 +50,96 @@ function downloadPNG(svgEl: SVGSVGElement, filename: string) {
   const url  = URL.createObjectURL(blob);
   const img  = new Image(); img.width=W*2; img.height=H*2;
   img.onload = () => {
-    const canvas = document.createElement("canvas"); canvas.width=W*2; canvas.height=H*2;
+    const PAD    = 26;
+    const FONT   = "'Google Sans','Product Sans',Arial,sans-serif";
+    const titre  = opts?.titre  || "";
+    const annees = opts?.annees || "";
+    const legende = opts?.legende || [];
+
+    // ── Mesure du bandeau (titre + badge d'années + légende, avec retours à la ligne)
+    const mctx = document.createElement("canvas").getContext("2d")!;
+    let headerH = 0;
+    const legLines: { nom: string; couleur: string; w: number }[][] = [];
+    if (titre || legende.length) {
+      headerH = PAD + 26;
+      if (legende.length) {
+        mctx.font = `700 11px ${FONT}`;
+        const maxW = W - PAD * 2;
+        let line: { nom: string; couleur: string; w: number }[] = []; let x = 0;
+        legende.forEach(l => {
+          const w = Math.ceil(mctx.measureText(l.nom).width) + 22;
+          if (x + w > maxW && line.length) { legLines.push(line); line = []; x = 0; }
+          line.push({ ...l, w }); x += w + 8;
+        });
+        if (line.length) legLines.push(line);
+        headerH += 6 + legLines.length * 26;
+      }
+      headerH += 10;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W * 2; canvas.height = (H + headerH) * 2;
     const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle="#fff"; ctx.fillRect(0,0,W*2,H*2);
-    ctx.drawImage(img,0,0,W*2,H*2);
+    ctx.scale(2, 2);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H + headerH);
+
+    if (headerH) {
+      ctx.textBaseline = "middle";
+      const ty = PAD + 12;
+      // Badge d'années (réserve sa place à droite du titre)
+      ctx.font = `700 11px ${FONT}`;
+      const badgeW = annees ? Math.ceil(ctx.measureText(annees).width) + 20 : 0;
+      // Titre, tronqué si besoin
+      ctx.font = `700 16px ${FONT}`; ctx.fillStyle = "#1a1a2e";
+      let t = titre;
+      const maxTitre = W - PAD * 2 - (badgeW ? badgeW + 10 : 0);
+      while (t && ctx.measureText(t).width > maxTitre) t = t.slice(0, -2);
+      if (t !== titre) t += "…";
+      ctx.fillText(t, PAD, ty);
+      if (annees) {
+        const bx = PAD + ctx.measureText(t).width + 10;
+        ctx.fillStyle = "#ECEAE8";
+        ctx.beginPath(); ctx.roundRect(bx, ty - 10, badgeW, 20, 999); ctx.fill();
+        ctx.font = `700 11px ${FONT}`; ctx.fillStyle = "#4a5568";
+        ctx.fillText(annees, bx + 10, ty + 0.5);
+      }
+      // Légende en pilules teintées, comme dans le modal
+      let ly = PAD + 26 + 6 + 13;
+      ctx.font = `700 11px ${FONT}`;
+      legLines.forEach(line => {
+        let lx = PAD;
+        line.forEach(l => {
+          ctx.fillStyle = l.couleur + "1F";
+          ctx.beginPath(); ctx.roundRect(lx, ly - 10, l.w, 20, 999); ctx.fill();
+          ctx.fillStyle = l.couleur;
+          ctx.fillText(l.nom, lx + 11, ly + 0.5);
+          lx += l.w + 8;
+        });
+        ly += 26;
+      });
+    }
+
+    ctx.drawImage(img, 0, headerH, W, H);
     const a = document.createElement("a"); a.href=canvas.toDataURL("image/png"); a.download=`${filename}.png`; a.click();
     URL.revokeObjectURL(url);
   };
   img.src = url;
 }
+
+// ── Tooltip D3 : coordonnées viewport (le tooltip est en position:fixed) et
+// repli automatique aux bords pour rester toujours visible à l'écran.
+function showD3Tooltip(tooltip: any, e: MouseEvent, html?: string) {
+  if (html !== undefined) tooltip.html(html);
+  tooltip.style("opacity", 1);
+  const node = tooltip.node() as HTMLElement | null;
+  const tw = node?.offsetWidth || 120, th = node?.offsetHeight || 44;
+  let x = e.clientX + 14, y = e.clientY - th - 14;
+  if (x + tw > window.innerWidth - 8) x = e.clientX - tw - 14;
+  if (y < 8) y = e.clientY + 18;
+  if (y + th > window.innerHeight - 8) y = window.innerHeight - th - 8;
+  tooltip.style("left", x + "px").style("top", y + "px");
+}
+function hideD3Tooltip(tooltip: any) { tooltip.style("opacity", 0); }
 
 // ── Graphe D3 multi-pays ──────────────────────────────────────────────────────
 function GrapheMultiPays({ series, height=280, type="line", titre="", fmt, showDots=true, lineWidth }: {
@@ -155,10 +236,10 @@ function GrapheMultiPays({ series, height=280, type="line", titre="", fmt, showD
           .attr("fill",s.couleur).attr("rx",3).style("cursor","pointer")
           .on("mouseover",(e,d)=>{
             d3.select(e.currentTarget as SVGRectElement).attr("opacity",0.75);
-            tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px")
-              .html(`<strong>${d.annee}${nbSeries>1?" — "+s.nom:""}</strong><br/>${fmtV(d.valeur)}`);
+            showD3Tooltip(tooltip, e, `<strong>${d.annee}${nbSeries>1?" — "+s.nom:""}</strong><br/>${fmtV(d.valeur)}`);
           })
-          .on("mouseout",(e)=>{ d3.select(e.currentTarget as SVGRectElement).attr("opacity",1); tooltip.style("opacity",0); });
+          .on("mousemove",(e)=>showD3Tooltip(tooltip, e))
+          .on("mouseout",(e)=>{ d3.select(e.currentTarget as SVGRectElement).attr("opacity",1); hideD3Tooltip(tooltip); });
       });
 
       const maxTicks = Math.floor((W - M.left - M.right) / 28);
@@ -192,21 +273,26 @@ function GrapheMultiPays({ series, height=280, type="line", titre="", fmt, showD
 
         const nb = valid.length;
         const rBase = nb > 25 ? 0 : nb > 18 ? 1.5 : nb > 10 ? 2 : 2.5;
+        // Points visibles (décoratifs : les événements passent par les cibles invisibles)
+        let dots: any = null;
         if (showDots && rBase > 0) {
-          svg.selectAll(`.p${s.nom.replace(/\W/g,"")}`)
+          dots = svg.selectAll(`.p${s.nom.replace(/\W/g,"")}`)
             .data(valid).enter().append("circle")
             .attr("cx",d=>xLin(d.annee)).attr("cy",d=>ys(d.valeur)).attr("r",rBase)
-            .attr("fill","#fff").attr("stroke",s.couleur).attr("stroke-width",1.5).style("cursor","pointer")
-            .on("mouseover",(e,d)=>{ d3.select(e.currentTarget as any).attr("r",rBase+2); tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px").html(`<strong>${d.annee} — ${s.nom}</strong><br/>${fmtV(d.valeur)}`); })
-            .on("mouseout",(e)=>{ d3.select(e.currentTarget as any).attr("r",rBase); tooltip.style("opacity",0); });
-        } else {
-          svg.selectAll(`.ph${s.nom.replace(/\W/g,"")}`)
-            .data(valid).enter().append("circle")
-            .attr("cx",d=>xLin(d.annee)).attr("cy",d=>ys(d.valeur)).attr("r",6)
-            .attr("fill","transparent").attr("stroke","none").style("cursor","pointer")
-            .on("mouseover",(e,d)=>{ tooltip.style("opacity",1).style("left",(e.pageX+12)+"px").style("top",(e.pageY-28)+"px").html(`<strong>${d.annee} — ${s.nom}</strong><br/>${fmtV(d.valeur)}`); })
-            .on("mouseout",()=>{ tooltip.style("opacity",0); });
+            .attr("fill","#fff").attr("stroke",s.couleur).attr("stroke-width",1.5)
+            .style("pointer-events","none");
         }
+        // Larges cibles de survol invisibles : le tooltip se déclenche à coup sûr
+        svg.selectAll(`.ph${s.nom.replace(/\W/g,"")}`)
+          .data(valid).enter().append("circle")
+          .attr("cx",d=>xLin(d.annee)).attr("cy",d=>ys(d.valeur)).attr("r",Math.max(10, rBase+6))
+          .attr("fill","transparent").attr("stroke","none").style("cursor","pointer")
+          .on("mouseover",(e,d)=>{
+            if (dots) dots.filter((p:any)=>p===d).attr("r",rBase+2);
+            showD3Tooltip(tooltip, e, `<strong>${d.annee} — ${s.nom}</strong><br/>${fmtV(d.valeur)}`);
+          })
+          .on("mousemove",(e)=>showD3Tooltip(tooltip, e))
+          .on("mouseout",(e,d)=>{ if (dots) dots.filter((p:any)=>p===d).attr("r",rBase); hideD3Tooltip(tooltip); });
       });
 
       // Ticks = années entières uniquement (évite les doublons type "2020 2020"
@@ -267,6 +353,17 @@ function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, seri
   const modalRef = useRef<HTMLDivElement>(null);
   const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement|null;
 
+  // Intervalle d'années couvert par les séries (badge du titre + export PNG)
+  const anneesRange = (() => {
+    const as: number[] = (series||[]).flatMap((s:any)=>s.data.filter((d:any)=>d.valeur!==null).map((d:any)=>d.annee));
+    if (!as.length) return "";
+    const mn = Math.min(...as), mx = Math.max(...as);
+    return mn === mx ? String(mn) : `${mn} – ${mx}`;
+  })();
+  const legendeExport = (series||[])
+    .filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))
+    .map((s:any)=>({ nom: s.nom, couleur: s.couleur }));
+
   if (!open) return null;
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:32 }}>
@@ -278,7 +375,14 @@ function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, seri
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
             <div style={{ flex:1, minWidth:0 }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35 }}>{titre}</h2>
+              <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
+                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35, minWidth:0 }}>{titre}</h2>
+                {anneesRange && (
+                  <span style={{ flexShrink:0, fontSize:11, fontWeight:700, color:"#4a5568", background:"#ECEAE8", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
+                    {anneesRange}
+                  </span>
+                )}
+              </div>
               <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
                 {series?.length > 0 && series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
                   <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:s.couleur, background:`${s.couleur}12`, border:`1px solid ${s.couleur}30` }}>
@@ -315,7 +419,7 @@ function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, seri
           <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
             Fermer
           </button>
-          <button onClick={()=>{ const svg=getSvg(); if(svg) downloadPNG(svg, grapheId||titre||"graphe"); }}
+          <button onClick={()=>{ const svg=getSvg(); if(svg) downloadPNG(svg, grapheId||titre||"graphe", { titre, annees:anneesRange, legende:legendeExport }); }}
             style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgba(0,79,145,0.25)", fontFamily:"var(--font-google-sans)" }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Télécharger
