@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Search, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
-import { isPhoneComplete, isEmailComplete } from "@/components/shared/PhoneInput";
+import { isPhoneComplete, isEmailComplete, isContactComplete } from "@/components/shared/PhoneInput";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -59,11 +59,11 @@ function FieldErr({ msg }: { msg: string }) {
 }
 
 // ── Bouton ajout inline ───────────────────────────────────────────────────────
-function AddBtn({ label, onClick }: { label:string; onClick:()=>void }) {
+function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
-    <button onClick={onClick}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:9, border:"2px dashed #C5BFBB", background:"transparent", color:"#9aa5b4", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}
-      onMouseEnter={e=>{ e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.color="#ca631f"; }}
+    <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:9, border:"2px dashed #C5BFBB", background:"transparent", color:"#9aa5b4", fontSize:12, fontWeight:600, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)" }}
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.color="#ca631f"; } }}
       onMouseLeave={e=>{ e.currentTarget.style.borderColor="#C5BFBB"; e.currentTarget.style.color="#9aa5b4"; }}>
       <Plus size={13} /> {label}
     </button>
@@ -519,7 +519,9 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
                 onRemove={()=>remItem("porteurs",i)}/>
             ))}
             <AddBtn label="Ajouter un porteur de projet"
-              onClick={()=>addItem("porteurs",{nom:"",telephones:[""],mails:[""]})}/>
+              onClick={()=>addItem("porteurs",{nom:"",telephones:[""],mails:[""]})}
+              ok={form.porteurs.every((p:any)=>isContactComplete(p,["nom"]))}
+              titre="Complétez d'abord le porteur précédent (nom / organisation, téléphone et email valides)"/>
           </div>
 
           {/* ── 6. Points focaux ── */}
@@ -531,7 +533,9 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
                 onRemove={()=>remItem("points_focaux",i)}/>
             ))}
             <AddBtn label="Ajouter un point focal"
-              onClick={()=>addItem("points_focaux",{civilite:"",nom:"",prenom:"",telephones:[],mails:[]})}/>
+              onClick={()=>addItem("points_focaux",{civilite:"",nom:"",prenom:"",telephones:[],mails:[]})}
+              ok={form.points_focaux.every((pf:any)=>isContactComplete(pf,["civilite","nom","prenom"]))}
+              titre="Complétez d'abord le point focal précédent (civilité, nom, prénom, téléphone et email valides)"/>
           </div>
 
           {/* ── 7. Documents PDF ── */}

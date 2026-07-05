@@ -4,7 +4,7 @@ import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
-import PhoneInput, { isPhoneComplete, isEmailComplete } from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete } from "@/components/shared/PhoneInput";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { Building2, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -338,13 +338,16 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             ))}
           </div>
         )}
-        <button onClick={()=>setFocaux(prev=>[...prev,{...EMPTY_FOCAL, est_principal: prev.length===0}])}
-          style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 14px",borderRadius:10,cursor:"pointer",border:"2px dashed #E4E1DE",background:"#FAFAF9",transition:"border-color 0.15s",fontFamily:"var(--font-google-sans)"}}
-          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+        {(()=>{ const ok=focaux.every(pf=>isContactComplete({...pf, civilite: pf.civilite||"Monsieur"},["civilite","nom","prenom"])); return (
+        <button onClick={()=>ok&&setFocaux(prev=>[...prev,{...EMPTY_FOCAL, est_principal: prev.length===0}])} disabled={!ok}
+          title={ok?undefined:"Complétez d'abord le point focal précédent (civilité, nom, prénom, téléphone et email valides)"}
+          style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 14px",borderRadius:10,cursor:ok?"pointer":"not-allowed",opacity:ok?1:0.45,border:"2px dashed #E4E1DE",background:"#FAFAF9",transition:"border-color 0.15s",fontFamily:"var(--font-google-sans)"}}
+          onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="#004f91";}}
           onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
           <Plus size={14} color="#9aa5b4"/>
           <span style={{fontSize:13,color:"#9aa5b4"}}>Ajouter un point focal</span>
         </button>
+        ); })()}
       </FSection>
 
       {errors.global && <FError>{errors.global}</FError>}

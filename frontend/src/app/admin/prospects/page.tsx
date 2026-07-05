@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Clock, FileText, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, Upload, User, Video, X } from "lucide-react";
-import PhoneInput, { isPhoneComplete, isEmailComplete } from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete } from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import NaemaSelect from "@/components/shared/NaemaSelect";
@@ -525,14 +525,17 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
             ))}
           </div>
         )}
-        <button type="button"
-          onClick={()=>upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL, est_principal: form.points_focaux.length===0 }])}
-          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s", fontFamily:"var(--font-google-sans)" }}
-          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
+        {(()=>{ const ok=form.points_focaux.every((pf:any)=>isContactComplete(pf,["nom","prenom"])); return (
+        <button type="button" disabled={!ok}
+          title={ok?undefined:"Complétez d'abord le point focal précédent (nom, prénom, téléphone et email valides)"}
+          onClick={()=>ok&&upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL, est_principal: form.points_focaux.length===0 }])}
+          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", borderRadius:10, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s", fontFamily:"var(--font-google-sans)" }}
+          onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="#004f91";}}
           onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
           <Plus size={14} color="#9aa5b4"/>
           <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un point focal</span>
         </button>
+        ); })()}
       </FSection>
 
       {/* Commentaires */}

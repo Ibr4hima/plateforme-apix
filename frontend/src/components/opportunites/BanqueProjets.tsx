@@ -9,7 +9,7 @@ import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FToggle, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
-import PhoneInput, { isPhoneComplete, isEmailComplete } from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete } from "@/components/shared/PhoneInput";
 
 // Bouton « + Ajouter » d'une liste de contacts : actif seulement si toutes les entrées sont valides
 function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void; titre:string }) {
@@ -168,11 +168,11 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
   );
 }
 
-function AddBtn({ label, onClick }: { label:string; onClick:()=>void }) {
+function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
-    <button onClick={onClick}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed #E4E1DE", background:"#FAFAF9", color:"#9aa5b4", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
-      onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; }}
+    <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed #E4E1DE", background:"#FAFAF9", color:"#9aa5b4", fontSize:12.5, fontWeight:600, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; } }}
       onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E4E1DE"; e.currentTarget.style.color="#9aa5b4"; }}>
       <Plus size={13}/> {label}
     </button>
@@ -421,7 +421,9 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         {form.porteurs.map((porteur:any,i:number)=>(
           <PorteurRow key={i} p={porteur} idx={i} onChange={v=>updList("porteurs",i,v)} onRemove={()=>remItem("porteurs",i)}/>
         ))}
-        <AddBtn label="Ajouter un porteur de projet" onClick={()=>addItem("porteurs",{nom:"",telephones:[""],mails:[""]})}/>
+        <AddBtn label="Ajouter un porteur de projet" onClick={()=>addItem("porteurs",{nom:"",telephones:[""],mails:[""]})}
+          ok={form.porteurs.every((p:any)=>isContactComplete(p,["nom"]))}
+          titre="Complétez d'abord le porteur précédent (nom / organisation, téléphone et email valides)"/>
       </FSection>
 
       {/* Points focaux */}
@@ -429,7 +431,9 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         {form.points_focaux.map((pf:any,i:number)=>(
           <PointFocalRow key={i} pf={pf} idx={i} onChange={v=>updList("points_focaux",i,v)} onRemove={()=>remItem("points_focaux",i)}/>
         ))}
-        <AddBtn label="Ajouter un point focal" onClick={()=>addItem("points_focaux",{civilite:"",nom:"",prenom:"",telephones:[""],mails:[""]})}/>
+        <AddBtn label="Ajouter un point focal" onClick={()=>addItem("points_focaux",{civilite:"",nom:"",prenom:"",telephones:[""],mails:[""]})}
+          ok={form.points_focaux.every((pf:any)=>isContactComplete(pf,["civilite","nom","prenom"]))}
+          titre="Complétez d'abord le point focal précédent (civilité, nom, prénom, téléphone et email valides)"/>
       </FSection>
 
       {/* Documents */}

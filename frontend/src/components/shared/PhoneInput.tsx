@@ -30,6 +30,16 @@ export function isPhoneComplete(v: string): boolean {
 export function isEmailComplete(v: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((v || "").trim());
 }
+// Un contact structuré (point focal, porteur de projet…) est complet quand ses
+// champs texte requis sont remplis et qu'il a au moins un téléphone et un email,
+// tous valides. Sert à verrouiller l'ajout d'un contact suivant.
+export function isContactComplete(obj: any, champsRequis: string[] = []): boolean {
+  if (champsRequis.some(c => !String(obj?.[c] ?? "").trim())) return false;
+  const tels  = (obj?.telephones || []).filter((t: string) => (t || "").trim());
+  const mails = (obj?.mails || []).filter((m: string) => (m || "").trim());
+  return tels.length > 0 && tels.every(isPhoneComplete)
+      && mails.length > 0 && mails.every(isEmailComplete);
+}
 
 interface Props {
   value:        string;
