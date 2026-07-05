@@ -408,28 +408,26 @@ function CreationsLineChart({ data, height }: { data: { label: number; valeur: n
     // Points + tooltip
     const rBase = sorted.length > 25 ? 0 : sorted.length > 18 ? 1.5 : 2.5;
     const tip   = d3.select("#d3-tooltip") as any;
+    // Points visibles (décoratifs : les événements passent par les cibles invisibles)
+    let dots: any = null;
     if (rBase > 0) {
-      svg.selectAll<SVGCircleElement, typeof sorted[0]>("circle.pt")
+      dots = svg.selectAll<SVGCircleElement, typeof sorted[0]>("circle.pt")
         .data(sorted).enter().append("circle").attr("class", "pt")
         .attr("cx", d => xLin(d.label)).attr("cy", d => y(d.valeur)).attr("r", rBase)
-        .attr("fill", "#fff").attr("stroke", COLOR).attr("stroke-width", 1.5).style("cursor", "pointer")
-        .on("mouseover", (e, d) => {
-          d3.select(e.currentTarget).attr("r", rBase + 2);
-          tip.style("opacity", 1).style("left", (e.pageX + 12) + "px").style("top", (e.pageY - 28) + "px")
-            .html(`<strong>${d.label}</strong><br/>${d.valeur.toLocaleString("fr-FR")} créations`);
-        })
-        .on("mouseout", (e) => { d3.select(e.currentTarget).attr("r", rBase); tip.style("opacity", 0); });
-    } else {
-      svg.selectAll<SVGCircleElement, typeof sorted[0]>("circle.ph")
-        .data(sorted).enter().append("circle").attr("class", "ph")
-        .attr("cx", d => xLin(d.label)).attr("cy", d => y(d.valeur)).attr("r", 6)
-        .attr("fill", "transparent").attr("stroke", "none").style("cursor", "pointer")
-        .on("mouseover", (e, d) => {
-          tip.style("opacity", 1).style("left", (e.pageX + 12) + "px").style("top", (e.pageY - 28) + "px")
-            .html(`<strong>${d.label}</strong><br/>${d.valeur.toLocaleString("fr-FR")} créations`);
-        })
-        .on("mouseout", () => tip.style("opacity", 0));
+        .attr("fill", "#fff").attr("stroke", COLOR).attr("stroke-width", 1.5)
+        .style("pointer-events", "none");
     }
+    // Larges cibles de survol invisibles : le tooltip se déclenche à coup sûr
+    svg.selectAll<SVGCircleElement, typeof sorted[0]>("circle.ph")
+      .data(sorted).enter().append("circle").attr("class", "ph")
+      .attr("cx", d => xLin(d.label)).attr("cy", d => y(d.valeur)).attr("r", Math.max(10, rBase + 6))
+      .attr("fill", "transparent").attr("stroke", "none").style("cursor", "pointer")
+      .on("mouseover", (e, d) => {
+        if (dots) dots.filter((p: any) => p === d).attr("r", rBase + 2);
+        showD3Tooltip(tip, e, `<strong>${d.label}</strong><br/>${d.valeur.toLocaleString("fr-FR")} créations`);
+      })
+      .on("mousemove", (e) => showD3Tooltip(tip, e))
+      .on("mouseout", (e, d) => { if (dots) dots.filter((p: any) => p === d).attr("r", rBase); hideD3Tooltip(tip); });
 
     // Axe X
     svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
@@ -1126,11 +1124,18 @@ function ParamSelect({ param, value, onChange, parentValue }: { param:any; value
 }
 
 // ─── Download PNG ─────────────────────────────────────────────────────────────
-function downloadPNG(svgEl: SVGSVGElement, filename: string) {
+function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: string; annees?: string; legende?: { nom: string; couleur: string }[] }) {
+  const SCALE = 3; // suréchantillonnage : rendu net, identique au modal
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
   const W = svgEl.viewBox?.baseVal?.width || svgEl.clientWidth || 800;
   const H = svgEl.viewBox?.baseVal?.height || svgEl.clientHeight || 400;
+  // Dimensions explicites en pixels : sans elles le navigateur rastérise le SVG
+  // à une taille par défaut puis l'agrandit, d'où une image floue.
+  clone.removeAttribute("style");
+  clone.setAttribute("width",  String(W * SCALE));
+  clone.setAttribute("height", String(H * SCALE));
+  clone.setAttribute("font-family", "'Google Sans','Product Sans',Arial,sans-serif");
   const blob = new Blob([clone.outerHTML], {type:"image/svg+xml"});
   const url = URL.createObjectURL(blob);
   // Repli : si le canvas est « teinté » (SVG contenant un foreignObject, ex. donut),
@@ -1139,13 +1144,77 @@ function downloadPNG(svgEl: SVGSVGElement, filename: string) {
     const a = document.createElement("a"); a.href=url; a.download=`${filename}.svg`; a.click();
     setTimeout(()=>URL.revokeObjectURL(url), 1000);
   };
-  const img = new Image(); img.width=W*2; img.height=H*2;
+  const img = new Image();
   img.onload = () => {
     try {
-      const canvas = document.createElement("canvas"); canvas.width=W*2; canvas.height=H*2;
+      const PAD    = 26;
+      const FONT   = "'Google Sans','Product Sans',Arial,sans-serif";
+      const titre  = opts?.titre  || "";
+      const annees = opts?.annees || "";
+      const legende = opts?.legende || [];
+
+      // ── Mesure du bandeau (titre + badge d'années + légende, avec retours à la ligne)
+      const mctx = document.createElement("canvas").getContext("2d")!;
+      let headerH = 0;
+      const legLines: { nom: string; couleur: string; w: number }[][] = [];
+      if (titre || legende.length) {
+        headerH = PAD + 26;
+        if (legende.length) {
+          mctx.font = `700 11px ${FONT}`;
+          const maxW = W - PAD * 2;
+          let line: { nom: string; couleur: string; w: number }[] = []; let x = 0;
+          legende.forEach(l => {
+            const w = Math.ceil(mctx.measureText(l.nom).width) + 22;
+            if (x + w > maxW && line.length) { legLines.push(line); line = []; x = 0; }
+            line.push({ ...l, w }); x += w + 8;
+          });
+          if (line.length) legLines.push(line);
+          headerH += 6 + legLines.length * 26;
+        }
+        headerH += 10;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = W * SCALE; canvas.height = (H + headerH) * SCALE;
       const ctx = canvas.getContext("2d")!;
-      ctx.fillStyle="#fff"; ctx.fillRect(0,0,W*2,H*2);
-      ctx.drawImage(img,0,0,W*2,H*2);
+      ctx.scale(SCALE, SCALE);
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H + headerH);
+
+      if (headerH) {
+        ctx.textBaseline = "middle";
+        const ty = PAD + 12;
+        ctx.font = `700 11px ${FONT}`;
+        const badgeW = annees ? Math.ceil(ctx.measureText(annees).width) + 20 : 0;
+        ctx.font = `700 16px ${FONT}`; ctx.fillStyle = "#1a1a2e";
+        let t = titre;
+        const maxTitre = W - PAD * 2 - (badgeW ? badgeW + 10 : 0);
+        while (t && ctx.measureText(t).width > maxTitre) t = t.slice(0, -2);
+        if (t !== titre) t += "…";
+        ctx.fillText(t, PAD, ty);
+        if (annees) {
+          const bx = PAD + ctx.measureText(t).width + 10;
+          ctx.fillStyle = "#ECEAE8";
+          ctx.beginPath(); ctx.roundRect(bx, ty - 10, badgeW, 20, 999); ctx.fill();
+          ctx.font = `700 11px ${FONT}`; ctx.fillStyle = "#4a5568";
+          ctx.fillText(annees, bx + 10, ty + 0.5);
+        }
+        let ly = PAD + 26 + 6 + 13;
+        ctx.font = `700 11px ${FONT}`;
+        legLines.forEach(line => {
+          let lx = PAD;
+          line.forEach(l => {
+            ctx.fillStyle = l.couleur + "1F";
+            ctx.beginPath(); ctx.roundRect(lx, ly - 10, l.w, 20, 999); ctx.fill();
+            ctx.fillStyle = l.couleur;
+            ctx.fillText(l.nom, lx + 11, ly + 0.5);
+            lx += l.w + 8;
+          });
+          ly += 26;
+        });
+      }
+
+      ctx.drawImage(img, 0, headerH, W, H);
       const a = document.createElement("a"); a.href=canvas.toDataURL("image/png"); a.download=`${filename}.png`; a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -1155,6 +1224,21 @@ function downloadPNG(svgEl: SVGSVGElement, filename: string) {
   img.onerror = downloadSvg;
   img.src = url;
 }
+
+// ─── Tooltip D3 : coordonnées viewport (le tooltip est en position:fixed) et
+// repli automatique aux bords pour rester toujours visible à l'écran.
+function showD3Tooltip(tooltip: any, e: MouseEvent, html?: string) {
+  if (html !== undefined) tooltip.html(html);
+  tooltip.style("opacity", 1);
+  const node = tooltip.node() as HTMLElement | null;
+  const tw = node?.offsetWidth || 120, th = node?.offsetHeight || 44;
+  let x = e.clientX + 14, y = e.clientY - th - 14;
+  if (x + tw > window.innerWidth - 8) x = e.clientX - tw - 14;
+  if (y < 8) y = e.clientY + 18;
+  if (y + th > window.innerHeight - 8) y = window.innerHeight - th - 8;
+  tooltip.style("left", x + "px").style("top", y + "px");
+}
+function hideD3Tooltip(tooltip: any) { tooltip.style("opacity", 0); }
 
 // ─── Modal visualisation ──────────────────────────────────────────────────────
 function VizModal({ open, onClose, titre, vizId, children }: { open:boolean; onClose:()=>void; titre:string; vizId:string; children:React.ReactNode }) {
@@ -1186,7 +1270,7 @@ function VizModal({ open, onClose, titre, vizId, children }: { open:boolean; onC
           <button onClick={onClose} style={{padding:"9px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontSize:12.5,fontWeight:600,cursor:"pointer",fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
-          <button onClick={()=>{const svg=getSvg();if(svg)downloadPNG(svg,vizId);}}
+          <button onClick={()=>{const svg=getSvg();if(svg)downloadPNG(svg,vizId,{titre});}}
             style={{padding:"9px 20px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:7,boxShadow:"0 3px 12px rgba(0,79,145,0.25)",fontFamily:"var(--font-google-sans)"}}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Télécharger

@@ -42,13 +42,20 @@ function downloadSVG(svgEl: SVGSVGElement, filename: string) {
 }
 
 function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: string; annees?: string; legende?: { nom: string; couleur: string }[] }) {
+  const SCALE = 3; // suréchantillonnage : rendu net, identique au modal
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
   const W = svgEl.viewBox.baseVal.width || 800;
   const H = svgEl.viewBox.baseVal.height || 400;
+  // Dimensions explicites en pixels : sans elles le navigateur rastérise le SVG
+  // à une taille par défaut puis l'agrandit, d'où une image floue.
+  clone.removeAttribute("style");
+  clone.setAttribute("width",  String(W * SCALE));
+  clone.setAttribute("height", String(H * SCALE));
+  clone.setAttribute("font-family", "'Google Sans','Product Sans',Arial,sans-serif");
   const blob = new Blob([clone.outerHTML], {type:"image/svg+xml"});
   const url  = URL.createObjectURL(blob);
-  const img  = new Image(); img.width=W*2; img.height=H*2;
+  const img  = new Image();
   img.onload = () => {
     const PAD    = 26;
     const FONT   = "'Google Sans','Product Sans',Arial,sans-serif";
@@ -78,9 +85,10 @@ function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: st
     }
 
     const canvas = document.createElement("canvas");
-    canvas.width = W * 2; canvas.height = (H + headerH) * 2;
+    canvas.width = W * SCALE; canvas.height = (H + headerH) * SCALE;
     const ctx = canvas.getContext("2d")!;
-    ctx.scale(2, 2);
+    ctx.scale(SCALE, SCALE);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
     ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H + headerH);
 
     if (headerH) {
