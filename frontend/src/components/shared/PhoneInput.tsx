@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
-import { parsePhoneNumberWithError, isValidPhoneNumber, AsYouType, CountryCode, getExampleNumber, getNumberType } from "libphonenumber-js";
+// Métadonnées complètes (/max) : contrairement au bundle par défaut (« min »)
+// qui ne vérifie que les longueurs plausibles, /max valide aussi les motifs de
+// préfixes par opérateur — indispensable pour rejeter p.ex. un mobile sénégalais
+// commençant par 80 ou un numéro trop long accepté à tort.
+import { parsePhoneNumberWithError, isValidPhoneNumber, validatePhoneNumberLength, AsYouType, CountryCode, getExampleNumber } from "libphonenumber-js/max";
 import examples from "libphonenumber-js/mobile/examples";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -10,7 +14,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v
 // Indicatifs depuis libphonenumber-js (on importe getCountryCallingCode)
 function getIndicatif(iso2: string): string {
   try {
-    const { getCountryCallingCode } = require("libphonenumber-js");
+    const { getCountryCallingCode } = require("libphonenumber-js/max");
     return `+${getCountryCallingCode(iso2 as CountryCode)}`;
   } catch { return "+"; }
 }
@@ -107,7 +111,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
           const parsed = parsePhoneNumberWithError(full, iso2 as CountryCode);
           onChange(parsed.format("E.164"));
           // Détecter le type
-          const type = getNumberType(parsed);
+          const type = parsed.getType();
           const typeLabels: Record<string, string> = {
             MOBILE: "Mobile", FIXED_LINE: "Fixe", FIXED_LINE_OR_MOBILE: "Mobile / Fixe",
             TOLL_FREE: "Numéro vert", VOIP: "VoIP", PREMIUM_RATE: "Surtaxé",
@@ -142,6 +146,19 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
       return isValidPhoneNumber(`${indicatif}${raw}`, iso2 as CountryCode);
     } catch { return false; }
   })();
+
+  // Message d'erreur précis : longueur d'abord, sinon préfixe/format
+  const invalidMsg: string = (() => {
+    if (isValid !== false || !iso2) return `Numéro invalide pour ${selectedPaysNom() || "ce pays"}`;
+    try {
+      const raw = display.replace(/\D/g, "");
+      const lenIssue = validatePhoneNumberLength(`${indicatif}${raw}`, iso2 as CountryCode);
+      if (lenIssue === "TOO_SHORT" || lenIssue === "NOT_A_NUMBER") return "Numéro trop court";
+      if (lenIssue === "TOO_LONG") return "Numéro trop long";
+      return `Numéro invalide pour ${selectedPaysNom() || "ce pays"} — vérifiez le début du numéro`;
+    } catch { return `Numéro invalide pour ${selectedPaysNom() || "ce pays"}`; }
+  })();
+  function selectedPaysNom() { return pays.find(p => p.code_iso2 === iso2)?.nom_fr; }
 
   const filtered = pays.filter(p =>
     p.nom_fr.toLowerCase().includes(search.toLowerCase()) ||
@@ -237,7 +254,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
         )}
         {isValid === false && (
           <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>
-            Numéro invalide pour {selectedPays?.nom_fr || "ce pays"}
+            {invalidMsg}
           </p>
         )}
       </div>

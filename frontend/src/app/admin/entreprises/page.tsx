@@ -104,7 +104,8 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
     if (!telsValides.length) {
       e.telephone="Au moins un numéro obligatoire";
     } else {
-      const { isValidPhoneNumber } = await import("libphonenumber-js");
+      // Métadonnées /max : validation stricte des préfixes, pas seulement des longueurs
+      const { isValidPhoneNumber } = await import("libphonenumber-js/max");
       const invalides = telsValides.filter((t:string) => {
         try { return !isValidPhoneNumber(t); } catch { return true; }
       });
