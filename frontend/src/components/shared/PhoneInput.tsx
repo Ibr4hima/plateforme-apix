@@ -72,27 +72,36 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
 
   const indicatif = iso2 ? getIndicatif(iso2) : "";
 
+  const TYPE_LABELS: Record<string, string> = {
+    MOBILE: "Mobile", FIXED_LINE: "Fixe", FIXED_LINE_OR_MOBILE: "Mobile / Fixe",
+    TOLL_FREE: "Numéro vert", VOIP: "VoIP", PREMIUM_RATE: "Surtaxé",
+  };
+  const typeLabel = (t?: string) => (t && TYPE_LABELS[t]) || "";
+
+  // Valide en forme nationale (gère le 0 initial : « 06 12 … » en France, etc.)
+  // et remonte l'E.164 canonique au parent quand le numéro est valide.
+  const propagate = (raw: string, country: string) => {
+    if (!raw) { onChange(""); setNumType(""); return; }
+    try {
+      if (isValidPhoneNumber(raw, country as CountryCode)) {
+        const parsed = parsePhoneNumberWithError(raw, country as CountryCode);
+        onChange(parsed.format("E.164"));
+        setNumType(typeLabel(parsed.getType()));
+        return;
+      }
+    } catch { /* tombe sur le brut ci-dessous */ }
+    onChange(`${getIndicatif(country)}${raw}`);
+    setNumType("");
+  };
+
   const handleSelectPays = (p: Pays) => {
     setIso2(p.code_iso2);
     setOpen(false); setSearch("");
     // Reformater le numéro existant avec le nouveau pays
     if (display) {
-      try {
-        const formatter = new AsYouType(p.code_iso2 as CountryCode);
-        const ind = getIndicatif(p.code_iso2);
-        const raw = display.replace(/\D/g, "");
-        const formatted = formatter.input(raw);
-        setDisplay(formatted);
-        const full = `${ind}${raw}`;
-        try {
-          if (isValidPhoneNumber(full, p.code_iso2 as CountryCode)) {
-            const parsed = parsePhoneNumberWithError(full, p.code_iso2 as CountryCode);
-            onChange(parsed.format("E.164"));
-          } else {
-            onChange(full);
-          }
-        } catch { onChange(full); }
-      } catch { /* ignore */ }
+      const raw = display.replace(/\D/g, "");
+      setDisplay(new AsYouType(p.code_iso2 as CountryCode).input(raw));
+      propagate(raw, p.code_iso2);
     } else {
       onChange("");
     }
@@ -100,33 +109,35 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
 
   const handleNumberChange = (val: string) => {
     setTouched(true);
-    if (iso2) {
-      const formatter = new AsYouType(iso2 as CountryCode);
-      const formatted = formatter.input(val);
-      setDisplay(formatted);
-      const raw = val.replace(/\D/g, "");
-      const full = `${indicatif}${raw}`;
+    if (!iso2) { setDisplay(val); onChange(val); setNumType(""); return; }
+
+    // Collage d'un numéro international complet : bascule automatiquement le pays
+    if (val.trim().startsWith("+")) {
       try {
-        if (isValidPhoneNumber(full, iso2 as CountryCode)) {
-          const parsed = parsePhoneNumberWithError(full, iso2 as CountryCode);
+        const parsed = parsePhoneNumberWithError(val.trim());
+        if (parsed?.country) {
+          setIso2(parsed.country);
+          setDisplay(parsed.formatNational());
           onChange(parsed.format("E.164"));
-          // Détecter le type
-          const type = parsed.getType();
-          const typeLabels: Record<string, string> = {
-            MOBILE: "Mobile", FIXED_LINE: "Fixe", FIXED_LINE_OR_MOBILE: "Mobile / Fixe",
-            TOLL_FREE: "Numéro vert", VOIP: "VoIP", PREMIUM_RATE: "Surtaxé",
-          };
-          setNumType(typeLabels[type as string] || "");
-        } else {
-          onChange(full);
-          setNumType("");
+          setNumType(parsed.isValid() ? typeLabel(parsed.getType()) : "");
+          return;
         }
-      } catch { onChange(full); setNumType(""); }
-    } else {
-      setDisplay(val);
-      onChange(val);
-      setNumType("");
+      } catch { /* on retombe sur la saisie nationale */ }
     }
+
+    // Seuls les chiffres comptent : lettres et symboles sont ignorés
+    const raw = val.replace(/\D/g, "");
+    const prevRaw = display.replace(/\D/g, "");
+
+    // Longueur maximale du pays atteinte : la saisie de chiffres est bloquée
+    if (raw.length > prevRaw.length) {
+      try {
+        if (validatePhoneNumberLength(raw, iso2 as CountryCode) === "TOO_LONG") return;
+      } catch { /* ignore */ }
+    }
+
+    setDisplay(raw ? new AsYouType(iso2 as CountryCode).input(raw) : "");
+    propagate(raw, iso2);
   };
 
   // Exemple de numéro pour le placeholder
@@ -138,12 +149,12 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
     } catch { return placeholder; }
   })();
 
-  // Validation
+  // Validation en forme nationale (cohérente avec la saisie)
   const isValid: boolean | null = !touched || !display ? null : (() => {
     if (!iso2) return display.length >= 6;
     try {
       const raw = display.replace(/\D/g, "");
-      return isValidPhoneNumber(`${indicatif}${raw}`, iso2 as CountryCode);
+      return raw.length > 0 && isValidPhoneNumber(raw, iso2 as CountryCode);
     } catch { return false; }
   })();
 
@@ -152,7 +163,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
     if (isValid !== false || !iso2) return `Numéro invalide pour ${selectedPaysNom() || "ce pays"}`;
     try {
       const raw = display.replace(/\D/g, "");
-      const lenIssue = validatePhoneNumberLength(`${indicatif}${raw}`, iso2 as CountryCode);
+      const lenIssue = validatePhoneNumberLength(raw, iso2 as CountryCode);
       if (lenIssue === "TOO_SHORT" || lenIssue === "NOT_A_NUMBER") return "Numéro trop court";
       if (lenIssue === "TOO_LONG") return "Numéro trop long";
       return `Numéro invalide pour ${selectedPaysNom() || "ce pays"} — vérifiez le début du numéro`;
