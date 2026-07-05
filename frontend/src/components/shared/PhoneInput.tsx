@@ -21,6 +21,16 @@ function getIndicatif(iso2: string): string {
 
 interface Pays { id: number; code_iso2: string; code_iso3?: string; nom_fr: string; }
 
+// ── Helpers partagés : un contact ne peut être ajouté que si le précédent est complet ──
+// Un numéro stocké est complet s'il est valide en E.164 (PhoneInput ne produit
+// l'E.164 que pour un numéro valide ; sinon la valeur brute échoue ici).
+export function isPhoneComplete(v: string): boolean {
+  try { return !!v && isValidPhoneNumber(v); } catch { return false; }
+}
+export function isEmailComplete(v: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((v || "").trim());
+}
+
 interface Props {
   value:        string;
   onChange:     (val: string) => void;  // toujours en format E.164 : +XXXXXXXXXXX

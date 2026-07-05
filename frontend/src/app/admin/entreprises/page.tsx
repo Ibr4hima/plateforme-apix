@@ -4,7 +4,7 @@ import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
-import PhoneInput from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete } from "@/components/shared/PhoneInput";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { Building2, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -155,6 +155,8 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
   const errStyle = (f: string) => errors[f] ? { borderColor: "#dc2626" } : undefined;
   const Err = ({ f }: { f: string }) => errors[f] ? <span style={{ fontSize: 11, color: "#dc2626", marginTop: 3, display: "block" }}>{errors[f]}</span> : null;
   const btnAjout: any = { fontSize: 11, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontFamily: "var(--font-google-sans)" };
+  // Ajouter n'est possible que si toutes les entrées existantes sont complètes et valides
+  const btnAjoutOff = (ok: boolean): any => ok ? btnAjout : { ...btnAjout, opacity: 0.35, cursor: "not-allowed" };
 
   return (
     <FModal open={open} onClose={onClose} maxWidth={900}
@@ -207,7 +209,10 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
             <FLabel>Téléphone(s) *</FLabel>
-            <button onClick={()=>update("telephones",[...form.telephones,""])} style={btnAjout}><Plus size={11}/> Ajouter</button>
+            {(()=>{ const ok=form.telephones.every(isPhoneComplete); return (
+              <button onClick={()=>ok&&update("telephones",[...form.telephones,""])} disabled={!ok}
+                title={ok?undefined:"Saisissez d'abord un numéro valide"} style={btnAjoutOff(ok)}><Plus size={11}/> Ajouter</button>
+            ); })()}
           </div>
           <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
             {form.telephones.map((tel:string, i:number) => (
@@ -231,7 +236,10 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
             <FLabel>Email(s) *</FLabel>
-            <button onClick={()=>update("mails",[...form.mails,""])} style={btnAjout}><Plus size={11}/> Ajouter</button>
+            {(()=>{ const ok=form.mails.every(isEmailComplete); return (
+              <button onClick={()=>ok&&update("mails",[...form.mails,""])} disabled={!ok}
+                title={ok?undefined:"Saisissez d'abord un email valide"} style={btnAjoutOff(ok)}><Plus size={11}/> Ajouter</button>
+            ); })()}
           </div>
           <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
             {form.mails.map((mail:string, i:number) => (
@@ -290,7 +298,10 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                 <div style={{marginBottom:10}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                     <FLabel>Téléphone(s)</FLabel>
-                    <button onClick={()=>updFocal(i,"telephones",[...pf.telephones,""])} style={btnAjout}><Plus size={10}/> Ajouter</button>
+                    {(()=>{ const ok=pf.telephones.every(isPhoneComplete); return (
+                      <button onClick={()=>ok&&updFocal(i,"telephones",[...pf.telephones,""])} disabled={!ok}
+                        title={ok?undefined:"Saisissez d'abord un numéro valide"} style={btnAjoutOff(ok)}><Plus size={10}/> Ajouter</button>
+                    ); })()}
                   </div>
                   <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                     {pf.telephones.map((tel:string, ti:number)=>(
@@ -308,7 +319,10 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                 <div>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                     <FLabel>Email(s)</FLabel>
-                    <button onClick={()=>updFocal(i,"mails",[...pf.mails,""])} style={btnAjout}><Plus size={10}/> Ajouter</button>
+                    {(()=>{ const ok=pf.mails.every(isEmailComplete); return (
+                      <button onClick={()=>ok&&updFocal(i,"mails",[...pf.mails,""])} disabled={!ok}
+                        title={ok?undefined:"Saisissez d'abord un email valide"} style={btnAjoutOff(ok)}><Plus size={10}/> Ajouter</button>
+                    ); })()}
                   </div>
                   <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                     {pf.mails.map((mail:string, mi:number)=>(

@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Clock, FileText, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, Upload, User, Video, X } from "lucide-react";
-import PhoneInput from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete } from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import NaemaSelect from "@/components/shared/NaemaSelect";
@@ -220,12 +220,14 @@ const EMPTY_FORM = {
 
 // ── Multi-téléphones ──────────────────────────────────────────────────────────
 function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string[])=>void }) {
+  const ok = values.every(isPhoneComplete);
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
         <label style={{ ...fuiLabel, marginBottom:0 }}>Téléphone(s) *</label>
-        <button type="button" onClick={()=>onChange([...values,""])}
-          style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontFamily:"var(--font-google-sans)" }}>
+        <button type="button" onClick={()=>ok&&onChange([...values,""])} disabled={!ok}
+          title={ok?undefined:"Saisissez d'abord un numéro valide"}
+          style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:6, padding:"3px 9px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, display:"flex", alignItems:"center", gap:4, fontFamily:"var(--font-google-sans)" }}>
           <Plus size={11}/> Ajouter
         </button>
       </div>
@@ -250,12 +252,14 @@ function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string
 
 // ── Multi-mails ───────────────────────────────────────────────────────────────
 function MultiMails({ values, onChange }: { values:string[]; onChange:(v:string[])=>void }) {
+  const ok = values.every(isEmailComplete);
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
         <label style={{ ...fuiLabel, marginBottom:0 }}>Email(s) *</label>
-        <button type="button" onClick={()=>onChange([...values,""])}
-          style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:6, padding:"3px 9px", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontFamily:"var(--font-google-sans)" }}>
+        <button type="button" onClick={()=>ok&&onChange([...values,""])} disabled={!ok}
+          title={ok?undefined:"Saisissez d'abord un email valide"}
+          style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:6, padding:"3px 9px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, display:"flex", alignItems:"center", gap:4, fontFamily:"var(--font-google-sans)" }}>
           <Plus size={11}/> Ajouter
         </button>
       </div>

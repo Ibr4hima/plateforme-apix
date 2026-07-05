@@ -9,7 +9,17 @@ import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FToggle, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
-import PhoneInput from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete } from "@/components/shared/PhoneInput";
+
+// Bouton « + Ajouter » d'une liste de contacts : actif seulement si toutes les entrées sont valides
+function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void; titre:string }) {
+  return (
+    <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
+      style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, fontFamily:"var(--font-google-sans)" }}>
+      + Ajouter
+    </button>
+  );
+}
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#fff", border:"1px solid #E4E1DE", borderRadius:10, padding:"10px 13px", fontSize:13.5, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -50,10 +60,8 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Téléphone(s)</label>
-            <button onClick={()=>upd("telephones",[...(pf.telephones||[""]), ""])}
-              style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-              + Ajouter
-            </button>
+            <BtnAjoutContact ok={(pf.telephones||[""]).every(isPhoneComplete)} titre="Saisissez d'abord un numéro valide"
+              onClick={()=>upd("telephones",[...(pf.telephones||[""]), ""])}/>
           </div>
           {(pf.telephones||[""]).map((tel:string, ti:number)=>(
             <div key={ti} style={{ display:"flex", alignItems:"flex-start", gap:5, marginBottom:6 }}>
@@ -73,10 +81,8 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Mail(s)</label>
-            <button onClick={()=>upd("mails",[...(pf.mails||[""]), ""])}
-              style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-              + Ajouter
-            </button>
+            <BtnAjoutContact ok={(pf.mails||[""]).every(isEmailComplete)} titre="Saisissez d'abord un email valide"
+              onClick={()=>upd("mails",[...(pf.mails||[""]), ""])}/>
           </div>
           {(pf.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
@@ -119,10 +125,8 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Téléphone(s)</label>
-            <button onClick={()=>upd("telephones",[...(porteur.telephones||[""]), ""])}
-              style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-              + Ajouter
-            </button>
+            <BtnAjoutContact ok={(porteur.telephones||[""]).every(isPhoneComplete)} titre="Saisissez d'abord un numéro valide"
+              onClick={()=>upd("telephones",[...(porteur.telephones||[""]), ""])}/>
           </div>
           {(porteur.telephones||[""]).map((tel:string, ti:number)=>(
             <div key={ti} style={{ display:"flex", alignItems:"flex-start", gap:5, marginBottom:6 }}>
@@ -142,10 +146,8 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Mail(s)</label>
-            <button onClick={()=>upd("mails",[...(porteur.mails||[""]), ""])}
-              style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-              + Ajouter
-            </button>
+            <BtnAjoutContact ok={(porteur.mails||[""]).every(isEmailComplete)} titre="Saisissez d'abord un email valide"
+              onClick={()=>upd("mails",[...(porteur.mails||[""]), ""])}/>
           </div>
           {(porteur.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
