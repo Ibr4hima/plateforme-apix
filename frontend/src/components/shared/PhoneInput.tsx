@@ -19,7 +19,7 @@ function getIndicatif(iso2: string): string {
   } catch { return "+"; }
 }
 
-interface Pays { id: number; code_iso2: string; nom_fr: string; }
+interface Pays { id: number; code_iso2: string; code_iso3?: string; nom_fr: string; }
 
 interface Props {
   value:        string;
@@ -34,6 +34,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
   const [iso2,    setIso2]    = useState<string>("");
   const [display, setDisplay] = useState("");
   const [touched, setTouched] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [numType, setNumType] = useState<string>("");
   const ref = useRef<HTMLDivElement>(null);
 
@@ -140,15 +141,6 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
     propagate(raw, iso2);
   };
 
-  // Exemple de numéro pour le placeholder
-  const examplePlaceholder = (() => {
-    if (!iso2) return placeholder;
-    try {
-      const ex = getExampleNumber(iso2 as CountryCode, examples);
-      return ex ? `ex: ${ex.formatNational()}` : placeholder;
-    } catch { return placeholder; }
-  })();
-
   // Validation en forme nationale (cohérente avec la saisie)
   const isValid: boolean | null = !touched || !display ? null : (() => {
     if (!iso2) return display.length >= 6;
@@ -184,22 +176,67 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
     fontFamily: "var(--font-google-sans)", width: "100%", boxSizing: "border-box",
   };
 
-  return (
-    <div style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
+  // Bordure et halo du bloc unique selon l'état
+  const borderColor = isValid === false ? "#dc2626" : isValid === true ? "#188038" : (open || focused) ? "rgba(0,79,145,0.45)" : "#E4E1DE";
+  const halo = (open || focused)
+    ? (isValid === false ? "0 0 0 3px rgba(220,38,38,0.08)" : isValid === true ? "0 0 0 3px rgba(24,128,56,0.08)" : "0 0 0 3px rgba(0,79,145,0.10)")
+    : "none";
 
-      {/* Sélecteur pays */}
-      <div ref={ref} style={{ position:"relative", flexShrink:0, width:180 }}>
-        <div onClick={() => setOpen(o => !o)}
-          style={{ ...IS, display:"flex", alignItems:"center", gap:8, cursor:"pointer",
-            border:`1px solid ${open?"#004f91":"#E4E1DE"}`, boxShadow: open?"0 0 0 3px rgba(0,79,145,0.10)":"none", paddingRight:32, height:42, transition:"border-color 0.15s, box-shadow 0.15s" }}>
-          {selectedPays ? (
-            <span style={{ fontSize:13, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", flex:1 }}>{selectedPays.nom_fr}</span>
-          ) : (
-            <span style={{ fontSize:13, color:"#9aa5b4" }}>Pays</span>
+  // Largeur du champ calée sur l'exemple national du pays (le bloc s'ajuste au numéro attendu)
+  const exempleNational = (() => {
+    if (!iso2) return "";
+    try { const ex = getExampleNumber(iso2 as CountryCode, examples); return ex ? ex.formatNational() : ""; } catch { return ""; }
+  })();
+  const inputCh = Math.max(exempleNational.length || 14, 10);
+
+  return (
+    <div style={{ maxWidth:"100%" }}>
+      <div ref={ref} style={{ position:"relative", width:"fit-content", maxWidth:"100%" }}>
+
+        {/* ── Bloc unique : pays (ISO3) · indicatif · numéro ── */}
+        <div style={{ display:"flex", alignItems:"center", height:42, background:"#fff",
+          border:`1px solid ${borderColor}`, borderRadius:10, overflow:"hidden",
+          boxShadow:halo, transition:"border-color 0.18s, box-shadow 0.18s" }}>
+
+          {/* Segment pays */}
+          <button type="button" onClick={() => setOpen(o => !o)} title={selectedPays?.nom_fr || "Choisir le pays"}
+            style={{ display:"flex", alignItems:"center", gap:7, height:"100%", border:"none", cursor:"pointer",
+              padding: iso2 ? "0 11px" : "0 14px", fontFamily:"var(--font-google-sans)",
+              background: iso2 ? "rgba(0,79,145,0.07)" : "transparent",
+              borderRight: iso2 ? "1px solid rgba(0,79,145,0.15)" : "none",
+              flexShrink:0, transition:"background 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = iso2 ? "rgba(0,79,145,0.12)" : "#F8F7F6"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = iso2 ? "rgba(0,79,145,0.07)" : "transparent"; }}>
+            {iso2 ? (
+              <span style={{ fontSize:12.5, fontWeight:800, color:"#004f91", letterSpacing:"0.05em" }}>
+                {selectedPays?.code_iso3 || iso2}
+              </span>
+            ) : (
+              <span style={{ fontSize:13, color:"#9aa5b4" }}>Sélectionner un pays</span>
+            )}
+            <ChevronDown size={12} style={{ color: iso2 ? "#004f91" : "#9aa5b4",
+              transform:`rotate(${open?180:0}deg)`, transition:"transform 0.2s", flexShrink:0 }} />
+          </button>
+
+          {/* Indicatif */}
+          {iso2 && indicatif !== "+" && (
+            <span style={{ paddingLeft:11, fontSize:13, fontWeight:700, color:"#004f91", whiteSpace:"nowrap", flexShrink:0 }}>
+              {indicatif}
+            </span>
           )}
-          <ChevronDown size={13} style={{ position:"absolute", right:10, top:"50%",
-            transform:`translateY(-50%) rotate(${open?180:0}deg)`,
-            color:"#9aa5b4", transition:"transform 0.2s", pointerEvents:"none" }} />
+
+          {/* Champ numéro, dimensionné sur le format du pays */}
+          {iso2 && (
+            <input value={display} onChange={e => handleNumberChange(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => { setFocused(false); setTouched(true); }}
+              placeholder={exempleNational || placeholder}
+              style={{ width:`${inputCh + 2}ch`, minWidth:110, background:"transparent", border:"none", outline:"none",
+                padding:"0 10px 0 8px", fontSize:13, color:"#1a1a2e",
+                fontFamily:"var(--font-google-sans)", height:"100%" }} />
+          )}
+          {iso2 && isValid === true  && <span style={{ paddingRight:11, color:"#188038", fontSize:15, lineHeight:1 }}>✓</span>}
+          {iso2 && isValid === false && <span style={{ paddingRight:11, color:"#dc2626", fontSize:15, lineHeight:1 }}>✗</span>}
         </div>
 
         {open && (
@@ -237,38 +274,15 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
         )}
       </div>
 
-      {/* Champ numéro */}
-      <div style={{ flex:1 }}>
-        <div style={{ display:"flex", alignItems:"center", background:"#fff", height:42,
-          border:`1px solid ${isValid===false?"#dc2626":isValid===true?"#188038":"#E4E1DE"}`,
-          borderRadius:10, overflow:"hidden", transition:"border-color 0.2s" }}>
-          {indicatif && indicatif !== "+" && (
-            <span style={{ padding:"0 10px 0 12px", fontSize:13, fontWeight:700, color:"#004f91",
-              background:"rgba(0,79,145,0.07)", borderRight:"1px solid rgba(0,79,145,0.15)",
-              whiteSpace:"nowrap", flexShrink:0, height:"100%", display:"flex", alignItems:"center" }}>
-              {indicatif}
-            </span>
-          )}
-          <input value={display} onChange={e => handleNumberChange(e.target.value)}
-            onBlur={() => setTouched(true)}
-            placeholder={iso2 ? examplePlaceholder : "Sélectionner un pays d'abord"}
-            disabled={!iso2}
-            style={{ flex:1, background:"transparent", border:"none", outline:"none",
-              padding: "0 12px 0 8px", fontSize:13, color:"#1a1a2e",
-              fontFamily:"var(--font-google-sans)", height:"100%",
-              cursor: iso2 ? "text" : "not-allowed", opacity: iso2 ? 1 : 0.5 }} />
-          {isValid === true  && <span style={{ paddingRight:10, color:"#188038", fontSize:15, lineHeight:1 }}>✓</span>}
-          {isValid === false && <span style={{ paddingRight:10, color:"#dc2626", fontSize:15, lineHeight:1 }}>✗</span>}
-        </div>
-        {isValid === true && numType && (
-          <p style={{ fontSize:11, color:"#188038", marginTop:3 }}>{numType}</p>
-        )}
-        {isValid === false && (
-          <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>
-            {invalidMsg}
-          </p>
-        )}
-      </div>
+      {/* Messages sous le bloc */}
+      {isValid === true && numType && (
+        <p style={{ fontSize:11, color:"#188038", marginTop:3 }}>{numType}</p>
+      )}
+      {isValid === false && (
+        <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>
+          {invalidMsg}
+        </p>
+      )}
     </div>
   );
 }
