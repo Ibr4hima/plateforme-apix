@@ -90,10 +90,13 @@ async def _verifier_verrous(db: AsyncSession, cles: List[str]) -> None:
             )
 
 
-async def _enregistrer_echec(db: AsyncSession, cles: List[str]) -> None:
+async def _enregistrer_echec(db: AsyncSession, cles: List[str]) -> dict:
     """Incrémente les compteurs et pose les verrous — puis commit explicite :
-    get_db fait un rollback quand l'endpoint lève une HTTPException."""
-    for cle in cles:
+    get_db fait un rollback quand l'endpoint lève une HTTPException.
+    Retourne l'état du premier compteur (le compte) : verrouillage éventuel
+    et nombre de tentatives restantes avant le prochain verrou."""
+    etat = {"verrouille_min": 0, "restantes": SEUIL_ECHECS}
+    for i, cle in enumerate(cles):
         row = (await db.execute(select(AuthThrottle).where(AuthThrottle.cle == cle))).scalar_one_or_none()
         if not row:
             row = AuthThrottle(cle=cle, echecs=0)
@@ -106,7 +109,12 @@ async def _enregistrer_echec(db: AsyncSession, cles: List[str]) -> None:
             palier = row.echecs // SEUIL_ECHECS
             duree = min(VERROU_BASE_MIN * (2 ** (palier - 1)), VERROU_MAX_MIN)
             row.verrouille_jusqua = _now() + timedelta(minutes=duree)
+            if i == 0:
+                etat["verrouille_min"] = duree
+        if i == 0:
+            etat["restantes"] = SEUIL_ECHECS - (row.echecs % SEUIL_ECHECS) if row.echecs % SEUIL_ECHECS else 0
     await db.commit()
+    return etat
 
 
 async def _reinitialiser_compteurs(db: AsyncSession, cles: List[str]) -> None:
@@ -161,13 +169,21 @@ async def login(payload: LoginPayload, request: Request, db: AsyncSession = Depe
 
     res = await db.execute(select(User).where(func.lower(User.email) == email))
     user = res.scalar_one_or_none()
+    def _msg_echec(etat: dict) -> str:
+        if etat["verrouille_min"]:
+            return (f"Email ou mot de passe incorrect. Compte temporairement verrouillé : "
+                    f"réessayez dans {etat['verrouille_min']} minutes.")
+        n = etat["restantes"]
+        return (f"Email ou mot de passe incorrect — il vous reste {n} tentative{'s' if n > 1 else ''} "
+                "avant verrouillage temporaire.")
+
     if not user:
         verify_password(payload.password, _DUMMY_HASH)  # temps de réponse constant
-        await _enregistrer_echec(db, cles)
-        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
+        etat = await _enregistrer_echec(db, cles)
+        raise HTTPException(status_code=401, detail=_msg_echec(etat))
     if not verify_password(payload.password, user.hashed_password):
-        await _enregistrer_echec(db, cles)
-        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
+        etat = await _enregistrer_echec(db, cles)
+        raise HTTPException(status_code=401, detail=_msg_echec(etat))
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Compte désactivé.")
     await _reinitialiser_compteurs(db, cles)

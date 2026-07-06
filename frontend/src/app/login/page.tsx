@@ -7,6 +7,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+
 // ── Page de connexion — carte unique centrée, plein écran sans défilement ─────
 export default function LoginPage() {
   const router = useRouter()
@@ -20,10 +22,23 @@ export default function LoginPage() {
     e.preventDefault()
     setError("")
     setLoading(true)
+    // Vérification directe sur l'API : récupère le message précis du backend
+    // (tentatives restantes, verrouillage temporaire…), que NextAuth masque.
+    const check = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    }).catch(() => null)
+    if (!check || !check.ok) {
+      const data = check ? await check.json().catch(() => ({})) : {}
+      setError(data.detail || "Connexion impossible. Vérifiez votre réseau et réessayez.")
+      setLoading(false)
+      return
+    }
     const res = await signIn("credentials", { email, password, redirect: false })
     setLoading(false)
     if (res?.error) {
-      setError("Email ou mot de passe incorrect — ou compte temporairement verrouillé après plusieurs tentatives.")
+      setError("Email ou mot de passe incorrect.")
       return
     }
     router.push("/")
