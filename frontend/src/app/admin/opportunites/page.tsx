@@ -639,7 +639,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
                   )}
                   {(a.fichiers||[]).length>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
                   <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:8}} onClick={ev=>ev.stopPropagation()}>
-                    <button onClick={()=>onEdit(a)}
+                    <button className="ro-w" onClick={()=>onEdit(a)}
                       style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
                       <Pencil size={11}/> Modifier
                     </button>
@@ -813,7 +813,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
             style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
-          <button onClick={()=>{onClose();onEdit(p);}}
+          <button className="ro-w" onClick={()=>{onClose();onEdit(p);}}
             style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
@@ -935,7 +935,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
             style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
-          <button onClick={()=>{onClose();onEdit(data);}}
+          <button className="ro-w" onClick={()=>{onClose();onEdit(data);}}
             style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
@@ -1096,19 +1096,19 @@ export default function OpportunitesAdminPage() {
           })}
         </div>
         {onglet==="projets"&&(
-          <button onClick={()=>openNewProjet.current?.()}
+          <button className="ro-w" onClick={()=>openNewProjet.current?.()}
             style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
             <Plus size={15}/> Nouveau projet
           </button>
         )}
         {onglet==="potentialites"&&(
-          <button onClick={()=>{setPotEdit(null);setPotModal(true);}}
+          <button className="ro-w" onClick={()=>{setPotEdit(null);setPotModal(true);}}
             style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
             <Plus size={15}/> Nouvelle fiche
           </button>
         )}
         {onglet==="avantages"&&(
-          <button onClick={()=>{setAvgEdit(null);setAvgModal(true);}}
+          <button className="ro-w" onClick={()=>{setAvgEdit(null);setAvgModal(true);}}
             style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
             <Plus size={15}/> Nouvel avantage
           </button>
@@ -1261,8 +1261,8 @@ export default function OpportunitesAdminPage() {
                           </div>
 
                           {/* Actions */}
-                          <div style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
-                            <button onClick={()=>{setPotEdit(p);setPotModal(true);}}
+                          <div className="ro-w" style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
+                            <button className="ro-w" onClick={()=>{setPotEdit(p);setPotModal(true);}}
                               style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
                               onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
                               onMouseLeave={ev=>ev.currentTarget.style.background="none"}>

@@ -55,10 +55,14 @@ export default async function middleware(req: NextRequest) {
     if (!token) return login()
     const role = String(token.role || "")
     if (role !== "admin" && role !== "admin_plus" && role !== "dev") return NextResponse.redirect(new URL("/unauthorized", req.url))
-    if (role === "admin_plus") {
-      const seg = pathname.split("/")[2] || ""
+    const seg = pathname.split("/")[2] || ""
+    if (seg && role === "admin_plus") {
       const mods = Array.isArray(token.modules) ? (token.modules as string[]) : []
-      if (seg && !mods.includes(seg)) return NextResponse.redirect(new URL("/unauthorized", req.url))
+      if (!mods.includes(seg)) return NextResponse.redirect(new URL("/unauthorized", req.url))
+    }
+    if (seg && role === "admin") {
+      const lecture = ["evenements", "accords", "entreprises", "gestion-zones", "opportunites", "intentions", "prospects"]
+      if (!lecture.includes(seg)) return NextResponse.redirect(new URL("/unauthorized", req.url))
     }
     return NextResponse.next()
   }

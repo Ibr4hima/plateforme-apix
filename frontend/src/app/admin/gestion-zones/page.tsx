@@ -892,7 +892,7 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
 
         {/* Pied */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
-          <button onClick={onAddEntreprise}
+          <button className="ro-w" onClick={onAddEntreprise}
             style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgba(24,128,56,0.08)", color:"#188038", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
             <Plus size={13}/> Entreprise
           </button>
@@ -901,7 +901,7 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
               style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
               Fermer
             </button>
-            <button onClick={onEdit}
+            <button className="ro-w" onClick={onEdit}
               style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgba(0,79,145,0.25)" }}>
               <Pencil size={13}/> Modifier
             </button>
@@ -1000,7 +1000,7 @@ export default function GestionZonesPage() {
         {[{ key: "zones", label: "Zones d'investissement", count: zones.length }, { key: "poles", label: "Pôles territoires", count: polesCount }].map(o => {
           const actif = onglet === o.key;
           return (
-          <button key={o.key} onClick={() => setOnglet(o.key as any)}
+          <button key={o.key} className={o.key === "poles" ? "ro-w" : undefined} onClick={() => setOnglet(o.key as any)}
             style={{ padding: "14px 22px", border: "none", borderBottom: `2px solid ${actif ? "#004f91" : "transparent"}`, background: "transparent", color: actif ? "#004f91" : "#9aa5b4", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", transition: "all 0.15s" }}>
             {o.label}
             {o.count > 0 && <span style={{ marginLeft: 7, fontSize: 11, fontWeight: 700, color: actif ? "#004f91" : "#9aa5b4", background: actif ? "rgba(0,79,145,0.1)" : "#F2F0EF", padding: "1px 7px", borderRadius: 999 }}>{o.count}</span>}
@@ -1076,7 +1076,7 @@ export default function GestionZonesPage() {
 
                   {/* Action */}
                   <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
-                    <button onClick={ev => { ev.stopPropagation(); openAjouterZone(t.key); }}
+                    <button className="ro-w" onClick={ev => { ev.stopPropagation(); openAjouterZone(t.key); }}
                       style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: c, fontWeight: 700, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
                       onMouseEnter={ev => ev.currentTarget.style.background = `${c}0D`}
                       onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
@@ -1145,7 +1145,7 @@ export default function GestionZonesPage() {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
+                    <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
                       <button onClick={() => openEditZone(z)}
                         style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
                         onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}

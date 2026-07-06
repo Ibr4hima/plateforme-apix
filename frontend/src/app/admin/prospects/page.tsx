@@ -1688,7 +1688,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         {/* Pied */}
         <div style={{ display:"flex", gap:10, justifyContent:"space-between", alignItems:"center", padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
           {(!readOnly && !estFige(p)) ? (
-            <button onClick={onContacter}
+            <button className="ro-w" onClick={onContacter}
               style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgba(24,128,56,0.08)", color:"#188038", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
               <MessageSquare size={13}/> Contacter
             </button>
@@ -1699,7 +1699,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               Fermer
             </button>
             {!readOnly && !historiqueOnly && (
-              <button onClick={onEdit}
+              <button className="ro-w" onClick={onEdit}
                 style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgba(0,79,145,0.25)" }}>
                 <Pencil size={13}/> Modifier
               </button>
@@ -1827,7 +1827,7 @@ export default function ProspectsPage() {
           })}
         </div>
         {onglet!=="precedents" && (
-          <button onClick={()=>{ setEdit(null); setModal(true); }}
+          <button className="ro-w" onClick={()=>{ setEdit(null); setModal(true); }}
             style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(0,79,145,0.3)", marginBottom:4 }}>
             <Plus size={15}/> Nouveau prospect
           </button>
@@ -1923,7 +1923,7 @@ export default function ProspectsPage() {
 
                   {/* Actions */}
                   {onglet==="precedents" ? (
-                    <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
+                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>setVue(p)}
                         style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#4a5568", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                         onMouseEnter={ev=>ev.currentTarget.style.background="rgba(156,163,175,0.07)"}
@@ -1956,7 +1956,7 @@ export default function ProspectsPage() {
                         const nbEchangesCourants = echangesDuCycle(p, null).length;
                         const terminerDisabled = nbEchangesCourants === 0;
                         return (
-                        <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }}>
+                        <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }}>
                           <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
                             style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#188038", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                             onMouseEnter={ev=>ev.currentTarget.style.background="rgba(24,128,56,0.05)"}
@@ -2000,7 +2000,7 @@ export default function ProspectsPage() {
                     </div>
                   ) : onglet==="cibles" && p.nb_echanges > 0 ? (
                     // Prospect déjà contacté dans "Investisseurs ciblés" : Modifier uniquement, pas Contacter ni Delete
-                    <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
+                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
                         style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                         onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
@@ -2009,7 +2009,7 @@ export default function ProspectsPage() {
                       </button>
                     </div>
                   ) : (
-                    <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
+                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
                         style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                         onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}

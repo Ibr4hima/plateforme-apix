@@ -699,7 +699,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
             style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
-          <button onClick={()=>{onClose();onEdit(p);}}
+          <button className="ro-w" onClick={()=>{onClose();onEdit(p);}}
             style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
@@ -812,7 +812,7 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
 
               {/* Actions */}
               <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={ev=>ev.stopPropagation()}>
-                <button onClick={()=>{ setEdit(p); setModal(true); }}
+                <button className="ro-w" onClick={()=>{ setEdit(p); setModal(true); }}
                   style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                   onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>

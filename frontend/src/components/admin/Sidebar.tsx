@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { AUTH_ENFORCED } from "@/lib/authGate";
+import { AUTH_ENFORCED, pageAdminAccessible } from "@/lib/authGate";
 
 type NavItem =
   | { type: "link"; label: string; href: string; icon: string; disabled?: boolean }
@@ -41,14 +41,9 @@ const IS_DEPLOYED = !!API_URL && !API_URL.includes("localhost") && !API_URL.incl
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  // Admin+ : seules ses pages cochées sont accessibles, le reste est grisé.
-  // Admin (lecture seule) et dev voient tout.
-  const verrouillePour = (href: string) => {
-    if (!AUTH_ENFORCED) return false;
-    if (session?.user?.role !== "admin_plus") return false;
-    const slug = href.replace("/admin/", "");
-    return !(session?.user?.modules || []).includes(slug);
-  };
+  // Pages non accessibles pour ce profil (Admin : pas d'Utilisateurs & accès,
+  // d'Analyse ni de référentiels ; Admin+ : seulement ses pages cochées).
+  const verrouillePour = (href: string) => !pageAdminAccessible(session, href.replace("/admin/", ""));
 
   return (
     <>

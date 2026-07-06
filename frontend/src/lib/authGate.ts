@@ -43,3 +43,17 @@ export function nomAffiche(prenom?: string | null, nom?: string | null, email?: 
 export const ROLE_LABELS: Record<string, string> = {
   dev: "Développeur", admin: "Admin", admin_plus: "Admin+", agent: "Agent",
 };
+
+// Pages admin ouvertes au rôle Admin (lecture seule) — pas d'Utilisateurs &
+// accès, pas d'Analyse de données, pas de référentiels.
+export const ADMIN_PAGES_LECTURE = ["evenements", "accords", "entreprises", "gestion-zones", "opportunites", "intentions", "prospects"];
+
+// Une page admin est-elle accessible (navigation) pour cette session ?
+export function pageAdminAccessible(session: any, slug: string): boolean {
+  if (!AUTH_ENFORCED) return true;
+  const role = session?.user?.role;
+  if (role === "dev") return true;
+  if (role === "admin") return ADMIN_PAGES_LECTURE.includes(slug);
+  if (role === "admin_plus") return (session?.user?.modules || []).includes(slug);
+  return false;
+}
