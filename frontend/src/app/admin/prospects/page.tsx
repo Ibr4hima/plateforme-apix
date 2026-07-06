@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Clock, FileText, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, Upload, User, Video, X } from "lucide-react";
-import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete } from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, doublonsDans, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import NaemaSelect from "@/components/shared/NaemaSelect";
@@ -220,7 +220,7 @@ const EMPTY_FORM = {
 
 // ── Multi-téléphones ──────────────────────────────────────────────────────────
 function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string[])=>void }) {
-  const ok = values.every(isPhoneComplete);
+  const ok = listePreteAjout(values, isPhoneComplete, normPhone);
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
@@ -252,7 +252,7 @@ function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string
 
 // ── Multi-mails ───────────────────────────────────────────────────────────────
 function MultiMails({ values, onChange }: { values:string[]; onChange:(v:string[])=>void }) {
-  const ok = values.every(isEmailComplete);
+  const ok = listePreteAjout(values, isEmailComplete, normEmail);
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
@@ -416,10 +416,16 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
     if (!form.nom.trim()) { setError("Le nom est obligatoire"); return; }
     if (!form.telephones.filter(Boolean).length) { setError("Au moins un numéro de téléphone est obligatoire"); return; }
     if (!form.mails.filter(Boolean).length) { setError("Au moins un email est obligatoire"); return; }
+    const telsDoubles = doublonsDans(form.telephones.filter(Boolean), normPhone);
+    if (telsDoubles.length) { setError(`Numéro(s) en double : ${telsDoubles.join(", ")}`); return; }
+    const mailsDoubles = doublonsDans(form.mails.filter(Boolean), normEmail);
+    if (mailsDoubles.length) { setError(`Email(s) en double : ${mailsDoubles.join(", ")}`); return; }
     for (const pf of form.points_focaux.filter(p=>p.nom.trim())) {
       if (!pf.telephones.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un téléphone est obligatoire`); return; }
       if (!pf.mails.filter(Boolean).length) { setError(`Point focal « ${pf.nom} » : au moins un email est obligatoire`); return; }
     }
+    const partagesPf = contactsPartages(form.points_focaux);
+    if (partagesPf.length) { setError(`Téléphone(s) ou email(s) en double entre points focaux : ${partagesPf.join(", ")}`); return; }
     setSaving(true); setError("");
     try {
       const payload: any = {
@@ -525,7 +531,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
             ))}
           </div>
         )}
-        {(()=>{ const ok=form.points_focaux.every((pf:any)=>isContactComplete(pf,["nom","prenom"])); return (
+        {(()=>{ const ok=form.points_focaux.every((pf:any)=>isContactComplete(pf,["nom","prenom"])) && contactsPartages(form.points_focaux).length===0; return (
         <button type="button" disabled={!ok}
           title={ok?undefined:"Complétez d'abord le point focal précédent (nom, prénom, téléphone et email valides)"}
           onClick={()=>ok&&upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL, est_principal: form.points_focaux.length===0 }])}

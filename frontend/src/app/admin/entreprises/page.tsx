@@ -4,7 +4,7 @@ import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
-import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete } from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, doublonsDans, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { Building2, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -148,6 +148,10 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         try { return !isValidPhoneNumber(t); } catch { return true; }
       });
       if (invalides.length > 0) e.telephone=`Numéro(s) invalide(s) : ${invalides.join(", ")}`;
+      else {
+        const telsDoubles = doublonsDans(telsValides, normPhone);
+        if (telsDoubles.length > 0) e.telephone=`Numéro(s) en double : ${telsDoubles.join(", ")}`;
+      }
     }
 
     // Validation emails entreprise (format standard exigé)
@@ -156,11 +160,19 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
     else {
       const mailsInvalides = mailsValides.filter((m:string)=>!isEmailComplete(m));
       if (mailsInvalides.length > 0) e.mail=`Email(s) invalide(s) : ${mailsInvalides.join(", ")}`;
+      else {
+        const mailsDoubles = doublonsDans(mailsValides, normEmail);
+        if (mailsDoubles.length > 0) e.mail=`Email(s) en double : ${mailsDoubles.join(", ")}`;
+      }
     }
 
     // Validation contacts des points focaux
     const pfMailsInvalides = focaux.flatMap(f=>f.mails.filter(Boolean).filter((m:string)=>!isEmailComplete(m)));
     if (pfMailsInvalides.length > 0) e.global=`Email(s) de point focal invalide(s) : ${pfMailsInvalides.join(", ")}`;
+    else {
+      const partages = contactsPartages(focaux);
+      if (partages.length > 0) e.global=`Téléphone(s) ou email(s) en double entre points focaux : ${partages.join(", ")}`;
+    }
 
     // Validation + normalisation du site web (on ne stocke que le domaine de base)
     let siteweb = form.siteweb?.trim() || "";
@@ -284,7 +296,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
             <FLabel>Téléphone(s) *</FLabel>
-            {(()=>{ const ok=form.telephones.every(isPhoneComplete); return (
+            {(()=>{ const ok=listePreteAjout(form.telephones, isPhoneComplete, normPhone); return (
               <button onClick={()=>ok&&update("telephones",[...form.telephones,""])} disabled={!ok}
                 title={ok?undefined:"Saisissez d'abord un numéro valide"} style={btnAjoutOff(ok)}><Plus size={11}/> Ajouter</button>
             ); })()}
@@ -311,7 +323,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
             <FLabel>Email(s) *</FLabel>
-            {(()=>{ const ok=form.mails.every(isEmailComplete); return (
+            {(()=>{ const ok=listePreteAjout(form.mails, isEmailComplete, normEmail); return (
               <button onClick={()=>ok&&update("mails",[...form.mails,""])} disabled={!ok}
                 title={ok?undefined:"Saisissez d'abord un email valide"} style={btnAjoutOff(ok)}><Plus size={11}/> Ajouter</button>
             ); })()}
@@ -320,7 +332,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             {form.mails.map((mail:string, i:number) => (
               <div key={i} style={{display:"flex",gap:6}}>
                 <FInput type="email" value={mail} onChange={e=>{const arr=[...form.mails];arr[i]=e.target.value;update("mails",arr);}}
-                  placeholder="email@domaine.sn" style={{flex:1, ...(mail&&!isEmailComplete(mail)?{borderColor:"#dc2626"}:{})}} />
+                  placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||form.mails.slice(0,i).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"#dc2626"}:{})}} />
                 {form.mails.length > 1 && (
                   <button onClick={()=>update("mails",form.mails.filter((_:any,idx:number)=>idx!==i))}
                     style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0}}>
@@ -378,7 +390,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                 <div style={{marginBottom:10}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                     <FLabel>Téléphone(s)</FLabel>
-                    {(()=>{ const ok=pf.telephones.every(isPhoneComplete); return (
+                    {(()=>{ const ok=listePreteAjout(pf.telephones, isPhoneComplete, normPhone); return (
                       <button onClick={()=>ok&&updFocal(i,"telephones",[...pf.telephones,""])} disabled={!ok}
                         title={ok?undefined:"Saisissez d'abord un numéro valide"} style={btnAjoutOff(ok)}><Plus size={10}/> Ajouter</button>
                     ); })()}
@@ -399,7 +411,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                 <div>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                     <FLabel>Email(s)</FLabel>
-                    {(()=>{ const ok=pf.mails.every(isEmailComplete); return (
+                    {(()=>{ const ok=listePreteAjout(pf.mails, isEmailComplete, normEmail); return (
                       <button onClick={()=>ok&&updFocal(i,"mails",[...pf.mails,""])} disabled={!ok}
                         title={ok?undefined:"Saisissez d'abord un email valide"} style={btnAjoutOff(ok)}><Plus size={10}/> Ajouter</button>
                     ); })()}
@@ -408,7 +420,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                     {pf.mails.map((mail:string, mi:number)=>(
                       <div key={mi} style={{display:"flex",gap:6}}>
                         <FInput type="email" value={mail} onChange={e=>{const arr=[...pf.mails];arr[mi]=e.target.value;updFocal(i,"mails",arr);}}
-                          placeholder="email@domaine.sn" style={{flex:1, ...(mail&&!isEmailComplete(mail)?{borderColor:"#dc2626"}:{})}}/>
+                          placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||pf.mails.slice(0,mi).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"#dc2626"}:{})}}/>
                         {pf.mails.length>1&&<button onClick={()=>updFocal(i,"mails",pf.mails.filter((_:any,idx:number)=>idx!==mi))} style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px"}}><X size={11} style={{color:"#dc2626"}}/></button>}
                       </div>
                     ))}
@@ -418,7 +430,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             ))}
           </div>
         )}
-        {(()=>{ const ok=focaux.every(pf=>isContactComplete({...pf, civilite: pf.civilite||"Monsieur"},["civilite","nom","prenom"])); return (
+        {(()=>{ const ok=focaux.every(pf=>isContactComplete({...pf, civilite: pf.civilite||"Monsieur"},["civilite","nom","prenom"])) && contactsPartages(focaux).length===0; return (
         <button onClick={()=>ok&&setFocaux(prev=>[...prev,{...EMPTY_FOCAL, est_principal: prev.length===0}])} disabled={!ok}
           title={ok?undefined:"Complétez d'abord le point focal précédent (civilité, nom, prénom, téléphone et email valides)"}
           style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 14px",borderRadius:10,cursor:ok?"pointer":"not-allowed",opacity:ok?1:0.45,border:"2px dashed #E4E1DE",background:"#FAFAF9",transition:"border-color 0.15s",fontFamily:"var(--font-google-sans)"}}

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Search, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
-import { isPhoneComplete, isEmailComplete, isContactComplete } from "@/components/shared/PhoneInput";
+import { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -137,7 +137,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
             </button>
           </div>
         ))}
-        {(()=>{ const ok=(pf.telephones||[]).every(isPhoneComplete); return (
+        {(()=>{ const ok=listePreteAjout(pf.telephones||[], isPhoneComplete, normPhone); return (
         <button onClick={()=>ok&&addTel()} disabled={!ok} title={ok?undefined:"Saisissez d'abord un numéro valide"}
           style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#004f91", background:"rgba(0,79,145,0.06)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:7, padding:"5px 10px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, fontFamily:"var(--font-google-sans)" }}>
           <Plus size={10}/> Ajouter un téléphone
@@ -160,7 +160,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
             </button>
           </div>
         ))}
-        {(()=>{ const ok=(pf.mails||[]).every(isEmailComplete); return (
+        {(()=>{ const ok=listePreteAjout(pf.mails||[], isEmailComplete, normEmail); return (
         <button onClick={()=>ok&&addMail()} disabled={!ok} title={ok?undefined:"Saisissez d'abord un email valide"}
           style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#004f91", background:"rgba(0,79,145,0.06)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:7, padding:"5px 10px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, fontFamily:"var(--font-google-sans)" }}>
           <Plus size={10}/> Ajouter un email
@@ -193,7 +193,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Téléphone(s)</label>
-            {(()=>{ const ok=(porteur.telephones||[""]).every(isPhoneComplete); return (
+            {(()=>{ const ok=listePreteAjout(porteur.telephones||[""], isPhoneComplete, normPhone); return (
             <button onClick={()=>ok&&upd("telephones",[...(porteur.telephones||[""]), ""])} disabled={!ok} title={ok?undefined:"Saisissez d'abord un numéro valide"}
               style={{ fontSize:10, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:5, padding:"2px 7px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35 }}>
               + Ajouter
@@ -219,7 +219,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Mail(s)</label>
-            {(()=>{ const ok=(porteur.mails||[""]).every(isEmailComplete); return (
+            {(()=>{ const ok=listePreteAjout(porteur.mails||[""], isEmailComplete, normEmail); return (
             <button onClick={()=>ok&&upd("mails",[...(porteur.mails||[""]), ""])} disabled={!ok} title={ok?undefined:"Saisissez d'abord un email valide"}
               style={{ fontSize:10, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:5, padding:"2px 7px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35 }}>
               + Ajouter
@@ -520,7 +520,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
             ))}
             <AddBtn label="Ajouter un porteur de projet"
               onClick={()=>addItem("porteurs",{nom:"",telephones:[""],mails:[""]})}
-              ok={form.porteurs.every((p:any)=>isContactComplete(p,["nom"]))}
+              ok={form.porteurs.every((p:any)=>isContactComplete(p,["nom"])) && contactsPartages(form.porteurs).length===0}
               titre="Complétez d'abord le porteur précédent (nom / organisation, téléphone et email valides)"/>
           </div>
 
@@ -534,7 +534,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
             ))}
             <AddBtn label="Ajouter un point focal"
               onClick={()=>addItem("points_focaux",{civilite:"",nom:"",prenom:"",telephones:[],mails:[]})}
-              ok={form.points_focaux.every((pf:any)=>isContactComplete(pf,["civilite","nom","prenom"]))}
+              ok={form.points_focaux.every((pf:any)=>isContactComplete(pf,["civilite","nom","prenom"])) && contactsPartages(form.points_focaux).length===0}
               titre="Complétez d'abord le point focal précédent (civilité, nom, prénom, téléphone et email valides)"/>
           </div>
 

@@ -9,7 +9,7 @@ import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FToggle, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
-import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete } from "@/components/shared/PhoneInput";
+import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 
 // Bouton « + Ajouter » d'une liste de contacts : actif seulement si toutes les entrées sont valides
 function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void; titre:string }) {
@@ -60,7 +60,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Téléphone(s)</label>
-            <BtnAjoutContact ok={(pf.telephones||[""]).every(isPhoneComplete)} titre="Saisissez d'abord un numéro valide"
+            <BtnAjoutContact ok={listePreteAjout(pf.telephones||[""], isPhoneComplete, normPhone)} titre="Saisissez d'abord un numéro valide"
               onClick={()=>upd("telephones",[...(pf.telephones||[""]), ""])}/>
           </div>
           {(pf.telephones||[""]).map((tel:string, ti:number)=>(
@@ -81,7 +81,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Mail(s)</label>
-            <BtnAjoutContact ok={(pf.mails||[""]).every(isEmailComplete)} titre="Saisissez d'abord un email valide"
+            <BtnAjoutContact ok={listePreteAjout(pf.mails||[""], isEmailComplete, normEmail)} titre="Saisissez d'abord un email valide"
               onClick={()=>upd("mails",[...(pf.mails||[""]), ""])}/>
           </div>
           {(pf.mails||[""]).map((mail:string, mi:number)=>(
@@ -125,7 +125,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Téléphone(s)</label>
-            <BtnAjoutContact ok={(porteur.telephones||[""]).every(isPhoneComplete)} titre="Saisissez d'abord un numéro valide"
+            <BtnAjoutContact ok={listePreteAjout(porteur.telephones||[""], isPhoneComplete, normPhone)} titre="Saisissez d'abord un numéro valide"
               onClick={()=>upd("telephones",[...(porteur.telephones||[""]), ""])}/>
           </div>
           {(porteur.telephones||[""]).map((tel:string, ti:number)=>(
@@ -146,7 +146,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Mail(s)</label>
-            <BtnAjoutContact ok={(porteur.mails||[""]).every(isEmailComplete)} titre="Saisissez d'abord un email valide"
+            <BtnAjoutContact ok={listePreteAjout(porteur.mails||[""], isEmailComplete, normEmail)} titre="Saisissez d'abord un email valide"
               onClick={()=>upd("mails",[...(porteur.mails||[""]), ""])}/>
           </div>
           {(porteur.mails||[""]).map((mail:string, mi:number)=>(
@@ -422,7 +422,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
           <PorteurRow key={i} p={porteur} idx={i} onChange={v=>updList("porteurs",i,v)} onRemove={()=>remItem("porteurs",i)}/>
         ))}
         <AddBtn label="Ajouter un porteur de projet" onClick={()=>addItem("porteurs",{nom:"",telephones:[""],mails:[""]})}
-          ok={form.porteurs.every((p:any)=>isContactComplete(p,["nom"]))}
+          ok={form.porteurs.every((p:any)=>isContactComplete(p,["nom"])) && contactsPartages(form.porteurs).length===0}
           titre="Complétez d'abord le porteur précédent (nom / organisation, téléphone et email valides)"/>
       </FSection>
 
@@ -432,7 +432,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
           <PointFocalRow key={i} pf={pf} idx={i} onChange={v=>updList("points_focaux",i,v)} onRemove={()=>remItem("points_focaux",i)}/>
         ))}
         <AddBtn label="Ajouter un point focal" onClick={()=>addItem("points_focaux",{civilite:"",nom:"",prenom:"",telephones:[""],mails:[""]})}
-          ok={form.points_focaux.every((pf:any)=>isContactComplete(pf,["civilite","nom","prenom"]))}
+          ok={form.points_focaux.every((pf:any)=>isContactComplete(pf,["civilite","nom","prenom"])) && contactsPartages(form.points_focaux).length===0}
           titre="Complétez d'abord le point focal précédent (civilité, nom, prénom, téléphone et email valides)"/>
       </FSection>
 

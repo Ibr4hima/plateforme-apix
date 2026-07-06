@@ -40,15 +40,42 @@ export function isEmailComplete(v: string): boolean {
   if (local.length > 64) return false;
   return /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/.test(s);
 }
+// Normalisations pour la détection de doublons (comparaison insensible au format)
+export const normPhone = (v: string) => (v || "").replace(/\D/g, "");
+export const normEmail = (v: string) => (v || "").trim().toLowerCase();
+
+// Valeurs en double dans une liste (les entrées vides sont ignorées)
+export function doublonsDans(values: string[], norm: (v: string) => string): string[] {
+  const seen = new Set<string>(); const dups: string[] = [];
+  for (const v of values) {
+    const n = norm(v); if (!n) continue;
+    if (seen.has(n)) dups.push(v); else seen.add(n);
+  }
+  return dups;
+}
+
+// Une liste de contacts autorise un nouvel ajout : toutes les entrées valides ET uniques
+export function listePreteAjout(values: string[], check: (v: string) => boolean, norm: (v: string) => string): boolean {
+  return values.every(check) && doublonsDans(values, norm).length === 0;
+}
+
+// Téléphones / emails partagés entre plusieurs contacts (points focaux, porteurs…)
+// — détecte aussi les doublons internes à un même contact.
+export function contactsPartages(contacts: { telephones?: string[]; mails?: string[] }[]): string[] {
+  const tels  = contacts.flatMap(c => (c.telephones || []).filter(Boolean));
+  const mails = contacts.flatMap(c => (c.mails || []).filter(Boolean));
+  return [...doublonsDans(tels, normPhone), ...doublonsDans(mails, normEmail)];
+}
+
 // Un contact structuré (point focal, porteur de projet…) est complet quand ses
 // champs texte requis sont remplis et qu'il a au moins un téléphone et un email,
-// tous valides. Sert à verrouiller l'ajout d'un contact suivant.
+// tous valides et sans doublon interne. Sert à verrouiller l'ajout d'un contact suivant.
 export function isContactComplete(obj: any, champsRequis: string[] = []): boolean {
   if (champsRequis.some(c => !String(obj?.[c] ?? "").trim())) return false;
   const tels  = (obj?.telephones || []).filter((t: string) => (t || "").trim());
   const mails = (obj?.mails || []).filter((m: string) => (m || "").trim());
-  return tels.length > 0 && tels.every(isPhoneComplete)
-      && mails.length > 0 && mails.every(isEmailComplete);
+  return tels.length > 0 && tels.every(isPhoneComplete) && doublonsDans(tels, normPhone).length === 0
+      && mails.length > 0 && mails.every(isEmailComplete) && doublonsDans(mails, normEmail).length === 0;
 }
 
 interface Props {
