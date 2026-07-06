@@ -34,7 +34,7 @@ const providers = [
       })
       if (!res.ok) return null
       const user = await res.json()
-      return { id: user.email, email: user.email, role: user.role }
+      return { id: user.email, email: user.email, role: user.role, modules: user.modules || [] }
     },
   }),
   ...(azureConfigured
@@ -79,36 +79,48 @@ async function decode(params: {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
 
-  // Session par JWT (connexion par formulaire email/mot de passe)
-  session: { strategy: "jwt" },
+  // Session par JWT — 12 h : back-office institutionnel, pas de session d'un mois
+  session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
 
   // Utilise notre encodage HS256 au lieu du JWE chiffré par défaut
   jwt: { encode, decode },
 
   callbacks: {
     async jwt({ token, account, profile, user }) {
-      // Connexion email/mot de passe : le rôle vient du backend (authorize)
+      // Connexion email/mot de passe : rôle et modules viennent du backend (authorize)
       if (user?.role) {
         token.email = user.email ?? token.email
         token.role = user.role
+        token.modules = user.modules ?? []
       }
-      // Connexion Microsoft Entra ID : rôle dérivé de la liste ADMIN_EMAILS
+      // Connexion Microsoft Entra ID : identité garantie par Azure ; les droits
+      // (rôle/modules) restent gérés en base — le backend les relit à chaque
+      // requête, le token ne porte que des valeurs indicatives pour l'UI.
       if (account && profile) {
         token.email = (profile.email as string) || token.email
+        const devEmails = (process.env.DEV_EMAILS || "")
+          .split(",").map((e) => e.trim().toLowerCase())
         const adminEmails = (process.env.ADMIN_EMAILS || "")
-          .split(",")
-          .map((e) => e.trim().toLowerCase())
-        token.role = adminEmails.includes((token.email || "").toLowerCase())
-          ? "admin"
-          : "viewer"
+          .split(",").map((e) => e.trim().toLowerCase())
+        const em = (token.email || "").toLowerCase()
+        token.role = devEmails.includes(em) ? "dev" : adminEmails.includes(em) ? "admin" : "restreint"
+        token.modules = []
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.role = token.role
+        session.user.modules = token.modules ?? []
         if (token.email) session.user.email = token.email
       }
+      // Jeton d'API : même JWT HS256 que la session, à joindre en
+      // Authorization: Bearer sur les appels au backend protégés.
+      session.accessToken = await new SignJWT(token as Record<string, unknown>)
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime(Math.floor(Date.now() / 1000) + 12 * 60 * 60)
+        .sign(secret)
       return session
     },
   },

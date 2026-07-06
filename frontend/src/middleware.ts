@@ -1,11 +1,85 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { jwtVerify } from "jose"
 
-// Auth temporairement désactivée — à réactiver quand le backend sera configuré
-export default function middleware(_req: NextRequest) {
+// ── Contrôle d'accès des pages (RBAC) ─────────────────────────────────────────
+// Public : accueil, code des investissements, événements, accords, zones,
+// entreprises (les fiches détaillées y sont gérées au niveau des pages).
+// Protégé : les routes ci-dessous exigent une session ; le rôle « restreint »
+// doit en plus avoir le module dans sa liste. /admin exige admin ou dev.
+// AUTH_ENFORCED=false (défaut) = mode développement : tout passe.
+
+const PROTECTED_MODULES: Record<string, string> = {
+  "/tableau-de-bord": "tableau-de-bord",
+  "/ide": "ide",
+  "/prospects": "prospects",
+  "/opportunites": "opportunites",
+}
+
+const secret = new TextEncoder().encode(process.env.AUTH_SECRET || "")
+const enforced = (process.env.AUTH_ENFORCED || "").toLowerCase() === "true"
+
+async function getToken(req: NextRequest): Promise<Record<string, unknown> | null> {
+  const raw =
+    req.cookies.get("__Secure-authjs.session-token")?.value ||
+    req.cookies.get("authjs.session-token")?.value
+  if (!raw) return null
+  try {
+    const { payload } = await jwtVerify(raw, secret, { algorithms: ["HS256"] })
+    return payload
+  } catch {
+    return null
+  }
+}
+
+export default async function middleware(req: NextRequest) {
+  if (!enforced) return NextResponse.next()
+
+  const { pathname } = req.nextUrl
+  const token = await getToken(req)
+
+  // Déjà connecté : les pages login/register redirigent vers l'accueil
+  if (pathname === "/login" || pathname === "/register") {
+    if (token) return NextResponse.redirect(new URL("/", req.url))
+    return NextResponse.next()
+  }
+
+  const login = () => {
+    const url = new URL("/login", req.url)
+    url.searchParams.set("callbackUrl", pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // Pages d'administration : admin ou dev uniquement
+  if (pathname.startsWith("/admin")) {
+    if (!token) return login()
+    const role = String(token.role || "")
+    if (role !== "admin" && role !== "dev") return NextResponse.redirect(new URL("/unauthorized", req.url))
+    return NextResponse.next()
+  }
+
+  // Modules protégés
+  const entry = Object.entries(PROTECTED_MODULES).find(([prefix]) =>
+    pathname === prefix || pathname.startsWith(prefix + "/"))
+  if (entry) {
+    if (!token) return login()
+    const role = String(token.role || "")
+    if (role === "dev" || role === "admin" || role === "agent") return NextResponse.next()
+    const modules = Array.isArray(token.modules) ? (token.modules as string[]) : []
+    if (!modules.includes(entry[1])) return NextResponse.redirect(new URL("/unauthorized", req.url))
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/login"],
+  matcher: [
+    "/admin/:path*",
+    "/login",
+    "/register",
+    "/tableau-de-bord/:path*",
+    "/ide/:path*",
+    "/prospects/:path*",
+    "/opportunites/:path*",
+  ],
 }

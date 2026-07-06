@@ -52,6 +52,19 @@ class Settings(BaseSettings):
         """Retourne la liste des emails admin en minuscules."""
         return [e.strip().lower() for e in self.ADMIN_EMAILS.split(",") if e.strip()]
 
+    # Développeur(s) : accès total, défini uniquement par variable d'environnement
+    # (jamais modifiable depuis l'interface). Ex : DEV_EMAILS=ibra.ba@apix.sn
+    DEV_EMAILS: str = "ibra.ba@apix.sn,ibrahima.28@outlook.com"
+
+    @property
+    def dev_emails_list(self) -> List[str]:
+        return [e.strip().lower() for e in self.DEV_EMAILS.split(",") if e.strip()]
+
+    # Interrupteur de mise en application de l'authentification sur l'API.
+    # False = mode développement actuel (aucun contrôle) ; passer à True pour
+    # activer la vérification JWT + RBAC sur toutes les routes protégées.
+    AUTH_ENFORCED: bool = False
+
     # CORS — origines autorisées (séparées par virgule)
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:3001"
 
