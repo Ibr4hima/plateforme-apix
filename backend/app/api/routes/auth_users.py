@@ -9,9 +9,10 @@ Le frontend (NextAuth) appelle /auth/login, puis émet lui-même le JWT de
 session (HS256) que le backend revalide sur les autres routes.
 """
 
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +21,7 @@ from app.core.database import get_db
 from app.core.auth import hash_password, verify_password, role_for_email, require_admin, get_current_user
 from app.core.passwords import valider_mot_de_passe
 from app.core.config import get_settings
-from app.models.user import User
+from app.models.user import User, AuthThrottle
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -54,6 +55,66 @@ class LoginPayload(BaseModel):
     password: str
 
 
+# ── Anti-force-brute ──────────────────────────────────────────────────────────
+# 5 échecs → verrouillage 15 min, puis 30, 60… (doublé à chaque palier de 5,
+# plafonné à 24 h). Compté par compte ET par IP, en base (table auth_throttle).
+# Un échec vieux de plus d'une heure remet le compteur à zéro.
+SEUIL_ECHECS   = 5
+VERROU_BASE_MIN = 15
+VERROU_MAX_MIN  = 24 * 60
+FENETRE_MIN     = 60
+
+# Hash factice : égalise le temps de réponse quand l'email n'existe pas
+_DUMMY_HASH = hash_password("dummy-timing-equalizer")
+
+
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "inconnu"
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+async def _verifier_verrous(db: AsyncSession, cles: List[str]) -> None:
+    res = await db.execute(select(AuthThrottle).where(AuthThrottle.cle.in_(cles)))
+    for row in res.scalars().all():
+        if row.verrouille_jusqua and row.verrouille_jusqua > _now():
+            restant = int((row.verrouille_jusqua - _now()).total_seconds() // 60) + 1
+            raise HTTPException(
+                status_code=429,
+                detail=f"Trop de tentatives. Réessayez dans {restant} minute{'s' if restant > 1 else ''}.",
+            )
+
+
+async def _enregistrer_echec(db: AsyncSession, cles: List[str]) -> None:
+    """Incrémente les compteurs et pose les verrous — puis commit explicite :
+    get_db fait un rollback quand l'endpoint lève une HTTPException."""
+    for cle in cles:
+        row = (await db.execute(select(AuthThrottle).where(AuthThrottle.cle == cle))).scalar_one_or_none()
+        if not row:
+            row = AuthThrottle(cle=cle, echecs=0)
+            db.add(row)
+        if row.dernier_echec and (_now() - row.dernier_echec) > timedelta(minutes=FENETRE_MIN):
+            row.echecs = 0
+        row.echecs += 1
+        row.dernier_echec = _now()
+        if row.echecs >= SEUIL_ECHECS and row.echecs % SEUIL_ECHECS == 0:
+            palier = row.echecs // SEUIL_ECHECS
+            duree = min(VERROU_BASE_MIN * (2 ** (palier - 1)), VERROU_MAX_MIN)
+            row.verrouille_jusqua = _now() + timedelta(minutes=duree)
+    await db.commit()
+
+
+async def _reinitialiser_compteurs(db: AsyncSession, cles: List[str]) -> None:
+    res = await db.execute(select(AuthThrottle).where(AuthThrottle.cle.in_(cles)))
+    for row in res.scalars().all():
+        await db.delete(row)
+
+
 def _check_domain(email: str) -> str:
     normalized = email.strip().lower()
     if not normalized.endswith(ALLOWED_DOMAIN):
@@ -65,8 +126,10 @@ def _check_domain(email: str) -> str:
 
 
 @router.post("/register")
-async def register(payload: RegisterPayload, db: AsyncSession = Depends(get_db)):
+async def register(payload: RegisterPayload, request: Request, db: AsyncSession = Depends(get_db)):
     """Crée un compte. L'email doit se terminer par @apix.sn."""
+    ip = _client_ip(request)
+    await _verifier_verrous(db, [f"register-ip:{ip}"])
     email = _check_domain(payload.email)
     erreurs = await valider_mot_de_passe(payload.password, email)
     if erreurs:
@@ -77,6 +140,7 @@ async def register(payload: RegisterPayload, db: AsyncSession = Depends(get_db))
 
     existing = await db.execute(select(User).where(func.lower(User.email) == email))
     if existing.scalar_one_or_none():
+        await _enregistrer_echec(db, [f"register-ip:{ip}"])
         raise HTTPException(status_code=409, detail="Un compte existe déjà avec cet email.")
 
     role = role_for_email(email)
@@ -88,15 +152,25 @@ async def register(payload: RegisterPayload, db: AsyncSession = Depends(get_db))
 
 
 @router.post("/login")
-async def login(payload: LoginPayload, db: AsyncSession = Depends(get_db)):
+async def login(payload: LoginPayload, request: Request, db: AsyncSession = Depends(get_db)):
     """Vérifie les identifiants et retourne email + rôle (NextAuth émet le JWT)."""
     email = payload.email.strip().lower()
+    ip = _client_ip(request)
+    cles = [f"login:{email}", f"login-ip:{ip}"]
+    await _verifier_verrous(db, cles)
+
     res = await db.execute(select(User).where(func.lower(User.email) == email))
     user = res.scalar_one_or_none()
-    if not user or not verify_password(payload.password, user.hashed_password):
+    if not user:
+        verify_password(payload.password, _DUMMY_HASH)  # temps de réponse constant
+        await _enregistrer_echec(db, cles)
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
+    if not verify_password(payload.password, user.hashed_password):
+        await _enregistrer_echec(db, cles)
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Compte désactivé.")
+    await _reinitialiser_compteurs(db, cles)
     pu = _public_user(user)
     return {"email": user.email, "role": pu["role"], "modules": pu["modules"]}
 

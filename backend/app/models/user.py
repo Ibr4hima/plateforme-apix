@@ -22,3 +22,13 @@ class User(Base):
     modules         = Column(ARRAY(Text), nullable=False, default=[])
     created_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at      = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class AuthThrottle(Base):
+    """Compteur anti-force-brute (par email et par IP), avec verrouillage progressif."""
+    __tablename__ = "auth_throttle"
+
+    cle               = Column(Text, primary_key=True)   # ex : login:<email> / login-ip:<ip>
+    echecs            = Column(Integer, nullable=False, default=0)
+    dernier_echec     = Column(TIMESTAMP(timezone=True))
+    verrouille_jusqua = Column(TIMESTAMP(timezone=True))

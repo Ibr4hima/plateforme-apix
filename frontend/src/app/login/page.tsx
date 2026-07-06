@@ -23,7 +23,7 @@ export default function LoginPage() {
     const res = await signIn("credentials", { email, password, redirect: false })
     setLoading(false)
     if (res?.error) {
-      setError("Email ou mot de passe incorrect.")
+      setError("Email ou mot de passe incorrect — ou compte temporairement verrouillé après plusieurs tentatives.")
       return
     }
     router.push("/")
