@@ -3,9 +3,14 @@
 import { ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { AUTH_ENFORCED, moduleAutorise } from "@/lib/authGate";
 import { useEffect, useRef, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+// Slugs des modules protégés (connexion requise quand AUTH_ENFORCED est actif)
+const PROTECTED_SLUGS: Record<string,string> = { "/ide":"ide", "/prospects":"prospects", "/opportunites":"opportunites", "/tableau-de-bord":"tableau-de-bord" };
 
 const modules = [
   { label: "Investissements privés",        href: "/ide",          icon: "finance_mode",           color: "#ca631f" },
@@ -362,6 +367,13 @@ function CodeModal({ onClose }: { onClose: () => void }) {
 
 // ── Navbar principale ─────────────────────────────────────────────────────────
 export default function Navbar() {
+  const { data: session } = useSession();
+  const [userOpen, setUserOpen] = useState(false);
+  const visible = (href: string) => {
+    const slug = PROTECTED_SLUGS[href];
+    return !slug || moduleAutorise(session, slug);
+  };
+  const isAdminRole = !AUTH_ENFORCED || session?.user?.role === "admin" || session?.user?.role === "dev";
   const [scrolled,    setScrolled]    = useState(false);
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [modulesOpen, setModulesOpen] = useState(false);
@@ -431,7 +443,7 @@ export default function Navbar() {
 
                   {/* Grid 2 colonnes */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-                    {modules.map(m => (
+                    {modules.filter(m => visible(m.href)).map(m => (
                       <Link key={m.href} href={m.href} onClick={() => setModulesOpen(false)}
                         style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s", background: "transparent" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
@@ -448,12 +460,12 @@ export default function Navbar() {
             </div>
 
             {/* Tableau de bord */}
-            <Link href="/tableau-de-bord"
+            {visible("/tableau-de-bord") && <Link href="/tableau-de-bord"
               style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
               Tableau de bord
-            </Link>
+            </Link>}
 
             {/* Code des investissements */}
             <button onClick={() => setCodeOpen(true)}
@@ -467,18 +479,46 @@ export default function Navbar() {
           {/* ── CTA Connexion ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {/* Bouton temporaire vers l'espace d'administration */}
-            <Link href="/admin/evenements"
+            {isAdminRole && <Link href="/admin/evenements"
               style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", padding: "9px 18px", borderRadius: 10, border: "1.5px solid rgba(202,99,31,0.45)", textDecoration: "none", transition: "all 0.2s", fontFamily: "var(--font-google-sans)" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.15)"; e.currentTarget.style.borderColor = "#ca631f"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(202,99,31,0.08)"; e.currentTarget.style.borderColor = "rgba(202,99,31,0.45)"; }}>
               Page Admin
-            </Link>
+            </Link>}
+            {session?.user ? (
+              <div style={{ position: "relative" }}>
+                <button onClick={() => setUserOpen(o => !o)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "#1a1a2e", background: "#F5F4F3", padding: "7px 14px 7px 8px", borderRadius: 999, border: "1px solid #ECEAE7", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
+                  <span style={{ width: 26, height: 26, borderRadius: "50%", background: "#004f91", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>
+                    {(session.user.email || "?")[0].toUpperCase()}
+                  </span>
+                  <span style={{ maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</span>
+                </button>
+                {userOpen && (
+                  <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 230, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 14, padding: 8, boxShadow: "0 16px 56px rgba(0,0,0,0.12)" }}>
+                    <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
+                      <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</p>
+                      <span style={{ display: "inline-flex", marginTop: 5, fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{session.user.role || "—"}</span>
+                    </div>
+                    <button onClick={() => signOut({ callbackUrl: "/" })}
+                      style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#dc2626", fontFamily: "var(--font-google-sans)", textAlign: "left" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.06)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                      Se déconnecter
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
             <Link href="/login"
               style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#fff", background: "#ca631f", padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", boxShadow: "0 2px 12px rgba(202,99,31,0.35)", transition: "all 0.2s", letterSpacing: "0em", fontFamily: "var(--font-google-sans)", textDecoration: "none" }}
               onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(202,99,31,0.45)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 12px rgba(202,99,31,0.35)"; }}>
               Connexion
             </Link>
+            )}
           </div>
 
           {/* ── Burger mobile ── */}
@@ -492,7 +532,7 @@ export default function Navbar() {
         {menuOpen && (
           <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "rgba(255,255,255,0.98)", borderBottom: "1px solid #E8E5E3", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", padding: "12px 16px 16px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 12 }}>
-              {modules.map(m => (
+              {modules.filter(m => visible(m.href)).map(m => (
                 <Link key={m.href} href={m.href} onClick={() => setMenuOpen(false)}
                   style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, color: "#1a1a2e", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
                   <span style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(0,79,145,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

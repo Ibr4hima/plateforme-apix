@@ -7,6 +7,7 @@ import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import Badge from "@/components/shared/Badge";
 import { Building2, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuthGate } from "@/lib/authGate";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -244,6 +245,7 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function EntreprisesPage() {
+  const gate = useAuthGate();
   const [onglet,      setOnglet]      = useState<"liste"|"territoire">("liste");
   const [triDate,     setTriDate]     = useState<"desc"|"asc">("desc");
   const [tous,        setTous]        = useState<any[]>([]);
@@ -443,7 +445,7 @@ export default function EntreprisesPage() {
             ):(
               <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {entreprises.map(e=>(
-                  <div key={e.id} onClick={()=>setSelec(e)}
+                  <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>

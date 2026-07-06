@@ -5,6 +5,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuthGate } from "@/lib/authGate";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -315,6 +316,7 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AccordsPage() {
+  const gate = useAuthGate();
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [selec,       setSelec]       = useState<any>(null);
@@ -585,7 +587,7 @@ export default function AccordsPage() {
                   const blocBd = estExpire ? "#E8E5E3" : "rgba(0,79,145,0.10)";
                   const txtC   = estExpire ? "#4a5568" : "#1a1a2e";
                   return (
-                  <div key={a.id} onClick={()=>setSelec(a)}
+                  <div key={a.id} onClick={()=>gate(()=>setSelec(a))}
                     style={{background:estExpire?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=estExpire?"#D8D4D0":"rgba(0,79,145,0.25)";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>

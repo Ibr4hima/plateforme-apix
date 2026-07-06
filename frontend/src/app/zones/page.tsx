@@ -7,6 +7,7 @@ import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
+import { useAuthGate } from "@/lib/authGate";
 import { Building2, ChevronRight, FileText, X } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -23,6 +24,7 @@ const POLE_COLORS = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0"
 
 // ── Sunburst par type ─────────────────────────────────────────────────────────
 function SunburstZones({ zones }: { zones:any[] }) {
+  const gate = useAuthGate();
   const svgRef = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [ficheEnt, setFicheEnt] = useState<any>(null);
@@ -137,8 +139,10 @@ function SunburstZones({ zones }: { zones:any[] }) {
     let focus=root;
     cell.select("rect").on("click",function(_:any,p:any){
       if(p.depth===3&&p.data.data?.id){
-        fetch(`${API_BASE}/entreprises/${p.data.data.id}`)
-          .then(r=>r.json()).then(d=>setFicheEnt(d)).catch(()=>{});
+        gate(()=>{
+          fetch(`${API_BASE}/entreprises/${p.data.data.id}`)
+            .then(r=>r.json()).then(d=>setFicheEnt(d)).catch(()=>{});
+        });
         return;
       }
       focus=focus===p?(p=p.parent):p;
@@ -356,6 +360,7 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
 
 // ── Modal détail zone ─────────────────────────────────────────────────────────
 function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
+  const gate = useAuthGate();
   const [ficheEnt,  setFicheEnt]  = useState<any>(null);
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
   const [branches,  setBranches]  = useState<any[]>([]);
@@ -371,10 +376,10 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
       .catch(()=>{});
   }, [zone.id]);
 
-  const ouvrirFiche = async (id:number) => {
+  const ouvrirFiche = (id:number) => gate(async () => {
     try { const res=await fetch(`${API_BASE}/entreprises/${id}`); setFicheEnt(await res.json()); }
     catch(e){ console.error(e); }
-  };
+  });
 
   const meta      = TYPE_META[zone.type_zone]||TYPE_META.ZES;
   const col       = meta.color;

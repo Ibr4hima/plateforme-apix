@@ -5,6 +5,7 @@ import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/sha
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { CalendarDays, ChevronDown, ChevronUp, FileText, Loader2, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuthGate } from "@/lib/authGate";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -500,6 +501,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
 }
 
 export default function EvenementsPage() {
+  const gate = useAuthGate();
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [selec,       setSelec]       = useState<any>(null);
@@ -624,7 +626,7 @@ export default function EvenementsPage() {
         droite={(()=>{
           const prochain = prochainId!=null ? tous.find(e=>e.id===prochainId) : null;
           if (!prochain) return null;
-          return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>setSelec(prochain)}/>;
+          return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelec(prochain))}/>;
         })()}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
       </BarreTitre>
@@ -694,7 +696,7 @@ export default function EvenementsPage() {
                 {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#ca631f",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
               </div>
             ):vueMode==="frise"?(
-              <FriseChronologique evenements={evenements} onOpen={setSelec} prochainId={prochainId}/>
+              <FriseChronologique evenements={evenements} onOpen={(e:any)=>gate(()=>setSelec(e))} prochainId={prochainId}/>
             ):(
               <>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
@@ -727,7 +729,7 @@ export default function EvenementsPage() {
                     const roleC  = estPasse ? { c:"#6b7280", bg:"#F2F0EF" } : estEnCours ? { c:"#188038", bg:"rgba(24,128,56,0.08)" } : { c:"#004f91", bg:"rgba(0,79,145,0.07)" };
                     const txtC   = estPasse ? "#4a5568" : "#1a1a2e";
                     return (
-                      <div key={e.id} onClick={()=>setSelec(e)}
+                      <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                         style={{background:estPasse?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                         onMouseEnter={ev=>{
                           ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?`${accent.c}40`:estPasse?"#D8D4D0":"rgba(0,79,145,0.25)";

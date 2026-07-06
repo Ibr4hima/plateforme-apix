@@ -10,6 +10,7 @@ type NavItem =
 
 const MODULES: NavItem[] = [
   { type: "section", label: "Gestion des données" },
+  { type: "link", label: "Utilisateurs & accès",            href: "/admin/utilisateurs",       icon: "security"              },
   { type: "link", label: "Événements",                     href: "/admin/evenements",         icon: "event"                 },
   { type: "link", label: "Accords & Traités",              href: "/admin/accords",            icon: "signature"             },
   { type: "link", label: "Entreprises",                    href: "/admin/entreprises",        icon: "enterprise"            },

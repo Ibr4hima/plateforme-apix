@@ -1,3 +1,4 @@
+import Providers from "@/components/layout/Providers";
 import type { Metadata } from "next";
 import { Google_Sans } from "next/font/google";
 import "./globals.css";
@@ -35,7 +36,7 @@ export default function RootLayout({
         ) : null}
       </head>
       <body style={{ fontFamily: "var(--font-google-sans), sans-serif" }}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
