@@ -819,14 +819,14 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
                   <Pencil size={12}/> Modifier
                 </button>
                 <div style={{ width:1, background:"#F2F0EF" }}/>
-                <button onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
+                <button className="ro-w" onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
                   style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:p.est_publie?"#188038":"#6b7280", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                   onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
                 </button>
                 <div style={{ width:1, background:"#F2F0EF" }}/>
-                <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
+                <button className="ro-w" onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
                   style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
                   onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>

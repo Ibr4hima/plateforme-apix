@@ -647,7 +647,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
                       style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:a.est_publie?"#059669":"#6b7280",fontWeight:600}}>
                       {avgToggle===a.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:a.est_publie?<><EyeOff size={11}/> Public</>:<><Eye size={11}/> Publier</>}
                     </button>
-                    <button onClick={()=>onDelete(a.id)} disabled={avgDel===a.id}
+                    <button className="ro-w" onClick={()=>onDelete(a.id)} disabled={avgDel===a.id}
                       style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
                       {avgDel===a.id?<Loader2 size={11} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"#dc2626"}}/>}
                     </button>
@@ -1276,7 +1276,7 @@ export default function OpportunitesAdminPage() {
                               {potToggle===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Publié</>:<><Eye size={12}/> Publier</>}
                             </button>
                             <div style={{width:1,background:"#F2F0EF"}}/>
-                            <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
+                            <button className="ro-w" onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
                               style={{width:46,display:"flex",alignItems:"center",justifyContent:"center",background:"none",border:"none",cursor:"pointer",transition:"background 0.15s"}}
                               onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
                               onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
@@ -1434,7 +1434,7 @@ export default function OpportunitesAdminPage() {
                                 <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                 </div>
-                                <button onClick={ev=>{ev.stopPropagation();deleteAvg(a.id);}} disabled={avgDel===a.id}
+                                <button className="ro-w" onClick={ev=>{ev.stopPropagation();deleteAvg(a.id);}} disabled={avgDel===a.id}
                                   style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 8px",flexShrink:0,transition:"background 0.15s"}}
                                   onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.14)"}
                                   onMouseLeave={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.07)"}>
