@@ -369,9 +369,14 @@ function CodeModal({ onClose }: { onClose: () => void }) {
 export default function Navbar() {
   const { data: session } = useSession();
   const [userOpen, setUserOpen] = useState(false);
+  // Sans session, tous les liens restent visibles : cliquer sur un module
+  // protégé redirige vers la connexion (middleware). Connecté, on filtre
+  // selon les droits du profil.
   const visible = (href: string) => {
     const slug = PROTECTED_SLUGS[href];
-    return !slug || moduleAutorise(session, slug);
+    if (!slug) return true;
+    if (!session) return true;
+    return moduleAutorise(session, slug);
   };
   const isAdminRole = !AUTH_ENFORCED || ["admin", "admin_plus", "dev"].includes(session?.user?.role || "");
   const afficheNom = nomAffiche(session?.user?.prenom, session?.user?.nom, session?.user?.email);
