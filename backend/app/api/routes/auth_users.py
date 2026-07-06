@@ -241,9 +241,12 @@ async def modifier_user(user_id: int, payload: UserUpdatePayload,
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable.")
     email = (user.email or "").lower()
-    # Le rôle dev est défini par l'environnement : intouchable depuis l'interface.
-    if email in _settings.dev_emails_list:
-        raise HTTPException(status_code=403, detail="Le compte développeur n'est pas modifiable.")
+    # Le compte dev : prénom/nom modifiables, mais rôle/modules/statut intouchables
+    # (définis par l'environnement).
+    if email in _settings.dev_emails_list and (
+        payload.role is not None or payload.modules is not None or payload.is_active is not None
+    ):
+        raise HTTPException(status_code=403, detail="Le rôle et le statut du compte développeur ne sont pas modifiables.")
     if payload.prenom is not None:
         user.prenom = payload.prenom.strip() or None
     if payload.nom is not None:

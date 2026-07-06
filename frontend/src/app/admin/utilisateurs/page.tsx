@@ -2,9 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Check, ChevronDown, Loader2, ShieldCheck, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Loader2, Trash2 } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+// Couleur de chaque rôle (badges) : dev et admin en bleu, admin+ en vert, agent en orange
+const ROLE_COLORS: Record<string, string> = { dev: "#004f91", admin: "#004f91", admin_plus: "#188038", agent: "#ca631f" };
+const ROLE_LABELS: Record<string, string> = { dev: "Développeur", admin: "Admin", admin_plus: "Admin+", agent: "Agent" };
 
 const ROLES: { v: string; l: string; desc: string }[] = [
   { v: "agent",      l: "Agent",       desc: "Tous les modules publics, pas d'accès admin" },
@@ -104,10 +108,6 @@ export default function UtilisateursAdminPage() {
 
       <div style={{ marginBottom: 8 }}>
         <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Utilisateurs &amp; accès</h1>
-        <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 4 }}>
-          Agent : modules publics uniquement · Admin : pages admin en lecture seule · Admin+ : édition sur les pages cochées · Développeur : tout.
-          Prénom et nom saisis ici s&apos;affichent dans la barre de navigation de l&apos;utilisateur (à sa prochaine connexion).
-        </p>
       </div>
 
       {error && (
@@ -157,28 +157,38 @@ export default function UtilisateursAdminPage() {
                     </td>
                     {/* Rôle */}
                     <td style={TD}>
-                      {estDev ? (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: "#6A1B9A", background: "rgba(106,27,154,0.08)", padding: "4px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
-                          <ShieldCheck size={11}/> Développeur
-                        </span>
-                      ) : (
-                        <select value={u.role} onChange={e => patcher(u, { role: e.target.value })}
-                          title={ROLES.find(r => r.v === u.role)?.desc}
-                          style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 8, padding: "7px 10px", fontSize: 12.5, fontWeight: 600, color: "#004f91", outline: "none", cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
-                          {ROLES.map(r => <option key={r.v} value={r.v} title={r.desc}>{r.l}</option>)}
-                        </select>
-                      )}
+                      {(() => {
+                        const c = ROLE_COLORS[u.role] || "#4a5568";
+                        const badge = (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: c, background: `${c}14`, padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>
+                            {ROLE_LABELS[u.role] || u.role}
+                            {!estDev && <ChevronDown size={11} style={{ opacity: 0.7 }}/>}
+                          </span>
+                        );
+                        if (estDev) return badge;
+                        // Select natif invisible par-dessus le badge : clic = menu des rôles
+                        return (
+                          <span style={{ position: "relative", display: "inline-flex" }}>
+                            {badge}
+                            <select value={u.role} onChange={e => patcher(u, { role: e.target.value })}
+                              title={ROLES.find(r => r.v === u.role)?.desc}
+                              style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%" }}>
+                              {ROLES.map(r => <option key={r.v} value={r.v} title={r.desc}>{r.l}</option>)}
+                            </select>
+                          </span>
+                        );
+                      })()}
                     </td>
                     {/* Accès admin (admin_plus) : menu déroulant à cases */}
                     <td style={{ ...TD, position: "relative" }}>
                       {estDev ? (
-                        <span style={{ fontSize: 11.5, color: "#9aa5b4" }}>Toutes les pages</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>Tout</span>
                       ) : u.role !== "admin_plus" ? (
                         <span style={{ fontSize: 11.5, color: "#C5BFBB" }}>—</span>
                       ) : (
                         <div ref={accesOpen === u.id ? popRef : undefined} style={{ position: "relative", display: "inline-block" }}>
                           <button onClick={() => setAccesOpen(o => o === u.id ? null : u.id)}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(0,79,145,0.07)", border: "1px solid rgba(0,79,145,0.18)", borderRadius: 8, padding: "7px 11px", fontSize: 11.5, fontWeight: 700, color: "#004f91", cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(0,79,145,0.08)", border: "none", borderRadius: 999, padding: "4px 12px", fontSize: 10.5, fontWeight: 700, color: "#004f91", cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
                             {(u.modules || []).length ? `${u.modules.length} page${u.modules.length > 1 ? "s" : ""}` : "Aucune page"}
                             <ChevronDown size={12} style={{ transform: accesOpen === u.id ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}/>
                           </button>
@@ -207,11 +217,11 @@ export default function UtilisateursAdminPage() {
                     {/* Statut */}
                     <td style={TD}>
                       {estDev ? (
-                        <span style={{ fontSize: 11, fontWeight: 700, color: "#188038", whiteSpace: "nowrap" }}>Actif</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#188038", whiteSpace: "nowrap" }}>Actif</span>
                       ) : (
                         <button onClick={() => patcher(u, { is_active: !u.is_active })}
                           title={u.is_active ? "Cliquer pour désactiver" : "Compte en attente — cliquer pour activer"}
-                          style={{ padding: "5px 13px", borderRadius: 999, border: `1px solid ${u.is_active ? "rgba(24,128,56,0.25)" : "rgba(202,99,31,0.35)"}`, cursor: "pointer", fontSize: 11, fontWeight: 700, background: u.is_active ? "rgba(24,128,56,0.08)" : "rgba(202,99,31,0.08)", color: u.is_active ? "#188038" : "#ca631f", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                          style={{ padding: 0, border: "none", background: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: u.is_active ? "#188038" : "#ca631f", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
                           {u.is_active ? "Actif" : "En attente"}
                         </button>
                       )}
