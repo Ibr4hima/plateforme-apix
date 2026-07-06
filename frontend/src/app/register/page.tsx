@@ -165,8 +165,8 @@ export default function RegisterPage() {
               </span>
               <h1 style={{ fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: 0 }}>Compte créé</h1>
               <p style={{ color: "#4a5568", fontSize: 13.5, marginTop: 10, lineHeight: 1.65 }}>
-                Votre compte <span style={{ fontWeight: 700, color: "#004f91" }}>{email}</span> est en attente de
-                validation par un administrateur. Vous pourrez vous connecter dès qu&apos;il aura été activé.
+                Votre compte <span style={{ fontWeight: 700, color: "#004f91" }}>{email}</span>{" "}
+                est en attente de validation par un administrateur. Vous pourrez vous connecter dès qu&apos;il aura été activé.
               </p>
               <Link href="/login" className="login-cta"
                 style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 20, height: 44, padding: "0 26px", borderRadius: 12, background: "#004f91", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none", boxShadow: "0 4px 18px rgba(0,79,145,0.35)" }}>
