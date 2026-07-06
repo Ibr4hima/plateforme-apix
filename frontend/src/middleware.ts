@@ -54,7 +54,7 @@ export default async function middleware(req: NextRequest) {
   if (pathname.startsWith("/admin")) {
     if (!token) return login()
     const role = String(token.role || "")
-    if (role !== "admin" && role !== "dev") return NextResponse.redirect(new URL("/unauthorized", req.url))
+    if (role !== "admin" && role !== "admin_plus" && role !== "dev") return NextResponse.redirect(new URL("/unauthorized", req.url))
     return NextResponse.next()
   }
 
@@ -64,7 +64,7 @@ export default async function middleware(req: NextRequest) {
   if (entry) {
     if (!token) return login()
     const role = String(token.role || "")
-    if (role === "dev" || role === "admin" || role === "agent") return NextResponse.next()
+    if (role === "dev" || role === "admin" || role === "admin_plus" || role === "agent") return NextResponse.next()
     const modules = Array.isArray(token.modules) ? (token.modules as string[]) : []
     if (!modules.includes(entry[1])) return NextResponse.redirect(new URL("/unauthorized", req.url))
   }

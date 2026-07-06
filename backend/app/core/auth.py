@@ -35,13 +35,13 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def role_for_email(email: str) -> str:
-    """Rôle par défaut à la création du compte (dev/admin via env, sinon restreint)."""
+    """Rôle par défaut à la création du compte (dev/admin via env, sinon agent)."""
     e = (email or "").strip().lower()
     if e in settings.dev_emails_list:
         return "dev"
     if e in settings.admin_emails_list:
-        return "admin"
-    return "restreint"
+        return "admin_plus"
+    return "agent"
 
 
 def verify_nextauth_token(token: str) -> dict:
@@ -95,7 +95,7 @@ async def _load_user(email: str) -> dict:
         user = res.scalar_one_or_none()
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="Compte inconnu ou désactivé.")
-    role = "admin" if e in settings.admin_emails_list else (user.role or "restreint")
+    role = "admin_plus" if e in settings.admin_emails_list else (user.role or "agent")
     return {"email": e, "role": role, "modules": list(user.modules or [])}
 
 
@@ -117,9 +117,29 @@ async def require_authenticated(current_user: dict = Depends(get_current_user)) 
 
 
 async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if settings.AUTH_ENFORCED and current_user.get("role") not in ("admin", "dev"):
+    """Accès aux pages/API d'administration (lecture) : admin, admin_plus, dev."""
+    if settings.AUTH_ENFORCED and current_user.get("role") not in ("admin", "admin_plus", "dev"):
         raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs.")
     return current_user
+
+
+def peut_editer_admin(current_user: dict, slug: str) -> bool:
+    """Droit d'écriture sur une page admin : dev, ou admin_plus avec la page cochée."""
+    if not settings.AUTH_ENFORCED:
+        return True
+    role = current_user.get("role")
+    if role == "dev":
+        return True
+    return role == "admin_plus" and slug in (current_user.get("modules") or [])
+
+
+def require_admin_write(slug: str):
+    """Fabrique de dépendance : écriture sur la page admin `slug`."""
+    async def _dep(current_user: dict = Depends(get_current_user)) -> dict:
+        if not peut_editer_admin(current_user, slug):
+            raise HTTPException(status_code=403, detail=f"Modification non autorisée sur « {slug} ».")
+        return current_user
+    return _dep
 
 
 def require_module(slug: str):
@@ -129,9 +149,9 @@ def require_module(slug: str):
         if not settings.AUTH_ENFORCED:
             return current_user
         role = current_user.get("role")
-        if role in ("dev", "admin", "agent"):
+        if role in ("dev", "admin", "admin_plus", "agent"):
             return current_user
-        if slug in (current_user.get("modules") or []):
+        if slug in (current_user.get("modules") or []):  # ancien rôle « restreint »
             return current_user
         raise HTTPException(status_code=403, detail=f"Accès au module « {slug} » non autorisé.")
     return _dep

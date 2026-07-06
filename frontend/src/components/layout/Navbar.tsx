@@ -4,7 +4,7 @@ import { ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-rea
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { AUTH_ENFORCED, moduleAutorise } from "@/lib/authGate";
+import { AUTH_ENFORCED, moduleAutorise, nomAffiche } from "@/lib/authGate";
 import { useEffect, useRef, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -373,7 +373,8 @@ export default function Navbar() {
     const slug = PROTECTED_SLUGS[href];
     return !slug || moduleAutorise(session, slug);
   };
-  const isAdminRole = !AUTH_ENFORCED || session?.user?.role === "admin" || session?.user?.role === "dev";
+  const isAdminRole = !AUTH_ENFORCED || ["admin", "admin_plus", "dev"].includes(session?.user?.role || "");
+  const afficheNom = nomAffiche(session?.user?.prenom, session?.user?.nom, session?.user?.email);
   const [scrolled,    setScrolled]    = useState(false);
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [modulesOpen, setModulesOpen] = useState(false);
@@ -492,14 +493,15 @@ export default function Navbar() {
                   onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
                   <span style={{ width: 26, height: 26, borderRadius: "50%", background: "#004f91", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>
-                    {(session.user.email || "?")[0].toUpperCase()}
+                    {(afficheNom || "?")[0].toUpperCase()}
                   </span>
-                  <span style={{ maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</span>
+                  <span style={{ maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</span>
                 </button>
                 {userOpen && (
                   <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 230, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 14, padding: 8, boxShadow: "0 16px 56px rgba(0,0,0,0.12)" }}>
                     <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
-                      <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</p>
+                      {afficheNom !== session.user.email && <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</p>}
+                      <p style={{ margin: afficheNom !== session.user.email ? "3px 0 0" : 0, fontSize: 11.5, fontWeight: afficheNom !== session.user.email ? 500 : 700, color: afficheNom !== session.user.email ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</p>
                       <span style={{ display: "inline-flex", marginTop: 5, fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{session.user.role || "—"}</span>
                     </div>
                     <button onClick={() => signOut({ callbackUrl: "/" })}

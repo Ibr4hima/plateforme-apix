@@ -26,6 +26,15 @@ export function moduleAutorise(session: any, slug: string): boolean {
   if (!AUTH_ENFORCED) return true;
   const role = session?.user?.role;
   if (!role) return false;
-  if (role === "dev" || role === "admin" || role === "agent") return true;
-  return (session?.user?.modules || []).includes(slug);
+  if (role === "dev" || role === "admin" || role === "admin_plus" || role === "agent") return true;
+  return (session?.user?.modules || []).includes(slug);  // ancien rôle « restreint »
+}
+
+// Nom affiché : premier prénom + initiale du second (s'il existe) + nom.
+// « Mouhammad Moustapha » + « Ba » → « Mouhammad M. Ba ». À défaut : l'email.
+export function nomAffiche(prenom?: string | null, nom?: string | null, email?: string | null): string {
+  const prenoms = (prenom || "").trim().split(/\s+/).filter(Boolean);
+  const n = (nom || "").trim();
+  if (!prenoms.length || !n) return email || "";
+  return `${prenoms[0]}${prenoms[1] ? ` ${prenoms[1][0].toUpperCase()}.` : ""} ${n}`;
 }

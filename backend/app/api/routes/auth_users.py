@@ -18,7 +18,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.auth import hash_password, verify_password, role_for_email, require_admin, get_current_user
+from app.core.auth import hash_password, verify_password, role_for_email, require_admin, get_current_user, peut_editer_admin
 from app.core.passwords import valider_mot_de_passe
 from app.core.config import get_settings
 from app.models.user import User, AuthThrottle
@@ -27,18 +27,21 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 _settings = get_settings()
 
-# Modules protégés de la plateforme (slugs) — la page admin « Utilisateurs &
-# accès » s'appuie sur cette liste pour le rôle restreint.
+# Pages d'administration (slugs) — pour le rôle admin_plus, `modules` liste les
+# pages admin sur lesquelles il a le droit d'édition (ajout/modif/suppression).
 MODULES = [
-    "tableau-de-bord", "ide", "prospects", "opportunites",
-    "evenements", "accords", "zones", "entreprises",
+    "evenements", "accords", "entreprises", "gestion-zones",
+    "opportunites", "prospects", "code-investissement", "utilisateurs",
 ]
+
+ROLES_VALIDES = ("agent", "admin", "admin_plus")
 
 
 def _public_user(u: User) -> dict:
     email = (u.email or "").lower()
-    role = "dev" if email in _settings.dev_emails_list else ("admin" if email in _settings.admin_emails_list else (u.role or "restreint"))
-    return {"id": u.id, "email": u.email, "role": role, "modules": list(u.modules or []),
+    role = "dev" if email in _settings.dev_emails_list else ("admin_plus" if email in _settings.admin_emails_list else (u.role or "agent"))
+    return {"id": u.id, "email": u.email, "prenom": u.prenom or "", "nom": u.nom or "",
+            "role": role, "modules": list(u.modules or []),
             "is_active": u.is_active, "created_at": u.created_at}
 
 ALLOWED_DOMAIN = "@apix.sn"
@@ -155,9 +158,10 @@ async def register(payload: RegisterPayload, request: Request, db: AsyncSession 
     # Validation par un administrateur : les comptes naissent désactivés, sauf
     # les emails dev/admin (définis par l'environnement) — sans quoi le tout
     # premier compte de la plateforme ne pourrait jamais être activé.
-    actif_immediat = role in ("dev", "admin")
+    actif_immediat = role in ("dev", "admin_plus")
     user = User(email=email, hashed_password=hash_password(payload.password),
-                role=role if role != "dev" else "restreint", modules=[],
+                role=role if role != "dev" else "agent",
+                modules=list(MODULES) if role == "admin_plus" else [],
                 is_active=actif_immediat)
     db.add(user)
     await db.flush()
@@ -193,7 +197,8 @@ async def login(payload: LoginPayload, request: Request, db: AsyncSession = Depe
         raise HTTPException(status_code=403, detail="Compte en attente de validation par un administrateur, ou désactivé.")
     await _reinitialiser_compteurs(db, cles)
     pu = _public_user(user)
-    return {"email": user.email, "role": pu["role"], "modules": pu["modules"]}
+    return {"email": user.email, "prenom": pu["prenom"], "nom": pu["nom"],
+            "role": pu["role"], "modules": pu["modules"]}
 
 
 # ── Profil courant & gestion des accès (page admin « Utilisateurs & accès ») ──
@@ -217,8 +222,10 @@ async def liste_users(db: AsyncSession = Depends(get_db), _: dict = Depends(requ
 
 
 class UserUpdatePayload(BaseModel):
-    role: Optional[str] = None          # admin | agent | restreint
-    modules: Optional[List[str]] = None
+    prenom: Optional[str] = None
+    nom: Optional[str] = None
+    role: Optional[str] = None          # agent | admin | admin_plus
+    modules: Optional[List[str]] = None  # pages admin éditables (admin_plus)
     is_active: Optional[bool] = None
 
 
@@ -226,6 +233,9 @@ class UserUpdatePayload(BaseModel):
 async def modifier_user(user_id: int, payload: UserUpdatePayload,
                         db: AsyncSession = Depends(get_db),
                         current_user: dict = Depends(require_admin)):
+    # Écriture : dev, ou admin_plus avec la page « utilisateurs » cochée
+    if not peut_editer_admin(current_user, "utilisateurs"):
+        raise HTTPException(status_code=403, detail="Modification des utilisateurs non autorisée.")
     res = await db.execute(select(User).where(User.id == user_id))
     user = res.scalar_one_or_none()
     if not user:
@@ -234,8 +244,12 @@ async def modifier_user(user_id: int, payload: UserUpdatePayload,
     # Le rôle dev est défini par l'environnement : intouchable depuis l'interface.
     if email in _settings.dev_emails_list:
         raise HTTPException(status_code=403, detail="Le compte développeur n'est pas modifiable.")
+    if payload.prenom is not None:
+        user.prenom = payload.prenom.strip() or None
+    if payload.nom is not None:
+        user.nom = payload.nom.strip() or None
     if payload.role is not None:
-        if payload.role not in ("admin", "agent", "restreint"):
+        if payload.role not in ROLES_VALIDES:
             raise HTTPException(status_code=422, detail="Rôle invalide.")
         user.role = payload.role
     if payload.modules is not None:
@@ -247,3 +261,19 @@ async def modifier_user(user_id: int, payload: UserUpdatePayload,
         user.is_active = payload.is_active
     await db.flush()
     return _public_user(user)
+
+
+@router.delete("/users/{user_id}", status_code=204)
+async def supprimer_user(user_id: int,
+                         db: AsyncSession = Depends(get_db),
+                         current_user: dict = Depends(require_admin)):
+    if not peut_editer_admin(current_user, "utilisateurs"):
+        raise HTTPException(status_code=403, detail="Suppression des utilisateurs non autorisée.")
+    res = await db.execute(select(User).where(User.id == user_id))
+    user = res.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable.")
+    if (user.email or "").lower() in _settings.dev_emails_list:
+        raise HTTPException(status_code=403, detail="Le compte développeur n'est pas supprimable.")
+    await db.delete(user)
+    await db.flush()

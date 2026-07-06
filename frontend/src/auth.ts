@@ -34,7 +34,7 @@ const providers = [
       })
       if (!res.ok) return null
       const user = await res.json()
-      return { id: user.email, email: user.email, role: user.role, modules: user.modules || [] }
+      return { id: user.email, email: user.email, role: user.role, modules: user.modules || [], prenom: user.prenom || "", nom: user.nom || "" }
     },
   }),
   ...(azureConfigured
@@ -92,6 +92,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.email = user.email ?? token.email
         token.role = user.role
         token.modules = user.modules ?? []
+        token.prenom = user.prenom ?? ""
+        token.nom = user.nom ?? ""
       }
       // Connexion Microsoft Entra ID : identité garantie par Azure ; les droits
       // (rôle/modules) restent gérés en base — le backend les relit à chaque
@@ -103,7 +105,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const adminEmails = (process.env.ADMIN_EMAILS || "")
           .split(",").map((e) => e.trim().toLowerCase())
         const em = (token.email || "").toLowerCase()
-        token.role = devEmails.includes(em) ? "dev" : adminEmails.includes(em) ? "admin" : "restreint"
+        token.role = devEmails.includes(em) ? "dev" : adminEmails.includes(em) ? "admin_plus" : "agent"
         token.modules = []
       }
       return token
@@ -112,6 +114,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.role = token.role
         session.user.modules = token.modules ?? []
+        session.user.prenom = token.prenom ?? ""
+        session.user.nom = token.nom ?? ""
         if (token.email) session.user.email = token.email
       }
       // Jeton d'API : même JWT HS256 que la session, à joindre en
