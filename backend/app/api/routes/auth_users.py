@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.auth import hash_password, verify_password, role_for_email, require_admin, get_current_user
+from app.core.passwords import valider_mot_de_passe
 from app.core.config import get_settings
 from app.models.user import User
 
@@ -67,10 +68,11 @@ def _check_domain(email: str) -> str:
 async def register(payload: RegisterPayload, db: AsyncSession = Depends(get_db)):
     """Crée un compte. L'email doit se terminer par @apix.sn."""
     email = _check_domain(payload.email)
-    if len(payload.password) < MIN_PASSWORD_LEN:
+    erreurs = await valider_mot_de_passe(payload.password, email)
+    if erreurs:
         raise HTTPException(
             status_code=422,
-            detail=f"Le mot de passe doit contenir au moins {MIN_PASSWORD_LEN} caractères.",
+            detail="Le mot de passe doit : " + " ; ".join(erreurs) + ".",
         )
 
     existing = await db.execute(select(User).where(func.lower(User.email) == email))

@@ -20,6 +20,18 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
+  // Règles de robustesse, reflétées en direct (le backend revalide et vérifie
+  // aussi les mots de passe compromis via Have I Been Pwned)
+  const localEmail = email.split("@")[0]?.toLowerCase() || ""
+  const regles = [
+    { l: "12 caractères minimum",  ok: password.length >= 12 },
+    { l: "Une majuscule",          ok: /[A-Z]/.test(password) },
+    { l: "Une minuscule",          ok: /[a-z]/.test(password) },
+    { l: "Un chiffre",             ok: /\d/.test(password) },
+    { l: "Un caractère spécial",   ok: /[^A-Za-z0-9]/.test(password) },
+    { l: "Différent de votre email", ok: !localEmail || localEmail.length < 3 || !password.toLowerCase().includes(localEmail) },
+  ]
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -28,8 +40,8 @@ export default function RegisterPage() {
       setError("Seules les adresses @apix.sn sont autorisées.")
       return
     }
-    if (password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.")
+    if (regles.some(r => !r.ok)) {
+      setError("Le mot de passe ne respecte pas encore toutes les règles.")
       return
     }
     if (password !== confirm) {
@@ -163,7 +175,7 @@ export default function RegisterPage() {
                       type={showPwd ? "text" : "password"}
                       required
                       autoComplete="new-password"
-                      placeholder="8 caractères minimum"
+                      placeholder="12 caractères minimum"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       style={{ width: "100%", height: 43, padding: "0 44px 0 42px", border: "1.5px solid #E8E5E3", borderRadius: 12, fontSize: 14, color: "#1a1a2e", background: "#F8F7F6", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }}
@@ -174,6 +186,17 @@ export default function RegisterPage() {
                     </button>
                   </div>
                 </div>
+
+                {password && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3px 12px", margin: "-4px 2px 0" }}>
+                    {regles.map(r => (
+                      <span key={r.l} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 600, color: r.ok ? "#188038" : "#9aa5b4", transition: "color 0.15s" }}>
+                        <span style={{ width: 12, height: 12, borderRadius: "50%", background: r.ok ? "rgba(24,128,56,0.12)" : "#F0EEEC", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, lineHeight: 1, flexShrink: 0 }}>{r.ok ? "✓" : ""}</span>
+                        {r.l}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 <div>
                   <label style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", marginBottom: 6 }}>Confirmer le mot de passe</label>
