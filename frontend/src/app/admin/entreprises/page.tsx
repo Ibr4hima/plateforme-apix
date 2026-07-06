@@ -47,9 +47,27 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [saveOk, setSaveOk] = useState(false);
   const [errors, setErrors] = useState<Record<string,string>>({});
+  // Pôle territorial : filtre de saisie (non stocké) — restreint les régions à celles du pôle
+  const [poles,  setPoles]  = useState<any[]>([]);
+  const [poleId, setPoleId] = useState<number|null>(null);
 
   const update   = (k:string,v:any) => setForm((f:any)=>({...f,[k]:v}));
   const updFocal = (i:number,k:string,v:any) => setFocaux(prev=>prev.map((f,idx)=>idx===i?{...f,[k]:v}:f));
+
+  useEffect(()=>{
+    fetch(`${API_BASE}/zones-types/poles`).then(r=>r.json()).then(d=>setPoles(Array.isArray(d)?d:[])).catch(()=>{});
+  },[]);
+
+  // En édition : présélectionner le pôle qui contient la région de l'entreprise
+  useEffect(()=>{
+    if (!open) return;
+    if (editItem?.region_id && poles.length) {
+      const p = poles.find((px:any)=>(px.region_ids||[]).includes(editItem.region_id));
+      setPoleId(p?.id ?? null);
+    } else if (!editItem) {
+      setPoleId(null);
+    }
+  },[open, editItem?.id, poles]);
 
   useEffect(()=>{
     if (!open) return;
@@ -195,11 +213,30 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
 
       {/* Localisation Sénégal */}
       <FSection title="Localisation au Sénégal">
-        <GeoCascadeSelect
-          regionId={form.region_id} departementId={form.departement_id} arrondissementId={form.arrondissement_id}
-          onChangeRegion={id=>{update("region_id",id);update("departement_id",null);update("arrondissement_id",null);}}
-          onChangeDepartement={id=>{update("departement_id",id);update("arrondissement_id",null);}}
-          onChangeArrondissement={id=>update("arrondissement_id",id)}/>
+        <div style={{marginBottom:14}}>
+          <FLabel>Pôle territorial *</FLabel>
+          <FSelect value={poleId||""} onChange={e=>{
+            const id = e.target.value ? parseInt(e.target.value) : null;
+            setPoleId(id);
+            // Le pôle change : la localisation repart de zéro, restreinte à ses régions
+            update("region_id",null); update("departement_id",null); update("arrondissement_id",null);
+          }}>
+            <option value="">— Sélectionner un pôle d&apos;abord —</option>
+            {poles.map((p:any)=>(
+              <option key={p.id} value={p.id}>{p.pole_territoire}{p.localisation?` — ${p.localisation}`:""}</option>
+            ))}
+          </FSelect>
+        </div>
+        {(()=>{ const poleRegionIds: number[] = poles.find((p:any)=>p.id===poleId)?.region_ids || []; return (
+        <div style={{opacity: poleId?1:0.45, pointerEvents: poleId?"auto":"none", transition:"opacity 0.2s"}}>
+          <GeoCascadeSelect
+            regionId={form.region_id} departementId={form.departement_id} arrondissementId={form.arrondissement_id}
+            filterRegionIds={poleRegionIds.length>0?poleRegionIds:undefined}
+            onChangeRegion={id=>{update("region_id",id);update("departement_id",null);update("arrondissement_id",null);}}
+            onChangeDepartement={id=>{update("departement_id",id);update("arrondissement_id",null);}}
+            onChangeArrondissement={id=>update("arrondissement_id",id)}/>
+        </div>
+        ); })()}
         <div style={{marginTop:14}}><FLabel>Adresse complète *</FLabel><FInput value={form.adresse} onChange={e=>update("adresse",e.target.value)} placeholder="Adresse physique" style={errStyle("adresse")}/><Err f="adresse"/></div>
       </FSection>
 
