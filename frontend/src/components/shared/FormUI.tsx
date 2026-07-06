@@ -20,7 +20,11 @@ export const FORM_COLORS = { primary: "#004f91", accent: "#ca631f", success: "#1
 
 // ── Styles de base (exportés pour les cas particuliers) ──────────────────────
 export const fuiInput: React.CSSProperties = {
-  width: "100%", background: "#fff", border: "1px solid #E4E1DE", borderRadius: 10,
+  // Bordure en propriétés séparées (pas le raccourci `border`) : les appelants
+  // surchargent borderColor conditionnellement, et React interdit de mélanger
+  // raccourci et propriété détaillée sur la même valeur entre deux rendus.
+  width: "100%", background: "#fff",
+  borderWidth: 1, borderStyle: "solid", borderColor: "#E4E1DE", borderRadius: 10,
   padding: "10px 13px", fontSize: 13.5, color: "#1a1a2e", outline: "none",
   fontFamily: "var(--font-google-sans)", boxSizing: "border-box",
   transition: "border-color 0.15s, box-shadow 0.15s",
