@@ -84,7 +84,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
         pole_id:           editZone.pole_id           ?? "",
         date_creation:     editZone.date_creation     || "",
         decret_creation:   editZone.decret_creation   || "",
-        superficie:        editZone.superficie != null ? String(editZone.superficie) : "",
+        superficie:        editZone.superficie != null ? String(editZone.superficie).replace(".", ",") : "",
         region_id:         editZone.region_id         || "",
         departement_id:    editZone.departement_id    || "",
         arrondissement_id: editZone.arrondissement_id || "",
@@ -152,7 +152,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
             description:       form.description       ?? "",
             date_creation:     form.date_creation      ?? "",
             decret_creation:   form.decret_creation    ?? "",
-            superficie:        form.superficie         ?? "",
+            superficie:        (form.superficie ?? "").replace(",", "."),
             region_id:         form.region_id         ? String(form.region_id)         : "0",
             departement_id:    form.departement_id    ? String(form.departement_id)    : "0",
             arrondissement_id: form.arrondissement_id ? String(form.arrondissement_id) : "0",
@@ -169,7 +169,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
         fd.append("description",     form.description    ?? "");
         fd.append("date_creation",   form.date_creation  ?? "");
         fd.append("decret_creation", form.decret_creation ?? "");
-        fd.append("superficie",      form.superficie      ?? "");
+        fd.append("superficie",      (form.superficie ?? "").replace(",", "."));
         fd.append("secteur_ids",     JSON.stringify(secIds));
         fd.append("branche_ids",     JSON.stringify(braIds));
         fd.append("activite_ids",    JSON.stringify(actIds));
@@ -261,7 +261,16 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
           </div>
           <div>
             <FLabel>Superficie (hectares)</FLabel>
-            <FInput type="text" inputMode="decimal" pattern="[0-9]*[.,]?[0-9]*" value={form.superficie} onChange={e => update("superficie", e.target.value)} placeholder="Ex : 1700.50" />
+            <FInput type="text" inputMode="decimal" value={form.superficie}
+              onChange={e => {
+                // Chiffres et virgule uniquement ; le « . » du clavier devient « , »,
+                // et une seule virgule est conservée.
+                let s = e.target.value.replace(/[^\d.,]/g, "").replace(/\./g, ",");
+                const i = s.indexOf(",");
+                if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/,/g, "");
+                update("superficie", s);
+              }}
+              placeholder="Ex : 1700,50" />
           </div>
         </FGrid>
         <div>
