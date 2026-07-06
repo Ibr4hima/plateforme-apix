@@ -11,7 +11,7 @@ sont temporairement désactivées (mode dev). À réactiver avant la mise en pro
 from typing import Optional
 from fastapi import Depends, HTTPException, Request
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 
 from app.core.config import get_settings
 
@@ -19,17 +19,17 @@ settings = get_settings()
 
 _ALGORITHM = "HS256"
 
-# Hachage des mots de passe (bcrypt).
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-
+# Hachage des mots de passe — bcrypt appelé directement (passlib n'est plus
+# maintenu et plante avec bcrypt >= 4.1). bcrypt ignore tout au-delà de
+# 72 octets : on tronque explicitement pour rester déterministe.
 def hash_password(password: str) -> str:
-    return _pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode("utf-8")[:72], bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     try:
-        return _pwd_context.verify(plain, hashed)
+        return bcrypt.checkpw(plain.encode("utf-8")[:72], (hashed or "").encode("utf-8"))
     except Exception:
         return False
 
