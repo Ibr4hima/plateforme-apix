@@ -34,7 +34,7 @@ export default function LoginPage() {
     <main style={{
       height: "100vh", overflow: "hidden",
       display: "flex", flexDirection: "column",
-      background: "radial-gradient(125% 95% at 50% -25%, #001a33 0%, #002b52 26%, #003c70 44%, #004f91 58%, rgba(0,79,145,0) 72%), radial-gradient(85% 40% at 50% 112%, rgba(202,99,31,0.06) 0%, transparent 70%), #F6F5F3",
+      background: "radial-gradient(125% 95% at 50% -25%, #001a33 0%, #002b52 26%, #003c70 44%, #004f91 58%, rgba(0,79,145,0) 72%), radial-gradient(80% 55% at 50% 108%, rgba(202,99,31,0.16) 0%, rgba(202,99,31,0.07) 45%, transparent 72%), #F6F5F3",
       position: "relative", fontFamily: "var(--font-google-sans)",
     }}>
       <style>{`
