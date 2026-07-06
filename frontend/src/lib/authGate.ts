@@ -38,3 +38,8 @@ export function nomAffiche(prenom?: string | null, nom?: string | null, email?: 
   if (!prenoms.length || !n) return email || "";
   return `${prenoms[0]}${prenoms[1] ? ` ${prenoms[1][0].toUpperCase()}.` : ""} ${n}`;
 }
+
+// Libellés d'affichage des rôles
+export const ROLE_LABELS: Record<string, string> = {
+  dev: "Développeur", admin: "Admin", admin_plus: "Admin+", agent: "Agent",
+};

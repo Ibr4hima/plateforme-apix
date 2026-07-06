@@ -30,8 +30,10 @@ _settings = get_settings()
 # Pages d'administration (slugs) — pour le rôle admin_plus, `modules` liste les
 # pages admin sur lesquelles il a le droit d'édition (ajout/modif/suppression).
 MODULES = [
-    "evenements", "accords", "entreprises", "gestion-zones",
-    "opportunites", "prospects", "code-investissement", "utilisateurs",
+    "utilisateurs", "evenements", "accords", "entreprises", "gestion-zones",
+    "opportunites", "intentions", "prospects", "analyse",
+    "ref-pays", "geo", "naema", "classifications", "ide", "bdef",
+    "code-investissement",
 ]
 
 ROLES_VALIDES = ("agent", "admin", "admin_plus")

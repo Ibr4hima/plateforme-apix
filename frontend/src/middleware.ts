@@ -50,11 +50,16 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Pages d'administration : admin ou dev uniquement
+  // Pages d'administration : admin (lecture seule), admin_plus (ses pages), dev
   if (pathname.startsWith("/admin")) {
     if (!token) return login()
     const role = String(token.role || "")
     if (role !== "admin" && role !== "admin_plus" && role !== "dev") return NextResponse.redirect(new URL("/unauthorized", req.url))
+    if (role === "admin_plus") {
+      const seg = pathname.split("/")[2] || ""
+      const mods = Array.isArray(token.modules) ? (token.modules as string[]) : []
+      if (seg && !mods.includes(seg)) return NextResponse.redirect(new URL("/unauthorized", req.url))
+    }
     return NextResponse.next()
   }
 

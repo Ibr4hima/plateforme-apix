@@ -16,15 +16,24 @@ const ROLES: { v: string; l: string; desc: string }[] = [
   { v: "admin_plus", l: "Admin+",      desc: "Édition sur les pages admin cochées" },
 ];
 
+// Toutes les pages de la barre de menu admin
 const MODULE_LABELS: Record<string, string> = {
+  "utilisateurs":         "Utilisateurs & accès",
   "evenements":           "Événements",
   "accords":              "Accords & Traités",
   "entreprises":          "Entreprises",
-  "gestion-zones":        "Pôles & Zones",
-  "opportunites":         "Opportunités",
+  "gestion-zones":        "Pôles & Zones d'investissement",
+  "opportunites":         "Opportunités d'investissement",
+  "intentions":           "Intentions d'investissement",
   "prospects":            "Prospects",
+  "analyse":              "Analyse de données",
+  "ref-pays":             "Pays & Groupements",
+  "geo":                  "Découpage administratif",
+  "naema":                "Classification NAEMA",
+  "classifications":      "Tableaux de correspondance",
+  "ide":                  "Données IDE",
+  "bdef":                 "Données BDEF",
   "code-investissement":  "Code des investissements",
-  "utilisateurs":         "Utilisateurs & accès",
 };
 
 const TH: React.CSSProperties = { padding: "12px 14px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" };

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { AUTH_ENFORCED } from "@/lib/authGate";
 
 type NavItem =
   | { type: "link"; label: string; href: string; icon: string; disabled?: boolean }
@@ -38,6 +40,15 @@ const IS_DEPLOYED = !!API_URL && !API_URL.includes("localhost") && !API_URL.incl
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  // Admin+ : seules ses pages cochées sont accessibles, le reste est grisé.
+  // Admin (lecture seule) et dev voient tout.
+  const verrouillePour = (href: string) => {
+    if (!AUTH_ENFORCED) return false;
+    if (session?.user?.role !== "admin_plus") return false;
+    const slug = href.replace("/admin/", "");
+    return !(session?.user?.modules || []).includes(slug);
+  };
 
   return (
     <>
@@ -88,11 +99,12 @@ export default function Sidebar() {
             }
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
 
-            // Entrées temporairement indisponibles (uniquement sur la démo déployée) :
-            // non cliquables, grisées.
-            if (item.disabled && IS_DEPLOYED) {
+            // Entrées temporairement indisponibles (démo déployée) ou pages non
+            // autorisées pour ce profil Admin+ : non cliquables, grisées.
+            const nonAutorise = verrouillePour(item.href);
+            if ((item.disabled && IS_DEPLOYED) || nonAutorise) {
               return (
-                <div key={item.href} title="Indisponible"
+                <div key={item.href} title={nonAutorise ? "Accès non autorisé pour votre profil" : "Indisponible"}
                   style={{
                     display: "flex", alignItems: "center", gap: 11,
                     width: "100%", padding: "8px 12px", marginBottom: 2, borderRadius: 10,

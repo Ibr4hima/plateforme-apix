@@ -4,7 +4,7 @@ import { ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-rea
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { AUTH_ENFORCED, moduleAutorise, nomAffiche } from "@/lib/authGate";
+import { AUTH_ENFORCED, moduleAutorise, nomAffiche, ROLE_LABELS } from "@/lib/authGate";
 import { useEffect, useRef, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -502,7 +502,7 @@ export default function Navbar() {
                     <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
                       {afficheNom !== session.user.email && <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</p>}
                       <p style={{ margin: afficheNom !== session.user.email ? "3px 0 0" : 0, fontSize: 11.5, fontWeight: afficheNom !== session.user.email ? 500 : 700, color: afficheNom !== session.user.email ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</p>
-                      <span style={{ display: "inline-flex", marginTop: 5, fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{session.user.role || "—"}</span>
+                      <span style={{ display: "inline-flex", marginTop: 5, fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</span>
                     </div>
                     <button onClick={() => signOut({ callbackUrl: "/" })}
                       style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#dc2626", fontFamily: "var(--font-google-sans)", textAlign: "left" }}
