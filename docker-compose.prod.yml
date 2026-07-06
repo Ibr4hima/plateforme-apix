@@ -33,7 +33,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       SECRET_KEY: ${SECRET_KEY}
       AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_ENFORCED: ${AUTH_ENFORCED:-false}
       ADMIN_EMAILS: ${ADMIN_EMAILS}
+      DEV_EMAILS: ${DEV_EMAILS:-ibra.ba@apix.sn,ibrahima.28@outlook.com}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       DEBUG: "false"
       UNCTAD_CLIENT_ID: ${UNCTAD_CLIENT_ID:-}
@@ -63,10 +65,13 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         NEXT_PUBLIC_FORCE_ZOOM: ${NEXT_PUBLIC_FORCE_ZOOM:-}
+        NEXT_PUBLIC_AUTH_ENFORCED: ${AUTH_ENFORCED:-false}
     container_name: apix_frontend_prod
     restart: unless-stopped
     environment:
       AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_ENFORCED: ${AUTH_ENFORCED:-false}
+      DEV_EMAILS: ${DEV_EMAILS:-ibra.ba@apix.sn,ibrahima.28@outlook.com}
       AZURE_AD_CLIENT_ID: ${AZURE_AD_CLIENT_ID}
       AZURE_AD_CLIENT_SECRET: ${AZURE_AD_CLIENT_SECRET}
       AZURE_AD_TENANT_ID: ${AZURE_AD_TENANT_ID}
