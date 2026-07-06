@@ -182,18 +182,30 @@ function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()
 const DEVISE_SYMBOLE: Record<string,string> = { XOF:"FCFA", USD:"$", EUR:"€", GBP:"£", CNY:"¥", CAD:"CA$", CHF:"CHF", JPY:"¥" };
 const devSymbole = (code?:string, symbole?:string) => symbole || (code ? DEVISE_SYMBOLE[code]||code : "");
 
+// Chiffres et virgule uniquement : le « . » du clavier devient « , », une seule
+// virgule (2 décimales max), milliers groupés à la saisie (1 000 000).
+// La valeur remontée au parent utilise le point décimal (format backend).
 function MoneyInput({ value, onChange, placeholder }: { value:string; onChange:(v:string)=>void; placeholder?:string }) {
-  const [display, setDisplay] = useState(() => value ? Number(value).toLocaleString("fr-FR") : "");
+  const fmt = (raw: string) => {           // raw en point décimal : "1234567.5"
+    if (!raw) return "";
+    const [int, dec] = raw.split(".");
+    const g = (int||"").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return dec !== undefined ? `${g},${dec}` : g;
+  };
+  const [display, setDisplay] = useState(() => fmt(String(value||"")));
   useEffect(()=>{
-    const raw = display.replace(/\s/g,"").replace(/[^\d]/g,"");
-    if (raw !== String(value||"")) setDisplay(value ? Number(value).toLocaleString("fr-FR") : "");
+    const raw = display.replace(/\s/g,"").replace(",",".");
+    if (raw !== String(value||"")) setDisplay(fmt(String(value||"")));
   }, [value]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\s/g,"").replace(/[^\d]/g,"");
-    setDisplay(raw ? Number(raw).toLocaleString("fr-FR") : "");
+    let s = e.target.value.replace(/[^\d.,]/g,"").replace(/\./g,",");
+    const i = s.indexOf(",");
+    if (i !== -1) s = s.slice(0, i+1) + s.slice(i+1).replace(/,/g,"").slice(0,2);
+    const raw = s.replace(",",".");
+    setDisplay(fmt(raw));
     onChange(raw);
   };
-  return <input type="text" inputMode="numeric" value={display} onChange={handleChange} placeholder={placeholder||""} style={IS}/>;
+  return <input type="text" inputMode="decimal" value={display} onChange={handleChange} placeholder={placeholder||""} style={IS}/>;
 }
 
 const EMPTY: any = {
@@ -295,9 +307,9 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         branche_ids:         form.branche_ids||[],
         activite_ids:        form.activite_ids||[],
         investissement_est_intervalle: form.est_intervalle,
-        investissement:      !form.est_intervalle && form.investissement ? form.investissement : null,
-        investissement_min:  form.est_intervalle && form.investissement_min ? form.investissement_min : null,
-        investissement_max:  form.est_intervalle && form.investissement_max ? form.investissement_max : null,
+        investissement:      !form.est_intervalle && form.investissement ? form.investissement.replace(/\.$/,"") : null,
+        investissement_min:  form.est_intervalle && form.investissement_min ? form.investissement_min.replace(/\.$/,"") : null,
+        investissement_max:  form.est_intervalle && form.investissement_max ? form.investissement_max.replace(/\.$/,"") : null,
         devise_id:           form.devise_id||null,
         porteurs:            form.porteurs.map((p:any,i:number)=>({
           nom:        p.nom||null,
