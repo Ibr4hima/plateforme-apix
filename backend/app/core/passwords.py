@@ -82,11 +82,17 @@ async def valider_mot_de_passe(password: str, email: str = "") -> List[str]:
     if not re.search(r"[^A-Za-z0-9]", pw):
         erreurs.append("contenir un caractère spécial")
 
+    # Aucune séquence de 4 caractères consécutifs ne doit être commune au mot de
+    # passe et à la partie locale de l'email (Ibrahima@… → « Ibra@7738 » refusé).
     e = (email or "").strip().lower()
     local = e.split("@")[0] if "@" in e else e
     pw_lower = pw.lower()
-    if local and len(local) >= 3 and local in pw_lower:
-        erreurs.append("ne pas contenir votre adresse email")
+    if local:
+        if len(local) >= 4:
+            if any(local[i:i + 4] in pw_lower for i in range(len(local) - 3)):
+                erreurs.append("ne pas contenir votre adresse email (4 caractères consécutifs en commun)")
+        elif len(local) >= 3 and local in pw_lower:
+            erreurs.append("ne pas contenir votre adresse email")
 
     if pw_lower in _COMMON or _sans_suffixe_trivial(pw_lower) in _COMMON:
         erreurs.append("ne pas être un mot de passe courant")

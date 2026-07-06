@@ -29,7 +29,14 @@ export default function RegisterPage() {
     { l: "Une minuscule",          ok: /[a-z]/.test(password) },
     { l: "Un chiffre",             ok: /\d/.test(password) },
     { l: "Un caractère spécial",   ok: /[^A-Za-z0-9]/.test(password) },
-    { l: "Différent de votre email", ok: !localEmail || localEmail.length < 3 || !password.toLowerCase().includes(localEmail) },
+    { l: "Différent de votre email", ok: (() => {
+        if (!localEmail) return true
+        const pw = password.toLowerCase()
+        if (localEmail.length < 3) return true
+        if (localEmail.length < 4) return !pw.includes(localEmail)
+        for (let i = 0; i <= localEmail.length - 4; i++) if (pw.includes(localEmail.slice(i, i + 4))) return false
+        return true
+      })() },
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
