@@ -4,6 +4,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.models.zone_types import PoleTerritoire  # noqa: F401 — requis pour la relationship
+from app.models.shared import RefPays  # noqa: F401 — requis pour la relationship siege_pays_obj
 
 
 class RefSecteur(Base):
@@ -106,6 +107,7 @@ class EntrepriseIntallee(Base):
     points_focaux = relationship("EntreprisePointFocal", backref="entreprise", lazy="selectin",
                                   foreign_keys=[EntreprisePointFocal.entreprise_id],
                                   cascade="all, delete-orphan")
+    siege_pays_obj = relationship("RefPays",           foreign_keys=[siege_pays_id],     lazy="joined")
     region         = relationship("RefRegion",         foreign_keys=[region_id],         lazy="joined")
     departement    = relationship("RefDepartement",    foreign_keys=[departement_id],    lazy="joined")
     arrondissement = relationship("RefArrondissement", foreign_keys=[arrondissement_id], lazy="joined")

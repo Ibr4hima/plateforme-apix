@@ -27,6 +27,7 @@ def enrich_entreprise(e: EntrepriseIntallee) -> dict:
         "id": e.id, "nom": e.nom, "forme_juridique": e.forme_juridique,
         "date_creation": e.date_creation, "pays": e.pays,
         "siege_pays_id": e.siege_pays_id,
+        "siege_pays_nom": e.siege_pays_obj.nom_fr if getattr(e, "siege_pays_obj", None) else None,
         "region_id": e.region_id, "departement_id": e.departement_id, "arrondissement_id": e.arrondissement_id,
         "adresse": e.adresse, "telephone": e.telephone, "mail": e.mail, "siteweb": e.siteweb,
         "secteur_ids": e.secteur_ids or [], "branche_ids": e.branche_ids or [], "activite_ids": e.activite_ids or [],

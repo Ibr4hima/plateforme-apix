@@ -94,7 +94,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
               {e.adresse && <Bloc label="Adresse"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{e.adresse}</p></Bloc>}
               {e.siteweb && (
                 <Bloc label="Site web" full>
-                  <a href={e.siteweb} target="_blank" rel="noopener noreferrer" style={{fontSize:12.5,fontWeight:600,color:"#004f91",textDecoration:"none",wordBreak:"break-all" as const}}>{e.siteweb}</a>
+                  <a href={e.siteweb.startsWith("http")?e.siteweb:`https://${e.siteweb}`} target="_blank" rel="noopener noreferrer" style={{fontSize:12.5,fontWeight:600,color:"#004f91",textDecoration:"none",wordBreak:"break-all" as const}}>{e.siteweb}</a>
                 </Bloc>
               )}
             </div>

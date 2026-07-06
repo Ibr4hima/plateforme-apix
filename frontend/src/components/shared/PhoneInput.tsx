@@ -27,8 +27,18 @@ interface Pays { id: number; code_iso2: string; code_iso3?: string; nom_fr: stri
 export function isPhoneComplete(v: string): boolean {
   try { return !!v && isValidPhoneNumber(v); } catch { return false; }
 }
+// Validation email pragmatique alignée sur RFC 5322 / normes des registres :
+// partie locale ≤ 64 car., sans point en bord ni points consécutifs ; domaine en
+// labels alphanumériques (tirets internes seulement) ; TLD alphabétique ≥ 2 lettres
+// (rejette « cash », « x@y », « a@b. », « a@b.12 », « a..b@c.sn », etc.)
 export function isEmailComplete(v: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((v || "").trim());
+  const s = (v || "").trim();
+  if (!s || s.length > 254) return false;
+  const at = s.lastIndexOf("@");
+  if (at <= 0 || at === s.length - 1) return false;
+  const local = s.slice(0, at);
+  if (local.length > 64) return false;
+  return /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/.test(s);
 }
 // Un contact structuré (point focal, porteur de projet…) est complet quand ses
 // champs texte requis sont remplis et qu'il a au moins un téléphone et un email,

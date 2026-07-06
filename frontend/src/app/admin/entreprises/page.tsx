@@ -38,6 +38,26 @@ const EMPTY_FORM = {
 };
 const EMPTY_FOCAL = { civilite:"Monsieur", nom:"", prenom:"", poste:"", telephones:[""] as string[], mails:[""] as string[], est_principal:false };
 
+// Extrait le domaine de base d'une saisie libre (URL complète, avec ou sans schéma,
+// avec chemin/paramètres, www., sous-domaines…) → « atlassian.com », « gouv.sn »…
+// Retourne null si la saisie ne contient pas un nom de domaine valide.
+function extraireDomaine(input: string): string | null {
+  const v = (input || "").trim();
+  if (!v) return null;
+  let host = "";
+  try { host = new URL(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(v) ? v : `https://${v}`).hostname.toLowerCase(); }
+  catch { return null; }
+  host = host.replace(/^www\./, "");
+  // Nom de domaine valide : labels alphanumériques (tirets internes), TLD alphabétique ≥ 2
+  if (!/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(host)) return null;
+  const labels = host.split(".");
+  if (labels.length <= 2) return host;
+  // Suffixes publics à deux niveaux courants (.co.uk, .com.br, .gouv.sn…) : garder 3 labels
+  const SLD = new Set(["co","com","org","net","gov","gouv","edu","ac","mil","asso","int"]);
+  const keep = labels[labels.length-1].length === 2 && SLD.has(labels[labels.length-2]) ? 3 : 2;
+  return labels.slice(-keep).join(".");
+}
+
 // ── Modal formulaire ──────────────────────────────────────────────────────────
 function EntrepriseModal({ open, onClose, editItem, onSaved }: {
   open:boolean; onClose:()=>void; editItem:any; onSaved:()=>void;
@@ -130,7 +150,25 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
       if (invalides.length > 0) e.telephone=`Numéro(s) invalide(s) : ${invalides.join(", ")}`;
     }
 
-    if (!form.mails.filter(Boolean).length) e.mail="Au moins un email obligatoire";
+    // Validation emails entreprise (format standard exigé)
+    const mailsValides = form.mails.filter(Boolean);
+    if (!mailsValides.length) e.mail="Au moins un email obligatoire";
+    else {
+      const mailsInvalides = mailsValides.filter((m:string)=>!isEmailComplete(m));
+      if (mailsInvalides.length > 0) e.mail=`Email(s) invalide(s) : ${mailsInvalides.join(", ")}`;
+    }
+
+    // Validation contacts des points focaux
+    const pfMailsInvalides = focaux.flatMap(f=>f.mails.filter(Boolean).filter((m:string)=>!isEmailComplete(m)));
+    if (pfMailsInvalides.length > 0) e.global=`Email(s) de point focal invalide(s) : ${pfMailsInvalides.join(", ")}`;
+
+    // Validation + normalisation du site web (on ne stocke que le domaine de base)
+    let siteweb = form.siteweb?.trim() || "";
+    if (siteweb) {
+      const dom = extraireDomaine(siteweb);
+      if (!dom) e.siteweb="Site web invalide — saisissez une adresse du type exemple.com";
+      else siteweb = dom;
+    }
 
     setErrors(e);
     if (Object.keys(e).length > 0) return;
@@ -148,7 +186,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         adresse: form.adresse||null,
         telephone: form.telephones.filter(Boolean).join(", ")||null,
         mail: form.mails.filter(Boolean).join(", ")||null,
-        siteweb: form.siteweb||null,
+        siteweb: siteweb||null,
         secteur_ids: form.secteur_ids||[],
         branche_ids: form.branche_ids||[],
         activite_ids: form.activite_ids||[],
@@ -282,7 +320,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             {form.mails.map((mail:string, i:number) => (
               <div key={i} style={{display:"flex",gap:6}}>
                 <FInput type="email" value={mail} onChange={e=>{const arr=[...form.mails];arr[i]=e.target.value;update("mails",arr);}}
-                  placeholder="email@domaine.sn" style={{flex:1}} />
+                  placeholder="email@domaine.sn" style={{flex:1, ...(mail&&!isEmailComplete(mail)?{borderColor:"#dc2626"}:{})}} />
                 {form.mails.length > 1 && (
                   <button onClick={()=>update("mails",form.mails.filter((_:any,idx:number)=>idx!==i))}
                     style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0}}>
@@ -295,8 +333,13 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
           <Err f="mail"/>
         </div>
 
-        {/* Site web */}
-        <div><FLabel>Site web</FLabel><FInput value={form.siteweb} onChange={e=>update("siteweb",e.target.value)} placeholder="https://…"/></div>
+        {/* Site web — normalisé au domaine de base dès la sortie du champ */}
+        <div><FLabel>Site web</FLabel>
+          <FInput value={form.siteweb} onChange={e=>update("siteweb",e.target.value)}
+            onBlur={()=>{ const v=form.siteweb?.trim(); if(v){ const d=extraireDomaine(v); if(d) update("siteweb",d); } }}
+            placeholder="exemple.com" style={errStyle("siteweb")}/>
+          <Err f="siteweb"/>
+        </div>
       </FSection>
 
       {/* NAEMA */}
@@ -365,7 +408,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                     {pf.mails.map((mail:string, mi:number)=>(
                       <div key={mi} style={{display:"flex",gap:6}}>
                         <FInput type="email" value={mail} onChange={e=>{const arr=[...pf.mails];arr[mi]=e.target.value;updFocal(i,"mails",arr);}}
-                          placeholder="email@domaine.sn" style={{flex:1}}/>
+                          placeholder="email@domaine.sn" style={{flex:1, ...(mail&&!isEmailComplete(mail)?{borderColor:"#dc2626"}:{})}}/>
                         {pf.mails.length>1&&<button onClick={()=>updFocal(i,"mails",pf.mails.filter((_:any,idx:number)=>idx!==mi))} style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px"}}><X size={11} style={{color:"#dc2626"}}/></button>}
                       </div>
                     ))}
@@ -455,7 +498,7 @@ function EntrepriseVue({ ent:e, onClose, onEdit }: { ent:any; onClose:()=>void; 
               {e.date_creation&&<Bloc label="Création"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{fmtD(e.date_creation)}</p></Bloc>}
               {locStr&&<Bloc label="Localisation"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{locStr}</p></Bloc>}
               {e.adresse&&<Bloc label="Adresse"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{e.adresse}</p></Bloc>}
-              {e.siteweb&&<Bloc label="Site web"><a href={e.siteweb} target="_blank" rel="noopener noreferrer" style={{fontSize:12.5,fontWeight:600,color:"#004f91",textDecoration:"none",wordBreak:"break-all" as const}}>{e.siteweb}</a></Bloc>}
+              {e.siteweb&&<Bloc label="Site web"><a href={e.siteweb.startsWith("http")?e.siteweb:`https://${e.siteweb}`} target="_blank" rel="noopener noreferrer" style={{fontSize:12.5,fontWeight:600,color:"#004f91",textDecoration:"none",wordBreak:"break-all" as const}}>{e.siteweb}</a></Bloc>}
             </div>
           </section>
 
