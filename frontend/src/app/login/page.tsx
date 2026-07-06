@@ -34,7 +34,7 @@ export default function LoginPage() {
     <main style={{
       height: "100vh", overflow: "hidden",
       display: "flex", flexDirection: "column",
-      background: "radial-gradient(125% 95% at 50% -25%, #001a33 0%, #002b52 26%, #003c70 44%, #004f91 58%, rgba(0,79,145,0) 72%), #F6F5F3",
+      background: "radial-gradient(125% 95% at 50% -25%, #001a33 0%, #002b52 26%, #003c70 44%, #004f91 58%, rgba(0,79,145,0) 72%), radial-gradient(85% 40% at 50% 112%, rgba(202,99,31,0.06) 0%, transparent 70%), #F6F5F3",
       position: "relative", fontFamily: "var(--font-google-sans)",
     }}>
       <style>{`
@@ -43,7 +43,6 @@ export default function LoginPage() {
         @keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(26px,14px,0)}}
         @keyframes driftInv{from{transform:translate3d(0,0,0)}to{transform:translate3d(-22px,-12px,0)}}
         @keyframes riseIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-        @keyframes pulseDotB{0%{box-shadow:0 0 0 0 rgba(0,79,145,0.35)}70%{box-shadow:0 0 0 7px rgba(0,79,145,0)}100%{box-shadow:0 0 0 0 rgba(0,79,145,0)}}
         @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
         .login-brand{animation:riseIn 0.45s ease both}
         .login-card{animation:cardIn 0.5s 0.08s ease both}
@@ -54,9 +53,8 @@ export default function LoginPage() {
         .login-input{transition:border-color .18s,box-shadow .18s,background .18s}
         .login-input::placeholder{color:#b8b2ad}
         .login-input:focus{outline:none;border-color:rgba(0,79,145,0.45);box-shadow:0 0 0 3.5px rgba(0,79,145,0.10);background:#fff}
-        .login-cta{position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s,filter .18s}
-        .login-cta::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.14) 0%,rgba(255,255,255,0) 55%);pointer-events:none}
-        .login-cta:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(0,79,145,.42);filter:brightness(1.05)}
+        .login-cta{transition:transform .18s,box-shadow .18s}
+        .login-cta:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(0,79,145,.45)}
         .login-cta:active{transform:translateY(0) scale(0.995)}
         .login-cta:disabled{opacity:.65;transform:none;cursor:not-allowed}
         .login-cta .cta-arrow{transition:transform .18s;opacity:.85}
@@ -102,11 +100,7 @@ export default function LoginPage() {
           <div className="login-card" style={{ width: "100%", maxWidth: 408, background: "#fff", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(0,79,145,0.10)", boxShadow: "0 30px 70px rgba(0,20,45,0.35), 0 4px 14px rgba(0,20,45,0.12)", position: "relative" }}>
             <div style={{ height: 4, background: "linear-gradient(90deg,#003a6e 0%,#004f91 55%,#1a6ab0 100%)", flexShrink: 0 }} />
             <div style={{ padding: "30px 34px 26px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#004f91", animation: "pulseDotB 1.8s ease-out infinite" }} />
-                <p style={{ margin: 0, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em", color: "#004f91", textTransform: "uppercase" }}>Espace sécurisé</p>
-              </div>
-              <h1 style={{ fontWeight: 800, fontSize: "1.5rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: "10px 0 0" }}>Connexion</h1>
+              <h1 style={{ fontWeight: 800, fontSize: "1.5rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: 0 }}>Connexion</h1>
               <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 6, marginBottom: 0, lineHeight: 1.55 }}>
                 Accédez à votre espace avec votre compte <span style={{ color: "#4a5568", fontWeight: 600 }}>@apix.sn</span>
               </p>
@@ -157,7 +151,7 @@ export default function LoginPage() {
                 )}
 
                 <button type="submit" disabled={loading} className="login-cta"
-                  style={{ width: "100%", height: 46, borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(180deg,#0a5ca8 0%,#004f91 62%,#00437c 100%)", color: "#fff", fontWeight: 700, fontSize: 14.5, letterSpacing: "0.01em", boxShadow: "0 6px 20px rgba(0,79,145,0.35)", fontFamily: "var(--font-google-sans)", marginTop: 3 }}>
+                  style={{ width: "100%", height: 46, borderRadius: 12, border: "none", cursor: "pointer", background: "#004f91", color: "#fff", fontWeight: 700, fontSize: 14.5, letterSpacing: "0.01em", boxShadow: "0 4px 18px rgba(0,79,145,0.35)", fontFamily: "var(--font-google-sans)", marginTop: 3 }}>
                   {loading ? (
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center", position: "relative", zIndex: 1 }}>
                       <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Connexion…
