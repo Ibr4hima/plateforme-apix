@@ -102,10 +102,6 @@ services:
       - caddy_config:/config
     environment:
       DOMAIN: ${DOMAIN}
-    # Identifiants basic-auth (BASIC_AUTH_USER / BASIC_AUTH_HASH) — passés tels quels
-    # au conteneur, sans interpolation Compose (le hash bcrypt contient des « $ »).
-    env_file:
-      - ./secrets.caddy.env
     depends_on:
       - frontend
       - backend
