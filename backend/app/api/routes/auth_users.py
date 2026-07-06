@@ -152,11 +152,16 @@ async def register(payload: RegisterPayload, request: Request, db: AsyncSession 
         raise HTTPException(status_code=409, detail="Un compte existe déjà avec cet email.")
 
     role = role_for_email(email)
+    # Validation par un administrateur : les comptes naissent désactivés, sauf
+    # les emails dev/admin (définis par l'environnement) — sans quoi le tout
+    # premier compte de la plateforme ne pourrait jamais être activé.
+    actif_immediat = role in ("dev", "admin")
     user = User(email=email, hashed_password=hash_password(payload.password),
-                role=role if role != "dev" else "restreint", modules=[])
+                role=role if role != "dev" else "restreint", modules=[],
+                is_active=actif_immediat)
     db.add(user)
     await db.flush()
-    return {"email": user.email, "role": role, "modules": []}
+    return {"email": user.email, "role": role, "modules": [], "pending": not actif_immediat}
 
 
 @router.post("/login")
@@ -185,7 +190,7 @@ async def login(payload: LoginPayload, request: Request, db: AsyncSession = Depe
         etat = await _enregistrer_echec(db, cles)
         raise HTTPException(status_code=401, detail=_msg_echec(etat))
     if not user.is_active:
-        raise HTTPException(status_code=403, detail="Compte désactivé.")
+        raise HTTPException(status_code=403, detail="Compte en attente de validation par un administrateur, ou désactivé.")
     await _reinitialiser_compteurs(db, cles)
     pu = _public_user(user)
     return {"email": user.email, "role": pu["role"], "modules": pu["modules"]}

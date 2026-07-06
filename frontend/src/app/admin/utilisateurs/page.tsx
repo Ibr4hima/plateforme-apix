@@ -110,6 +110,11 @@ export default function UtilisateursAdminPage() {
                             <ShieldCheck size={10}/> Développeur — accès total, non modifiable
                           </span>
                         )}
+                        {!estDev && !u.is_active && (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 3, fontSize: 10, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", padding: "2px 9px", borderRadius: 999 }}>
+                            En attente de validation — cliquez sur « Désactivé » pour activer
+                          </span>
+                        )}
                       </div>
                     </div>
 

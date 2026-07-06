@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [pending, setPending] = useState(false)
 
   // Règles de robustesse, reflétées en direct (le backend revalide et vérifie
   // aussi les mots de passe compromis via Have I Been Pwned)
@@ -66,6 +67,14 @@ export default function RegisterPage() {
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
       setError(data.detail || "Erreur lors de la création du compte.")
+      setLoading(false)
+      return
+    }
+
+    const data = await res.json().catch(() => ({}))
+    if (data.pending) {
+      // Compte créé mais inactif : un administrateur doit le valider
+      setPending(true)
       setLoading(false)
       return
     }
@@ -149,6 +158,22 @@ export default function RegisterPage() {
           {/* Carte */}
           <div className="login-card" style={{ width: "100%", maxWidth: 408, background: "#fff", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(0,79,145,0.10)", boxShadow: "0 30px 70px rgba(0,20,45,0.35), 0 4px 14px rgba(0,20,45,0.12)", position: "relative" }}>
             <div style={{ height: 4, background: "linear-gradient(90deg,#003a6e 0%,#004f91 55%,#1a6ab0 100%)", flexShrink: 0 }} />
+            {pending ? (
+            <div style={{ padding: "30px 34px 28px", textAlign: "center" }}>
+              <span style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(24,128,56,0.10)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+                <ShieldCheck size={22} style={{ color: "#188038" }} />
+              </span>
+              <h1 style={{ fontWeight: 800, fontSize: "1.25rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: 0 }}>Compte créé</h1>
+              <p style={{ color: "#4a5568", fontSize: 13.5, marginTop: 10, lineHeight: 1.65 }}>
+                Votre compte <span style={{ fontWeight: 700, color: "#004f91" }}>{email}</span> est en attente de
+                validation par un administrateur. Vous pourrez vous connecter dès qu&apos;il aura été activé.
+              </p>
+              <Link href="/login" className="login-cta"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 20, height: 44, padding: "0 26px", borderRadius: 12, background: "#004f91", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none", boxShadow: "0 4px 18px rgba(0,79,145,0.35)" }}>
+                Retour à la connexion <ArrowRight size={15} className="cta-arrow" />
+              </Link>
+            </div>
+            ) : (
             <div style={{ padding: "26px 34px 24px" }}>
               <h1 style={{ fontWeight: 800, fontSize: "1.5rem", color: "#1a1a2e", letterSpacing: "-0.02em", margin: 0 }}>Créer un compte</h1>
               <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 6, marginBottom: 0, lineHeight: 1.55 }}>
@@ -246,6 +271,7 @@ export default function RegisterPage() {
                 </button>
               </form>
             </div>
+            )}
 
             {/* Pied de carte */}
             <div style={{ padding: "12px 34px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", textAlign: "center", fontSize: 13, color: "#6b7280" }}>
