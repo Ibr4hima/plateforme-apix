@@ -44,7 +44,7 @@ function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect
   );
 }
 
-function FileZone({ files, onChange }: { files: File[]; onChange: (f: File[]) => void }) {
+function FileZone({ files, onChange, hint }: { files: File[]; onChange: (f: File[]) => void; hint: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const addFiles = (nf: FileList | null) => { if (nf) onChange([...files, ...Array.from(nf).filter(f => !files.some(e => e.name === f.name))]); };
@@ -57,7 +57,7 @@ function FileZone({ files, onChange }: { files: File[]; onChange: (f: File[]) =>
         <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" multiple style={{ display: "none" }} onChange={e => addFiles(e.target.files)} />
         <UploadCloud size={22} color={files.length ? "#004f91" : "#9aa5b4"} style={{ marginBottom: 6 }} />
         <div style={{ fontSize: 13, fontWeight: 600, color: files.length ? "#004f91" : "#4a5568" }}>Déposez le ou les fichiers Excel / CSV</div>
-        <div style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 2 }}>Colonne A : pays · B : année · C : valeur · un fichier peut contenir plusieurs pays</div>
+        <div style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 2 }}>{hint}</div>
       </div>
       {files.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -196,7 +196,10 @@ export default function AdminStatistiquesPage() {
           </button>
         </div>
 
-        <FileZone files={files} onChange={setFiles} />
+        <FileZone files={files} onChange={setFiles}
+          hint={indicateur === "superficie"
+            ? "Colonnes : ID · Pays · Superficie (sans année) · un fichier peut contenir plusieurs pays"
+            : "Colonne A : pays · B : année · C : valeur · un fichier peut contenir plusieurs pays"} />
 
         {res && (
           <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -278,7 +281,7 @@ export default function AdminStatistiquesPage() {
                       const s = c.series[i.code];
                       return (
                         <td key={i.code} style={{ padding: "10px 12px", textAlign: "center" }}>
-                          {s ? <span style={{ background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, fontSize: 11.5, color: "#004f91", whiteSpace: "nowrap" }}>{s.min}–{s.max} <span style={{ color: "#9aa5b4" }}>({s.nb})</span></span> : <span style={{ color: "#DDD" }}>–</span>}
+                          {s ? <span style={{ background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, fontSize: 11.5, color: "#004f91", whiteSpace: "nowrap" }}>{i.code === "superficie" || s.max === 0 ? "✓" : `${s.min}–${s.max}`} <span style={{ color: "#9aa5b4" }}>({s.nb})</span></span> : <span style={{ color: "#DDD" }}>–</span>}
                         </td>
                       );
                     })}
