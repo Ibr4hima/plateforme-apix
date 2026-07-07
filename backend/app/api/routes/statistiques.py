@@ -383,3 +383,183 @@ async def supprimer_pays(pays_id: int, db: AsyncSession = Depends(get_db), curre
     for r in (await db.execute(select(_StatPays).where(_StatPays.pays_id == pays_id))).scalars().all():
         await db.delete(r)
     await db.flush()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DONNÉES TRANSACTIONNELLES (BACI/OEC, HS6) — commerce bilatéral par produit
+# Fichier volumineux : colonnes year, exporter_id/name, importer_id/name,
+# hs_code, product_name, value, quantity, unit_name. Les pays sont résolus par
+# code ISO3 (secours : nom) ; les libellés produits/unités sont des références
+# éditables (une modif se répercute partout).
+# ══════════════════════════════════════════════════════════════════════════════
+from app.models.shared import StatProduit, StatUnite, StatTransaction
+from sqlalchemy import delete as _delete, func as _sqlfunc
+from sqlalchemy.dialects.postgresql import insert as _pg_insert
+
+
+async def _cache_pays(db: AsyncSession):
+    rows = (await db.execute(select(RefPays))).scalars().all()
+    by_code, by_name = {}, {}
+    for p in rows:
+        if p.code_iso3:
+            by_code[p.code_iso3.upper()] = p.id
+        if p.nom_fr:
+            by_name[_norm(p.nom_fr)] = p.id
+        if p.nom_cnuced:
+            by_name[_norm(p.nom_cnuced)] = p.id
+    return by_code, by_name
+
+
+@router.post("/transactions/importer")
+async def importer_transactions(
+    fichiers: List[UploadFile] = File(default=[]),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    """Importe un fichier CSV de transactions bilatérales. Streaming + insertion
+    par lots. Réimporter une année remplace ses données."""
+    by_code, by_name = await _cache_pays(db)
+    non_resolus: dict[str, int] = {}
+    produits: dict[str, str] = {}   # hs_code → nom_en
+    unites: dict[str, str] = {}     # unit_name → abbr
+    annees_vues: set[int] = set()
+    total = 0
+    BATCH = 4000
+
+    for fichier in (fichiers or []):
+        try:
+            fichier.file.seek(0)
+        except Exception:
+            pass
+        text = io.TextIOWrapper(fichier.file, encoding="utf-8-sig", newline="")
+        reader = csv.DictReader(text)
+        # normalise les noms de colonnes
+        if reader.fieldnames:
+            reader.fieldnames = [(c or "").strip().lower() for c in reader.fieldnames]
+
+        # Purge des années présentes dans ce fichier (au premier enregistrement)
+        annees_purgees: set[int] = set()
+        batch: list[dict] = []
+
+        async def flush(rows):
+            if rows:
+                await db.execute(_pg_insert(StatTransaction.__table__), rows)
+
+        for row in reader:
+            try:
+                annee = int(float(row.get("year") or 0))
+                if not (1900 <= annee <= 2100):
+                    continue
+                if annee not in annees_purgees:
+                    await db.execute(_delete(StatTransaction).where(StatTransaction.annee == annee))
+                    annees_purgees.add(annee); annees_vues.add(annee)
+
+                exp_code = (row.get("exporter_id") or "").strip().upper()
+                imp_code = (row.get("importer_id") or "").strip().upper()
+                exp_nom = (row.get("exporter_name") or "").strip()
+                imp_nom = (row.get("importer_name") or "").strip()
+                eid = by_code.get(exp_code) or by_name.get(_norm(exp_nom))
+                iid = by_code.get(imp_code) or by_name.get(_norm(imp_nom))
+                if eid is None:
+                    if exp_nom: non_resolus[exp_nom] = non_resolus.get(exp_nom, 0) + 1
+                    continue
+                if iid is None:
+                    if imp_nom: non_resolus[imp_nom] = non_resolus.get(imp_nom, 0) + 1
+                    continue
+
+                hs = (row.get("hs_code") or "").strip()
+                if not hs:
+                    continue
+                if hs not in produits:
+                    produits[hs] = (row.get("product_name") or "").strip()
+                unite = (row.get("unit_name") or "").strip()
+                if unite and unite not in unites:
+                    unites[unite] = (row.get("unit_abbrevation") or row.get("unit_abbreviation") or "").strip()
+
+                batch.append({
+                    "annee": annee, "exportateur_id": eid, "importateur_id": iid,
+                    "hs_code": hs, "valeur": _num(str(row.get("value") or "")),
+                    "quantite": _num(str(row.get("quantity") or "")), "unite": unite or None,
+                })
+                total += 1
+                if len(batch) >= BATCH:
+                    await flush(batch); batch = []
+            except (ValueError, KeyError):
+                continue
+        await flush(batch)
+
+    # Enregistre les nouveaux produits / unités sans écraser les libellés édités
+    if produits:
+        await db.execute(
+            _pg_insert(StatProduit.__table__).values(
+                [{"hs_code": h, "libelle": n or h, "nom_en": n} for h, n in produits.items()]
+            ).on_conflict_do_nothing(index_elements=["hs_code"])
+        )
+    if unites:
+        await db.execute(
+            _pg_insert(StatUnite.__table__).values(
+                [{"code": u, "libelle": u, "abbr": a} for u, a in unites.items()]
+            ).on_conflict_do_nothing(index_elements=["code"])
+        )
+    await db.flush()
+    return {
+        "lignes": total,
+        "annees": sorted(annees_vues),
+        "produits_vus": len(produits),
+        "unites_vues": len(unites),
+        "non_resolus": [{"label": l, "nb_lignes": n} for l, n in sorted(non_resolus.items())],
+    }
+
+
+@router.get("/transactions/couverture")
+async def couverture_transactions(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
+    rows = (await db.execute(
+        select(StatTransaction.annee, _sqlfunc.count()).group_by(StatTransaction.annee).order_by(StatTransaction.annee)
+    )).all()
+    return [{"annee": a, "nb_lignes": n} for a, n in rows]
+
+
+@router.delete("/transactions/{annee}", status_code=204)
+async def supprimer_annee_transactions(annee: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    await db.execute(_delete(StatTransaction).where(StatTransaction.annee == annee))
+    await db.flush()
+
+
+@router.get("/produits")
+async def liste_produits(q: str = "", limit: int = 100, offset: int = 0,
+                         db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
+    query = select(StatProduit)
+    if q:
+        like = f"%{q.lower()}%"
+        query = query.where(_sqlfunc.lower(StatProduit.hs_code).like(like) | _sqlfunc.lower(StatProduit.libelle).like(like) | _sqlfunc.lower(StatProduit.nom_en).like(like))
+    total = (await db.execute(select(_sqlfunc.count()).select_from(query.subquery()))).scalar()
+    rows = (await db.execute(query.order_by(StatProduit.hs_code).limit(limit).offset(offset))).scalars().all()
+    return {"total": total, "produits": [{"hs_code": p.hs_code, "libelle": p.libelle, "nom_en": p.nom_en} for p in rows]}
+
+
+@router.patch("/produits/{hs_code}")
+async def modifier_produit(hs_code: str, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    p = (await db.execute(select(StatProduit).where(StatProduit.hs_code == hs_code))).scalar_one_or_none()
+    if not p:
+        raise HTTPException(404, "Produit introuvable")
+    if "libelle" in payload:
+        p.libelle = (payload["libelle"] or "").strip() or p.nom_en or hs_code
+    await db.flush()
+    return {"hs_code": p.hs_code, "libelle": p.libelle, "nom_en": p.nom_en}
+
+
+@router.get("/unites")
+async def liste_unites(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
+    rows = (await db.execute(select(StatUnite).order_by(StatUnite.code))).scalars().all()
+    return [{"code": u.code, "libelle": u.libelle, "abbr": u.abbr} for u in rows]
+
+
+@router.patch("/unites/{code}")
+async def modifier_unite(code: str, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    u = (await db.execute(select(StatUnite).where(StatUnite.code == code))).scalar_one_or_none()
+    if not u:
+        raise HTTPException(404, "Unité introuvable")
+    if "libelle" in payload:
+        u.libelle = (payload["libelle"] or "").strip() or u.code
+    await db.flush()
+    return {"code": u.code, "libelle": u.libelle, "abbr": u.abbr}
