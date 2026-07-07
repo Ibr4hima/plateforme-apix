@@ -817,7 +817,7 @@ async def commerce_kpis(
     # « Année record » = année au plus fort volume total, sur toute la période filtrée.
     rec = (await db.execute(
         select(StatTransaction.annee, _sum.label("v")).where(W)
-        .group_by(StatTransaction.annee).order_by(_sum.desc()).limit(1)
+        .group_by(StatTransaction.annee).order_by(_sum.desc().nullslast()).limit(1)
     )).first()
     annee_record = {"annee": rec.annee, "valeur": float(rec.v or 0)} if rec else None
 
@@ -838,7 +838,7 @@ async def commerce_kpis(
 
         tp = (await db.execute(
             select(partner_col.label("pid"), _sum.label("v")).where(Wref)
-            .group_by(partner_col).order_by(_sum.desc()).limit(1)
+            .group_by(partner_col).order_by(_sum.desc().nullslast()).limit(1)
         )).first()
         if tp:
             nom = (await db.execute(select(RefPays.nom_fr).where(RefPays.id == tp.pid))).scalar_one_or_none()
@@ -846,7 +846,7 @@ async def commerce_kpis(
 
         tr = (await db.execute(
             select(StatTransaction.ressource, _sum.label("v")).where(Wref)
-            .group_by(StatTransaction.ressource).order_by(_sum.desc()).limit(1)
+            .group_by(StatTransaction.ressource).order_by(_sum.desc().nullslast()).limit(1)
         )).first()
         if tr:
             lib = (await db.execute(select(StatRessource.libelle).where(StatRessource.nom_en == tr.ressource))).scalar_one_or_none()
