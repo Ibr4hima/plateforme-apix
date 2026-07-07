@@ -693,7 +693,8 @@ async def commerce_filtres(db: AsyncSession = Depends(get_db)):
     pays = []
     if ids:
         rows = (await db.execute(select(RefPays).where(RefPays.id.in_(ids)).order_by(RefPays.nom_fr))).scalars().all()
-        pays = [{"id": p.id, "nom": p.nom_fr, "code_iso3": p.code_iso3} for p in rows]
+        pays = [{"id": p.id, "nom": p.nom_fr, "code_iso3": p.code_iso3,
+                 "continent": p.continent, "region_geo": p.region_geo} for p in rows]
     return {
         "annees": list(annees),
         "ressources": [{"nom_en": r.nom_en, "libelle": r.libelle or r.nom_en} for r in ressources],
@@ -705,9 +706,13 @@ async def commerce_filtres(db: AsyncSession = Depends(get_db)):
 async def commerce_transactions(
     db: AsyncSession = Depends(get_db),
     annee: Optional[int] = Query(default=None),
+    annee_min: Optional[int] = Query(default=None),
+    annee_max: Optional[int] = Query(default=None),
+    annees: Optional[str] = Query(default=None),
     exportateur_id: Optional[int] = Query(default=None),
     importateur_id: Optional[int] = Query(default=None),
     ressource: Optional[str] = Query(default=None),
+    ressources: Optional[str] = Query(default=None),
     recherche: Optional[str] = Query(default=None),
     page: int = Query(default=1, ge=1),
     taille: int = Query(default=50, ge=1, le=200),
@@ -733,12 +738,24 @@ async def commerce_transactions(
     )
     if annee is not None:
         base = base.where(StatTransaction.annee == annee)
+    if annee_min is not None:
+        base = base.where(StatTransaction.annee >= annee_min)
+    if annee_max is not None:
+        base = base.where(StatTransaction.annee <= annee_max)
+    if annees:
+        liste_a = [int(x) for x in annees.split(",") if x.strip().isdigit()]
+        if liste_a:
+            base = base.where(StatTransaction.annee.in_(liste_a))
     if exportateur_id is not None:
         base = base.where(StatTransaction.exportateur_id == exportateur_id)
     if importateur_id is not None:
         base = base.where(StatTransaction.importateur_id == importateur_id)
     if ressource:
         base = base.where(StatTransaction.ressource == ressource)
+    if ressources:
+        liste_r = [x for x in ressources.split(",") if x.strip()]
+        if liste_r:
+            base = base.where(StatTransaction.ressource.in_(liste_r))
     if recherche:
         motif = f"%{recherche.strip()}%"
         base = base.where(_or(Exp.nom_fr.ilike(motif), Imp.nom_fr.ilike(motif),
