@@ -44,7 +44,13 @@ def _completer_derives(par_pays_annee: dict) -> None:
         if pop and surf and surf > 0:
             vals["densite"] = round(pop / surf, 2)
         if pop and pib and pop > 0:
-            vals["pib_hab"] = round(pib * 1_000_000_000 / pop, 1)
+            vals["pib_hab"] = round(pib / pop, 1)  # pib en USD bruts
+        im, ex = vals.get("importations_marchandises"), vals.get("exportations_marchandises")
+        if im is not None and ex is not None:
+            vals["balance_marchandises"] = round(ex - im, 1)
+        ims, exs = vals.get("importations_services"), vals.get("exportations_services")
+        if ims is not None and exs is not None:
+            vals["balance_services"] = round(exs - ims, 1)
 
 
 async def _donnees(db: AsyncSession, pays_ids: List[int],
@@ -135,7 +141,16 @@ from app.core.auth import require_admin
 from app.models.shared import StatPays as _StatPays
 
 # Seuls les indicateurs « de base » sont importables (densité et PIB/hab dérivés)
-_INDICATEURS_IMPORT = {"population", "superficie", "pib", "croissance_pib"}
+_INDICATEURS_IMPORT = {
+    "population", "superficie", "pib", "croissance_pib",
+    "importations_marchandises", "exportations_marchandises",
+    "importations_services", "exportations_services",
+}
+# Indicateurs exprimés en millions de USD dans les fichiers → stockés en USD (×1e6)
+_MILLIONS_USD = {
+    "pib", "importations_marchandises", "exportations_marchandises",
+    "importations_services", "exportations_services",
+}
 
 
 def _parse_stat_file(contenu: bytes, nom_fichier: str):
@@ -244,9 +259,11 @@ async def importer(
                 continue
             ins = maj = 0
             for annee, valeur in lignes:
-                # Les fichiers de population sont en milliers d'habitants → stocker en habitants
-                if indicateur == "population" and valeur is not None:
-                    valeur = valeur * 1000
+                if valeur is not None:
+                    if indicateur == "population":
+                        valeur = valeur * 1000            # milliers d'habitants → habitants
+                    elif indicateur in _MILLIONS_USD:
+                        valeur = valeur * 1_000_000        # millions USD → USD
                 row = (await db.execute(select(_StatPays).where(
                     _StatPays.pays_id == pays_obj.id, _StatPays.annee == annee, _StatPays.indicateur == indicateur
                 ))).scalar_one_or_none()

@@ -186,7 +186,7 @@ export default function AdminStatistiquesPage() {
           </div>
           {indActuel && (
             <div style={{ fontSize: 12, color: "#9aa5b4", paddingBottom: 10 }}>
-              Unité attendue : <strong style={{ color: "#004f91" }}>{indActuel.code === "population" ? "milliers d'habitants" : indActuel.unite}</strong>
+              Unité attendue : <strong style={{ color: "#004f91" }}>{indActuel.code === "population" ? "milliers d'habitants" : ["pib","importations_marchandises","exportations_marchandises","importations_services","exportations_services"].includes(indActuel.code) ? "millions de $ US" : indActuel.unite}</strong>
             </div>
           )}
           <button onClick={handleVider} disabled={viding} title={`Vider toutes les données de « ${indActuel?.libelle} »`}

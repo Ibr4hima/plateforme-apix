@@ -20,8 +20,13 @@ function fmt(valeur: number | null | undefined, unite: string): string {
   if (valeur === null || valeur === undefined || isNaN(valeur)) return "—";
   const v = valeur;
   if (unite === "%") return `${v > 0 ? "+" : ""}${v.toFixed(1)} %`;
+  if (unite === "USD") {
+    const a = Math.abs(v);
+    if (a >= 1e9) return `${(v / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md $`;
+    if (a >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M $`;
+    return `${Math.round(v).toLocaleString("fr-FR")} $`;
+  }
   if (unite === "Md USD") return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md $`;
-  if (unite === "USD") return `${Math.round(v).toLocaleString("fr-FR")} $`;
   if (unite === "hab/km²") return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} hab/km²`;
   if (unite === "km²") return `${Math.round(v).toLocaleString("fr-FR")} km²`;
   if (unite === "habitants") {
@@ -35,7 +40,7 @@ function fmtCourt(valeur: number | null | undefined, unite: string): string {
   const v = valeur;
   if (unite === "habitants") return v >= 1e6 ? `${(v / 1e6).toFixed(1)} M` : `${Math.round(v / 1e3)} k`;
   if (unite === "km²") return v >= 1e6 ? `${(v / 1e6).toFixed(2)} M` : `${Math.round(v / 1e3)} k`;
-  if (unite === "USD") return v >= 1e3 ? `${(v / 1e3).toFixed(1)} k` : `${Math.round(v)}`;
+  if (unite === "USD") { const a = Math.abs(v); return a >= 1e9 ? `${(v / 1e9).toFixed(1)}Md` : a >= 1e6 ? `${(v / 1e6).toFixed(0)}M` : a >= 1e3 ? `${(v / 1e3).toFixed(0)}k` : `${Math.round(v)}`; }
   if (unite === "%") return `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
   return v.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
 }
