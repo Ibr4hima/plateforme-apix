@@ -13,13 +13,6 @@ type RefPays    = { id: number; nom_fr: string; code_iso3: string | null };
 type Couverture = { pays_id: number; pays: string; code_iso3: string | null; series: Record<string, { min: number; max: number; nb: number }> };
 type ImportRes  = { pays: { pays: string; pays_id: number; insere: number; mis_a_jour: number }[]; erreurs: string[]; non_resolus: { label: string; nb_lignes: number }[] };
 
-function Flag({ code }: { code: string | null }) {
-  if (!code || code.length < 2) return <span style={{ fontSize: 16, marginRight: 8 }}>🌐</span>;
-  const c2 = code.slice(0, 2).toUpperCase();
-  const emoji = c2.split("").map(ch => String.fromCodePoint(ch.charCodeAt(0) + 127397)).join("");
-  return <span style={{ fontSize: 16, marginRight: 8 }}>{emoji}</span>;
-}
-
 function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect: (id: number, nom: string) => void }) {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -42,7 +35,7 @@ function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect
               style={{ padding: "8px 12px", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
               onMouseEnter={e => (e.currentTarget.style.background = "#F8F7F6")}
               onMouseLeave={e => (e.currentTarget.style.background = "")}>
-              <Flag code={p.code_iso3} />{p.nom_fr}
+              {p.nom_fr}
             </div>
           ))}
         </div>
@@ -97,6 +90,7 @@ export default function AdminStatistiquesPage() {
   const [assoc, setAssoc] = useState<Record<string, { id: number; nom: string }>>({});
   const [associating, setAssociating] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [viding, setViding] = useState(false);
 
   const headers = () => {
     const h: Record<string, string> = {};
@@ -151,6 +145,14 @@ export default function AdminStatistiquesPage() {
     await handleImport();
   }
 
+  async function handleVider() {
+    if (!indicateur) return;
+    if (!confirm(`Vider TOUTES les données de « ${indActuel?.libelle} » pour tous les pays ?\n\nCette action est irréversible.`)) return;
+    setViding(true);
+    try { const r = await fetch(`${API}/statistiques/indicateur/${indicateur}`, { method: "DELETE", headers: headers() }); if (r.ok) await load(); } catch {}
+    setViding(false);
+  }
+
   async function handleDelete(pid: number, pays: string) {
     if (!confirm(`Supprimer toutes les données statistiques de ${pays} ?`)) return;
     setDeleting(pid);
@@ -184,9 +186,14 @@ export default function AdminStatistiquesPage() {
           </div>
           {indActuel && (
             <div style={{ fontSize: 12, color: "#9aa5b4", paddingBottom: 10 }}>
-              Unité attendue : <strong style={{ color: "#004f91" }}>{indActuel.unite}</strong>
+              Unité attendue : <strong style={{ color: "#004f91" }}>{indActuel.code === "population" ? "milliers d'habitants" : indActuel.unite}</strong>
             </div>
           )}
+          <button onClick={handleVider} disabled={viding} title={`Vider toutes les données de « ${indActuel?.libelle} »`}
+            style={{ marginBottom: 4, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.2)", color: "#dc2626", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 600, cursor: viding ? "default" : "pointer", fontFamily: "var(--font-google-sans)" }}>
+            {viding ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Trash2 size={14} />}
+            Vider l&apos;indicateur
+          </button>
         </div>
 
         <FileZone files={files} onChange={setFiles} />
@@ -265,7 +272,7 @@ export default function AdminStatistiquesPage() {
                 {couverture.map(c => (
                   <tr key={c.pays_id} style={{ borderBottom: "1px solid #F5F4F3" }}>
                     <td style={{ padding: "10px 12px" }}>
-                      <span style={{ display: "flex", alignItems: "center" }}><Flag code={c.code_iso3} /><span style={{ fontWeight: 600, color: "#1a1a2e" }}>{c.pays}</span></span>
+                      <span style={{ fontWeight: 600, color: "#1a1a2e" }}>{c.pays}</span>
                     </td>
                     {importables.map(i => {
                       const s = c.series[i.code];

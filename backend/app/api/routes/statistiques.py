@@ -244,6 +244,9 @@ async def importer(
                 continue
             ins = maj = 0
             for annee, valeur in lignes:
+                # Les fichiers de population sont en milliers d'habitants → stocker en habitants
+                if indicateur == "population" and valeur is not None:
+                    valeur = valeur * 1000
                 row = (await db.execute(select(_StatPays).where(
                     _StatPays.pays_id == pays_obj.id, _StatPays.annee == annee, _StatPays.indicateur == indicateur
                 ))).scalar_one_or_none()
@@ -273,6 +276,14 @@ async def associer_pays(payload: dict, db: AsyncSession = Depends(get_db), curre
     p.nom_cnuced = label
     await db.flush()
     return {"success": True, "nom_fr": p.nom_fr}
+
+
+@router.delete("/indicateur/{code}", status_code=204)
+async def vider_indicateur(code: str, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    """Supprime toutes les données d'un indicateur, pour tous les pays."""
+    for r in (await db.execute(select(_StatPays).where(_StatPays.indicateur == code))).scalars().all():
+        await db.delete(r)
+    await db.flush()
 
 
 @router.delete("/pays/{pays_id}", status_code=204)
