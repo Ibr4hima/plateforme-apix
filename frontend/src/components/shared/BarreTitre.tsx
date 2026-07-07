@@ -57,15 +57,18 @@ export function BarreTitreSegment<T extends string>({ options, value, onChange }
 }
 
 // ── Badge d'action en verre dépoli avec point pulsant (ex. Prochain événement) ─
-export function BarreTitreBadge({ label, detail, onClick }: {
-  label: string; detail?: string; onClick?: () => void;
+// `icon` remplace le point pulsant quand il est fourni (ex. icône de tableau).
+export function BarreTitreBadge({ label, detail, onClick, icon }: {
+  label: string; detail?: string; onClick?: () => void; icon?: React.ReactNode;
 }) {
   return (
     <button onClick={onClick}
       style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.10)", cursor: onClick ? "pointer" : "default", minWidth: 0, maxWidth: 440, transition: "background 0.15s", fontFamily: "var(--font-google-sans)" }}
       onMouseEnter={e => { if (onClick) e.currentTarget.style.background = "rgba(255,255,255,0.18)"; }}
       onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.10)"; }}>
-      <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
+      {icon
+        ? <span style={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>
+        : <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />}
       <span style={{ fontSize: 12, fontWeight: 700, color: "#fff", whiteSpace: "nowrap", flexShrink: 0 }}>{label}</span>
       {detail && <span style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{detail}</span>}
     </button>
