@@ -11,6 +11,7 @@ import { jwtVerify } from "jose"
 
 const PROTECTED_MODULES: Record<string, string> = {
   "/tableau-de-bord": "tableau-de-bord",
+  "/statistiques": "statistiques",
   "/ide": "ide",
   "/prospects": "prospects",
   "/opportunites": "opportunites",
@@ -87,6 +88,7 @@ export const config = {
     "/login",
     "/register",
     "/tableau-de-bord/:path*",
+    "/statistiques/:path*",
     "/ide/:path*",
     "/prospects/:path*",
     "/opportunites/:path*",

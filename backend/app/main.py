@@ -6,7 +6,7 @@ from app.api.routes import (
     evenements, accords, entreprises, prospects, zones, zones_types,
     projets, code_investissement, modalites_application, suivi_projets, classifications,
     ide, ref_pays, opportunites, ref_potentialites, ref_avantages,
-    citi, dashboard, dashboard_tables, bdef, auth_users
+    citi, dashboard, dashboard_tables, bdef, auth_users, statistiques
 )
 from contextlib import asynccontextmanager
 import os
@@ -112,6 +112,7 @@ app.include_router(dashboard.router,           prefix=settings.API_PREFIX)
 app.include_router(dashboard_tables.router,    prefix=settings.API_PREFIX)
 app.include_router(bdef.router,                prefix=settings.API_PREFIX)
 app.include_router(auth_users.router,          prefix=settings.API_PREFIX)
+app.include_router(statistiques.router,        prefix=settings.API_PREFIX)
 
 @app.get("/")
 async def root():

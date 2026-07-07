@@ -55,3 +55,21 @@ class IdeCnucedMonde(Base):
     max        = Column(Numeric(16, 4))
     variance   = Column(Numeric(22, 4))
     ecart_type = Column(Numeric(16, 4))
+
+
+class StatIndicateur(Base):
+    __tablename__ = "stat_indicateurs"
+    code      = Column(String(50), primary_key=True)
+    libelle   = Column(String(200), nullable=False)
+    unite     = Column(String(50))
+    categorie = Column(String(100))
+    ordre     = Column(Integer, nullable=False, default=0)
+    derive    = Column(Boolean, nullable=False, default=False)
+
+
+class StatPays(Base):
+    __tablename__ = "stat_pays"
+    pays_id    = Column(Integer, ForeignKey("ref_pays.id", ondelete="CASCADE"), primary_key=True)
+    annee      = Column(SmallInteger, primary_key=True)
+    indicateur = Column(String(50), primary_key=True)
+    valeur     = Column(Numeric(22, 4))

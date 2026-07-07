@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // Slugs des modules protégés (connexion requise quand AUTH_ENFORCED est actif)
-const PROTECTED_SLUGS: Record<string,string> = { "/ide":"ide", "/prospects":"prospects", "/opportunites":"opportunites", "/tableau-de-bord":"tableau-de-bord" };
+const PROTECTED_SLUGS: Record<string,string> = { "/ide":"ide", "/prospects":"prospects", "/opportunites":"opportunites", "/tableau-de-bord":"tableau-de-bord", "/statistiques":"statistiques" };
 
 const modules = [
   { label: "Investissements privés",        href: "/ide",          icon: "finance_mode",           color: "#ca631f" },
@@ -471,6 +471,14 @@ export default function Navbar() {
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
               Tableau de bord
+            </Link>}
+
+            {/* Statistiques */}
+            {visible("/statistiques") && <Link href="/statistiques"
+              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
+              Statistiques
             </Link>}
 
             {/* Code des investissements */}
