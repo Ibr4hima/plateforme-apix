@@ -32,7 +32,7 @@ _settings = get_settings()
 MODULES = [
     "utilisateurs", "evenements", "accords", "entreprises", "gestion-zones",
     "opportunites", "intentions", "prospects", "analyse",
-    "ref-pays", "geo", "naema", "classifications", "ide", "bdef",
+    "statistiques", "ref-pays", "geo", "naema", "classifications", "ide", "bdef",
     "code-investissement",
 ]
 

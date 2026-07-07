@@ -27,6 +27,7 @@ const MODULE_LABELS: Record<string, string> = {
   "intentions":           "Intentions d'investissement",
   "prospects":            "Prospects",
   "analyse":              "Analyse de données",
+  "statistiques":         "Données Statistiques",
   "ref-pays":             "Pays & Groupements",
   "geo":                  "Découpage administratif",
   "naema":                "Classification NAEMA",

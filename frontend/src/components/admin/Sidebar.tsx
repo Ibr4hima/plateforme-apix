@@ -22,6 +22,7 @@ const MODULES: NavItem[] = [
   { type: "link", label: "Prospects",                      href: "/admin/prospects",          icon: "frame_inspect"         },
   { type: "link", label: "Analyse de données",             href: "/admin/analyse",            icon: "show_chart",             disabled: true },
   { type: "section", label: "Référentiels" },
+  { type: "link", label: "Données Statistiques",           href: "/admin/statistiques",       icon: "public"                },
   { type: "link", label: "Pays & Groupements",             href: "/admin/ref-pays",           icon: "public",                 disabled: true },
   { type: "link", label: "Découpage administratif",        href: "/admin/geo",                icon: "map",                    disabled: true },
   { type: "link", label: "Classification NAEMA",           href: "/admin/naema",              icon: "account_tree",           disabled: true },
