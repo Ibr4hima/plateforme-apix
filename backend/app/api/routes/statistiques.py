@@ -427,11 +427,20 @@ async def importer_transactions(
     BATCH = 4000
 
     for fichier in (fichiers or []):
+        raw = fichier.file
         try:
-            fichier.file.seek(0)
+            raw.seek(0)
         except Exception:
             pass
-        text = io.TextIOWrapper(fichier.file, encoding="utf-8-sig", newline="")
+        # SpooledTemporaryFile (py<3.11) n'expose pas readable/writable/seekable
+        # que TextIOWrapper attend → on les fournit au besoin.
+        if not hasattr(raw, "readable"):
+            raw.readable = lambda: True          # type: ignore[attr-defined]
+        if not hasattr(raw, "writable"):
+            raw.writable = lambda: False         # type: ignore[attr-defined]
+        if not hasattr(raw, "seekable"):
+            raw.seekable = lambda: True          # type: ignore[attr-defined]
+        text = io.TextIOWrapper(raw, encoding="utf-8-sig", newline="")
         reader = csv.DictReader(text)
         # normalise les noms de colonnes
         if reader.fieldnames:
