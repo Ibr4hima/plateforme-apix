@@ -91,6 +91,7 @@ export default function AdminStatistiquesPage() {
   const [associating, setAssociating] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [viding, setViding] = useState(false);
+  const [tab, setTab] = useState<"indicateurs"|"transactions">("indicateurs");
 
   const headers = () => {
     const h: Record<string, string> = {};
@@ -165,9 +166,24 @@ export default function AdminStatistiquesPage() {
       <div style={{ marginBottom: 8 }}>
         <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Données Statistiques</h1>
         <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 4 }}>
-          Importez les données macro par pays. Choisissez l&apos;indicateur, déposez le fichier ; le pays est détecté automatiquement et alimente la page Statistiques.
+          Importez les données de la page Statistiques : indicateurs macro par pays, ou données transactionnelles bilatérales par ressource.
         </p>
       </div>
+
+      {/* Onglets */}
+      <div style={{ display: "flex", borderBottom: "1px solid #E8E5E3", marginBottom: 24, marginTop: 12 }}>
+        {([["indicateurs","Indicateurs par pays"],["transactions","Données transactionnelles"]] as const).map(([k,l]) => {
+          const actif = tab === k;
+          return (
+            <button key={k} onClick={() => setTab(k)}
+              style={{ padding: "12px 20px", border: "none", borderBottom: `2px solid ${actif?"#004f91":"transparent"}`, background: "transparent", color: actif?"#004f91":"#9aa5b4", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)" }}>
+              {l}
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === "transactions" ? <TransactionsPanel headers={headers} paysList={paysList} /> : (<>
 
       {/* ── Import ── */}
       <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", marginTop: 20, marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
@@ -298,7 +314,146 @@ export default function AdminStatistiquesPage() {
           </div>
         )}
       </div>
+      </>)}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
+  );
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Panneau « Données transactionnelles » (resourcetrade.earth)
+// ══════════════════════════════════════════════════════════════════════════════
+function TransactionsPanel({ headers, paysList }: { headers: () => Record<string,string>; paysList: RefPays[] }) {
+  const [files, setFiles] = useState<File[]>([]);
+  const [importing, setImporting] = useState(false);
+  const [res, setRes] = useState<any>(null);
+  const [assoc, setAssoc] = useState<Record<string, { id: number; nom: string }>>({});
+  const [associating, setAssociating] = useState(false);
+  const [couv, setCouv] = useState<{ annee: number; nb_lignes: number }[]>([]);
+  const [ressources, setRessources] = useState<{ nom_en: string; libelle: string }[]>([]);
+  const [deleting, setDeleting] = useState<number | null>(null);
+
+  const load = async () => {
+    const [c, r] = await Promise.all([
+      fetch(`${API}/statistiques/transactions/couverture`, { headers: headers() }).then(x => x.ok ? x.json() : []),
+      fetch(`${API}/statistiques/ressources`, { headers: headers() }).then(x => x.ok ? x.json() : []),
+    ]);
+    setCouv(c || []); setRessources(r || []);
+  };
+  useEffect(() => { load(); }, []);
+
+  async function handleImport() {
+    if (!files.length) return;
+    setImporting(true); setRes(null); setAssoc({});
+    try {
+      const fd = new FormData();
+      files.forEach(f => fd.append("fichiers", f));
+      const r = await fetch(`${API}/statistiques/transactions/importer`, { method: "POST", headers: headers(), body: fd });
+      const data = await r.json();
+      if (r.ok) { setRes(data); if (!data.non_resolus?.length) setFiles([]); await load(); }
+      else setRes({ non_resolus: [], erreur: data.detail || "Erreur" });
+    } catch (e: any) { setRes({ non_resolus: [], erreur: "Erreur réseau : " + e.message }); }
+    setImporting(false);
+  }
+  async function handleAssocier() {
+    const toDo = Object.entries(assoc).filter(([, v]) => v.id);
+    if (!toDo.length) return;
+    setAssociating(true);
+    for (const [label, { id }] of toDo)
+      await fetch(`${API}/statistiques/associer-pays`, { method: "POST", headers: { ...headers(), "Content-Type": "application/json" }, body: JSON.stringify({ label, ref_pays_id: id }) });
+    setAssociating(false); await handleImport();
+  }
+  async function delAnnee(a: number) {
+    if (!confirm(`Supprimer toutes les transactions de ${a} ?`)) return;
+    setDeleting(a);
+    try { const r = await fetch(`${API}/statistiques/transactions/${a}`, { method: "DELETE", headers: headers() }); if (r.ok) await load(); } catch {}
+    setDeleting(null);
+  }
+  async function saveRessource(nom_en: string, libelle: string) {
+    await fetch(`${API}/statistiques/ressources/${encodeURIComponent(nom_en)}`, { method: "PATCH", headers: { ...headers(), "Content-Type": "application/json" }, body: JSON.stringify({ libelle }) });
+  }
+
+  return (
+    <>
+      {/* Import */}
+      <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+        <div style={SEC}>Importer un fichier de transactions</div>
+        <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 14 }}>
+          Fichier resourcetrade.earth (colonnes Exporter ISO3, Importer ISO3, Resource, Year, Value 1000USD). Les pays sont résolus par code ISO3, la valeur convertie en dollars, les ressources enregistrées pour édition. Réimporter une année remplace ses données.
+        </p>
+        <FileZone files={files} onChange={setFiles} hint="Fichier Excel (.xlsx) ou CSV · un fichier par année" />
+        {res?.lignes !== undefined && (
+          <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(24,128,56,0.06)", border: "1px solid rgba(24,128,56,0.2)", fontSize: 13, color: "#188038" }}>
+            ✓ {res.lignes.toLocaleString("fr-FR")} lignes importées · années {(res.annees || []).join(", ")} · {res.ressources_vues} ressources
+          </div>
+        )}
+        {res?.erreur && <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)", fontSize: 13, color: "#dc2626" }}>⚠ {res.erreur}</div>}
+        <button onClick={handleImport} disabled={importing || !files.length}
+          style={{ marginTop: 16, background: importing || !files.length ? "#C5BFBB" : "#004f91", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 13, fontWeight: 700, cursor: importing || !files.length ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)" }}>
+          {importing ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <UploadCloud size={15} />}
+          {importing ? "Import en cours (peut être long)…" : "Importer"}
+        </button>
+      </div>
+
+      {/* Pays non reconnus */}
+      {res?.non_resolus?.length ? (
+        <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "2px solid rgba(202,99,31,0.5)", padding: "24px 28px", marginBottom: 20 }}>
+          <div style={{ ...SEC, color: "#ca631f", borderBottomColor: "rgba(202,99,31,0.25)" }}>{res.non_resolus.length} pays non reconnus — association manuelle</div>
+          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 16 }}>L&apos;association vaut à la fois pour l&apos;exportateur et l&apos;importateur, et pour tous les imports futurs.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {res.non_resolus.map((nr: any) => (
+              <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgba(202,99,31,0.04)", borderRadius: 10, border: "1px solid rgba(202,99,31,0.18)" }}>
+                <div style={{ flex: "0 0 240px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#ca631f" }}>{nr.label}</div>
+                  <div style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>{nr.nb_lignes.toLocaleString("fr-FR")} lignes concernées</div>
+                </div>
+                <AssociatePicker paysList={paysList} onSelect={(id, nom) => setAssoc(p => ({ ...p, [nr.label]: { id, nom } }))} />
+                {assoc[nr.label] && <CheckCircle size={18} color="#188038" style={{ flexShrink: 0 }} />}
+              </div>
+            ))}
+          </div>
+          <button onClick={handleAssocier} disabled={associating || !Object.values(assoc).some(v => v.id)}
+            style={{ marginTop: 16, background: associating || !Object.values(assoc).some(v => v.id) ? "#C5BFBB" : "#ca631f", color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)" }}>
+            {associating ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <Link2 size={15} />}
+            {associating ? "Association…" : "Associer et réimporter"}
+          </button>
+        </div>
+      ) : null}
+
+      {/* Années couvertes */}
+      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+        <div style={{ ...SEC, marginBottom: 12 }}>Années importées</div>
+        {couv.length === 0 ? <div style={{ fontSize: 13, color: "#9aa5b4" }}>Aucune transaction importée.</div> : (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {couv.map(cc => (
+              <span key={cc.annee} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.06)", borderRadius: 999, padding: "5px 6px 5px 13px", fontSize: 12.5, fontWeight: 600, color: "#004f91" }}>
+                {cc.annee} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {cc.nb_lignes.toLocaleString("fr-FR")} lignes</span>
+                <button onClick={() => delAnnee(cc.annee)} className="ro-w" title="Supprimer cette année"
+                  style={{ background: "rgba(220,38,38,0.08)", border: "none", cursor: "pointer", borderRadius: 999, width: 22, height: 22, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  {deleting === cc.annee ? <Loader2 size={11} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={11} style={{ color: "#dc2626" }} />}
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Ressources (éditables) */}
+      {ressources.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+          <div style={{ ...SEC, marginBottom: 12 }}>Ressources — libellés éditables</div>
+          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 12 }}>Traduisez ou renommez ; le libellé s&apos;applique partout où la ressource apparaît.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 10 }}>
+            {ressources.map(rr => (
+              <div key={rr.nom_en} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 11, color: "#9aa5b4", flex: "0 0 auto", minWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={rr.nom_en}>{rr.nom_en}</span>
+                <input defaultValue={rr.libelle || ""} onBlur={e => saveRessource(rr.nom_en, e.target.value)} style={IS} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

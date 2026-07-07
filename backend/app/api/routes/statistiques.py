@@ -383,3 +383,180 @@ async def supprimer_pays(pays_id: int, db: AsyncSession = Depends(get_db), curre
     for r in (await db.execute(select(_StatPays).where(_StatPays.pays_id == pays_id))).scalars().all():
         await db.delete(r)
     await db.flush()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DONNÉES TRANSACTIONNELLES (resourcetrade.earth) — commerce bilatéral par ressource
+# Colonnes du fichier Excel : Exporter ISO3, Importer ISO3, Resource, Year,
+# Value (1000USD). Pays résolus par code ISO3 (secours : nom). Valeur ×1000 (le
+# fichier est en milliers de USD). Libellés de ressources éditables.
+# ══════════════════════════════════════════════════════════════════════════════
+from app.models.shared import StatRessource, StatTransaction
+from sqlalchemy import delete as _delete, func as _sqlfunc
+from sqlalchemy.dialects.postgresql import insert as _pg_insert
+
+
+async def _cache_pays(db: AsyncSession):
+    rows = (await db.execute(select(RefPays))).scalars().all()
+    by_code, by_name = {}, {}
+    for p in rows:
+        if p.code_iso3:
+            by_code[p.code_iso3.upper()] = p.id
+        if p.nom_fr:
+            by_name[_norm(p.nom_fr)] = p.id
+        if p.nom_cnuced:
+            by_name[_norm(p.nom_cnuced)] = p.id
+    return by_code, by_name
+
+
+def _colonnes_tx(header):
+    """Repère les colonnes du fichier resourcetrade (en-têtes anglais)."""
+    hs = [str(c or "").strip().lower() for c in header]
+
+    def trouver(*mots, exact=None):
+        if exact is not None:
+            for i, h in enumerate(hs):
+                if h == exact:
+                    return i
+        for i, h in enumerate(hs):
+            if all(m in h for m in mots):
+                return i
+        return None
+
+    return {
+        "exp_code": trouver("exporter", "iso"),
+        "imp_code": trouver("importer", "iso"),
+        "exp_nom": trouver(exact="exporter"),
+        "imp_nom": trouver(exact="importer"),
+        "ressource": trouver("resource") if trouver("resource") is not None else trouver("produit"),
+        "annee": trouver("year") if trouver("year") is not None else trouver("année"),
+        "valeur": trouver("value"),
+    }
+
+
+@router.post("/transactions/importer")
+async def importer_transactions(
+    fichiers: List[UploadFile] = File(default=[]),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    """Importe un fichier Excel/CSV de transactions bilatérales par ressource.
+    Réimporter une année remplace ses données."""
+    import openpyxl
+    by_code, by_name = await _cache_pays(db)
+    non_resolus: dict[str, int] = {}
+    ressources: set[str] = set()
+    annees_vues: set[int] = set()
+    total = 0
+    BATCH = 4000
+
+    for fichier in (fichiers or []):
+        contenu = await fichier.read()
+        if not contenu:
+            continue
+        ext = (fichier.filename or "").lower().rsplit(".", 1)[-1]
+        if ext in ("xlsx", "xls"):
+            wb = openpyxl.load_workbook(io.BytesIO(contenu), read_only=True, data_only=True)
+            it = wb.active.iter_rows(values_only=True)
+        else:
+            texte = contenu.decode("utf-8-sig", errors="replace")
+            sep = "," if texte[:2048].count(",") >= texte[:2048].count(";") else ";"
+            it = iter(csv.reader(io.StringIO(texte), delimiter=sep))
+
+        try:
+            header = next(it)
+        except StopIteration:
+            continue
+        c = _colonnes_tx(header)
+        if c["exp_code"] is None or c["imp_code"] is None or c["valeur"] is None or c["annee"] is None:
+            raise HTTPException(400, "Colonnes attendues introuvables (Exporter ISO3, Importer ISO3, Resource, Year, Value).")
+
+        annees_purgees: set[int] = set()
+        batch: list[dict] = []
+
+        def g(row, key):
+            i = c[key]
+            return row[i] if i is not None and i < len(row) else None
+
+        for row in it:
+            try:
+                annee = int(float(str(g(row, "annee")).strip()))
+                if not (1900 <= annee <= 2100):
+                    continue
+                if annee not in annees_purgees:
+                    await db.execute(_delete(StatTransaction).where(StatTransaction.annee == annee))
+                    annees_purgees.add(annee); annees_vues.add(annee)
+
+                exp_c = str(g(row, "exp_code") or "").strip().upper()
+                imp_c = str(g(row, "imp_code") or "").strip().upper()
+                exp_n = str(g(row, "exp_nom") or "").strip()
+                imp_n = str(g(row, "imp_nom") or "").strip()
+                eid = by_code.get(exp_c) or by_name.get(_norm(exp_n))
+                iid = by_code.get(imp_c) or by_name.get(_norm(imp_n))
+                if eid is None:
+                    if exp_n or exp_c: non_resolus[exp_n or exp_c] = non_resolus.get(exp_n or exp_c, 0) + 1
+                    continue
+                if iid is None:
+                    if imp_n or imp_c: non_resolus[imp_n or imp_c] = non_resolus.get(imp_n or imp_c, 0) + 1
+                    continue
+
+                ress = str(g(row, "ressource") or "").strip()
+                if ress:
+                    ressources.add(ress)
+                val = _num(str(g(row, "valeur") or ""))
+                if val is not None:
+                    val = val * 1000  # milliers USD → USD
+
+                batch.append({"annee": annee, "exportateur_id": eid, "importateur_id": iid,
+                              "ressource": ress or None, "valeur": val})
+                total += 1
+                if len(batch) >= BATCH:
+                    await db.execute(_pg_insert(StatTransaction.__table__), batch); batch = []
+            except (ValueError, TypeError):
+                continue
+        if batch:
+            await db.execute(_pg_insert(StatTransaction.__table__), batch)
+
+    if ressources:
+        await db.execute(
+            _pg_insert(StatRessource.__table__).values([{"nom_en": r, "libelle": r} for r in ressources])
+            .on_conflict_do_nothing(index_elements=["nom_en"])
+        )
+    await db.flush()
+    return {
+        "lignes": total,
+        "annees": sorted(annees_vues),
+        "ressources_vues": len(ressources),
+        "non_resolus": [{"label": l, "nb_lignes": n} for l, n in sorted(non_resolus.items())],
+    }
+
+
+@router.get("/transactions/couverture")
+async def couverture_transactions(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
+    rows = (await db.execute(
+        select(StatTransaction.annee, _sqlfunc.count()).group_by(StatTransaction.annee).order_by(StatTransaction.annee)
+    )).all()
+    return [{"annee": a, "nb_lignes": n} for a, n in rows]
+
+
+@router.delete("/transactions/{annee}", status_code=204)
+async def supprimer_annee_transactions(annee: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    await db.execute(_delete(StatTransaction).where(StatTransaction.annee == annee))
+    await db.flush()
+
+
+@router.get("/ressources")
+async def liste_ressources(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
+    rows = (await db.execute(select(StatRessource).order_by(StatRessource.nom_en))).scalars().all()
+    return [{"nom_en": r.nom_en, "libelle": r.libelle} for r in rows]
+
+
+@router.patch("/ressources/{nom_en:path}")
+async def modifier_ressource(nom_en: str, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    r = (await db.execute(select(StatRessource).where(StatRessource.nom_en == nom_en))).scalar_one_or_none()
+    if not r:
+        raise HTTPException(404, "Ressource introuvable")
+    if "libelle" in payload:
+        r.libelle = (payload["libelle"] or "").strip() or r.nom_en
+    await db.flush()
+    return {"nom_en": r.nom_en, "libelle": r.libelle}

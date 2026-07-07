@@ -73,3 +73,19 @@ class StatPays(Base):
     annee      = Column(SmallInteger, primary_key=True)
     indicateur = Column(String(50), primary_key=True)
     valeur     = Column(Numeric(22, 4))
+
+
+class StatRessource(Base):
+    __tablename__ = "stat_ressources"
+    nom_en  = Column(Text, primary_key=True)
+    libelle = Column(Text)
+
+
+class StatTransaction(Base):
+    __tablename__ = "stat_transactions"
+    id             = Column(Integer, primary_key=True, autoincrement=True)
+    annee          = Column(SmallInteger, nullable=False)
+    exportateur_id = Column(Integer, ForeignKey("ref_pays.id", ondelete="CASCADE"), nullable=False)
+    importateur_id = Column(Integer, ForeignKey("ref_pays.id", ondelete="CASCADE"), nullable=False)
+    ressource      = Column(Text)
+    valeur         = Column(Numeric)
