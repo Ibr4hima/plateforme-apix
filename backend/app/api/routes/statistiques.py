@@ -866,6 +866,64 @@ async def commerce_kpis(
     }
 
 
+@router.get("/commerce/tops")
+async def commerce_tops(
+    db: AsyncSession = Depends(get_db),
+    pays_id: int = Query(...),
+    direction: str = Query(default="exportateur"),
+    annee_min: Optional[int] = Query(default=None),
+    annee_max: Optional[int] = Query(default=None),
+    annees: Optional[str] = Query(default=None),
+    ressources: Optional[str] = Query(default=None),
+    limite: int = Query(default=10, ge=1, le=50),
+):
+    """Top partenaires et top ressources d'un pays, en cumul sur la période filtrée."""
+    from sqlalchemy import and_ as _and
+
+    self_col = StatTransaction.exportateur_id if direction == "exportateur" else StatTransaction.importateur_id
+    partner_col = StatTransaction.importateur_id if direction == "exportateur" else StatTransaction.exportateur_id
+
+    conds = [self_col == pays_id]
+    if annee_min is not None:
+        conds.append(StatTransaction.annee >= annee_min)
+    if annee_max is not None:
+        conds.append(StatTransaction.annee <= annee_max)
+    if annees:
+        la = [int(x) for x in annees.split(",") if x.strip().isdigit()]
+        if la:
+            conds.append(StatTransaction.annee.in_(la))
+    if ressources:
+        lr = [x for x in ressources.split(",") if x.strip()]
+        if lr:
+            conds.append(StatTransaction.ressource.in_(lr))
+    W = _and(*conds)
+    _sum = _sqlfunc.sum(StatTransaction.valeur)
+
+    prows = (await db.execute(
+        select(partner_col.label("pid"), _sum.label("v")).where(W)
+        .group_by(partner_col).order_by(_sum.desc().nullslast()).limit(limite)
+    )).all()
+    noms = {}
+    pids = [r.pid for r in prows]
+    if pids:
+        rn = (await db.execute(select(RefPays.id, RefPays.nom_fr).where(RefPays.id.in_(pids)))).all()
+        noms = {rid: nom for rid, nom in rn}
+    partenaires = [{"id": r.pid, "nom": noms.get(r.pid) or "—", "valeur": float(r.v or 0)} for r in prows]
+
+    rrows = (await db.execute(
+        select(StatTransaction.ressource.label("res"), _sum.label("v")).where(W)
+        .group_by(StatTransaction.ressource).order_by(_sum.desc().nullslast()).limit(limite)
+    )).all()
+    libs = {}
+    codes = [r.res for r in rrows]
+    if codes:
+        rl = (await db.execute(select(StatRessource.nom_en, StatRessource.libelle).where(StatRessource.nom_en.in_(codes)))).all()
+        libs = {code: lib for code, lib in rl}
+    ressources_top = [{"ressource": libs.get(r.res) or r.res, "valeur": float(r.v or 0)} for r in rrows]
+
+    return {"partenaires": partenaires, "ressources": ressources_top}
+
+
 @router.get("/commerce/balance")
 async def commerce_balance(
     db: AsyncSession = Depends(get_db),

@@ -189,6 +189,7 @@ function CommercePanel() {
   const [kpis, setKpis] = useState<any>(null);
   const [chargKpis, setChargKpis] = useState(false);
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
+  const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[] } | null>(null);
   const TAILLE = 50;
 
   const isResizing = useRef(false);
@@ -253,6 +254,17 @@ function CommercePanel() {
     fetch(`${API}/statistiques/commerce/balance?${p.toString()}`)
       .then(r => r.json()).then(d => setBalance(Array.isArray(d) ? d : [])).catch(() => setBalance([]));
   }, [selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
+
+  // Tops (débouchés / ressources) — dépend de la direction (vue)
+  useEffect(() => {
+    if (!selId) { setTops(null); return; }
+    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, limite: "10" });
+    if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
+    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
+    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
+    fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
+      .then(r => r.json()).then(setTops).catch(() => setTops(null));
+  }, [vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
@@ -542,13 +554,42 @@ function CommercePanel() {
 
         {/* Graphes */}
         {balance.length > 0 && (() => {
-          const serie = [{ nom: "Balance commerciale", couleur: "#004f91", data: balance.map(b => ({ annee: b.annee, valeur: b.balance })) }];
+          const expDir = vue === "exportateur";
           const a0 = balance[0].annee, a1 = balance[balance.length - 1].annee;
+          const balSerie = [{ nom: "Balance commerciale", couleur: "#004f91", data: balance.map(b => ({ annee: b.annee, valeur: b.balance })) }];
+          const fluxSerie = [{ nom: expDir ? "Exportations" : "Importations", couleur: "#004f91", data: balance.map(b => ({ annee: b.annee, valeur: expDir ? b.exportations : b.importations })) }];
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
-              <GrapheCard titre="Balance commerciale" sous_titre={`Exportations − importations · ${a0}–${a1}`} series={serie} grapheId={`stat_balance_${selId}`} hideLegend
-                fullChildren={<GrapheMultiPays series={serie} height={340} type="line" fmt={(v: number | null) => fmtUSD(v)} />}>
-                <GrapheMultiPays series={serie} height={160} type="line" fmt={(v: number | null) => fmtUSD(v)} />
+              {/* 1. Évolution du total exporté / importé */}
+              <GrapheCard titre={expDir ? "Évolution des exportations" : "Évolution des importations"} sous_titre={`Total · ${a0}–${a1}`} series={fluxSerie} grapheId={`stat_flux_${vue}_${selId}`} hideLegend
+                fullChildren={<GrapheMultiPays series={fluxSerie} height={340} type="line" fmt={(v: number | null) => fmtUSD(v)} />}>
+                <GrapheMultiPays series={fluxSerie} height={160} type="line" fmt={(v: number | null) => fmtUSD(v)} />
+              </GrapheCard>
+              {/* Balance commerciale (partagée) */}
+              <GrapheCard titre="Balance commerciale" sous_titre={`Exportations − importations · ${a0}–${a1}`} series={balSerie} grapheId={`stat_balance_${selId}`} hideLegend
+                fullChildren={<GrapheMultiPays series={balSerie} height={340} type="line" fmt={(v: number | null) => fmtUSD(v)} />}>
+                <GrapheMultiPays series={balSerie} height={160} type="line" fmt={(v: number | null) => fmtUSD(v)} />
+              </GrapheCard>
+            </div>
+          );
+        })()}
+
+        {/* 2 & 3. Top débouchés / origines & Top ressources */}
+        {tops && (tops.partenaires.length > 0 || tops.ressources.length > 0) && (() => {
+          const expDir = vue === "exportateur";
+          const dataPart = tops.partenaires.map(p => ({ label: p.nom, valeur: p.valeur }));
+          const dataRes = tops.ressources.map(r => ({ label: r.ressource, valeur: r.valeur }));
+          const periode = modeAnnees === "specifiques" && anneesSpec.length > 0
+            ? `${anneesSpec[0]}–${anneesSpec[anneesSpec.length - 1]}` : `${anneeMin}–${anneeMax}`;
+          return (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
+              <GrapheCard titre={expDir ? "Top 10 des débouchés" : "Top 10 des origines"} sous_titre={`Cumul ${periode}`} grapheId={`stat_top_part_${vue}_${selId}`} hideLegend
+                fullChildren={<GrapheBarresH data={dataPart} fmt={(v) => fmtUSD(v)} rowH={40} />}>
+                <GrapheBarresH data={dataPart} fmt={(v) => fmtUSD(v)} />
+              </GrapheCard>
+              <GrapheCard titre="Top 10 des ressources" sous_titre={`Cumul ${periode}`} grapheId={`stat_top_res_${vue}_${selId}`} hideLegend
+                fullChildren={<GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} couleur="#ca631f" rowH={40} />}>
+                <GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} couleur="#ca631f" />
               </GrapheCard>
             </div>
           );
@@ -872,6 +913,54 @@ function GrapheMultiPays({ series, height = 280, type = "line", titre = "", fmt,
       <svg ref={ref} style={{ width: "100%", height, display: "block" }} />
     </div>
   );
+}
+
+// ── Barres horizontales (top N) ───────────────────────────────────────────────
+function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34 }: {
+  data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; couleur?: string; rowH?: number;
+}) {
+  const ref = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const fmtV = fmt || fmtValGen;
+  const draw = useCallback(() => {
+    if (!ref.current || !wrapRef.current) return;
+    const el = ref.current;
+    d3.select(el).selectAll("*").remove();
+    if (!data.length) return;
+    const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
+    const longest = Math.max(...data.map(d => d.label.length));
+    const M = { top: 6, right: 78, bottom: 6, left: Math.min(230, Math.max(90, Math.round(longest * 6.2) + 14)) };
+    const H = data.length * rowH + M.top + M.bottom;
+    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+    const maxVal = d3.max(data, d => d.valeur) || 1;
+    const x = d3.scaleLinear().domain([0, maxVal]).range([M.left, W - M.right]);
+    const y = d3.scaleBand().domain(data.map(d => d.label)).range([M.top, H - M.bottom]).padding(0.28);
+    const tooltip = d3.select("#d3-tooltip") as any;
+
+    svg.selectAll("rect.bar").data(data).enter().append("rect")
+      .attr("x", M.left).attr("y", d => y(d.label)!).attr("height", y.bandwidth())
+      .attr("width", d => Math.max(2, x(d.valeur) - M.left)).attr("fill", couleur).attr("rx", 4)
+      .style("cursor", "pointer")
+      .on("mouseover", (e, d) => { d3.select(e.currentTarget as any).attr("opacity", 0.8); showD3Tooltip(tooltip, e, `<strong>${d.label}</strong><br/>${fmtV(d.valeur)}`); })
+      .on("mousemove", (e) => showD3Tooltip(tooltip, e))
+      .on("mouseout", (e) => { d3.select(e.currentTarget as any).attr("opacity", 1); hideD3Tooltip(tooltip); });
+
+    svg.selectAll("text.lbl").data(data).enter().append("text")
+      .attr("x", M.left - 8).attr("y", d => y(d.label)! + y.bandwidth() / 2).attr("dy", "0.35em")
+      .attr("text-anchor", "end").style("font-size", "11px").style("fill", "#4a5568").text(d => d.label);
+
+    svg.selectAll("text.val").data(data).enter().append("text")
+      .attr("x", d => x(d.valeur) + 6).attr("y", d => y(d.label)! + y.bandwidth() / 2).attr("dy", "0.35em")
+      .style("font-size", "10.5px").style("fill", "#9aa5b4").style("font-weight", "700").text(d => fmtV(d.valeur));
+  }, [data, fmtV, couleur, rowH]);
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const ro = new ResizeObserver(() => draw());
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, [draw]);
+  useEffect(() => { draw(); }, [draw]);
+  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
 }
 
 function GrapheModal({ open, onClose, titre, sous_titre, children, series, grapheId }: any) {
