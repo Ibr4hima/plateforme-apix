@@ -64,10 +64,20 @@ async def _donnees(db: AsyncSession, pays_ids: List[int],
     # noms des pays
     noms = {p.id: p.nom_fr for p in (await db.execute(
         select(RefPays).where(RefPays.id.in_(pays_ids)))).scalars().all()}
-    # regroupe pour dériver
+    # Superficie : constante par pays (stockée à l'année sentinelle) → on la
+    # propage à toutes les années réelles du pays pour densité/KPI/graphes.
+    superf = {}
+    for r in rows:
+        if r.indicateur == "superficie" and r.valeur is not None:
+            superf[r.pays_id] = float(r.valeur)  # une seule valeur par pays
     par = {}
     for r in rows:
+        if r.indicateur == "superficie":
+            continue
         par.setdefault((r.pays_id, r.annee), {})[r.indicateur] = float(r.valeur) if r.valeur is not None else None
+    for (pid, annee), vals in par.items():
+        if pid in superf:
+            vals["superficie"] = superf[pid]
     _completer_derives(par)
     out = []
     for (pid, annee), vals in par.items():
@@ -186,6 +196,38 @@ def _parse_stat_file(contenu: bytes, nom_fichier: str):
     return result
 
 
+# La superficie n'a pas d'année (colonnes : ID, Pays, Superficie) → année sentinelle.
+ANNEE_SUPERFICIE = 0
+
+
+def _parse_superficie_file(contenu: bytes, nom_fichier: str):
+    """Retourne {pays_label: [(0, superficie)]} depuis un fichier ID / Pays / Superficie."""
+    ext = (nom_fichier or "").lower().rsplit(".", 1)[-1]
+    if ext in ("xlsx", "xls"):
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True)
+        data = list(wb.active.iter_rows(values_only=True))
+    else:
+        texte = contenu.decode("utf-8-sig", errors="replace")
+        sep = "," if texte[:2048].count(",") >= texte[:2048].count(";") else ";"
+        data = list(csv.reader(io.StringIO(texte), delimiter=sep))
+    SKIP = {"pays", "country", "nom", "libelle", "economy_label"}
+    result = {}
+    for row in data[1:] if data else []:
+        try:
+            label = str(row[1]).strip() if len(row) > 1 and row[1] else ""
+            if not label or label.lower() in SKIP:
+                continue
+            raw = str(row[2]).strip() if len(row) > 2 else ""
+            valeur = None if raw in ("", "...", "—", "-", "n.d.", "N/A", "None") else float(
+                raw.replace(" ", "").replace(",", ".").replace(" ", "")
+            )
+            result.setdefault(label, []).append((ANNEE_SUPERFICIE, valeur))
+        except (ValueError, IndexError):
+            continue
+    return result
+
+
 def _norm(s: str) -> str:
     s = _re.sub(r"\s*\(\.+\d*\)", "", s or "")
     s = unicodedata.normalize("NFD", s)
@@ -245,7 +287,7 @@ async def importer(
         if not contenu:
             continue
         try:
-            par_pays = _parse_stat_file(contenu, fichier.filename or "")
+            par_pays = (_parse_superficie_file if indicateur == "superficie" else _parse_stat_file)(contenu, fichier.filename or "")
         except Exception as e:
             erreurs.append(f"{fichier.filename}: erreur de lecture — {e}")
             continue
