@@ -35,74 +35,6 @@ function fmt(valeur: number | null | undefined, unite: string): string {
   }
   return v.toLocaleString("fr-FR");
 }
-function fmtCourt(valeur: number | null | undefined, unite: string): string {
-  if (valeur === null || valeur === undefined || isNaN(valeur)) return "—";
-  const v = valeur;
-  if (unite === "habitants") return v >= 1e6 ? `${(v / 1e6).toFixed(1)} M` : `${Math.round(v / 1e3)} k`;
-  if (unite === "km²") return v >= 1e6 ? `${(v / 1e6).toFixed(2)} M` : `${Math.round(v / 1e3)} k`;
-  if (unite === "USD") { const a = Math.abs(v); return a >= 1e9 ? `${(v / 1e9).toFixed(1)}Md` : a >= 1e6 ? `${(v / 1e6).toFixed(0)}M` : a >= 1e3 ? `${(v / 1e3).toFixed(0)}k` : `${Math.round(v)}`; }
-  if (unite === "%") return `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
-  return v.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
-}
-
-// ── Petit graphe linéaire multi-séries (D3) ───────────────────────────────────
-function LineChart({ series, unite, height = 220 }: {
-  series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
-  unite: string; height?: number;
-}) {
-  const ref = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  const draw = useCallback(() => {
-    if (!ref.current) return;
-    const el = ref.current;
-    d3.select(el).selectAll("*").remove();
-    const W = el.parentElement?.clientWidth || 600;
-    const H = height;
-    const all = series.flatMap(s => s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[]);
-    if (!all.length) return;
-    const M = { top: 12, right: 16, bottom: 28, left: 52 };
-    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    const annees = [...new Set(all.map(d => d.annee))].sort((a, b) => a - b);
-    const x = d3.scaleLinear().domain([annees[0], annees[annees.length - 1]]).range([M.left, W - M.right]);
-    const mn = d3.min(all, d => d.valeur)!, mx = d3.max(all, d => d.valeur)!;
-    const pad = (mx - mn) * 0.1 || Math.abs(mx) * 0.1 || 1;
-    const y = d3.scaleLinear().domain([Math.min(mn - pad, unite === "%" ? mn - pad : Math.min(0, mn)), mx + pad]).nice().range([H - M.bottom, M.top]);
-    // grille
-    svg.append("g").selectAll("line").data(y.ticks(4)).enter().append("line")
-      .attr("x1", M.left).attr("x2", W - M.right).attr("y1", d => y(d)).attr("y2", d => y(d))
-      .attr("stroke", "#EBEBEB").attr("stroke-width", 1);
-    // axes
-    const fmtY = (v: d3.NumberValue) => { const n = +v; const a = Math.abs(n); return a >= 1e9 ? `${(n / 1e9).toFixed(0)}Md` : a >= 1e6 ? `${(n / 1e6).toFixed(0)}M` : a >= 1e3 ? `${(n / 1e3).toFixed(0)}k` : `${n}`; };
-    svg.append("g").attr("transform", `translate(${M.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(fmtY))
-      .call(g => g.select(".domain").remove()).call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
-    svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
-      .call(d3.axisBottom(x).tickValues(annees).tickFormat(d3.format("d")).tickSizeOuter(0))
-      .call(g => g.select(".domain").attr("stroke", "#E8E5E3")).call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
-    // séries
-    series.forEach(s => {
-      const valid = s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[];
-      if (!valid.length) return;
-      svg.append("path").datum(valid).attr("fill", "none").attr("stroke", s.couleur).attr("stroke-width", 2.2)
-        .attr("d", d3.line<{ annee: number; valeur: number }>().x(d => x(d.annee)).y(d => y(d.valeur)).curve(d3.curveMonotoneX));
-      svg.selectAll(null).data(valid).enter().append("circle")
-        .attr("cx", d => x(d.annee)).attr("cy", d => y(d.valeur)).attr("r", 2.5)
-        .attr("fill", "#fff").attr("stroke", s.couleur).attr("stroke-width", 1.5);
-    });
-  }, [series, height, unite]);
-
-  useEffect(() => { draw(); }, [draw]);
-  useEffect(() => {
-    if (!wrapRef.current) return;
-    const ro = new ResizeObserver(() => draw());
-    ro.observe(wrapRef.current);
-    return () => ro.disconnect();
-  }, [draw]);
-
-  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
-}
 
 // ── Regroupement des pays par continent ───────────────────────────────────────
 const VUES: { v: "pays" | "comparative" | "fiche"; l: string }[] = [
@@ -832,7 +764,7 @@ export default function StatistiquesPage() {
   // KPI (indicateurs épinglés)
   const [kpisEpingles, setKpisEpingles] = useState<string[]>([]);
 
-  const MAX_SEL = PALETTE.length;
+  const MAX_SEL = 4; // 4 pays au plus en comparaison (comme la page IDE)
   const multi = vue !== "pays";
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
 
@@ -1231,26 +1163,43 @@ export default function StatistiquesPage() {
               })()}
 
               {/* ── Analyse comparative ── */}
-              {vue === "comparative" && (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 14 }}>
-                  {indicateursAffiches.filter(i => i.code !== "superficie").map(ind => {
-                    const series = selection.map(id => ({ nom: paysNom(id), couleur: couleurPays(id), data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })) }));
-                    return (
-                      <div key={ind.code} style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "16px 18px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
-                        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: "0 0 6px" }}>{ind.libelle} <span style={{ fontWeight: 500, color: "#9aa5b4", fontSize: 11 }}>· {ind.unite}</span></h3>
-                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-                          {selection.map(id => (
-                            <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: couleurPays(id), background: `${couleurPays(id)}12`, padding: "2px 8px", borderRadius: 999 }}>
-                              <span style={{ width: 5, height: 5, borderRadius: "50%", background: couleurPays(id) }} />{paysNom(id)}
-                            </span>
-                          ))}
-                        </div>
-                        <LineChart series={series} unite={ind.unite} />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              {vue === "comparative" && (() => {
+                const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
+                  ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)
+                  : `${anneeMin} — ${anneeMax}`;
+                // Mêmes graphes que la vue Pays : indicateurs épinglés (hors superficie)
+                // + les 4 flux de commerce extérieur, dès qu'un pays sélectionné a des données.
+                const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
+                const aDesDonnees = (code: string) => selection.some(id => anneesActives.some(a => valeur(id, code, a) !== null));
+                const baseCodes = indicateursAffiches.filter(i => i.code !== "superficie").map(i => i.code);
+                const codesGraphes = [...baseCodes, ...TRADE_CODES.filter(c => !baseCodes.includes(c) && aDesDonnees(c))];
+                const graphIndics = codesGraphes.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
+                return (
+                <>
+                  {/* Header : période + pastilles pays */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 13px", borderRadius: 999, background: "#ECEAE8", border: "1px solid #DFDBD7", fontSize: 12, fontWeight: 700, color: "#3a4452", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
+                    {selection.map(id => (
+                      <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 13px", borderRadius: 999, background: `${couleurPays(id)}0D`, border: `1px solid ${couleurPays(id)}2E`, fontSize: 12, fontWeight: 700, color: couleurPays(id) }}>
+                        <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleurPays(id), display: "inline-block" }} />{paysNom(id)}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+                    {graphIndics.map(ind => {
+                      const series = selection.map(id => ({ nom: paysNom(id), couleur: couleurPays(id), data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })) }));
+                      return (
+                        <GrapheCard key={ind.code} titre={ind.libelle} sous_titre={`${ind.unite} · ${anneesActives[0] ?? anneeMin}–${refAnnee}`} series={series} grapheId={`stat_cmp_${ind.code}`} hideLegend
+                          fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} lineWidth={1.6} />}>
+                          <GrapheMultiPays series={series} height={145} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} showDots={false} lineWidth={1.4} />
+                        </GrapheCard>
+                      );
+                    })}
+                  </div>
+                </>
+                );
+              })()}
 
               {/* ── Fiche de comparaison ── */}
               {vue === "fiche" && (
