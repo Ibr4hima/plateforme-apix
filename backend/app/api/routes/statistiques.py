@@ -675,3 +675,91 @@ async def modifier_ressource(nom_en: str, payload: dict, db: AsyncSession = Depe
         r.libelle = (payload["libelle"] or "").strip() or r.nom_en
     await db.flush()
     return {"nom_en": r.nom_en, "libelle": r.libelle}
+
+
+# ── Données commerciales — endpoints publics (page Statistiques) ───────────────
+
+@router.get("/commerce/filtres")
+async def commerce_filtres(db: AsyncSession = Depends(get_db)):
+    """Options de filtre pour la vue publique : années, ressources, partenaires."""
+    annees = (await db.execute(
+        select(StatTransaction.annee).distinct().order_by(StatTransaction.annee.desc())
+    )).scalars().all()
+    ressources = (await db.execute(select(StatRessource).order_by(StatRessource.nom_en))).scalars().all()
+    # Pays impliqués dans au moins une transaction (exportateur ou importateur)
+    ids_exp = select(StatTransaction.exportateur_id.label("pid"))
+    ids_imp = select(StatTransaction.importateur_id.label("pid"))
+    ids = (await db.execute(select(ids_exp.union(ids_imp).subquery().c.pid))).scalars().all()
+    pays = []
+    if ids:
+        rows = (await db.execute(select(RefPays).where(RefPays.id.in_(ids)).order_by(RefPays.nom_fr))).scalars().all()
+        pays = [{"id": p.id, "nom": p.nom_fr, "code_iso3": p.code_iso3} for p in rows]
+    return {
+        "annees": list(annees),
+        "ressources": [{"nom_en": r.nom_en, "libelle": r.libelle or r.nom_en} for r in ressources],
+        "pays": pays,
+    }
+
+
+@router.get("/commerce/transactions")
+async def commerce_transactions(
+    db: AsyncSession = Depends(get_db),
+    annee: Optional[int] = Query(default=None),
+    exportateur_id: Optional[int] = Query(default=None),
+    importateur_id: Optional[int] = Query(default=None),
+    ressource: Optional[str] = Query(default=None),
+    recherche: Optional[str] = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    taille: int = Query(default=50, ge=1, le=200),
+):
+    """Tableau paginé public des flux commerciaux bilatéraux."""
+    from sqlalchemy import or_ as _or
+    from sqlalchemy.orm import aliased as _aliased
+
+    Exp = _aliased(RefPays)
+    Imp = _aliased(RefPays)
+
+    base = (
+        select(
+            StatTransaction.id, StatTransaction.annee, StatTransaction.valeur,
+            StatTransaction.ressource,
+            Exp.nom_fr.label("exp_nom"), Imp.nom_fr.label("imp_nom"),
+            StatTransaction.exportateur_id, StatTransaction.importateur_id,
+            StatRessource.libelle.label("ressource_lib"),
+        )
+        .join(Exp, Exp.id == StatTransaction.exportateur_id)
+        .join(Imp, Imp.id == StatTransaction.importateur_id)
+        .outerjoin(StatRessource, StatRessource.nom_en == StatTransaction.ressource)
+    )
+    if annee is not None:
+        base = base.where(StatTransaction.annee == annee)
+    if exportateur_id is not None:
+        base = base.where(StatTransaction.exportateur_id == exportateur_id)
+    if importateur_id is not None:
+        base = base.where(StatTransaction.importateur_id == importateur_id)
+    if ressource:
+        base = base.where(StatTransaction.ressource == ressource)
+    if recherche:
+        motif = f"%{recherche.strip()}%"
+        base = base.where(_or(Exp.nom_fr.ilike(motif), Imp.nom_fr.ilike(motif),
+                              StatTransaction.ressource.ilike(motif),
+                              StatRessource.libelle.ilike(motif)))
+
+    total = (await db.execute(select(_sqlfunc.count()).select_from(base.subquery()))).scalar_one()
+    rows = (await db.execute(
+        base.order_by(StatTransaction.valeur.desc().nullslast(), StatTransaction.annee.desc())
+            .offset((page - 1) * taille).limit(taille)
+    )).all()
+    return {
+        "total": total, "page": page, "taille": taille,
+        "lignes": [
+            {
+                "id": r.id, "annee": r.annee,
+                "exportateur": r.exp_nom, "importateur": r.imp_nom,
+                "exportateur_id": r.exportateur_id, "importateur_id": r.importateur_id,
+                "ressource": r.ressource_lib or r.ressource,
+                "valeur": float(r.valeur) if r.valeur is not None else None,
+            }
+            for r in rows
+        ],
+    }

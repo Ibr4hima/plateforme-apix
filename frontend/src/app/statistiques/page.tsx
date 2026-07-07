@@ -105,9 +105,16 @@ function LineChart({ series, unite, height = 220 }: {
 }
 
 // ── Sidebar de sélection des pays ─────────────────────────────────────────────
-function SidebarPays({ pays, selection, onToggle, multi, open, setOpen, width }: {
+const VUES: { v: "pays" | "comparative" | "fiche"; l: string }[] = [
+  { v: "pays", l: "Pays" },
+  { v: "comparative", l: "Analyse comparative" },
+  { v: "fiche", l: "Fiche de comparaison" },
+];
+
+function SidebarPays({ pays, selection, onToggle, multi, open, setOpen, width, vue, setVue }: {
   pays: Pays[]; selection: number[]; onToggle: (id: number) => void; multi: boolean;
   open: boolean; setOpen: (v: boolean) => void; width: number;
+  vue: "pays" | "comparative" | "fiche"; setVue: (v: "pays" | "comparative" | "fiche") => void;
 }) {
   const [search, setSearch] = useState("");
   const [openConts, setOpenConts] = useState<Set<string>>(new Set());
@@ -122,7 +129,7 @@ function SidebarPays({ pays, selection, onToggle, multi, open, setOpen, width }:
   return (
     <aside style={{ width: open ? width : 52, flexShrink: 0, transition: "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "calc(100vh - 64px)", overflowY: "auto", position: "sticky", top: 64, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: open ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: open ? "space-between" : "center", flexShrink: 0 }}>
-        {open && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" }}>Pays</span>}
+        {open && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
         <button onClick={() => setOpen(!open)} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
           <SlidersHorizontal size={14} style={{ color: "#004f91" }} />
           {open && selection.length > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.15)", borderRadius: 999, padding: "1px 5px" }}>{selection.length}</span>}
@@ -130,6 +137,25 @@ function SidebarPays({ pays, selection, onToggle, multi, open, setOpen, width }:
       </div>
       {open && (
         <div style={{ padding: "14px 14px", overflowY: "auto", flex: 1 }}>
+          {/* Sélecteur de vue */}
+          <div style={{ marginBottom: 18 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 8 }}>Vue</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {VUES.map(o => {
+                const actif = vue === o.v;
+                return (
+                  <button key={o.v} onClick={() => setVue(o.v)}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 7, border: "none", cursor: "pointer", background: actif ? "rgba(0,79,145,0.08)" : "transparent", textAlign: "left" }}
+                    onMouseEnter={e => { if (!actif) e.currentTarget.style.background = "#F8F7F6"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = actif ? "rgba(0,79,145,0.08)" : "transparent"; }}>
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: actif ? "#004f91" : "#C5BFBB", flexShrink: 0 }} />
+                    <span style={{ fontSize: 12.5, color: actif ? "#004f91" : "#4a5568", fontWeight: actif ? 700 : 500 }}>{o.l}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 8 }}>Pays</span>
           <div style={{ position: "relative", marginBottom: 14 }}>
             <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un pays…"
@@ -260,8 +286,155 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
   );
 }
 
+// ── Formatage monétaire commerce (USD) ────────────────────────────────────────
+function fmtUSD(v: number | null): string {
+  if (v == null) return "—";
+  const a = Math.abs(v);
+  if (a >= 1e9) return `${(v / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Md $`;
+  if (a >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} M $`;
+  if (a >= 1e3) return `${(v / 1e3).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} k $`;
+  return `${Math.round(v).toLocaleString("fr-FR")} $`;
+}
+
+// ── Panneau Données commerciales (flux bilatéraux) ────────────────────────────
+type OptionPays = { id: number; nom: string; code_iso3: string | null };
+function CommercePanel() {
+  const [annees, setAnnees] = useState<number[]>([]);
+  const [ressources, setRessources] = useState<{ nom_en: string; libelle: string }[]>([]);
+  const [paysOpts, setPaysOpts] = useState<OptionPays[]>([]);
+  const [lignes, setLignes] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [fAnnee, setFAnnee] = useState("");
+  const [fRessource, setFRessource] = useState("");
+  const [fExp, setFExp] = useState("");
+  const [fImp, setFImp] = useState("");
+  const [q, setQ] = useState("");
+  const [qDeb, setQDeb] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [chargTable, setChargTable] = useState(false);
+  const TAILLE = 50;
+
+  useEffect(() => {
+    fetch(`${API}/statistiques/commerce/filtres`).then(r => r.json()).then(d => {
+      setAnnees(d.annees || []); setRessources(d.ressources || []); setPaysOpts(d.pays || []);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { const t = setTimeout(() => { setQDeb(q); setPage(1); }, 350); return () => clearTimeout(t); }, [q]);
+  useEffect(() => { setPage(1); }, [fAnnee, fRessource, fExp, fImp]);
+
+  useEffect(() => {
+    setChargTable(true);
+    const p = new URLSearchParams({ page: String(page), taille: String(TAILLE) });
+    if (fAnnee) p.set("annee", fAnnee);
+    if (fRessource) p.set("ressource", fRessource);
+    if (fExp) p.set("exportateur_id", fExp);
+    if (fImp) p.set("importateur_id", fImp);
+    if (qDeb.trim()) p.set("recherche", qDeb.trim());
+    fetch(`${API}/statistiques/commerce/transactions?${p.toString()}`)
+      .then(r => r.json())
+      .then(d => { setLignes(d.lignes || []); setTotal(d.total || 0); })
+      .catch(() => { setLignes([]); setTotal(0); })
+      .finally(() => setChargTable(false));
+  }, [page, fAnnee, fRessource, fExp, fImp, qDeb]);
+
+  const nbPages = Math.max(1, Math.ceil(total / TAILLE));
+  const IS: any = { background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 9, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" };
+  const TH: any = { padding: "11px 16px", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#6b7684", whiteSpace: "nowrap" };
+  const TD: any = { padding: "10px 16px", verticalAlign: "middle" };
+
+  if (loading) return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 260, gap: 12, color: "#9aa5b4" }}>
+      <Loader2 size={22} style={{ animation: "spin 1s linear infinite" }} /><span style={{ fontSize: 14 }}>Chargement…</span>
+    </div>
+  );
+  if (!annees.length) return (
+    <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
+      <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucune donnée commerciale</p>
+      <p style={{ fontSize: 14, marginTop: 6 }}>Les flux commerciaux bilatéraux seront disponibles après import dans l&apos;administration.</p>
+    </div>
+  );
+
+  return (
+    <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #ECEAE7", padding: "24px 28px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
+        <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Flux commerciaux bilatéraux</h2>
+        <span style={{ fontSize: 12.5, color: "#9aa5b4", fontWeight: 600 }}>{total.toLocaleString("fr-FR")} flux</span>
+      </div>
+      <p style={{ fontSize: 12.5, color: "#9aa5b4", margin: "0 0 18px" }}>Valeur des échanges par ressource entre pays exportateur et importateur (source resourcetrade.earth).</p>
+
+      {/* Filtres */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+        <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
+          <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays, une ressource…" style={{ ...IS, width: "100%", paddingLeft: 30 }} />
+        </div>
+        <select value={fAnnee} onChange={e => setFAnnee(e.target.value)} style={{ ...IS, cursor: "pointer" }}>
+          <option value="">Toutes les années</option>
+          {annees.map(a => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <select value={fRessource} onChange={e => setFRessource(e.target.value)} style={{ ...IS, cursor: "pointer", maxWidth: 240 }}>
+          <option value="">Toutes les ressources</option>
+          {ressources.map(rr => <option key={rr.nom_en} value={rr.nom_en}>{rr.libelle}</option>)}
+        </select>
+        <select value={fExp} onChange={e => setFExp(e.target.value)} style={{ ...IS, cursor: "pointer", maxWidth: 220 }}>
+          <option value="">Tous les exportateurs</option>
+          {paysOpts.map(p => <option key={p.id} value={p.id}>{p.nom}</option>)}
+        </select>
+        <select value={fImp} onChange={e => setFImp(e.target.value)} style={{ ...IS, cursor: "pointer", maxWidth: 220 }}>
+          <option value="">Tous les importateurs</option>
+          {paysOpts.map(p => <option key={p.id} value={p.id}>{p.nom}</option>)}
+        </select>
+      </div>
+
+      <div style={{ overflowX: "auto", border: "1px solid #F0EEEC", borderRadius: 12 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ background: "#FAF9F8", textAlign: "left" }}>
+              <th style={TH}>Exportateur</th>
+              <th style={TH}>Importateur</th>
+              <th style={{ ...TH, width: 70 }}>Année</th>
+              <th style={TH}>Ressource</th>
+              <th style={{ ...TH, textAlign: "right" }}>Valeur</th>
+            </tr>
+          </thead>
+          <tbody>
+            {chargTable ? (
+              <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "32px" }}><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /></td></tr>
+            ) : lignes.length === 0 ? (
+              <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "32px" }}>Aucun flux ne correspond aux filtres.</td></tr>
+            ) : lignes.map(l => (
+              <tr key={l.id} style={{ borderTop: "1px solid #F4F2F0" }}>
+                <td style={{ ...TD, fontWeight: 600, color: "#2d3540" }}>{l.exportateur}</td>
+                <td style={{ ...TD, fontWeight: 600, color: "#2d3540" }}>{l.importateur}</td>
+                <td style={TD}>{l.annee}</td>
+                <td style={{ ...TD, color: "#4a5568" }}>{l.ressource}</td>
+                <td style={{ ...TD, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: "#004f91" }} title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtUSD(l.valeur)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {total > TAILLE && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 16 }}>
+          <span style={{ fontSize: 12.5, color: "#9aa5b4" }}>Page {page} / {nbPages}</span>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+              style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 9, padding: "8px 18px", fontSize: 13, fontWeight: 600, color: "#2d3540", fontFamily: "var(--font-google-sans)", opacity: page <= 1 ? 0.4 : 1, cursor: page <= 1 ? "not-allowed" : "pointer" }}>Précédent</button>
+            <button onClick={() => setPage(p => Math.min(nbPages, p + 1))} disabled={page >= nbPages}
+              style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 9, padding: "8px 18px", fontSize: 13, fontWeight: 600, color: "#2d3540", fontFamily: "var(--font-google-sans)", opacity: page >= nbPages ? 0.4 : 1, cursor: page >= nbPages ? "not-allowed" : "pointer" }}>Suivant</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
+  const [mode, setMode] = useState<"indicateurs" | "commerce">("indicateurs");
   const [onglet, setOnglet] = useState<"pays" | "comparative" | "fiche">("pays");
   const [pays, setPays] = useState<Pays[]>([]);
   const [indicateurs, setIndicateurs] = useState<Indicateur[]>([]);
@@ -313,14 +486,18 @@ export default function StatistiquesPage() {
       <Navbar />
       <BarreTitre titre="Statistiques">
         <BarreTitreSegment options={[
-          { v: "pays", l: "Analyse par pays" },
-          { v: "comparative", l: "Analyse comparative" },
-          { v: "fiche", l: "Fiche de comparaison" },
-        ]} value={onglet} onChange={setOnglet} />
+          { v: "indicateurs", l: "Indicateurs économiques" },
+          { v: "commerce", l: "Données commerciales" },
+        ]} value={mode} onChange={setMode} />
       </BarreTitre>
 
+      {mode === "commerce" ? (
+        <div style={{ padding: "32px 40px 80px" }}>
+          <CommercePanel />
+        </div>
+      ) : (
       <div style={{ display: "flex", alignItems: "flex-start" }}>
-        <SidebarPays pays={pays} selection={selection} onToggle={toggle} multi={multi} open={sidebarOpen} setOpen={setSidebarOpen} width={280} />
+        <SidebarPays pays={pays} selection={selection} onToggle={toggle} multi={multi} open={sidebarOpen} setOpen={setSidebarOpen} width={280} vue={onglet} setVue={setOnglet} />
 
         <div style={{ flex: 1, minWidth: 0, padding: "32px 40px 80px" }}>
           {loading ? (
@@ -415,6 +592,7 @@ export default function StatistiquesPage() {
           )}
         </div>
       </div>
+      )}
 
       {ficheOuverte && <FicheComparaison paysIds={selection} pays={pays} onClose={() => setFicheOuverte(false)} />}
     </main>
