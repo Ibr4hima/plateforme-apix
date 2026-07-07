@@ -780,3 +780,73 @@ async def commerce_transactions(
             for r in rows
         ],
     }
+
+
+@router.get("/commerce/kpis")
+async def commerce_kpis(
+    db: AsyncSession = Depends(get_db),
+    pays_id: int = Query(...),
+    direction: str = Query(default="exportateur"),   # exportateur | importateur
+    annee_min: Optional[int] = Query(default=None),
+    annee_max: Optional[int] = Query(default=None),
+    annees: Optional[str] = Query(default=None),
+    ressources: Optional[str] = Query(default=None),
+):
+    """Indicateurs agrégés des flux d'un pays (vue exportateur ou importateur)."""
+    from sqlalchemy import and_ as _and
+
+    self_col = StatTransaction.exportateur_id if direction == "exportateur" else StatTransaction.importateur_id
+    partner_col = StatTransaction.importateur_id if direction == "exportateur" else StatTransaction.exportateur_id
+
+    conds = [self_col == pays_id]
+    if annee_min is not None:
+        conds.append(StatTransaction.annee >= annee_min)
+    if annee_max is not None:
+        conds.append(StatTransaction.annee <= annee_max)
+    if annees:
+        la = [int(x) for x in annees.split(",") if x.strip().isdigit()]
+        if la:
+            conds.append(StatTransaction.annee.in_(la))
+    if ressources:
+        lr = [x for x in ressources.split(",") if x.strip()]
+        if lr:
+            conds.append(StatTransaction.ressource.in_(lr))
+    W = _and(*conds)
+    _sum = _sqlfunc.sum(StatTransaction.valeur)
+
+    total = float((await db.execute(select(_sqlfunc.coalesce(_sum, 0)).where(W))).scalar_one() or 0)
+
+    rec = (await db.execute(
+        select(StatTransaction.annee, _sum.label("v")).where(W)
+        .group_by(StatTransaction.annee).order_by(_sum.desc()).limit(1)
+    )).first()
+
+    tp = (await db.execute(
+        select(partner_col.label("pid"), _sum.label("v")).where(W)
+        .group_by(partner_col).order_by(_sum.desc()).limit(1)
+    )).first()
+    top_partenaire = None
+    if tp:
+        nom = (await db.execute(select(RefPays.nom_fr).where(RefPays.id == tp.pid))).scalar_one_or_none()
+        top_partenaire = {"id": tp.pid, "nom": nom, "valeur": float(tp.v or 0)}
+
+    tr = (await db.execute(
+        select(StatTransaction.ressource, _sum.label("v")).where(W)
+        .group_by(StatTransaction.ressource).order_by(_sum.desc()).limit(1)
+    )).first()
+    top_ressource = None
+    if tr:
+        lib = (await db.execute(select(StatRessource.libelle).where(StatRessource.nom_en == tr.ressource))).scalar_one_or_none()
+        top_ressource = {"ressource": lib or tr.ressource, "valeur": float(tr.v or 0)}
+
+    nb_partenaires = int((await db.execute(select(_sqlfunc.count(_sqlfunc.distinct(partner_col))).where(W))).scalar_one() or 0)
+    part_top = (top_partenaire["valeur"] / total * 100) if (top_partenaire and total > 0) else None
+
+    return {
+        "total": total,
+        "annee_record": {"annee": rec.annee, "valeur": float(rec.v or 0)} if rec else None,
+        "top_partenaire": top_partenaire,
+        "top_ressource": top_ressource,
+        "nb_partenaires": nb_partenaires,
+        "part_top_partenaire": part_top,
+    }

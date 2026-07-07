@@ -186,6 +186,8 @@ function CommercePanel() {
   const [q, setQ] = useState("");
   const [qDeb, setQDeb] = useState("");
   const [chargTable, setChargTable] = useState(false);
+  const [kpis, setKpis] = useState<any>(null);
+  const [chargKpis, setChargKpis] = useState(false);
   const TAILLE = 50;
 
   const isResizing = useRef(false);
@@ -226,6 +228,19 @@ function CommercePanel() {
       .catch(() => { setLignes([]); setTotal(0); })
       .finally(() => setChargTable(false));
   }, [page, vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, qDeb, ressources.length]);
+
+  // KPIs agrégés (période + ressources, hors recherche texte)
+  useEffect(() => {
+    if (!selId) { setKpis(null); return; }
+    setChargKpis(true);
+    const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
+    if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
+    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
+    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
+    fetch(`${API}/statistiques/commerce/kpis?${p.toString()}`)
+      .then(r => r.json()).then(setKpis).catch(() => setKpis(null))
+      .finally(() => setChargKpis(false));
+  }, [vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
@@ -485,6 +500,32 @@ function CommercePanel() {
           <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
           <span style={{ marginLeft: "auto", fontSize: 12.5, color: "#9aa5b4", fontWeight: 600 }}>{total.toLocaleString("fr-FR")} flux</span>
         </div>
+
+        {/* KPI cards */}
+        {(() => {
+          const expDir = vue === "exportateur";
+          const cards = [
+            { label: expDir ? "Total exportations" : "Total importations", sub: "Sur la période", value: fmtUSD(kpis?.total ?? null), indicatif: perLabel, text: false },
+            { label: "Année record", sub: expDir ? "Plus fort volume exporté" : "Plus fort volume importé", value: kpis?.annee_record ? String(kpis.annee_record.annee) : "—", indicatif: kpis?.annee_record ? fmtUSD(kpis.annee_record.valeur) : "", text: false },
+            { label: expDir ? "Principal débouché" : "Principale origine", sub: expDir ? "1er client" : "1er fournisseur", value: kpis?.top_partenaire?.nom || "—", indicatif: kpis?.top_partenaire ? fmtUSD(kpis.top_partenaire.valeur) : "", text: true },
+            { label: expDir ? "Ressource la plus exportée" : "Ressource la plus importée", sub: "1re ressource", value: kpis?.top_ressource?.ressource || "—", indicatif: kpis?.top_ressource ? fmtUSD(kpis.top_ressource.valeur) : "", text: true },
+            { label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", sub: "Concentration", value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toFixed(1)} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
+          ];
+          return (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
+              {cards.map((c, i) => (
+                <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid #ECEAE7", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", minWidth: 0 }}>
+                  <div style={{ marginBottom: 7 }}>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
+                    <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>{c.sub}</p>
+                  </div>
+                  <p title={c.text ? c.value : undefined} style={{ fontSize: c.text ? "0.95rem" : "1.15rem", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: c.text ? "normal" : "nowrap", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{c.value}</p>
+                  {c.indicatif && <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.indicatif}</p>}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #ECEAE7", padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
           <div style={{ position: "relative", maxWidth: 320, marginBottom: 16 }}>
