@@ -444,11 +444,35 @@ async def importer_transactions(
     Réimporter une année remplace ses données."""
     import openpyxl
     by_code, by_name = await _cache_pays(db)
-    non_resolus: dict[str, int] = {}
+    crees: dict[str, str] = {}   # nom → code, partenaires créés automatiquement
     ressources: set[str] = set()
     annees_vues: set[int] = set()
     total = 0
     BATCH = 4000
+
+    async def _resoudre_ou_creer(code: str, nom: str):
+        """Résout un acteur (code ISO3 puis nom) ; s'il est absent, le crée pour
+        ne perdre aucune donnée. Retourne son id, ou None si ni code ni nom."""
+        code = (code or "").strip().upper()
+        nom = (nom or "").strip()
+        if code and code in by_code:
+            return by_code[code]
+        n = _norm(nom)
+        if n and n in by_name:
+            return by_name[n]
+        if not code and not nom:
+            return None
+        # Création : code ISO3 s'il est libre et alphabétique, sinon sans code
+        code_ok = code if (2 <= len(code) <= 3 and code.isalpha() and code not in by_code) else None
+        p = RefPays(code_iso3=code_ok, nom_fr=nom or code, actif=False, origine="transaction")
+        db.add(p)
+        await db.flush()
+        if code_ok:
+            by_code[code_ok] = p.id
+        if n:
+            by_name[n] = p.id
+        crees[nom or code] = code_ok or ""
+        return p.id
 
     for fichier in (fichiers or []):
         contenu = await fichier.read()
@@ -487,17 +511,9 @@ async def importer_transactions(
                     await db.execute(_delete(StatTransaction).where(StatTransaction.annee == annee))
                     annees_purgees.add(annee); annees_vues.add(annee)
 
-                exp_c = str(g(row, "exp_code") or "").strip().upper()
-                imp_c = str(g(row, "imp_code") or "").strip().upper()
-                exp_n = str(g(row, "exp_nom") or "").strip()
-                imp_n = str(g(row, "imp_nom") or "").strip()
-                eid = by_code.get(exp_c) or by_name.get(_norm(exp_n))
-                iid = by_code.get(imp_c) or by_name.get(_norm(imp_n))
-                if eid is None:
-                    if exp_n or exp_c: non_resolus[exp_n or exp_c] = non_resolus.get(exp_n or exp_c, 0) + 1
-                    continue
-                if iid is None:
-                    if imp_n or imp_c: non_resolus[imp_n or imp_c] = non_resolus.get(imp_n or imp_c, 0) + 1
+                eid = await _resoudre_ou_creer(str(g(row, "exp_code") or ""), str(g(row, "exp_nom") or ""))
+                iid = await _resoudre_ou_creer(str(g(row, "imp_code") or ""), str(g(row, "imp_nom") or ""))
+                if eid is None or iid is None:
                     continue
 
                 ress = str(g(row, "ressource") or "").strip()
@@ -527,7 +543,7 @@ async def importer_transactions(
         "lignes": total,
         "annees": sorted(annees_vues),
         "ressources_vues": len(ressources),
-        "non_resolus": [{"label": l, "nb_lignes": n} for l, n in sorted(non_resolus.items())],
+        "partenaires_crees": [{"nom": nom, "code": c} for nom, c in sorted(crees.items())],
     }
 
 

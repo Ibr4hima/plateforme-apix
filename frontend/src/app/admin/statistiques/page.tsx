@@ -328,8 +328,6 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
   const [files, setFiles] = useState<File[]>([]);
   const [importing, setImporting] = useState(false);
   const [res, setRes] = useState<any>(null);
-  const [assoc, setAssoc] = useState<Record<string, { id: number; nom: string }>>({});
-  const [associating, setAssociating] = useState(false);
   const [couv, setCouv] = useState<{ annee: number; nb_lignes: number }[]>([]);
   const [ressources, setRessources] = useState<{ nom_en: string; libelle: string }[]>([]);
   const [deleting, setDeleting] = useState<number | null>(null);
@@ -345,24 +343,16 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
 
   async function handleImport() {
     if (!files.length) return;
-    setImporting(true); setRes(null); setAssoc({});
+    setImporting(true); setRes(null);
     try {
       const fd = new FormData();
       files.forEach(f => fd.append("fichiers", f));
       const r = await fetch(`${API}/statistiques/transactions/importer`, { method: "POST", headers: headers(), body: fd });
       const data = await r.json();
-      if (r.ok) { setRes(data); if (!data.non_resolus?.length) setFiles([]); await load(); }
+      if (r.ok) { setRes(data); setFiles([]); await load(); }
       else setRes({ non_resolus: [], erreur: data.detail || "Erreur" });
     } catch (e: any) { setRes({ non_resolus: [], erreur: "Erreur réseau : " + e.message }); }
     setImporting(false);
-  }
-  async function handleAssocier() {
-    const toDo = Object.entries(assoc).filter(([, v]) => v.id);
-    if (!toDo.length) return;
-    setAssociating(true);
-    for (const [label, { id }] of toDo)
-      await fetch(`${API}/statistiques/associer-pays`, { method: "POST", headers: { ...headers(), "Content-Type": "application/json" }, body: JSON.stringify({ label, ref_pays_id: id }) });
-    setAssociating(false); await handleImport();
   }
   async function delAnnee(a: number) {
     if (!confirm(`Supprimer toutes les transactions de ${a} ?`)) return;
@@ -385,7 +375,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
         <FileZone files={files} onChange={setFiles} hint="Fichier Excel (.xlsx) ou CSV · un fichier par année" />
         {res?.lignes !== undefined && (
           <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(24,128,56,0.06)", border: "1px solid rgba(24,128,56,0.2)", fontSize: 13, color: "#188038" }}>
-            ✓ {res.lignes.toLocaleString("fr-FR")} lignes importées · années {(res.annees || []).join(", ")} · {res.ressources_vues} ressources
+            ✓ {res.lignes.toLocaleString("fr-FR")} lignes importées · années {(res.annees || []).join(", ")} · {res.ressources_vues} ressources{res.partenaires_crees?.length ? ` · ${res.partenaires_crees.length} partenaire(s) ajouté(s) automatiquement` : ""}
           </div>
         )}
         {res?.erreur && <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)", fontSize: 13, color: "#dc2626" }}>⚠ {res.erreur}</div>}
@@ -396,28 +386,18 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
         </button>
       </div>
 
-      {/* Pays non reconnus */}
-      {res?.non_resolus?.length ? (
-        <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "2px solid rgba(202,99,31,0.5)", padding: "24px 28px", marginBottom: 20 }}>
-          <div style={{ ...SEC, color: "#ca631f", borderBottomColor: "rgba(202,99,31,0.25)" }}>{res.non_resolus.length} pays non reconnus — association manuelle</div>
-          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 16 }}>L&apos;association vaut à la fois pour l&apos;exportateur et l&apos;importateur, et pour tous les imports futurs.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {res.non_resolus.map((nr: any) => (
-              <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgba(202,99,31,0.04)", borderRadius: 10, border: "1px solid rgba(202,99,31,0.18)" }}>
-                <div style={{ flex: "0 0 240px" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#ca631f" }}>{nr.label}</div>
-                  <div style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>{nr.nb_lignes.toLocaleString("fr-FR")} lignes concernées</div>
-                </div>
-                <AssociatePicker paysList={paysList} onSelect={(id, nom) => setAssoc(p => ({ ...p, [nr.label]: { id, nom } }))} />
-                {assoc[nr.label] && <CheckCircle size={18} color="#188038" style={{ flexShrink: 0 }} />}
-              </div>
+      {/* Partenaires ajoutés automatiquement */}
+      {res?.partenaires_crees?.length ? (
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+          <div style={{ ...SEC, marginBottom: 10 }}>{res.partenaires_crees.length} partenaires ajoutés automatiquement</div>
+          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 12 }}>Ces exportateurs/importateurs étaient absents du référentiel (territoires, agrégats…). Ils ont été créés pour ne perdre aucune donnée et n&apos;apparaissent pas dans la liste des pays macro.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {res.partenaires_crees.map((pc: any) => (
+              <span key={pc.nom} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", padding: "4px 11px", borderRadius: 999 }}>
+                {pc.nom}{pc.code ? <span style={{ color: "#9aa5b4" }}>· {pc.code}</span> : null}
+              </span>
             ))}
           </div>
-          <button onClick={handleAssocier} disabled={associating || !Object.values(assoc).some(v => v.id)}
-            style={{ marginTop: 16, background: associating || !Object.values(assoc).some(v => v.id) ? "#C5BFBB" : "#ca631f", color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)" }}>
-            {associating ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <Link2 size={15} />}
-            {associating ? "Association…" : "Associer et réimporter"}
-          </button>
         </div>
       ) : null}
 

@@ -20,6 +20,7 @@ class RefPays(Base):
     est_emergent     = Column(Boolean, default=False)
     nom_cnuced       = Column(String(100))
     actif            = Column(Boolean, default=True)
+    origine          = Column(Text)   # 'transaction' = partenaire créé à l'import
     created_at       = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
