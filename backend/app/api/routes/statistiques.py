@@ -864,3 +864,56 @@ async def commerce_kpis(
         "nb_partenaires": nb_partenaires,
         "part_top_partenaire": part_top,
     }
+
+
+@router.get("/commerce/balance")
+async def commerce_balance(
+    db: AsyncSession = Depends(get_db),
+    pays_id: int = Query(...),
+    annee_min: Optional[int] = Query(default=None),
+    annee_max: Optional[int] = Query(default=None),
+    annees: Optional[str] = Query(default=None),
+    ressources: Optional[str] = Query(default=None),
+):
+    """Balance commerciale annuelle d'un pays : exportations − importations."""
+    from sqlalchemy import and_ as _and
+
+    def periode_conds():
+        c = []
+        if annee_min is not None:
+            c.append(StatTransaction.annee >= annee_min)
+        if annee_max is not None:
+            c.append(StatTransaction.annee <= annee_max)
+        if annees:
+            la = [int(x) for x in annees.split(",") if x.strip().isdigit()]
+            if la:
+                c.append(StatTransaction.annee.in_(la))
+        if ressources:
+            lr = [x for x in ressources.split(",") if x.strip()]
+            if lr:
+                c.append(StatTransaction.ressource.in_(lr))
+        return c
+
+    _sum = _sqlfunc.sum(StatTransaction.valeur)
+
+    async def par_annee(col):
+        rows = (await db.execute(
+            select(StatTransaction.annee, _sum.label("v"))
+            .where(_and(col == pays_id, *periode_conds()))
+            .group_by(StatTransaction.annee)
+        )).all()
+        return {r.annee: float(r.v or 0) for r in rows}
+
+    exp = await par_annee(StatTransaction.exportateur_id)
+    imp = await par_annee(StatTransaction.importateur_id)
+
+    annees_all = sorted(set(exp) | set(imp))
+    return [
+        {
+            "annee": a,
+            "exportations": exp.get(a, 0.0),
+            "importations": imp.get(a, 0.0),
+            "balance": exp.get(a, 0.0) - imp.get(a, 0.0),
+        }
+        for a in annees_all
+    ]

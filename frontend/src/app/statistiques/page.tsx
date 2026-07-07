@@ -188,6 +188,7 @@ function CommercePanel() {
   const [chargTable, setChargTable] = useState(false);
   const [kpis, setKpis] = useState<any>(null);
   const [chargKpis, setChargKpis] = useState(false);
+  const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
   const TAILLE = 50;
 
   const isResizing = useRef(false);
@@ -241,6 +242,17 @@ function CommercePanel() {
       .then(r => r.json()).then(setKpis).catch(() => setKpis(null))
       .finally(() => setChargKpis(false));
   }, [vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
+
+  // Balance commerciale (exp − imp) — indépendante de la vue
+  useEffect(() => {
+    if (!selId) { setBalance([]); return; }
+    const p = new URLSearchParams({ pays_id: String(selId) });
+    if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
+    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
+    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
+    fetch(`${API}/statistiques/commerce/balance?${p.toString()}`)
+      .then(r => r.json()).then(d => setBalance(Array.isArray(d) ? d : [])).catch(() => setBalance([]));
+  }, [selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
@@ -524,6 +536,20 @@ function CommercePanel() {
                   {c.indicatif && <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.indicatif}</p>}
                 </div>
               ))}
+            </div>
+          );
+        })()}
+
+        {/* Graphes */}
+        {balance.length > 0 && (() => {
+          const serie = [{ nom: "Balance commerciale", couleur: "#004f91", data: balance.map(b => ({ annee: b.annee, valeur: b.balance })) }];
+          const a0 = balance[0].annee, a1 = balance[balance.length - 1].annee;
+          return (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
+              <GrapheCard titre="Balance commerciale" sous_titre={`Exportations − importations · ${a0}–${a1}`} series={serie} grapheId={`stat_balance_${selId}`} hideLegend
+                fullChildren={<GrapheMultiPays series={serie} height={340} type="line" fmt={(v: number | null) => fmtUSD(v)} />}>
+                <GrapheMultiPays series={serie} height={160} type="line" fmt={(v: number | null) => fmtUSD(v)} />
+              </GrapheCard>
             </div>
           );
         })()}
