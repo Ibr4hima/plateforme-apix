@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { CheckCircle, ChevronDown, Link2, Loader2, Trash2, UploadCloud, X } from "lucide-react";
+import { CheckCircle, ChevronDown, Link2, Loader2, Search, Trash2, UploadCloud, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
@@ -330,14 +330,17 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
   const [res, setRes] = useState<any>(null);
   const [couv, setCouv] = useState<{ annee: number; nb_lignes: number }[]>([]);
   const [ressources, setRessources] = useState<{ nom_en: string; libelle: string }[]>([]);
+  const [partenaires, setPartenaires] = useState<{ id: number; nom_fr: string; code_iso3: string | null }[]>([]);
+  const [qPart, setQPart] = useState("");
   const [deleting, setDeleting] = useState<number | null>(null);
 
   const load = async () => {
-    const [c, r] = await Promise.all([
+    const [c, r, pa] = await Promise.all([
       fetch(`${API}/statistiques/transactions/couverture`, { headers: headers() }).then(x => x.ok ? x.json() : []),
       fetch(`${API}/statistiques/ressources`, { headers: headers() }).then(x => x.ok ? x.json() : []),
+      fetch(`${API}/statistiques/partenaires`, { headers: headers() }).then(x => x.ok ? x.json() : []),
     ]);
-    setCouv(c || []); setRessources(r || []);
+    setCouv(c || []); setRessources(r || []); setPartenaires(pa || []);
   };
   useEffect(() => { load(); }, []);
 
@@ -359,6 +362,9 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
     setDeleting(a);
     try { const r = await fetch(`${API}/statistiques/transactions/${a}`, { method: "DELETE", headers: headers() }); if (r.ok) await load(); } catch {}
     setDeleting(null);
+  }
+  async function savePartenaire(id: number, nom_fr: string) {
+    await fetch(`${API}/statistiques/partenaires/${id}`, { method: "PATCH", headers: { ...headers(), "Content-Type": "application/json" }, body: JSON.stringify({ nom_fr }) });
   }
   async function saveRessource(nom_en: string, libelle: string) {
     await fetch(`${API}/statistiques/ressources/${encodeURIComponent(nom_en)}`, { method: "PATCH", headers: { ...headers(), "Content-Type": "application/json" }, body: JSON.stringify({ libelle }) });
@@ -418,6 +424,32 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
           </div>
         )}
       </div>
+
+      {/* Partenaires hors référentiel (noms éditables) */}
+      {partenaires.length > 0 && (() => {
+        const filt = partenaires.filter(pa => !qPart || pa.nom_fr.toLowerCase().includes(qPart.toLowerCase()) || (pa.code_iso3 || "").toLowerCase().includes(qPart.toLowerCase()));
+        return (
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+            <div style={{ ...SEC, marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>Partenaires hors référentiel — noms éditables</div>
+            <span style={{ fontSize: 12, color: "#9aa5b4" }}>{partenaires.length}</span>
+          </div>
+          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 12 }}>Territoires et agrégats ajoutés à l&apos;import. Renommez-les en français (ex : Western Sahara → Sahara occidental) ; le nom d&apos;origine reste reconnu aux imports suivants.</p>
+          <div style={{ position: "relative", marginBottom: 12, maxWidth: 340 }}>
+            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+            <input value={qPart} onChange={e => setQPart(e.target.value)} placeholder="Rechercher un partenaire…" style={{ ...IS, paddingLeft: 30 }} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 10 }}>
+            {filt.map(pa => (
+              <div key={pa.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {pa.code_iso3 && <span style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 8px", borderRadius: 999, flexShrink: 0 }}>{pa.code_iso3}</span>}
+                <input defaultValue={pa.nom_fr || ""} onBlur={e => savePartenaire(pa.id, e.target.value)} style={IS} />
+              </div>
+            ))}
+          </div>
+        </div>
+        );
+      })()}
 
       {/* Ressources (éditables) */}
       {ressources.length > 0 && (

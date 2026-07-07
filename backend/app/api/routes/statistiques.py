@@ -561,6 +561,30 @@ async def supprimer_annee_transactions(annee: int, db: AsyncSession = Depends(ge
     await db.flush()
 
 
+@router.get("/partenaires")
+async def liste_partenaires(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
+    """Partenaires commerciaux créés à l'import (territoires/agrégats hors référentiel)."""
+    rows = (await db.execute(select(RefPays).where(RefPays.origine == "transaction").order_by(RefPays.nom_fr))).scalars().all()
+    return [{"id": p.id, "nom_fr": p.nom_fr, "code_iso3": p.code_iso3} for p in rows]
+
+
+@router.patch("/partenaires/{pays_id}")
+async def modifier_partenaire(pays_id: int, payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    p = (await db.execute(select(RefPays).where(RefPays.id == pays_id))).scalar_one_or_none()
+    if not p or p.origine != "transaction":
+        raise HTTPException(404, "Partenaire introuvable")
+    if "nom_fr" in payload:
+        nouveau = (payload["nom_fr"] or "").strip()
+        if nouveau:
+            # Conserve le nom d'origine comme alias pour que les imports futurs
+            # (fichier en anglais) continuent de reconnaître ce partenaire.
+            if not p.nom_cnuced:
+                p.nom_cnuced = p.nom_fr
+            p.nom_fr = nouveau
+    await db.flush()
+    return {"id": p.id, "nom_fr": p.nom_fr, "code_iso3": p.code_iso3}
+
+
 @router.get("/ressources")
 async def liste_ressources(db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
     rows = (await db.execute(select(StatRessource).order_by(StatRessource.nom_en))).scalars().all()
