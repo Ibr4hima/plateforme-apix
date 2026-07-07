@@ -354,6 +354,458 @@ function CommercePanel() {
   );
 }
 
+// ── Graphe D3 (repris de la page IDE) ─────────────────────────────────────────
+function fmtValGen(v: number | null) {
+  if (v === null || v === undefined) return "N/A";
+  const a = Math.abs(v);
+  if (a >= 1e9) return `${(v / 1e9).toFixed(1)} Md`;
+  if (a >= 1e6) return `${(v / 1e6).toFixed(1)} M`;
+  if (a >= 1e3) return `${(v / 1e3).toFixed(1)} k`;
+  return `${v.toFixed(0)}`;
+}
+function showD3Tooltip(tooltip: any, e: MouseEvent, html?: string) {
+  if (html !== undefined) tooltip.html(html);
+  tooltip.style("opacity", 1);
+  const node = tooltip.node() as HTMLElement | null;
+  const tw = node?.offsetWidth || 120, th = node?.offsetHeight || 44;
+  let x = e.clientX + 14, y = e.clientY - th - 14;
+  if (x + tw > window.innerWidth - 8) x = e.clientX - tw - 14;
+  if (y < 8) y = e.clientY + 18;
+  if (y + th > window.innerHeight - 8) y = window.innerHeight - th - 8;
+  tooltip.style("left", x + "px").style("top", y + "px");
+}
+function hideD3Tooltip(tooltip: any) { tooltip.style("opacity", 0); }
+
+function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: string; annees?: string; legende?: { nom: string; couleur: string }[] }) {
+  const SCALE = 3;
+  const clone = svgEl.cloneNode(true) as SVGSVGElement;
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  const W = svgEl.viewBox.baseVal.width || 800;
+  const H = svgEl.viewBox.baseVal.height || 400;
+  clone.removeAttribute("style");
+  clone.setAttribute("width", String(W * SCALE));
+  clone.setAttribute("height", String(H * SCALE));
+  clone.setAttribute("font-family", "'Google Sans','Product Sans',Arial,sans-serif");
+  const blob = new Blob([clone.outerHTML], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const PAD = 26;
+    const FONT = "'Google Sans','Product Sans',Arial,sans-serif";
+    const titre = opts?.titre || "";
+    const annees = opts?.annees || "";
+    const legende = opts?.legende || [];
+    const mctx = document.createElement("canvas").getContext("2d")!;
+    let headerH = 0;
+    const legLines: { nom: string; couleur: string; w: number }[][] = [];
+    if (titre || legende.length) {
+      headerH = PAD + 26;
+      if (legende.length) {
+        mctx.font = `700 11px ${FONT}`;
+        const maxW = W - PAD * 2;
+        let line: { nom: string; couleur: string; w: number }[] = []; let x = 0;
+        legende.forEach(l => {
+          const w = Math.ceil(mctx.measureText(l.nom).width) + 22;
+          if (x + w > maxW && line.length) { legLines.push(line); line = []; x = 0; }
+          line.push({ ...l, w }); x += w + 8;
+        });
+        if (line.length) legLines.push(line);
+        headerH += 6 + legLines.length * 26;
+      }
+      headerH += 10;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = W * SCALE; canvas.height = (H + headerH) * SCALE;
+    const ctx = canvas.getContext("2d")!;
+    ctx.scale(SCALE, SCALE);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H + headerH);
+    if (headerH) {
+      ctx.textBaseline = "middle";
+      const ty = PAD + 12;
+      ctx.font = `700 11px ${FONT}`;
+      const badgeW = annees ? Math.ceil(ctx.measureText(annees).width) + 20 : 0;
+      ctx.font = `700 16px ${FONT}`; ctx.fillStyle = "#1a1a2e";
+      let t = titre;
+      const maxTitre = W - PAD * 2 - (badgeW ? badgeW + 10 : 0);
+      while (t && ctx.measureText(t).width > maxTitre) t = t.slice(0, -2);
+      if (t !== titre) t += "…";
+      ctx.fillText(t, PAD, ty);
+      if (annees) {
+        const bx = PAD + ctx.measureText(t).width + 10;
+        ctx.fillStyle = "#ECEAE8";
+        ctx.beginPath(); ctx.roundRect(bx, ty - 10, badgeW, 20, 999); ctx.fill();
+        ctx.font = `700 11px ${FONT}`; ctx.fillStyle = "#4a5568";
+        ctx.fillText(annees, bx + 10, ty + 0.5);
+      }
+      let ly = PAD + 26 + 6 + 13;
+      ctx.font = `700 11px ${FONT}`;
+      legLines.forEach(line => {
+        let lx = PAD;
+        line.forEach(l => {
+          ctx.fillStyle = l.couleur + "1F";
+          ctx.beginPath(); ctx.roundRect(lx, ly - 10, l.w, 20, 999); ctx.fill();
+          ctx.fillStyle = l.couleur;
+          ctx.fillText(l.nom, lx + 11, ly + 0.5);
+          lx += l.w + 8;
+        });
+        ly += 26;
+      });
+    }
+    ctx.drawImage(img, 0, headerH, W, H);
+    const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${filename}.png`; a.click();
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+function GrapheMultiPays({ series, height = 280, type = "line", titre = "", fmt, showDots = true, lineWidth }: {
+  series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
+  height?: number; type?: "line" | "bar"; titre?: string; fmt?: (v: number | null) => string; showDots?: boolean; lineWidth?: number;
+}) {
+  const ref = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const fmtV = fmt || fmtValGen;
+  const draw = useCallback(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+    d3.select(el).selectAll("*").remove();
+    if (!series.length) return;
+    const W = el.parentElement?.clientWidth || el.clientWidth || 700;
+    const H = height;
+    const allData = series.flatMap(s => s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[]);
+    if (!allData.length) return;
+    const serieRanges = series.map(s => {
+      const vals = s.data.filter(d => d.valeur !== null).map(d => d.valeur as number);
+      const mn = d3.min(vals) ?? 0; const mx = d3.max(vals) ?? 1;
+      return { mn, mx, span: mx - mn };
+    });
+    const spanRatio = Math.max(...serieRanges.map(r => r.span)) / Math.max(1, Math.min(...serieRanges.map(r => r.span)));
+    const useDual = type === "line" && series.length >= 2 && spanRatio > 4;
+    const M = { top: 12, right: useDual ? 58 : 20, bottom: 34, left: 64 };
+    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+    const allAnnees = [...new Set(allData.map(d => d.annee))].sort();
+    const buildScale = (mn: number, mx: number, forBar: boolean) => {
+      const pad = (mx - mn) * 0.08;
+      const lo = forBar ? Math.min(0, mn) : mn - pad;
+      return d3.scaleLinear().domain([lo, mx * 1.08]).nice().range([H - M.bottom, M.top]);
+    };
+    const yScales = useDual
+      ? series.map((_, i) => buildScale(serieRanges[i].mn, serieRanges[i].mx, false))
+      : (() => {
+          const rawMin = d3.min(allData, d => d.valeur)!;
+          const maxVal = d3.max(allData, d => d.valeur)!;
+          const shared = buildScale(rawMin, maxVal, type === "bar");
+          return series.map(() => shared);
+        })();
+    const y = yScales[0];
+    const xBand = d3.scaleBand().domain(allAnnees.map(String)).range([M.left, W - M.right]).padding(0.18);
+    const xLin = d3.scaleLinear().domain([allAnnees[0], allAnnees[allAnnees.length - 1]]).range([M.left, W - M.right]);
+    svg.append("g").selectAll("line").data(y.ticks(4)).enter().append("line")
+      .attr("x1", M.left).attr("x2", W - M.right).attr("y1", d => y(d)).attr("y2", d => y(d))
+      .attr("stroke", "#EBEBEB").attr("stroke-width", 1);
+    if (y.domain()[0] < 0)
+      svg.append("line").attr("x1", M.left).attr("x2", W - M.right).attr("y1", y(0)).attr("y2", y(0))
+        .attr("stroke", "#C5BFBB").attr("stroke-width", 1.2).attr("stroke-dasharray", "4,3");
+    const tooltip = d3.select("#d3-tooltip") as any;
+    const fmtAxis = (v: d3.NumberValue) => {
+      const n = +v; const a = Math.abs(n);
+      return a >= 1e9 ? `${(n / 1e9).toFixed(1)}Md` : a >= 1e6 ? `${(n / 1e6).toFixed(0)}M` : a >= 1e3 ? `${(n / 1e3).toFixed(0)}k` : `${n.toFixed(0)}`;
+    };
+    if (type === "bar") {
+      const nbSeries = series.length;
+      const xGroup = nbSeries > 1
+        ? d3.scaleBand().domain(series.map(s => s.nom)).range([0, xBand.bandwidth()]).padding(0.06)
+        : null;
+      series.forEach((s) => {
+        const ys = yScales[0];
+        const valid = s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[];
+        if (!valid.length) return;
+        const getX = (d: { annee: number }) => { const base = xBand(String(d.annee))!; return xGroup ? base + xGroup(s.nom)! : base; };
+        const getW = () => xGroup ? xGroup.bandwidth() : xBand.bandwidth();
+        svg.selectAll(`.b${s.nom.replace(/\W/g, "")}`)
+          .data(valid).enter().append("rect")
+          .attr("x", d => getX(d)).attr("width", getW())
+          .attr("y", d => d.valeur >= 0 ? ys(d.valeur) : ys(0))
+          .attr("height", d => Math.abs(ys(d.valeur) - ys(0)))
+          .attr("fill", s.couleur).attr("rx", 3).style("cursor", "pointer")
+          .on("mouseover", (e, d) => {
+            d3.select(e.currentTarget as SVGRectElement).attr("opacity", 0.75);
+            showD3Tooltip(tooltip, e, `<strong>${d.annee}${nbSeries > 1 ? " — " + s.nom : ""}</strong><br/>${fmtV(d.valeur)}`);
+          })
+          .on("mousemove", (e) => showD3Tooltip(tooltip, e))
+          .on("mouseout", (e) => { d3.select(e.currentTarget as SVGRectElement).attr("opacity", 1); hideD3Tooltip(tooltip); });
+      });
+      const maxTicks = Math.floor((W - M.left - M.right) / 28);
+      const step = Math.ceil(allAnnees.length / maxTicks);
+      const tickVals = allAnnees.filter((_, i) => i % step === 0).map(String);
+      svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
+        .call(d3.axisBottom(xBand).tickValues(tickVals).tickSizeOuter(0))
+        .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
+        .call(g => g.selectAll("line").remove())
+        .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
+    } else {
+      series.forEach((s, si) => {
+        const ys = yScales[si];
+        const valid = s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[];
+        if (!valid.length) return;
+        const areaBase = ys(Math.max(ys.domain()[0], 0));
+        const gid = `sg${s.nom.replace(/\W/g, "")}${si}`;
+        const defs = svg.append("defs");
+        const grad = defs.append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
+        grad.append("stop").attr("offset", "0%").attr("stop-color", s.couleur).attr("stop-opacity", 0.1);
+        grad.append("stop").attr("offset", "100%").attr("stop-color", s.couleur).attr("stop-opacity", 0);
+        svg.append("path").datum(valid).attr("fill", `url(#${gid})`)
+          .attr("d", d3.area<{ annee: number; valeur: number }>().x(d => xLin(d.annee)).y0(areaBase).y1(d => ys(d.valeur)).curve(d3.curveMonotoneX));
+        svg.append("path").datum(valid).attr("fill", "none").attr("stroke", s.couleur).attr("stroke-width", lineWidth ?? 2.2)
+          .attr("d", d3.line<{ annee: number; valeur: number }>().x(d => xLin(d.annee)).y(d => ys(d.valeur)).curve(d3.curveMonotoneX));
+        const nb = valid.length;
+        const rBase = nb > 25 ? 0 : nb > 18 ? 1.5 : nb > 10 ? 2 : 2.5;
+        let dots: any = null;
+        if (showDots && rBase > 0) {
+          dots = svg.selectAll(`.p${s.nom.replace(/\W/g, "")}${si}`)
+            .data(valid).enter().append("circle")
+            .attr("cx", d => xLin(d.annee)).attr("cy", d => ys(d.valeur)).attr("r", rBase)
+            .attr("fill", "#fff").attr("stroke", s.couleur).attr("stroke-width", 1.5)
+            .style("pointer-events", "none");
+        }
+        svg.selectAll(`.ph${s.nom.replace(/\W/g, "")}${si}`)
+          .data(valid).enter().append("circle")
+          .attr("cx", d => xLin(d.annee)).attr("cy", d => ys(d.valeur)).attr("r", Math.max(10, rBase + 6))
+          .attr("fill", "transparent").attr("stroke", "none").style("cursor", "pointer")
+          .on("mouseover", (e, d) => {
+            if (dots) dots.filter((p: any) => p === d).attr("r", rBase + 2);
+            showD3Tooltip(tooltip, e, `<strong>${d.annee} — ${s.nom}</strong><br/>${fmtV(d.valeur)}`);
+          })
+          .on("mousemove", (e) => showD3Tooltip(tooltip, e))
+          .on("mouseout", (e, d) => { if (dots) dots.filter((p: any) => p === d).attr("r", rBase); hideD3Tooltip(tooltip); });
+      });
+      const maxTicksLine = Math.max(2, Math.min(7, Math.floor((W - M.left - M.right) / 42)));
+      let tickAnnees = allAnnees;
+      if (allAnnees.length > maxTicksLine) {
+        const stepA = Math.ceil((allAnnees.length - 1) / (maxTicksLine - 1));
+        tickAnnees = allAnnees.filter((_, i) => i % stepA === 0);
+        const last = allAnnees[allAnnees.length - 1];
+        if (tickAnnees[tickAnnees.length - 1] !== last) tickAnnees.push(last);
+      }
+      svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
+        .call(d3.axisBottom(xLin).tickValues(tickAnnees).tickFormat(d3.format("d")).tickSizeOuter(0))
+        .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
+        .call(g => g.selectAll("line").remove())
+        .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
+    }
+    svg.append("g").attr("transform", `translate(${M.left},0)`)
+      .call(d3.axisLeft(y).ticks(4).tickFormat(fmtAxis))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("line").remove())
+      .call(g => g.selectAll("text").style("fill", useDual ? series[0].couleur : "#9aa5b4").style("font-size", "10px").style("font-weight", useDual ? "600" : "400"));
+    if (useDual) {
+      svg.append("g").attr("transform", `translate(${W - M.right},0)`)
+        .call(d3.axisRight(yScales[1]).ticks(4).tickFormat(fmtAxis))
+        .call(g => g.select(".domain").remove())
+        .call(g => g.selectAll("line").remove())
+        .call(g => g.selectAll("text").style("fill", series[1].couleur).style("font-size", "10px").style("font-weight", "600"));
+    }
+  }, [series, type, height, fmtV]);
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const ro = new ResizeObserver(() => draw());
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, [draw]);
+  useEffect(() => { draw(); }, [draw]);
+  return (
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      <svg ref={ref} style={{ width: "100%", height, display: "block" }} />
+    </div>
+  );
+}
+
+function GrapheModal({ open, onClose, titre, sous_titre, children, series, grapheId }: any) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement | null;
+  const anneesRange = (() => {
+    const as: number[] = (series || []).flatMap((s: any) => s.data.filter((d: any) => d.valeur !== null).map((d: any) => d.annee));
+    if (!as.length) return "";
+    const mn = Math.min(...as), mx = Math.max(...as);
+    return mn === mx ? String(mn) : `${mn} – ${mx}`;
+  })();
+  const legendeExport = (series || [])
+    .filter((s: any) => s.data.some((d: any) => d.valeur !== null))
+    .map((s: any) => ({ nom: s.nom, couleur: s.couleur }));
+  if (!open) return null;
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 1100, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
+        <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
+        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0, lineHeight: 1.35, minWidth: 0 }}>{titre}</h2>
+                {anneesRange && (
+                  <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#4a5568", background: "#ECEAE8", padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{anneesRange}</span>
+                )}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                {series?.length > 0 && series.filter((s: any) => s.data.some((d: any) => d.valeur !== null)).map((s: any) => (
+                  <span key={s.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: s.couleur, background: `${s.couleur}12`, border: `1px solid ${s.couleur}30` }}>{s.nom}</span>
+                ))}
+                {sous_titre && <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 500 }}>{sous_titre}</span>}
+              </div>
+            </div>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
+              <X size={15} color="#4a5568" />
+            </button>
+          </div>
+        </div>
+        <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1 }}>
+          <div ref={modalRef}>{children}</div>
+        </div>
+        <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "flex-end", gap: 10, flexShrink: 0 }}>
+          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+          <button onClick={() => { const svg = getSvg(); if (svg) downloadPNG(svg, grapheId || titre || "graphe", { titre, annees: anneesRange, legende: legendeExport }); }}
+            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GrapheCard({ titre, sous_titre, children, fullChildren, series, grapheId, hideLegend, hideSousTitre }: any) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <div onClick={() => setOpen(true)}
+        style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "16px 18px", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", minWidth: 0 }}
+        onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
+              <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, display: "inline-block" }}>{titre}</h3>
+            </div>
+            {!hideLegend && series?.length > 0 && (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 5 }}>
+                {series.filter((s: any) => s.data.some((d: any) => d.valeur !== null)).map((s: any) => (
+                  <span key={s.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, color: s.couleur, background: `${s.couleur}12` }}>{s.nom}</span>
+                ))}
+              </div>
+            )}
+            {!hideSousTitre && sous_titre && <p style={{ fontSize: 10.5, color: "#9aa5b4", marginTop: 4 }}>{sous_titre}</p>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+            <span style={{ width: 26, height: 26, borderRadius: 8, background: "#F5F4F3", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <Maximize2 size={11} style={{ color: "#9aa5b4" }} />
+            </span>
+          </div>
+        </div>
+        <div style={{ pointerEvents: "none" }}>{children}</div>
+      </div>
+      <GrapheModal open={open} onClose={() => setOpen(false)} titre={titre} sous_titre={sous_titre} series={series} grapheId={grapheId}>
+        {fullChildren || children}
+      </GrapheModal>
+    </>
+  );
+}
+
+// ── Définitions & interprétations des indicateurs ─────────────────────────────
+const DEF_INDICATEUR: Record<string, string> = {
+  population: "Nombre total d'habitants du pays au 1er juillet de l'année considérée.",
+  superficie: "Superficie terrestre totale du pays, exprimée en kilomètres carrés.",
+  densite: "Nombre moyen d'habitants par kilomètre carré (population ÷ superficie).",
+  pib: "Produit intérieur brut : valeur totale des biens et services produits sur une année, en dollars courants.",
+  pib_hab: "PIB rapporté au nombre d'habitants (PIB ÷ population), en dollars courants.",
+  croissance_pib: "Taux de croissance annuel du PIB réel, en pourcentage.",
+  importations_marchandises: "Valeur totale des marchandises importées sur l'année, en dollars.",
+  exportations_marchandises: "Valeur totale des marchandises exportées sur l'année, en dollars.",
+  importations_services: "Valeur totale des services importés sur l'année, en dollars.",
+  exportations_services: "Valeur totale des services exportés sur l'année, en dollars.",
+  balance_marchandises: "Solde du commerce de marchandises (exportations − importations).",
+  balance_services: "Solde du commerce de services (exportations − importations).",
+};
+
+function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur; valeur: number | null; annee: number; precedent: number | null } | null; pays: string; couleur: string; onClose: () => void }) {
+  if (!kpi) return null;
+  const { ind, valeur, annee, precedent } = kpi;
+  const def = DEF_INDICATEUR[ind.code] || `${ind.libelle} — ${ind.unite}.`;
+  let variation: number | null = null;
+  if (valeur !== null && precedent !== null && precedent !== 0) variation = ((valeur - precedent) / Math.abs(precedent)) * 100;
+  const isPos = variation !== null && variation > 0.05;
+  const isNeg = variation !== null && variation < -0.05;
+  const signalColor = couleur;
+  const interpret = (() => {
+    if (valeur === null) return "Donnée non disponible pour cet indicateur sur la période sélectionnée.";
+    const val = fmt(valeur, ind.unite);
+    if (variation === null) return `En ${annee}, ${pays} affiche ${val} pour l'indicateur « ${ind.libelle} ».`;
+    const sens = isPos ? "en hausse" : isNeg ? "en baisse" : "stable";
+    const pct = `${variation > 0 ? "+" : ""}${variation.toFixed(1)} %`;
+    return `En ${annee}, ${pays} affiche ${val} (${sens} de ${pct} par rapport à l'année précédente) pour l'indicateur « ${ind.libelle} ».`;
+  })();
+  const trendColor = isPos ? "#188038" : isNeg ? "#dc2626" : "#9aa5b4";
+  const trendBg = isPos ? "rgba(24,128,56,0.06)" : isNeg ? "rgba(220,38,38,0.05)" : "#FAFAF9";
+  const trendBorder = isPos ? "rgba(24,128,56,0.18)" : isNeg ? "rgba(220,38,38,0.18)" : "#F0EEEC";
+  const SecTitle = ({ children }: { children: any }) => (
+    <p style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>{children}</p>
+  );
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 560, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
+        <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
+        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0, lineHeight: 1.35 }}>{ind.libelle}</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: couleur, background: `${couleur}12`, border: `1px solid ${couleur}30` }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, display: "inline-block" }} />{pays}
+                </span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "#4a5568", background: "#F5F4F3" }}>{ind.unite}</span>
+                {variation !== null && (
+                  <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: trendColor, background: trendBg, border: `1px solid ${trendBorder}` }}>{isPos ? "Positif" : isNeg ? "Négatif" : "Stable"}</span>
+                )}
+                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "#4a5568", background: "#F5F4F3" }}>{annee}</span>
+              </div>
+            </div>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
+              <X size={15} color="#4a5568" />
+            </button>
+          </div>
+        </div>
+        <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 22 }}>
+          <div>
+            <SecTitle>Valeur</SecTitle>
+            <div style={{ background: trendBg, border: `1px solid ${trendBorder}`, borderRadius: 12, padding: "16px 18px", display: "flex", alignItems: "baseline", gap: 10 }}>
+              <span style={{ fontSize: "2.2rem", fontWeight: 800, color: signalColor, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite)}</span>
+              <span style={{ fontSize: 13, color: "#9aa5b4", fontWeight: 500 }}>en {annee}</span>
+            </div>
+          </div>
+          <div>
+            <SecTitle>Interprétation</SecTitle>
+            <div style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "14px 18px" }}>
+              <p style={{ fontSize: 13, color: "#1a1a2e", lineHeight: 1.75 }}>{interpret}</p>
+            </div>
+          </div>
+          <div>
+            <SecTitle>Définition</SecTitle>
+            <p style={{ fontSize: 12, color: "#9aa5b4", lineHeight: 1.65 }}>{def}</p>
+          </div>
+        </div>
+        <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
+          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
   const [mode, setMode] = useState<"indicateurs" | "commerce">("indicateurs");
@@ -364,6 +816,7 @@ export default function StatistiquesPage() {
   const [donnees, setDonnees] = useState<Donnee[]>([]);
   const [loading, setLoading] = useState(true);
   const [ficheOuverte, setFicheOuverte] = useState(false);
+  const [kpiActif, setKpiActif] = useState<{ ind: Indicateur; valeur: number | null; annee: number; precedent: number | null } | null>(null);
   // Barre latérale
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
@@ -488,6 +941,7 @@ export default function StatistiquesPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#F6F5F3", fontFamily: "var(--font-google-sans)" }}>
+      <div id="d3-tooltip" style={{ position: "fixed", pointerEvents: "none", background: "rgba(26,26,46,0.92)", color: "#fff", borderRadius: 8, padding: "8px 12px", fontSize: 12, lineHeight: 1.5, opacity: 0, zIndex: 9999, backdropFilter: "blur(4px)" }} />
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
 .drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}
@@ -711,34 +1165,64 @@ export default function StatistiquesPage() {
           ) : (
             <>
               {/* ── Analyse par pays ── */}
-              {vue === "pays" && (
+              {vue === "pays" && (() => {
+                const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
+                  ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`
+                  : `${anneeMin} — ${anneeMax}`;
+                const graphIndics = indicateursAffiches.filter(i => i.code !== "superficie");
+                return (
                 <>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14, marginBottom: 26 }}>
+                  {/* Header */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#004f91", flexShrink: 0 }} />
+                      <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e" }}>{paysNom(selection[0])}</h2>
+                      <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
+                    </div>
+                  </div>
+
+                  {/* KPI cards */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20 }}>
                     {indicateursAffiches.map(ind => {
                       const v = valeur(selection[0], ind.code, refAnnee);
+                      const prec = valeur(selection[0], ind.code, refAnnee - 1);
                       return (
-                        <div key={ind.code} style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", marginBottom: 3 }}>{ind.libelle}</p>
-                          <p style={{ fontSize: 10, color: "#9aa5b4", marginBottom: 8 }}>{ind.unite} · {refAnnee}</p>
-                          <p style={{ fontSize: 22, fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "#dc2626" : "#1a1a2e", letterSpacing: "-0.01em" }}>{fmt(v, ind.unite)}</p>
+                        <div key={ind.code} onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
+                          style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid #ECEAE7", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", minWidth: 0 }}
+                          onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
+                          <div style={{ marginBottom: 7 }}>
+                            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
+                            <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
+                          </div>
+                          <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "#dc2626" : "#1a1a2e", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
+                          <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
                         </div>
                       );
                     })}
+                    {Array.from({ length: Math.max(0, MAX_KPI - indicateursAffiches.length) }).map((_, i) => (
+                      <div key={`empty-${i}`} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1.5px dashed #E8E5E3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90 }}>
+                        <span style={{ fontSize: 20, color: "#C5BFBB", lineHeight: 1 }}>+</span>
+                        <span style={{ fontSize: 10, color: "#C5BFBB", textAlign: "center", lineHeight: 1.5 }}>Choisir dans<br />le filtre</span>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
-                    {indicateursAffiches.filter(i => i.code !== "superficie").map(ind => {
+
+                  {/* Graphes */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+                    {graphIndics.map(ind => {
                       const serie = [{ nom: paysNom(selection[0]), couleur: "#004f91", data: anneesActives.map(a => ({ annee: a, valeur: valeur(selection[0], ind.code, a) })) }];
                       return (
-                        <div key={ind.code} style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "16px 18px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
-                          <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: "0 0 2px" }}>{ind.libelle}</h3>
-                          <p style={{ fontSize: 11, color: "#9aa5b4", margin: "0 0 8px" }}>{ind.unite} · {anneesActives[0]}–{refAnnee}</p>
-                          <LineChart series={serie} unite={ind.unite} />
-                        </div>
+                        <GrapheCard key={ind.code} titre={ind.libelle} sous_titre={`${ind.unite} · ${anneesActives[0] ?? anneeMin}–${refAnnee}`} series={serie} grapheId={`stat_${ind.code}`}
+                          fullChildren={<GrapheMultiPays series={serie} height={340} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} />}>
+                          <GrapheMultiPays series={serie} height={145} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} />
+                        </GrapheCard>
                       );
                     })}
                   </div>
                 </>
-              )}
+                );
+              })()}
 
               {/* ── Analyse comparative ── */}
               {vue === "comparative" && (
@@ -790,6 +1274,7 @@ export default function StatistiquesPage() {
       )}
 
       {ficheOuverte && <FicheComparaison paysIds={selection} pays={pays} onClose={() => setFicheOuverte(false)} />}
+      <MiniModalKpi kpi={kpiActif} pays={kpiActif ? paysNom(selection[0]) : ""} couleur="#004f91" onClose={() => setKpiActif(null)} />
     </main>
   );
 }
