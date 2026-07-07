@@ -163,33 +163,66 @@ _MILLIONS_USD = {
 }
 
 
-def _parse_stat_file(contenu: bytes, nom_fichier: str):
-    """Retourne {pays_label: [(annee, valeur), ...]} — supporte multi-pays."""
+def _lire_tableur(contenu: bytes, nom_fichier: str):
     ext = (nom_fichier or "").lower().rsplit(".", 1)[-1]
     if ext in ("xlsx", "xls"):
         import openpyxl
         wb = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True)
-        ws = wb.active
-        data = list(ws.iter_rows(values_only=True))
-    else:
-        texte = contenu.decode("utf-8-sig", errors="replace")
-        sep = "," if texte[:2048].count(",") >= texte[:2048].count(";") else ";"
-        data = list(csv.reader(io.StringIO(texte), delimiter=sep))
+        return list(wb.active.iter_rows(values_only=True))
+    texte = contenu.decode("utf-8-sig", errors="replace")
+    sep = "," if texte[:2048].count(",") >= texte[:2048].count(";") else ";"
+    return list(csv.reader(io.StringIO(texte), delimiter=sep))
 
+
+def _detecter_colonnes(header):
+    """Repère les colonnes Pays / Année / Valeur depuis l'en-tête (ordre libre).
+    Repli positionnel : Pays=0, Année=1, Valeur=2 si l'en-tête n'est pas reconnu."""
+    hs = [str(c or "").strip().lower() for c in header]
+
+    def trouver(mots):
+        for i, h in enumerate(hs):
+            if any(m in h for m in mots):
+                return i
+        return None
+
+    pays = trouver(["pays", "country", "economy", "économie", "economie", "nom"])
+    annee = trouver(["année", "annee", "year"])
+    id_col = trouver(["id"])
+    val = None
+    for i in range(len(hs)):
+        if i not in (pays, annee, id_col):
+            val = i
+            break
+    if pays is None or annee is None or val is None:
+        return 0, 1, 2
+    return pays, annee, val
+
+
+def _num(raw: str):
+    if raw in ("", "...", "—", "-", "n.d.", "N/A", "None"):
+        return None
+    return float(raw.replace(" ", "").replace("\xa0", "").replace(",", "."))
+
+
+def _parse_stat_file(contenu: bytes, nom_fichier: str):
+    """Retourne {pays_label: [(annee, valeur), ...]} — colonnes détectées par
+    en-tête (Pays / Année / Valeur dans n'importe quel ordre), multi-pays."""
+    data = _lire_tableur(contenu, nom_fichier)
+    if not data:
+        return {}
+    ci_pays, ci_annee, ci_val = _detecter_colonnes(data[0])
     SKIP = {"economy_label", "economy", "économie", "pays", "country", "nom", "libelle"}
     result = {}
-    for row in data[1:] if data else []:
+    for row in data[1:]:
         try:
-            label = str(row[0]).strip() if row[0] else ""
+            label = str(row[ci_pays]).strip() if len(row) > ci_pays and row[ci_pays] else ""
             if not label or label.lower() in SKIP:
                 continue
-            annee = int(str(row[1]).strip())
+            annee = int(float(str(row[ci_annee]).strip()))
             if not (1900 <= annee <= 2100):
                 continue
-            raw = str(row[2]).strip() if len(row) > 2 else ""
-            valeur = None if raw in ("", "...", "—", "-", "n.d.", "N/A", "None") else float(
-                raw.replace(" ", "").replace(",", ".").replace(" ", "").replace("\xa0", "")
-            )
+            raw = str(row[ci_val]).strip() if len(row) > ci_val else ""
+            valeur = _num(raw)
             result.setdefault(label, []).append((annee, valeur))
         except (ValueError, IndexError):
             continue

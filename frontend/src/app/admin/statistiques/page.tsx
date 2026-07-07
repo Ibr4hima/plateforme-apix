@@ -199,7 +199,7 @@ export default function AdminStatistiquesPage() {
         <FileZone files={files} onChange={setFiles}
           hint={indicateur === "superficie"
             ? "Colonnes : ID · Pays · Superficie (sans année) · un fichier peut contenir plusieurs pays"
-            : "Colonne A : pays · B : année · C : valeur · un fichier peut contenir plusieurs pays"} />
+            : "Colonnes Pays, Année et Valeur (ordre libre, en-têtes détectés automatiquement) · un fichier peut contenir plusieurs pays"} />
 
         {res && (
           <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
