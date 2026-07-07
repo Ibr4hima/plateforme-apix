@@ -501,15 +501,17 @@ function CommercePanel() {
           <span style={{ marginLeft: "auto", fontSize: 12.5, color: "#9aa5b4", fontWeight: 600 }}>{total.toLocaleString("fr-FR")} flux</span>
         </div>
 
-        {/* KPI cards */}
+        {/* KPI cards — valeurs de la dernière année sélectionnée (sauf « Année record ») */}
         {(() => {
           const expDir = vue === "exportateur";
+          const ref = kpis?.annee_ref;
+          const enRef = ref ? `en ${ref}` : "";
           const cards = [
-            { label: expDir ? "Total exportations" : "Total importations", sub: "Sur la période", value: fmtUSD(kpis?.total ?? null), indicatif: perLabel, text: false },
+            { label: expDir ? "Total exportations" : "Total importations", sub: "Dernière année", value: fmtUSD(kpis?.total ?? null), indicatif: enRef, text: false },
             { label: "Année record", sub: expDir ? "Plus fort volume exporté" : "Plus fort volume importé", value: kpis?.annee_record ? String(kpis.annee_record.annee) : "—", indicatif: kpis?.annee_record ? fmtUSD(kpis.annee_record.valeur) : "", text: false },
-            { label: expDir ? "Principal débouché" : "Principale origine", sub: expDir ? "1er client" : "1er fournisseur", value: kpis?.top_partenaire?.nom || "—", indicatif: kpis?.top_partenaire ? fmtUSD(kpis.top_partenaire.valeur) : "", text: true },
-            { label: expDir ? "Ressource la plus exportée" : "Ressource la plus importée", sub: "1re ressource", value: kpis?.top_ressource?.ressource || "—", indicatif: kpis?.top_ressource ? fmtUSD(kpis.top_ressource.valeur) : "", text: true },
-            { label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", sub: "Concentration", value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toFixed(1)} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
+            { label: expDir ? "Principal débouché" : "Principale origine", sub: expDir ? `1er client · ${ref ?? "—"}` : `1er fournisseur · ${ref ?? "—"}`, value: kpis?.top_partenaire?.nom || "—", indicatif: kpis?.top_partenaire ? `${fmtUSD(kpis.top_partenaire.valeur)} ${enRef}` : "", text: true },
+            { label: expDir ? "Ressource la plus exportée" : "Ressource la plus importée", sub: `1re ressource · ${ref ?? "—"}`, value: kpis?.top_ressource?.ressource || "—", indicatif: kpis?.top_ressource ? `${fmtUSD(kpis.top_ressource.valeur)} ${enRef}` : "", text: true },
+            { label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", sub: `Concentration · ${ref ?? "—"}`, value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toFixed(1)} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
           ];
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
