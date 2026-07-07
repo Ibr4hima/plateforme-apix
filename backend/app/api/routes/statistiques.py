@@ -555,6 +555,81 @@ async def couverture_transactions(db: AsyncSession = Depends(get_db), _: dict = 
     return [{"annee": a, "nb_lignes": n} for a, n in rows]
 
 
+@router.get("/transactions")
+async def liste_transactions(
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_admin),
+    annee: Optional[int] = Query(default=None),
+    exportateur_id: Optional[int] = Query(default=None),
+    importateur_id: Optional[int] = Query(default=None),
+    ressource: Optional[str] = Query(default=None),
+    recherche: Optional[str] = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    taille: int = Query(default=50, ge=1, le=500),
+):
+    """Tableau paginé des transactions importées (exportateur, importateur, année, ressource, valeur)."""
+    from sqlalchemy import or_ as _or
+    from sqlalchemy.orm import aliased as _aliased
+
+    Exp = _aliased(RefPays)
+    Imp = _aliased(RefPays)
+
+    filtres = []
+    if annee is not None:
+        filtres.append(StatTransaction.annee == annee)
+    if exportateur_id is not None:
+        filtres.append(StatTransaction.exportateur_id == exportateur_id)
+    if importateur_id is not None:
+        filtres.append(StatTransaction.importateur_id == importateur_id)
+    if ressource:
+        filtres.append(StatTransaction.ressource == ressource)
+
+    base = (
+        select(
+            StatTransaction.id, StatTransaction.annee, StatTransaction.valeur,
+            StatTransaction.ressource,
+            Exp.nom_fr.label("exp_nom"), Imp.nom_fr.label("imp_nom"),
+            StatTransaction.exportateur_id, StatTransaction.importateur_id,
+            StatRessource.libelle.label("ressource_lib"),
+        )
+        .join(Exp, Exp.id == StatTransaction.exportateur_id)
+        .join(Imp, Imp.id == StatTransaction.importateur_id)
+        .outerjoin(StatRessource, StatRessource.nom_en == StatTransaction.ressource)
+    )
+    for f in filtres:
+        base = base.where(f)
+    if recherche:
+        motif = f"%{recherche.strip()}%"
+        base = base.where(_or(Exp.nom_fr.ilike(motif), Imp.nom_fr.ilike(motif),
+                              StatTransaction.ressource.ilike(motif),
+                              StatRessource.libelle.ilike(motif)))
+
+    sous = base.subquery()
+    total = (await db.execute(select(_sqlfunc.count()).select_from(sous))).scalar_one()
+
+    rows = (await db.execute(
+        base.order_by(StatTransaction.annee.desc(), _sqlfunc.coalesce(StatRessource.libelle, StatTransaction.ressource),
+                      Exp.nom_fr, Imp.nom_fr)
+            .offset((page - 1) * taille).limit(taille)
+    )).all()
+
+    return {
+        "total": total,
+        "page": page,
+        "taille": taille,
+        "lignes": [
+            {
+                "id": r.id, "annee": r.annee,
+                "exportateur": r.exp_nom, "importateur": r.imp_nom,
+                "exportateur_id": r.exportateur_id, "importateur_id": r.importateur_id,
+                "ressource": r.ressource_lib or r.ressource,
+                "valeur": float(r.valeur) if r.valeur is not None else None,
+            }
+            for r in rows
+        ],
+    }
+
+
 @router.delete("/transactions/{annee}", status_code=204)
 async def supprimer_annee_transactions(annee: int, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
     await db.execute(_delete(StatTransaction).where(StatTransaction.annee == annee))

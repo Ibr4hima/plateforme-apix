@@ -7,6 +7,9 @@ import { CheckCircle, ChevronDown, Link2, Loader2, Search, Trash2, UploadCloud, 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
 const IS: any  = { background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+const TH: any  = { padding: "10px 14px", fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const };
+const TD: any  = { padding: "9px 14px", verticalAlign: "middle" as const };
+const PGBTN: any = { background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 8, padding: "7px 16px", fontSize: 12.5, fontWeight: 600, color: "#2d3540", fontFamily: "var(--font-google-sans)" };
 
 type Indicateur = { code: string; libelle: string; unite: string; derive: boolean };
 type RefPays    = { id: number; nom_fr: string; code_iso3: string | null };
@@ -334,6 +337,17 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
   const [qPart, setQPart] = useState("");
   const [deleting, setDeleting] = useState<number | null>(null);
 
+  // Tableau des données importées
+  const [lignes, setLignes] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [fAnnee, setFAnnee] = useState<string>("");
+  const [fRessource, setFRessource] = useState<string>("");
+  const [q, setQ] = useState("");
+  const [qDebounce, setQDebounce] = useState("");
+  const [loadingTable, setLoadingTable] = useState(false);
+  const TAILLE = 50;
+
   const load = async () => {
     const [c, r, pa] = await Promise.all([
       fetch(`${API}/statistiques/transactions/couverture`, { headers: headers() }).then(x => x.ok ? x.json() : []),
@@ -343,6 +357,34 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
     setCouv(c || []); setRessources(r || []); setPartenaires(pa || []);
   };
   useEffect(() => { load(); }, []);
+
+  // Débounce de la recherche texte
+  useEffect(() => { const t = setTimeout(() => { setQDebounce(q); setPage(1); }, 350); return () => clearTimeout(t); }, [q]);
+
+  const loadTable = async () => {
+    setLoadingTable(true);
+    try {
+      const p = new URLSearchParams({ page: String(page), taille: String(TAILLE) });
+      if (fAnnee) p.set("annee", fAnnee);
+      if (fRessource) p.set("ressource", fRessource);
+      if (qDebounce.trim()) p.set("recherche", qDebounce.trim());
+      const r = await fetch(`${API}/statistiques/transactions?${p.toString()}`, { headers: headers() });
+      if (r.ok) { const d = await r.json(); setLignes(d.lignes || []); setTotal(d.total || 0); }
+      else { setLignes([]); setTotal(0); }
+    } catch { setLignes([]); setTotal(0); }
+    setLoadingTable(false);
+  };
+  useEffect(() => { loadTable(); }, [page, fAnnee, fRessource, qDebounce, couv.length]);
+  useEffect(() => { setPage(1); }, [fAnnee, fRessource]);
+
+  const fmtVal = (v: number | null) => {
+    if (v == null) return "—";
+    if (v >= 1e9) return (v / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 2 }) + " Md$";
+    if (v >= 1e6) return (v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 }) + " M$";
+    if (v >= 1e3) return (v / 1e3).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " k$";
+    return v.toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " $";
+  };
+  const nbPages = Math.max(1, Math.ceil(total / TAILLE));
 
   async function handleImport() {
     if (!files.length) return;
@@ -424,6 +466,74 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
           </div>
         )}
       </div>
+
+      {/* Tableau des données importées */}
+      {couv.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+            <div style={{ ...SEC, marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>Données transactionnelles importées</div>
+            <span style={{ fontSize: 12, color: "#9aa5b4", fontWeight: 600 }}>{total.toLocaleString("fr-FR")} ligne{total > 1 ? "s" : ""}</span>
+          </div>
+
+          {/* Filtres */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+            <div style={{ position: "relative", flex: "1 1 260px", minWidth: 200 }}>
+              <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays ou une ressource…" style={{ ...IS, paddingLeft: 30 }} />
+            </div>
+            <select value={fAnnee} onChange={e => setFAnnee(e.target.value)} style={{ ...IS, flex: "0 0 auto", cursor: "pointer" }}>
+              <option value="">Toutes les années</option>
+              {couv.map(cc => <option key={cc.annee} value={cc.annee}>{cc.annee}</option>)}
+            </select>
+            <select value={fRessource} onChange={e => setFRessource(e.target.value)} style={{ ...IS, flex: "0 0 auto", cursor: "pointer", maxWidth: 260 }}>
+              <option value="">Toutes les ressources</option>
+              {ressources.map(rr => <option key={rr.nom_en} value={rr.nom_en}>{rr.libelle || rr.nom_en}</option>)}
+            </select>
+          </div>
+
+          <div style={{ overflowX: "auto", border: "1px solid #F0EEEC", borderRadius: 10 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+              <thead>
+                <tr style={{ background: "#FAF9F8", textAlign: "left", color: "#6b7684" }}>
+                  <th style={TH}>Exportateur</th>
+                  <th style={TH}>Importateur</th>
+                  <th style={{ ...TH, width: 70 }}>Année</th>
+                  <th style={TH}>Ressource</th>
+                  <th style={{ ...TH, textAlign: "right" }}>Valeur</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingTable ? (
+                  <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "28px" }}><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /></td></tr>
+                ) : lignes.length === 0 ? (
+                  <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "28px" }}>Aucune ligne ne correspond.</td></tr>
+                ) : lignes.map(l => (
+                  <tr key={l.id} style={{ borderTop: "1px solid #F4F2F0" }}>
+                    <td style={{ ...TD, fontWeight: 600, color: "#2d3540" }}>{l.exportateur}</td>
+                    <td style={{ ...TD, fontWeight: 600, color: "#2d3540" }}>{l.importateur}</td>
+                    <td style={TD}>{l.annee}</td>
+                    <td style={{ ...TD, color: "#4a5568" }}>{l.ressource}</td>
+                    <td style={{ ...TD, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 600, color: "#004f91" }} title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtVal(l.valeur)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {total > TAILLE && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 14 }}>
+              <span style={{ fontSize: 12, color: "#9aa5b4" }}>Page {page} / {nbPages}</span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+                  style={{ ...PGBTN, opacity: page <= 1 ? 0.4 : 1, cursor: page <= 1 ? "not-allowed" : "pointer" }}>Précédent</button>
+                <button onClick={() => setPage(p => Math.min(nbPages, p + 1))} disabled={page >= nbPages}
+                  style={{ ...PGBTN, opacity: page >= nbPages ? 0.4 : 1, cursor: page >= nbPages ? "not-allowed" : "pointer" }}>Suivant</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Partenaires hors référentiel (noms éditables) */}
       {partenaires.length > 0 && (() => {
