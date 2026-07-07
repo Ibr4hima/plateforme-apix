@@ -32,7 +32,7 @@ async def pays_disponibles(db: AsyncSession = Depends(get_db)):
         select(RefPays).where(RefPays.id.in_(ids)).order_by(RefPays.nom_fr)
     )).scalars().all()
     return [{"id": p.id, "nom": p.nom_fr, "code_iso3": p.code_iso3,
-             "continent": p.continent} for p in rows]
+             "continent": p.continent, "region_geo": p.region_geo} for p in rows]
 
 
 def _completer_derives(par_pays_annee: dict) -> None:

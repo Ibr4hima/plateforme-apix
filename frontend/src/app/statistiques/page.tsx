@@ -12,7 +12,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca"];
 
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string; ordre: number; derive: boolean };
-type Pays = { id: number; nom: string; code_iso3: string; continent: string };
+type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };
 type Donnee = { pays_id: number; pays: string; annee: number; indicateur: string; valeur: number | null };
 
 // ── Formatage des valeurs par unité ───────────────────────────────────────────
@@ -111,6 +111,8 @@ const VUES: { v: "pays" | "comparative" | "fiche"; l: string }[] = [
   { v: "fiche", l: "Fiche de comparaison" },
 ];
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
+const MAX_KPI = 5;
+const KPI_DEFAUT = ["population", "superficie", "densite", "pib", "pib_hab"];
 function sortContinents(conts: string[]) {
   return [...conts].sort((a, b) => {
     const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);
@@ -401,8 +403,13 @@ export default function StatistiquesPage() {
     }).finally(() => setLoading(false));
   }, []);
 
-  // Par défaut, tous les indicateurs sont épinglés
-  useEffect(() => { if (indicateurs.length) setKpisEpingles(indicateurs.map(i => i.code)); }, [indicateurs]);
+  // Par défaut : Population, Superficie, Densité, PIB, PIB/hab (dans la limite de 5)
+  useEffect(() => {
+    if (!indicateurs.length) return;
+    const codes = indicateurs.map(i => i.code);
+    const def = KPI_DEFAUT.filter(c => codes.includes(c)).slice(0, MAX_KPI);
+    setKpisEpingles(def.length ? def : codes.slice(0, MAX_KPI));
+  }, [indicateurs]);
 
   useEffect(() => {
     if (!selection.length) { setDonnees([]); return; }
@@ -424,7 +431,7 @@ export default function StatistiquesPage() {
   }, [multi]);
 
   const toggleCont = (c: string) => setOpenConts(s => { const n = new Set(s); n.has(c) ? n.delete(c) : n.add(c); return n; });
-  const toggleEpingle = (code: string) => setKpisEpingles(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]);
+  const toggleEpingle = (code: string) => setKpisEpingles(prev => prev.includes(code) ? prev.filter(c => c !== code) : (prev.length >= MAX_KPI ? prev : [...prev, code]));
 
   const clickPays = (id: number) => {
     if (!multi) { setSelection([id]); return; }
@@ -436,10 +443,16 @@ export default function StatistiquesPage() {
   };
 
   const groupedPays = useMemo(() => {
-    const g: Record<string, Pays[]> = {};
+    const g: Record<string, Record<string, Pays[]>> = {};
     pays.filter(p => !searchPays || p.nom.toLowerCase().includes(searchPays.toLowerCase()))
-      .forEach(p => { const c = p.continent || "Autre"; (g[c] ||= []).push(p); });
-    Object.values(g).forEach(arr => arr.sort((a, b) => { if (a.nom === "Sénégal") return -1; if (b.nom === "Sénégal") return 1; return a.nom.localeCompare(b.nom, "fr"); }));
+      .forEach(p => {
+        const c = p.continent || "Autre";
+        const z = p.region_geo || "Autre";
+        ((g[c] ||= {})[z] ||= []).push(p);
+      });
+    for (const c of Object.keys(g))
+      for (const z of Object.keys(g[c]))
+        g[c][z].sort((a, b) => { if (a.nom === "Sénégal") return -1; if (b.nom === "Sénégal") return 1; return a.nom.localeCompare(b.nom, "fr"); });
     return g;
   }, [pays, searchPays]);
   useEffect(() => { if (searchPays) setOpenConts(new Set(Object.keys(groupedPays))); }, [searchPays, groupedPays]);
@@ -461,13 +474,14 @@ export default function StatistiquesPage() {
   // État des filtres (pour badge + réinitialisation)
   const paysChange = multi ? (selection.length > 1 || selection[0] !== senId) : selection[0] !== senId;
   const periodeChange = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== bornes[0] || anneeMax !== bornes[1]);
-  const kpiChange = kpisEpingles.length !== indicateurs.length;
+  const kpiDefautSet = KPI_DEFAUT.filter(c => indicateurs.some(i => i.code === c)).slice(0, MAX_KPI);
+  const kpiChange = kpisEpingles.length !== kpiDefautSet.length || kpisEpingles.some(c => !kpiDefautSet.includes(c));
   const nbFiltres = (paysChange ? 1 : 0) + (periodeChange ? 1 : 0) + (kpiChange ? 1 : 0);
   const hasFilter = nbFiltres > 0;
   const reinit = () => {
     setSelection(senId ? [senId] : []); setModeAnnees("plage");
     setAnneeMin(bornes[0]); setAnneeMax(bornes[1]); setAnneesSpec([]);
-    setPeriodeTouchee(false); setKpisEpingles(indicateurs.map(i => i.code));
+    setPeriodeTouchee(false); setKpisEpingles(kpiDefautSet.length ? kpiDefautSet : indicateurs.map(i => i.code).slice(0, MAX_KPI));
   };
 
   const LBL: any = { fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em" };
@@ -562,7 +576,7 @@ export default function StatistiquesPage() {
               <div style={{ maxHeight: 220, overflowY: "auto" }}>
                 {sortContinents(Object.keys(groupedPays)).map(continent => {
                   const isOpen = openConts.has(continent);
-                  const liste = groupedPays[continent];
+                  const zones = groupedPays[continent];
                   return (
                     <div key={continent} style={{ marginBottom: 6 }}>
                       <button onClick={() => toggleCont(continent)}
@@ -570,27 +584,32 @@ export default function StatistiquesPage() {
                         <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
                         <ChevronDown size={11} style={{ color: "#004f91", transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
                       </button>
-                      {isOpen && liste.map(p => {
-                        const sel = selection.includes(p.id);
-                        const col = sel ? couleurPays(p.id) : "#C5BFBB";
-                        const disabled = multi && !sel && selection.length >= MAX_SEL;
-                        if (p.id === senId) return (
-                          <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed", marginLeft: 6 }}>
-                            <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
-                            <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                            <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4" }}>Réf.</span>
-                          </div>
-                        );
-                        return (
-                          <button key={p.id} onClick={() => clickPays(p.id)}
-                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: disabled ? "not-allowed" : "pointer", background: "transparent", textAlign: "left", width: "100%", opacity: disabled ? 0.4 : 1, marginLeft: 6 }}
-                            onMouseEnter={e => { if (!disabled && !sel) e.currentTarget.style.background = "#F8F7F6"; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                            <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
-                            <span style={{ fontSize: 12, color: "#4a5568", fontWeight: sel ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                          </button>
-                        );
-                      })}
+                      {isOpen && Object.entries(zones).sort(([a], [b]) => a.localeCompare(b, "fr")).map(([zone, paysInZone]) => (
+                        <div key={zone} style={{ marginLeft: 6, marginBottom: 4 }}>
+                          <p style={{ fontSize: 9, fontWeight: 600, color: "#C5BFBB", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
+                          {paysInZone.map(p => {
+                            const sel = selection.includes(p.id);
+                            const col = sel ? couleurPays(p.id) : "#C5BFBB";
+                            const disabled = multi && !sel && selection.length >= MAX_SEL;
+                            if (p.id === senId) return (
+                              <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
+                                <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
+                                <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                                <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4" }}>Réf.</span>
+                              </div>
+                            );
+                            return (
+                              <button key={p.id} onClick={() => clickPays(p.id)}
+                                style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: disabled ? "not-allowed" : "pointer", background: "transparent", textAlign: "left", width: "100%", opacity: disabled ? 0.4 : 1 }}
+                                onMouseEnter={e => { if (!disabled && !sel) e.currentTarget.style.background = "#F8F7F6"; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                                <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
+                                <span style={{ fontSize: 12, color: "#4a5568", fontWeight: sel ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ))}
                     </div>
                   );
                 })}
@@ -655,16 +674,16 @@ export default function StatistiquesPage() {
             <div style={{ marginBottom: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <span style={LBL}>Key Performance Indicators</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 999 }}>{kpisEpingles.length}/{indicateurs.length}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: kpisEpingles.length >= MAX_KPI ? "#004f91" : "#9aa5b4", background: kpisEpingles.length >= MAX_KPI ? "rgba(0,79,145,0.08)" : "#F2F0EF", padding: "2px 8px", borderRadius: 999 }}>{kpisEpingles.length}/{MAX_KPI}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 2, maxHeight: 240, overflowY: "auto" }}>
                 {indicateurs.map(ind => {
                   const epingle = kpisEpingles.includes(ind.code);
-                  const disabled = epingle && kpisEpingles.length <= 1;
+                  const disabled = !epingle && kpisEpingles.length >= MAX_KPI;
                   return (
                     <div key={ind.code} title={ind.libelle}
                       onClick={() => { if (!disabled) toggleEpingle(ind.code); }}
-                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, background: "transparent", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1, transition: "background 0.1s" }}
+                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, background: "transparent", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.3 : 1, transition: "background 0.1s" }}
                       onMouseEnter={ev => { ev.currentTarget.style.background = "#F8F7F6"; }}
                       onMouseLeave={ev => { ev.currentTarget.style.background = "transparent"; }}>
                       <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${epingle ? "#004f91" : "#C5BFBB"}`, background: epingle ? "#004f91" : "transparent", flexShrink: 0 }} />
