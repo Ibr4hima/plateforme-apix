@@ -1169,7 +1169,13 @@ export default function StatistiquesPage() {
                 const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
                   ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`
                   : `${anneeMin} — ${anneeMax}`;
-                const graphIndics = indicateursAffiches.filter(i => i.code !== "superficie");
+                // Graphes : indicateurs épinglés (hors superficie) + les 4 flux de
+                // commerce extérieur, toujours présents s'ils ont des données.
+                const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
+                const aDesDonnees = (code: string) => anneesActives.some(a => valeur(selection[0], code, a) !== null);
+                const baseCodes = indicateursAffiches.filter(i => i.code !== "superficie").map(i => i.code);
+                const codesGraphes = [...baseCodes, ...TRADE_CODES.filter(c => !baseCodes.includes(c) && aDesDonnees(c))];
+                const graphIndics = codesGraphes.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
                 return (
                 <>
                   {/* Header */}
