@@ -189,7 +189,8 @@ function CommercePanel() {
   const [kpis, setKpis] = useState<any>(null);
   const [chargKpis, setChargKpis] = useState(false);
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
-  const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[] } | null>(null);
+  const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
+  const [conc, setConc] = useState<{ points: { rang: number; nom: string; part_cumulee: number }[]; total_partenaires: number } | null>(null);
   const TAILLE = 50;
 
   const isResizing = useRef(false);
@@ -258,12 +259,14 @@ function CommercePanel() {
   // Tops (débouchés / ressources) — dépend de la direction (vue)
   useEffect(() => {
     if (!selId) { setTops(null); return; }
-    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, limite: "10" });
+    const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
     if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
     else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
       .then(r => r.json()).then(setTops).catch(() => setTops(null));
+    fetch(`${API}/statistiques/commerce/concentration?${p.toString()}`)
+      .then(r => r.json()).then(setConc).catch(() => setConc(null));
   }, [vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
@@ -591,6 +594,39 @@ function CommercePanel() {
                 fullChildren={<GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} couleur="#ca631f" rowH={40} />}>
                 <GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} couleur="#ca631f" />
               </GrapheCard>
+            </div>
+          );
+        })()}
+
+        {/* 4 & 5. Poids des ressources & Concentration */}
+        {(() => {
+          const expDir = vue === "exportateur";
+          const periode = modeAnnees === "specifiques" && anneesSpec.length > 0
+            ? `${anneesSpec[0]}–${anneesSpec[anneesSpec.length - 1]}` : `${anneeMin}–${anneeMax}`;
+          // Poids des ressources : top 8 + « Autres »
+          let donutData: { label: string; valeur: number }[] = [];
+          if (tops && tops.ressources.length) {
+            const top8 = tops.ressources.slice(0, 8);
+            donutData = top8.map(r => ({ label: r.ressource, valeur: r.valeur }));
+            const autres = (tops.total || 0) - top8.reduce((s, r) => s + r.valeur, 0);
+            if (autres > 0.0001 && tops.ressources.length > 8) donutData.push({ label: "Autres", valeur: autres });
+          }
+          const concPoints = conc?.points || [];
+          if (!donutData.length && !concPoints.length) return null;
+          return (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
+              {donutData.length > 0 && (
+                <GrapheCard titre={expDir ? "Poids des ressources exportées" : "Poids des ressources importées"} sous_titre={`Part du total · cumul ${periode}`} grapheId={`stat_poids_res_${vue}_${selId}`} hideLegend
+                  fullChildren={<GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} />}>
+                  <GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} />
+                </GrapheCard>
+              )}
+              {concPoints.length > 0 && (
+                <GrapheCard titre={expDir ? "Concentration des exportations" : "Concentration des importations"} sous_titre={`Part cumulée des ${expDir ? "débouchés" : "origines"} · ${periode}`} grapheId={`stat_conc_${vue}_${selId}`} hideLegend
+                  fullChildren={<GrapheConcentration points={concPoints} height={340} />}>
+                  <GrapheConcentration points={concPoints} height={200} />
+                </GrapheCard>
+              )}
             </div>
           );
         })()}
@@ -961,6 +997,104 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34 }: {
   }, [draw]);
   useEffect(() => { draw(); }, [draw]);
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
+}
+
+
+// ── Anneau de composition (poids %) ───────────────────────────────────────────
+const DONUT_PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca", "#C5BFBB"];
+function GrapheDonut({ data, fmt }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string }) {
+  const ref = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const fmtV = fmt || fmtValGen;
+  const draw = useCallback(() => {
+    if (!ref.current || !wrapRef.current) return;
+    const el = ref.current;
+    d3.select(el).selectAll("*").remove();
+    const items = data.filter(d => d.valeur > 0);
+    if (!items.length) return;
+    const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
+    const H = Math.max(230, items.length * 22 + 44);
+    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+    const total = d3.sum(items, d => d.valeur);
+    const R = Math.min(H - 20, W * 0.42) / 2;
+    const cx = R + 12, cy = H / 2;
+    const pie = d3.pie<any>().value(d => d.valeur).sort(null);
+    const arc = d3.arc<any>().innerRadius(R * 0.6).outerRadius(R);
+    const tooltip = d3.select("#d3-tooltip") as any;
+    const g = svg.append("g").attr("transform", `translate(${cx},${cy})`);
+    g.selectAll("path").data(pie(items)).enter().append("path")
+      .attr("d", arc as any).attr("fill", (_d, i) => DONUT_PALETTE[i % DONUT_PALETTE.length]).attr("stroke", "#fff").attr("stroke-width", 1.5)
+      .style("cursor", "pointer")
+      .on("mouseover", (e, d: any) => { showD3Tooltip(tooltip, e, `<strong>${d.data.label}</strong><br/>${fmtV(d.data.valeur)} · ${(d.data.valeur / total * 100).toFixed(1)}%`); })
+      .on("mousemove", (e) => showD3Tooltip(tooltip, e))
+      .on("mouseout", () => hideD3Tooltip(tooltip));
+    // Légende
+    const lx = cx + R + 20;
+    let ly = cy - (items.length * 20) / 2 + 10;
+    const legend = svg.append("g");
+    const maxc = Math.max(8, Math.floor((W - lx - 66) / 6.3));
+    items.forEach((d, i) => {
+      const pct = (d.valeur / total * 100).toFixed(1);
+      let lbl = d.label; if (lbl.length > maxc) lbl = lbl.slice(0, maxc - 1) + "…";
+      const row = legend.append("g").attr("transform", `translate(${lx},${ly})`);
+      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 10).attr("height", 10).attr("rx", 2).attr("fill", DONUT_PALETTE[i % DONUT_PALETTE.length]);
+      row.append("text").attr("x", 16).attr("y", 0).attr("dy", "0.02em").style("font-size", "11px").style("fill", "#4a5568").text(lbl);
+      row.append("text").attr("x", W - lx - 4).attr("y", 0).attr("text-anchor", "end").style("font-size", "11px").style("font-weight", "700").style("fill", "#1a1a2e").text(`${pct}%`);
+      ly += 20;
+    });
+  }, [data, fmtV]);
+  useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
+  useEffect(() => { draw(); }, [draw]);
+  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
+}
+
+// ── Courbe de concentration (Pareto) ──────────────────────────────────────────
+function GrapheConcentration({ points, height = 200 }: { points: { rang: number; nom: string; part_cumulee: number }[]; height?: number }) {
+  const ref = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const draw = useCallback(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+    d3.select(el).selectAll("*").remove();
+    if (!points.length) return;
+    const W = el.parentElement?.clientWidth || 600;
+    const H = height;
+    const M = { top: 12, right: 18, bottom: 28, left: 44 };
+    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+    const pts = [{ rang: 0, nom: "", part_cumulee: 0 }, ...points];
+    const maxRang = points[points.length - 1].rang;
+    const x = d3.scaleLinear().domain([0, maxRang]).range([M.left, W - M.right]);
+    const y = d3.scaleLinear().domain([0, 100]).range([H - M.bottom, M.top]);
+    const tooltip = d3.select("#d3-tooltip") as any;
+    svg.append("g").selectAll("line").data(y.ticks(4)).enter().append("line")
+      .attr("x1", M.left).attr("x2", W - M.right).attr("y1", d => y(d)).attr("y2", d => y(d)).attr("stroke", "#EBEBEB").attr("stroke-width", 1);
+    const gid = "concGrad";
+    const grad = svg.append("defs").append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
+    grad.append("stop").attr("offset", "0%").attr("stop-color", "#004f91").attr("stop-opacity", 0.12);
+    grad.append("stop").attr("offset", "100%").attr("stop-color", "#004f91").attr("stop-opacity", 0);
+    svg.append("path").datum(pts).attr("fill", `url(#${gid})`)
+      .attr("d", d3.area<any>().x(d => x(d.rang)).y0(y(0)).y1(d => y(d.part_cumulee)).curve(d3.curveMonotoneX));
+    svg.append("path").datum(pts).attr("fill", "none").attr("stroke", "#004f91").attr("stroke-width", 2.2)
+      .attr("d", d3.line<any>().x(d => x(d.rang)).y(d => y(d.part_cumulee)).curve(d3.curveMonotoneX));
+    svg.selectAll("circle.pt").data(points).enter().append("circle")
+      .attr("cx", d => x(d.rang)).attr("cy", d => y(d.part_cumulee)).attr("r", points.length > 20 ? 0 : 2.5)
+      .attr("fill", "#fff").attr("stroke", "#004f91").attr("stroke-width", 1.5).style("pointer-events", "none");
+    svg.selectAll("circle.hit").data(points).enter().append("circle")
+      .attr("cx", d => x(d.rang)).attr("cy", d => y(d.part_cumulee)).attr("r", 9).attr("fill", "transparent").style("cursor", "pointer")
+      .on("mouseover", (e, d) => showD3Tooltip(tooltip, e, `<strong>Top ${d.rang} — ${d.nom}</strong><br/>${d.part_cumulee.toFixed(1)}% du total cumulé`))
+      .on("mousemove", (e) => showD3Tooltip(tooltip, e))
+      .on("mouseout", () => hideD3Tooltip(tooltip));
+    svg.append("g").attr("transform", `translate(${M.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d => `${d}%`))
+      .call(g => g.select(".domain").remove()).call(g => g.selectAll("line").remove())
+      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
+    const xticks = x.ticks(Math.min(maxRang, 6)).filter(t => Number.isInteger(t) && t >= 1);
+    svg.append("g").attr("transform", `translate(0,${H - M.bottom})`).call(d3.axisBottom(x).tickValues(xticks).tickFormat(d3.format("d")).tickSizeOuter(0))
+      .call(g => g.select(".domain").attr("stroke", "#E8E5E3")).call(g => g.selectAll("line").remove())
+      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
+  }, [points, height]);
+  useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
+  useEffect(() => { draw(); }, [draw]);
+  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
 }
 
 function GrapheModal({ open, onClose, titre, sous_titre, children, series, grapheId }: any) {
