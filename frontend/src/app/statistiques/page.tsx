@@ -213,25 +213,6 @@ function CommercePanel() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { const t = setTimeout(() => { setQDeb(q); setPage(1); }, 350); return () => clearTimeout(t); }, [q]);
-  useEffect(() => { setPage(1); }, [vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel]);
-
-  useEffect(() => {
-    if (!selId) return;
-    setChargTable(true);
-    const p = new URLSearchParams({ page: String(page), taille: String(TAILLE) });
-    p.set(vue === "exportateur" ? "exportateur_id" : "importateur_id", String(selId));
-    if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
-    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
-    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
-    if (qDeb.trim()) p.set("recherche", qDeb.trim());
-    fetch(`${API}/statistiques/commerce/transactions?${p.toString()}`)
-      .then(r => r.json())
-      .then(d => { setLignes(d.lignes || []); setTotal(d.total || 0); })
-      .catch(() => { setLignes([]); setTotal(0); })
-      .finally(() => setChargTable(false));
-  }, [page, vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, qDeb, ressources.length]);
-
   // KPIs agrégés (période + ressources, hors recherche texte)
   useEffect(() => {
     if (!selId) { setKpis(null); return; }
@@ -586,13 +567,13 @@ function CommercePanel() {
             ? `${anneesSpec[0]}–${anneesSpec[anneesSpec.length - 1]}` : `${anneeMin}–${anneeMax}`;
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
-              <GrapheCard titre={expDir ? "Top 10 des débouchés" : "Top 10 des origines"} sous_titre={`Cumul ${periode}`} grapheId={`stat_top_part_${vue}_${selId}`} hideLegend
+              <GrapheCard titre={expDir ? "Top 10 des débouchés" : "Top 10 des origines"} sous_titre={`Top 6 · cumul ${periode}`} grapheId={`stat_top_part_${vue}_${selId}`} hideLegend
                 fullChildren={<GrapheBarresH data={dataPart} fmt={(v) => fmtUSD(v)} rowH={40} />}>
-                <GrapheBarresH data={dataPart} fmt={(v) => fmtUSD(v)} />
+                <GrapheBarresH data={dataPart.slice(0, 6)} fmt={(v) => fmtUSD(v)} />
               </GrapheCard>
-              <GrapheCard titre="Top 10 des ressources" sous_titre={`Cumul ${periode}`} grapheId={`stat_top_res_${vue}_${selId}`} hideLegend
+              <GrapheCard titre="Top 10 des ressources" sous_titre={`Top 6 · cumul ${periode}`} grapheId={`stat_top_res_${vue}_${selId}`} hideLegend
                 fullChildren={<GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} couleur="#ca631f" rowH={40} />}>
-                <GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} couleur="#ca631f" />
+                <GrapheBarresH data={dataRes.slice(0, 6)} fmt={(v) => fmtUSD(v)} couleur="#ca631f" />
               </GrapheCard>
             </div>
           );
@@ -630,55 +611,6 @@ function CommercePanel() {
             </div>
           );
         })()}
-
-        <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #ECEAE7", padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
-          <div style={{ position: "relative", maxWidth: 320, marginBottom: 16 }}>
-            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher un ${vue === "exportateur" ? "importateur" : "exportateur"}, une ressource…`}
-              style={{ width: "100%", background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 9, padding: "9px 12px 9px 30px", fontSize: 13, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-          </div>
-
-          <div style={{ overflowX: "auto", border: "1px solid #F0EEEC", borderRadius: 12 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: "#FAF9F8", textAlign: "left" }}>
-                  <th style={TH}>Exportateur</th>
-                  <th style={TH}>Importateur</th>
-                  <th style={{ ...TH, width: 70 }}>Année</th>
-                  <th style={TH}>Ressource</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Valeur</th>
-                </tr>
-              </thead>
-              <tbody>
-                {chargTable ? (
-                  <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "32px" }}><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /></td></tr>
-                ) : lignes.length === 0 ? (
-                  <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "32px" }}>Aucun flux ne correspond aux filtres.</td></tr>
-                ) : lignes.map(l => (
-                  <tr key={l.id} style={{ borderTop: "1px solid #F4F2F0" }}>
-                    <td style={{ ...TD, fontWeight: l.exportateur_id === selId ? 700 : 600, color: l.exportateur_id === selId ? "#004f91" : "#2d3540" }}>{l.exportateur}</td>
-                    <td style={{ ...TD, fontWeight: l.importateur_id === selId ? 700 : 600, color: l.importateur_id === selId ? "#004f91" : "#2d3540" }}>{l.importateur}</td>
-                    <td style={TD}>{l.annee}</td>
-                    <td style={{ ...TD, color: "#4a5568" }}>{l.ressource}</td>
-                    <td style={{ ...TD, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: "#004f91" }} title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtUSD(l.valeur)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {total > TAILLE && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 16 }}>
-              <span style={{ fontSize: 12.5, color: "#9aa5b4" }}>Page {page} / {nbPages}</span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
-                  style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 9, padding: "8px 18px", fontSize: 13, fontWeight: 600, color: "#2d3540", fontFamily: "var(--font-google-sans)", opacity: page <= 1 ? 0.4 : 1, cursor: page <= 1 ? "not-allowed" : "pointer" }}>Précédent</button>
-                <button onClick={() => setPage(p => Math.min(nbPages, p + 1))} disabled={page >= nbPages}
-                  style={{ background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 9, padding: "8px 18px", fontSize: 13, fontWeight: 600, color: "#2d3540", fontFamily: "var(--font-google-sans)", opacity: page >= nbPages ? 0.4 : 1, cursor: page >= nbPages ? "not-allowed" : "pointer" }}>Suivant</button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -975,7 +907,7 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34 }: {
 
     svg.selectAll("rect.bar").data(data).enter().append("rect")
       .attr("x", M.left).attr("y", d => y(d.label)!).attr("height", y.bandwidth())
-      .attr("width", d => Math.max(2, x(d.valeur) - M.left)).attr("fill", couleur).attr("rx", 4)
+      .attr("width", d => Math.max(2, x(d.valeur) - M.left)).attr("fill", couleur)
       .style("cursor", "pointer")
       .on("mouseover", (e, d) => { d3.select(e.currentTarget as any).attr("opacity", 0.8); showD3Tooltip(tooltip, e, `<strong>${d.label}</strong><br/>${fmtV(d.valeur)}`); })
       .on("mousemove", (e) => showD3Tooltip(tooltip, e))
