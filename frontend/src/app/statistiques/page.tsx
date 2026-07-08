@@ -1565,6 +1565,32 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
   );
 }
 
+// ── Bouton « Tableau de données » responsive (plein → « Données » → icône) ─────
+function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [mode, setMode] = useState<"full" | "court" | "icone">("full");
+  useEffect(() => {
+    const btn = ref.current; const parent = btn?.parentElement;
+    if (!btn || !parent) return;
+    const calc = () => {
+      let used = 0;
+      Array.from(parent.children).forEach(ch => { if (ch !== btn) used += (ch as HTMLElement).offsetWidth + 8; });
+      const avail = parent.clientWidth - used;
+      setMode(avail >= 185 ? "full" : avail >= 112 ? "court" : "icone");
+    };
+    const raf = requestAnimationFrame(calc);
+    const ro = new ResizeObserver(calc); ro.observe(parent);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+  }, [dep]);
+  return (
+    <button ref={ref} onClick={onClick} title="Tableau de données"
+      style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: mode === "icone" ? 0 : 7, padding: mode === "icone" ? "8px 10px" : "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0, whiteSpace: "nowrap" }}
+      onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
+      <Table size={14} />{mode !== "icone" && <span>{mode === "full" ? "Tableau de données" : "Données"}</span>}
+    </button>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
   const [mode, setMode] = useState<"indicateurs" | "commerce">("indicateurs");
@@ -1943,10 +1969,7 @@ export default function StatistiquesPage() {
                       <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e" }}>{paysNom(selection[0])}</h2>
                       <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
                     </div>
-                    <button onClick={() => setShowTable(true)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
-                      <Table size={14} /> Tableau de données
-                    </button>
+                    <BoutonDonnees onClick={() => setShowTable(true)} dep={selection[0]} />
                   </div>
 
                   {/* KPI cards */}
@@ -2007,17 +2030,14 @@ export default function StatistiquesPage() {
                 return (
                 <>
                   {/* Header : période + pastilles pays */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "nowrap" }}>
                     <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 13px", borderRadius: 999, background: "#ECEAE8", border: "1px solid #DFDBD7", fontSize: 12, fontWeight: 700, color: "#3a4452", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
                     {selection.map(id => (
-                      <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 13px", borderRadius: 999, background: `${couleurPays(id)}0D`, border: `1px solid ${couleurPays(id)}2E`, fontSize: 12, fontWeight: 700, color: couleurPays(id) }}>
+                      <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 13px", borderRadius: 999, background: `${couleurPays(id)}0D`, border: `1px solid ${couleurPays(id)}2E`, fontSize: 12, fontWeight: 700, color: couleurPays(id), flexShrink: 0, whiteSpace: "nowrap" }}>
                         <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleurPays(id), display: "inline-block" }} />{paysNom(id)}
                       </span>
                     ))}
-                    <button onClick={() => setShowTable(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
-                      <Table size={14} /> Tableau de données
-                    </button>
+                    <BoutonDonnees onClick={() => setShowTable(true)} dep={selection.join(",")} />
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
