@@ -60,7 +60,8 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
   const [ideFlux, setIdeFlux] = useState<any>(null);
   const [bilat, setBilat] = useState<any>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const printRef = useRef<HTMLDivElement>(null);
+  const page1Ref = useRef<HTMLDivElement>(null);
+  const page2Ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     fetch(`${API}/statistiques/comparaison?pays=${paysIds.join(",")}`).then(r => r.json()).then(setData).catch(() => {});
     fetch(`${API}/statistiques/ide_flux?pays=${paysIds.join(",")}`).then(r => r.json()).then(setIdeFlux).catch(() => setIdeFlux({}));
@@ -92,21 +93,29 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
     return Math.max(...vals);
   };
 
-  // PDF : rendu fidèle de la fiche (html2canvas haute résolution, page unique continue)
+  // PDF : rendu fidèle de la fiche sur 2 pages (html2canvas haute résolution)
+  // Page 1 : en-tête + indicateurs jusqu'aux IDE · Page 2 : échanges bilatéraux
   const exportPDF = async () => {
-    if (!printRef.current) return;
+    if (!page1Ref.current) return;
     setPdfLoading(true);
     try {
       const jspdfMod: any = await import("jspdf");
       const JsPDF = jspdfMod.jsPDF || jspdfMod.default;
       const h2cMod: any = await import("html2canvas");
       const html2canvas = h2cMod.default || h2cMod;
-      const el = printRef.current;
-      const canvas = await html2canvas(el, { scale: 3, backgroundColor: "#ffffff", useCORS: true, windowWidth: el.scrollWidth });
       const imgW = 760;
-      const imgH = canvas.height * imgW / canvas.width;
-      const doc = new JsPDF({ unit: "pt", format: [imgW, imgH], compress: true });
-      doc.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, imgW, imgH);
+      const shoot = async (el: HTMLDivElement) => {
+        const canvas = await html2canvas(el, { scale: 3, backgroundColor: "#ffffff", useCORS: true, windowWidth: el.scrollWidth });
+        return { url: canvas.toDataURL("image/png"), h: canvas.height * imgW / canvas.width };
+      };
+      const p1 = await shoot(page1Ref.current);
+      const doc = new JsPDF({ unit: "pt", format: [imgW, p1.h], compress: true });
+      doc.addImage(p1.url, "PNG", 0, 0, imgW, p1.h);
+      if (page2Ref.current) {
+        const p2 = await shoot(page2Ref.current);
+        doc.addPage([imgW, p2.h]);
+        doc.addImage(p2.url, "PNG", 0, 0, imgW, p2.h);
+      }
       doc.save(`Fiche_Pays_${cols.map((c: any) => c.nom.replace(/\s/g, "_")).join("_")}.pdf`);
     } catch (e) { console.error(e); }
     setPdfLoading(false);
@@ -121,7 +130,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
           <X size={15} color="#4a5568" />
         </button>
         <div style={{ overflowY: "auto", flex: 1 }}>
-          <div ref={printRef} style={{ background: "#fff", padding: "26px 30px 30px" }}>
+          <div ref={page1Ref} style={{ background: "#fff", padding: "26px 30px 30px" }}>
             {/* En-tête premium */}
             <div style={{ marginBottom: 22, paddingBottom: 18, borderBottom: "1px solid #ECEAE7" }}>
               <p style={{ fontSize: 10, fontWeight: 800, color: "#004f91", letterSpacing: "0.18em", textTransform: "uppercase", margin: 0 }}>APIX Sénégal · Statistiques</p>
@@ -181,8 +190,10 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
               </tbody>
             </table>
           )}
-          {/* Échanges bilatéraux (2 pays) */}
-          {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (() => {
+          </div>
+          {/* Échanges bilatéraux (2 pays) — page 2 du PDF */}
+          {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (
+          <div ref={page2Ref} style={{ background: "#fff", padding: "10px 30px 30px" }}>{(() => {
             const a = cols[0], b = cols[1];
             const ab = bilat.a_vers_b || 0, ba = bilat.b_vers_a || 0;
             const diff = ab - ba;
@@ -262,8 +273,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                 </div>
               </div>
             );
-          })()}
-          </div>
+          })()}</div>)}
         </div>
         <div data-no-pdf style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <span style={{ fontSize: 11, color: "#9aa5b4" }}>Valeur en vert = plus élevée · dernière année disponible</span>
