@@ -957,8 +957,10 @@ function GrapheDonut({ data, fmt, height = 240, nbLabels = 99 }: {
     const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
     const H = height;
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    const labelSpace = Math.max(96, W * 0.30);
-    const radius = Math.max(40, Math.min(H / 2 - 12, W / 2 - labelSpace));
+    // Rayon réduit pour laisser la place aux étiquettes (trait + nom + pastille).
+    const pad = 8;
+    const minLabel = Math.min(180, Math.max(72, W * 0.22));
+    const radius = Math.max(38, Math.min(H / 2 - 14, (W / 2 - pad - minLabel) / 1.14));
     const g = svg.append("g").attr("transform", `translate(${W / 2},${H / 2})`);
 
     // Angles pondérés en racine carrée pour rendre visibles les petites parts ;
@@ -984,29 +986,42 @@ function GrapheDonut({ data, fmt, height = 240, nbLabels = 99 }: {
 
     // Étiquettes reliées par un trait, pour les nbLabels plus grandes parts
     const mctx = document.createElement("canvas").getContext("2d")!;
-    const lineEnd = radius * 1.2;
-    arcs.slice(0, Math.min(nbLabels, n)).forEach((d: any, i: number) => {
+    const lineEnd = radius * 1.14;
+    const avail = W / 2 - lineEnd - pad; // largeur dispo (nom + pastille) d'un côté
+    const k = Math.min(nbLabels, n);
+    const labeled = arcs.slice(0, k).map((d: any, i: number) => ({ d, i, right: mid(d) < Math.PI, y: outer.centroid(d)[1] }));
+    // Dé-collision verticale des étiquettes, côté par côté
+    [true, false].forEach(side => {
+      const grp = labeled.filter(o => o.right === side).sort((a, b) => a.y - b.y);
+      const gap = 22, top = -(H / 2) + 12, bottom = H / 2 - 12;
+      for (let j = 1; j < grp.length; j++) if (grp[j].y - grp[j - 1].y < gap) grp[j].y = grp[j - 1].y + gap;
+      if (grp.length) {
+        const over = grp[grp.length - 1].y - bottom; if (over > 0) grp.forEach(o => o.y -= over);
+        const under = top - grp[0].y; if (under > 0) grp.forEach(o => o.y += under);
+      }
+    });
+    labeled.forEach(({ d, i, right, y }) => {
       const c = couleur(i);
-      const right = mid(d) < Math.PI;
       const p0 = arc.centroid(d), p1 = outer.centroid(d);
       g.append("polyline").attr("fill", "none").attr("stroke", "#D5D0CC").attr("stroke-width", 1).attr("stroke-linejoin", "round")
-        .attr("points", [p0, p1, [lineEnd * (right ? 1 : -1), p1[1]]] as any);
+        .attr("points", [p0, [p1[0], y], [lineEnd * (right ? 1 : -1), y]] as any);
       const pctStr = `${(d.data.valeur / total * 100).toFixed(1)}%`;
       mctx.font = "700 11px 'Google Sans',sans-serif";
       const pillW = Math.ceil(mctx.measureText(pctStr).width) + 16;
       mctx.font = "12px 'Google Sans',sans-serif";
-      const budget = labelSpace - pillW - 16;
+      const budget = Math.max(0, avail - pillW - 6);
       let nom = d.data.label;
-      while (nom.length > 1 && mctx.measureText(nom).width > budget) nom = nom.slice(0, -1);
-      if (nom !== d.data.label) nom = nom.slice(0, -1) + "…";
+      if (mctx.measureText(nom).width > budget) {
+        while (nom.length > 1 && mctx.measureText(nom + "…").width > budget) nom = nom.slice(0, -1);
+        nom = nom + "…";
+      }
       const nameW = Math.ceil(mctx.measureText(nom).width);
       const startX = right ? lineEnd + 6 : -(lineEnd + 6) - (nameW + 6 + pillW);
-      const yc = p1[1];
-      g.append("text").attr("x", startX).attr("y", yc).attr("dy", "0.35em").style("font-size", "12px").style("fill", "#4a5568").text(nom);
+      g.append("text").attr("x", startX).attr("y", y).attr("dy", "0.35em").style("font-size", "12px").style("fill", "#4a5568").text(nom);
       const rgb = d3.color(c)?.rgb();
       const lum = rgb ? (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255 : 0;
-      g.append("rect").attr("x", startX + nameW + 6).attr("y", yc - 9).attr("width", pillW).attr("height", 18).attr("rx", 999).attr("fill", c);
-      g.append("text").attr("x", startX + nameW + 6 + pillW / 2).attr("y", yc).attr("dy", "0.35em").attr("text-anchor", "middle")
+      g.append("rect").attr("x", startX + nameW + 6).attr("y", y - 9).attr("width", pillW).attr("height", 18).attr("rx", 999).attr("fill", c);
+      g.append("text").attr("x", startX + nameW + 6 + pillW / 2).attr("y", y).attr("dy", "0.35em").attr("text-anchor", "middle")
         .style("font-size", "11px").style("font-weight", "800").style("fill", lum > 0.62 ? "#1a1a2e" : "#fff").text(pctStr);
     });
   }, [data, fmtV, height, nbLabels]);
