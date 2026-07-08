@@ -957,7 +957,9 @@ function GrapheDonut({ data, fmt }: { data: { label: string; valeur: number }[];
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
     const R = Math.min(H - 20, W * 0.42) / 2;
     const cx = R + 12, cy = H / 2;
-    const pie = d3.pie<any>().value(d => d.valeur).sort(null);
+    // Angles pondérés en racine carrée pour rendre visibles les petites parts ;
+    // le total au centre et les % de la légende restent les vraies proportions.
+    const pie = d3.pie<any>().value(d => Math.sqrt(d.valeur)).sort(null);
     const arc = d3.arc<any>().innerRadius(R * 0.58).outerRadius(R);
     const arcH = d3.arc<any>().innerRadius(R * 0.58).outerRadius(R + 5);
     const tooltip = d3.select("#d3-tooltip") as any;
