@@ -567,13 +567,13 @@ function CommercePanel() {
             ? `${anneesSpec[0]}–${anneesSpec[anneesSpec.length - 1]}` : `${anneeMin}–${anneeMax}`;
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
-              <GrapheCard titre={expDir ? "Top 10 des débouchés" : "Top 10 des origines"} sous_titre={`Top 6 · cumul ${periode}`} grapheId={`stat_top_part_${vue}_${selId}`} hideLegend
+              <GrapheCard titre={expDir ? "Répartition des exportations par pays de destination" : "Répartition des importations par pays d'origine"} grapheId={`stat_top_part_${vue}_${selId}`} hideLegend
                 fullChildren={<GrapheBarresH data={dataPart} fmt={(v) => fmtUSD(v)} rowH={40} />}>
-                <GrapheBarresH data={dataPart.slice(0, 6)} fmt={(v) => fmtUSD(v)} />
+                <GrapheBarresH data={dataPart.slice(0, 5)} fmt={(v) => fmtUSD(v)} />
               </GrapheCard>
-              <GrapheCard titre="Top 10 des ressources" sous_titre={`Top 6 · cumul ${periode}`} grapheId={`stat_top_res_${vue}_${selId}`} hideLegend
-                fullChildren={<GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} couleur="#ca631f" rowH={40} />}>
-                <GrapheBarresH data={dataRes.slice(0, 6)} fmt={(v) => fmtUSD(v)} couleur="#ca631f" />
+              <GrapheCard titre={expDir ? "Classement des ressources exportées" : "Classement des ressources importées"} grapheId={`stat_top_res_${vue}_${selId}`} hideLegend
+                fullChildren={<GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} rowH={40} />}>
+                <GrapheBarresH data={dataRes.slice(0, 5)} fmt={(v) => fmtUSD(v)} />
               </GrapheCard>
             </div>
           );
@@ -597,7 +597,7 @@ function CommercePanel() {
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
               {donutData.length > 0 && (
-                <GrapheCard titre={expDir ? "Poids des ressources exportées" : "Poids des ressources importées"} sous_titre={`Part du total · cumul ${periode}`} grapheId={`stat_poids_res_${vue}_${selId}`} hideLegend
+                <GrapheCard titre={expDir ? "Poids des ressources exportées" : "Poids des ressources importées"} grapheId={`stat_poids_res_${vue}_${selId}`} hideLegend
                   fullChildren={<GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} />}>
                   <GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} />
                 </GrapheCard>
