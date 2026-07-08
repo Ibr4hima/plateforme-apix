@@ -780,6 +780,33 @@ async def commerce_detail(
     return {"partenaires": partenaires}
 
 
+@router.get("/commerce/bilateral")
+async def commerce_bilateral(
+    db: AsyncSession = Depends(get_db),
+    pays_a: int = Query(...),
+    pays_b: int = Query(...),
+):
+    """Échanges bilatéraux cumulés entre deux pays (toutes ressources, toutes années)."""
+    from sqlalchemy import and_ as _and, or_ as _or
+    _sum = _sqlfunc.coalesce(_sqlfunc.sum(StatTransaction.valeur), 0)
+
+    ab = (await db.execute(select(_sum).where(
+        StatTransaction.exportateur_id == pays_a, StatTransaction.importateur_id == pays_b))).scalar_one()
+    ba = (await db.execute(select(_sum).where(
+        StatTransaction.exportateur_id == pays_b, StatTransaction.importateur_id == pays_a))).scalar_one()
+    bornes = (await db.execute(
+        select(_sqlfunc.min(StatTransaction.annee), _sqlfunc.max(StatTransaction.annee)).where(
+            _or(_and(StatTransaction.exportateur_id == pays_a, StatTransaction.importateur_id == pays_b),
+                _and(StatTransaction.exportateur_id == pays_b, StatTransaction.importateur_id == pays_a)))
+    )).first()
+    return {
+        "a_vers_b": float(ab or 0),
+        "b_vers_a": float(ba or 0),
+        "annee_min": bornes[0] if bornes else None,
+        "annee_max": bornes[1] if bornes else None,
+    }
+
+
 @router.get("/commerce/transactions")
 async def commerce_transactions(
     db: AsyncSession = Depends(get_db),

@@ -58,9 +58,14 @@ function sortContinents(conts: string[]) {
 function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays: Pays[]; onClose: () => void }) {
   const [data, setData] = useState<any>(null);
   const [ideFlux, setIdeFlux] = useState<any>(null);
+  const [bilat, setBilat] = useState<any>(null);
   useEffect(() => {
     fetch(`${API}/statistiques/comparaison?pays=${paysIds.join(",")}`).then(r => r.json()).then(setData).catch(() => {});
     fetch(`${API}/statistiques/ide_flux?pays=${paysIds.join(",")}`).then(r => r.json()).then(setIdeFlux).catch(() => setIdeFlux({}));
+    setBilat(null);
+    if (paysIds.length === 2) {
+      fetch(`${API}/statistiques/commerce/bilateral?pays_a=${paysIds[0]}&pays_b=${paysIds[1]}`).then(r => r.json()).then(setBilat).catch(() => setBilat(null));
+    }
   }, [paysIds]);
   const cols = data?.pays || [];
   // Indicateurs macro + flux d'IDE entrant/sortant (source CNUCED)
@@ -142,6 +147,42 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
               </tbody>
             </table>
           )}
+          {/* Échanges bilatéraux (2 pays) */}
+          {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (() => {
+            const a = cols[0], b = cols[1];
+            const ab = bilat.a_vers_b || 0, ba = bilat.b_vers_a || 0;
+            const diff = ab - ba;
+            const gagnant = diff >= 0 ? a : b;
+            const perdant = diff >= 0 ? b : a;
+            const colA = PALETTE[0], colB = PALETTE[1];
+            const periode = bilat.annee_min ? `${bilat.annee_min}–${bilat.annee_max}` : "";
+            const Fleche = ({ de, vers, col, val }: any) => (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "11px 14px", background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, fontWeight: 600, color: "#4a5568" }}>
+                  <span style={{ fontWeight: 800, color: col }}>{de}</span>
+                  <span style={{ color: "#9aa5b4" }}>→</span>
+                  <span style={{ fontWeight: 700 }}>{vers}</span>
+                </span>
+                <span style={{ fontSize: 13.5, fontWeight: 800, color: "#004f91", fontVariantNumeric: "tabular-nums" }}>{fmtUSD(val)}</span>
+              </div>
+            );
+            return (
+              <div style={{ marginTop: 22 }}>
+                <p style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>Échanges bilatéraux{periode ? ` · ${periode}` : ""}</p>
+                <div style={{ display: "grid", gap: 8 }}>
+                  <Fleche de={a.nom} vers={b.nom} col={colA} val={ab} />
+                  <Fleche de={b.nom} vers={a.nom} col={colB} val={ba} />
+                </div>
+                <div style={{ marginTop: 10, padding: "12px 16px", borderRadius: 10, background: "rgba(24,128,56,0.06)", border: "1px solid rgba(24,128,56,0.18)", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 12.5, color: "#1a1a2e", lineHeight: 1.5 }}>
+                    {diff === 0
+                      ? <>Les échanges sont <strong>équilibrés</strong> entre {a.nom} et {b.nom}.</>
+                      : <>Balance commerciale <strong>excédentaire en faveur de <span style={{ color: diff >= 0 ? colA : colB }}>{gagnant.nom}</span></strong> : <strong style={{ color: "#188038" }}>+{fmtUSD(Math.abs(diff))}</strong> (déficit pour {perdant.nom}).</>}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
         <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <span style={{ fontSize: 11, color: "#9aa5b4" }}>Valeur en vert = plus élevée · dernière année disponible</span>
