@@ -185,63 +185,30 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
     if (!selId) return;
     setExporting(true);
     try {
-      const ExcelJS = (await import("exceljs")).default;
-      const wb = new ExcelJS.Workbook();
-      const BLEU = "FF004F91", BLEU_CLAIR = "FFEAF1F9", GRIS = "FFE6E2DE", ALT = "FFFAF9F7";
-      const bordure = { style: "thin" as const, color: { argb: GRIS } };
-      const cadre = { top: bordure, left: bordure, bottom: bordure, right: bordure };
-
+      const wb = XLSX.utils.book_new();
       for (const a of anneesTabs) {
         const d = await fetch(`${API}/statistiques/commerce/detail?pays_id=${selId}&direction=${vue}&annee=${a}`).then(r => r.json());
         const parts: any[] = d.partenaires || [];
-        const ws = wb.addWorksheet(String(a), { views: [{ state: "frozen", ySplit: 1 }] });
-        ws.columns = [{ width: 24 }, { width: 28 }, { width: 34 }, { width: 20 }];
-
-        // En-tête
-        const hr = ws.addRow([colSelf, colPart, "Ressource", "Valeur ($)"]);
-        hr.height = 24;
-        hr.eachCell((c, i) => {
-          c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: BLEU } };
-          c.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
-          c.alignment = { vertical: "middle", horizontal: i === 4 ? "right" : "left" };
-          c.border = cadre;
-        });
-
-        let r = 2; const startExp = r;
-        parts.forEach((p: any, pi: number) => {
+        const aoa: any[][] = [[colSelf, colPart, "Ressource", "Valeur ($)"]];
+        const merges: any[] = [];
+        let r = 1; const startExp = r;
+        parts.forEach(p => {
           const lignes = p.lignes.length ? p.lignes : [{ ressource: "—", valeur: 0 }];
           const startP = r;
-          const bg = pi % 2 === 0 ? "FFFFFFFF" : ALT;
           lignes.forEach((lg: any, li: number) => {
-            const row = ws.addRow(["", li === 0 ? p.nom : "", lg.ressource, Math.round(lg.valeur)]);
-            row.eachCell((c) => { c.border = cadre; });
-            [2, 3, 4].forEach(ci => { ws.getCell(r, ci).fill = { type: "pattern", pattern: "solid", fgColor: { argb: bg } }; });
-            const cP = ws.getCell(r, 2); cP.font = { bold: true, color: { argb: "FF2D3540" } }; cP.alignment = { vertical: "middle" };
-            ws.getCell(r, 3).font = { color: { argb: "FF4A5568" } };
-            const cV = ws.getCell(r, 4); cV.numFmt = '#,##0" $"'; cV.font = { bold: true, color: { argb: BLEU } }; cV.alignment = { horizontal: "right" };
+            aoa.push(["", li === 0 ? p.nom : "", lg.ressource, Math.round(lg.valeur)]);
             r++;
           });
-          if (lignes.length > 1) ws.mergeCells(startP, 2, r - 1, 2);
+          if (lignes.length > 1) merges.push({ s: { r: startP, c: 1 }, e: { r: r - 1, c: 1 } });
         });
-
         const endExp = r - 1;
-        if (endExp >= startExp) {
-          ws.getCell(startExp, 1).value = nomPays;
-          ws.mergeCells(startExp, 1, endExp, 1);
-          const cE = ws.getCell(startExp, 1);
-          cE.font = { bold: true, color: { argb: BLEU }, size: 12 };
-          cE.alignment = { vertical: "middle", horizontal: "center" };
-          cE.fill = { type: "pattern", pattern: "solid", fgColor: { argb: BLEU_CLAIR } };
-          cE.border = cadre;
-        }
+        if (endExp >= startExp) { aoa[startExp][0] = nomPays; merges.push({ s: { r: startExp, c: 0 }, e: { r: endExp, c: 0 } }); }
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws["!merges"] = merges;
+        ws["!cols"] = [{ wch: 22 }, { wch: 26 }, { wch: 32 }, { wch: 18 }];
+        XLSX.utils.book_append_sheet(wb, ws, String(a));
       }
-
-      const buf = await wb.xlsx.writeBuffer();
-      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url; link.download = `Flux_${nomPays.replace(/\s/g, "_")}_${expDir ? "exportations" : "importations"}.xlsx`; link.click();
-      URL.revokeObjectURL(url);
+      XLSX.writeFile(wb, `Flux_${nomPays.replace(/\s/g, "_")}_${expDir ? "exportations" : "importations"}.xlsx`);
     } catch { /* noop */ }
     setExporting(false);
   };
