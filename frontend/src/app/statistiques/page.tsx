@@ -161,6 +161,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
   const [annee, setAnnee] = useState<number | null>(null);
   const [partenaires, setPartenaires] = useState<{ nom: string; total: number; lignes: { ressource: string; valeur: number }[] }[]>([]);
   const [charg, setCharg] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => { if (open && anneesTabs.length) setAnnee(anneesTabs[anneesTabs.length - 1]); }, [open, anneesTabs]);
   useEffect(() => {
@@ -177,8 +178,40 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
   const colPart = expDir ? "Importateur" : "Exportateur";
   const totalRows = partenaires.reduce((s, p) => s + Math.max(1, p.lignes.length), 0);
   const grand = partenaires.reduce((s, p) => s + p.total, 0);
-  const TH: any = { padding: "10px 14px", fontSize: 11, fontWeight: 700, color: "#fff", background: "#004f91", letterSpacing: "0.03em", textAlign: "left", position: "sticky", top: 0, zIndex: 2, whiteSpace: "nowrap" };
+  const TH: any = { padding: "10px 14px", fontSize: 11, fontWeight: 700, color: "#fff", background: "#004f91", letterSpacing: "0.03em", textAlign: "left", position: "sticky", top: 0, zIndex: 2, whiteSpace: "nowrap", borderRight: "1px solid rgba(255,255,255,0.28)" };
   const cell: any = { border: "1px solid #E6E2DE", padding: "8px 14px", verticalAlign: "middle", fontSize: 12.5 };
+
+  const exporterExcel = async () => {
+    if (!selId) return;
+    setExporting(true);
+    try {
+      const wb = XLSX.utils.book_new();
+      for (const a of anneesTabs) {
+        const d = await fetch(`${API}/statistiques/commerce/detail?pays_id=${selId}&direction=${vue}&annee=${a}`).then(r => r.json());
+        const parts: any[] = d.partenaires || [];
+        const aoa: any[][] = [[colSelf, colPart, "Ressource", "Valeur ($)"]];
+        const merges: any[] = [];
+        let r = 1; const startExp = r;
+        parts.forEach(p => {
+          const lignes = p.lignes.length ? p.lignes : [{ ressource: "—", valeur: 0 }];
+          const startP = r;
+          lignes.forEach((lg: any, li: number) => {
+            aoa.push(["", li === 0 ? p.nom : "", lg.ressource, Math.round(lg.valeur)]);
+            r++;
+          });
+          if (lignes.length > 1) merges.push({ s: { r: startP, c: 1 }, e: { r: r - 1, c: 1 } });
+        });
+        const endExp = r - 1;
+        if (endExp >= startExp) { aoa[startExp][0] = nomPays; merges.push({ s: { r: startExp, c: 0 }, e: { r: endExp, c: 0 } }); }
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws["!merges"] = merges;
+        ws["!cols"] = [{ wch: 22 }, { wch: 26 }, { wch: 30 }, { wch: 18 }];
+        XLSX.utils.book_append_sheet(wb, ws, String(a));
+      }
+      XLSX.writeFile(wb, `Flux_${nomPays.replace(/\s/g, "_")}_${expDir ? "exportations" : "importations"}.xlsx`);
+    } catch { /* noop */ }
+    setExporting(false);
+  };
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -221,7 +254,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
                   <th style={{ ...TH, borderTopLeftRadius: 8 }}>{colSelf}</th>
                   <th style={TH}>{colPart}</th>
                   <th style={TH}>Ressource</th>
-                  <th style={{ ...TH, textAlign: "right", borderTopRightRadius: 8 }}>Valeur</th>
+                  <th style={{ ...TH, textAlign: "right", borderTopRightRadius: 8, borderRight: "none" }}>Valeur</th>
                 </tr>
               </thead>
               <tbody>
@@ -251,7 +284,13 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
         </div>
         <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <span style={{ fontSize: 11.5, color: "#9aa5b4" }}>{partenaires.length} {colPart.toLowerCase()}s · total {fmtUSD(grand)} en {annee}</span>
-          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+            <button onClick={exporterExcel} disabled={exporting}
+              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: exporting ? "wait" : "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)", opacity: exporting ? 0.7 : 1 }}>
+              {exporting ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <FileSpreadsheet size={13} />} Excel (toutes les années)
+            </button>
+          </div>
         </div>
       </div>
     </div>
