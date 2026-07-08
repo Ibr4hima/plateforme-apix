@@ -606,7 +606,7 @@ function CommercePanel() {
               {parts.length > 0 && (
                 <GrapheCard titre={expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"} sous_titre={`Cumul ${periode}`} grapheId={`stat_repart_${vue}_${selId}`} hideLegend
                   fullChildren={<GrapheBarresEmpilees partenaires={parts} ressources={resLabels} fmt={(v) => fmtUSD(v)} rowH={42} />}>
-                  <GrapheBarresEmpilees partenaires={parts.slice(0, 5)} ressources={resLabels} fmt={(v) => fmtUSD(v)} />
+                  <GrapheBarresEmpilees partenaires={parts.slice(0, 5)} ressources={resLabels} fmt={(v) => fmtUSD(v)} showLegend={false} />
                 </GrapheCard>
               )}
             </div>
@@ -937,9 +937,9 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0
 
 // ── Barres horizontales empilées (par partenaire × ressource) ─────────────────
 const RESSOURCE_PALETTE = ["#004f91", "#2872B8", "#5596D4", "#7FB1DE", "#0E7C86", "#188038", "#7FA653", "#C99A2E", "#CA631F", "#9C6ADE", "#B0AAA4"];
-function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposant = 0.5 }: {
+function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposant = 0.5, showLegend = true }: {
   partenaires: { nom: string; total: number; valeurs: number[] }[]; ressources: string[];
-  fmt?: (v: number | null) => string; rowH?: number; exposant?: number;
+  fmt?: (v: number | null) => string; rowH?: number; exposant?: number; showLegend?: boolean;
 }) {
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -953,15 +953,18 @@ function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposan
     const mctx = document.createElement("canvas").getContext("2d")!;
     const col = (i: number) => RESSOURCE_PALETTE[i % RESSOURCE_PALETTE.length];
 
-    // Légende des ressources (chips, avec retour à la ligne)
-    mctx.font = "600 11px 'Google Sans',sans-serif";
-    const chips = ressources.map((r, i) => ({ label: r, i, w: Math.ceil(mctx.measureText(r).width) + 24 }));
-    const lines: typeof chips[] = [];
-    let line: typeof chips = []; let lw = 0;
-    chips.forEach(c => { if (lw + c.w > W && line.length) { lines.push(line); line = []; lw = 0; } line.push(c); lw += c.w + 10; });
-    if (line.length) lines.push(line);
+    // Légende des ressources (chips, avec retour à la ligne) — masquée sur la carte
     const legRowH = 20;
-    const legendH = lines.length * legRowH + 8;
+    let legendH = 0;
+    let lines: { label: string; i: number; w: number }[][] = [];
+    if (showLegend) {
+      mctx.font = "600 11px 'Google Sans',sans-serif";
+      const chips = ressources.map((r, i) => ({ label: r, i, w: Math.ceil(mctx.measureText(r).width) + 24 }));
+      let line: typeof chips = []; let lw = 0;
+      chips.forEach(c => { if (lw + c.w > W && line.length) { lines.push(line); line = []; lw = 0; } line.push(c); lw += c.w + 10; });
+      if (line.length) lines.push(line);
+      legendH = lines.length * legRowH + 8;
+    }
 
     const longest = Math.max(...partenaires.map(p => p.nom.length));
     const M = { top: legendH + 4, right: 78, bottom: 8, left: Math.min(230, Math.max(90, Math.round(longest * 6.2) + 14)) };
@@ -988,11 +991,14 @@ function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposan
 
     partenaires.forEach(p => {
       const barW = x(p.total) - M.left;
+      // Largeur des segments pondérée en racine (comme la longueur des barres) pour
+      // mieux voir les petites ressources ; les valeurs/% du tooltip restent réels.
+      const racSum = p.valeurs.reduce((s, v) => s + (v > 0 ? Math.pow(v, exposant) : 0), 0) || 1;
       let xc = M.left;
       ressources.forEach((res, ri) => {
         const v = p.valeurs[ri] || 0;
         if (v <= 0) return;
-        const segW = (v / p.total) * barW;
+        const segW = (Math.pow(v, exposant) / racSum) * barW;
         svg.append("rect").attr("x", xc).attr("y", y(p.nom)!).attr("width", Math.max(0.5, segW)).attr("height", y.bandwidth())
           .attr("fill", col(ri)).attr("stroke", "#fff").attr("stroke-width", 0.6).style("cursor", "pointer")
           .on("mouseover", function (e) { d3.select(this).attr("opacity", 0.82); showD3Tooltip(tooltip, e, `<strong>${p.nom} — ${res}</strong><br/>${fmtV(v)} · ${(v / p.total * 100).toFixed(1)}%`); })
