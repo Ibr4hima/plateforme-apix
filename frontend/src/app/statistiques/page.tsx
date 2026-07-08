@@ -459,42 +459,6 @@ function CommercePanel() {
               </div>
             )}
           </div>
-          <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
-          {/* Ressources */}
-          <div style={{ marginBottom: 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <span style={LBL}>Ressources</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 999 }}>{ressSel.length}/{ressources.length}</span>
-            </div>
-            <div style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-              <button onClick={() => setRessSel(ressources.map(r => r.nom_en))} style={{ fontSize: 11, color: "#004f91", background: "none", border: "none", cursor: "pointer", fontWeight: 600, padding: 0 }}>Tout</button>
-              <button onClick={() => setRessSel(ressources.length ? [ressources[0].nom_en] : [])} style={{ fontSize: 11, color: "#9aa5b4", background: "none", border: "none", cursor: "pointer", padding: 0 }}>Réduire</button>
-            </div>
-            {ressources.length > 8 && (
-              <div style={{ position: "relative", marginBottom: 8 }}>
-                <Search size={12} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-                <input value={qRess} onChange={e => setQRess(e.target.value)} placeholder="Filtrer les ressources…"
-                  style={{ width: "100%", paddingLeft: 28, paddingRight: 8, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 11.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-              </div>
-            )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 2, maxHeight: 260, overflowY: "auto" }}>
-              {ressFiltrees.map(r => {
-                const on = ressSel.includes(r.nom_en);
-                const disabled = on && ressSel.length <= 1;
-                return (
-                  <div key={r.nom_en} title={r.libelle || r.nom_en}
-                    onClick={() => { if (!disabled) toggleRess(r.nom_en); }}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, background: "transparent", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1 }}
-                    onMouseEnter={ev => { ev.currentTarget.style.background = "#F8F7F6"; }}
-                    onMouseLeave={ev => { ev.currentTarget.style.background = "transparent"; }}>
-                    <div style={{ width: 9, height: 9, borderRadius: 3, border: `2px solid ${on ? "#004f91" : "#C5BFBB"}`, background: on ? "#004f91" : "transparent", flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, color: "#4a5568", flex: 1, minWidth: 0, lineHeight: 1.35, fontWeight: on ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.libelle || r.nom_en}</span>
-                  </div>
-                );
-              })}
-              {ressFiltrees.length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "8px 0" }}>Aucune ressource</p>}
-            </div>
-          </div>
         </div>}
       </aside>
 
