@@ -92,28 +92,106 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
     return Math.max(...vals);
   };
 
+  // Génération native (texte vectoriel net, pagination maîtrisée)
   const exportPDF = async () => {
-    if (!printRef.current) return;
+    if (!data) return;
     setPdfLoading(true);
     try {
-      const [jspdfMod, h2cMod] = await Promise.all([import("jspdf"), import("html2canvas")]);
-      const jsPDF = (jspdfMod as any).jsPDF || (jspdfMod as any).default;
-      const html2canvas = (h2cMod as any).default || (h2cMod as any);
-      const canvas = await html2canvas(printRef.current, { scale: 2, backgroundColor: "#ffffff", windowWidth: printRef.current.scrollWidth });
-      const img = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ unit: "pt", format: "a4", compress: true });
-      const pw = pdf.internal.pageSize.getWidth(), ph = pdf.internal.pageSize.getHeight();
-      const m = 24, iw = pw - m * 2, ih = canvas.height * iw / canvas.width;
-      let heightLeft = ih, position = m;
-      pdf.addImage(img, "PNG", m, position, iw, ih);
-      heightLeft -= (ph - m * 2);
-      while (heightLeft > 0) {
-        pdf.addPage();
-        position = m - (ih - heightLeft);
-        pdf.addImage(img, "PNG", m, position, iw, ih);
-        heightLeft -= (ph - m * 2);
+      const jspdfMod: any = await import("jspdf");
+      const JsPDF = jspdfMod.jsPDF || jspdfMod.default;
+      const doc = new JsPDF({ unit: "pt", format: "a4", compress: true });
+      const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+      const M = 44, CW = W - M * 2;
+      let y = M;
+      const rgb = (h: string) => { const n = parseInt(h.replace("#", ""), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+      const tint = (h: string, a = 0.88) => { const [r, g, b] = rgb(h); return [Math.round(r + (255 - r) * a), Math.round(g + (255 - g) * a), Math.round(b + (255 - b) * a)]; };
+      const tc = (h: string) => { const [r, g, b] = rgb(h); doc.setTextColor(r, g, b); };
+      const fc = (c: number[]) => doc.setFillColor(c[0], c[1], c[2]);
+      const dc = (h: string) => { const [r, g, b] = rgb(h); doc.setDrawColor(r, g, b); };
+      const need = (h: number) => { if (y + h > H - M) { doc.addPage(); y = M; } };
+      const T = (t: string, x: number, opts?: any) => doc.text(t, x, y, opts);
+
+      // En-tête
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8); tc("#004f91"); T("APIX SÉNÉGAL — STATISTIQUES", M); y += 18;
+      doc.setFontSize(22); tc("#1a1a2e"); T("Fiche Pays", M); y += 22;
+      let px = M;
+      cols.forEach((c: any, i: number) => {
+        const col = PALETTE[i % PALETTE.length];
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+        const label = c.nom + (c.code_iso3 ? "  " + c.code_iso3 : "");
+        const w = doc.getTextWidth(label) + 26;
+        if (px + w > W - M) { px = M; y += 24; }
+        fc(tint(col)); doc.roundedRect(px, y - 11, w, 18, 9, 9, "F");
+        fc(rgb(col)); doc.circle(px + 11, y - 2, 2.4, "F");
+        tc(col); T(label, px + 18);
+        px += w + 8;
+      });
+      y += 16; dc("#ECEAE7"); doc.setLineWidth(1); doc.line(M, y, W - M, y); y += 20;
+
+      const indW = CW * 0.40, valW = (CW - indW) / cols.length;
+      const colRight = (i: number) => M + indW + valW * (i + 1) - 4;
+
+      // En-tête de colonnes
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8); tc("#9aa5b4"); T("INDICATEUR", M);
+      cols.forEach((c: any, i: number) => { tc(PALETTE[i % PALETTE.length]); doc.setFontSize(9.5); T(c.nom, colRight(i), { align: "right" }); });
+      y += 5; dc("#ECEAE7"); doc.setLineWidth(1); doc.line(M, y, W - M, y);
+
+      // Indicateurs par catégorie
+      cats.forEach(cat => {
+        need(48); y += 20;
+        doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); tc("#004f91"); T(cat.toUpperCase(), M);
+        parCat[cat].forEach(ind => {
+          need(26); y += 18;
+          doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); tc("#1a1a2e"); T(ind.libelle, M);
+          doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); tc("#9aa5b4"); doc.text(ind.unite, M, y + 9);
+          const best = meilleur(ind.code);
+          cols.forEach((c: any, i: number) => {
+            const cell = getCell(c.id, ind.code); const v = cell?.valeur;
+            const isBest = best !== null && v === best && cols.length > 1;
+            doc.setFont("helvetica", "bold"); doc.setFontSize(10); tc(v == null ? "#C5BFBB" : isBest ? "#188038" : "#1a1a2e");
+            T(fmt(v ?? null, ind.unite), colRight(i), { align: "right" });
+            if (cell?.annee) { doc.setFont("helvetica", "normal"); doc.setFontSize(7); tc("#C5BFBB"); doc.text(String(cell.annee), colRight(i), y + 9, { align: "right" }); }
+          });
+          y += 8; dc("#F2F0EF"); doc.setLineWidth(0.5); doc.line(M, y, W - M, y);
+        });
+      });
+
+      // Échanges bilatéraux
+      if (cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0)) {
+        const a = cols[0], b = cols[1], colA = PALETTE[0], colB = PALETTE[1];
+        const ab = bilat.a_vers_b || 0, ba = bilat.b_vers_a || 0, diff = ab - ba;
+        const per = bilat.annee_min ? `${bilat.annee_min}–${bilat.annee_max}` : "";
+        need(60); y += 26;
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9); tc("#004f91"); T(`ÉCHANGES BILATÉRAUX${per ? ` · ${per}` : ""}`, M); y += 16;
+        const paraGris = (t: string) => { doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); tc("#6b7684"); doc.splitTextToSize(t, CW).forEach((ln: string) => { need(12); T(ln, M); y += 12; }); };
+        if (bilat.groupements_communs?.length) paraGris("Appartenances communes : " + bilat.groupements_communs.map((x: any) => x.code || x.nom).join(", "));
+        if (bilat.accords?.length) paraGris((bilat.accords.length > 1 ? "Accords signés : " : "Accord signé : ") + bilat.accords.map((x: any) => x.titre + (x.date_signature ? ` (${x.date_signature.slice(0, 4)})` : "")).join(" ; "));
+        y += 8;
+        const dir = (de: string, vers: string, col: string, val: number, res: any[], dep: number | null) => {
+          need(24); y += 4;
+          doc.setFont("helvetica", "bold"); doc.setFontSize(10); tc(col); T(de, M);
+          const w1 = doc.getTextWidth(de);
+          doc.setFont("helvetica", "normal"); tc("#4a5568"); T(`  →  ${vers}`, M + w1);
+          doc.setFont("helvetica", "bold"); tc("#004f91"); T(fmtUSD(val), W - M, { align: "right" }); y += 12;
+          if (dep != null) { doc.setFont("helvetica", "normal"); doc.setFontSize(8); tc("#9aa5b4"); T(`soit ${(dep * 100).toFixed(1)} % des importations totales de ${vers}`, M); y += 12; }
+          (res || []).forEach((r: any) => {
+            need(12); doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); tc("#4a5568"); T(`•  ${r.ressource}`, M + 6);
+            doc.setFont("helvetica", "bold"); tc("#2d3540"); T(`${fmtUSD(r.valeur)}  ·  ${val > 0 ? (r.valeur / val * 100).toFixed(0) : 0}%`, W - M, { align: "right" }); y += 12;
+          });
+          y += 8;
+        };
+        dir(a.nom, b.nom, colA, ab, bilat.a_vers_b_ressources, bilat.a_vers_b_dependance);
+        dir(b.nom, a.nom, colB, ba, bilat.b_vers_a_ressources, bilat.b_vers_a_dependance);
+        // Balance
+        need(30); y += 4;
+        fc(tint("#188038", 0.92)); doc.roundedRect(M, y - 11, CW, 24, 6, 6, "F");
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9); tc("#1a1a2e");
+        const txt = diff === 0 ? `Échanges équilibrés entre ${a.nom} et ${b.nom}.`
+          : `Balance excédentaire en faveur de ${diff >= 0 ? a.nom : b.nom} : +${fmtUSD(Math.abs(diff))} (déficit pour ${diff >= 0 ? b.nom : a.nom}).`;
+        T(txt, M + 12); y += 24;
       }
-      pdf.save(`Fiche_Pays_${cols.map((c: any) => c.nom.replace(/\s/g, "_")).join("_")}.pdf`);
+
+      doc.save(`Fiche_Pays_${cols.map((c: any) => c.nom.replace(/\s/g, "_")).join("_")}.pdf`);
     } catch (e) { console.error(e); }
     setPdfLoading(false);
   };
