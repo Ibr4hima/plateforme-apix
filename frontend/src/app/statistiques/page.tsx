@@ -96,7 +96,9 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
     if (!printRef.current) return;
     setPdfLoading(true);
     try {
-      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([import("jspdf"), import("html2canvas")]);
+      const [jspdfMod, h2cMod] = await Promise.all([import("jspdf"), import("html2canvas")]);
+      const jsPDF = (jspdfMod as any).jsPDF || (jspdfMod as any).default;
+      const html2canvas = (h2cMod as any).default || (h2cMod as any);
       const canvas = await html2canvas(printRef.current, { scale: 2, backgroundColor: "#ffffff", windowWidth: printRef.current.scrollWidth });
       const img = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ unit: "pt", format: "a4", compress: true });
