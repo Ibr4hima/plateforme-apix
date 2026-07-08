@@ -852,6 +852,23 @@ async def commerce_bilateral(
         grows = (await db.execute(select(RefGroupement).where(RefGroupement.id.in_(communs_ids)).order_by(RefGroupement.nom_fr))).scalars().all()
         groupements = [{"code": g.code, "nom": g.nom_fr} for g in grows]
 
+    # Accords / traités signés entre les deux pays
+    from app.models.accord import Accord
+    arows = (await db.execute(
+        select(Accord).where(
+            Accord.parties_pays_ids.contains([pays_a]),
+            Accord.parties_pays_ids.contains([pays_b]),
+            Accord.est_publie.is_(True),
+            Accord.is_deleted.is_(False),
+        ).order_by(Accord.date_signature.desc().nullslast())
+    )).scalars().all()
+    accords = [{
+        "titre": a.titre,
+        "reference": a.reference,
+        "date_signature": a.date_signature.isoformat() if a.date_signature else None,
+        "statut": a.statut,
+    } for a in arows]
+
     return {
         "a_vers_b": float(ab or 0),
         "b_vers_a": float(ba or 0),
@@ -863,6 +880,7 @@ async def commerce_bilateral(
         "a_vers_b_ressources": await ventil(pays_a, pays_b, b_imp),
         "b_vers_a_ressources": await ventil(pays_b, pays_a, a_imp),
         "groupements_communs": groupements,
+        "accords": accords,
     }
 
 

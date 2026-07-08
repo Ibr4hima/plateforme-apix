@@ -200,6 +200,21 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                     ))}
                   </div>
                 )}
+                {bilat.accords && bilat.accords.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap", marginBottom: 12, padding: "10px 14px", background: "#F8F7F6", border: "1px solid #F0EEEC", borderRadius: 10 }}>
+                    <span style={{ fontSize: 11.5, color: "#6b7684", fontWeight: 600, flexShrink: 0, paddingTop: 3 }}>{bilat.accords.length > 1 ? "Accords signés" : "Accord signé"} :</span>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {bilat.accords.map((ac: any, i: number) => {
+                        const an = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
+                        return (
+                          <span key={i} title={ac.reference || ac.titre} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#ECEAE8", padding: "3px 11px", borderRadius: 999 }}>
+                            {ac.titre}{an ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {an}</span> : null}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div style={{ display: "grid", gap: 8 }}>
                   <BlocDir de={a.nom} vers={b.nom} col={colA} val={ab} res={bilat.a_vers_b_ressources} dep={bilat.a_vers_b_dependance} />
                   <BlocDir de={b.nom} vers={a.nom} col={colB} val={ba} res={bilat.b_vers_a_ressources} dep={bilat.b_vers_a_dependance} />
