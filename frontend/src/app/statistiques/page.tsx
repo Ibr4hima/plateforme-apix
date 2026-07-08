@@ -936,7 +936,6 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0
 
 
 // ── Barres horizontales empilées (par partenaire × ressource) ─────────────────
-const RESSOURCE_PALETTE = ["#004f91", "#2872B8", "#5596D4", "#7FB1DE", "#0E7C86", "#188038", "#7FA653", "#C99A2E", "#CA631F", "#9C6ADE", "#B0AAA4"];
 function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposant = 0.5, showLegend = true }: {
   partenaires: { nom: string; total: number; valeurs: number[] }[]; ressources: string[];
   fmt?: (v: number | null) => string; rowH?: number; exposant?: number; showLegend?: boolean;
@@ -951,7 +950,9 @@ function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposan
     if (!partenaires.length || !ressources.length) return;
     const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
     const mctx = document.createElement("canvas").getContext("2d")!;
-    const col = (i: number) => RESSOURCE_PALETTE[i % RESSOURCE_PALETTE.length];
+    // Rampe bleue comme l'anneau : ressource la plus lourde (index 0) = plus foncé.
+    const nRes = ressources.length;
+    const col = (i: number) => d3.interpolateRgb("#003468", "#EDF4FB")(nRes > 1 ? i / (nRes - 1) : 0) as string;
 
     // Légende des ressources (chips, avec retour à la ligne) — masquée sur la carte
     const legRowH = 20;
@@ -990,15 +991,18 @@ function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposan
     const y = d3.scaleBand().domain(partenaires.map(p => p.nom)).range([M.top, H - M.bottom]).padding(0.3);
 
     partenaires.forEach(p => {
-      const barW = x(p.total) - M.left;
-      // Largeur des segments pondérée en racine (comme la longueur des barres) pour
-      // mieux voir les petites ressources ; les valeurs/% du tooltip restent réels.
-      const racSum = p.valeurs.reduce((s, v) => s + (v > 0 ? Math.pow(v, exposant) : 0), 0) || 1;
+      const barW = Math.max(0, x(p.total) - M.left);
+      // Chaque ressource présente reçoit une largeur plancher (visible même minime),
+      // le reste étant réparti en racine ; valeurs/% du tooltip restent réels.
+      const present = ressources.map((res, ri) => ({ res, ri, v: p.valeurs[ri] || 0 })).filter(o => o.v > 0);
+      const k = present.length;
+      const floorPx = 4;
+      const hasFloor = barW >= k * floorPx;
+      const reste = hasFloor ? barW - k * floorPx : barW;
+      const racSum = present.reduce((s, o) => s + Math.pow(o.v, exposant), 0) || 1;
       let xc = M.left;
-      ressources.forEach((res, ri) => {
-        const v = p.valeurs[ri] || 0;
-        if (v <= 0) return;
-        const segW = (Math.pow(v, exposant) / racSum) * barW;
+      present.forEach(({ res, ri, v }) => {
+        const segW = (hasFloor ? floorPx : 0) + (Math.pow(v, exposant) / racSum) * reste;
         svg.append("rect").attr("x", xc).attr("y", y(p.nom)!).attr("width", Math.max(0.5, segW)).attr("height", y.bandwidth())
           .attr("fill", col(ri)).attr("stroke", "#fff").attr("stroke-width", 0.6).style("cursor", "pointer")
           .on("mouseover", function (e) { d3.select(this).attr("opacity", 0.82); showD3Tooltip(tooltip, e, `<strong>${p.nom} — ${res}</strong><br/>${fmtV(v)} · ${(v / p.total * 100).toFixed(1)}%`); })
