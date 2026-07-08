@@ -190,7 +190,7 @@ function CommercePanel() {
   const [chargKpis, setChargKpis] = useState(false);
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
   const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
-  const [conc, setConc] = useState<{ points: { rang: number; nom: string; part: number; part_cumulee: number }[]; total_partenaires: number } | null>(null);
+  const [repart, setRepart] = useState<{ ressources: string[]; partenaires: { nom: string; total: number; valeurs: number[] }[] } | null>(null);
   const TAILLE = 50;
 
   const isResizing = useRef(false);
@@ -246,8 +246,8 @@ function CommercePanel() {
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
       .then(r => r.json()).then(setTops).catch(() => setTops(null));
-    fetch(`${API}/statistiques/commerce/concentration?${p.toString()}`)
-      .then(r => r.json()).then(setConc).catch(() => setConc(null));
+    fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
+      .then(r => r.json()).then(setRepart).catch(() => setRepart(null));
   }, [vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
@@ -592,8 +592,9 @@ function CommercePanel() {
             const autres = (tops.total || 0) - top8.reduce((s, r) => s + r.valeur, 0);
             if (autres > 0.0001 && tops.ressources.length > 8) donutData.push({ label: "Autres", valeur: autres });
           }
-          const concPoints = conc?.points || [];
-          if (!donutData.length && !concPoints.length) return null;
+          const parts = repart?.partenaires || [];
+          const resLabels = repart?.ressources || [];
+          if (!donutData.length && !parts.length) return null;
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
               {donutData.length > 0 && (
@@ -602,10 +603,10 @@ function CommercePanel() {
                   <GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} />
                 </GrapheCard>
               )}
-              {concPoints.length > 0 && (
-                <GrapheCard titre={expDir ? "Concentration des exportations" : "Concentration des importations"} sous_titre={`Part cumulée des ${expDir ? "débouchés" : "origines"} · ${periode}`} grapheId={`stat_conc_${vue}_${selId}`} hideLegend
-                  fullChildren={<GrapheConcentration points={concPoints} height={340} />}>
-                  <GrapheConcentration points={concPoints} height={200} />
+              {parts.length > 0 && (
+                <GrapheCard titre={expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"} sous_titre={`Cumul ${periode}`} grapheId={`stat_repart_${vue}_${selId}`} hideLegend
+                  fullChildren={<GrapheBarresEmpilees partenaires={parts} ressources={resLabels} fmt={(v) => fmtUSD(v)} rowH={42} />}>
+                  <GrapheBarresEmpilees partenaires={parts.slice(0, 5)} ressources={resLabels} fmt={(v) => fmtUSD(v)} />
                 </GrapheCard>
               )}
             </div>
@@ -933,6 +934,80 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
 }
 
+
+// ── Barres horizontales empilées (par partenaire × ressource) ─────────────────
+const RESSOURCE_PALETTE = ["#004f91", "#2872B8", "#5596D4", "#7FB1DE", "#0E7C86", "#188038", "#7FA653", "#C99A2E", "#CA631F", "#9C6ADE", "#B0AAA4"];
+function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposant = 0.5 }: {
+  partenaires: { nom: string; total: number; valeurs: number[] }[]; ressources: string[];
+  fmt?: (v: number | null) => string; rowH?: number; exposant?: number;
+}) {
+  const ref = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const fmtV = fmt || fmtValGen;
+  const draw = useCallback(() => {
+    if (!ref.current || !wrapRef.current) return;
+    const el = ref.current;
+    d3.select(el).selectAll("*").remove();
+    if (!partenaires.length || !ressources.length) return;
+    const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
+    const mctx = document.createElement("canvas").getContext("2d")!;
+    const col = (i: number) => RESSOURCE_PALETTE[i % RESSOURCE_PALETTE.length];
+
+    // Légende des ressources (chips, avec retour à la ligne)
+    mctx.font = "600 11px 'Google Sans',sans-serif";
+    const chips = ressources.map((r, i) => ({ label: r, i, w: Math.ceil(mctx.measureText(r).width) + 24 }));
+    const lines: typeof chips[] = [];
+    let line: typeof chips = []; let lw = 0;
+    chips.forEach(c => { if (lw + c.w > W && line.length) { lines.push(line); line = []; lw = 0; } line.push(c); lw += c.w + 10; });
+    if (line.length) lines.push(line);
+    const legRowH = 20;
+    const legendH = lines.length * legRowH + 8;
+
+    const longest = Math.max(...partenaires.map(p => p.nom.length));
+    const M = { top: legendH + 4, right: 78, bottom: 8, left: Math.min(230, Math.max(90, Math.round(longest * 6.2) + 14)) };
+    const N = partenaires.length;
+    const H = M.top + N * rowH + M.bottom;
+    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+    const tooltip = d3.select("#d3-tooltip") as any;
+
+    // Légende
+    let ly = 12;
+    lines.forEach(ln => {
+      let lx = 0;
+      ln.forEach(c => {
+        svg.append("rect").attr("x", lx).attr("y", ly - 9).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", col(c.i));
+        svg.append("text").attr("x", lx + 17).attr("y", ly).attr("dy", "0.32em").style("font-size", "11px").style("fill", "#4a5568").text(c.label);
+        lx += c.w + 10;
+      });
+      ly += legRowH;
+    });
+
+    const maxTotal = d3.max(partenaires, p => p.total) || 1;
+    const x = d3.scalePow().exponent(exposant).domain([0, maxTotal]).range([M.left, W - M.right]);
+    const y = d3.scaleBand().domain(partenaires.map(p => p.nom)).range([M.top, H - M.bottom]).padding(0.3);
+
+    partenaires.forEach(p => {
+      const barW = x(p.total) - M.left;
+      let xc = M.left;
+      ressources.forEach((res, ri) => {
+        const v = p.valeurs[ri] || 0;
+        if (v <= 0) return;
+        const segW = (v / p.total) * barW;
+        svg.append("rect").attr("x", xc).attr("y", y(p.nom)!).attr("width", Math.max(0.5, segW)).attr("height", y.bandwidth())
+          .attr("fill", col(ri)).attr("stroke", "#fff").attr("stroke-width", 0.6).style("cursor", "pointer")
+          .on("mouseover", function (e) { d3.select(this).attr("opacity", 0.82); showD3Tooltip(tooltip, e, `<strong>${p.nom} — ${res}</strong><br/>${fmtV(v)} · ${(v / p.total * 100).toFixed(1)}%`); })
+          .on("mousemove", (e) => showD3Tooltip(tooltip, e))
+          .on("mouseout", function () { d3.select(this).attr("opacity", 1); hideD3Tooltip(tooltip); });
+        xc += segW;
+      });
+      svg.append("text").attr("x", M.left - 8).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11px").style("fill", "#4a5568").text(p.nom);
+      svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "#9aa5b4").text(fmtV(p.total));
+    });
+  }, [partenaires, ressources, fmtV, rowH, exposant]);
+  useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
+  useEffect(() => { draw(); }, [draw]);
+  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
+}
 
 // ── Anneau de composition (style tableau de bord, légende latérale) ────────────
 // Rampe bleue #003468 (part la plus élevée) → #EDF4FB (la plus faible).
