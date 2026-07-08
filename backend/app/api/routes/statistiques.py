@@ -786,9 +786,11 @@ async def commerce_bilateral(
     pays_a: int = Query(...),
     pays_b: int = Query(...),
 ):
-    """Échanges bilatéraux cumulés entre deux pays (toutes ressources, toutes années)."""
+    """Échanges bilatéraux cumulés entre deux pays (toutes ressources, toutes années),
+    avec la ventilation par ressource dans chaque sens."""
     from sqlalchemy import and_ as _and, or_ as _or
     _sum = _sqlfunc.coalesce(_sqlfunc.sum(StatTransaction.valeur), 0)
+    _s = _sqlfunc.sum(StatTransaction.valeur)
 
     ab = (await db.execute(select(_sum).where(
         StatTransaction.exportateur_id == pays_a, StatTransaction.importateur_id == pays_b))).scalar_one()
@@ -799,11 +801,27 @@ async def commerce_bilateral(
             _or(_and(StatTransaction.exportateur_id == pays_a, StatTransaction.importateur_id == pays_b),
                 _and(StatTransaction.exportateur_id == pays_b, StatTransaction.importateur_id == pays_a)))
     )).first()
+
+    async def ventil(exp_id, imp_id):
+        rows = (await db.execute(
+            select(StatTransaction.ressource, _s.label("v"))
+            .where(StatTransaction.exportateur_id == exp_id, StatTransaction.importateur_id == imp_id)
+            .group_by(StatTransaction.ressource).order_by(_s.desc().nullslast())
+        )).all()
+        codes = [r.ressource for r in rows]
+        libs = {}
+        if codes:
+            rl = (await db.execute(select(StatRessource.nom_en, StatRessource.libelle).where(StatRessource.nom_en.in_(codes)))).all()
+            libs = {c: l for c, l in rl}
+        return [{"ressource": libs.get(r.ressource) or r.ressource, "valeur": float(r.v or 0)} for r in rows if (r.v or 0) > 0]
+
     return {
         "a_vers_b": float(ab or 0),
         "b_vers_a": float(ba or 0),
         "annee_min": bornes[0] if bornes else None,
         "annee_max": bornes[1] if bornes else None,
+        "a_vers_b_ressources": await ventil(pays_a, pays_b),
+        "b_vers_a_ressources": await ventil(pays_b, pays_a),
     }
 
 
