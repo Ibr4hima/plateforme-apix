@@ -802,7 +802,20 @@ async def commerce_bilateral(
                 _and(StatTransaction.exportateur_id == pays_b, StatTransaction.importateur_id == pays_a)))
     )).first()
 
-    async def ventil(exp_id, imp_id):
+    async def totaux_import(imp_id):
+        """Total des importations de imp_id (tous fournisseurs), global et par ressource."""
+        rows = (await db.execute(
+            select(StatTransaction.ressource, _s.label("v"))
+            .where(StatTransaction.importateur_id == imp_id)
+            .group_by(StatTransaction.ressource)
+        )).all()
+        par_res = {r.ressource: float(r.v or 0) for r in rows if (r.v or 0) > 0}
+        return par_res, sum(par_res.values())
+
+    b_imp, b_imp_tot = await totaux_import(pays_b)   # sens A→B : B importe
+    a_imp, a_imp_tot = await totaux_import(pays_a)   # sens B→A : A importe
+
+    async def ventil(exp_id, imp_id, imp_res):
         rows = (await db.execute(
             select(StatTransaction.ressource, _s.label("v"))
             .where(StatTransaction.exportateur_id == exp_id, StatTransaction.importateur_id == imp_id)
@@ -813,15 +826,29 @@ async def commerce_bilateral(
         if codes:
             rl = (await db.execute(select(StatRessource.nom_en, StatRessource.libelle).where(StatRessource.nom_en.in_(codes)))).all()
             libs = {c: l for c, l in rl}
-        return [{"ressource": libs.get(r.ressource) or r.ressource, "valeur": float(r.v or 0)} for r in rows if (r.v or 0) > 0]
+        out = []
+        for r in rows:
+            v = float(r.v or 0)
+            if v <= 0:
+                continue
+            tot_res = imp_res.get(r.ressource, 0)
+            out.append({
+                "ressource": libs.get(r.ressource) or r.ressource,
+                "valeur": v,
+                "part_dependance": (v / tot_res) if tot_res > 0 else None,
+            })
+        return out
 
     return {
         "a_vers_b": float(ab or 0),
         "b_vers_a": float(ba or 0),
         "annee_min": bornes[0] if bornes else None,
         "annee_max": bornes[1] if bornes else None,
-        "a_vers_b_ressources": await ventil(pays_a, pays_b),
-        "b_vers_a_ressources": await ventil(pays_b, pays_a),
+        # Dépendance globale : part du fournisseur dans le total des imports de l'importateur
+        "a_vers_b_dependance": (float(ab or 0) / b_imp_tot) if b_imp_tot > 0 else None,
+        "b_vers_a_dependance": (float(ba or 0) / a_imp_tot) if a_imp_tot > 0 else None,
+        "a_vers_b_ressources": await ventil(pays_a, pays_b, b_imp),
+        "b_vers_a_ressources": await ventil(pays_b, pays_a, a_imp),
     }
 
 

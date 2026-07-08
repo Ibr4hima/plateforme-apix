@@ -156,20 +156,25 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
             const perdant = diff >= 0 ? b : a;
             const colA = PALETTE[0], colB = PALETTE[1];
             const periode = bilat.annee_min ? `${bilat.annee_min}–${bilat.annee_max}` : "";
-            const BlocDir = ({ de, vers, col, val, res }: any) => {
+            // Couleur de dépendance selon l'intensité (part chez l'importateur)
+            const depCol = (p: number) => p >= 0.5 ? "#b91c1c" : p >= 0.25 ? "#ca631f" : p >= 0.1 ? "#a16207" : "#6b7684";
+            const BlocDir = ({ de, vers, col, val, res, dep }: any) => {
               const maxR = res && res.length ? res[0].valeur : 1;
               return (
                 <div style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10, overflow: "hidden" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "11px 14px" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, fontWeight: 600, color: "#4a5568" }}>
-                      <span style={{ fontWeight: 800, color: col }}>{de}</span>
-                      <span style={{ color: "#9aa5b4" }}>→</span>
-                      <span style={{ fontWeight: 700 }}>{vers}</span>
-                    </span>
-                    <span style={{ fontSize: 13.5, fontWeight: 800, color: "#004f91", fontVariantNumeric: "tabular-nums" }}>{fmtUSD(val)}</span>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "11px 14px 8px" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, fontWeight: 600, color: "#4a5568" }}>
+                        <span style={{ fontWeight: 800, color: col }}>{de}</span>
+                        <span style={{ color: "#9aa5b4" }}>→</span>
+                        <span style={{ fontWeight: 700 }}>{vers}</span>
+                      </span>
+                      {dep != null && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2, display: "block" }}>soit <strong style={{ color: depCol(dep) }}>{(dep * 100).toFixed(1)} %</strong> des importations totales de {vers}</span>}
+                    </div>
+                    <span style={{ fontSize: 13.5, fontWeight: 800, color: "#004f91", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{fmtUSD(val)}</span>
                   </div>
                   {res && res.length > 0 && (
-                    <div style={{ padding: "2px 14px 12px", display: "grid", gap: 6 }}>
+                    <div style={{ padding: "2px 14px 12px", display: "grid", gap: 8 }}>
                       {res.map((r: any) => (
                         <div key={r.ressource} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 10 }}>
                           <div style={{ minWidth: 0 }}>
@@ -178,7 +183,10 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                               <div style={{ height: "100%", width: `${Math.max(3, (r.valeur / maxR) * 100)}%`, background: col, borderRadius: 3 }} />
                             </div>
                           </div>
-                          <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(r.valeur)} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {val > 0 ? (r.valeur / val * 100).toFixed(0) : 0}%</span></span>
+                          <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                            <div style={{ fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums" }}>{fmtUSD(r.valeur)}</div>
+                            {r.part_dependance != null && <div style={{ fontSize: 10.5, fontWeight: 700, color: depCol(r.part_dependance) }}>{(r.part_dependance * 100).toFixed(0)} % des imports de {vers}</div>}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -190,8 +198,8 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
               <div style={{ marginTop: 22 }}>
                 <p style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>Échanges bilatéraux{periode ? ` · ${periode}` : ""}</p>
                 <div style={{ display: "grid", gap: 8 }}>
-                  <BlocDir de={a.nom} vers={b.nom} col={colA} val={ab} res={bilat.a_vers_b_ressources} />
-                  <BlocDir de={b.nom} vers={a.nom} col={colB} val={ba} res={bilat.b_vers_a_ressources} />
+                  <BlocDir de={a.nom} vers={b.nom} col={colA} val={ab} res={bilat.a_vers_b_ressources} dep={bilat.a_vers_b_dependance} />
+                  <BlocDir de={b.nom} vers={a.nom} col={colB} val={ba} res={bilat.b_vers_a_ressources} dep={bilat.b_vers_a_dependance} />
                 </div>
                 <div style={{ marginTop: 10, padding: "12px 16px", borderRadius: 10, background: "rgba(24,128,56,0.06)", border: "1px solid rgba(24,128,56,0.18)", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 12.5, color: "#1a1a2e", lineHeight: 1.5 }}>
