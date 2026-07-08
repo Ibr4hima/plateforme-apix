@@ -1065,6 +1065,10 @@ async def commerce_flux(
     annee_min: Optional[int] = Query(default=None),
     annee_max: Optional[int] = Query(default=None),
     annees: Optional[str] = Query(default=None),
+    annee: Optional[int] = Query(default=None),
+    exportateur_id: Optional[int] = Query(default=None),
+    importateur_id: Optional[int] = Query(default=None),
+    ressource: Optional[str] = Query(default=None),
     pays_id: Optional[int] = Query(default=None),
     limite: int = Query(default=120, ge=1, le=600),
 ):
@@ -1077,6 +1081,8 @@ async def commerce_flux(
     Imp = _aliased(RefPays)
 
     conds = [Exp.code_iso3.isnot(None), Imp.code_iso3.isnot(None)]
+    if annee is not None:
+        conds.append(StatTransaction.annee == annee)
     if annee_min is not None:
         conds.append(StatTransaction.annee >= annee_min)
     if annee_max is not None:
@@ -1085,6 +1091,12 @@ async def commerce_flux(
         la = [int(x) for x in annees.split(",") if x.strip().isdigit()]
         if la:
             conds.append(StatTransaction.annee.in_(la))
+    if exportateur_id is not None:
+        conds.append(StatTransaction.exportateur_id == exportateur_id)
+    if importateur_id is not None:
+        conds.append(StatTransaction.importateur_id == importateur_id)
+    if ressource:
+        conds.append(StatTransaction.ressource == ressource)
     if pays_id is not None:
         conds.append(_or(StatTransaction.exportateur_id == pays_id, StatTransaction.importateur_id == pays_id))
     _sum = _sqlfunc.sum(StatTransaction.valeur)
