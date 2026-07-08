@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
@@ -828,6 +828,32 @@ function splitKpiLabel(label: string, dernAnnee: number): { main: string; badge:
   return { main: label, badge: null };
 }
 
+// ── Bouton « Tableau de données » responsive (plein → « Données » → icône) ─────
+function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [mode, setMode] = useState<"full" | "court" | "icone">("full");
+  useEffect(() => {
+    const btn = ref.current; const parent = btn?.parentElement;
+    if (!btn || !parent) return;
+    const calc = () => {
+      let used = 0;
+      Array.from(parent.children).forEach(ch => { if (ch !== btn) used += (ch as HTMLElement).offsetWidth + 8; });
+      const avail = parent.clientWidth - used;
+      setMode(avail >= 185 ? "full" : avail >= 112 ? "court" : "icone");
+    };
+    const raf = requestAnimationFrame(calc);
+    const ro = new ResizeObserver(calc); ro.observe(parent);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+  }, [dep]);
+  return (
+    <button ref={ref} onClick={onClick} title="Tableau de données"
+      style={{ marginLeft:"auto", display:"inline-flex", alignItems:"center", gap: mode==="icone"?0:7, padding: mode==="icone"?"8px 10px":"8px 16px", borderRadius:999, border:"1px solid #E4E1DE", background:"#fff", color:"#004f91", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, whiteSpace:"nowrap" as const }}
+      onMouseEnter={e=>{e.currentTarget.style.background="#F5F4F3";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>
+      <Table size={14} />{mode!=="icone" && <span>{mode==="full"?"Tableau de données":"Données"}</span>}
+    </button>
+  );
+}
+
 function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
@@ -1129,6 +1155,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   : `${anneeMin} — ${anneeMax}`}
               </span>
             </div>
+            <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec}/>
           </div>
 
           {/* KPI cards */}
@@ -1425,18 +1452,19 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
 
         {/* Zone graphes */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"wrap" as const }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"nowrap" as const }}>
             <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                 : `${anneeMin} — ${anneeMax}`}
             </span>
             {paysAvecCouleur.map(p=>(
-              <span key={p.nom} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:12, fontWeight:700, color:p.couleur }}>
+              <span key={p.nom} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:12, fontWeight:700, color:p.couleur, flexShrink:0, whiteSpace:"nowrap" as const }}>
                 <span style={{ width:7, height:7, borderRadius:"50%", background:p.couleur, display:"inline-block" }} />
                 {p.nom}
               </span>
             ))}
+            <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec.join(",")}/>
           </div>
 
           {loading ? (
@@ -2033,18 +2061,19 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
 
       {/* Zone graphes */}
       <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"wrap" as const }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"nowrap" as const }}>
           <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
             {modeAnnees==="specifiques"&&anneesSpec.length>0
               ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
               : `${anneeMin} — ${anneeMax}`}
           </span>
           {grpAvecCouleur.map(g=>(
-            <span key={g.nom} title={g.label} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${g.couleur}0D`, border:`1px solid ${g.couleur}2E`, fontSize:12, fontWeight:700, color:g.couleur }}>
+            <span key={g.nom} title={g.label} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${g.couleur}0D`, border:`1px solid ${g.couleur}2E`, fontSize:12, fontWeight:700, color:g.couleur, flexShrink:0, whiteSpace:"nowrap" as const }}>
               <span style={{ width:7, height:7, borderRadius:"50%", background:g.couleur, display:"inline-block" }} />
               {g.abrege}
             </span>
           ))}
+          {grpSelec.length>0 && <BoutonDonnees onClick={()=>setShowTable(true)} dep={grpSelec.join(",")}/>}
         </div>
 
         {grpSelec.length===0 ? (
@@ -3156,10 +3185,7 @@ export default function IdePage() {
       <Navbar />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <BarreTitre titre="Investissements Privés"
-        droite={ongletPrincipal==="ide" && section==="realises" ? (
-          <BarreTitreBadge label="Tableau de données" onClick={()=>setShowTable(true)}/>
-        ) : null}>
+      <BarreTitre titre="Investissements Privés">
         <BarreTitreSegment options={[{v:"ide",l:"Investissements Directs Étrangers"},{v:"national",l:"Investissements nationaux"}]} value={ongletPrincipal} onChange={setOngletPrincipal}/>
       </BarreTitre>
 
