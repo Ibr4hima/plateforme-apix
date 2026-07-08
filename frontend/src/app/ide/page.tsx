@@ -2979,7 +2979,7 @@ function OngletNational() {
                   {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
                 </span>}
               </div>
-              {compSelec.length>0&&!loadingComp&&<button onClick={()=>setShowTable(true)} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
+              {compSelec.length>0&&!loadingComp&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12.5, fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid #E4E1DE", background:"#fff", color:"#004f91", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="#F5F4F3";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>
                 <Table size={14}/> Tableau de données
               </button>}
             </div>
@@ -3059,7 +3059,7 @@ function OngletNational() {
               {anneesAffichees[0]} — {anneesAffichees[anneesAffichees.length-1]}
             </span>}
           </div>
-          {indicateurs.length>0&&<button onClick={()=>setShowTable(true)} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:9, border:"1px solid #E8E5E3", background:"#fff", color:"#4a5568", cursor:"pointer" }}>
+          {indicateurs.length>0&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12.5, fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid #E4E1DE", background:"#fff", color:"#004f91", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="#F5F4F3";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>
             <Table size={14}/> Tableau de données
           </button>}
         </div>
