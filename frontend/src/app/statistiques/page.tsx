@@ -190,7 +190,7 @@ function CommercePanel() {
   const [chargKpis, setChargKpis] = useState(false);
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
   const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
-  const [conc, setConc] = useState<{ points: { rang: number; nom: string; part_cumulee: number }[]; total_partenaires: number } | null>(null);
+  const [conc, setConc] = useState<{ points: { rang: number; nom: string; part: number; part_cumulee: number }[]; total_partenaires: number } | null>(null);
   const TAILLE = 50;
 
   const isResizing = useRef(false);
@@ -1004,8 +1004,8 @@ function GrapheDonut({ data, fmt, height }: { data: { label: string; valeur: num
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
 }
 
-// ── Courbe de concentration (Pareto) ──────────────────────────────────────────
-function GrapheConcentration({ points, height = 200 }: { points: { rang: number; nom: string; part_cumulee: number }[]; height?: number }) {
+// ── Courbe de concentration (Pareto) : lollipops (part) + courbe cumulée ───────
+function GrapheConcentration({ points, height = 200 }: { points: { rang: number; nom: string; part: number; part_cumulee: number }[]; height?: number }) {
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const draw = useCallback(() => {
@@ -1017,7 +1017,7 @@ function GrapheConcentration({ points, height = 200 }: { points: { rang: number;
     const H = height;
     const M = { top: 12, right: 18, bottom: 28, left: 44 };
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    const pts = [{ rang: 0, nom: "", part_cumulee: 0 }, ...points];
+    const pts = [{ rang: 0, nom: "", part: 0, part_cumulee: 0 }, ...points];
     const maxRang = points[points.length - 1].rang;
     const x = d3.scaleLinear().domain([0, maxRang]).range([M.left, W - M.right]);
     const y = d3.scaleLinear().domain([0, 100]).range([H - M.bottom, M.top]);
@@ -1030,14 +1030,27 @@ function GrapheConcentration({ points, height = 200 }: { points: { rang: number;
     grad.append("stop").attr("offset", "100%").attr("stop-color", "#004f91").attr("stop-opacity", 0);
     svg.append("path").datum(pts).attr("fill", `url(#${gid})`)
       .attr("d", d3.area<any>().x(d => x(d.rang)).y0(y(0)).y1(d => y(d.part_cumulee)).curve(d3.curveMonotoneX));
+
+    // Lollipops : part individuelle de chaque débouché (tige fine + pastille)
+    const dotR = points.length > 30 ? 2.2 : points.length > 18 ? 2.8 : 3.4;
+    const lol = svg.append("g");
+    lol.selectAll("line").data(points).enter().append("line")
+      .attr("x1", d => x(d.rang)).attr("x2", d => x(d.rang)).attr("y1", y(0)).attr("y2", d => y(d.part))
+      .attr("stroke", "#5596D4").attr("stroke-width", 1.6).attr("stroke-linecap", "round");
+    lol.selectAll("circle").data(points).enter().append("circle")
+      .attr("cx", d => x(d.rang)).attr("cy", d => y(d.part)).attr("r", dotR)
+      .attr("fill", "#2872B8").style("pointer-events", "none");
+
+    // Courbe cumulée par-dessus
     svg.append("path").datum(pts).attr("fill", "none").attr("stroke", "#004f91").attr("stroke-width", 2.2)
       .attr("d", d3.line<any>().x(d => x(d.rang)).y(d => y(d.part_cumulee)).curve(d3.curveMonotoneX));
-    svg.selectAll("circle.pt").data(points).enter().append("circle")
-      .attr("cx", d => x(d.rang)).attr("cy", d => y(d.part_cumulee)).attr("r", points.length > 20 ? 0 : 2.5)
-      .attr("fill", "#fff").attr("stroke", "#004f91").attr("stroke-width", 1.5).style("pointer-events", "none");
-    svg.selectAll("circle.hit").data(points).enter().append("circle")
-      .attr("cx", d => x(d.rang)).attr("cy", d => y(d.part_cumulee)).attr("r", 9).attr("fill", "transparent").style("cursor", "pointer")
-      .on("mouseover", (e, d) => showD3Tooltip(tooltip, e, `<strong>Top ${d.rang} — ${d.nom}</strong><br/>${d.part_cumulee.toFixed(1)}% du total cumulé`))
+
+    // Cibles de survol (colonne complète)
+    const bw = Math.max(6, (x(1) - x(0)) * 0.9);
+    svg.selectAll("rect.hit").data(points).enter().append("rect")
+      .attr("x", d => x(d.rang) - bw / 2).attr("y", M.top).attr("width", bw).attr("height", H - M.bottom - M.top)
+      .attr("fill", "transparent").style("cursor", "pointer")
+      .on("mouseover", (e, d) => showD3Tooltip(tooltip, e, `<strong>Top ${d.rang} — ${d.nom}</strong><br/>Part : ${d.part.toFixed(1)}% · Cumulé : ${d.part_cumulee.toFixed(1)}%`))
       .on("mousemove", (e) => showD3Tooltip(tooltip, e))
       .on("mouseout", () => hideD3Tooltip(tooltip));
     svg.append("g").attr("transform", `translate(${M.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d => `${d}%`))
