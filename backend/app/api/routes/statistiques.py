@@ -1059,6 +1059,62 @@ async def commerce_repartition(
     return {"ressources": ressources_labels, "partenaires": partenaires}
 
 
+@router.get("/commerce/flux")
+async def commerce_flux(
+    db: AsyncSession = Depends(get_db),
+    annee_min: Optional[int] = Query(default=None),
+    annee_max: Optional[int] = Query(default=None),
+    annees: Optional[str] = Query(default=None),
+    pays_id: Optional[int] = Query(default=None),
+    limite: int = Query(default=120, ge=1, le=600),
+):
+    """Flux bilatéraux agrégés (toutes ressources) pour la carte mondiale.
+    Seuls les couples dont les deux pays ont un code ISO3 (cartographiables)."""
+    from sqlalchemy import and_ as _and, or_ as _or
+    from sqlalchemy.orm import aliased as _aliased
+
+    Exp = _aliased(RefPays)
+    Imp = _aliased(RefPays)
+
+    conds = [Exp.code_iso3.isnot(None), Imp.code_iso3.isnot(None)]
+    if annee_min is not None:
+        conds.append(StatTransaction.annee >= annee_min)
+    if annee_max is not None:
+        conds.append(StatTransaction.annee <= annee_max)
+    if annees:
+        la = [int(x) for x in annees.split(",") if x.strip().isdigit()]
+        if la:
+            conds.append(StatTransaction.annee.in_(la))
+    if pays_id is not None:
+        conds.append(_or(StatTransaction.exportateur_id == pays_id, StatTransaction.importateur_id == pays_id))
+    _sum = _sqlfunc.sum(StatTransaction.valeur)
+
+    rows = (await db.execute(
+        select(
+            StatTransaction.exportateur_id, StatTransaction.importateur_id,
+            Exp.code_iso3.label("exp_iso3"), Imp.code_iso3.label("imp_iso3"),
+            Exp.nom_fr.label("exp_nom"), Imp.nom_fr.label("imp_nom"),
+            _sum.label("v"),
+        )
+        .join(Exp, Exp.id == StatTransaction.exportateur_id)
+        .join(Imp, Imp.id == StatTransaction.importateur_id)
+        .where(_and(*conds))
+        .group_by(StatTransaction.exportateur_id, StatTransaction.importateur_id,
+                  Exp.code_iso3, Imp.code_iso3, Exp.nom_fr, Imp.nom_fr)
+        .order_by(_sum.desc().nullslast()).limit(limite)
+    )).all()
+
+    return [
+        {
+            "exp_id": r.exportateur_id, "imp_id": r.importateur_id,
+            "exp_iso3": r.exp_iso3, "imp_iso3": r.imp_iso3,
+            "exp_nom": r.exp_nom, "imp_nom": r.imp_nom,
+            "valeur": float(r.v or 0),
+        }
+        for r in rows
+    ]
+
+
 @router.get("/commerce/balance")
 async def commerce_balance(
     db: AsyncSession = Depends(get_db),
