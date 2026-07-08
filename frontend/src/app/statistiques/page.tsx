@@ -1,10 +1,10 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
-import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ChevronDown, ChevronUp, FileSpreadsheet, FileText, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import * as XLSX from "xlsx";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -38,10 +38,9 @@ function fmt(valeur: number | null | undefined, unite: string): string {
 }
 
 // ── Regroupement des pays par continent ───────────────────────────────────────
-const VUES: { v: "pays" | "comparative" | "fiche"; l: string }[] = [
+const VUES: { v: "pays" | "comparative"; l: string }[] = [
   { v: "pays", l: "Pays" },
   { v: "comparative", l: "Analyse comparative" },
-  { v: "fiche", l: "Fiche de comparaison" },
 ];
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 const MAX_KPI = 5;
@@ -77,7 +76,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
         <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
         <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexShrink: 0 }}>
           <div>
-            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>Fiche de comparaison</h2>
+            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>Fiche Pays</h2>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
               {cols.map((c: any, i: number) => (
                 <span key={c.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: PALETTE[i % PALETTE.length], background: `${PALETTE[i % PALETTE.length]}12`, padding: "3px 10px", borderRadius: 999 }}>
@@ -1594,7 +1593,7 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
   const [mode, setMode] = useState<"indicateurs" | "commerce">("indicateurs");
-  const [vue, setVue] = useState<"pays" | "comparative" | "fiche">("pays");
+  const [vue, setVue] = useState<"pays" | "comparative">("pays");
   const [pays, setPays] = useState<Pays[]>([]);
   const [indicateurs, setIndicateurs] = useState<Indicateur[]>([]);
   const [selection, setSelection] = useState<number[]>([]);
@@ -1735,7 +1734,8 @@ export default function StatistiquesPage() {
 .drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
 .drs-thumb::-moz-range-thumb{background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <Navbar />
-      <BarreTitre titre="Statistiques">
+      <BarreTitre titre="Statistiques"
+        droite={<BarreTitreBadge label="Fiche Pays" icon={<FileText size={13} style={{ color: "#fff" }} />} onClick={() => setFicheOuverte(true)} />}>
         <BarreTitreSegment options={[
           { v: "indicateurs", l: "Indicateurs économiques" },
           { v: "commerce", l: "Flux bilatéraux" },
@@ -2054,28 +2054,6 @@ export default function StatistiquesPage() {
                 </>
                 );
               })()}
-
-              {/* ── Fiche de comparaison ── */}
-              {vue === "fiche" && (
-                <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "28px 32px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", textAlign: "center" }}>
-                  <Maximize2 size={30} style={{ color: "#004f91", opacity: 0.5, marginBottom: 12 }} />
-                  <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: "0 0 6px" }}>Générer une fiche de comparaison</h3>
-                  <p style={{ fontSize: 13.5, color: "#9aa5b4", maxWidth: 460, margin: "0 auto 18px", lineHeight: 1.6 }}>
-                    Sélectionnez au moins deux pays dans la barre de filtre, puis générez une fiche comparant tous leurs indicateurs côte à côte.
-                  </p>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", marginBottom: 20 }}>
-                    {selection.map((id, i) => (
-                      <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, color: PALETTE[i % PALETTE.length], background: `${PALETTE[i % PALETTE.length]}12`, padding: "5px 12px", borderRadius: 999 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: PALETTE[i % PALETTE.length] }} />{paysNom(id)}
-                      </span>
-                    ))}
-                  </div>
-                  <button onClick={() => setFicheOuverte(true)} disabled={selection.length < 2}
-                    style={{ padding: "11px 26px", borderRadius: 12, border: "none", cursor: selection.length < 2 ? "not-allowed" : "pointer", opacity: selection.length < 2 ? 0.4 : 1, background: "#004f91", color: "#fff", fontWeight: 700, fontSize: 14, boxShadow: "0 4px 18px rgba(0,79,145,0.35)", fontFamily: "var(--font-google-sans)" }}>
-                    Générer la fiche ({selection.length} pays)
-                  </button>
-                </div>
-              )}
             </>
           )}
         </div>
