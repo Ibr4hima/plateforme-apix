@@ -884,8 +884,8 @@ function GrapheMultiPays({ series, height = 280, type = "line", titre = "", fmt,
 }
 
 // ── Barres horizontales (top N) ───────────────────────────────────────────────
-function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34 }: {
-  data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; couleur?: string; rowH?: number;
+function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0.5 }: {
+  data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; couleur?: string; rowH?: number; exposant?: number;
 }) {
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -901,7 +901,9 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34 }: {
     const H = data.length * rowH + M.top + M.bottom;
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
     const maxVal = d3.max(data, d => d.valeur) || 1;
-    const x = d3.scaleLinear().domain([0, maxVal]).range([M.left, W - M.right]);
+    // Échelle en puissance (racine carrée par défaut) : rééquilibre les barres
+    // quand les valeurs sont très dispersées, sans changer les valeurs affichées.
+    const x = d3.scalePow().exponent(exposant).domain([0, maxVal]).range([M.left, W - M.right]);
     const y = d3.scaleBand().domain(data.map(d => d.label)).range([M.top, H - M.bottom]).padding(0.28);
     const tooltip = d3.select("#d3-tooltip") as any;
 
@@ -934,7 +936,7 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34 }: {
 
 // ── Anneau de composition (poids %) ───────────────────────────────────────────
 const DONUT_PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca", "#C5BFBB"];
-function GrapheDonut({ data, fmt }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string }) {
+function GrapheDonut({ data, fmt, exposant = 0.5 }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; exposant?: number }) {
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtValGen;
@@ -950,7 +952,9 @@ function GrapheDonut({ data, fmt }: { data: { label: string; valeur: number }[];
     const total = d3.sum(items, d => d.valeur);
     const R = Math.min(H - 20, W * 0.42) / 2;
     const cx = R + 12, cy = H / 2;
-    const pie = d3.pie<any>().value(d => d.valeur).sort(null);
+    // Angles rééquilibrés en puissance (√) pour rendre visibles les petites parts ;
+    // les % affichés (légende, tooltip) restent les vraies proportions.
+    const pie = d3.pie<any>().value(d => Math.pow(d.valeur, exposant)).sort(null);
     const arc = d3.arc<any>().innerRadius(R * 0.6).outerRadius(R);
     const tooltip = d3.select("#d3-tooltip") as any;
     const g = svg.append("g").attr("transform", `translate(${cx},${cy})`);
