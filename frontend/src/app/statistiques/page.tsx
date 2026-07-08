@@ -174,14 +174,14 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                   {res && res.length > 0 && (
                     <div style={{ padding: "2px 14px 12px", display: "grid", gap: 6 }}>
                       {res.map((r: any) => (
-                        <div key={r.ressource} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 10 }}>
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: 11.5, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 3 }}>{r.ressource}</div>
+                        <div key={r.ressource}>
+                          <div style={{ fontSize: 11.5, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>{r.ressource}</div>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 132px", alignItems: "center", gap: 10 }}>
                             <div style={{ height: 5, background: "#EDEBE8", borderRadius: 3, overflow: "hidden" }}>
                               <div style={{ height: "100%", width: `${Math.max(3, Math.sqrt(r.valeur / maxR) * 100)}%`, background: col, borderRadius: 3 }} />
                             </div>
+                            <span style={{ textAlign: "right", fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(r.valeur)} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {val > 0 ? (r.valeur / val * 100).toFixed(0) : 0}%</span></span>
                           </div>
-                          <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(r.valeur)} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {val > 0 ? (r.valeur / val * 100).toFixed(0) : 0}%</span></span>
                         </div>
                       ))}
                     </div>
