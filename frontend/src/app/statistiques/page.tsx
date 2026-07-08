@@ -153,13 +153,12 @@ function fmtUSD(v: number | null): string {
 
 // ── Panneau Flux bilatéraux (données commerciales) ────────────────────────────
 type OptionPaysCom = { id: number; nom: string; code_iso3: string | null; continent: string | null; region_geo: string | null };
-const VUES_COM: { v: "exportateur" | "importateur" | "flux_mondial"; l: string }[] = [
+const VUES_COM: { v: "exportateur" | "importateur"; l: string }[] = [
   { v: "exportateur", l: "Exportateur" },
   { v: "importateur", l: "Importateur" },
-  { v: "flux_mondial", l: "Flux mondial" },
 ];
 function CommercePanel() {
-  const [vue, setVue] = useState<"exportateur" | "importateur" | "flux_mondial">("exportateur");
+  const [vue, setVue] = useState<"exportateur" | "importateur">("exportateur");
   const [annees, setAnnees] = useState<number[]>([]);
   const [ressources, setRessources] = useState<{ nom_en: string; libelle: string }[]>([]);
   const [paysOpts, setPaysOpts] = useState<OptionPaysCom[]>([]);
@@ -192,12 +191,6 @@ function CommercePanel() {
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
   const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
   const [repart, setRepart] = useState<{ ressources: string[]; partenaires: { nom: string; total: number; valeurs: number[] }[] } | null>(null);
-  const [flux, setFlux] = useState<any[]>([]);
-  // Filtres de la carte des flux (façon resourcetrade)
-  const [fExp, setFExp] = useState("");   // exportateur_id ("" = tous)
-  const [fImp, setFImp] = useState("");   // importateur_id
-  const [fRes, setFRes] = useState("");   // ressource (nom_en)
-  const [fAn, setFAn] = useState("");     // année (single)
   const TAILLE = 50;
 
   const isResizing = useRef(false);
@@ -214,7 +207,7 @@ function CommercePanel() {
       const ann: number[] = (d.annees || []).slice().sort((a: number, b: number) => a - b);
       setAnnees(ann); setRessources(d.ressources || []); setPaysOpts(d.pays || []);
       setRessSel((d.ressources || []).map((r: any) => r.nom_en));
-      if (ann.length) { setBornes([ann[0], ann[ann.length - 1]]); setAnneeMin(ann[0]); setAnneeMax(ann[ann.length - 1]); setFAn(String(ann[ann.length - 1])); }
+      if (ann.length) { setBornes([ann[0], ann[ann.length - 1]]); setAnneeMin(ann[0]); setAnneeMax(ann[ann.length - 1]); }
       const sen = (d.pays || []).find((p: any) => p.code_iso3 === "SEN");
       setSelId(sen ? sen.id : (d.pays && d.pays[0] ? d.pays[0].id : null));
     }).catch(() => {}).finally(() => setLoading(false));
@@ -222,7 +215,7 @@ function CommercePanel() {
 
   // KPIs agrégés (période + ressources, hors recherche texte)
   useEffect(() => {
-    if (!selId || vue === "flux_mondial") { setKpis(null); return; }
+    if (!selId) { setKpis(null); return; }
     setChargKpis(true);
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
     if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
@@ -244,21 +237,9 @@ function CommercePanel() {
       .then(r => r.json()).then(d => setBalance(Array.isArray(d) ? d : [])).catch(() => setBalance([]));
   }, [selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
 
-  // Carte des flux mondiaux — 10 plus gros flux, filtrés (exp/imp/ressource/année)
-  useEffect(() => {
-    if (vue !== "flux_mondial") return;
-    const p = new URLSearchParams({ limite: "10" });
-    if (fAn) p.set("annee", fAn);
-    if (fExp) p.set("exportateur_id", fExp);
-    if (fImp) p.set("importateur_id", fImp);
-    if (fRes) p.set("ressource", fRes);
-    fetch(`${API}/statistiques/commerce/flux?${p.toString()}`)
-      .then(r => r.json()).then(d => setFlux(Array.isArray(d) ? d : [])).catch(() => setFlux([]));
-  }, [vue, fAn, fExp, fImp, fRes]);
-
   // Tops (débouchés / ressources) — dépend de la direction (vue)
   useEffect(() => {
-    if (!selId || vue === "flux_mondial") { setTops(null); setRepart(null); return; }
+    if (!selId) { setTops(null); setRepart(null); return; }
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
     if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
     else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
@@ -353,7 +334,6 @@ function CommercePanel() {
               ))}
             </div>
           </div>
-          {vue !== "flux_mondial" && (<>
           {/* Recherche pays */}
           <div style={{ position: "relative", marginBottom: 18 }}>
             <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
@@ -426,8 +406,6 @@ function CommercePanel() {
               {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
             </div>
           </div>
-          </>)}
-          {vue !== "flux_mondial" && (<>
           <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
           {/* Période */}
           <div style={{ marginBottom: 18 }}>
@@ -481,58 +459,11 @@ function CommercePanel() {
               </div>
             )}
           </div>
-          </>)}
         </div>}
       </aside>
 
       {/* ── Zone principale ── */}
       <div style={{ flex: 1, minWidth: 0, padding: "32px 40px 80px" }}>
-        {vue === "flux_mondial" ? (() => {
-          const CTRL: any = { background: "transparent", border: "none", borderBottom: "2px solid #E4E1DE", padding: "4px 2px", fontSize: 15, fontWeight: 700, color: "#1a1a2e", outline: "none", cursor: "pointer", fontFamily: "var(--font-google-sans)", width: "100%", boxSizing: "border-box" };
-          const LB: any = { fontSize: 11, fontWeight: 600, color: "#9aa5b4", marginBottom: 4, display: "block" };
-          const paysTri = [...paysOpts].sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
-          return (
-          <>
-            {/* Contrôles façon resourcetrade */}
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 20, marginBottom: 8, flexWrap: "wrap" }}>
-              <div style={{ flex: "1 1 200px", minWidth: 160 }}>
-                <label style={LB}>Exportateur</label>
-                <select value={fExp} onChange={e => setFExp(e.target.value)} style={{ ...CTRL, borderBottomColor: "#004f91" }}>
-                  <option value="">Tous les pays</option>
-                  {paysTri.map(p => <option key={p.id} value={p.id}>{p.nom}</option>)}
-                </select>
-              </div>
-              <button onClick={() => { const a = fExp; setFExp(fImp); setFImp(a); }} title="Inverser" style={{ background: "#F2F0EF", border: "none", cursor: "pointer", borderRadius: 8, padding: "8px 10px", marginBottom: 2, flexShrink: 0 }}>⇄</button>
-              <div style={{ flex: "1 1 200px", minWidth: 160 }}>
-                <label style={LB}>Importateur</label>
-                <select value={fImp} onChange={e => setFImp(e.target.value)} style={{ ...CTRL, borderBottomColor: "#ca631f" }}>
-                  <option value="">Tous les pays</option>
-                  {paysTri.map(p => <option key={p.id} value={p.id}>{p.nom}</option>)}
-                </select>
-              </div>
-              <div style={{ flex: "1 1 200px", minWidth: 160 }}>
-                <label style={LB}>Ressource</label>
-                <select value={fRes} onChange={e => setFRes(e.target.value)} style={CTRL}>
-                  <option value="">Toutes les ressources</option>
-                  {ressources.map(r => <option key={r.nom_en} value={r.nom_en}>{r.libelle || r.nom_en}</option>)}
-                </select>
-              </div>
-              <div style={{ flex: "0 1 110px", minWidth: 90 }}>
-                <label style={LB}>Année</label>
-                <select value={fAn} onChange={e => setFAn(e.target.value)} style={CTRL}>
-                  {annees.slice().reverse().map(a => <option key={a} value={a}>{a}</option>)}
-                </select>
-              </div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 4 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#6b7684", fontWeight: 600 }}><span style={{ width: 9, height: 9, borderRadius: "50%", background: "#004f91" }} />Exportateur</span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#6b7684", fontWeight: 600 }}><span style={{ width: 9, height: 9, borderRadius: "50%", background: "#ca631f" }} />Importateur</span>
-              <span style={{ fontSize: 11.5, color: "#9aa5b4" }}>10 plus gros flux</span>
-            </div>
-            <CarteFluxMondial flux={flux} fmt={(v) => fmtUSD(v)} height={620} />
-          </>
-          );
-        })() : (<>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#004f91", flexShrink: 0 }} />
@@ -645,7 +576,6 @@ function CommercePanel() {
             </div>
           );
         })()}
-        </>)}
       </div>
     </div>
   );
@@ -1182,120 +1112,6 @@ function GrapheConcentration({ points, height = 200 }: { points: { rang: number;
   }, [points, height]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
   useEffect(() => { draw(); }, [draw]);
-  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
-}
-
-// ── Carte mondiale des flux (style resourcetrade.earth) ───────────────────────
-let _mondePromise: Promise<any> | null = null;
-function chargerMonde() {
-  if (!_mondePromise) _mondePromise = fetch("https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json").then(r => r.json());
-  return _mondePromise;
-}
-function CarteFluxMondial({ flux, fmt, height = 560 }: { flux: any[]; fmt?: (v: number | null) => string; height?: number }) {
-  const ref = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [monde, setMonde] = useState<any>(null);
-  const fmtV = fmt || fmtValGen;
-  useEffect(() => { let ok = true; chargerMonde().then(m => { if (ok) setMonde(m); }).catch(() => {}); return () => { ok = false; }; }, []);
-
-  const draw = useCallback(() => {
-    if (!ref.current || !wrapRef.current || !monde) return;
-    const el = ref.current;
-    d3.select(el).selectAll("*").remove();
-    const W = wrapRef.current.clientWidth || 900;
-    const H = height;
-    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    // Planisphère (rectangulaire) posé directement sur le fond de page.
-    const proj = d3.geoEquirectangular().fitExtent([[2, 2], [W - 2, H - 2]], monde);
-    const path = d3.geoPath(proj);
-    const tooltip = d3.select("#d3-tooltip") as any;
-
-    const centre: Record<string, [number, number]> = {};
-    monde.features.forEach((f: any) => { const c = d3.geoCentroid(f); const p = proj(c as any); if (p && !isNaN(p[0])) centre[f.id] = p as [number, number]; });
-
-    // Pays (pas d'océan : le fond de page transparaît)
-    svg.append("g").selectAll("path").data(monde.features).enter().append("path")
-      .attr("d", path as any).attr("fill", "#E5E1DC").attr("stroke", "#F6F5F3").attr("stroke-width", 0.6);
-
-    const valides = flux.filter(f => centre[f.exp_iso3] && centre[f.imp_iso3] && f.exp_iso3 !== f.imp_iso3);
-    if (!valides.length) return;
-    const maxV = d3.max(valides, (f: any) => f.valeur) || 1;
-    const wScale = d3.scaleSqrt().domain([0, maxV]).range([3, 30]);
-    const tri = [...valides].sort((a, b) => b.valeur - a.valeur);
-
-    // Ruban effilé : fin côté exportateur → large côté importateur (façon resourcetrade)
-    const rubanPath = (s: [number, number], c: [number, number], t: [number, number], wMax: number) => {
-      const N = 28; const left: string[] = []; const right: string[] = [];
-      for (let k = 0; k <= N; k++) {
-        const u = k / N, iu = 1 - u;
-        const px = iu * iu * s[0] + 2 * iu * u * c[0] + u * u * t[0];
-        const py = iu * iu * s[1] + 2 * iu * u * c[1] + u * u * t[1];
-        const tx = 2 * iu * (c[0] - s[0]) + 2 * u * (t[0] - c[0]);
-        const ty = 2 * iu * (c[1] - s[1]) + 2 * u * (t[1] - c[1]);
-        const tl = Math.hypot(tx, ty) || 1;
-        const nx = -ty / tl, ny = tx / tl;
-        const h = (wMax / 2) * Math.pow(u, 0.8);
-        left.push(`${(px + nx * h).toFixed(1)},${(py + ny * h).toFixed(1)}`);
-        right.push(`${(px - nx * h).toFixed(1)},${(py - ny * h).toFixed(1)}`);
-      }
-      return "M" + left.join("L") + "L" + right.reverse().join("L") + "Z";
-    };
-
-    const defs = svg.append("defs");
-    const gflux = svg.append("g");
-    tri.forEach((f, i) => {
-      const s = centre[f.exp_iso3], t = centre[f.imp_iso3];
-      const dx = t[0] - s[0], dy = t[1] - s[1];
-      const dr = Math.sqrt(dx * dx + dy * dy) || 1;
-      const mx = (s[0] + t[0]) / 2, my = (s[1] + t[1]) / 2;
-      const cx = mx - (dy / dr) * dr * 0.16, cy = my + (dx / dr) * dr * 0.16;
-      const gid = `flx${i}`;
-      const grad = defs.append("linearGradient").attr("id", gid).attr("gradientUnits", "userSpaceOnUse")
-        .attr("x1", s[0]).attr("y1", s[1]).attr("x2", t[0]).attr("y2", t[1]);
-      grad.append("stop").attr("offset", "0%").attr("stop-color", "#004f91");
-      grad.append("stop").attr("offset", "100%").attr("stop-color", "#ca631f");
-      gflux.append("path").datum(f)
-        .attr("d", rubanPath(s, [cx, cy], t, wScale(f.valeur)))
-        .attr("fill", `url(#${gid})`).attr("opacity", 0.72).style("cursor", "pointer")
-        .on("mouseover", function (e: any) { gflux.selectAll("path").attr("opacity", 0.09); d3.select(this).attr("opacity", 0.95).raise(); showD3Tooltip(tooltip, e, `<strong>${f.exp_nom} → ${f.imp_nom}</strong><br/>${fmtV(f.valeur)}`); })
-        .on("mousemove", (e: any) => showD3Tooltip(tooltip, e))
-        .on("mouseout", function () { gflux.selectAll("path").attr("opacity", 0.72); hideD3Tooltip(tooltip); });
-    });
-
-    // Points aux pays impliqués
-    const iso = new Set<string>(); const nomPar: Record<string, string> = {};
-    valides.forEach(f => { iso.add(f.exp_iso3); iso.add(f.imp_iso3); nomPar[f.exp_iso3] = f.exp_nom; nomPar[f.imp_iso3] = f.imp_nom; });
-    const pts = svg.append("g");
-    iso.forEach(code => { const p = centre[code]; if (!p) return; pts.append("circle").attr("cx", p[0]).attr("cy", p[1]).attr("r", 1.8).attr("fill", "#2d3540").attr("opacity", 0.55); });
-
-    // Étiquettes des extrémités des plus gros flux
-    const topIso: string[] = [];
-    tri.forEach(f => { [f.exp_iso3, f.imp_iso3].forEach(c => { if (topIso.length < 22 && !topIso.includes(c)) topIso.push(c); }); });
-    const lab = svg.append("g");
-    topIso.forEach(code => {
-      const p = centre[code]; if (!p) return;
-      lab.append("text").attr("x", p[0]).attr("y", p[1] - 5).attr("text-anchor", "middle")
-        .style("font-size", "10px").style("font-weight", "700").style("fill", "#1a1a2e")
-        .style("paint-order", "stroke").style("stroke", "#fff").style("stroke-width", "2.6px").style("stroke-linejoin", "round")
-        .text(nomPar[code] || code);
-    });
-
-    // Échelle (bas-gauche) : rubans effilés pour quelques valeurs de référence
-    const niveaux = [maxV, maxV / 2, maxV / 4].filter(v => v > 0);
-    const lg = svg.append("g").attr("transform", `translate(16,${H - 16 - niveaux.length * 22})`);
-    niveaux.forEach((v, i) => {
-      const yy = i * 22 + 6;
-      const w = wScale(v);
-      lg.append("path").attr("d", rubanPath([8, yy], [40, yy], [72, yy], w)).attr("fill", "#8a8f98").attr("opacity", 0.85);
-      lg.append("text").attr("x", 80).attr("y", yy).attr("dy", "0.35em").style("font-size", "10.5px").style("fill", "#6b7684").style("font-weight", "600").text(fmtV(v));
-    });
-    lg.append("text").attr("x", 8).attr("y", niveaux.length * 22 + 12).style("font-size", "9px").style("fill", "#9aa5b4").text("exportateur → importateur");
-  }, [monde, flux, fmtV, height]);
-
-  useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
-  useEffect(() => { draw(); }, [draw]);
-
-  if (!monde) return <div ref={wrapRef} style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "#9aa5b4", gap: 10 }}><Loader2 size={22} style={{ animation: "spin 1s linear infinite" }} /><span style={{ fontSize: 13 }}>Chargement de la carte…</span></div>;
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
 }
 
