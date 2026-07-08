@@ -1606,7 +1606,7 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
 function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
   pays: Pays[]; senId: number | null; initial: number[]; onValider: (ids: number[]) => void; onClose: () => void;
 }) {
-  const MAX = 4;
+  const MAX = 2;
   const [sel, setSel] = useState<number[]>(initial.length ? initial.slice(0, MAX) : (senId ? [senId] : []));
   const [search, setSearch] = useState("");
   const [openConts, setOpenConts] = useState<Set<string>>(new Set());
