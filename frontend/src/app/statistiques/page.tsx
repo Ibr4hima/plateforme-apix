@@ -59,6 +59,8 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
   const [data, setData] = useState<any>(null);
   const [ideFlux, setIdeFlux] = useState<any>(null);
   const [bilat, setBilat] = useState<any>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     fetch(`${API}/statistiques/comparaison?pays=${paysIds.join(",")}`).then(r => r.json()).then(setData).catch(() => {});
     fetch(`${API}/statistiques/ide_flux?pays=${paysIds.join(",")}`).then(r => r.json()).then(setIdeFlux).catch(() => setIdeFlux({}));
@@ -71,9 +73,13 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
   // Indicateurs macro + flux d'IDE entrant/sortant (source CNUCED)
   const inds: Indicateur[] = [
     ...(data?.indicateurs || []),
-    { code: "__ide_entrant", libelle: "Flux d'IDE entrants", unite: "USD" } as any,
-    { code: "__ide_sortant", libelle: "Flux d'IDE sortants", unite: "USD" } as any,
+    { code: "__ide_entrant", libelle: "Flux d'IDE entrants", unite: "USD", categorie: "Investissements directs étrangers" } as any,
+    { code: "__ide_sortant", libelle: "Flux d'IDE sortants", unite: "USD", categorie: "Investissements directs étrangers" } as any,
   ];
+  // Regroupement par catégorie (ordre de première apparition)
+  const cats: string[] = [];
+  const parCat: Record<string, Indicateur[]> = {};
+  inds.forEach(ind => { const c = (ind as any).categorie || "Autres"; if (!parCat[c]) { parCat[c] = []; cats.push(c); } parCat[c].push(ind); });
   const getCell = (cid: number, code: string): { valeur: number | null; annee?: number } | null => {
     if (code === "__ide_entrant") return ideFlux?.[String(cid)]?.entrant || null;
     if (code === "__ide_sortant") return ideFlux?.[String(cid)]?.sortant || null;
@@ -86,64 +92,96 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
     return Math.max(...vals);
   };
 
+  const exportPDF = async () => {
+    if (!printRef.current) return;
+    setPdfLoading(true);
+    try {
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([import("jspdf"), import("html2canvas")]);
+      const canvas = await html2canvas(printRef.current, { scale: 2, backgroundColor: "#ffffff", windowWidth: printRef.current.scrollWidth });
+      const img = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ unit: "pt", format: "a4", compress: true });
+      const pw = pdf.internal.pageSize.getWidth(), ph = pdf.internal.pageSize.getHeight();
+      const m = 24, iw = pw - m * 2, ih = canvas.height * iw / canvas.width;
+      let heightLeft = ih, position = m;
+      pdf.addImage(img, "PNG", m, position, iw, ih);
+      heightLeft -= (ph - m * 2);
+      while (heightLeft > 0) {
+        pdf.addPage();
+        position = m - (ih - heightLeft);
+        pdf.addImage(img, "PNG", m, position, iw, ih);
+        heightLeft -= (ph - m * 2);
+      }
+      pdf.save(`Fiche_Pays_${cols.map((c: any) => c.nom.replace(/\s/g, "_")).join("_")}.pdf`);
+    } catch (e) { console.error(e); }
+    setPdfLoading(false);
+  };
+
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 880, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
+      <div onClick={e => e.stopPropagation()} style={{ position: "relative", background: "#fff", borderRadius: 20, width: "100%", maxWidth: 920, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
         <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
-        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexShrink: 0 }}>
-          <div>
-            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>Fiche Pays</h2>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-              {cols.map((c: any, i: number) => (
-                <span key={c.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: PALETTE[i % PALETTE.length], background: `${PALETTE[i % PALETTE.length]}12`, padding: "3px 10px", borderRadius: 999 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: PALETTE[i % PALETTE.length] }} />{c.nom}
-                </span>
-              ))}
+        <button onClick={onClose} data-no-pdf style={{ position: "absolute", top: 16, right: 18, width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3 }}>
+          <X size={15} color="#4a5568" />
+        </button>
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          <div ref={printRef} style={{ background: "#fff", padding: "26px 30px 30px" }}>
+            {/* En-tête premium */}
+            <div style={{ marginBottom: 22, paddingBottom: 18, borderBottom: "1px solid #ECEAE7" }}>
+              <p style={{ fontSize: 10, fontWeight: 800, color: "#004f91", letterSpacing: "0.18em", textTransform: "uppercase", margin: 0 }}>APIX Sénégal · Statistiques</p>
+              <h2 style={{ fontWeight: 800, fontSize: "1.55rem", color: "#1a1a2e", margin: "5px 0 0", letterSpacing: "-0.01em" }}>Fiche Pays</h2>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+                {cols.map((c: any, i: number) => (
+                  <span key={c.id} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 700, color: PALETTE[i % PALETTE.length], background: `${PALETTE[i % PALETTE.length]}12`, border: `1px solid ${PALETTE[i % PALETTE.length]}2E`, padding: "5px 13px", borderRadius: 999 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: PALETTE[i % PALETTE.length] }} />{c.nom}{c.code_iso3 ? <span style={{ color: "#9aa5b4", fontWeight: 600 }}>· {c.code_iso3}</span> : null}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <X size={15} color="#4a5568" />
-          </button>
-        </div>
-        <div style={{ padding: "6px 28px 22px", overflowY: "auto", flex: 1 }}>
-          {!data ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} /></div>
-          ) : (
+            {!data ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} /></div>
+            ) : (
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid #ECEAE7" }}>
-                  <th style={{ padding: "14px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur</th>
+                <tr style={{ borderBottom: "2px solid #ECEAE7" }}>
+                  <th style={{ padding: "0 12px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur</th>
                   {cols.map((c: any, i: number) => (
-                    <th key={c.id} style={{ padding: "14px 12px", textAlign: "right", fontSize: 11.5, fontWeight: 800, color: PALETTE[i % PALETTE.length] }}>{c.nom}</th>
+                    <th key={c.id} style={{ padding: "0 12px 12px", textAlign: "right", fontSize: 12.5, fontWeight: 800, color: PALETTE[i % PALETTE.length] }}>{c.nom}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {inds.map(ind => {
-                  const best = meilleur(ind.code);
-                  return (
-                    <tr key={ind.code} style={{ borderBottom: "1px solid #F5F4F3" }}>
-                      <td style={{ padding: "11px 12px" }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e" }}>{ind.libelle}</div>
-                        <div style={{ fontSize: 10.5, color: "#9aa5b4" }}>{ind.unite}</div>
-                      </td>
-                      {cols.map((c: any) => {
-                        const cell = getCell(c.id, ind.code);
-                        const v = cell?.valeur;
-                        const estBest = best !== null && v === best && cols.length > 1;
-                        return (
-                          <td key={c.id} style={{ padding: "11px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                            <span style={{ fontSize: 13, fontWeight: estBest ? 800 : 600, color: estBest ? "#188038" : v === null || v === undefined ? "#C5BFBB" : "#1a1a2e" }}>
-                              {fmt(v, ind.unite)}
-                            </span>
-                            {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "#C5BFBB" }}>{cell.annee}</span>}
-                          </td>
-                        );
-                      })}
+                {cats.map(cat => (
+                  <Fragment key={cat}>
+                    <tr>
+                      <td colSpan={cols.length + 1} style={{ padding: "18px 12px 6px", fontSize: 10.5, fontWeight: 800, color: "#004f91", textTransform: "uppercase", letterSpacing: "0.1em" }}>{cat}</td>
                     </tr>
-                  );
-                })}
+                    {parCat[cat].map(ind => {
+                      const best = meilleur(ind.code);
+                      return (
+                        <tr key={ind.code} style={{ borderBottom: "1px solid #F5F4F3" }}>
+                          <td style={{ padding: "11px 12px" }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e" }}>{ind.libelle}</div>
+                            <div style={{ fontSize: 10.5, color: "#9aa5b4" }}>{ind.unite}</div>
+                          </td>
+                          {cols.map((c: any) => {
+                            const cell = getCell(c.id, ind.code);
+                            const v = cell?.valeur;
+                            const estBest = best !== null && v === best && cols.length > 1;
+                            return (
+                              <td key={c.id} style={{ padding: "11px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                                <span style={{ fontSize: 13, fontWeight: estBest ? 800 : 600, color: estBest ? "#188038" : v === null || v === undefined ? "#C5BFBB" : "#1a1a2e" }}>
+                                  {fmt(v, ind.unite)}
+                                </span>
+                                {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "#C5BFBB" }}>{cell.annee}</span>}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
+                ))}
               </tbody>
             </table>
           )}
@@ -229,10 +267,17 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
               </div>
             );
           })()}
+          </div>
         </div>
-        <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
+        <div data-no-pdf style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <span style={{ fontSize: 11, color: "#9aa5b4" }}>Valeur en vert = plus élevée · dernière année disponible</span>
-          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+            <button onClick={exportPDF} disabled={pdfLoading || !data}
+              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: pdfLoading ? "wait" : "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)", opacity: pdfLoading || !data ? 0.7 : 1 }}>
+              {pdfLoading ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <FileText size={13} />} Télécharger PDF
+            </button>
+          </div>
         </div>
       </div>
     </div>
