@@ -153,6 +153,106 @@ function fmtUSD(v: number | null): string {
 
 // ── Panneau Flux bilatéraux (données commerciales) ────────────────────────────
 type OptionPaysCom = { id: number; nom: string; code_iso3: string | null; continent: string | null; region_geo: string | null };
+// ── Modal « Tableau de données » des flux bilatéraux ──────────────────────────
+function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, perLabel, periode }: {
+  open: boolean; onClose: () => void; selId: number | null; vue: "exportateur" | "importateur";
+  nomPays: string; perLabel: string; periode: string;
+}) {
+  const [lignes, setLignes] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
+  const [qDeb, setQDeb] = useState("");
+  const [charg, setCharg] = useState(false);
+  const TAILLE = 40;
+
+  useEffect(() => { if (open) { setPage(1); setQ(""); setQDeb(""); } }, [open, selId, vue]);
+  useEffect(() => { const t = setTimeout(() => { setQDeb(q); setPage(1); }, 350); return () => clearTimeout(t); }, [q]);
+  useEffect(() => {
+    if (!open || !selId) return;
+    setCharg(true);
+    const p = new URLSearchParams(periode);
+    p.set("page", String(page)); p.set("taille", String(TAILLE));
+    p.set(vue === "exportateur" ? "exportateur_id" : "importateur_id", String(selId));
+    if (qDeb.trim()) p.set("recherche", qDeb.trim());
+    fetch(`${API}/statistiques/commerce/transactions?${p.toString()}`)
+      .then(r => r.json()).then(d => { setLignes(d.lignes || []); setTotal(d.total || 0); })
+      .catch(() => { setLignes([]); setTotal(0); }).finally(() => setCharg(false));
+  }, [open, selId, vue, page, qDeb, periode]);
+
+  if (!open) return null;
+  const nbPages = Math.max(1, Math.ceil(total / TAILLE));
+  const TH: any = { padding: "11px 16px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap", borderBottom: "1px solid #F0EEEC" };
+  const TD: any = { padding: "9px 16px", verticalAlign: "middle", whiteSpace: "nowrap" };
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 1100, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
+        <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
+        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>Tableau de données</h2>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 10px", borderRadius: 999 }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: "#004f91" }} />{nomPays} · {vue === "exportateur" ? "Exportations" : "Importations"}</span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#3a4452", background: "#ECEAE8", padding: "3px 10px", borderRadius: 999 }}>{perLabel}</span>
+              </div>
+              <div style={{ position: "relative", maxWidth: 320, marginTop: 12 }}>
+                <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+                <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher un ${vue === "exportateur" ? "importateur" : "exportateur"}, une ressource…`}
+                  style={{ width: "100%", background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 9, padding: "8px 12px 8px 30px", fontSize: 13, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+              </div>
+            </div>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
+              <X size={15} color="#4a5568" />
+            </button>
+          </div>
+        </div>
+        <div style={{ overflowY: "auto", flex: 1, overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+            <thead style={{ position: "sticky", top: 0, zIndex: 2, background: "#FAFAF9" }}>
+              <tr>
+                <th style={TH}>Exportateur</th>
+                <th style={TH}>Importateur</th>
+                <th style={{ ...TH, width: 70 }}>Année</th>
+                <th style={TH}>Ressource</th>
+                <th style={{ ...TH, textAlign: "right" }}>Valeur</th>
+              </tr>
+            </thead>
+            <tbody>
+              {charg ? (
+                <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "34px" }}><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /></td></tr>
+              ) : lignes.length === 0 ? (
+                <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "34px" }}>Aucune donnée.</td></tr>
+              ) : lignes.map(l => (
+                <tr key={l.id} style={{ borderBottom: "1px solid #F6F4F3" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#FAFAF9"} onMouseLeave={e => e.currentTarget.style.background = "#fff"}>
+                  <td style={{ ...TD, fontWeight: l.exportateur_id === selId ? 800 : 600, color: l.exportateur_id === selId ? "#004f91" : "#2d3540" }}>{l.exportateur}</td>
+                  <td style={{ ...TD, fontWeight: l.importateur_id === selId ? 800 : 600, color: l.importateur_id === selId ? "#004f91" : "#2d3540" }}>{l.importateur}</td>
+                  <td style={{ ...TD, color: "#4a5568" }}>{l.annee}</td>
+                  <td style={{ ...TD, color: "#4a5568", whiteSpace: "normal" }}>{l.ressource}</td>
+                  <td style={{ ...TD, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: "#004f91" }} title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtUSD(l.valeur)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
+          <span style={{ fontSize: 11.5, color: "#9aa5b4" }}>{total.toLocaleString("fr-FR")} ligne{total > 1 ? "s" : ""}{total > TAILLE ? ` · page ${page}/${nbPages}` : ""}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {total > TAILLE && <>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} style={{ background: "#fff", border: "1px solid #E4E1DE", borderRadius: 9, padding: "8px 16px", fontSize: 12.5, fontWeight: 600, color: "#4a5568", fontFamily: "var(--font-google-sans)", opacity: page <= 1 ? 0.4 : 1, cursor: page <= 1 ? "not-allowed" : "pointer" }}>Précédent</button>
+              <button onClick={() => setPage(p => Math.min(nbPages, p + 1))} disabled={page >= nbPages} style={{ background: "#fff", border: "1px solid #E4E1DE", borderRadius: 9, padding: "8px 16px", fontSize: 12.5, fontWeight: 600, color: "#4a5568", fontFamily: "var(--font-google-sans)", opacity: page >= nbPages ? 0.4 : 1, cursor: page >= nbPages ? "not-allowed" : "pointer" }}>Suivant</button>
+            </>}
+            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const VUES_COM: { v: "exportateur" | "importateur"; l: string }[] = [
   { v: "exportateur", l: "Exportateur" },
   { v: "importateur", l: "Importateur" },
@@ -191,6 +291,7 @@ function CommercePanel() {
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
   const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
   const [repart, setRepart] = useState<{ ressources: string[]; partenaires: { nom: string; total: number; valeurs: number[] }[] } | null>(null);
+  const [showTable, setShowTable] = useState(false);
   const TAILLE = 50;
 
   const isResizing = useRef(false);
@@ -276,6 +377,12 @@ function CommercePanel() {
   const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
     ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)
     : `${anneeMin} — ${anneeMax}`;
+  const periodeStr = useMemo(() => {
+    const p = new URLSearchParams();
+    if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
+    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
+    return p.toString();
+  }, [modeAnnees, anneeMin, anneeMax, anneesSpec]);
   const paysChange = selId !== senId;
   const periodeChange = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== bornes[0] || anneeMax !== bornes[1]);
   const ressChange = ressources.length > 0 && ressSel.length !== ressources.length;
@@ -470,6 +577,10 @@ function CommercePanel() {
           <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>{selPays?.nom || "—"}</h2>
           <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "rgba(0,79,145,0.08)", fontSize: 12, fontWeight: 700, color: "#004f91", flexShrink: 0 }}>{vue === "exportateur" ? "Exportations" : "Importations"}</span>
           <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
+          <button onClick={() => setShowTable(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
+            <Table size={14} /> Tableau de données
+          </button>
         </div>
 
         {/* KPI cards — valeurs de la dernière année sélectionnée (sauf « Année record ») */}
@@ -577,6 +688,8 @@ function CommercePanel() {
           );
         })()}
       </div>
+      <ModalDonneesCommerce open={showTable} onClose={() => setShowTable(false)} selId={selId} vue={vue}
+        nomPays={selPays?.nom || "—"} perLabel={perLabel} periode={periodeStr} />
     </div>
   );
 }
