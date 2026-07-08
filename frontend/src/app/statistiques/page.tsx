@@ -934,9 +934,9 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0
 }
 
 
-// ── Anneau de composition (poids %) ───────────────────────────────────────────
-const DONUT_PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca", "#C5BFBB"];
-function GrapheDonut({ data, fmt, exposant = 0.5 }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; exposant?: number }) {
+// ── Anneau de composition (style tableau de bord) ─────────────────────────────
+// Rampe bleue #003468 (part la plus élevée) → #EDF4FB (la plus faible).
+function GrapheDonut({ data, fmt }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string }) {
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtValGen;
@@ -944,36 +944,46 @@ function GrapheDonut({ data, fmt, exposant = 0.5 }: { data: { label: string; val
     if (!ref.current || !wrapRef.current) return;
     const el = ref.current;
     d3.select(el).selectAll("*").remove();
-    const items = data.filter(d => d.valeur > 0);
+    const positifs = data.filter(d => d.valeur > 0);
+    const total = d3.sum(positifs, d => d.valeur);
+    // On masque les parts qui arrondissent à 0,0 % (invisibles sur l'anneau).
+    const items = total > 0 ? positifs.filter(d => d.valeur / total * 100 >= 0.05) : [];
     if (!items.length) return;
+    const n = items.length;
+    const couleur = (i: number) => d3.interpolateRgb("#003468", "#EDF4FB")(n > 1 ? i / (n - 1) : 0) as string;
+
     const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
-    const H = Math.max(230, items.length * 22 + 44);
+    const H = Math.max(230, n * 22 + 44);
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    const total = d3.sum(items, d => d.valeur);
     const R = Math.min(H - 20, W * 0.42) / 2;
     const cx = R + 12, cy = H / 2;
-    // Angles rééquilibrés en puissance (√) pour rendre visibles les petites parts ;
-    // les % affichés (légende, tooltip) restent les vraies proportions.
-    const pie = d3.pie<any>().value(d => Math.pow(d.valeur, exposant)).sort(null);
-    const arc = d3.arc<any>().innerRadius(R * 0.6).outerRadius(R);
+    const pie = d3.pie<any>().value(d => d.valeur).sort(null);
+    const arc = d3.arc<any>().innerRadius(R * 0.58).outerRadius(R);
+    const arcH = d3.arc<any>().innerRadius(R * 0.58).outerRadius(R + 5);
     const tooltip = d3.select("#d3-tooltip") as any;
     const g = svg.append("g").attr("transform", `translate(${cx},${cy})`);
+
     g.selectAll("path").data(pie(items)).enter().append("path")
-      .attr("d", arc as any).attr("fill", (_d, i) => DONUT_PALETTE[i % DONUT_PALETTE.length]).attr("stroke", "#fff").attr("stroke-width", 1.5)
+      .attr("d", arc as any).attr("fill", (_d, i) => couleur(i)).attr("opacity", 0.9)
       .style("cursor", "pointer")
-      .on("mouseover", (e, d: any) => { showD3Tooltip(tooltip, e, `<strong>${d.data.label}</strong><br/>${fmtV(d.data.valeur)} · ${(d.data.valeur / total * 100).toFixed(1)}%`); })
+      .on("mouseover", function (e, d: any) { d3.select(this).attr("d", arcH(d) as string).attr("opacity", 1); showD3Tooltip(tooltip, e, `<strong>${d.data.label}</strong><br/>${fmtV(d.data.valeur)} · ${(d.data.valeur / total * 100).toFixed(1)}%`); })
       .on("mousemove", (e) => showD3Tooltip(tooltip, e))
-      .on("mouseout", () => hideD3Tooltip(tooltip));
-    // Légende
+      .on("mouseout", function (_e, d: any) { d3.select(this).attr("d", arc(d) as string).attr("opacity", 0.9); hideD3Tooltip(tooltip); });
+
+    // Total au centre
+    g.append("text").attr("text-anchor", "middle").attr("dy", "-.05em").style("font-size", "15px").style("font-weight", "800").style("fill", "#1a1a2e").text(fmtV(total));
+    g.append("text").attr("text-anchor", "middle").attr("dy", "1.5em").style("font-size", "9.5px").style("fill", "#9aa5b4").text("total");
+
+    // Légende (part la plus forte en haut, couleur assortie)
     const lx = cx + R + 20;
-    let ly = cy - (items.length * 20) / 2 + 10;
+    let ly = cy - (n * 20) / 2 + 10;
     const legend = svg.append("g");
     const maxc = Math.max(8, Math.floor((W - lx - 66) / 6.3));
     items.forEach((d, i) => {
       const pct = (d.valeur / total * 100).toFixed(1);
       let lbl = d.label; if (lbl.length > maxc) lbl = lbl.slice(0, maxc - 1) + "…";
       const row = legend.append("g").attr("transform", `translate(${lx},${ly})`);
-      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 10).attr("height", 10).attr("rx", 2).attr("fill", DONUT_PALETTE[i % DONUT_PALETTE.length]);
+      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 10).attr("height", 10).attr("rx", 2).attr("fill", couleur(i)).attr("stroke", "#E8E5E3").attr("stroke-width", 0.5);
       row.append("text").attr("x", 16).attr("y", 0).attr("dy", "0.02em").style("font-size", "11px").style("fill", "#4a5568").text(lbl);
       row.append("text").attr("x", W - lx - 4).attr("y", 0).attr("text-anchor", "end").style("font-size", "11px").style("font-weight", "700").style("fill", "#1a1a2e").text(`${pct}%`);
       ly += 20;
