@@ -1220,11 +1220,29 @@ function CarteFluxMondial({ flux, fmt, height = 560 }: { flux: any[]; fmt?: (v: 
     const valides = flux.filter(f => centre[f.exp_iso3] && centre[f.imp_iso3] && f.exp_iso3 !== f.imp_iso3);
     if (!valides.length) return;
     const maxV = d3.max(valides, (f: any) => f.valeur) || 1;
-    const wScale = d3.scaleSqrt().domain([0, maxV]).range([0.8, 13]);
+    const wScale = d3.scaleSqrt().domain([0, maxV]).range([3, 30]);
     const tri = [...valides].sort((a, b) => b.valeur - a.valeur);
 
+    // Ruban effilé : fin côté exportateur → large côté importateur (façon resourcetrade)
+    const rubanPath = (s: [number, number], c: [number, number], t: [number, number], wMax: number) => {
+      const N = 28; const left: string[] = []; const right: string[] = [];
+      for (let k = 0; k <= N; k++) {
+        const u = k / N, iu = 1 - u;
+        const px = iu * iu * s[0] + 2 * iu * u * c[0] + u * u * t[0];
+        const py = iu * iu * s[1] + 2 * iu * u * c[1] + u * u * t[1];
+        const tx = 2 * iu * (c[0] - s[0]) + 2 * u * (t[0] - c[0]);
+        const ty = 2 * iu * (c[1] - s[1]) + 2 * u * (t[1] - c[1]);
+        const tl = Math.hypot(tx, ty) || 1;
+        const nx = -ty / tl, ny = tx / tl;
+        const h = (wMax / 2) * Math.pow(u, 0.8);
+        left.push(`${(px + nx * h).toFixed(1)},${(py + ny * h).toFixed(1)}`);
+        right.push(`${(px - nx * h).toFixed(1)},${(py - ny * h).toFixed(1)}`);
+      }
+      return "M" + left.join("L") + "L" + right.reverse().join("L") + "Z";
+    };
+
     const defs = svg.append("defs");
-    const gflux = svg.append("g").attr("fill", "none");
+    const gflux = svg.append("g");
     tri.forEach((f, i) => {
       const s = centre[f.exp_iso3], t = centre[f.imp_iso3];
       const dx = t[0] - s[0], dy = t[1] - s[1];
@@ -1237,12 +1255,11 @@ function CarteFluxMondial({ flux, fmt, height = 560 }: { flux: any[]; fmt?: (v: 
       grad.append("stop").attr("offset", "0%").attr("stop-color", "#004f91");
       grad.append("stop").attr("offset", "100%").attr("stop-color", "#ca631f");
       gflux.append("path").datum(f)
-        .attr("d", `M${s[0]},${s[1]}Q${cx},${cy} ${t[0]},${t[1]}`)
-        .attr("stroke", `url(#${gid})`).attr("stroke-width", wScale(f.valeur))
-        .attr("stroke-linecap", "round").attr("opacity", 0.5).style("cursor", "pointer")
-        .on("mouseover", function (e: any) { gflux.selectAll("path").attr("opacity", 0.07); d3.select(this).attr("opacity", 1).raise(); showD3Tooltip(tooltip, e, `<strong>${f.exp_nom} → ${f.imp_nom}</strong><br/>${fmtV(f.valeur)}`); })
+        .attr("d", rubanPath(s, [cx, cy], t, wScale(f.valeur)))
+        .attr("fill", `url(#${gid})`).attr("opacity", 0.72).style("cursor", "pointer")
+        .on("mouseover", function (e: any) { gflux.selectAll("path").attr("opacity", 0.09); d3.select(this).attr("opacity", 0.95).raise(); showD3Tooltip(tooltip, e, `<strong>${f.exp_nom} → ${f.imp_nom}</strong><br/>${fmtV(f.valeur)}`); })
         .on("mousemove", (e: any) => showD3Tooltip(tooltip, e))
-        .on("mouseout", function () { gflux.selectAll("path").attr("opacity", 0.5); hideD3Tooltip(tooltip); });
+        .on("mouseout", function () { gflux.selectAll("path").attr("opacity", 0.72); hideD3Tooltip(tooltip); });
     });
 
     // Points aux pays impliqués
@@ -1262,6 +1279,17 @@ function CarteFluxMondial({ flux, fmt, height = 560 }: { flux: any[]; fmt?: (v: 
         .style("paint-order", "stroke").style("stroke", "#fff").style("stroke-width", "2.6px").style("stroke-linejoin", "round")
         .text(nomPar[code] || code);
     });
+
+    // Échelle (bas-gauche) : rubans effilés pour quelques valeurs de référence
+    const niveaux = [maxV, maxV / 2, maxV / 4].filter(v => v > 0);
+    const lg = svg.append("g").attr("transform", `translate(16,${H - 16 - niveaux.length * 22})`);
+    niveaux.forEach((v, i) => {
+      const yy = i * 22 + 6;
+      const w = wScale(v);
+      lg.append("path").attr("d", rubanPath([8, yy], [40, yy], [72, yy], w)).attr("fill", "#8a8f98").attr("opacity", 0.85);
+      lg.append("text").attr("x", 80).attr("y", yy).attr("dy", "0.35em").style("font-size", "10.5px").style("fill", "#6b7684").style("font-weight", "600").text(fmtV(v));
+    });
+    lg.append("text").attr("x", 8).attr("y", niveaux.length * 22 + 12).style("font-size", "9px").style("fill", "#9aa5b4").text("exportateur → importateur");
   }, [monde, flux, fmtV, height]);
 
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
