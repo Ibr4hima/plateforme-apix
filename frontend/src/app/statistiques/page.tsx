@@ -156,8 +156,6 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
             const perdant = diff >= 0 ? b : a;
             const colA = PALETTE[0], colB = PALETTE[1];
             const periode = bilat.annee_min ? `${bilat.annee_min}–${bilat.annee_max}` : "";
-            // Couleur de dépendance selon l'intensité (part chez l'importateur)
-            const depCol = (p: number) => p >= 0.5 ? "#b91c1c" : p >= 0.25 ? "#ca631f" : p >= 0.1 ? "#a16207" : "#6b7684";
             const BlocDir = ({ de, vers, col, val, res, dep }: any) => {
               const maxR = res && res.length ? res[0].valeur : 1;
               return (
@@ -169,12 +167,12 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                         <span style={{ color: "#9aa5b4" }}>→</span>
                         <span style={{ fontWeight: 700 }}>{vers}</span>
                       </span>
-                      {dep != null && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2, display: "block" }}>soit <strong style={{ color: depCol(dep) }}>{(dep * 100).toFixed(1)} %</strong> des importations totales de {vers}</span>}
+                      {dep != null && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2, display: "block" }}>soit <strong style={{ color: "#4a5568" }}>{(dep * 100).toFixed(1)} %</strong> des importations totales de {vers}</span>}
                     </div>
                     <span style={{ fontSize: 13.5, fontWeight: 800, color: "#004f91", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{fmtUSD(val)}</span>
                   </div>
                   {res && res.length > 0 && (
-                    <div style={{ padding: "2px 14px 12px", display: "grid", gap: 8 }}>
+                    <div style={{ padding: "2px 14px 12px", display: "grid", gap: 6 }}>
                       {res.map((r: any) => (
                         <div key={r.ressource} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 10 }}>
                           <div style={{ minWidth: 0 }}>
@@ -183,10 +181,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                               <div style={{ height: "100%", width: `${Math.max(3, (r.valeur / maxR) * 100)}%`, background: col, borderRadius: 3 }} />
                             </div>
                           </div>
-                          <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                            <div style={{ fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums" }}>{fmtUSD(r.valeur)}</div>
-                            {r.part_dependance != null && <div style={{ fontSize: 10.5, fontWeight: 700, color: depCol(r.part_dependance) }}>{(r.part_dependance * 100).toFixed(0)} % des imports de {vers}</div>}
-                          </div>
+                          <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(r.valeur)} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {val > 0 ? (r.valeur / val * 100).toFixed(0) : 0}%</span></span>
                         </div>
                       ))}
                     </div>
