@@ -135,6 +135,33 @@ async def comparaison(
     }
 
 
+@router.get("/ide_flux")
+async def ide_flux(
+    pays: str = Query(..., description="ids de pays séparés par virgule"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Dernier flux d'IDE entrant et sortant (source CNUCED) par pays, en USD.
+    Les valeurs CNUCED sont en millions USD → converties en USD (×1e6)."""
+    from app.models.ide import IdeCnuced
+    ids = [int(x) for x in pays.split(",") if x.strip().isdigit()]
+    if not ids:
+        return {}
+    rows = (await db.execute(
+        select(IdeCnuced).where(IdeCnuced.ref_pays_id.in_(ids), IdeCnuced.indicateur == "flux")
+    )).scalars().all()
+    latest: dict = {}
+    for r in rows:
+        if r.ref_pays_id is None or r.valeur is None:
+            continue
+        key = (r.ref_pays_id, r.direction)
+        if key not in latest or r.annee > latest[key][1]:
+            latest[key] = (float(r.valeur), r.annee)
+    out: dict = {}
+    for (pid, direction), (v, an) in latest.items():
+        out.setdefault(str(pid), {})[direction] = {"valeur": v * 1_000_000, "annee": an}
+    return out
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # IMPORT ADMIN — extraction des données depuis des fichiers Excel/CSV
 # Format attendu : colonne A = pays, colonne B = année, colonne C = valeur.

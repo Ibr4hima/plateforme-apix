@@ -57,14 +57,26 @@ function sortContinents(conts: string[]) {
 // ── Fiche de comparaison (modal) ──────────────────────────────────────────────
 function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays: Pays[]; onClose: () => void }) {
   const [data, setData] = useState<any>(null);
+  const [ideFlux, setIdeFlux] = useState<any>(null);
   useEffect(() => {
     fetch(`${API}/statistiques/comparaison?pays=${paysIds.join(",")}`).then(r => r.json()).then(setData).catch(() => {});
+    fetch(`${API}/statistiques/ide_flux?pays=${paysIds.join(",")}`).then(r => r.json()).then(setIdeFlux).catch(() => setIdeFlux({}));
   }, [paysIds]);
   const cols = data?.pays || [];
-  const inds: Indicateur[] = data?.indicateurs || [];
+  // Indicateurs macro + flux d'IDE entrant/sortant (source CNUCED)
+  const inds: Indicateur[] = [
+    ...(data?.indicateurs || []),
+    { code: "__ide_entrant", libelle: "Flux d'IDE entrants", unite: "USD" } as any,
+    { code: "__ide_sortant", libelle: "Flux d'IDE sortants", unite: "USD" } as any,
+  ];
+  const getCell = (cid: number, code: string): { valeur: number | null; annee?: number } | null => {
+    if (code === "__ide_entrant") return ideFlux?.[String(cid)]?.entrant || null;
+    if (code === "__ide_sortant") return ideFlux?.[String(cid)]?.sortant || null;
+    return data?.valeurs?.[String(cid)]?.[code] || null;
+  };
   // « mieux disant » par indicateur (max, sauf densité qui reste neutre)
   const meilleur = (code: string): number | null => {
-    const vals = cols.map((c: any) => data.valeurs[String(c.id)]?.[code]?.valeur).filter((v: any) => v !== null && v !== undefined);
+    const vals = cols.map((c: any) => getCell(c.id, code)?.valeur).filter((v: any) => v !== null && v !== undefined);
     if (!vals.length || code === "densite" || code === "superficie") return null;
     return Math.max(...vals);
   };
@@ -112,7 +124,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                         <div style={{ fontSize: 10.5, color: "#9aa5b4" }}>{ind.unite}</div>
                       </td>
                       {cols.map((c: any) => {
-                        const cell = data.valeurs[String(c.id)]?.[ind.code];
+                        const cell = getCell(c.id, ind.code);
                         const v = cell?.valeur;
                         const estBest = best !== null && v === best && cols.length > 1;
                         return (
