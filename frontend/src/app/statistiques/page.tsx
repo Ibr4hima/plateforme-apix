@@ -598,8 +598,8 @@ function CommercePanel() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
               {donutData.length > 0 && (
                 <GrapheCard titre={expDir ? "Poids des ressources exportées" : "Poids des ressources importées"} grapheId={`stat_poids_res_${vue}_${selId}`} hideLegend
-                  fullChildren={<GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} height={360} />}>
-                  <GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} height={220} nbLabels={3} />
+                  fullChildren={<GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} />}>
+                  <GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} />
                 </GrapheCard>
               )}
               {concPoints.length > 0 && (
@@ -934,12 +934,9 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0
 }
 
 
-// ── Anneau de composition (style tableau de bord, étiquettes reliées) ──────────
+// ── Anneau de composition (style tableau de bord, légende latérale) ────────────
 // Rampe bleue #003468 (part la plus élevée) → #EDF4FB (la plus faible).
-// nbLabels = nombre de parts (les plus grandes) reliées par un trait.
-function GrapheDonut({ data, fmt, height = 240, nbLabels = 99 }: {
-  data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; height?: number; nbLabels?: number;
-}) {
+function GrapheDonut({ data, fmt }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string }) {
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtValGen;
@@ -949,31 +946,26 @@ function GrapheDonut({ data, fmt, height = 240, nbLabels = 99 }: {
     d3.select(el).selectAll("*").remove();
     const positifs = data.filter(d => d.valeur > 0);
     const total = d3.sum(positifs, d => d.valeur);
+    // On masque les parts qui arrondissent à 0,0 % (invisibles sur l'anneau).
     const items = total > 0 ? positifs.filter(d => d.valeur / total * 100 >= 0.05) : [];
     if (!items.length) return;
     const n = items.length;
     const couleur = (i: number) => d3.interpolateRgb("#003468", "#EDF4FB")(n > 1 ? i / (n - 1) : 0) as string;
 
     const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
-    const H = height;
+    const H = Math.max(230, n * 22 + 44);
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    // Rayon réduit pour laisser la place aux étiquettes (trait + nom + pastille).
-    const pad = 8;
-    const minLabel = Math.min(180, Math.max(72, W * 0.22));
-    const radius = Math.max(38, Math.min(H / 2 - 14, (W / 2 - pad - minLabel) / 1.14));
-    const g = svg.append("g").attr("transform", `translate(${W / 2},${H / 2})`);
-
+    const R = Math.min(H - 20, W * 0.42) / 2;
+    const cx = R + 12, cy = H / 2;
     // Angles pondérés en racine carrée pour rendre visibles les petites parts ;
-    // le total au centre et les % restent les vraies proportions.
+    // le total au centre et les % de la légende restent les vraies proportions.
     const pie = d3.pie<any>().value(d => Math.sqrt(d.valeur)).sort(null);
-    const arc = d3.arc<any>().innerRadius(radius * 0.58).outerRadius(radius);
-    const arcH = d3.arc<any>().innerRadius(radius * 0.58).outerRadius(radius + 5);
-    const outer = d3.arc<any>().innerRadius(radius * 1.06).outerRadius(radius * 1.06);
+    const arc = d3.arc<any>().innerRadius(R * 0.58).outerRadius(R);
+    const arcH = d3.arc<any>().innerRadius(R * 0.58).outerRadius(R + 5);
     const tooltip = d3.select("#d3-tooltip") as any;
-    const arcs = pie(items);
-    const mid = (d: any) => d.startAngle + (d.endAngle - d.startAngle) / 2;
+    const g = svg.append("g").attr("transform", `translate(${cx},${cy})`);
 
-    g.selectAll("path").data(arcs).enter().append("path")
+    g.selectAll("path").data(pie(items)).enter().append("path")
       .attr("d", arc as any).attr("fill", (_d, i) => couleur(i)).attr("opacity", 0.9)
       .style("cursor", "pointer")
       .on("mouseover", function (e, d: any) { d3.select(this).attr("d", arcH(d) as string).attr("opacity", 1); showD3Tooltip(tooltip, e, `<strong>${d.data.label}</strong><br/>${fmtV(d.data.valeur)} · ${(d.data.valeur / total * 100).toFixed(1)}%`); })
@@ -984,50 +976,24 @@ function GrapheDonut({ data, fmt, height = 240, nbLabels = 99 }: {
     g.append("text").attr("text-anchor", "middle").attr("dy", "-.05em").style("font-size", "15px").style("font-weight", "800").style("fill", "#1a1a2e").text(fmtV(total));
     g.append("text").attr("text-anchor", "middle").attr("dy", "1.5em").style("font-size", "9.5px").style("fill", "#9aa5b4").text("total");
 
-    // Étiquettes reliées par un trait, pour les nbLabels plus grandes parts
-    const mctx = document.createElement("canvas").getContext("2d")!;
-    const lineEnd = radius * 1.14;
-    const avail = W / 2 - lineEnd - pad; // largeur dispo (nom + pastille) d'un côté
-    const k = Math.min(nbLabels, n);
-    const labeled = arcs.slice(0, k).map((d: any, i: number) => ({ d, i, right: mid(d) < Math.PI, y: outer.centroid(d)[1] }));
-    // Dé-collision verticale des étiquettes, côté par côté
-    [true, false].forEach(side => {
-      const grp = labeled.filter(o => o.right === side).sort((a, b) => a.y - b.y);
-      const gap = 22, top = -(H / 2) + 12, bottom = H / 2 - 12;
-      for (let j = 1; j < grp.length; j++) if (grp[j].y - grp[j - 1].y < gap) grp[j].y = grp[j - 1].y + gap;
-      if (grp.length) {
-        const over = grp[grp.length - 1].y - bottom; if (over > 0) grp.forEach(o => o.y -= over);
-        const under = top - grp[0].y; if (under > 0) grp.forEach(o => o.y += under);
-      }
+    // Légende (part la plus forte en haut, couleur assortie)
+    const lx = cx + R + 20;
+    let ly = cy - (n * 20) / 2 + 10;
+    const legend = svg.append("g");
+    const maxc = Math.max(8, Math.floor((W - lx - 66) / 6.3));
+    items.forEach((d, i) => {
+      const pct = (d.valeur / total * 100).toFixed(1);
+      let lbl = d.label; if (lbl.length > maxc) lbl = lbl.slice(0, maxc - 1) + "…";
+      const row = legend.append("g").attr("transform", `translate(${lx},${ly})`);
+      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 10).attr("height", 10).attr("rx", 2).attr("fill", couleur(i)).attr("stroke", "#E8E5E3").attr("stroke-width", 0.5);
+      row.append("text").attr("x", 16).attr("y", 0).attr("dy", "0.02em").style("font-size", "11px").style("fill", "#4a5568").text(lbl);
+      row.append("text").attr("x", W - lx - 4).attr("y", 0).attr("text-anchor", "end").style("font-size", "11px").style("font-weight", "700").style("fill", "#1a1a2e").text(`${pct}%`);
+      ly += 20;
     });
-    labeled.forEach(({ d, i, right, y }) => {
-      const c = couleur(i);
-      const p0 = arc.centroid(d), p1 = outer.centroid(d);
-      g.append("polyline").attr("fill", "none").attr("stroke", "#D5D0CC").attr("stroke-width", 1).attr("stroke-linejoin", "round")
-        .attr("points", [p0, [p1[0], y], [lineEnd * (right ? 1 : -1), y]] as any);
-      const pctStr = `${(d.data.valeur / total * 100).toFixed(1)}%`;
-      mctx.font = "700 11px 'Google Sans',sans-serif";
-      const pillW = Math.ceil(mctx.measureText(pctStr).width) + 16;
-      mctx.font = "12px 'Google Sans',sans-serif";
-      const budget = Math.max(0, avail - pillW - 6);
-      let nom = d.data.label;
-      if (mctx.measureText(nom).width > budget) {
-        while (nom.length > 1 && mctx.measureText(nom + "…").width > budget) nom = nom.slice(0, -1);
-        nom = nom + "…";
-      }
-      const nameW = Math.ceil(mctx.measureText(nom).width);
-      const startX = right ? lineEnd + 6 : -(lineEnd + 6) - (nameW + 6 + pillW);
-      g.append("text").attr("x", startX).attr("y", y).attr("dy", "0.35em").style("font-size", "12px").style("fill", "#4a5568").text(nom);
-      const rgb = d3.color(c)?.rgb();
-      const lum = rgb ? (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255 : 0;
-      g.append("rect").attr("x", startX + nameW + 6).attr("y", y - 9).attr("width", pillW).attr("height", 18).attr("rx", 999).attr("fill", c);
-      g.append("text").attr("x", startX + nameW + 6 + pillW / 2).attr("y", y).attr("dy", "0.35em").attr("text-anchor", "middle")
-        .style("font-size", "11px").style("font-weight", "800").style("fill", lum > 0.62 ? "#1a1a2e" : "#fff").text(pctStr);
-    });
-  }, [data, fmtV, height, nbLabels]);
+  }, [data, fmtV]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
   useEffect(() => { draw(); }, [draw]);
-  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
+  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
 }
 
 // ── Courbe de concentration (Pareto) ──────────────────────────────────────────
