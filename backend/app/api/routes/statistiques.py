@@ -702,6 +702,57 @@ async def commerce_filtres(db: AsyncSession = Depends(get_db)):
     }
 
 
+@router.get("/commerce/detail")
+async def commerce_detail(
+    db: AsyncSession = Depends(get_db),
+    pays_id: int = Query(...),
+    direction: str = Query(default="exportateur"),
+    annee: int = Query(...),
+):
+    """Détail groupé pour une année : par partenaire puis par ressource."""
+    from sqlalchemy import and_ as _and
+    from collections import defaultdict
+
+    self_col = StatTransaction.exportateur_id if direction == "exportateur" else StatTransaction.importateur_id
+    partner_col = StatTransaction.importateur_id if direction == "exportateur" else StatTransaction.exportateur_id
+    W = _and(self_col == pays_id, StatTransaction.annee == annee)
+    _sum = _sqlfunc.sum(StatTransaction.valeur)
+
+    rows = (await db.execute(
+        select(partner_col.label("pid"), StatTransaction.ressource.label("res"), _sum.label("v"))
+        .where(W).group_by(partner_col, StatTransaction.ressource)
+    )).all()
+
+    data: dict = defaultdict(dict)   # pid -> {res: valeur}
+    part_tot: dict = defaultdict(float)
+    for r in rows:
+        v = float(r.v or 0)
+        if v <= 0:
+            continue
+        data[r.pid][r.res] = data[r.pid].get(r.res, 0.0) + v
+        part_tot[r.pid] += v
+
+    pids = sorted(part_tot, key=lambda p: part_tot[p], reverse=True)
+    noms = {}
+    if pids:
+        rn = (await db.execute(select(RefPays.id, RefPays.nom_fr).where(RefPays.id.in_(pids)))).all()
+        noms = {rid: nom for rid, nom in rn}
+    codes = {c for d in data.values() for c in d}
+    libs = {}
+    if codes:
+        rl = (await db.execute(select(StatRessource.nom_en, StatRessource.libelle).where(StatRessource.nom_en.in_(codes)))).all()
+        libs = {code: lib for code, lib in rl}
+
+    partenaires = []
+    for pid in pids:
+        lignes = sorted(
+            ({"ressource": libs.get(c) or c, "valeur": v} for c, v in data[pid].items()),
+            key=lambda x: x["valeur"], reverse=True,
+        )
+        partenaires.append({"nom": noms.get(pid) or "—", "total": part_tot[pid], "lignes": lignes})
+    return {"partenaires": partenaires}
+
+
 @router.get("/commerce/transactions")
 async def commerce_transactions(
     db: AsyncSession = Depends(get_db),
