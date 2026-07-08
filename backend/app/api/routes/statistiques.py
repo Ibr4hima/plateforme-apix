@@ -839,6 +839,19 @@ async def commerce_bilateral(
             })
         return out
 
+    # Groupements communs aux deux pays (ZLECAf, UA, OPEP…)
+    from app.models.shared import RefGroupement, RefPaysGroupement
+    communs_ids = (await db.execute(
+        select(RefPaysGroupement.groupement_id)
+        .where(RefPaysGroupement.pays_id.in_([pays_a, pays_b]))
+        .group_by(RefPaysGroupement.groupement_id)
+        .having(_sqlfunc.count(_sqlfunc.distinct(RefPaysGroupement.pays_id)) == 2)
+    )).scalars().all()
+    groupements = []
+    if communs_ids:
+        grows = (await db.execute(select(RefGroupement).where(RefGroupement.id.in_(communs_ids)).order_by(RefGroupement.nom_fr))).scalars().all()
+        groupements = [{"code": g.code, "nom": g.nom_fr} for g in grows]
+
     return {
         "a_vers_b": float(ab or 0),
         "b_vers_a": float(ba or 0),
@@ -849,6 +862,7 @@ async def commerce_bilateral(
         "b_vers_a_dependance": (float(ba or 0) / a_imp_tot) if a_imp_tot > 0 else None,
         "a_vers_b_ressources": await ventil(pays_a, pays_b, b_imp),
         "b_vers_a_ressources": await ventil(pays_b, pays_a, a_imp),
+        "groupements_communs": groupements,
     }
 
 

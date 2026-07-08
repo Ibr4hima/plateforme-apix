@@ -192,6 +192,14 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
             return (
               <div style={{ marginTop: 22 }}>
                 <p style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>Échanges bilatéraux{periode ? ` · ${periode}` : ""}</p>
+                {bilat.groupements_communs && bilat.groupements_communs.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12, padding: "10px 14px", background: "#F8F7F6", border: "1px solid #F0EEEC", borderRadius: 10 }}>
+                    <span style={{ fontSize: 11.5, color: "#6b7684", fontWeight: 600 }}>Appartenances communes :</span>
+                    {bilat.groupements_communs.map((g: any) => (
+                      <span key={g.code} title={g.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 10px", borderRadius: 999 }}>{g.code || g.nom}</span>
+                    ))}
+                  </div>
+                )}
                 <div style={{ display: "grid", gap: 8 }}>
                   <BlocDir de={a.nom} vers={b.nom} col={colA} val={ab} res={bilat.a_vers_b_ressources} dep={bilat.a_vers_b_dependance} />
                   <BlocDir de={b.nom} vers={a.nom} col={colB} val={ba} res={bilat.b_vers_a_ressources} dep={bilat.b_vers_a_dependance} />
