@@ -178,7 +178,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                           <div style={{ minWidth: 0 }}>
                             <div style={{ fontSize: 11.5, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 3 }}>{r.ressource}</div>
                             <div style={{ height: 5, background: "#EDEBE8", borderRadius: 3, overflow: "hidden" }}>
-                              <div style={{ height: "100%", width: `${Math.max(3, (r.valeur / maxR) * 100)}%`, background: col, borderRadius: 3 }} />
+                              <div style={{ height: "100%", width: `${Math.max(3, Math.sqrt(r.valeur / maxR) * 100)}%`, background: col, borderRadius: 3 }} />
                             </div>
                           </div>
                           <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(r.valeur)} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {val > 0 ? (r.valeur / val * 100).toFixed(0) : 0}%</span></span>
