@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
@@ -1709,10 +1709,7 @@ export default function StatistiquesPage() {
 .drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
 .drs-thumb::-moz-range-thumb{background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <Navbar />
-      <BarreTitre titre="Statistiques"
-        droite={mode === "indicateurs" && (vue === "pays" || vue === "comparative")
-          ? <BarreTitreBadge label="Tableau de données" icon={<Table size={13} style={{ color: "#fff" }} />} onClick={() => setShowTable(true)} />
-          : null}>
+      <BarreTitre titre="Statistiques">
         <BarreTitreSegment options={[
           { v: "indicateurs", l: "Indicateurs économiques" },
           { v: "commerce", l: "Flux bilatéraux" },
@@ -1946,6 +1943,10 @@ export default function StatistiquesPage() {
                       <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e" }}>{paysNom(selection[0])}</h2>
                       <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
                     </div>
+                    <button onClick={() => setShowTable(true)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
+                      <Table size={14} /> Tableau de données
+                    </button>
                   </div>
 
                   {/* KPI cards */}
@@ -2013,6 +2014,10 @@ export default function StatistiquesPage() {
                         <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleurPays(id), display: "inline-block" }} />{paysNom(id)}
                       </span>
                     ))}
+                    <button onClick={() => setShowTable(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
+                      <Table size={14} /> Tableau de données
+                    </button>
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
