@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { AUTH_ENFORCED, moduleAutorise, nomAffiche, ROLE_LABELS } from "@/lib/authGate";
+import FichePaysLauncher from "@/components/fiche-pays/FichePaysLauncher";
 import { useEffect, useRef, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -473,6 +474,8 @@ export default function Navbar() {
               Tableau de bord
             </Link>}
 
+
+            <FichePaysLauncher textColor={textColor} textHover={textHover} />
 
             {/* Code des investissements */}
             <button onClick={() => setCodeOpen(true)}
