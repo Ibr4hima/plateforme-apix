@@ -130,6 +130,11 @@ async def _reinitialiser_compteurs(db: AsyncSession, cles: List[str]) -> None:
 
 def _check_domain(email: str) -> str:
     normalized = email.strip().lower()
+    # Les emails dev/admin configurés (DEV_EMAILS / ADMIN_EMAILS) sont autorisés
+    # même hors du domaine @apix.sn : la config les désigne explicitement comme
+    # comptes privilégiés, il faut donc pouvoir les créer.
+    if normalized in _settings.dev_emails_list or normalized in _settings.admin_emails_list:
+        return normalized
     if not normalized.endswith(ALLOWED_DOMAIN):
         raise HTTPException(
             status_code=403,
