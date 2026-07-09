@@ -14,7 +14,7 @@ const PROTECTED_SLUGS: Record<string,string> = { "/ide":"ide", "/prospects":"pro
 
 const modules = [
   { label: "Investissements privés",        href: "/ide",          icon: "finance_mode",           color: "#ca631f" },
-  { label: "Intentions d'investissement",   href: "/intentions",   icon: "universal_currency_alt", color: "#366FE3" },
+  { label: "Échanges commerciaux",          href: "/statistiques", icon: "currency_exchange",      color: "#366FE3" },
   { label: "Prospects",                     href: "/prospects",    icon: "frame_inspect",          color: "#ca631f" },
   { label: "Entreprises installées",        href: "/entreprises",  icon: "enterprise",             color: "#366FE3" },
   { label: "Zones d'investissement",        href: "/zones",        icon: "real_estate_agent",      color: "#ca631f" },
@@ -473,13 +473,6 @@ export default function Navbar() {
               Tableau de bord
             </Link>}
 
-            {/* Échanges commerciaux */}
-            {visible("/statistiques") && <Link href="/statistiques"
-              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
-              Échanges commerciaux
-            </Link>}
 
             {/* Code des investissements */}
             <button onClick={() => setCodeOpen(true)}
