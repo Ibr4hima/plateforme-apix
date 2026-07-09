@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, ChevronDown, Loader2, Scale, Search, X } from "lucide-react";
+import { ArrowRight, ChevronDown, FileText, Landmark, Loader2, Scale, Search, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -196,21 +196,25 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
               <div style={{ marginTop: 22 }}>
                 <p style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>Échanges bilatéraux{periode ? ` · ${periode}` : ""}</p>
                 {bilat.groupements_communs && bilat.groupements_communs.length > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12, padding: "10px 14px", background: "#F8F7F6", border: "1px solid #F0EEEC", borderRadius: 10 }}>
-                    <span style={{ fontSize: 11.5, color: "#6b7684", fontWeight: 600 }}>Appartenances communes :</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, padding: "12px 16px", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 12, boxShadow: "0 1px 2px rgba(0,30,60,0.04)" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 9.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase", flexShrink: 0 }}>
+                      <Landmark size={13} /> Appartenances communes
+                    </span>
                     {bilat.groupements_communs.map((g: any) => (
-                      <span key={g.code} title={g.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 11, fontWeight: 700, color: "#4a5568", background: "#ECEAE8", padding: "3px 10px", borderRadius: 999 }}>{g.code || g.nom}</span>
+                      <span key={g.code} title={g.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 11, fontWeight: 700, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>{g.code || g.nom}</span>
                     ))}
                   </div>
                 )}
                 {bilat.accords && bilat.accords.length > 0 && (
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap", marginBottom: 12, padding: "10px 14px", background: "#F8F7F6", border: "1px solid #F0EEEC", borderRadius: 10 }}>
-                    <span style={{ fontSize: 11.5, color: "#6b7684", fontWeight: 600, flexShrink: 0, paddingTop: 3 }}>{bilat.accords.length > 1 ? "Accords signés" : "Accord signé"} :</span>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap", marginBottom: 10, padding: "12px 16px", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 12, boxShadow: "0 1px 2px rgba(0,30,60,0.04)" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 9.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase", flexShrink: 0, paddingTop: 4 }}>
+                      <FileText size={13} /> {bilat.accords.length > 1 ? "Accords signés" : "Accord signé"}
+                    </span>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {bilat.accords.map((ac: any, i: number) => {
                         const an = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
                         return (
-                          <span key={i} title={ac.reference || ac.titre} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#ECEAE8", padding: "3px 11px", borderRadius: 999 }}>
+                          <span key={i} title={ac.reference || ac.titre} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>
                             {ac.titre}{an ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {an}</span> : null}
                           </span>
                         );
