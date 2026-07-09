@@ -473,12 +473,12 @@ export default function Navbar() {
               Tableau de bord
             </Link>}
 
-            {/* Statistiques */}
+            {/* Échanges commerciaux */}
             {visible("/statistiques") && <Link href="/statistiques"
               style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
-              Statistiques
+              Échanges commerciaux
             </Link>}
 
             {/* Code des investissements */}
