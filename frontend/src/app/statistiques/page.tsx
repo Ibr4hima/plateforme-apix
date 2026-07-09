@@ -59,9 +59,6 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
   const [data, setData] = useState<any>(null);
   const [ideFlux, setIdeFlux] = useState<any>(null);
   const [bilat, setBilat] = useState<any>(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const page1Ref = useRef<HTMLDivElement>(null);
-  const page2Ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     fetch(`${API}/statistiques/comparaison?pays=${paysIds.join(",")}`).then(r => r.json()).then(setData).catch(() => {});
     fetch(`${API}/statistiques/ide_flux?pays=${paysIds.join(",")}`).then(r => r.json()).then(setIdeFlux).catch(() => setIdeFlux({}));
@@ -86,34 +83,6 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
     if (code === "__ide_sortant") return ideFlux?.[String(cid)]?.sortant || null;
     return data?.valeurs?.[String(cid)]?.[code] || null;
   };
-  // PDF : rendu fidèle de la fiche sur 2 pages (html2canvas haute résolution)
-  // Page 1 : en-tête + indicateurs jusqu'aux IDE · Page 2 : échanges bilatéraux
-  const exportPDF = async () => {
-    if (!page1Ref.current) return;
-    setPdfLoading(true);
-    try {
-      const jspdfMod: any = await import("jspdf");
-      const JsPDF = jspdfMod.jsPDF || jspdfMod.default;
-      const h2cMod: any = await import("html2canvas");
-      const html2canvas = h2cMod.default || h2cMod;
-      const imgW = 760;
-      const shoot = async (el: HTMLDivElement) => {
-        const canvas = await html2canvas(el, { scale: 4, backgroundColor: "#ffffff", useCORS: true, windowWidth: el.scrollWidth });
-        return { url: canvas.toDataURL("image/png"), h: canvas.height * imgW / canvas.width };
-      };
-      const p1 = await shoot(page1Ref.current);
-      const doc = new JsPDF({ unit: "pt", format: [imgW, p1.h], compress: true });
-      doc.addImage(p1.url, "PNG", 0, 0, imgW, p1.h);
-      if (page2Ref.current) {
-        const p2 = await shoot(page2Ref.current);
-        doc.addPage([imgW, p2.h]);
-        doc.addImage(p2.url, "PNG", 0, 0, imgW, p2.h);
-      }
-      doc.save(`Fiche_Pays_${cols.map((c: any) => c.nom.replace(/\s/g, "_")).join("_")}.pdf`);
-    } catch (e) { console.error(e); }
-    setPdfLoading(false);
-  };
-
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
@@ -123,7 +92,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
           <X size={15} color="#4a5568" />
         </button>
         <div style={{ overflowY: "auto", flex: 1 }}>
-          <div ref={page1Ref} style={{ background: "#fff", padding: "26px 30px 30px" }}>
+          <div style={{ background: "#fff", padding: "26px 30px 30px" }}>
             {/* En-tête premium */}
             <div style={{ marginBottom: 22, paddingBottom: 18, borderBottom: "1px solid #ECEAE7" }}>
               <p style={{ fontSize: 10, fontWeight: 800, color: "#004f91", letterSpacing: "0.18em", textTransform: "uppercase", margin: 0 }}>APIX Sénégal · Statistiques</p>
@@ -182,9 +151,9 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
             </table>
           )}
           </div>
-          {/* Échanges bilatéraux (2 pays) — page 2 du PDF */}
+          {/* Échanges bilatéraux (2 pays) */}
           {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (
-          <div ref={page2Ref} style={{ background: "#fff", padding: "10px 30px 30px" }}>{(() => {
+          <div style={{ background: "#fff", padding: "10px 30px 30px" }}>{(() => {
             const a = cols[0], b = cols[1];
             const ab = bilat.a_vers_b || 0, ba = bilat.b_vers_a || 0;
             const diff = ab - ba;
@@ -268,13 +237,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
         </div>
         <div data-no-pdf style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <span style={{ fontSize: 11, color: "#9aa5b4" }}>Dernière année disponible pour chaque indicateur</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
-            <button onClick={exportPDF} disabled={pdfLoading || !data}
-              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: pdfLoading ? "wait" : "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)", opacity: pdfLoading || !data ? 0.7 : 1 }}>
-              {pdfLoading ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <FileText size={13} />} Télécharger PDF
-            </button>
-          </div>
+          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
         </div>
       </div>
     </div>
@@ -1842,7 +1805,16 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
         </div>
         <div style={{ padding: "14px 22px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            {sel.map(id => { const p = pays.find(x => x.id === id); return p ? <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: couleur(id), background: `${couleur(id)}12`, padding: "3px 9px", borderRadius: 999 }}><span style={{ width: 5, height: 5, borderRadius: "50%", background: couleur(id) }} />{p.nom}</span> : null; })}
+            {sel.map(id => { const p = pays.find(x => x.id === id); const canRemove = sel.length > 1; return p ? (
+              <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: couleur(id), background: `${couleur(id)}12`, padding: "3px 5px 3px 9px", borderRadius: 999 }}>
+                {p.nom}
+                <button onClick={() => canRemove && setSel(prev => prev.filter(x => x !== id))} disabled={!canRemove} title={canRemove ? `Retirer ${p.nom}` : "Au moins un pays requis"}
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15, height: 15, borderRadius: "50%", border: "none", padding: 0, background: "transparent", color: couleur(id), cursor: canRemove ? "pointer" : "not-allowed", opacity: canRemove ? 1 : 0.35 }}
+                  onMouseEnter={e => { if (canRemove) e.currentTarget.style.background = `${couleur(id)}22`; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                  <X size={10} strokeWidth={2.6} />
+                </button>
+              </span>
+            ) : null; })}
           </div>
           <button onClick={() => sel.length && onValider(sel)} disabled={!sel.length}
             style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: sel.length ? "pointer" : "not-allowed", opacity: sel.length ? 1 : 0.4, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", flexShrink: 0 }}>
