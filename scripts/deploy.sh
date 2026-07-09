@@ -37,8 +37,15 @@ $COMPOSE up -d
 # mémoire. On recharge explicitement (reload à chaud, sinon redémarrage) pour
 # que toute modif de routage prenne effet à chaque déploiement.
 echo "▸ Rechargement de la configuration Caddy…"
-$COMPOSE exec -T caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null \
-  || $COMPOSE restart caddy
+# `caddy reload` doit connaître l'adaptateur Caddyfile, sinon il tente de lire
+# le fichier comme du JSON et échoue. On recharge à chaud ; en cas d'échec, on
+# force un redémarrage complet du conteneur (qui relit le Caddyfile monté).
+if $COMPOSE exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile; then
+  echo "  ✓ Caddy rechargé à chaud."
+else
+  echo "  ⚠ reload impossible — redémarrage du conteneur Caddy…"
+  $COMPOSE restart caddy
+fi
 
 # Le volume backend_uploads est monté sur /app/uploads mais créé « root » par
 # Docker, alors que le backend tourne en utilisateur non-root (uid 1000) → sans
