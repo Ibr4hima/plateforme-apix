@@ -2,6 +2,7 @@
 
 import { Check, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -155,7 +156,7 @@ export default function PolesPage() {
     try {
       const res = await fetch(`${API_BASE}/zones-types/poles/${pole.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -169,7 +170,7 @@ export default function PolesPage() {
     try {
       const res = await fetch(`${API_BASE}/zones-types/poles`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -182,7 +183,7 @@ export default function PolesPage() {
     if (!confirm("Supprimer ce pôle ? Les zones associées perdront leur référence.")) return;
     setDeletingId(id);
     try {
-      await fetch(`${API_BASE}/zones-types/poles/${id}`, { method: "DELETE" });
+      await fetch(`${API_BASE}/zones-types/poles/${id}`, { method: "DELETE", headers: authHeaders() });
       charger();
     } finally { setDeletingId(null); }
   };

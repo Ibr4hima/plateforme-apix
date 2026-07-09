@@ -2,6 +2,7 @@
 
 import { Check, Link2, Loader2, Search, Unlink, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -54,7 +55,7 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
     setSaving(true);
     try {
       await fetch(`${API}/classifications/${systeme}/classes/${classe.id}/correspondances`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
+        method: "PUT", headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({ naema_activite_ids: selected }),
       });
       setOk(true);
@@ -175,7 +176,7 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
   const delCorr = async (corrId: number) => {
     if (!selectedClass) return;
     setDeleting(corrId);
-    await fetch(`${API}/classifications/${systeme}/classes/${selectedClass.id}/correspondances/${corrId}`, { method: "DELETE" });
+    await fetch(`${API}/classifications/${systeme}/classes/${selectedClass.id}/correspondances/${corrId}`, { method: "DELETE", headers: authHeaders() });
     setDeleting(null);
     chargerCorrs(selectedClass);
     chargerStats();

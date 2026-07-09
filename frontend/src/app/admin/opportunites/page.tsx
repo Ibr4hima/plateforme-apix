@@ -7,6 +7,7 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FSegmented, FInfo, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -167,7 +168,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
       for (const p of pdfQueue) {
         const fd = new FormData();
         fd.append("fichier", p.file); fd.append("titre", p.titre||p.file.name);
-        await fetch(`${API}/opportunites/potentialites/${potId}/fichiers`, { method:"POST", body:fd });
+        await fetch(`${API}/opportunites/potentialites/${potId}/fichiers`, { method:"POST", headers:authHeaders(), body:fd });
       }
 
       setOk(true);
@@ -271,7 +272,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
                 <a href={`${API}/opportunites/potentialites/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize:13, flex:1, color:"#1a1a2e", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{
-                  if (edit?.id) await fetch(`${API}/opportunites/potentialites/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
+                  if (edit?.id) await fetch(`${API}/opportunites/potentialites/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:authHeaders()});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
                 }} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{color:"#dc2626"}}/></button>
               </div>
@@ -383,7 +384,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
       const avgId = saved.id || edit?.id;
       for (const p of pdfQueue) {
         const fd=new FormData(); fd.append("fichier",p.file); fd.append("titre",p.titre||p.file.name);
-        await fetch(`${API}/opportunites/avantages/${avgId}/fichiers`,{method:"POST",body:fd});
+        await fetch(`${API}/opportunites/avantages/${avgId}/fichiers`,{method:"POST",headers:authHeaders(),body:fd});
       }
       setOk(true);setTimeout(()=>{setOk(false);onClose();onSaved();},700);
     } catch(e:any){setError(e.message);}
@@ -503,7 +504,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
                 <a href={`${API}/opportunites/avantages/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{fontSize:13,flex:1,color:"#1a1a2e",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{
-                  if(edit?.id) await fetch(`${API}/opportunites/avantages/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
+                  if(edit?.id) await fetch(`${API}/opportunites/avantages/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:authHeaders()});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
                 }} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
               </div>
@@ -1034,23 +1035,23 @@ export default function OpportunitesAdminPage() {
   const deletePot=async(id:number)=>{
     if(!confirm("Supprimer cette fiche ?"))return;
     setPotDel(id);
-    await fetch(`${API}/opportunites/potentialites/${id}`,{method:"DELETE"});
+    await fetch(`${API}/opportunites/potentialites/${id}`,{method:"DELETE",headers:authHeaders()});
     setPotDel(null);chargerPots();
   };
   const togglePot=async(p:any)=>{
     setPotToggle(p.id);
-    await fetch(`${API}/opportunites/potentialites/${p.id}/toggle`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({est_publie:!p.est_publie})});
+    await fetch(`${API}/opportunites/potentialites/${p.id}/toggle`,{method:"PATCH",headers:{"Content-Type":"application/json", ...authHeaders()},body:JSON.stringify({est_publie:!p.est_publie})});
     setPotToggle(null);chargerPots();
   };
   const deleteAvg=async(id:number)=>{
     if(!confirm("Supprimer cet avantage ?"))return;
     setAvgDel(id);
-    await fetch(`${API}/opportunites/avantages/${id}`,{method:"DELETE"});
+    await fetch(`${API}/opportunites/avantages/${id}`,{method:"DELETE",headers:authHeaders()});
     setAvgDel(null);chargerAvgs();
   };
   const toggleAvg=async(a:any)=>{
     setAvgToggle(a.id);
-    await fetch(`${API}/opportunites/avantages/${a.id}/toggle`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({est_publie:!a.est_publie})});
+    await fetch(`${API}/opportunites/avantages/${a.id}/toggle`,{method:"PATCH",headers:{"Content-Type":"application/json", ...authHeaders()},body:JSON.stringify({est_publie:!a.est_publie})});
     setAvgToggle(null);chargerAvgs();
   };
 

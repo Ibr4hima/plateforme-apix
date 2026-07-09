@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, ChevronRight, ChevronDown, MapPin, Upload } from "lucide-react";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -101,7 +102,7 @@ export default function AdminGeo() {
       departement:    `/entreprises/ref/departements/${id}`,
       arrondissement: `/entreprises/ref/arrondissements/${id}`,
     };
-    await fetch(`${API_BASE}${endpoints[type]}`, { method: "DELETE" });
+    await fetch(`${API_BASE}${endpoints[type]}`, { method: "DELETE", headers: authHeaders() });
     setDeleting(null);
     charger();
   };
@@ -199,7 +200,7 @@ export default function AdminGeo() {
     setImporting(true); setImportError(""); setImportResult(null);
     try {
       const res = await fetch(`${API_BASE}/entreprises/ref/arrondissements/bulk`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);

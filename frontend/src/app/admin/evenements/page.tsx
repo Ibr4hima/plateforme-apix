@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, Check, Calendar } from "lucide-react";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { api } from "@/lib/api";
+import { authHeaders } from "@/lib/authHeaders";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import PaysSelect from "@/components/shared/PaysSelect";
@@ -252,12 +253,12 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
       let evtId: number | null = editItem?.id ?? null;
       if (editItem) {
         const res = await fetch(`${API_BASE}/evenements/${editItem.id}`, {
-          method: "PATCH", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload)
+          method: "PATCH", headers: {"Content-Type":"application/json", ...authHeaders()}, body: JSON.stringify(payload)
         });
         if (!res.ok) { const d = await res.json(); throw d; }
       } else {
         const res = await fetch(`${API_BASE}/evenements`, {
-          method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload)
+          method: "POST", headers: {"Content-Type":"application/json", ...authHeaders()}, body: JSON.stringify(payload)
         });
         if (!res.ok) { const d = await res.json(); throw d; }
         const d = await res.json(); evtId = d.id;
@@ -268,7 +269,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
           const fd = new FormData();
           fd.append("titre", pq.titre);
           fd.append("fichier", pq.file);
-          await fetch(`${API_BASE}/evenements/${evtId}/fichiers`, { method: "POST", body: fd });
+          await fetch(`${API_BASE}/evenements/${evtId}/fichiers`, { method: "POST", headers: authHeaders(), body: fd });
         }
       }
       setSaveOk(true);
@@ -281,7 +282,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
 
   const supprimerFichier = async (fid: number) => {
     if (!editItem) return;
-    await fetch(`${API_BASE}/evenements/${editItem.id}/fichiers/${fid}`, { method: "DELETE" });
+    await fetch(`${API_BASE}/evenements/${editItem.id}/fichiers/${fid}`, { method: "DELETE", headers: authHeaders() });
     setFichiers(prev => prev.filter(f => f.id !== fid));
   };
 
@@ -563,7 +564,7 @@ export default function EvenementsPage() {
   const handleTogglePublie = async (e: any) => {
     setTogglingId(e.id);
     try {
-      await fetch(`${API_BASE}/evenements/${e.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({est_publie:!e.est_publie}) });
+      await fetch(`${API_BASE}/evenements/${e.id}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({est_publie:!e.est_publie}) });
       charger();
     } finally { setTogglingId(null); }
   };

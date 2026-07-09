@@ -5,6 +5,7 @@ import {
   Globe, Loader2, Pencil,
   Plus, Search, Trash2, Users, X, Check, AlertTriangle
 } from "lucide-react";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -284,13 +285,13 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
 
   const handleAjouter = async (pays_id: number) => {
     setAdding(pays_id);
-    await fetch(`${API}/ref-pays/groupements/${grp.id}/membres`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ pays_id }) });
+    await fetch(`${API}/ref-pays/groupements/${grp.id}/membres`, { method:"POST", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({ pays_id }) });
     await charger(); setAdding(null); onChanged();
   };
 
   const handleRetirer = async (pays_id: number) => {
     setRemoving(pays_id);
-    await fetch(`${API}/ref-pays/groupements/${grp.id}/membres/${pays_id}`, { method:"DELETE" });
+    await fetch(`${API}/ref-pays/groupements/${grp.id}/membres/${pays_id}`, { method:"DELETE", headers:authHeaders() });
     await charger(); setRemoving(null); onChanged();
   };
 
@@ -420,7 +421,7 @@ export default function RefPaysPage() {
       msg: `Supprimer le pays "${p.nom_fr}" (${p.code_iso3}) ? Cette action est irréversible.`,
       onOui: async () => {
         setConfirm(null);
-        const res = await fetch(`${API}/ref-pays/${p.id}`, { method:"DELETE" });
+        const res = await fetch(`${API}/ref-pays/${p.id}`, { method:"DELETE", headers:authHeaders() });
         if (!res.ok) {
           const d = await res.json();
           alert(d.detail || "Impossible de supprimer ce pays.");
@@ -435,7 +436,7 @@ export default function RefPaysPage() {
       msg: `Supprimer le groupement "${g.nom_fr}" et ses ${g.nb_pays} liaison(s) ? Action irréversible.`,
       onOui: async () => {
         setConfirm(null);
-        await fetch(`${API}/ref-pays/groupements/${g.id}`, { method:"DELETE" });
+        await fetch(`${API}/ref-pays/groupements/${g.id}`, { method:"DELETE", headers:authHeaders() });
         charger();
       },
       onNon: ()=>setConfirm(null)

@@ -8,6 +8,7 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FButtonGhost, FError, FInfo, fuiLabel, fuiInput } from "@/components/shared/FormUI";
 import { parsePhoneNumber } from "libphonenumber-js";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -732,7 +733,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
   const supprimerContrainte = async (id:number) => {
     try {
-      const res = await fetch(`${API}/prospects/contraintes/${id}`, { method:"DELETE" });
+      const res = await fetch(`${API}/prospects/contraintes/${id}`, { method:"DELETE", headers:authHeaders() });
       if (!res.ok && res.status!==204) { const d=await res.json().catch(()=>({})); throw new Error(d.detail||"Erreur"); }
       setLocalContraintes(prev => prev.filter((x:any)=>x.id!==id));
       if (editContrainteId===id) annulerContrainte();
@@ -746,7 +747,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
     try {
       if (editContrainteId) {
         const res = await fetch(`${API}/prospects/contraintes/${editContrainteId}`, {
-          method:"PATCH", headers:{"Content-Type":"application/json"},
+          method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()},
           body: JSON.stringify({ description: lines[0] }),
         });
         if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
@@ -755,7 +756,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
       } else {
         const savedAll = await Promise.all(lines.map(line =>
           fetch(`${API}/prospects/${prospect.id}/contraintes`, {
-            method:"POST", headers:{"Content-Type":"application/json"},
+            method:"POST", headers:{"Content-Type":"application/json", ...authHeaders()},
             body: JSON.stringify({ description: line }),
           }).then(async r => { if (!r.ok) { const d=await r.json(); throw new Error(d.detail||"Erreur"); } return r.json(); })
         ));
@@ -792,28 +793,28 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         canal_contact:  form.canal_contact.trim() || null,
       });
       const res = isEdit
-        ? await fetch(`${API}/prospects/echanges/${edit.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body })
-        : await fetch(`${API}/prospects/${prospect.id}/echanges`, { method:"POST", headers:{"Content-Type":"application/json"}, body });
+        ? await fetch(`${API}/prospects/echanges/${edit.id}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()}, body })
+        : await fetch(`${API}/prospects/${prospect.id}/echanges`, { method:"POST", headers:{"Content-Type":"application/json", ...authHeaders()}, body });
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
       const savedEchange = await res.json();
       const echangeId = savedEchange.id ?? edit?.id;
       if (compteRendu) {
         // Remplacement : supprimer l'ancien compte rendu pour n'en garder qu'un
         if (crExistant) {
-          await fetch(`${API}/prospects/echanges/${echangeId}/fichiers/${crExistant.id}`, { method:"DELETE" });
+          await fetch(`${API}/prospects/echanges/${echangeId}/fichiers/${crExistant.id}`, { method:"DELETE", headers:authHeaders() });
         }
         const fd = new FormData();
         fd.append("titre", compteRendu.titre || compteRendu.file.name);
         fd.append("categorie", "compte_rendu");
         fd.append("fichier", compteRendu.file);
-        await fetch(`${API}/prospects/echanges/${echangeId}/fichiers`, { method:"POST", body:fd });
+        await fetch(`${API}/prospects/echanges/${echangeId}/fichiers`, { method:"POST", headers:authHeaders(), body:fd });
       }
       for (const p of pdfQueue) {
         const fd = new FormData();
         fd.append("titre", p.titre || p.file.name);
         fd.append("categorie", "autre");
         fd.append("fichier", p.file);
-        await fetch(`${API}/prospects/echanges/${echangeId}/fichiers`, { method:"POST", body:fd });
+        await fetch(`${API}/prospects/echanges/${echangeId}/fichiers`, { method:"POST", headers:authHeaders(), body:fd });
       }
       setOk(true);
       const pr = await fetch(`${API}/prospects/${prospect.id}`);
@@ -1113,7 +1114,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   const handleDeleteEchange = async (id:number) => {
     if (!confirm("Supprimer cet échange ?")) return;
     setDeletingEchange(id);
-    await fetch(`${API}/prospects/echanges/${id}`, { method:"DELETE" });
+    await fetch(`${API}/prospects/echanges/${id}`, { method:"DELETE", headers:authHeaders() });
     setDeletingEchange(null);
     onRefresh();
   };
@@ -1768,7 +1769,7 @@ export default function ProspectsPage() {
   const handleDelete = async (id:number) => {
     if (!confirm("Supprimer ce prospect ?")) return;
     setDeleting(id);
-    await fetch(`${API}/prospects/${id}`, { method:"DELETE" });
+    await fetch(`${API}/prospects/${id}`, { method:"DELETE", headers:authHeaders() });
     setDeleting(null); charger();
   };
 
@@ -1777,7 +1778,7 @@ export default function ProspectsPage() {
     setSavingTerminer(true);
     try {
       const res = await fetch(`${API}/prospects/${id}/conclusion`, {
-        method:"PATCH", headers:{"Content-Type":"application/json"},
+        method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()},
         body: JSON.stringify({ issue:terminerForm.issue, issue_commentaire:terminerForm.commentaire }),
       });
       if (!res.ok) { const d=await res.json().catch(()=>({})); alert(d.detail||"Erreur"); return; }
@@ -1790,7 +1791,7 @@ export default function ProspectsPage() {
   // Re-contacter une entreprise « Déclinée » : nouvelle prospection, historique conservé.
   const handleRecontact = async (id:number) => {
     if (!confirm("Re-contacter cette entreprise ?\n\nUne nouvelle prospection démarre. Tout l'historique précédent (échanges, contraintes, conclusion) est conservé et consultable.")) return;
-    const res = await fetch(`${API}/prospects/${id}/recontact`, { method:"POST" });
+    const res = await fetch(`${API}/prospects/${id}/recontact`, { method:"POST", headers:authHeaders() });
     if (res.ok) { setVue(null); setOnglet("historique"); }
     else { const d=await res.json().catch(()=>({})); alert(d.detail||"Erreur lors du re-contact"); }
   };

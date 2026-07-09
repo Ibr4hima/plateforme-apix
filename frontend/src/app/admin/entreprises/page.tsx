@@ -8,6 +8,7 @@ import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listeP
 import { parsePhoneNumber } from "libphonenumber-js";
 import { Building2, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -643,14 +644,14 @@ export default function AdminEntreprises() {
   const handleDelete = async (id:string) => {
     if (!confirm("Supprimer cette entreprise ?")) return;
     setDeleting(id);
-    try { await fetch(`${API_BASE}/entreprises/${id}`,{method:"DELETE"}); charger(); }
+    try { await fetch(`${API_BASE}/entreprises/${id}`,{method:"DELETE",headers:authHeaders()}); charger(); }
     finally { setDeleting(null); }
   };
 
   const handleTogglePublie = async (e:any) => {
     setTogglingId(e.id);
     try {
-      await fetch(`${API_BASE}/entreprises/${e.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({est_publie:!e.est_publie})});
+      await fetch(`${API_BASE}/entreprises/${e.id}`,{method:"PATCH",headers:{"Content-Type":"application/json", ...authHeaders()},body:JSON.stringify({est_publie:!e.est_publie})});
       charger();
     } finally { setTogglingId(null); }
   };

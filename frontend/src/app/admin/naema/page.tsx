@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, ChevronRight, ChevronDown } from "lucide-react";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -77,13 +78,13 @@ export default function AdminNaema() {
 
       if (mode === "create") {
         const res = await fetch(`${API_BASE}${endpoint}`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify(body),
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
       } else {
         const res = await fetch(`${API_BASE}${endpoint}/${data.id}`, {
-          method: "PATCH", headers: { "Content-Type": "application/json" },
+          method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({ code: formCode, nom: formNom }),
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -101,7 +102,7 @@ export default function AdminNaema() {
     setDeleting(id);
     try {
       const endpoint = type === "branche" ? "branches" : "activites";
-      await fetch(`${API_BASE}/entreprises/ref/${endpoint}/${id}`, { method: "DELETE" });
+      await fetch(`${API_BASE}/entreprises/ref/${endpoint}/${id}`, { method: "DELETE", headers: authHeaders() });
       charger();
     } finally { setDeleting(null); }
   };

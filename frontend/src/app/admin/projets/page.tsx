@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Search, User, Eye, EyeOff, FileText, Upload } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
+import { authHeaders } from "@/lib/authHeaders";
 import { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -372,14 +373,14 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
       };
       const url    = edit ? `${API}/projets/${edit.id}` : `${API}/projets`;
       const method = edit ? "PATCH" : "POST";
-      const res = await fetch(url, { method, headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+      const res = await fetch(url, { method, headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify(payload) });
       if (!res.ok) { const d=await res.json(); throw new Error(d.detail||"Erreur"); }
       const saved = await res.json();
       const projetId = saved.id || edit?.id;
       for (const p of pdfQueue) {
         const fd = new FormData();
         fd.append("fichier", p.file); fd.append("titre", p.titre||p.file.name);
-        await fetch(`${API}/projets/${projetId}/fichiers`, { method:"POST", body:fd });
+        await fetch(`${API}/projets/${projetId}/fichiers`, { method:"POST", headers:authHeaders(), body:fd });
       }
       setOk(true);
       setTimeout(()=>{ setOk(false); onClose(); onSaved(); }, 700);
@@ -550,7 +551,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
                       <FileText size={11}/> {f.titre||f.fichier_nom}
                     </a>
                     <button onClick={async()=>{
-                      if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
+                      if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:authHeaders()});
                       setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
                     }} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:5, padding:"3px 5px", display:"flex", alignItems:"center" }}>
                       <X size={10} style={{ color:"#dc2626" }}/>
@@ -828,7 +829,7 @@ export default function ProjetsPage() {
   const handleTogglePublie = async (p:any) => {
     setTogglingId(p.id);
     try {
-      await fetch(`${API}/projets/${p.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({est_publie:!p.est_publie}) });
+      await fetch(`${API}/projets/${p.id}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({est_publie:!p.est_publie}) });
       charger();
     } finally { setTogglingId(null); }
   };
@@ -836,7 +837,7 @@ export default function ProjetsPage() {
   const handleDelete = async (id:string) => {
     if (!confirm("Supprimer ce projet ?")) return;
     setDeleting(id);
-    await fetch(`${API}/projets/${id}`, { method:"DELETE" });
+    await fetch(`${API}/projets/${id}`, { method:"DELETE", headers:authHeaders() });
     setDeleting(null); charger();
   };
 
