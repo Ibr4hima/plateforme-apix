@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Loader2, Scale, Search, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Loader2, Scale, Search, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -154,32 +154,39 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
             const periode = bilat.annee_min ? `${bilat.annee_min}–${bilat.annee_max}` : "";
             const BlocDir = ({ de, vers, col, val, res, dep }: any) => {
               const maxR = res && res.length ? res[0].valeur : 1;
+              const hasRes = res && res.length > 0;
               return (
-                <div style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10, overflow: "hidden" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "11px 14px 8px" }}>
+                <div style={{ background: "#fff", border: "1px solid #ECEAE7", borderLeft: `3px solid ${col}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 2px rgba(0,30,60,0.04)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "13px 16px", borderBottom: hasRes ? "1px solid #F4F2F0" : "none" }}>
                     <div style={{ minWidth: 0 }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, fontWeight: 600, color: "#4a5568" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: "#1a1a2e" }}>
                         <span style={{ fontWeight: 800, color: col }}>{de}</span>
-                        <span style={{ color: "#9aa5b4" }}>→</span>
-                        <span style={{ fontWeight: 700 }}>{vers}</span>
+                        <ArrowRight size={13} style={{ color: "#c5bfbb", flexShrink: 0 }} />
+                        <span>{vers}</span>
                       </span>
-                      {dep != null && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2, display: "block" }}>soit <strong style={{ color: "#4a5568" }}>{(dep * 100).toFixed(1)} %</strong> des importations totales de {vers}</span>}
+                      {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 3, display: "block" }}>soit <strong style={{ color: "#6b7684" }}>{(dep * 100).toFixed(1)} %</strong> des importations de {vers}</span>}
                     </div>
-                    <span style={{ fontSize: 13.5, fontWeight: 800, color: "#004f91", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{fmtUSD(val)}</span>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{fmtUSD(val)}</div>
+                      <div style={{ fontSize: 8.5, fontWeight: 700, color: "#c5bfbb", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>Total exporté</div>
+                    </div>
                   </div>
-                  {res && res.length > 0 && (
-                    <div style={{ padding: "2px 14px 12px", display: "grid", gap: 6 }}>
-                      {res.map((r: any) => (
-                        <div key={r.ressource}>
-                          <div style={{ fontSize: 11.5, lineHeight: 1.6, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>{r.ressource}</div>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 132px", alignItems: "center", gap: 10 }}>
-                            <div style={{ height: 5, background: "#EDEBE8", borderRadius: 3, overflow: "hidden" }}>
-                              <div style={{ height: "100%", width: `${Math.max(3, Math.sqrt(r.valeur / maxR) * 100)}%`, background: col, borderRadius: 3 }} />
+                  {hasRes && (
+                    <div style={{ padding: "13px 16px", display: "grid", gap: 12 }}>
+                      {res.map((r: any) => {
+                        const pct = val > 0 ? r.valeur / val * 100 : 0;
+                        return (
+                          <div key={r.ressource}>
+                            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 5 }}>
+                              <span style={{ fontSize: 11.5, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }} title={r.ressource}>{r.ressource}</span>
+                              <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", flexShrink: 0 }}>{fmtUSD(r.valeur)} <span style={{ color: "#b0aaa4", fontWeight: 600 }}>· {pct.toFixed(0)} %</span></span>
                             </div>
-                            <span style={{ textAlign: "right", fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(r.valeur)} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {val > 0 ? (r.valeur / val * 100).toFixed(0) : 0}%</span></span>
+                            <div style={{ height: 6, background: "#F0EEEC", borderRadius: 99, overflow: "hidden" }}>
+                              <div style={{ height: "100%", width: `${Math.max(4, Math.sqrt(r.valeur / maxR) * 100)}%`, background: col, borderRadius: 99 }} />
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
