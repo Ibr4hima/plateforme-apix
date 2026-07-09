@@ -985,8 +985,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                             return (
                               <button key={st.t} onClick={()=>setSousType(st.t)}
                                 style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                                <span style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#c5bfbb"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxSizing:"border-box" as const }}>
-                                  {actif && <span style={{ width:5, height:5, borderRadius:"50%", background:"#004f91" }}/>}
+                                <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
+                                  {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
                                 </span>
                                 {st.l}
                               </button>
@@ -1333,8 +1333,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                             return (
                               <button key={st.t} onClick={()=>setSousType(st.t)}
                                 style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                                <span style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#c5bfbb"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxSizing:"border-box" as const }}>
-                                  {actif && <span style={{ width:5, height:5, borderRadius:"50%", background:"#004f91" }}/>}
+                                <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
+                                  {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
                                 </span>
                                 {st.l}
                               </button>
@@ -1937,8 +1937,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                         return (
                           <button key={st.t} onClick={()=>setSousType(st.t)}
                             style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                            <span style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#c5bfbb"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxSizing:"border-box" as const }}>
-                              {actif && <span style={{ width:5, height:5, borderRadius:"50%", background:"#004f91" }}/>}
+                            <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
+                              {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
                             </span>
                             {st.l}
                           </button>
