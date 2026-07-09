@@ -974,17 +974,20 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
                     <div key={o.v}>
                       <button onClick={()=>setSousOnglet(o.v)}
-                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"6px 10px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:12, fontWeight:700, color:sousOnglet===o.v?"#1a1a2e":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", fontSize:12, fontWeight:sousOnglet===o.v?700:600, color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
                         {o.l}
-                        <ChevronDown size={14} style={{ color:"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
+                        <ChevronDown size={14} style={{ color:sousOnglet===o.v?"#004f91":"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
                       </button>
                       {sousOnglet===o.v && (
-                        <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:2 }}>
+                        <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
                           {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
                             const actif = sousType===st.t;
                             return (
                               <button key={st.t} onClick={()=>setSousType(st.t)}
-                                style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                                style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                                <span style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#c5bfbb"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxSizing:"border-box" as const }}>
+                                  {actif && <span style={{ width:5, height:5, borderRadius:"50%", background:"#004f91" }}/>}
+                                </span>
                                 {st.l}
                               </button>
                             );
@@ -1319,17 +1322,20 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                   {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
                     <div key={o.v}>
                       <button onClick={()=>setSousOnglet(o.v)}
-                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"6px 10px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:12, fontWeight:700, color:sousOnglet===o.v?"#1a1a2e":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", fontSize:12, fontWeight:sousOnglet===o.v?700:600, color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
                         {o.l}
-                        <ChevronDown size={14} style={{ color:"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
+                        <ChevronDown size={14} style={{ color:sousOnglet===o.v?"#004f91":"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
                       </button>
                       {sousOnglet===o.v && (
-                        <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:2 }}>
+                        <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
                           {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
                             const actif = sousType===st.t;
                             return (
                               <button key={st.t} onClick={()=>setSousType(st.t)}
-                                style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                                style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                                <span style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#c5bfbb"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxSizing:"border-box" as const }}>
+                                  {actif && <span style={{ width:5, height:5, borderRadius:"50%", background:"#004f91" }}/>}
+                                </span>
                                 {st.l}
                               </button>
                             );
@@ -1920,17 +1926,20 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
                 <div key={o.v}>
                   <button onClick={()=>setSousOnglet(o.v)}
-                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"6px 10px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:12, fontWeight:700, color:sousOnglet===o.v?"#1a1a2e":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", fontSize:12, fontWeight:sousOnglet===o.v?700:600, color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
                     {o.l}
-                    <ChevronDown size={14} style={{ color:"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
+                    <ChevronDown size={14} style={{ color:sousOnglet===o.v?"#004f91":"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
                   </button>
                   {sousOnglet===o.v && (
-                    <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:2 }}>
+                    <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
                       {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
                         const actif = sousType===st.t;
                         return (
                           <button key={st.t} onClick={()=>setSousType(st.t)}
-                            style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                            style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                            <span style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#c5bfbb"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxSizing:"border-box" as const }}>
+                              {actif && <span style={{ width:5, height:5, borderRadius:"50%", background:"#004f91" }}/>}
+                            </span>
                             {st.l}
                           </button>
                         );
