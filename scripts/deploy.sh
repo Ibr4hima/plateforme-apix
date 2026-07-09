@@ -12,6 +12,10 @@ if [ ! -f .env.prod ]; then
   echo "✗ .env.prod introuvable. Copier .env.prod.example → .env.prod et le renseigner." >&2
   exit 1
 fi
+if [ ! -f secrets.caddy.env ]; then
+  echo "✗ secrets.caddy.env introuvable. Copier secrets.caddy.env.example et générer le hash basic-auth." >&2
+  exit 1
+fi
 set -a; source .env.prod; set +a
 COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.prod"
 
