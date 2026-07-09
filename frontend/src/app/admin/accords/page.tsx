@@ -6,6 +6,7 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
+import { authHeaders } from "@/lib/authHeaders";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -120,7 +121,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
       const partiesStr = buildPartiesStr();
       if (editItem) {
         const res = await fetch(`${API_BASE}/accords/${editItem.id}`,{
-          method:"PATCH", headers:{"Content-Type":"application/json"},
+          method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()},
           body:JSON.stringify({
             titre:form.titre, reference:form.reference||null,
             parties_signataires: form.mode_signataire==="organisation" ? [APIX,...(form.orgs as string[])].join(", ") : null,
@@ -135,7 +136,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
         for (const p of pdfQueue) {
           const fd=new FormData(); fd.append("titre",p.titre||p.file.name); fd.append("fichier",p.file);
-          await fetch(`${API_BASE}/accords/${editItem.id}/fichiers`,{method:"POST",body:fd});
+          await fetch(`${API_BASE}/accords/${editItem.id}/fichiers`,{method:"POST",headers:authHeaders(),body:fd});
         }
       } else {
         const fd = new FormData();
@@ -155,12 +156,12 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         if (form.date_expiration)     fd.append("date_expiration",    form.date_expiration);
         if (form.commentaires)        fd.append("commentaires",       form.commentaires);
         fd.append("est_publie","true");
-        const res = await fetch(`${API_BASE}/accords`,{method:"POST",body:fd});
+        const res = await fetch(`${API_BASE}/accords`,{method:"POST",headers:authHeaders(),body:fd});
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
         const na = await res.json();
         for (const p of pdfQueue) {
           const fd2=new FormData(); fd2.append("titre",p.titre||p.file.name); fd2.append("fichier",p.file);
-          await fetch(`${API_BASE}/accords/${na.id}/fichiers`,{method:"POST",body:fd2});
+          await fetch(`${API_BASE}/accords/${na.id}/fichiers`,{method:"POST",headers:authHeaders(),body:fd2});
         }
       }
       setSaveOk(true);
@@ -302,7 +303,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                 <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
                 <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                   style={{fontSize:13,flex:1,color:"#1a1a2e",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
-                <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE"}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
+                <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE",headers:authHeaders()}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
                   style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
               </div>
             ))}
@@ -573,14 +574,14 @@ export default function AdminAccords() {
   const handleDelete = async (id:number) => {
     if (!confirm("Supprimer cet accord ?")) return;
     setDeleting(id);
-    try { await fetch(`${API_BASE}/accords/${id}`,{method:"DELETE"}); charger(); }
+    try { await fetch(`${API_BASE}/accords/${id}`,{method:"DELETE",headers:authHeaders()}); charger(); }
     finally { setDeleting(null); }
   };
 
   const handleTogglePublie = async (a:any) => {
     setTogglingId(a.id);
     try {
-      await fetch(`${API_BASE}/accords/${a.id}`,{ method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({est_publie:!a.est_publie}) });
+      await fetch(`${API_BASE}/accords/${a.id}`,{ method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({est_publie:!a.est_publie}) });
       charger();
     } finally { setTogglingId(null); }
   };
