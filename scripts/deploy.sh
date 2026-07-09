@@ -32,6 +32,14 @@ bash scripts/apply_migrations.sh
 echo "▸ (Re)démarrage de la stack…"
 $COMPOSE up -d
 
+# Le Caddyfile est monté en bind-mount : `up -d` ne recrée pas le conteneur
+# quand seul son CONTENU change, donc Caddy garde son ancienne config en
+# mémoire. On recharge explicitement (reload à chaud, sinon redémarrage) pour
+# que toute modif de routage prenne effet à chaque déploiement.
+echo "▸ Rechargement de la configuration Caddy…"
+$COMPOSE exec -T caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null \
+  || $COMPOSE restart caddy
+
 # Le volume backend_uploads est monté sur /app/uploads mais créé « root » par
 # Docker, alors que le backend tourne en utilisateur non-root (uid 1000) → sans
 # ce chown, les téléversements (PDF du code, modalités, projets…) échouent.
