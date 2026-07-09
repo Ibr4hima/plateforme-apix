@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Loader2, Search, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -380,6 +381,11 @@ export default function FichePaysLauncher({ textColor, textHover }: { textColor:
   const [pickerOpen, setPickerOpen] = useState(false);
   const [sel, setSel] = useState<number[]>([]);
   const [ficheOpen, setFicheOpen] = useState(false);
+  // La navbar applique un backdrop-filter → elle devient le bloc conteneur des
+  // éléments position:fixed. On rend donc les overlays via un portail sur
+  // document.body pour qu'ils couvrent tout l'écran (fond flouté inclus).
+  const [monte, setMonte] = useState(false);
+  useEffect(() => { setMonte(true); }, []);
   useEffect(() => { fetch(`${API}/statistiques/pays`).then(r => r.json()).then(setPays).catch(() => {}); }, []);
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
   return (
@@ -390,10 +396,14 @@ export default function FichePaysLauncher({ textColor, textHover }: { textColor:
         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
         Fiche Pays
       </button>
-      {pickerOpen && <FichePaysPicker pays={pays} senId={senId} initial={sel.length ? sel : (senId ? [senId] : [])}
-        onValider={(ids: number[]) => { setSel(ids); setPickerOpen(false); setFicheOpen(true); }}
-        onClose={() => setPickerOpen(false)} />}
-      {ficheOpen && sel.length > 0 && <FicheComparaison paysIds={sel} pays={pays} onClose={() => setFicheOpen(false)} />}
+      {monte && pickerOpen && createPortal(
+        <FichePaysPicker pays={pays} senId={senId} initial={sel.length ? sel : (senId ? [senId] : [])}
+          onValider={(ids: number[]) => { setSel(ids); setPickerOpen(false); setFicheOpen(true); }}
+          onClose={() => setPickerOpen(false)} />,
+        document.body)}
+      {monte && ficheOpen && sel.length > 0 && createPortal(
+        <FicheComparaison paysIds={sel} pays={pays} onClose={() => setFicheOpen(false)} />,
+        document.body)}
     </>
   );
 }
