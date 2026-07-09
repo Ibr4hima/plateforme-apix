@@ -1,4 +1,7 @@
 {$DOMAIN} {
-    reverse_proxy /api/* backend:8000
+    # L'API backend est servie sous /api/v1/* uniquement. On ne route QUE ce
+    # préfixe vers FastAPI : les routes NextAuth (/api/auth/*) doivent rester
+    # sur le frontend Next.js, sinon Caddy les enverrait au backend (404).
+    reverse_proxy /api/v1/* backend:8000
     reverse_proxy /* frontend:3000
 }
