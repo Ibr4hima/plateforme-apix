@@ -86,13 +86,6 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
     if (code === "__ide_sortant") return ideFlux?.[String(cid)]?.sortant || null;
     return data?.valeurs?.[String(cid)]?.[code] || null;
   };
-  // « mieux disant » par indicateur (max, sauf densité qui reste neutre)
-  const meilleur = (code: string): number | null => {
-    const vals = cols.map((c: any) => getCell(c.id, code)?.valeur).filter((v: any) => v !== null && v !== undefined);
-    if (!vals.length || code === "densite" || code === "superficie") return null;
-    return Math.max(...vals);
-  };
-
   // PDF : rendu fidèle de la fiche sur 2 pages (html2canvas haute résolution)
   // Page 1 : en-tête + indicateurs jusqu'aux IDE · Page 2 : échanges bilatéraux
   const exportPDF = async () => {
@@ -105,7 +98,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
       const html2canvas = h2cMod.default || h2cMod;
       const imgW = 760;
       const shoot = async (el: HTMLDivElement) => {
-        const canvas = await html2canvas(el, { scale: 3, backgroundColor: "#ffffff", useCORS: true, windowWidth: el.scrollWidth });
+        const canvas = await html2canvas(el, { scale: 4, backgroundColor: "#ffffff", useCORS: true, windowWidth: el.scrollWidth });
         return { url: canvas.toDataURL("image/png"), h: canvas.height * imgW / canvas.width };
       };
       const p1 = await shoot(page1Ref.current);
@@ -162,7 +155,6 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                       <td colSpan={cols.length + 1} style={{ padding: "18px 12px 6px", fontSize: 10.5, fontWeight: 800, color: "#004f91", textTransform: "uppercase", letterSpacing: "0.1em" }}>{cat}</td>
                     </tr>
                     {parCat[cat].map(ind => {
-                      const best = meilleur(ind.code);
                       return (
                         <tr key={ind.code} style={{ borderBottom: "1px solid #F5F4F3" }}>
                           <td style={{ padding: "11px 12px" }}>
@@ -172,10 +164,9 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                           {cols.map((c: any) => {
                             const cell = getCell(c.id, ind.code);
                             const v = cell?.valeur;
-                            const estBest = best !== null && v === best && cols.length > 1;
                             return (
                               <td key={c.id} style={{ padding: "11px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                                <span style={{ fontSize: 13, fontWeight: estBest ? 800 : 600, color: estBest ? "#188038" : v === null || v === undefined ? "#C5BFBB" : "#1a1a2e" }}>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: v === null || v === undefined ? "#C5BFBB" : "#1a1a2e" }}>
                                   {fmt(v, ind.unite)}
                                 </span>
                                 {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "#C5BFBB" }}>{cell.annee}</span>}
@@ -220,7 +211,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                     <div style={{ padding: "2px 14px 12px", display: "grid", gap: 6 }}>
                       {res.map((r: any) => (
                         <div key={r.ressource}>
-                          <div style={{ fontSize: 11.5, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>{r.ressource}</div>
+                          <div style={{ fontSize: 11.5, lineHeight: 1.6, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>{r.ressource}</div>
                           <div style={{ display: "grid", gridTemplateColumns: "1fr 132px", alignItems: "center", gap: 10 }}>
                             <div style={{ height: 5, background: "#EDEBE8", borderRadius: 3, overflow: "hidden" }}>
                               <div style={{ height: "100%", width: `${Math.max(3, Math.sqrt(r.valeur / maxR) * 100)}%`, background: col, borderRadius: 3 }} />
@@ -276,7 +267,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
           })()}</div>)}
         </div>
         <div data-no-pdf style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
-          <span style={{ fontSize: 11, color: "#9aa5b4" }}>Valeur en vert = plus élevée · dernière année disponible</span>
+          <span style={{ fontSize: 11, color: "#9aa5b4" }}>Dernière année disponible pour chaque indicateur</span>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
             <button onClick={exportPDF} disabled={pdfLoading || !data}
