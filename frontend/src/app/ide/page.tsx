@@ -973,18 +973,24 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                   {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
                     <div key={o.v}>
-                      <div style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", padding:"2px 10px 4px" }}>{o.l}</div>
-                      <div style={{ display:"flex", flexDirection:"column" as const, gap:1 }}>
-                        {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
-                          const actif = sousOnglet===o.v && sousType===st.t;
-                          return (
-                            <button key={st.t} onClick={()=>{ setSousOnglet(o.v); setSousType(st.t); }}
-                              style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                              {st.l}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <button onClick={()=>setSousOnglet(o.v)}
+                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"6px 10px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:12, fontWeight:700, color:sousOnglet===o.v?"#1a1a2e":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                        {o.l}
+                        <ChevronDown size={14} style={{ color:"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
+                      </button>
+                      {sousOnglet===o.v && (
+                        <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:2 }}>
+                          {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                            const actif = sousType===st.t;
+                            return (
+                              <button key={st.t} onClick={()=>setSousType(st.t)}
+                                style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                                {st.l}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1312,18 +1318,24 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                   {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
                     <div key={o.v}>
-                      <div style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", padding:"2px 10px 4px" }}>{o.l}</div>
-                      <div style={{ display:"flex", flexDirection:"column" as const, gap:1 }}>
-                        {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
-                          const actif = sousOnglet===o.v && sousType===st.t;
-                          return (
-                            <button key={st.t} onClick={()=>{ setSousOnglet(o.v); setSousType(st.t); }}
-                              style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                              {st.l}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <button onClick={()=>setSousOnglet(o.v)}
+                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"6px 10px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:12, fontWeight:700, color:sousOnglet===o.v?"#1a1a2e":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                        {o.l}
+                        <ChevronDown size={14} style={{ color:"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
+                      </button>
+                      {sousOnglet===o.v && (
+                        <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:2 }}>
+                          {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                            const actif = sousType===st.t;
+                            return (
+                              <button key={st.t} onClick={()=>setSousType(st.t)}
+                                style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                                {st.l}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1907,18 +1919,24 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
               {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
                 <div key={o.v}>
-                  <div style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", padding:"2px 10px 4px" }}>{o.l}</div>
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:1 }}>
-                    {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
-                      const actif = sousOnglet===o.v && sousType===st.t;
-                      return (
-                        <button key={st.t} onClick={()=>{ setSousOnglet(o.v); setSousType(st.t); }}
-                          style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                          {st.l}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <button onClick={()=>setSousOnglet(o.v)}
+                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"6px 10px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:12, fontWeight:700, color:sousOnglet===o.v?"#1a1a2e":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                    {o.l}
+                    <ChevronDown size={14} style={{ color:"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
+                  </button>
+                  {sousOnglet===o.v && (
+                    <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:2 }}>
+                      {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                        const actif = sousType===st.t;
+                        return (
+                          <button key={st.t} onClick={()=>setSousType(st.t)}
+                            style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                            {st.l}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
