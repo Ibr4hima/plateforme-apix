@@ -38,6 +38,22 @@ async function getServerToken(): Promise<string | null> {
 }
 
 /**
+ * Récupère le jeton d'API côté client via getSession().
+ * Le cookie de session NextAuth est httpOnly (illisible via document.cookie) :
+ * on passe donc par la session, qui expose `accessToken` (JWT HS256).
+ */
+async function getClientToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const { getSession } = await import("next-auth/react");
+    const session = await getSession();
+    return (session as { accessToken?: string } | null)?.accessToken ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Appel API avec auth automatique.
  *
  * Côté serveur : récupère le JWT depuis le cookie NextAuth et l'envoie
@@ -53,10 +69,14 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     headers["Content-Type"] = "application/json";
   }
 
-  // Injecter le Bearer token côté serveur
+  // Injecter le Bearer token : côté serveur via le cookie, côté client via
+  // getSession() (le cookie httpOnly n'est pas lisible en JS).
   const serverToken = await getServerToken();
   if (serverToken) {
     headers["Authorization"] = `Bearer ${serverToken}`;
+  } else if (typeof window !== "undefined") {
+    const clientToken = await getClientToken();
+    if (clientToken) headers["Authorization"] = `Bearer ${clientToken}`;
   }
 
   const res = await fetch(`${API_BASE}${path}`, {
@@ -87,27 +107,10 @@ export async function apiCall<T>(path: string, options?: RequestInit): Promise<T
     headers["Content-Type"] = "application/json";
   }
 
-  // Côté client : récupérer le token depuis la session
-  if (typeof window !== "undefined") {
-    try {
-      const { getSession } = await import("next-auth/react");
-      const session = await getSession();
-      if (session) {
-        // Le token JWT brut est dans le cookie ; on le lit directement
-        const cookieName =
-          window.location.protocol === "https:"
-            ? "__Secure-authjs.session-token"
-            : "authjs.session-token";
-        const match = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith(cookieName + "="));
-        if (match) {
-          headers["Authorization"] = `Bearer ${match.split("=")[1]}`;
-        }
-      }
-    } catch {
-      // pas de session, pas de token
-    }
+  // Côté client : récupérer le token depuis la session (accessToken)
+  const clientToken = await getClientToken();
+  if (clientToken) {
+    headers["Authorization"] = `Bearer ${clientToken}`;
   }
 
   const res = await fetch(`${API_BASE}${path}`, {

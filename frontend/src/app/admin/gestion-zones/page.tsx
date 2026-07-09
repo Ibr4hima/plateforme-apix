@@ -192,7 +192,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
         const fd2 = new FormData();
         fd2.append("titre",   p.titre || p.file.name);
         fd2.append("fichier", p.file);
-        await fetch(`${API_BASE}/zones-types/${zone.id}/fichiers`, { method: "POST", headers: authHeaders(), body: fd2 });
+        await fetch(`${API_BASE}/zones-types/${zone.id}/fichiers`, { method: "POST", headers: await authHeaders(), body: fd2 });
       }
 
       setSaveOk(true);
@@ -203,7 +203,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
 
   const supprimerFichier = async (fichId: string) => {
     if (!editZone) return;
-    await fetch(`${API_BASE}/zones-types/${editZone.id}/fichiers/${fichId}`, { method: "DELETE", headers: authHeaders() });
+    await fetch(`${API_BASE}/zones-types/${editZone.id}/fichiers/${fichId}`, { method: "DELETE", headers: await authHeaders() });
     setFichiers(prev => prev.filter((f: any) => f.id !== fichId));
   };
 
@@ -404,7 +404,7 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
     setSaving(true);
     try {
       for (const [eid,statut] of entries)
-        await fetch(`${API_BASE}/zones-types/${zoneId}/entreprises?entreprise_id=${eid}&statut=${statut}`,{method:"POST",headers:authHeaders()});
+        await fetch(`${API_BASE}/zones-types/${zoneId}/entreprises?entreprise_id=${eid}&statut=${statut}`,{method:"POST",headers:await authHeaders()});
       setSaveOk(true);
       setTimeout(()=>{onClose();onSaved();},700);
     } finally { setSaving(false); }
@@ -559,7 +559,7 @@ function OngletPoles() {
           const fd = new FormData();
           fd.append("titre", p.titre);
           fd.append("fichier", p.file);
-          await fetch(`${API_BASE}/zones-types/poles/${poleId}/fichiers`, { method: "POST", headers: authHeaders(), body: fd });
+          await fetch(`${API_BASE}/zones-types/poles/${poleId}/fichiers`, { method: "POST", headers: await authHeaders(), body: fd });
         }
       }
       setExpanded(null);
@@ -570,13 +570,13 @@ function OngletPoles() {
   };
 
   const supprimerPoleFichier = async (poleId: number, fichierId: number) => {
-    await fetch(`${API_BASE}/zones-types/poles/${poleId}/fichiers/${fichierId}`, { method: "DELETE", headers: authHeaders() });
+    await fetch(`${API_BASE}/zones-types/poles/${poleId}/fichiers/${fichierId}`, { method: "DELETE", headers: await authHeaders() });
     charger();
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Supprimer ce pôle ? Les zones liées perdront leur pôle.")) return;
-    await fetch(`${API_BASE}/zones-types/poles/${id}`, { method: "DELETE", headers: authHeaders() });
+    await fetch(`${API_BASE}/zones-types/poles/${id}`, { method: "DELETE", headers: await authHeaders() });
     charger();
   };
 
@@ -849,8 +849,8 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
                       <button title={`Passer en "${nextCfg.label}"`}
                         onClick={async (e) => {
                           e.stopPropagation();
-                          await fetch(`${API_BASE}/zones-types/${z.id}/entreprises/${ze.entreprise?.id}`, { method:"POST", headers:{...authHeaders()} });
-                          await fetch(`${API_BASE}/zones-types/${z.id}/entreprises?entreprise_id=${ze.entreprise?.id}&statut=${nextStatut}`, { method:"POST", headers:authHeaders() });
+                          await fetch(`${API_BASE}/zones-types/${z.id}/entreprises/${ze.entreprise?.id}`, { method:"POST", headers:{...(await authHeaders())} });
+                          await fetch(`${API_BASE}/zones-types/${z.id}/entreprises?entreprise_id=${ze.entreprise?.id}&statut=${nextStatut}`, { method:"POST", headers:await authHeaders() });
                           charger();
                         }}
                         style={{ fontSize:10, fontWeight:700, color:cfg.color, background:cfg.bg, border:`1px solid ${cfg.border}`, padding:"3px 10px", borderRadius:999, flexShrink:0, cursor:"pointer", display:"flex", alignItems:"center", gap:4, transition:"all 0.15s" }}
@@ -971,13 +971,13 @@ export default function GestionZonesPage() {
   const handleDeleteZone = async (id: string) => {
     if (!confirm("Supprimer cette zone et toutes ses associations ?")) return;
     setDeleting(id);
-    try { await fetch(`${API_BASE}/zones-types/${id}`, { method: "DELETE", headers: authHeaders() }); charger(); }
+    try { await fetch(`${API_BASE}/zones-types/${id}`, { method: "DELETE", headers: await authHeaders() }); charger(); }
     finally { setDeleting(null); }
   };
 
   const handleRetirerEntreprise = async (zoneId: string, entId: number) => {
     setDeletingEnt(entId);
-    try { await fetch(`${API_BASE}/zones-types/${zoneId}/entreprises/${entId}`, { method: "DELETE", headers: authHeaders() }); charger(); }
+    try { await fetch(`${API_BASE}/zones-types/${zoneId}/entreprises/${entId}`, { method: "DELETE", headers: await authHeaders() }); charger(); }
     finally { setDeletingEnt(null); }
   };
 

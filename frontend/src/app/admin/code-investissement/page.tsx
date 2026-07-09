@@ -151,10 +151,10 @@ export default function CodeInvestissementPage() {
     setSaving(true);
     try {
       if (chapId) {
-        await fetch(`${base}/chapitres/${chapId}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({titre, contenu}) });
+        await fetch(`${base}/chapitres/${chapId}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({titre, contenu}) });
         setEditChap(null);
       } else {
-        await fetch(`${base}/chapitres`, { method:"POST", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({numero:nextChapNum(), titre, contenu}) });
+        await fetch(`${base}/chapitres`, { method:"POST", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({numero:nextChapNum(), titre, contenu}) });
         setNewChapForm(false);
       }
       charger();
@@ -163,7 +163,7 @@ export default function CodeInvestissementPage() {
 
   const delChap = async (chapId:string) => {
     if (!confirm("Supprimer ce chapitre et tous ses contenus ?")) return;
-    await fetch(`${base}/chapitres/${chapId}`, {method:"DELETE", headers:authHeaders()});
+    await fetch(`${base}/chapitres/${chapId}`, {method:"DELETE", headers:await authHeaders()});
     charger();
   };
 
@@ -174,10 +174,10 @@ export default function CodeInvestissementPage() {
     setSaving(true);
     try {
       if (secId) {
-        await fetch(`${base}/sections/${secId}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({titre, contenu}) });
+        await fetch(`${base}/sections/${secId}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({titre, contenu}) });
         setEditSec(null);
       } else {
-        await fetch(`${base}/chapitres/${chapId}/sections`, { method:"POST", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({numero:nextSecNum(chapId), titre, contenu}) });
+        await fetch(`${base}/chapitres/${chapId}/sections`, { method:"POST", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({numero:nextSecNum(chapId), titre, contenu}) });
         setNewSecForm(null);
       }
       charger();
@@ -186,7 +186,7 @@ export default function CodeInvestissementPage() {
 
   const delSec = async (secId:string) => {
     if (!confirm("Supprimer cette section ?")) return;
-    await fetch(`${base}/sections/${secId}`, {method:"DELETE", headers:authHeaders()});
+    await fetch(`${base}/sections/${secId}`, {method:"DELETE", headers:await authHeaders()});
     charger();
   };
 
@@ -194,10 +194,10 @@ export default function CodeInvestissementPage() {
     setSaving(true);
     try {
       if (artId) {
-        await fetch(`${base}/articles/${artId}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify(data) });
+        await fetch(`${base}/articles/${artId}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify(data) });
         setEditArt(null);
       } else {
-        await fetch(`${base}/articles`, { method:"POST", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({...data, chapitre_id:chapId, numero:nextArtNum()}) });
+        await fetch(`${base}/articles`, { method:"POST", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({...data, chapitre_id:chapId, numero:nextArtNum()}) });
         setNewArtChap(null);
       }
       charger();
@@ -206,7 +206,7 @@ export default function CodeInvestissementPage() {
 
   const delArt = async (artId:string) => {
     if (!confirm("Supprimer cet article ?")) return;
-    await fetch(`${base}/articles/${artId}`, {method:"DELETE", headers:authHeaders()});
+    await fetch(`${base}/articles/${artId}`, {method:"DELETE", headers:await authHeaders()});
     charger();
   };
 
@@ -222,7 +222,7 @@ export default function CodeInvestissementPage() {
     fd.append("titre", pdfInfo?.titre || (onglet === "code" ? "Code des investissements du Sénégal" : "Modalités d'application du code des investissements"));
     fd.append("version", pdfInfo?.version || "");
     try {
-      const res = await fetch(`${base}/pdf`, {method:"POST", headers:authHeaders(), body:fd});
+      const res = await fetch(`${base}/pdf`, {method:"POST", headers:await authHeaders(), body:fd});
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         alert(`Échec du téléversement du PDF (HTTP ${res.status}).\n${txt.slice(0, 300)}`);
@@ -243,7 +243,7 @@ export default function CodeInvestissementPage() {
     try {
       await fetch(`${base}/pdf/${pdfInfo.id}`, {
         method: "PATCH",
-        headers: {"Content-Type":"application/json", ...authHeaders()},
+        headers: {"Content-Type":"application/json", ...(await authHeaders())},
         body: JSON.stringify({titre: pdfTitreVal}),
       });
       setPdfTitreEdit(false);

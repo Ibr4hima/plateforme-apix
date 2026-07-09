@@ -102,7 +102,7 @@ export default function AdminGeo() {
       departement:    `/entreprises/ref/departements/${id}`,
       arrondissement: `/entreprises/ref/arrondissements/${id}`,
     };
-    await fetch(`${API_BASE}${endpoints[type]}`, { method: "DELETE", headers: authHeaders() });
+    await fetch(`${API_BASE}${endpoints[type]}`, { method: "DELETE", headers: await authHeaders() });
     setDeleting(null);
     charger();
   };
@@ -200,7 +200,7 @@ export default function AdminGeo() {
     setImporting(true); setImportError(""); setImportResult(null);
     try {
       const res = await fetch(`${API_BASE}/entreprises/ref/arrondissements/bulk`, {
-        method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
+        method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);

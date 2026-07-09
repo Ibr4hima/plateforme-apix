@@ -253,12 +253,12 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
       let evtId: number | null = editItem?.id ?? null;
       if (editItem) {
         const res = await fetch(`${API_BASE}/evenements/${editItem.id}`, {
-          method: "PATCH", headers: {"Content-Type":"application/json", ...authHeaders()}, body: JSON.stringify(payload)
+          method: "PATCH", headers: {"Content-Type":"application/json", ...(await authHeaders())}, body: JSON.stringify(payload)
         });
         if (!res.ok) { const d = await res.json(); throw d; }
       } else {
         const res = await fetch(`${API_BASE}/evenements`, {
-          method: "POST", headers: {"Content-Type":"application/json", ...authHeaders()}, body: JSON.stringify(payload)
+          method: "POST", headers: {"Content-Type":"application/json", ...(await authHeaders())}, body: JSON.stringify(payload)
         });
         if (!res.ok) { const d = await res.json(); throw d; }
         const d = await res.json(); evtId = d.id;
@@ -269,7 +269,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
           const fd = new FormData();
           fd.append("titre", pq.titre);
           fd.append("fichier", pq.file);
-          await fetch(`${API_BASE}/evenements/${evtId}/fichiers`, { method: "POST", headers: authHeaders(), body: fd });
+          await fetch(`${API_BASE}/evenements/${evtId}/fichiers`, { method: "POST", headers: await authHeaders(), body: fd });
         }
       }
       setSaveOk(true);
@@ -282,7 +282,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
 
   const supprimerFichier = async (fid: number) => {
     if (!editItem) return;
-    await fetch(`${API_BASE}/evenements/${editItem.id}/fichiers/${fid}`, { method: "DELETE", headers: authHeaders() });
+    await fetch(`${API_BASE}/evenements/${editItem.id}/fichiers/${fid}`, { method: "DELETE", headers: await authHeaders() });
     setFichiers(prev => prev.filter(f => f.id !== fid));
   };
 
@@ -564,7 +564,7 @@ export default function EvenementsPage() {
   const handleTogglePublie = async (e: any) => {
     setTogglingId(e.id);
     try {
-      await fetch(`${API_BASE}/evenements/${e.id}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({est_publie:!e.est_publie}) });
+      await fetch(`${API_BASE}/evenements/${e.id}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({est_publie:!e.est_publie}) });
       charger();
     } finally { setTogglingId(null); }
   };

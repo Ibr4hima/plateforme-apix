@@ -157,7 +157,7 @@ export default function AdminIdePage() {
     if (!hasFiles) return;
     setImporting(true); setImportRes(null); setAssociations({});
     try {
-      const res  = await fetch(`${API}/ide/importer`, { method: "POST", headers: authHeaders(), body: buildFormData() });
+      const res  = await fetch(`${API}/ide/importer`, { method: "POST", headers: await authHeaders(), body: buildFormData() });
       const data = await res.json();
       if (res.ok) {
         setImportRes(data);
@@ -175,7 +175,7 @@ export default function AdminIdePage() {
     if (!toAssociate.length) return;
     setAssociating(true);
     for (const [label, { id }] of toAssociate) {
-      await fetch(`${API}/ide/associer-pays`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ label_cnuced: label, ref_pays_id: id }) });
+      await fetch(`${API}/ide/associer-pays`, { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ label_cnuced: label, ref_pays_id: id }) });
     }
     setAssociating(false);
     await handleImport();
@@ -185,7 +185,7 @@ export default function AdminIdePage() {
     if (!unctadOk) return;
     setRefreshing(true); setRefreshRes(null);
     try {
-      const res  = await fetch(`${API}/ide/rafraichir`, { method: "POST", headers: authHeaders() });
+      const res  = await fetch(`${API}/ide/rafraichir`, { method: "POST", headers: await authHeaders() });
       const data = await res.json();
       if (data.success) {
         const nb = (data.pays || []).reduce((acc: number, p: any) => acc + p.insere + p.mis_a_jour, 0);
@@ -201,7 +201,7 @@ export default function AdminIdePage() {
   async function handleDelete(rpid: number, pays: string) {
     if (!confirm(`Supprimer toutes les données IDE pour ${pays} ?`)) return;
     setDeleting(rpid);
-    try { const res = await fetch(`${API}/ide/cnuced/pays/${rpid}`, { method: "DELETE", headers: authHeaders() }); if (res.ok) await loadData(); } catch {}
+    try { const res = await fetch(`${API}/ide/cnuced/pays/${rpid}`, { method: "DELETE", headers: await authHeaders() }); if (res.ok) await loadData(); } catch {}
     setDeleting(null);
   }
 

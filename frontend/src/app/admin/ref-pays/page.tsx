@@ -285,13 +285,13 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
 
   const handleAjouter = async (pays_id: number) => {
     setAdding(pays_id);
-    await fetch(`${API}/ref-pays/groupements/${grp.id}/membres`, { method:"POST", headers:{"Content-Type":"application/json", ...authHeaders()}, body:JSON.stringify({ pays_id }) });
+    await fetch(`${API}/ref-pays/groupements/${grp.id}/membres`, { method:"POST", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({ pays_id }) });
     await charger(); setAdding(null); onChanged();
   };
 
   const handleRetirer = async (pays_id: number) => {
     setRemoving(pays_id);
-    await fetch(`${API}/ref-pays/groupements/${grp.id}/membres/${pays_id}`, { method:"DELETE", headers:authHeaders() });
+    await fetch(`${API}/ref-pays/groupements/${grp.id}/membres/${pays_id}`, { method:"DELETE", headers:await authHeaders() });
     await charger(); setRemoving(null); onChanged();
   };
 
@@ -421,7 +421,7 @@ export default function RefPaysPage() {
       msg: `Supprimer le pays "${p.nom_fr}" (${p.code_iso3}) ? Cette action est irréversible.`,
       onOui: async () => {
         setConfirm(null);
-        const res = await fetch(`${API}/ref-pays/${p.id}`, { method:"DELETE", headers:authHeaders() });
+        const res = await fetch(`${API}/ref-pays/${p.id}`, { method:"DELETE", headers:await authHeaders() });
         if (!res.ok) {
           const d = await res.json();
           alert(d.detail || "Impossible de supprimer ce pays.");
@@ -436,7 +436,7 @@ export default function RefPaysPage() {
       msg: `Supprimer le groupement "${g.nom_fr}" et ses ${g.nb_pays} liaison(s) ? Action irréversible.`,
       onOui: async () => {
         setConfirm(null);
-        await fetch(`${API}/ref-pays/groupements/${g.id}`, { method:"DELETE", headers:authHeaders() });
+        await fetch(`${API}/ref-pays/groupements/${g.id}`, { method:"DELETE", headers:await authHeaders() });
         charger();
       },
       onNon: ()=>setConfirm(null)

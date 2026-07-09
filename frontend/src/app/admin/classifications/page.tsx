@@ -55,7 +55,7 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
     setSaving(true);
     try {
       await fetch(`${API}/classifications/${systeme}/classes/${classe.id}/correspondances`, {
-        method: "PUT", headers: { "Content-Type": "application/json", ...authHeaders() },
+        method: "PUT", headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ naema_activite_ids: selected }),
       });
       setOk(true);
@@ -176,7 +176,7 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
   const delCorr = async (corrId: number) => {
     if (!selectedClass) return;
     setDeleting(corrId);
-    await fetch(`${API}/classifications/${systeme}/classes/${selectedClass.id}/correspondances/${corrId}`, { method: "DELETE", headers: authHeaders() });
+    await fetch(`${API}/classifications/${systeme}/classes/${selectedClass.id}/correspondances/${corrId}`, { method: "DELETE", headers: await authHeaders() });
     setDeleting(null);
     chargerCorrs(selectedClass);
     chargerStats();

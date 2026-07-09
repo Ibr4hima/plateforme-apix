@@ -1,18 +1,25 @@
+import { getSession } from "next-auth/react";
+
 /**
  * En-tête Authorization: Bearer pour les mutations côté client.
  *
- * Le cookie de session NextAuth (`authjs.session-token`) est un JWT signé
- * HS256 avec AUTH_SECRET — directement vérifiable par le backend FastAPI
- * (voir app/core/auth.py). On le lit ici pour l'ajouter aux requêtes
- * POST/PATCH/DELETE quand AUTH_ENFORCED est actif côté backend.
+ * Le cookie de session NextAuth est httpOnly : impossible à lire via
+ * document.cookie. On récupère donc le jeton d'API (`session.accessToken`,
+ * un JWT signé HS256 avec AUTH_SECRET — voir le callback session() dans
+ * src/auth.ts) au travers de getSession(), directement vérifiable par le
+ * backend FastAPI (app/core/auth.py).
  *
+ * Asynchrone : à utiliser en `headers: await authHeaders()` ou
+ * `headers: { "Content-Type": "application/json", ...(await authHeaders()) }`.
  * Renvoie un objet vide côté serveur ou si aucune session n'est présente.
  */
-export function authHeaders(): Record<string, string> {
+export async function authHeaders(): Promise<Record<string, string>> {
   if (typeof window === "undefined") return {};
-  const cookieName = window.location.protocol === "https:"
-    ? "__Secure-authjs.session-token"
-    : "authjs.session-token";
-  const match = document.cookie.split("; ").find(r => r.startsWith(cookieName + "="));
-  return match ? { Authorization: `Bearer ${match.slice(cookieName.length + 1)}` } : {};
+  try {
+    const session = await getSession();
+    const token = (session as { accessToken?: string } | null)?.accessToken;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
 }

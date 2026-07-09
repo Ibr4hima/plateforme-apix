@@ -156,7 +156,7 @@ export default function PolesPage() {
     try {
       const res = await fetch(`${API_BASE}/zones-types/poles/${pole.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -170,7 +170,7 @@ export default function PolesPage() {
     try {
       const res = await fetch(`${API_BASE}/zones-types/poles`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -183,7 +183,7 @@ export default function PolesPage() {
     if (!confirm("Supprimer ce pôle ? Les zones associées perdront leur référence.")) return;
     setDeletingId(id);
     try {
-      await fetch(`${API_BASE}/zones-types/poles/${id}`, { method: "DELETE", headers: authHeaders() });
+      await fetch(`${API_BASE}/zones-types/poles/${id}`, { method: "DELETE", headers: await authHeaders() });
       charger();
     } finally { setDeletingId(null); }
   };

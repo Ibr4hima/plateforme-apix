@@ -151,7 +151,7 @@ export default function AdminBdefPage() {
     if (!window.confirm("Confirmez une seconde fois : vider définitivement toutes les données BDEF ?")) return;
     setViding(true);
     try {
-      const r = await fetch(`${API}/bdef/vider`, { method: "DELETE", headers: authHeaders() });
+      const r = await fetch(`${API}/bdef/vider`, { method: "DELETE", headers: await authHeaders() });
       if (r.ok) {
         setRes(null); setRapport(null); setCorrections({}); setValeurs(null);
         await loadRefs();
@@ -185,7 +185,7 @@ export default function AdminBdefPage() {
     try {
       const fd = new FormData();
       fd.append("fichier", f);
-      const r = await fetch(`${API}/bdef/importer`, { method: "POST", headers: authHeaders(), body: fd });
+      const r = await fetch(`${API}/bdef/importer`, { method: "POST", headers: await authHeaders(), body: fd });
       const data = await r.json();
       if (!r.ok) { setRes({ import_id: 0, statut: "erreur", annees: [], revue: [], erreur: data.detail || "Erreur inconnue" }); }
       else {
@@ -221,7 +221,7 @@ export default function AdminBdefPage() {
       const cible = choix[`${ri.niveau}|${ri.libelle_brut}`];
       if (!cible) continue;
       await fetch(`${API}/bdef/associer`, {
-        method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
+        method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ niveau: ri.niveau, libelle_brut: ri.libelle_brut, cible_id: cible }),
       });
     }
@@ -243,7 +243,7 @@ export default function AdminBdefPage() {
         ? { rejetee_id: a.rejetee_id, valeur_corrigee: parseFloat(val) }
         : { indicateur: a.indicateur, niveau: a.niveau, cible_id: a.cible_id, annee: a.annee, valeur_corrigee: parseFloat(val) };
       const r = await fetch(`${API}/bdef/corriger`, {
-        method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
+        method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify(body),
       });
       if (r.ok) {
@@ -293,7 +293,7 @@ export default function AdminBdefPage() {
       };
       if (reset) body.reset = true; else body.valeur = parsedVal;
       const r = await fetch(`${API}/bdef/modifier`, {
-        method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
+        method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify(body),
       });
       const d = await r.json();

@@ -78,13 +78,13 @@ export default function AdminNaema() {
 
       if (mode === "create") {
         const res = await fetch(`${API_BASE}${endpoint}`, {
-          method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
+          method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) },
           body: JSON.stringify(body),
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
       } else {
         const res = await fetch(`${API_BASE}${endpoint}/${data.id}`, {
-          method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders() },
+          method: "PATCH", headers: { "Content-Type": "application/json", ...(await authHeaders()) },
           body: JSON.stringify({ code: formCode, nom: formNom }),
         });
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -102,7 +102,7 @@ export default function AdminNaema() {
     setDeleting(id);
     try {
       const endpoint = type === "branche" ? "branches" : "activites";
-      await fetch(`${API_BASE}/entreprises/ref/${endpoint}/${id}`, { method: "DELETE", headers: authHeaders() });
+      await fetch(`${API_BASE}/entreprises/ref/${endpoint}/${id}`, { method: "DELETE", headers: await authHeaders() });
       charger();
     } finally { setDeleting(null); }
   };

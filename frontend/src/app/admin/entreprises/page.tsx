@@ -644,14 +644,14 @@ export default function AdminEntreprises() {
   const handleDelete = async (id:string) => {
     if (!confirm("Supprimer cette entreprise ?")) return;
     setDeleting(id);
-    try { await fetch(`${API_BASE}/entreprises/${id}`,{method:"DELETE",headers:authHeaders()}); charger(); }
+    try { await fetch(`${API_BASE}/entreprises/${id}`,{method:"DELETE",headers:await authHeaders()}); charger(); }
     finally { setDeleting(null); }
   };
 
   const handleTogglePublie = async (e:any) => {
     setTogglingId(e.id);
     try {
-      await fetch(`${API_BASE}/entreprises/${e.id}`,{method:"PATCH",headers:{"Content-Type":"application/json", ...authHeaders()},body:JSON.stringify({est_publie:!e.est_publie})});
+      await fetch(`${API_BASE}/entreprises/${e.id}`,{method:"PATCH",headers:{"Content-Type":"application/json", ...(await authHeaders())},body:JSON.stringify({est_publie:!e.est_publie})});
       charger();
     } finally { setTogglingId(null); }
   };
