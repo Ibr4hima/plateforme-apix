@@ -980,7 +980,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                       </button>
                       {sousOnglet===o.v && (
                         <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
-                          {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                          {([{t:"fluxstock",l:"Flux & Stocks"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
                             const actif = sousType===st.t;
                             return (
                               <button key={st.t} onClick={()=>setSousType(st.t)}
@@ -1328,7 +1328,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                       </button>
                       {sousOnglet===o.v && (
                         <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
-                          {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                          {([{t:"fluxstock",l:"Flux & Stocks"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
                             const actif = sousType===st.t;
                             return (
                               <button key={st.t} onClick={()=>setSousType(st.t)}
@@ -1932,7 +1932,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                   </button>
                   {sousOnglet===o.v && (
                     <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
-                      {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                      {([{t:"fluxstock",l:"Flux & Stocks"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
                         const actif = sousType===st.t;
                         return (
                           <button key={st.t} onClick={()=>setSousType(st.t)}
