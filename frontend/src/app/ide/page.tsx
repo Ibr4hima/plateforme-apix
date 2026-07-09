@@ -984,7 +984,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                             const actif = sousType===st.t;
                             return (
                               <button key={st.t} onClick={()=>setSousType(st.t)}
-                                style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                                style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#4a5568":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
                                 <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
                                   {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
                                 </span>
@@ -1332,7 +1332,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                             const actif = sousType===st.t;
                             return (
                               <button key={st.t} onClick={()=>setSousType(st.t)}
-                                style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                                style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#4a5568":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
                                 <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
                                   {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
                                 </span>
@@ -1936,7 +1936,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                         const actif = sousType===st.t;
                         return (
                           <button key={st.t} onClick={()=>setSousType(st.t)}
-                            style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#1a1a2e":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                            style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#4a5568":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
                             <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
                               {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
                             </span>
