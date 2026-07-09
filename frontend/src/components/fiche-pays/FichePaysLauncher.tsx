@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Loader2, Search, X } from "lucide-react";
+import { ChevronDown, Loader2, Scale, Search, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -215,12 +215,23 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                   <BlocDir de={a.nom} vers={b.nom} col={colA} val={ab} res={bilat.a_vers_b_ressources} dep={bilat.a_vers_b_dependance} />
                   <BlocDir de={b.nom} vers={a.nom} col={colB} val={ba} res={bilat.b_vers_a_ressources} dep={bilat.b_vers_a_dependance} />
                 </div>
-                <div style={{ marginTop: 10, padding: "12px 16px", borderRadius: 10, background: "rgba(24,128,56,0.06)", border: "1px solid rgba(24,128,56,0.18)", display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 12.5, color: "#1a1a2e", lineHeight: 1.5 }}>
-                    {diff === 0
-                      ? <>Les échanges sont <strong>équilibrés</strong> entre {a.nom} et {b.nom}.</>
-                      : <>Balance commerciale <strong>excédentaire en faveur de <span style={{ color: diff >= 0 ? colA : colB }}>{gagnant.nom}</span></strong> : <strong style={{ color: "#188038" }}>+{fmtUSD(Math.abs(diff))}</strong> (déficit pour {perdant.nom}).</>}
+                <div style={{ marginTop: 12, padding: "14px 18px", borderRadius: 12, background: "linear-gradient(180deg,rgba(0,79,145,0.08),rgba(0,79,145,0.035))", border: "1px solid rgba(0,79,145,0.20)", display: "flex", alignItems: "center", gap: 14 }}>
+                  <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(0,79,145,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Scale size={19} color="#004f91" />
                   </span>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 3 }}>Balance commerciale</div>
+                    <div style={{ fontSize: 12.5, color: "#4a5568", lineHeight: 1.45 }}>
+                      {diff === 0
+                        ? <>Échanges <strong style={{ color: "#1a1a2e" }}>équilibrés</strong> entre {a.nom} et {b.nom}.</>
+                        : <>Excédentaire en faveur de <strong style={{ color: diff >= 0 ? colA : colB }}>{gagnant.nom}</strong>, déficitaire pour {perdant.nom}.</>}
+                    </div>
+                  </div>
+                  {diff !== 0 && (
+                    <span style={{ fontSize: 17, fontWeight: 800, color: diff >= 0 ? colA : colB, fontVariantNumeric: "tabular-nums", flexShrink: 0, whiteSpace: "nowrap" }}>
+                      +{fmtUSD(Math.abs(diff))}
+                    </span>
+                  )}
                 </div>
               </div>
             );
