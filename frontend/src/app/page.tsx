@@ -39,7 +39,7 @@ function AnimatedCounter({ target, suffix="", decimals=0 }: { target:number; suf
 
 const MODULES = [
   { num:"01", icon:"finance_mode",           label:"Investissements privés",        href:"/ide",          color:"#ca631f", desc:"Flux d'investissements directs entrants et sortants" },
-  { num:"02", icon:"currency_exchange",      label:"Échanges commerciaux",          href:"/statistiques", color:"#004f91", desc:"Flux commerciaux bilatéraux et indicateurs économiques" },
+  { num:"02", icon:"currency_exchange",      label:"Échanges commerciaux",          href:"/statistiques", color:"#004f91", desc:"Flux bilatéraux et indicateurs sociaux-économiques" },
   { num:"03", icon:"frame_inspect",          label:"Prospects",                     href:"/prospects",    color:"#ca631f", desc:"Portefeuille d'entreprises internationales ciblées" },
   { num:"04", icon:"enterprise",             label:"Entreprises installées",        href:"/entreprises",  color:"#004f91", desc:"Cartographie des entreprises formalisées installées" },
   { num:"05", icon:"real_estate_agent",      label:"Zones d'investissement",        href:"/zones",        color:"#ca631f", desc:"ZES, ZAI, ZFI et pôles territoriaux d'investissement" },
