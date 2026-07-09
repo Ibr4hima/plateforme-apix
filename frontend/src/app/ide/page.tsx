@@ -854,7 +854,7 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
   );
 }
 
-function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
+function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, typeInvest, setTypeInvest }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; typeInvest: string; setTypeInvest: (v:"greenfield"|"fusion")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -967,6 +967,18 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             </div>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+              {/* Sélecteur de type d'investissement */}
+              <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+                <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;investissement</p>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+                  {([{v:"greenfield",l:"Greenfield"},{v:"fusion",l:"Fusion & Acquisition"}] as const).map(o=>(
+                    <button key={o.v} onClick={()=>setTypeInvest(o.v)}
+                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:typeInvest===o.v?700:500, background:typeInvest===o.v?"rgba(0,79,145,0.08)":"transparent", color:typeInvest===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {/* Sélecteur de vue */}
               <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
                 <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
@@ -1214,7 +1226,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 const COMP_PALETTE = ["#004f91","#ca631f","#188038","#6A1B9A"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
-function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
+function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, typeInvest, setTypeInvest }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; typeInvest: string; setTypeInvest: (v:"greenfield"|"fusion")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -1296,6 +1308,18 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             </div>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+              {/* Sélecteur de type d'investissement */}
+              <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+                <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;investissement</p>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+                  {([{v:"greenfield",l:"Greenfield"},{v:"fusion",l:"Fusion & Acquisition"}] as const).map(o=>(
+                    <button key={o.v} onClick={()=>setTypeInvest(o.v)}
+                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:typeInvest===o.v?700:500, background:typeInvest===o.v?"rgba(0,79,145,0.08)":"transparent", color:typeInvest===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {/* Sélecteur de vue */}
               <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
                 <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
@@ -1761,7 +1785,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
   );
 }
 
-function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
+function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, typeInvest, setTypeInvest }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; typeInvest: string; setTypeInvest: (v:"greenfield"|"fusion")=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
   const [loading,     setLoading]    = useState(false);
   const [anneeMin,    setAnneeMin]   = useState(1990);
@@ -1881,6 +1905,18 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
           </div>
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+          {/* Sélecteur de type d'investissement */}
+          <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+            <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;investissement</p>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+              {([{v:"greenfield",l:"Greenfield"},{v:"fusion",l:"Fusion & Acquisition"}] as const).map(o=>(
+                <button key={o.v} onClick={()=>setTypeInvest(o.v)}
+                  style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:typeInvest===o.v?700:500, background:typeInvest===o.v?"rgba(0,79,145,0.08)":"transparent", color:typeInvest===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                  {o.l}
+                </button>
+              ))}
+            </div>
+          </div>
           {/* Sélecteur de vue */}
           <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
             <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
@@ -3164,6 +3200,7 @@ export default function IdePage() {
   const [ongletPrincipal, setOngletPrincipal] = useState<"ide"|"national">("ide");
   const [section,    setSection]    = useState<"realises"|"projetes">("realises");
   const [sousOnglet, setSousOnglet] = useState<"pays"|"comparative"|"monde">("pays");
+  const [typeInvest, setTypeInvest] = useState<"greenfield"|"fusion">("greenfield");
   const [paysDispo,  setPaysDispo]  = useState<any[]>([]);
   const [showTable,  setShowTable]  = useState(false);
 
@@ -3217,9 +3254,9 @@ export default function IdePage() {
           {/* Investissements réalisés (CNUCED) */}
           {section === "realises" && (
             <>
-              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
-              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
-              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
+              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} typeInvest={typeInvest} setTypeInvest={setTypeInvest}/>}
+              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} typeInvest={typeInvest} setTypeInvest={setTypeInvest}/>}
+              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} typeInvest={typeInvest} setTypeInvest={setTypeInvest}/>}
             </>
           )}
           {/* Investissements projetés (FDI Markets) */}
