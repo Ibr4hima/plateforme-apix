@@ -79,6 +79,10 @@ async function decode(params: {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
 
+  // L'app tourne derrière le reverse proxy Caddy : sans trustHost, Auth.js v5
+  // rejette l'en-tête Host (« UntrustedHost ») et renvoie 500 sur /api/auth/*.
+  trustHost: true,
+
   // Session par JWT — 12 h : back-office institutionnel, pas de session d'un mois
   session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
 
