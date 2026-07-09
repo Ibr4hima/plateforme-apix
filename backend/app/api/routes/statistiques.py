@@ -127,7 +127,8 @@ async def comparaison(
     for (pid, ind), d in latest.items():
         valeurs.setdefault(str(pid), {})[ind] = {"valeur": d["valeur"], "annee": d["annee"]}
     return {
-        "pays": [{"id": pid, "nom": paysmap[pid].nom_fr, "code_iso3": paysmap[pid].code_iso3}
+        "pays": [{"id": pid, "nom": paysmap[pid].nom_fr, "code_iso3": paysmap[pid].code_iso3,
+                  "code_iso2": paysmap[pid].code_iso2}
                  for pid in ids if pid in paysmap],
         "indicateurs": [{"code": i.code, "libelle": i.libelle, "unite": i.unite,
                          "categorie": i.categorie, "ordre": i.ordre} for i in inds],

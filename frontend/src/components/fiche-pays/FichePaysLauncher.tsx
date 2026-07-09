@@ -84,12 +84,14 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
           <div style={{ background: "#fff", padding: "26px 30px 30px" }}>
             {/* En-tête premium */}
             <div style={{ marginBottom: 22, paddingBottom: 18, borderBottom: "1px solid #ECEAE7" }}>
-              <p style={{ fontSize: 10, fontWeight: 800, color: "#004f91", letterSpacing: "0.18em", textTransform: "uppercase", margin: 0 }}>APIX Sénégal · Statistiques</p>
-              <h2 style={{ fontWeight: 800, fontSize: "1.55rem", color: "#1a1a2e", margin: "5px 0 0", letterSpacing: "-0.01em" }}>Fiche Pays</h2>
+              <h2 style={{ fontWeight: 800, fontSize: "1.55rem", color: "#1a1a2e", margin: 0, letterSpacing: "-0.01em" }}>Fiche Pays</h2>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
                 {cols.map((c: any, i: number) => (
                   <span key={c.id} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 700, color: PALETTE[i % PALETTE.length], background: `${PALETTE[i % PALETTE.length]}12`, border: `1px solid ${PALETTE[i % PALETTE.length]}2E`, padding: "5px 13px", borderRadius: 999 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: PALETTE[i % PALETTE.length] }} />{c.nom}{c.code_iso3 ? <span style={{ color: "#9aa5b4", fontWeight: 600 }}>· {c.code_iso3}</span> : null}
+                    {c.code_iso2
+                      ? <img src={`https://flagcdn.com/w40/${String(c.code_iso2).toLowerCase()}.png`} alt="" width={20} height={14} style={{ borderRadius: 2, objectFit: "cover", boxShadow: "0 0 0 1px rgba(0,0,0,0.10)", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = "none"; }} />
+                      : <span style={{ width: 7, height: 7, borderRadius: "50%", background: PALETTE[i % PALETTE.length] }} />}
+                    {c.nom}{c.code_iso3 ? <span style={{ color: "#9aa5b4", fontWeight: 600 }}>· {c.code_iso3}</span> : null}
                   </span>
                 ))}
               </div>
