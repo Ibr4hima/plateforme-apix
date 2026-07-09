@@ -854,7 +854,7 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
   );
 }
 
-function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
+function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -967,15 +967,25 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             </div>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-              {/* Sélecteur de vue */}
+              {/* Sélecteur de vue (avec sous-type par vue) */}
               <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
                 <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                   {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                      {o.l}
-                    </button>
+                    <div key={o.v}>
+                      <div style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", padding:"2px 10px 4px" }}>{o.l}</div>
+                      <div style={{ display:"flex", flexDirection:"column" as const, gap:1 }}>
+                        {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                          const actif = sousOnglet===o.v && sousType===st.t;
+                          return (
+                            <button key={st.t} onClick={()=>{ setSousOnglet(o.v); setSousType(st.t); }}
+                              style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                              {st.l}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -1214,7 +1224,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 const COMP_PALETTE = ["#004f91","#ca631f","#188038","#6A1B9A"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
-function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
+function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -1296,15 +1306,25 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             </div>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-              {/* Sélecteur de vue */}
+              {/* Sélecteur de vue (avec sous-type par vue) */}
               <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
                 <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                   {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                      {o.l}
-                    </button>
+                    <div key={o.v}>
+                      <div style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", padding:"2px 10px 4px" }}>{o.l}</div>
+                      <div style={{ display:"flex", flexDirection:"column" as const, gap:1 }}>
+                        {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                          const actif = sousOnglet===o.v && sousType===st.t;
+                          return (
+                            <button key={st.t} onClick={()=>{ setSousOnglet(o.v); setSousType(st.t); }}
+                              style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                              {st.l}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -1761,7 +1781,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
   );
 }
 
-function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void }) {
+function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
   const [loading,     setLoading]    = useState(false);
   const [anneeMin,    setAnneeMin]   = useState(1990);
@@ -1881,15 +1901,25 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet }: { s
           </div>
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-          {/* Sélecteur de vue */}
+          {/* Sélecteur de vue (avec sous-type par vue) */}
           <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
             <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-            <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
               {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                  style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                  {o.l}
-                </button>
+                <div key={o.v}>
+                  <div style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", padding:"2px 10px 4px" }}>{o.l}</div>
+                  <div style={{ display:"flex", flexDirection:"column" as const, gap:1 }}>
+                    {([{t:"fluxstock",l:"Flux & Stock"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
+                      const actif = sousOnglet===o.v && sousType===st.t;
+                      return (
+                        <button key={st.t} onClick={()=>{ setSousOnglet(o.v); setSousType(st.t); }}
+                          style={{ textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:actif?700:500, background:actif?"rgba(0,79,145,0.08)":"transparent", color:actif?"#004f91":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
+                          {st.l}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -3164,6 +3194,7 @@ export default function IdePage() {
   const [ongletPrincipal, setOngletPrincipal] = useState<"ide"|"national">("ide");
   const [section,    setSection]    = useState<"realises"|"projetes">("realises");
   const [sousOnglet, setSousOnglet] = useState<"pays"|"comparative"|"monde">("pays");
+  const [sousType,   setSousType]   = useState<"fluxstock"|"greenfield"|"fusion">("fluxstock");
   const [paysDispo,  setPaysDispo]  = useState<any[]>([]);
   const [showTable,  setShowTable]  = useState(false);
 
@@ -3217,9 +3248,9 @@ export default function IdePage() {
           {/* Investissements réalisés (CNUCED) */}
           {section === "realises" && (
             <>
-              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
-              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
-              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet}/>}
+              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType}/>}
+              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType}/>}
+              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType}/>}
             </>
           )}
           {/* Investissements projetés (FDI Markets) */}
