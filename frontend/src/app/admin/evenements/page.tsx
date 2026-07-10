@@ -425,7 +425,15 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
         <FGrid cols={2}>
           <div>
             <FLabel>Pays hôte</FLabel>
-            <PaysSelect value={form.pays_hote_nom} onChange={nom=>update("pays_hote_nom",nom)} onChangeId={id=>update("pays_hote_id",id||"")} />
+            <PaysSelect value={form.pays_hote_nom} onChange={nom=>{
+              update("pays_hote_nom",nom);
+              // retirer le pays hôte de la liste des invités s'il y figurait
+              if (nom) {
+                const invites = (form.pays_invites_noms||"").split(",").map((s:string)=>s.trim()).filter(Boolean).filter((x:string)=>x!==nom);
+                update("pays_invites_noms", invites.join(", "));
+                update("pays_invites_ids", []);
+              }
+            }} onChangeId={id=>update("pays_hote_id",id||"")} />
           </div>
           <div>
             <FLabel>Ville</FLabel>
@@ -470,8 +478,11 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
             <FLabel>Pays invités</FLabel>
             <PaysMultiSelect
               value={form.pays_invites_noms || ""}
-              onChange={(noms: string) => update("pays_invites_noms", noms)}
+              onChange={(noms: string) => { update("pays_invites_noms", noms); update("pays_invites_ids", []); }}
               placeholder="Sélectionner les pays invités"
+              excludeNom={form.pays_hote_nom}
+              disabled={!form.pays_hote_nom}
+              disabledHint="Choisissez d'abord le pays hôte"
             />
           </div>
           <div>

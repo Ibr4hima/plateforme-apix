@@ -9,11 +9,15 @@ interface Pays { id: number; code_iso2: string; nom_fr: string; continent: strin
 
 export default function PaysMultiSelect({
   value, onChange, placeholder = "Sélectionner des pays", style,
+  excludeNom, disabled = false, disabledHint,
 }: {
   value:        string;
   onChange:     (val: string) => void;
   placeholder?: string;
   style?:       any;
+  excludeNom?:  string;   // pays à griser (non sélectionnable), ex. le pays hôte
+  disabled?:    boolean;  // désactive tout le sélecteur
+  disabledHint?: string;  // message affiché quand désactivé
 }) {
   const [pays,   setPays]   = useState<Pays[]>([]);
   const [search, setSearch] = useState("");
@@ -62,13 +66,14 @@ export default function PaysMultiSelect({
 
   return (
     <div ref={ref} style={{ position: "relative", ...style }}>
-      <div onClick={() => setOpen(o => !o)}
+      <div onClick={() => { if (disabled) return; setOpen(o => !o); }}
         style={{ ...inputBase, minHeight: 40, display: "flex", alignItems: "flex-start",
-          justifyContent: "space-between", cursor: "pointer",
+          justifyContent: "space-between", cursor: disabled ? "not-allowed" : "pointer",
+          background: disabled ? "#F5F4F3" : inputBase.background,
           border: `1px solid ${open ? "#004f91" : "#C5BFBB"}`,
           transition: "border-color 0.2s", flexWrap: "wrap", gap: 4, paddingRight: 32 }}>
         {selected.length === 0 ? (
-          <span style={{ color: "#9aa5b4", lineHeight: "22px" }}>{placeholder}</span>
+          <span style={{ color: "#9aa5b4", lineHeight: "22px" }}>{disabled ? (disabledHint || placeholder) : placeholder}</span>
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4, flex: 1 }}>
             {selected.map(nom => {
@@ -122,6 +127,17 @@ export default function PaysMultiSelect({
               </div>
               {list.map(p => {
                 const isSelected = selected.includes(p.nom_fr);
+                if (excludeNom && p.nom_fr === excludeNom) {
+                  return (
+                    <div key={p.id} title="Déjà choisi comme pays hôte"
+                      style={{ padding: "9px 14px", cursor: "not-allowed", fontSize: 13,
+                        display: "flex", alignItems: "center", gap: 10, opacity: 0.55 }}>
+                      <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, border: "2px solid #D8D3CF", background: "transparent" }} />
+                      <span style={{ color: "#9aa5b4", fontWeight: 400 }}>{p.nom_fr}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pays hôte</span>
+                    </div>
+                  );
+                }
                 return (
                   <div key={p.id}
                     onMouseDown={e => { e.preventDefault(); toggle(p.nom_fr); }}
