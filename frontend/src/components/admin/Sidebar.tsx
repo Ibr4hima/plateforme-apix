@@ -18,7 +18,6 @@ const MODULES: NavItem[] = [
   { type: "link", label: "Entreprises",                    href: "/admin/entreprises",        icon: "enterprise"            },
   { type: "link", label: "Pôles & Zones d'investissement", href: "/admin/gestion-zones",      icon: "real_estate_agent"     },
   { type: "link", label: "Opportunités d'investissement",  href: "/admin/opportunites",       icon: "bookmark_stacks"       },
-  { type: "link", label: "Intentions d'investissement",    href: "/admin/intentions",         icon: "universal_currency_alt", disabled: true },
   { type: "link", label: "Prospects",                      href: "/admin/prospects",          icon: "frame_inspect"         },
   { type: "link", label: "Analyse de données",             href: "/admin/analyse",            icon: "show_chart",             disabled: true },
   { type: "section", label: "Référentiels" },
