@@ -14,6 +14,7 @@ import { CATALOGUE, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
 import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { zoneTypeMeta } from "@/components/shared/zoneTypes";
 import { Skeleton } from "@/components/shared/Skeleton";
+import { useModalA11y } from "@/lib/useModalA11y";
 
 // Layout effect côté client, effet classique côté serveur (évite le warning SSR)
 const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -1244,18 +1245,19 @@ function hideD3Tooltip(tooltip: any) { tooltip.style("opacity", 0); }
 // ─── Modal visualisation ──────────────────────────────────────────────────────
 function VizModal({ open, onClose, titre, vizId, children }: { open:boolean; onClose:()=>void; titre:string; vizId:string; children:React.ReactNode }) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const dlgRef = useModalA11y(onClose); // monté uniquement quand open (rendu conditionnel côté parent)
   const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement|null;
   if (!open) return null;
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:32}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:1100,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={titre} onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:1100,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
         <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
         {/* En-tête fixe */}
         <div style={{padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
           <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",margin:0,lineHeight:1.35}}>{titre}</h2>
-          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",background:"#F5F4F3",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+          <button onClick={onClose} aria-label="Fermer" style={{width:32,height:32,borderRadius:"50%",background:"#F5F4F3",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
             <X size={15} color="#4a5568"/>
           </button>
@@ -1312,7 +1314,7 @@ function VizCard({ card, viz, onRemove }: {
             <span style={{width:26,height:26,borderRadius:8,background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
               <Maximize2 size={11} style={{color:"#9aa5b4"}}/>
             </span>
-            <button onClick={e=>{e.stopPropagation();onRemove();}} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
+            <button onClick={e=>{e.stopPropagation();onRemove();}} aria-label="Fermer" style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
           </div>
         </div>
         <div style={{pointerEvents:"none"}}>
@@ -1326,9 +1328,9 @@ function VizCard({ card, viz, onRemove }: {
         </div>
       </div>
 
-      <VizModal open={open} onClose={()=>setOpen(false)} titre={viz.titre} vizId={viz.id}>
+      {open && <VizModal open={open} onClose={()=>setOpen(false)} titre={viz.titre} vizId={viz.id}>
         <VizChart vizId={viz.id} data={data} height={400}/>
-      </VizModal>
+      </VizModal>}
     </>
   );
 }
@@ -1796,20 +1798,20 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
               <span style={{ width:26, height:26, borderRadius:8, background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
                 <Maximize2 size={11} style={{ color:"#9aa5b4" }}/>
               </span>
-              <button onClick={e=>{e.stopPropagation();onRemove();}} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB" }}><X size={13}/></button>
+              <button onClick={e=>{e.stopPropagation();onRemove();}} aria-label="Fermer" style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB" }}><X size={13}/></button>
             </div>
           </div>
           <div style={{ pointerEvents:"none" as const }}>{body(cardH)}</div>
         </div>
       </div>
 
-      <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top ${modalN}`:titre} vizId={id}>
+      {open && <VizModal open={open} onClose={()=>setOpen(false)} titre={isLong?`${titre} · Top ${modalN}`:titre} vizId={id}>
         {isSecteurs
           ? <DonutLabeled data={modalData} height={Math.max(340, modalH)} palette={BAR_PALETTE5}/>
           : isPays
           ? <VBarChart data={modalData} height={Math.max(320, modalH)} palette={BAR_PALETTE7} rotateX/>
           : <HBarAxisChart data={modalData} height={Math.max(300, modalH)} palette={BAR_PALETTE7}/>}
-      </VizModal>
+      </VizModal>}
     </>
   );
 }
@@ -1897,7 +1899,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
       <div style={{ padding:sidebarOpen?"14px 16px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
         {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+          <button onClick={()=>setSidebarOpen(!sidebarOpen)} aria-label="Basculer les filtres" style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
             <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
             {sidebarOpen&&nbActifs>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbActifs}</span>}
           </button>
@@ -2073,12 +2075,12 @@ export default function TableauDeBordPage() {
                 <div style={{flex:1,minHeight:200}}><GroupedBarZones height={200} fill/></div>
               </div>
             </div>
-            <VizModal open={mapOpen} onClose={()=>setMapOpen(false)} titre="Répartition des entreprises" vizId="repartition-entreprises">
+            {mapOpen && <VizModal open={mapOpen} onClose={()=>setMapOpen(false)} titre="Répartition des entreprises" vizId="repartition-entreprises">
               <CarteSenegal height={480} legendVertical/>
-            </VizModal>
-            <VizModal open={zoneEcoOpen} onClose={()=>setZoneEcoOpen(false)} titre="Répartition des entreprises par zone économique" vizId="entreprises-par-zone-eco">
+            </VizModal>}
+            {zoneEcoOpen && <VizModal open={zoneEcoOpen} onClose={()=>setZoneEcoOpen(false)} titre="Répartition des entreprises par zone économique" vizId="entreprises-par-zone-eco">
               <GroupedBarZones height={460}/>
-            </VizModal>
+            </VizModal>}
 
             {/* Visualisations sélectionnées dans le filtre */}
             {config.kpisActifs.length===0 ? (

@@ -1195,7 +1195,7 @@ export default function GestionZonesPage() {
         <EntreprisesModal open={entModal} onClose={() => setEntModal(false)}
           zoneId={entModalZone.id} zoneNom={entModalZone.nom_zone} onSaved={charger} />
       )}
-      <EntreprisePublicModal entreprise={detailEnt} onClose={() => setDetailEnt(null)} />
+      {detailEnt && <EntreprisePublicModal entreprise={detailEnt} onClose={() => setDetailEnt(null)} />}
     </div>
   );
 }

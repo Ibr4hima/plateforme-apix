@@ -7,6 +7,7 @@ import { SkeletonCards } from "@/components/shared/Skeleton";
 import { ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
+import { useModalA11y } from "@/lib/useModalA11y";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -141,6 +142,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
 
 // ── Modal vue accord ─────────────────────────────────────────────────────────
 function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
+  const dlgRef = useModalA11y(onClose); // monté uniquement quand un accord est sélectionné (rendu conditionnel côté parent)
   const [fichiers,  setFichiers]  = useState<any[]>([]);
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
   const [branches,  setBranches]  = useState<any[]>([]);
@@ -181,7 +183,7 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={ev=>ev.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={`Détail de l'accord ${a.titre}`} onClick={ev=>ev.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
         <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
@@ -194,7 +196,7 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
               {a.reference&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{a.reference}</span>}
             </div>
           </div>
-          <button onClick={onClose}
+          <button onClick={onClose} aria-label="Fermer"
             style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
             onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
@@ -479,7 +481,7 @@ export default function AccordsPage() {
             <div style={{padding:sidebarOpen?"14px 16px 10px":"12px 8px",borderBottom:"1px solid #F2F0EF",display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",flexShrink:0}}>
               {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
               <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <button onClick={()=>setSidebarOpen(o=>!o)}
+                <button onClick={()=>setSidebarOpen(o=>!o)} aria-label="Basculer les filtres"
                   style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
                   <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
                   {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
@@ -497,7 +499,7 @@ export default function AccordsPage() {
                   <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
                   <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                  {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                  {recherche&&<button onClick={()=>setRecherche("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
                 {/* Parties signataires — section personnalisée */}
                 <div style={{marginBottom:18}}>

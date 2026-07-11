@@ -7,6 +7,7 @@ import * as d3 from "d3";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
+import { useModalA11y } from "@/lib/useModalA11y";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -360,6 +361,7 @@ function GrapheMultiPays({ series, height=280, type="line", titre="", fmt, showD
 // ── Modal graphe plein écran ──────────────────────────────────────────────────
 function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, series, grapheId }: any) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const dlgRef = useModalA11y(onClose); // monté uniquement quand open (rendu conditionnel côté parent)
   const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement|null;
 
   // Intervalle d'années couvert par les séries (badge du titre + export PNG)
@@ -377,7 +379,7 @@ function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, seri
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:32 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={titre || "Graphique en plein écran"} onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
 
         {/* En-tête fixe */}
@@ -401,7 +403,7 @@ function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, seri
                 {sous_titre && <span style={{ fontSize:11.5, color:"#9aa5b4", fontWeight:500 }}>{sous_titre}</span>}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -478,9 +480,9 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series
         <div style={{ pointerEvents:"none" }}>{children}</div>
       </div>
 
-      <GrapheModal open={open} onClose={()=>setOpen(false)} titre={titre} sous_titre={sous_titre} analyse={analyse} series={series} grapheId={grapheId}>
+      {open && <GrapheModal open={open} onClose={()=>setOpen(false)} titre={titre} sous_titre={sous_titre} analyse={analyse} series={series} grapheId={grapheId}>
         {fullChildren || children}
-      </GrapheModal>
+      </GrapheModal>}
     </>
   );
 }
@@ -530,6 +532,7 @@ function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string) {
 
 // ── Modal données ─────────────────────────────────────────────────────────────
 function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
+  const dlgRef = useModalA11y(onClose); // monté uniquement quand open (rendu conditionnel côté parent)
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
@@ -543,7 +546,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label="Tableau de données IDE" onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
 
         {/* En-tête fixe */}
@@ -579,7 +582,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
                 })}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -709,6 +712,7 @@ function splitKpiTitre(label: string): { main: string; suffix: string | null } {
 
 // ── Mini modal KPI ────────────────────────────────────────────────────────────
 function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pays: string; couleur: string; onClose: ()=>void }) {
+  const dlgRef = useModalA11y(onClose); // monté uniquement quand un KPI est actif (rendu conditionnel côté parent)
   if (!kpi) return null;
   const interp = interpreterKpi(kpi, pays, couleur);
   const isTrend = ["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe"].includes(kpi.id);
@@ -726,7 +730,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pa
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={`Détail de l'indicateur ${titreMain}`} onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
 
         {/* En-tête fixe */}
@@ -756,7 +760,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pa
                 )}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -956,7 +960,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
             {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <button onClick={()=>setSidebarOpen(o=>!o)} aria-label="Basculer les filtres" style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
                 <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
                 {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
               </button>
@@ -1003,7 +1007,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
                 <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
                   style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-                {searchPays&&<button onClick={()=>setSearchPays("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+                {searchPays&&<button onClick={()=>setSearchPays("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
               </div>
               <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
               {/* Pays */}
@@ -1222,8 +1226,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
         </div>
       </div>
 
-      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={[{nom:paysSelec,couleur}]} />
-      <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} onClose={()=>setKpiActif(null)} />
+      {showTable && <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={[{nom:paysSelec,couleur}]} />}
+      {kpiActif && <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} onClose={()=>setKpiActif(null)} />}
     </div>
   );
 }
@@ -1302,7 +1306,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
           <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
             {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <button onClick={()=>setSidebarOpen(o=>!o)} aria-label="Basculer les filtres" style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
                 <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
                 {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
               </button>
@@ -1349,7 +1353,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                 <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
                 <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
                   style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-                {searchPays&&<button onClick={()=>setSearchPays("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+                {searchPays&&<button onClick={()=>setSearchPays("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
               </div>
               <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
               {/* Pays */}
@@ -1517,7 +1521,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             </div>
           )}
         </div>
-      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} />
+      {showTable && <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} />}
     </div>
   );
 }
@@ -1904,7 +1908,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
           {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+            <button onClick={()=>setSidebarOpen(o=>!o)} aria-label="Basculer les filtres" style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
               <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
               {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
             </button>
@@ -1953,7 +1957,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
             <input value={searchGrp} onChange={e=>setSearchGrp(e.target.value)} placeholder="Rechercher un groupement…"
               style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-            {searchGrp&&<button onClick={()=>setSearchGrp("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+            {searchGrp&&<button onClick={()=>setSearchGrp("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
           </div>
           <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
 
@@ -2164,7 +2168,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           </>
         )}
       </div>
-      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={grpAvecCouleur} />
+      {showTable && <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={grpAvecCouleur} />}
     </div>
   );
 }
@@ -2275,6 +2279,7 @@ function BdefRow({ label, niveau, selected, onSelect, expandable, expanded, onTo
 function ModalBdefTable({ open, onClose, blocs, annees }: {
   open:boolean; onClose:()=>void; blocs:{libelle:string; couleur:string; indicateurs:BdefIndic[]}[]; annees:number[];
 }) {
+  const dlgRef = useModalA11y(onClose); // monté uniquement quand open (rendu conditionnel côté parent)
   if (!open) return null;
   const parCatDe = (indicateurs:BdefIndic[]) => {
     const parCat: {cat:string; inds:BdefIndic[]}[] = [];
@@ -2317,7 +2322,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label="Tableau de données BDEF" onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
 
         {/* En-tête fixe */}
@@ -2353,7 +2358,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                 })}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -2437,6 +2442,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
 function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   ind: BdefIndic | null; annees: number[]; libelle: string; onClose: ()=>void;
 }) {
+  const dlgRef = useModalA11y(onClose); // monté uniquement quand un indicateur est actif (rendu conditionnel côté parent)
   if (!ind) return null;
   const lastA  = annees.length ? annees[annees.length - 1] : null;
   const v      = lastA !== null ? (ind.valeurs[lastA] ?? null) : null;
@@ -2465,7 +2471,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={`Détail de l'indicateur ${ind.libelle}`} onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
 
         {/* En-tête fixe */}
@@ -2488,7 +2494,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
                 )}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -2720,7 +2726,7 @@ function OngletNational() {
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
           {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
+            <button onClick={()=>setSidebarOpen(o=>!o)} aria-label="Basculer les filtres" style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
               <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
             </button>
             {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgba(220,38,38,0.08)", border:"1px solid rgba(220,38,38,0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
@@ -2858,7 +2864,7 @@ function OngletNational() {
             <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
               style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-            {search&&<button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+            {search&&<button onClick={()=>setSearch("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
           </div>
 
           {/* Activités */}
@@ -3179,7 +3185,7 @@ function OngletNational() {
         )}
       </div>
 
-      <ModalBdefTable open={showTable} onClose={()=>setShowTable(false)}
+      {showTable && <ModalBdefTable open={showTable} onClose={()=>setShowTable(false)}
         annees={sousVue==="comparative" ? anneesCompAff : anneesAffichees}
         blocs={sousVue==="comparative"
           ? compSelec.map((id,ci)=>{
@@ -3187,8 +3193,8 @@ function OngletNational() {
               const n = nodes.find(x=>x.id===id);
               return { libelle:n?.libelle||String(id), couleur:BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length], indicateurs:compData[id]||[] };
             })
-          : [{ libelle:sel.libelle, couleur, indicateurs }]} />
-      <MiniModalBdefKpi ind={kpiActif} annees={anneesAffichees} libelle={sel.libelle} onClose={()=>setKpiActif(null)} />
+          : [{ libelle:sel.libelle, couleur, indicateurs }]} />}
+      {kpiActif && <MiniModalBdefKpi ind={kpiActif} annees={anneesAffichees} libelle={sel.libelle} onClose={()=>setKpiActif(null)} />}
 
       {/* Tooltip de définition au survol */}
       {tip && (()=>{
