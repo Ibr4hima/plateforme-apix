@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, ChevronDown, FileText, Landmark, Scale, Search, X } from "lucide-react";
 import { SkeletonRows } from "@/components/shared/Skeleton";
+import { useModalA11y } from "@/lib/useModalA11y";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -46,6 +47,7 @@ function sortContinents(conts: string[]) {
 
 // ── Fiche de comparaison (modal) ──────────────────────────────────────────────
 function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays: Pays[]; onClose: () => void }) {
+  const dlgRef = useModalA11y(onClose); // accessibilité : Échap, piège de focus, restauration
   const [data, setData] = useState<any>(null);
   const [ideFlux, setIdeFlux] = useState<any>(null);
   const [bilat, setBilat] = useState<any>(null);
@@ -76,9 +78,9 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ position: "relative", background: "#fff", borderRadius: 20, width: "100%", maxWidth: 920, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label="Fiche Pays" onClick={e => e.stopPropagation()} style={{ position: "relative", background: "#fff", borderRadius: 20, width: "100%", maxWidth: 920, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
         <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
-        <button onClick={onClose} data-no-pdf style={{ position: "absolute", top: 16, right: 18, width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3 }}>
+        <button onClick={onClose} data-no-pdf aria-label="Fermer" style={{ position: "absolute", top: 16, right: 18, width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3 }}>
           <X size={15} color="#4a5568" />
         </button>
         <div style={{ overflowY: "auto", flex: 1 }}>
@@ -278,6 +280,7 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
   pays: Pays[]; senId: number | null; initial: number[]; onValider: (ids: number[]) => void; onClose: () => void;
 }) {
   const MAX = 2;
+  const dlgRef = useModalA11y(onClose); // accessibilité : Échap, piège de focus, restauration
   const [sel, setSel] = useState<number[]>(initial.length ? initial.slice(0, MAX) : (senId ? [senId] : []));
   const [search, setSearch] = useState("");
   const [openConts, setOpenConts] = useState<Set<string>>(new Set());
@@ -301,7 +304,7 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 400, maxHeight: "84vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label="Sélection des pays" onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 400, maxHeight: "84vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
         <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
         <div style={{ padding: "18px 22px 12px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
@@ -309,7 +312,7 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
               <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Fiche Pays</h2>
               <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.12)", padding: "2px 8px", borderRadius: 999 }}>{sel.length}/{MAX}</span>
             </div>
-            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 30, height: 30, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
               onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
               <X size={14} color="#4a5568" />
             </button>
@@ -318,7 +321,7 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
             <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un pays…" autoFocus
               style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 9, paddingBottom: 9, borderRadius: 9, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-            {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+            {search && <button onClick={() => setSearch("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
           </div>
         </div>
         <div style={{ overflowY: "auto", flex: 1, padding: "12px 18px" }}>
@@ -387,7 +390,7 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
             {sel.map(id => { const p = pays.find(x => x.id === id); const canRemove = sel.length > 1; return p ? (
               <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: couleur(id), background: `${couleur(id)}12`, padding: "3px 5px 3px 9px", borderRadius: 999 }}>
                 {p.nom}
-                <button onClick={() => canRemove && setSel(prev => prev.filter(x => x !== id))} disabled={!canRemove} title={canRemove ? `Retirer ${p.nom}` : "Au moins un pays requis"}
+                <button onClick={() => canRemove && setSel(prev => prev.filter(x => x !== id))} disabled={!canRemove} aria-label={`Retirer ${p.nom}`} title={canRemove ? `Retirer ${p.nom}` : "Au moins un pays requis"}
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15, height: 15, borderRadius: "50%", border: "none", padding: 0, background: "transparent", color: couleur(id), cursor: canRemove ? "pointer" : "not-allowed", opacity: canRemove ? 1 : 0.35 }}
                   onMouseEnter={e => { if (canRemove) e.currentTarget.style.background = `${couleur(id)}22`; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                   <X size={10} strokeWidth={2.6} />
