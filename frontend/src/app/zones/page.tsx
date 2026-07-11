@@ -9,7 +9,6 @@ import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
-import { useModalA11y } from "@/lib/useModalA11y";
 import { Building2, ChevronRight, FileText, X } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -164,7 +163,7 @@ function SunburstZones({ zones }: { zones:any[] }) {
   return (
     <div ref={wrapRef}>
       <svg ref={svgRef} style={{ width:"100%",height:500,display:"block" }}/>
-      {ficheEnt && <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>}
+      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>
     </div>
   );
 }
@@ -363,7 +362,6 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
 // ── Modal détail zone ─────────────────────────────────────────────────────────
 function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
   const gate = useAuthGate();
-  const dlgRef = useModalA11y(onClose); // monté uniquement quand une zone est sélectionnée (rendu conditionnel côté parent)
   const [ficheEnt,  setFicheEnt]  = useState<any>(null);
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
   const [branches,  setBranches]  = useState<any[]>([]);
@@ -422,7 +420,7 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
     <>
       <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
         <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-        <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={`Détail de la zone ${zone.nom_zone}`} onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+        <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
           {/* Liseré d'accent */}
           <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
@@ -435,7 +433,7 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
                 {zone.pole_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{zone.pole_nom}</span>}
               </div>
             </div>
-            <button onClick={onClose} aria-label="Fermer"
+            <button onClick={onClose}
               style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
               onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
               onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
@@ -563,7 +561,7 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
           </div>
         </div>
       </div>
-      {ficheEnt && <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>}
+      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>
     </>
   );
 }

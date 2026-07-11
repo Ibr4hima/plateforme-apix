@@ -3,7 +3,6 @@
 import { X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useEffect, useState } from "react";
-import { useModalA11y } from "@/lib/useModalA11y";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -24,7 +23,6 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
   const [branches,  setBranches]  = useState<any[]>([]);
   const [activites, setActivites] = useState<any[]>([]);
-  const dlgRef = useModalA11y(onClose); // monté uniquement quand une entreprise est sélectionnée (rendu conditionnel côté parent)
 
   // Recharger les référentiels NAEMA à chaque ouverture (pas de cache inter-modales)
   useEffect(() => {
@@ -61,7 +59,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={`Fiche de l'entreprise ${e.nom}`} onClick={ev=>ev.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+      <div onClick={ev=>ev.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
         <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
@@ -75,7 +73,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
               {e.region_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>Région de {e.region_nom}</span>}
             </div>
           </div>
-          <button onClick={onClose} aria-label="Fermer"
+          <button onClick={onClose}
             style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
             onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>

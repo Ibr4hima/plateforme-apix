@@ -8,7 +8,6 @@ import { ArrowLeft, ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal,
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Fuse from "@/lib/fuse";
-import { useModalA11y } from "@/lib/useModalA11y";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -301,7 +300,6 @@ function AtotusFiltreFilter({ pots, refAvantages, selected, onToggle }: {
 function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
   projet:any; secteurs:any[]; branches:any[]; activites:any[]; onClose:()=>void;
 }) {
-  const dlgRef = useModalA11y(onClose); // monté uniquement quand un projet est sélectionné (rendu conditionnel côté parent)
   const fmtInvest = () => {
     const sym = devSymbole(p.devise_code, p.devise_symbole);
     if (!p.investissement_est_intervalle)
@@ -326,7 +324,7 @@ function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={`Détail du projet ${p.titre_projet}`} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
         <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
@@ -341,7 +339,7 @@ function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
               {p.arrondissement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#6A1B9A",background:"rgba(106,27,154,0.07)",padding:"3px 10px",borderRadius:999}}>Arrondissement de {p.arrondissement_nom}</span>}
             </div>
           </div>
-          <button onClick={onClose} aria-label="Fermer"
+          <button onClick={onClose}
             style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
             onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
@@ -509,7 +507,6 @@ function ProjetModal({ projet: p, secteurs, branches, activites, onClose }: {
 
 // ── Modal détail potentialité ─────────────────────────────────────────────────
 function PotentialiteModal({ pot: p, refAvantages, onClose }: { pot:any; refAvantages:any[]; onClose:()=>void }) {
-  const dlgRef = useModalA11y(onClose); // monté uniquement quand une potentialité est sélectionnée (rendu conditionnel côté parent)
   // Couleur du niveau (palette du site)
   const NIVEAU_COLORS: Record<string,string> = {
     pole:"#004f91", region:"#ca631f", departement:"#188038", arrondissement:"#6A1B9A",
@@ -552,7 +549,7 @@ function PotentialiteModal({ pot: p, refAvantages, onClose }: { pot:any; refAvan
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={`Détail de la potentialité ${p.titre}`} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:660,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:660,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
         <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
@@ -566,7 +563,7 @@ function PotentialiteModal({ pot: p, refAvantages, onClose }: { pot:any; refAvan
               </div>
             )}
           </div>
-          <button onClick={onClose} aria-label="Fermer"
+          <button onClick={onClose}
             style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
             onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
@@ -689,7 +686,6 @@ function PotentialiteModal({ pot: p, refAvantages, onClose }: { pot:any; refAvan
 
 // ── Modal détail avantage ─────────────────────────────────────────────────────
 function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
-  const dlgRef = useModalA11y(onClose); // monté uniquement quand un avantage est sélectionné (rendu conditionnel côté parent)
   const [data, setData] = useState<any>(a);
 
   useEffect(()=>{
@@ -705,7 +701,7 @@ function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={`Détail de l'avantage ${data.activite_nom||""}`} onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
         <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
@@ -732,7 +728,7 @@ function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
               )}
             </div>
           </div>
-          <button onClick={onClose} aria-label="Fermer"
+          <button onClick={onClose}
             style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
             onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
@@ -1106,7 +1102,7 @@ export default function OpportunitesPage() {
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
                 {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <button onClick={()=>setSidebarOpen(o=>!o)} aria-label="Basculer les filtres"
+                  <button onClick={()=>setSidebarOpen(o=>!o)}
                     style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
                     <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
                     {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
@@ -1127,7 +1123,7 @@ export default function OpportunitesPage() {
                       <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
                       <input value={projQ} onChange={e=>setProjQ(e.target.value)} placeholder="Rechercher…"
                         style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                      {projQ&&<button onClick={()=>setProjQ("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                      {projQ&&<button onClick={()=>setProjQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                     </div>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                     <SideFilter label="Pôle territoire" color="#004f91"
