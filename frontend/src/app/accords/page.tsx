@@ -46,7 +46,7 @@ function SideFilter({ label, items, selected, onToggle, color, listMaxHeight }: 
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           {selected.length>0&&<span style={{width:6,height:6,borderRadius:"50%",background:color,display:"inline-block"}}/>}
-          <span style={{fontSize:11,fontWeight:700,color:selected.length>0?color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
+          <span style={{fontSize:11,fontWeight:700,color:selected.length>0?color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
           {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"18",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
         </div>
         <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -86,7 +86,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
           {secteursSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{secteursSel.length}</span>}
           {branchesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{branchesSel.length}</span>}
           {activitesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{activitesSel.length}</span>}
@@ -211,9 +211,9 @@ function AccordVue({ accord:a, onClose }: { accord:any; onClose:()=>void }) {
           <section>
             <SecTitle>Dates</SecTitle>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <Bloc label="Signature"><p style={{fontSize:12.5,fontWeight:600,color:a.date_signature?"#1a1a2e":"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p></Bloc>
+              <Bloc label="Signature"><p style={{fontSize:12.5,fontWeight:600,color:a.date_signature?"#1a1a2e":"#6b7684"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p></Bloc>
               {a.date_entree_vigueur&&<Bloc label="Entrée en vigueur"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p></Bloc>}
-              <Bloc label="Expiration"><p style={{fontSize:12.5,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p></Bloc>
+              <Bloc label="Expiration"><p style={{fontSize:12.5,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#6b7684"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p></Bloc>
             </div>
           </section>
 
@@ -496,17 +496,17 @@ export default function AccordsPage() {
             </div>
             {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
                 <div style={{position:"relative" as const,marginBottom:18}}>
-                  <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+                  <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#6b7684"}}/>
                   <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                  {recherche&&<button onClick={()=>setRecherche("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                  {recherche&&<button onClick={()=>setRecherche("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#6b7684"}}/></button>}
                 </div>
                 {/* Parties signataires — section personnalisée */}
                 <div style={{marginBottom:18}}>
                   <button onClick={()=>setPartiesOpen(o=>!o)}
                     style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:partiesOpen?8:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Parties signataires</span>
+                      <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Parties signataires</span>
                       {(paysIdsFiltres.length>0||apixFiltre)&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{paysIdsFiltres.length+(apixFiltre?1:0)}</span>}
                     </div>
                     <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -538,7 +538,7 @@ export default function AccordsPage() {
                     );})()}
                     {/* Sous-section Pays */}
                     {autresPays.length>0&&<>
-                      <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",margin:"8px 0 2px",padding:"0 8px"}}>Pays</p>
+                      <p style={{fontSize:10,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.08em",margin:"8px 0 2px",padding:"0 8px"}}>Pays</p>
                       <div style={{maxHeight:160,overflowY:"auto" as const}}>
                         {autresPays.map((p:any)=>{const sel=paysIdsFiltres.includes(p.id); return (
                           <button key={p.id} onClick={()=>togglePaysId(p.id)}
@@ -566,7 +566,7 @@ export default function AccordsPage() {
             {loading ? (
               <SkeletonCards n={6} cols={2} height={200}/>
             ) : accords.length===0 ? (
-              <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+              <div style={{textAlign:"center",padding:"80px 24px",color:"#6b7684"}}>
                 <FileText size={48} style={{marginBottom:16,opacity:0.3}}/>
                 <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun accord trouvé</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
@@ -610,11 +610,11 @@ export default function AccordsPage() {
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
                         <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
                           <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
-                          <p style={{fontSize:12,fontWeight:600,color:a.date_signature?txtC:"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
+                          <p style={{fontSize:12,fontWeight:600,color:a.date_signature?txtC:"#6b7684"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                         </div>
                         <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
                           <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
-                          <p style={{fontSize:12,fontWeight:600,color:a.date_expiration?txtC:"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p>
+                          <p style={{fontSize:12,fontWeight:600,color:a.date_expiration?txtC:"#6b7684"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p>
                         </div>
                       </div>
 

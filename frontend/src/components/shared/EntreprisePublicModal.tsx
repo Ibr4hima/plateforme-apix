@@ -181,7 +181,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
                   <div key={i} style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"11px 14px",fontSize:12}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap" as const}}>
                       <span style={{fontWeight:700,color:"#1a1a2e"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</span>
-                      {pf.poste && <span style={{color:"#9aa5b4"}}>{pf.poste}</span>}
+                      {pf.poste && <span style={{color:"#6b7684"}}>{pf.poste}</span>}
                       {pf.est_principal && <span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",borderRadius:999,padding:"2px 8px"}}>Principal</span>}
                     </div>
                     {(pf.telephone||pf.mail)&&(

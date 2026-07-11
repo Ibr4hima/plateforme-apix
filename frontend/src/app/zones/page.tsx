@@ -67,7 +67,7 @@ function SunburstZones({ zones }: { zones:any[] }) {
     const getColor = (d:any):string => {
       if (d.depth===0) return "#F2F2F2";
       let n=d; while(n.depth>1) n=n.parent;
-      const c = ZONE_COL[n.data.type] || "#9aa5b4";
+      const c = ZONE_COL[n.data.type] || "#6b7684";
       const a = d.depth===1?0.45:d.depth===2?0.40:d.depth===3?0.37:0.12+d.depth*0.15;
       return c + Math.round(Math.min(a,0.85)*255).toString(16).padStart(2,"0");
     };
@@ -96,7 +96,7 @@ function SunburstZones({ zones }: { zones:any[] }) {
     });
 
     // ── Badges via foreignObject (centrage CSS parfait) ───────────────────────
-    const getTypeColor = (d:any):string => { let n=d; while(n.depth>1) n=n.parent; return TYPE_META[n.data.type]?.color||"#9aa5b4"; };
+    const getTypeColor = (d:any):string => { let n=d; while(n.depth>1) n=n.parent; return TYPE_META[n.data.type]?.color||"#6b7684"; };
 
     // depth=1 : badge "N ZES" centré sous le titre
     cell.filter((d:any)=>d.depth===1&&d.children&&labelOk(d)&&(d.x1-d.x0)>32)
@@ -248,11 +248,11 @@ function ZonesParType({ zones }: { zones: any[] }) {
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
                   <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px" }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
-                    <p style={{ fontSize:14, fontWeight:800, color:entreprises>0?"#1a1a2e":"#9aa5b4" }}>{entreprises}</p>
+                    <p style={{ fontSize:14, fontWeight:800, color:entreprises>0?"#1a1a2e":"#6b7684" }}>{entreprises}</p>
                   </div>
                   <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px" }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Zone{t.zones.length>1?"s":""}</p>
-                    <p style={{ fontSize:14, fontWeight:800, color:t.zones.length>0?"#1a1a2e":"#9aa5b4" }}>{t.zones.length}</p>
+                    <p style={{ fontSize:14, fontWeight:800, color:t.zones.length>0?"#1a1a2e":"#6b7684" }}>{t.zones.length}</p>
                   </div>
                 </div>
               </div>
@@ -337,13 +337,13 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
           <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px", minWidth:0 }}>
             <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Localisation</p>
-            <p data-marquee style={{ fontSize:12, fontWeight:600, color:(zone.departement_nom||zone.region_nom)?"#1a1a2e":"#9aa5b4", overflow:"hidden", whiteSpace:"nowrap" as const }}>
+            <p data-marquee style={{ fontSize:12, fontWeight:600, color:(zone.departement_nom||zone.region_nom)?"#1a1a2e":"#6b7684", overflow:"hidden", whiteSpace:"nowrap" as const }}>
               <span style={{ display:"inline-block" }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</span>
             </p>
           </div>
           <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px" }}>
             <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
-            <p style={{ fontSize:12, fontWeight:600, color:entreprises>0?"#1a1a2e":"#9aa5b4" }}>{entreprises}</p>
+            <p style={{ fontSize:12, fontWeight:600, color:entreprises>0?"#1a1a2e":"#6b7684" }}>{entreprises}</p>
           </div>
         </div>
       </div>
@@ -410,7 +410,7 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
       onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";}}>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ze.entreprise?.nom}</div>
-        {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"#9aa5b4"}}>{ze.entreprise.forme_juridique}</div>}
+        {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"#6b7684"}}>{ze.entreprise.forme_juridique}</div>}
       </div>
       <span style={{display:"flex",alignItems:"center",gap:4,background:"rgba(0,79,145,0.07)",borderRadius:7,padding:"5px 10px",fontSize:11,color:"#004f91",fontWeight:600,flexShrink:0}}>
         Fiche →

@@ -65,7 +65,7 @@ function SideFilter({ label, items, selected, onToggle, color }: {
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
           {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"18",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
         </div>
         <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -108,7 +108,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
           {secteursSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{secteursSel.length}</span>}
           {branchesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{branchesSel.length}</span>}
           {activitesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{activitesSel.length}</span>}
@@ -245,7 +245,7 @@ function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
               {dateStr&&(
                 <Bloc label="Date">
                   <p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{dateStr}</p>
-                  {e.duree_jours&&<p style={{fontSize:10.5,color:"#9aa5b4",marginTop:2}}>{e.duree_jours} jour{e.duree_jours>1?"s":""}</p>}
+                  {e.duree_jours&&<p style={{fontSize:10.5,color:"#6b7684",marginTop:2}}>{e.duree_jours} jour{e.duree_jours>1?"s":""}</p>}
                 </Bloc>
               )}
               {(e.ville||e.pays_hote_nom)&&(
@@ -309,7 +309,7 @@ function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
               <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
                 {e.pays_invites_noms&&(
                   <div>
-                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:5}}>Pays invités</p>
+                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#6b7684",textTransform:"uppercase" as const,marginBottom:5}}>Pays invités</p>
                     <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
                       {e.pays_invites_noms.split(",").map((p:string)=>p.trim()).filter(Boolean).map((p:string)=>(
                         <span key={p} style={{fontSize:11,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999,fontWeight:600}}>{p}</span>
@@ -319,7 +319,7 @@ function EvenementVue({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
                 )}
                 {e.entreprises_invitees&&(
                   <div>
-                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:5}}>Entreprises invitées</p>
+                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#6b7684",textTransform:"uppercase" as const,marginBottom:5}}>Entreprises invitées</p>
                     <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
                       {e.entreprises_invitees.split(",").map((ent:string)=>ent.trim()).filter(Boolean).map((ent:string)=>(
                         <span key={ent} style={{fontSize:11,color:"#ca631f",background:"rgba(202,99,31,0.07)",padding:"3px 10px",borderRadius:999,fontWeight:600}}>{ent}</span>
@@ -439,11 +439,11 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
         <div data-marquee style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
           <span style={{display:"inline-block"}}>{e.nom_event}</span>
         </div>
-        {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinal(e.edition)}</div>}
+        {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#6b7684",marginTop:2}}>{ordinal(e.edition)}</div>}
         {lieu&&(
           <div style={{display:"flex",alignItems:"center",gap:5,marginTop:7,minWidth:0}}>
-            <MapPin size={11} style={{color:"#9aa5b4",flexShrink:0}}/>
-            <span data-marquee style={{fontSize:11.5,color:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const,minWidth:0}}>
+            <MapPin size={11} style={{color:"#6b7684",flexShrink:0}}/>
+            <span data-marquee style={{fontSize:11.5,color:"#6b7684",overflow:"hidden",whiteSpace:"nowrap" as const,minWidth:0}}>
               <span style={{display:"inline-block"}}>{lieu}</span>
             </span>
           </div>
@@ -493,7 +493,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
       {/* Événements récurrents sans date fixée */}
       {sansDate.length>0&&(
         <div style={{marginTop:36}}>
-          <p style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",letterSpacing:"0.14em",textTransform:"uppercase" as const,textAlign:"center" as const,marginBottom:14}}>Date à confirmer</p>
+          <p style={{fontSize:10.5,fontWeight:700,color:"#6b7684",letterSpacing:"0.14em",textTransform:"uppercase" as const,textAlign:"center" as const,marginBottom:14}}>Date à confirmer</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
             {sansDate.map(e=><Carte key={e.id} e={e}/>)}
           </div>
@@ -659,13 +659,13 @@ export default function EvenementsPage() {
             {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
               <>
                 <div style={{position:"relative" as const,marginBottom:18}}>
-                  <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+                  <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#6b7684"}}/>
                   <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                  {recherche&&<button onClick={()=>setRecherche("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                  {recherche&&<button onClick={()=>setRecherche("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#6b7684"}}/></button>}
                 </div>
                 <div style={{marginBottom:18}}>
-                  <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
+                  <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"#004f91":"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
                   <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
                     {STATUT_OPTS.map(b=>(
                       <button key={b.value} onClick={()=>setStatutFiltre(b.value)}
@@ -690,7 +690,7 @@ export default function EvenementsPage() {
             {loading?(
               <SkeletonCards n={6} cols={2} height={220}/>
             ):evenements.length===0?(
-              <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+              <div style={{textAlign:"center",padding:"80px 24px",color:"#6b7684"}}>
                 <CalendarDays size={48} style={{marginBottom:16,opacity:0.3}}/>
                 <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun événement trouvé</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
@@ -769,19 +769,19 @@ export default function EvenementsPage() {
 
                           {/* Titre + édition */}
                           <div style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
-                          {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinal(e.edition)}</div>}
+                          {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#6b7684",marginTop:2}}>{ordinal(e.edition)}</div>}
 
                           {/* Infos libellées */}
                           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
                             <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px",minWidth:0}}>
                               <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Date</p>
-                              <p data-marquee style={{fontSize:12,fontWeight:600,color:dateStr?txtC:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                              <p data-marquee style={{fontSize:12,fontWeight:600,color:dateStr?txtC:"#6b7684",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                 <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
                               </p>
                             </div>
                             <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px",minWidth:0}}>
                               <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Lieu</p>
-                              <p data-marquee style={{fontSize:12,fontWeight:600,color:lieu?txtC:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                              <p data-marquee style={{fontSize:12,fontWeight:600,color:lieu?txtC:"#6b7684",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                 <span style={{display:"inline-block"}}>{lieu||"—"}</span>
                               </p>
                             </div>

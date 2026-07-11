@@ -180,7 +180,7 @@ export default function HomePage() {
                 8 modules de données<br/>interconnectés
               </h2>
             </div>
-            <p style={{color:"#9aa5b4",maxWidth:360,lineHeight:1.65,fontSize:14}}>
+            <p style={{color:"#6b7684",maxWidth:360,lineHeight:1.65,fontSize:14}}>
               Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
             </p>
           </div>
@@ -197,7 +197,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h3 style={{fontWeight:700,fontSize:15,color:"#1a1a2e",marginBottom:6}}>{m.label}</h3>
-                    <p style={{fontSize:12,color:"#9aa5b4",lineHeight:1.6}}>{m.desc}</p>
+                    <p style={{fontSize:12,color:"#6b7684",lineHeight:1.6}}>{m.desc}</p>
                   </div>
                   <div className="mod-arrow" style={{marginTop:"auto",display:"flex",alignItems:"center",gap:4,fontSize:12,color:m.color,fontWeight:600,opacity:0,transition:"opacity 0.15s"}}>
                     Accéder <ChevronRight size={13}/>
@@ -265,7 +265,7 @@ export default function HomePage() {
             <div style={{width:1,height:36,background:"#E4E1DE"}}/>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:"#1a1a2e"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
-              <div style={{fontSize:12,color:"#9aa5b4",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
+              <div style={{fontSize:12,color:"#6b7684",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
             </div>
           </div>
           <div style={{display:"flex",gap:16,flexWrap:"wrap" as const}}>
@@ -286,8 +286,8 @@ export default function HomePage() {
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
       <footer className="lp-pad" style={{borderTop:"1px solid #ECEAE7",padding:"24px 60px",background:"#fff"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:12}}>
-          <p style={{color:"#9aa5b4",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
-          <p style={{color:"#9aa5b4",fontSize:12}}>Plateforme à usage institutionnel</p>
+          <p style={{color:"#6b7684",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
+          <p style={{color:"#6b7684",fontSize:12}}>Plateforme à usage institutionnel</p>
         </div>
       </footer>
     </main>

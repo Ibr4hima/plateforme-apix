@@ -71,7 +71,7 @@ function SideFilter({ label, items, selected, onToggle, color }: {
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
           {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"18",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
         </div>
         <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -112,7 +112,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
           {secteursSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{secteursSel.length}</span>}
           {branchesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{branchesSel.length}</span>}
           {activitesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{activitesSel.length}</span>}
@@ -179,7 +179,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Localisation</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Localisation</span>
           {regionsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{regionsSel.length}</span>}
           {departementsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{departementsSel.length}</span>}
           {arrondissementsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{arrondissementsSel.length}</span>}
@@ -248,7 +248,7 @@ function AtotusFiltreFilter({ pots, refAvantages, selected, onToggle }: {
   const catMap = new Map<string, {libelle:string; couleur:string; atouts:string[]}>();
   refAvantages.filter(a => usedAvantageIds.has(a.id)).forEach(a => {
     const cat = a.categorie_libelle || "Autres";
-    if (!catMap.has(cat)) catMap.set(cat, {libelle:cat, couleur:CAT_COLORS[cat]||"#9aa5b4", atouts:[]});
+    if (!catMap.has(cat)) catMap.set(cat, {libelle:cat, couleur:CAT_COLORS[cat]||"#6b7684", atouts:[]});
     if (!catMap.get(cat)!.atouts.includes(a.libelle)) catMap.get(cat)!.atouts.push(a.libelle);
   });
   const categories = Array.from(catMap.values());
@@ -259,7 +259,7 @@ function AtotusFiltreFilter({ pots, refAvantages, selected, onToggle }: {
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Atouts & potentialités</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Atouts & potentialités</span>
           {hasFilter&&<span style={{fontSize:10,fontWeight:700,color:"#059669",background:"rgba(5,150,105,0.12)",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
         </div>
         <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -1124,10 +1124,10 @@ export default function OpportunitesPage() {
                   {/* Filtres Projets */}
                   {onglet==="projets"&&<>
                     <div style={{position:"relative" as const,marginBottom:18}}>
-                      <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+                      <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#6b7684"}}/>
                       <input value={projQ} onChange={e=>setProjQ(e.target.value)} placeholder="Rechercher…"
                         style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                      {projQ&&<button onClick={()=>setProjQ("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                      {projQ&&<button onClick={()=>setProjQ("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#6b7684"}}/></button>}
                     </div>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                     <SideFilter label="Pôle territoire" color="#004f91"
@@ -1165,7 +1165,7 @@ export default function OpportunitesPage() {
                 {projLoad ? (
                   <SkeletonCards n={6} cols={2} height={200}/>
                 ) : projetsFiltres.length===0 ? (
-                  <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+                  <div style={{textAlign:"center",padding:"80px 24px",color:"#6b7684"}}>
                     <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun projet trouvé</p>
                     <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                   </div>
@@ -1198,11 +1198,11 @@ export default function OpportunitesPage() {
                           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
                             <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
                               <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Région</p>
-                              <p style={{fontSize:12,fontWeight:600,color:p.region_nom?"#1a1a2e":"#9aa5b4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
+                              <p style={{fontSize:12,fontWeight:600,color:p.region_nom?"#1a1a2e":"#6b7684",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
                             </div>
                             <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
                               <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Département</p>
-                              <p style={{fontSize:12,fontWeight:600,color:p.departement_nom?"#1a1a2e":"#9aa5b4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
+                              <p style={{fontSize:12,fontWeight:600,color:p.departement_nom?"#1a1a2e":"#6b7684",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
                             </div>
                           </div>
                         </div>
@@ -1271,11 +1271,11 @@ export default function OpportunitesPage() {
                             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                               <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
                                 <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{n.unit}</p>
-                                <p style={{fontSize:14,fontWeight:800,color:total>0?"#1a1a2e":"#9aa5b4"}}>{total||"—"}</p>
+                                <p style={{fontSize:14,fontWeight:800,color:total>0?"#1a1a2e":"#6b7684"}}>{total||"—"}</p>
                               </div>
                               <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
                                 <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Fiches définies</span></p>
-                                <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{total>0?`${count}/${total}`:count}</p>
+                                <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#6b7684"}}>{total>0?`${count}/${total}`:count}</p>
                               </div>
                             </div>
                           </div>
@@ -1301,7 +1301,7 @@ export default function OpportunitesPage() {
                     </button>
                     {(()=>{
                       const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
-                      if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
+                      if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#6b7684"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
                       // Rattachements géographiques via le référentiel déjà chargé
                       const regionDuDept = (nom:string) => regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.nom===nom))?.nom || null;
                       const deptDeArr = (nom:string) => {
@@ -1351,13 +1351,13 @@ export default function OpportunitesPage() {
                                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
                                     <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
                                       <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{info1.label}</p>
-                                      <p data-marquee style={{fontSize:12,fontWeight:600,color:info1.value?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                      <p data-marquee style={{fontSize:12,fontWeight:600,color:info1.value?"#1a1a2e":"#6b7684",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                         <span style={{display:"inline-block"}}>{info1.value||"—"}</span>
                                       </p>
                                     </div>
                                     <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
                                       <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Activités porteuses</span></p>
-                                      <p style={{fontSize:14,fontWeight:800,color:nbActs>0?"#1a1a2e":"#9aa5b4"}}>{nbActs||"—"}</p>
+                                      <p style={{fontSize:14,fontWeight:800,color:nbActs>0?"#1a1a2e":"#6b7684"}}>{nbActs||"—"}</p>
                                     </div>
                                   </div>
                                 </div>
@@ -1430,11 +1430,11 @@ export default function OpportunitesPage() {
                             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                               <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
                                 <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Activités</p>
-                                <p style={{fontSize:14,fontWeight:800,color:actCount>0?"#1a1a2e":"#9aa5b4"}}>{actCount||"—"}</p>
+                                <p style={{fontSize:14,fontWeight:800,color:actCount>0?"#1a1a2e":"#6b7684"}}>{actCount||"—"}</p>
                               </div>
                               <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
                                 <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Avantages définis</span></p>
-                                <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{actCount>0?`${count}/${actCount}`:count}</p>
+                                <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#6b7684"}}>{actCount>0?`${count}/${actCount}`:count}</p>
                               </div>
                             </div>
                           </div>

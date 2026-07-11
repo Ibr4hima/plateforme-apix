@@ -29,7 +29,7 @@ function SideFilter({ label, items, selected, onToggle, color, searchable=false,
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
           {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"18",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
         </div>
         <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -39,7 +39,7 @@ function SideFilter({ label, items, selected, onToggle, color, searchable=false,
       {open&&(
         <>
           {searchable&&<div style={{position:"relative" as const,marginBottom:6}}>
-            <Search size={11} style={{position:"absolute" as const,left:8,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+            <Search size={11} style={{position:"absolute" as const,left:8,top:"50%",transform:"translateY(-50%)",color:"#6b7684"}}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
               style={{width:"100%",paddingLeft:24,paddingRight:8,paddingTop:6,paddingBottom:6,borderRadius:7,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:11,outline:"none",boxSizing:"border-box" as const}}/>
           </div>}
@@ -76,7 +76,7 @@ function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activite
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
           {secteursSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{secteursSel.length}</span>}
           {branchesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{branchesSel.length}</span>}
           {activitesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{activitesSel.length}</span>}
@@ -142,7 +142,7 @@ function LocalisationFilter({ regions, regionsSel, departementsSel, arrondisseme
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Localisation</span>
+          <span style={{fontSize:11,fontWeight:700,color:"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Localisation</span>
           {regionsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{regionsSel.length}</span>}
           {departementsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{departementsSel.length}</span>}
           {arrondissementsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{arrondissementsSel.length}</span>}
@@ -209,7 +209,7 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",display:"inline-block"}}/>}
-          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
+          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"#004f91":"#6b7684",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
         </div>
         <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
           {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
@@ -231,7 +231,7 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
-            <span style={{fontSize:10,color:"#9aa5b4"}}>—</span>
+            <span style={{fontSize:10,color:"#6b7684"}}>—</span>
             <span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
           </div>
           {isFiltered&&<button onClick={()=>onChange(minYear,maxYear)}
@@ -411,10 +411,10 @@ export default function EntreprisesPage() {
             </div>
             {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
                 <div style={{position:"relative" as const,marginBottom:18}}>
-                  <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+                  <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#6b7684"}}/>
                   <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                  {recherche&&<button onClick={()=>setRecherche("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                  {recherche&&<button onClick={()=>setRecherche("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#6b7684"}}/></button>}
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <SideFilter label="Forme juridique" color="#004f91" items={formeOpts} selected={formesSel} onToggle={toggleForme} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
@@ -433,7 +433,7 @@ export default function EntreprisesPage() {
             {loading?(
               <SkeletonCards n={6} cols={2} height={200}/>
             ):entreprises.length===0?(
-              <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+              <div style={{textAlign:"center",padding:"80px 24px",color:"#6b7684"}}>
                 <Building2 size={48} style={{marginBottom:16,opacity:0.3}}/>
                 <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucune entreprise trouvée</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
@@ -466,11 +466,11 @@ export default function EntreprisesPage() {
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
                         <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
                           <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Création</p>
-                          <p style={{fontSize:12,fontWeight:600,color:e.date_creation?"#1a1a2e":"#9aa5b4"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
+                          <p style={{fontSize:12,fontWeight:600,color:e.date_creation?"#1a1a2e":"#6b7684"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
                         </div>
                         <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
                           <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Région</p>
-                          <p style={{fontSize:12,fontWeight:600,color:e.region_nom?"#1a1a2e":"#9aa5b4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
+                          <p style={{fontSize:12,fontWeight:600,color:e.region_nom?"#1a1a2e":"#6b7684",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
                         </div>
                       </div>
                     </div>
