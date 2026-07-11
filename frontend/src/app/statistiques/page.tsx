@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
@@ -157,7 +158,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
         </div>
         <div style={{ overflowY: "auto", flex: 1, padding: "0 28px 8px" }}>
           {charg ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={20} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} /></div>
+            <div style={{ paddingTop: 12 }}><SkeletonRows n={9} h={36} /></div>
           ) : partenaires.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "#9aa5b4", fontSize: 13 }}>Aucune donnée pour {annee}.</div>
           ) : (
@@ -351,8 +352,9 @@ function CommercePanel() {
   const ressFiltrees = ressources.filter(r => !qRess || (r.libelle || r.nom_en).toLowerCase().includes(qRess.toLowerCase()));
 
   if (loading) return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 260, gap: 12, color: "#9aa5b4" }}>
-      <Loader2 size={22} style={{ animation: "spin 1s linear infinite" }} /><span style={{ fontSize: 14 }}>Chargement…</span>
+    <div style={{ padding: "32px 40px 80px", display: "grid", gap: 18 }}>
+      <SkeletonKPIs n={5} />
+      <SkeletonChartGrid n={2} cols={2} height={320} />
     </div>
   );
   if (!annees.length) return (
@@ -1850,8 +1852,9 @@ export default function StatistiquesPage() {
         {/* Zone principale */}
         <div style={{ flex: 1, minWidth: 0, padding: "32px 40px 80px" }}>
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 300, gap: 12, color: "#9aa5b4" }}>
-              <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} /><span style={{ fontSize: 14 }}>Chargement…</span>
+            <div style={{ display: "grid", gap: 18 }}>
+              <SkeletonKPIs n={5} />
+              <SkeletonChartGrid n={2} cols={2} height={320} />
             </div>
           ) : !selection.length ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>

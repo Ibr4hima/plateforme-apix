@@ -2,7 +2,8 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, ChevronDown, FileText, Landmark, Loader2, Scale, Search, X } from "lucide-react";
+import { ArrowRight, ChevronDown, FileText, Landmark, Scale, Search, X } from "lucide-react";
+import { SkeletonRows } from "@/components/shared/Skeleton";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -129,7 +130,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
               </div>
             )}
             {!data ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} /></div>
+              <SkeletonRows n={10} h={34} />
             ) : (
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
