@@ -5,7 +5,8 @@ import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/sha
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import Badge from "@/components/shared/Badge";
-import { Building2, ChevronDown, ChevronUp, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
+import { Building2, ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 
@@ -381,9 +382,7 @@ export default function EntreprisesPage() {
       {onglet==="territoire" && (
         <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
           {loading ? (
-            <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}>
-              <Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:14}}>Chargement…</span>
-            </div>
+            <SkeletonChart height={520}/>
           ) : (
             <VueTerritorialeSenegal zones={[]} mode="region"/>
           )}
@@ -432,9 +431,7 @@ export default function EntreprisesPage() {
           {/* Grille */}
           <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
             {loading?(
-              <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}>
-                <Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:14}}>Chargement…</span>
-              </div>
+              <SkeletonCards n={6} cols={2} height={200}/>
             ):entreprises.length===0?(
               <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
                 <Building2 size={48} style={{marginBottom:16,opacity:0.3}}/>

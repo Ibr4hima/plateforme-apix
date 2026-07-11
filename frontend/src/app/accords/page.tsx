@@ -3,7 +3,8 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
-import { ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import { ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 
@@ -561,9 +562,7 @@ export default function AccordsPage() {
           {/* Grille accords */}
           <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
             {loading ? (
-              <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}>
-                <Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:14}}>Chargement…</span>
-              </div>
+              <SkeletonCards n={6} cols={2} height={200}/>
             ) : accords.length===0 ? (
               <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
                 <FileText size={48} style={{marginBottom:16,opacity:0.3}}/>

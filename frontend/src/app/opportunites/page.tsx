@@ -3,7 +3,8 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge from "@/components/shared/Badge";
-import { ArrowLeft, ChevronDown, ChevronUp, FileText, Loader2, Search, SlidersHorizontal, User, X } from "lucide-react";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import { ArrowLeft, ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Fuse from "@/lib/fuse";
@@ -1158,7 +1159,7 @@ export default function OpportunitesPage() {
             {onglet==="projets"&&(
               <>
                 {projLoad ? (
-                  <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
+                  <SkeletonCards n={6} cols={2} height={200}/>
                 ) : projetsFiltres.length===0 ? (
                   <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
                     <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun projet trouvé</p>
@@ -1221,7 +1222,7 @@ export default function OpportunitesPage() {
             {onglet==="potentialites"&&(
               <>
                 {potsLoad ? (
-                  <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
+                  <SkeletonCards n={4} cols={4} height={190}/>
                 ) : selectedNiveau===null ? (
                   /* ── Picker 4 cards ── */
                   <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
@@ -1380,7 +1381,7 @@ export default function OpportunitesPage() {
             {onglet==="avantages"&&(
               <>
                 {avgsLoad ? (
-                  <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:12,color:"#9aa5b4"}}><Loader2 size={24} style={{animation:"spin 1s linear infinite"}}/><span>Chargement…</span></div>
+                  <SkeletonCards n={3} cols={3} height={190}/>
                 ) : selectedSecAvg===null ? (
                   /* ── Vue secteurs : 3 cards ── */
                   <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>

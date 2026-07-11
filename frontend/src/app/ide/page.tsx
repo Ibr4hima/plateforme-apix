@@ -7,6 +7,7 @@ import * as d3 from "d3";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
+import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -1207,9 +1208,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 
           {/* Graphes */}
           {loading ? (
-            <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
-              <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-            </div>
+            <SkeletonChartGrid n={4} cols={2} height={230}/>
           ) : (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>(
@@ -1506,9 +1505,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
           </div>
 
           {loading ? (
-            <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
-              <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-            </div>
+            <SkeletonChartGrid n={4} cols={2} height={230}/>
           ) : (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
@@ -1642,7 +1639,7 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
       <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
         <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
       </div>
-      {donnees.length===0&&!mini&&<p style={{ textAlign:"center" as const, color:"#9aa5b4", fontSize:12, marginTop:16 }}>Chargement…</p>}
+      {donnees.length===0&&!mini&&<div style={{ marginTop:16 }}><SkeletonRows n={10} h={36}/></div>}
     </div>
   );
 }
@@ -2015,7 +2012,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=4?"#004f91":"#9aa5b4", background:grpSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/4</span>
           </div>
 
-          {groupements.length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Chargement…</p>}
+          {groupements.length===0&&<div style={{ padding:"8px 0" }}><SkeletonRows n={8} h={26}/></div>}
 
           {/* Helper render d'un item */}
           {(() => {
@@ -2140,9 +2137,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             <p style={{ fontSize:13 }}>Les statistiques agrégées s'afficheront ici.</p>
           </div>
         ) : loading ? (
-          <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
-            <div style={{ width:28, height:28, border:"2.5px solid #188038", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-          </div>
+          <SkeletonChartGrid n={4} cols={2} height={230}/>
         ) : (
           <>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
@@ -3072,9 +3067,7 @@ function OngletNational() {
                 <p style={{ fontSize:14, lineHeight:1.7 }}>Sélectionnez jusqu'à 4 {typePluriel} dans le filtre pour comparer leurs données.</p>
               </div>
             ) : loadingComp ? (
-              <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
-                <div style={{ width:28, height:28, border:"2.5px solid #004f91", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-              </div>
+              <SkeletonChartGrid n={8} cols={2} height={215}/>
             ) : (
               <>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
@@ -3150,9 +3143,7 @@ function OngletNational() {
         )}
 
         {loading ? (
-          <div style={{ display:"flex", justifyContent:"center", padding:80 }}>
-            <div style={{ width:28, height:28, border:`2.5px solid ${couleur}`, borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-          </div>
+          <SkeletonChartGrid n={8} cols={2} height={215}/>
         ) : indicateurs.length===0 ? (
           <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"#9aa5b4" }}>
             <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>

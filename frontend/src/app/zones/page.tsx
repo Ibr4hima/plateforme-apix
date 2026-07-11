@@ -5,6 +5,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
+import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
@@ -604,21 +605,13 @@ export default function ZonesPage() {
       {/* ── Contenu ── */}
       <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
         {onglet==="zones" && (
-          loading ? <Loader/> : <ZonesParType zones={zones}/>
+          loading ? <SkeletonCards n={3} cols={3} height={190}/> : <ZonesParType zones={zones}/>
         )}
         {onglet==="territoire" && (
-          loading ? <Loader/> : <VueTerritorialeSenegal zones={zones}/>
+          loading ? <SkeletonChart height={520}/> : <VueTerritorialeSenegal zones={zones}/>
         )}
       </section>
     </main>
   );
 }
 
-function Loader() {
-  return (
-    <div style={{ display:"flex",justifyContent:"center",alignItems:"center",height:300,gap:10,color:"#9aa5b4" }}>
-      <div style={{ width:20,height:20,border:"2px solid rgba(202,99,31,0.2)",borderTopColor:"#ca631f",borderRadius:"50%",animation:"spin 1s linear infinite" }}/>
-      <span style={{ fontSize:14 }}>Chargement…</span>
-    </div>
-  );
-}

@@ -6,13 +6,14 @@ import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
 import {
   Activity, BarChart2, Building2, Calendar, ChevronDown, ChevronUp,
-  DollarSign, Handshake, Layers, Loader2, MapPin, Maximize2, Search,
+  DollarSign, Handshake, Layers, MapPin, Maximize2, Search,
   SlidersHorizontal, Table2, Target, TrendingUp, X
 } from "lucide-react";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { CATALOGUE, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
 import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { zoneTypeMeta } from "@/components/shared/zoneTypes";
+import { Skeleton } from "@/components/shared/Skeleton";
 
 // Layout effect côté client, effet classique côté serveur (évite le warning SSR)
 const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -1316,9 +1317,7 @@ function VizCard({ card, viz, onRemove }: {
         </div>
         <div style={{pointerEvents:"none"}}>
           {loading?(
-            <div style={{height:160,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:"#9aa5b4"}}>
-              <Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span>
-            </div>
+            <Skeleton w="100%" h={160} r={10}/>
           ):data.length===0?(
             <EmptyState h={160}/>
           ):(
@@ -1770,7 +1769,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const modalH = isSecteurs ? 380 : isPays ? 440 : 26 + Math.max(1, modalData.length)*44 + 8;
 
   const body = (h:number) => loading
-    ? <div style={{ height:h, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"#9aa5b4" }}><Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/><span style={{fontSize:12}}>Chargement…</span></div>
+    ? <Skeleton w="100%" h={h} r={10}/>
     : cardData.length===0 ? <EmptyState h={h}/>
     : isSecteurs ? <DonutLabeled data={cardData} height={h} palette={BAR_PALETTE5} compact/>
     : isPays ? <VBarChart data={cardData} height={h} palette={BAR_PALETTE5}/>
