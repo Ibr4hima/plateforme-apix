@@ -147,7 +147,7 @@ export default function HomePage() {
             {icon:BarChart2, label:"Tableau de bord",             href:"/tableau-de-bord", sub:"KPIs & Analyses"},
             {icon:Building2, label:"Entreprises",                  href:"/entreprises",     sub:"Registre complet"},
             {mat:"real_estate_agent", label:"Zones d'investissement",        href:"/zones",        sub:"ZES, ZAI, ZFI & pôles"},
-            {mat:"bookmark_stacks",   label:"Opportunités d'investissement", href:"/opportunites", sub:"Potentialités sectorielles"},
+            {mat:"currency_exchange", label:"Échanges commerciaux",           href:"/statistiques", sub:"Flux bilatéraux"},
           ].map((item:any,i)=>{
             const Icon=item.icon;
             return (
