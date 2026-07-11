@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { AUTH_ENFORCED, moduleAutorise, nomAffiche, ROLE_LABELS } from "@/lib/authGate";
 import FichePaysLauncher from "@/components/fiche-pays/FichePaysLauncher";
-import { useModalA11y } from "@/lib/useModalA11y";
 import { useEffect, useRef, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -51,7 +50,6 @@ function CodeModal({ onClose }: { onClose: () => void }) {
   const [loading,      setLoading]     = useState(true);
   const [pendingArtId, setPendingArtId]= useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const dlgRef = useModalA11y(onClose);
 
   // Après un clic sur un résultat de recherche : défiler jusqu'à l'article et le surligner.
   useEffect(() => {
@@ -111,8 +109,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position:"fixed", inset:0, background:"rgba(20,22,28,0.5)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
 
-      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label="Code des investissements"
-        style={{ background:"#fff", borderRadius:18, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 40px 100px rgba(0,0,0,0.3)" }}>
+      <div style={{ background:"#fff", borderRadius:18, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 40px 100px rgba(0,0,0,0.3)" }}>
 
         {/* ── Header ── */}
         <div style={{ padding:"20px 28px", borderBottom:"1px solid #EDEAE6", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>
@@ -144,7 +141,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
             </a>
           )}
 
-          <button onClick={onClose} aria-label="Fermer"
+          <button onClick={onClose}
             style={{ width:38, height:38, background:"#F5F3F0", border:"none", borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.background="#EDEAE6"; }}
             onMouseLeave={e => { e.currentTarget.style.background="#F5F3F0"; }}>
@@ -399,19 +396,6 @@ export default function Navbar() {
   const openModules  = () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); setModulesOpen(true); };
   const closeModules = () => { timeoutRef.current = setTimeout(() => setModulesOpen(false), 120); };
 
-  // Menu Modules accessible clavier/tactile : Échap et clic extérieur ferment
-  const modulesRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!modulesOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setModulesOpen(false); };
-    const onDown = (e: MouseEvent) => {
-      if (modulesRef.current && !modulesRef.current.contains(e.target as Node)) setModulesOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onDown);
-    return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("mousedown", onDown); };
-  }, [modulesOpen]);
-
   const textColor = "#4a5568";
   const textHover = "#004f91";
   const bg = scrolled ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.88)";
@@ -441,13 +425,11 @@ export default function Navbar() {
           <nav className="apix-nav-desktop" style={{ display: "flex", alignItems: "center", gap: 4 }}>
 
             {/* Modules dropdown */}
-            <div ref={modulesRef} style={{ position: "relative" }}
+            <div style={{ position: "relative" }}
               onMouseEnter={openModules}
               onMouseLeave={closeModules}>
 
               <button
-                onClick={() => setModulesOpen(o => !o)}
-                aria-haspopup="menu" aria-expanded={modulesOpen}
                 style={{ display: "flex", alignItems: "center", gap: 5, height: 36, padding: "0 14px", borderRadius: 10, background: modulesOpen ? "rgba(0,79,145,0.07)" : "transparent", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: modulesOpen ? textHover : textColor, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
                 onMouseLeave={e => { e.currentTarget.style.background = modulesOpen ? "rgba(0,79,145,0.07)" : "transparent"; e.currentTarget.style.color = modulesOpen ? textHover : textColor; }}>
@@ -515,7 +497,7 @@ export default function Navbar() {
             </Link>}
             {session?.user ? (
               <div style={{ position: "relative" }}>
-                <button onClick={() => setUserOpen(o => !o)} aria-haspopup="menu" aria-expanded={userOpen}
+                <button onClick={() => setUserOpen(o => !o)}
                   style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "#1a1a2e", background: "#F5F4F3", padding: "7px 14px 7px 8px", borderRadius: 999, border: "1px solid #ECEAE7", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
