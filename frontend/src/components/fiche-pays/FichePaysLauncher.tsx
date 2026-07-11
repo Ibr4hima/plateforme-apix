@@ -94,7 +94,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                     {c.code_iso2
                       ? <img src={`https://flagcdn.com/w40/${String(c.code_iso2).toLowerCase()}.png`} alt="" width={20} height={14} style={{ borderRadius: 2, objectFit: "cover", boxShadow: "0 0 0 1px rgba(0,0,0,0.10)", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = "none"; }} />
                       : <span style={{ width: 7, height: 7, borderRadius: "50%", background: PALETTE[i % PALETTE.length] }} />}
-                    {c.nom}{c.code_iso3 ? <span style={{ color: "#6b7684", fontWeight: 600 }}>· {c.code_iso3}</span> : null}
+                    {c.nom}{c.code_iso3 ? <span style={{ color: "#9aa5b4", fontWeight: 600 }}>· {c.code_iso3}</span> : null}
                   </span>
                 ))}
               </div>
@@ -122,7 +122,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                         const an = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
                         return (
                           <span key={i} title={ac.reference || ac.titre} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>
-                            {ac.titre}{an ? <span style={{ color: "#6b7684", fontWeight: 500 }}>· {an}</span> : null}
+                            {ac.titre}{an ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {an}</span> : null}
                           </span>
                         );
                       })}
@@ -137,7 +137,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid #ECEAE7" }}>
-                  <th style={{ padding: "0 12px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur</th>
+                  <th style={{ padding: "0 12px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur</th>
                   {cols.map((c: any, i: number) => (
                     <th key={c.id} style={{ padding: "0 12px 12px", textAlign: "right", fontSize: 12.5, fontWeight: 800, color: PALETTE[i % PALETTE.length] }}>{c.nom}</th>
                   ))}
@@ -154,7 +154,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                         <tr key={ind.code} style={{ borderBottom: "1px solid #F5F4F3" }}>
                           <td style={{ padding: "11px 12px" }}>
                             <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e" }}>{ind.libelle}</div>
-                            <div style={{ fontSize: 10.5, color: "#6b7684" }}>{ind.unite}</div>
+                            <div style={{ fontSize: 10.5, color: "#9aa5b4" }}>{ind.unite}</div>
                           </td>
                           {cols.map((c: any) => {
                             const cell = getCell(c.id, ind.code);
@@ -199,7 +199,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                         <ArrowRight size={13} style={{ color: "#c5bfbb", flexShrink: 0 }} />
                         <span>{vers}</span>
                       </span>
-                      {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "#6b7684", marginTop: 3, display: "block" }}>soit <strong style={{ color: "#6b7684" }}>{(dep * 100).toFixed(1)} %</strong> des importations de {vers}</span>}
+                      {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 3, display: "block" }}>soit <strong style={{ color: "#6b7684" }}>{(dep * 100).toFixed(1)} %</strong> des importations de {vers}</span>}
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{fmtUSD(val)}</div>
@@ -257,7 +257,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
           })()}</div>)}
         </div>
         <div data-no-pdf style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
-          <span style={{ fontSize: 11, color: "#6b7684" }}>Dernière année disponible pour chaque indicateur</span>
+          <span style={{ fontSize: 11, color: "#9aa5b4" }}>Dernière année disponible pour chaque indicateur</span>
           <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
         </div>
       </div>
@@ -318,10 +318,10 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
             </button>
           </div>
           <div style={{ position: "relative" }}>
-            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#6b7684" }} />
+            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un pays…" autoFocus
               style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 9, paddingBottom: 9, borderRadius: 9, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-            {search && <button onClick={() => setSearch("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#6b7684" }} /></button>}
+            {search && <button onClick={() => setSearch("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
           </div>
         </div>
         <div style={{ overflowY: "auto", flex: 1, padding: "12px 18px" }}>
@@ -338,7 +338,7 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
                   onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                   <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "#C5BFBB"}`, background: on ? col : "transparent", flexShrink: 0 }} />
                   <span style={{ fontSize: 12, color: "#4a5568", fontWeight: on ? 700 : 400 }}>Sénégal</span>
-                  <span style={{ marginLeft: "auto", fontSize: 9, color: "#6b7684", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                  <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                 </button>
               </div>
             );
@@ -365,7 +365,7 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
                         <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
                           <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "#C5BFBB"}`, background: on ? col : "transparent", flexShrink: 0 }} />
                           <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                          <span style={{ marginLeft: "auto", fontSize: 9, color: "#6b7684" }}>Réf.</span>
+                          <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4" }}>Réf.</span>
                         </div>
                       );
                       return (
@@ -383,7 +383,7 @@ function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
               </div>
             );
           })}
-          {Object.keys(grouped).length === 0 && <p style={{ fontSize: 12, color: "#6b7684", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
+          {Object.keys(grouped).length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
         </div>
         <div style={{ padding: "14px 22px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>

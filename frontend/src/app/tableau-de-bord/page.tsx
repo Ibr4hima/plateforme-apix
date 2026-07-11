@@ -89,7 +89,7 @@ function BarH({ data, height, palette=COLORS }: { data:any[]; height:number; pal
       .text(d=>{const t=String(d.label);return t.length>17?t.slice(0,16)+"…":t;});
     g.selectAll(".val").data(data).join("text").attr("class","val")
       .attr("x",d=>x(d.valeur)+5).attr("y",d=>(y(String(d.label))??0)+y.bandwidth()/2).attr("dy","0.35em")
-      .style("font-size","10px").style("fill","#6b7684").style("font-weight","700")
+      .style("font-size","10px").style("fill","#9aa5b4").style("font-weight","700")
       .text(d=>Number(d.valeur).toLocaleString("fr-FR"));
   },[data,w,height]);
   if(!data.length) return <EmptyState/>;
@@ -191,7 +191,7 @@ function VBarChart({ data, height, palette=COLORS, rotateX=false }: { data:any[]
       .call(d3.axisBottom(x).tickSizeOuter(0))
       .call((g:any)=>g.selectAll(".domain").remove());
     if(rotateX){
-      ax.call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#6b7684")
+      ax.call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#9aa5b4")
         .attr("transform","rotate(-30)").style("text-anchor","end")
         .text((d:any)=>{ const s=String(d); return s.length>14?s.slice(0,13)+"…":s; }));
     } else {
@@ -203,7 +203,7 @@ function VBarChart({ data, height, palette=COLORS, rotateX=false }: { data:any[]
       .call(d3.axisLeft(y).ticks(4).tickFormat(d3.format("d")))
       .call((g:any)=>g.select(".domain").remove())
       .call((g:any)=>g.selectAll("line").remove())
-      .call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#6b7684"));
+      .call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#9aa5b4"));
   },[data,w,height,palette,rotateX]);
   if(!data.length) return <EmptyState h={height}/>;
   return <div ref={cRef} style={{ width:"100%", position:"relative" as const }}><svg ref={ref} style={{ width:"100%", height, display:"block" }}/></div>;
@@ -221,11 +221,11 @@ function BarV({ data, height, color="#004f91" }: { data:any[]; height:number; co
     const y=d3.scaleLinear().domain([0,d3.max(data,d=>d.valeur)||1]).range([H,0]);
     g.append("g").call(d3.axisLeft(y).ticks(4).tickFormat(d3.format("d")))
       .call(g=>g.select(".domain").remove()).call(g=>g.selectAll(".tick line").attr("stroke","#F2F0EF").attr("x2",W))
-      .call(g=>g.selectAll(".tick text").style("font-size","10px").style("fill","#6b7684"));
+      .call(g=>g.selectAll(".tick text").style("font-size","10px").style("fill","#9aa5b4"));
     const ticks=x.domain().filter((_,i,a)=>i===0||i===a.length-1||i%Math.ceil(a.length/6)===0);
     g.append("g").attr("transform",`translate(0,${H})`).call(d3.axisBottom(x).tickValues(ticks))
       .call(g=>g.select(".domain").remove()).call(g=>g.selectAll(".tick line").remove())
-      .call(g=>g.selectAll(".tick text").style("font-size","10px").style("fill","#6b7684"));
+      .call(g=>g.selectAll(".tick text").style("font-size","10px").style("fill","#9aa5b4"));
     g.selectAll("rect").data(data).join("rect").attr("x",d=>x(String(d.label))??0).attr("y",H)
       .attr("width",x.bandwidth()).attr("height",0).attr("fill",color).attr("opacity",0.85)
       .transition().duration(450).delay((_,i)=>i*12).attr("y",d=>y(d.valeur)).attr("height",d=>H-y(d.valeur));
@@ -254,7 +254,7 @@ function DonutChart({ data, size, palette=COLORS }: { data:any[]; size:number; p
       });
     const total=d3.sum(data,d=>d.valeur);
     g.append("text").attr("text-anchor","middle").attr("dy","-.1em").style("font-size","17px").style("font-weight","800").style("fill","#1a1a2e").text(total.toLocaleString("fr-FR"));
-    g.append("text").attr("text-anchor","middle").attr("dy","1.2em").style("font-size","10px").style("fill","#6b7684").text("total");
+    g.append("text").attr("text-anchor","middle").attr("dy","1.2em").style("font-size","10px").style("fill","#9aa5b4").text("total");
   },[data,size]);
   if(!data.length) return <EmptyState h={size}/>;
   return (
@@ -310,7 +310,7 @@ function DonutLabeled({ data, height, palette=COLORS, compact=false }: { data:an
     // Total au centre
     const total=d3.sum(data,d=>d.valeur);
     g.append("text").attr("text-anchor","middle").attr("dy","-.05em").style("font-size","18px").style("font-weight","800").style("fill","#1a1a2e").text(total.toLocaleString("fr-FR"));
-    g.append("text").attr("text-anchor","middle").attr("dy","1.4em").style("font-size","9.5px").style("fill","#6b7684").text("total");
+    g.append("text").attr("text-anchor","middle").attr("dy","1.4em").style("font-size","9.5px").style("fill","#9aa5b4").text("total");
 
     // Lignes de repère (coude + segment horizontal)
     const lineEnd = radius*(compact?1.12:1.16);
@@ -436,7 +436,7 @@ function CreationsLineChart({ data, height }: { data: { label: number; valeur: n
       .call(d3.axisBottom(xLin).ticks(8).tickFormat(d3.format("d")).tickSizeOuter(0))
       .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
       .call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#6b7684").style("font-size", "10px"));
+      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
 
     // Axe Y
     const fmtY = (v: d3.NumberValue) => { const n = +v; return n >= 1000 ? `${(n/1000).toFixed(0)}k` : `${n}`; };
@@ -444,7 +444,7 @@ function CreationsLineChart({ data, height }: { data: { label: number; valeur: n
       .call(d3.axisLeft(y).ticks(4).tickFormat(fmtY))
       .call(g => g.select(".domain").remove())
       .call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#6b7684").style("font-size", "10px"));
+      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
 
   }, [data, height]);
 
@@ -785,7 +785,7 @@ function BrancheBarChart({ data, height, compact = false }: { data: BrancheRow[]
               padding: "4px 12px", border: "none", cursor: "pointer",
               fontSize: 11, fontWeight: 600, borderRadius: 6,
               background: active === s ? secteurColor(s, secteurs.indexOf(s)) : "#F2F0EF",
-              color:      active === s ? "#fff" : "#6b7684",
+              color:      active === s ? "#fff" : "#9aa5b4",
               transition: "all 0.15s",
             }}>{shortSecteur(s)}</button>
           ))}
@@ -1312,7 +1312,7 @@ function VizCard({ card, viz, onRemove }: {
           </div>
           <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0,marginLeft:8}}>
             <span style={{width:26,height:26,borderRadius:8,background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
-              <Maximize2 size={11} style={{color:"#6b7684"}}/>
+              <Maximize2 size={11} style={{color:"#9aa5b4"}}/>
             </span>
             <button onClick={e=>{e.stopPropagation();onRemove();}} aria-label="Fermer" style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
           </div>
@@ -1378,7 +1378,7 @@ function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any })
       <p style={{ fontSize:9, fontWeight:800, color:KPI_ACCENT, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{def.label}</p>
       <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
         <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{display}</p>
-        {def.unit==="jours" && <span style={{ fontSize:8.5, fontWeight:700, color:"#6b7684", background:"#F2F0EF", padding:"1px 6px", borderRadius:5, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>moy.</span>}
+        {def.unit==="jours" && <span style={{ fontSize:8.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:5, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>moy.</span>}
       </div>
     </div>
   );
@@ -1535,15 +1535,15 @@ function CarteSenegal({ height=200, legend=true, legendVertical=false }: { heigh
       {/* Légende d'intensité */}
       {legend && bornes && (legendVertical ? (
         <div style={{ position:"absolute" as const, right:16, top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column" as const, alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:12, fontWeight:600, color:"#6b7684" }}>Forte</span>
+          <span style={{ fontSize:12, fontWeight:600, color:"#9aa5b4" }}>Forte</span>
           <div style={{ width:16, height:240, borderRadius:999, background:`linear-gradient(to top, ${HEAT_STOPS.join(",")})` }}/>
-          <span style={{ fontSize:12, fontWeight:600, color:"#6b7684" }}>Faible</span>
+          <span style={{ fontSize:12, fontWeight:600, color:"#9aa5b4" }}>Faible</span>
         </div>
       ) : (
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:10 }}>
-          <span style={{ fontSize:10, fontWeight:600, color:"#6b7684" }}>Faible</span>
+          <span style={{ fontSize:10, fontWeight:600, color:"#9aa5b4" }}>Faible</span>
           <div style={{ width:200, height:8, borderRadius:999, background:`linear-gradient(90deg, ${HEAT_STOPS.join(",")})` }}/>
-          <span style={{ fontSize:10, fontWeight:600, color:"#6b7684" }}>Forte</span>
+          <span style={{ fontSize:10, fontWeight:600, color:"#9aa5b4" }}>Forte</span>
         </div>
       ))}
 
@@ -1641,7 +1641,7 @@ function GroupedBarZones({ height=200, fill=false }: { height?:number; fill?:boo
       .call(d3.axisLeft(y).ticks(4).tickFormat(d3.format("d")))
       .call((g:any)=>g.select(".domain").remove())
       .call((g:any)=>g.selectAll("line").remove())
-      .call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#6b7684"));
+      .call((g:any)=>g.selectAll("text").style("font-size","10px").style("fill","#9aa5b4"));
   },[data,w,h,height,fill]);
 
   if(!data.length) return <EmptyState h={height}/>;
@@ -1791,12 +1791,12 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
               <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
                 <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0, display:"inline-block" }}>{ind.label}</p>
               </span>
-              <span style={{ fontSize:9.5, fontWeight:700, color:"#6b7684", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>{dim.label}</span>
-              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#6b7684", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>Top {cardN}</span>}
+              <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>{dim.label}</span>
+              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>Top {cardN}</span>}
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
               <span style={{ width:26, height:26, borderRadius:8, background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
-                <Maximize2 size={11} style={{ color:"#6b7684" }}/>
+                <Maximize2 size={11} style={{ color:"#9aa5b4" }}/>
               </span>
               <button onClick={e=>{e.stopPropagation();onRemove();}} aria-label="Fermer" style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB" }}><X size={13}/></button>
             </div>
@@ -1828,7 +1828,7 @@ function SbSection({ title, count, accent="#004f91", defaultOpen=true, children 
         style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"none", border:"none", cursor:"pointer", padding:"4px 0", marginBottom:open?8:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           {on&&<span style={{ width:6, height:6, borderRadius:"50%", background:accent }}/>}
-          <span style={{ fontSize:11, fontWeight:700, color:on?accent:"#6b7684", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{title}</span>
+          <span style={{ fontSize:11, fontWeight:700, color:on?accent:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{title}</span>
           {on&&<span style={{ fontSize:10, fontWeight:700, color:accent, background:`${accent}26`, padding:"1px 6px", borderRadius:999 }}>{count}</span>}
         </div>
         <span style={{ width:20, height:20, borderRadius:"50%", background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -2061,7 +2061,7 @@ export default function TableauDeBordPage() {
                 onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap" as const}}>
                   <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:0}}>Répartition des entreprises</p>
-                  <span style={{fontSize:9.5,fontWeight:700,color:"#6b7684",background:"#F2F0EF",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em"}}>ent./100 km²</span>
+                  <span style={{fontSize:9.5,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em"}}>ent./100 km²</span>
                 </div>
                 <CarteSenegal height={200}/>
               </div>
@@ -2087,7 +2087,7 @@ export default function TableauDeBordPage() {
               <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"64px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const}}>
                 <BarChart2 size={44} style={{color:"#E8E5E3",marginBottom:14}}/>
                 <p style={{fontSize:15,fontWeight:700,color:"#4a5568",marginBottom:6}}>Aucune visualisation sélectionnée</p>
-                <p style={{fontSize:13,color:"#6b7684",maxWidth:380}}>Choisissez un indicateur par dimension dans le filtre (Global, Secteurs, Branches, Activités, Pays) pour afficher des visualisations.</p>
+                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:380}}>Choisissez un indicateur par dimension dans le filtre (Global, Secteurs, Branches, Activités, Pays) pour afficher des visualisations.</p>
               </div>
             ) : (
               <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,alignItems:"start"}}>
@@ -2102,7 +2102,7 @@ export default function TableauDeBordPage() {
               <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"80px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
                 <Table2 size={48} style={{color:"#E8E5E3",marginBottom:16}}/>
                 <p style={{fontSize:16,fontWeight:700,color:"#4a5568",marginBottom:8}}>Aucun tableau</p>
-                <p style={{fontSize:13,color:"#6b7684",maxWidth:360}}>Utilisez la barre latérale pour ajouter des tableaux analytiques.</p>
+                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:360}}>Utilisez la barre latérale pour ajouter des tableaux analytiques.</p>
               </div>
             ):(
               <div style={{display:"grid",gridTemplateColumns:"1fr",gap:18}}>

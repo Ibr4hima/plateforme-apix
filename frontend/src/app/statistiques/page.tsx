@@ -151,7 +151,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
               const on = a === annee;
               return (
                 <button key={a} onClick={() => setAnnee(a)}
-                  style={{ padding: "9px 16px", border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: on ? 800 : 600, color: on ? "#004f91" : "#6b7684", borderBottom: on ? "2px solid #004f91" : "2px solid transparent", marginBottom: -1, fontFamily: "var(--font-google-sans)" }}>
+                  style={{ padding: "9px 16px", border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: on ? 800 : 600, color: on ? "#004f91" : "#9aa5b4", borderBottom: on ? "2px solid #004f91" : "2px solid transparent", marginBottom: -1, fontFamily: "var(--font-google-sans)" }}>
                   {a}
                 </button>
               );
@@ -162,7 +162,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
           {charg ? (
             <div style={{ paddingTop: 12 }}><SkeletonRows n={9} h={36} /></div>
           ) : partenaires.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "#6b7684", fontSize: 13 }}>Aucune donnée pour {annee}.</div>
+            <div style={{ textAlign: "center", padding: "40px", color: "#9aa5b4", fontSize: 13 }}>Aucune donnée pour {annee}.</div>
           ) : (
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
               <thead>
@@ -199,7 +199,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
           )}
         </div>
         <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
-          <span style={{ fontSize: 11.5, color: "#6b7684" }}>{partenaires.length} {colPart.toLowerCase()}s · total {fmtUSD(grand)} en {annee}</span>
+          <span style={{ fontSize: 11.5, color: "#9aa5b4" }}>{partenaires.length} {colPart.toLowerCase()}s · total {fmtUSD(grand)} en {annee}</span>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
             <button onClick={exporterExcel} disabled={exporting}
@@ -348,7 +348,7 @@ function CommercePanel() {
     setAnneesSpec([]); setPeriodeTouchee(false); setRessSel(ressources.map(r => r.nom_en));
   };
 
-  const LBL: any = { fontSize: 11, fontWeight: 700, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.1em" };
+  const LBL: any = { fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em" };
   const TH: any = { padding: "11px 16px", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: "#6b7684", whiteSpace: "nowrap" };
   const TD: any = { padding: "10px 16px", verticalAlign: "middle" };
   const ressFiltrees = ressources.filter(r => !qRess || (r.libelle || r.nom_en).toLowerCase().includes(qRess.toLowerCase()));
@@ -360,7 +360,7 @@ function CommercePanel() {
     </div>
   );
   if (!annees.length) return (
-    <div style={{ textAlign: "center", padding: "80px 24px", color: "#6b7684" }}>
+    <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
       <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucune donnée commerciale</p>
       <p style={{ fontSize: 14, marginTop: 6 }}>Les flux bilatéraux seront disponibles après import dans l&apos;administration.</p>
     </div>
@@ -400,10 +400,10 @@ function CommercePanel() {
           </div>
           {/* Recherche pays */}
           <div style={{ position: "relative", marginBottom: 18 }}>
-            <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#6b7684" }} />
+            <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
             <input value={searchPays} onChange={e => setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
               style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-            {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#6b7684" }} /></button>}
+            {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
           </div>
           <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
           {/* Pays */}
@@ -423,7 +423,7 @@ function CommercePanel() {
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                     <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? "#004f91" : "#C5BFBB"}`, background: sel ? "#004f91" : "transparent", flexShrink: 0 }} />
                     <span style={{ fontSize: 12, color: "#4a5568", fontWeight: sel ? 700 : 400 }}>Sénégal</span>
-                    <span style={{ marginLeft: "auto", fontSize: 9, color: "#6b7684", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                    <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                   </button>
                 </div>
               );
@@ -449,7 +449,7 @@ function CommercePanel() {
                             <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
                               <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? "#004f91" : "#C5BFBB"}`, background: sel ? "#004f91" : "transparent", flexShrink: 0 }} />
                               <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                              <span style={{ marginLeft: "auto", fontSize: 9, color: "#6b7684" }}>Réf.</span>
+                              <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4" }}>Réf.</span>
                             </div>
                           );
                           return (
@@ -467,7 +467,7 @@ function CommercePanel() {
                   </div>
                 );
               })}
-              {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "#6b7684", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
+              {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
             </div>
           </div>
           <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
@@ -479,7 +479,7 @@ function CommercePanel() {
             <div style={{ display: "flex", gap: 3, background: "#F2F0EF", borderRadius: 9, padding: 3, marginBottom: 12 }}>
               {[{ v: "plage", l: "Plage" }, { v: "specifiques", l: "Années" }].map(m => (
                 <button key={m.v} onClick={() => setModeAnnees(m.v as "plage" | "specifiques")}
-                  style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: modeAnnees === m.v ? "#fff" : "transparent", color: modeAnnees === m.v ? "#1a1a2e" : "#6b7684", boxShadow: modeAnnees === m.v ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s" }}>
+                  style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: modeAnnees === m.v ? "#fff" : "transparent", color: modeAnnees === m.v ? "#1a1a2e" : "#9aa5b4", boxShadow: modeAnnees === m.v ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s" }}>
                   {m.l}
                 </button>
               ))}
@@ -498,10 +498,10 @@ function CommercePanel() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMin}</span>
-                  <span style={{ fontSize: 10, color: "#6b7684" }}>—</span>
+                  <span style={{ fontSize: 10, color: "#9aa5b4" }}>—</span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMax}</span>
                 </div>
-                <p style={{ fontSize: 11, color: "#6b7684", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
+                <p style={{ fontSize: 11, color: "#9aa5b4", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
               </div>
             ) : (
               <div>
@@ -518,7 +518,7 @@ function CommercePanel() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 11, color: "#4a5568" }}>{anneesSpec.length > 0 ? `${anneesSpec.length} année${anneesSpec.length > 1 ? "s" : ""}` : ""}</span>
-                  {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "#6b7684", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
+                  {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "#9aa5b4", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
                 </div>
               </div>
             )}
@@ -558,10 +558,10 @@ function CommercePanel() {
                 <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid #ECEAE7", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", minWidth: 0 }}>
                   <div style={{ marginBottom: 7 }}>
                     <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
-                    {c.sub && <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#6b7684", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>{c.sub}</p>}
+                    {c.sub && <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>{c.sub}</p>}
                   </div>
                   <p title={c.text ? c.value : undefined} style={{ fontSize: c.text ? "0.95rem" : "1.15rem", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: c.text ? "normal" : "nowrap", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{c.value}</p>
-                  {c.indicatif && <p style={{ fontSize: 10, color: "#6b7684", marginTop: 5, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.indicatif}</p>}
+                  {c.indicatif && <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.indicatif}</p>}
                 </div>
               ))}
             </div>
@@ -841,7 +841,7 @@ function GrapheMultiPays({ series, height = 280, type = "line", titre = "", fmt,
         .call(d3.axisBottom(xBand).tickValues(tickVals).tickSizeOuter(0))
         .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
         .call(g => g.selectAll("line").remove())
-        .call(g => g.selectAll("text").style("fill", "#6b7684").style("font-size", "10px"));
+        .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
     } else {
       series.forEach((s, si) => {
         const ys = yScales[si];
@@ -890,13 +890,13 @@ function GrapheMultiPays({ series, height = 280, type = "line", titre = "", fmt,
         .call(d3.axisBottom(xLin).tickValues(tickAnnees).tickFormat(d3.format("d")).tickSizeOuter(0))
         .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
         .call(g => g.selectAll("line").remove())
-        .call(g => g.selectAll("text").style("fill", "#6b7684").style("font-size", "10px"));
+        .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
     }
     svg.append("g").attr("transform", `translate(${M.left},0)`)
       .call(d3.axisLeft(y).ticks(4).tickFormat(fmtAxis))
       .call(g => g.select(".domain").remove())
       .call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", useDual ? series[0].couleur : "#6b7684").style("font-size", "10px").style("font-weight", useDual ? "600" : "400"));
+      .call(g => g.selectAll("text").style("fill", useDual ? series[0].couleur : "#9aa5b4").style("font-size", "10px").style("font-weight", useDual ? "600" : "400"));
     if (useDual) {
       svg.append("g").attr("transform", `translate(${W - M.right},0)`)
         .call(d3.axisRight(yScales[1]).ticks(4).tickFormat(fmtAxis))
@@ -957,7 +957,7 @@ function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0
 
     svg.selectAll("text.val").data(data).enter().append("text")
       .attr("x", d => x(d.valeur) + 6).attr("y", d => y(d.label)! + y.bandwidth() / 2).attr("dy", "0.35em")
-      .style("font-size", "10.5px").style("fill", "#6b7684").style("font-weight", "700").text(d => fmtV(d.valeur));
+      .style("font-size", "10.5px").style("fill", "#9aa5b4").style("font-weight", "700").text(d => fmtV(d.valeur));
   }, [data, fmtV, couleur, rowH]);
   useEffect(() => {
     if (!wrapRef.current) return;
@@ -1046,7 +1046,7 @@ function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposan
         xc += segW;
       });
       svg.append("text").attr("x", M.left - 8).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11px").style("fill", "#4a5568").text(p.nom);
-      svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "#6b7684").text(fmtV(p.total));
+      svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "#9aa5b4").text(fmtV(p.total));
     });
   }, [partenaires, ressources, fmtV, rowH, exposant]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
@@ -1099,7 +1099,7 @@ function GrapheDonut({ data, fmt, height }: { data: { label: string; valeur: num
 
     // Total au centre
     g.append("text").attr("text-anchor", "middle").attr("dy", "-.05em").style("font-size", `${bigFont}px`).style("font-weight", "800").style("fill", "#1a1a2e").text(fmtV(total));
-    g.append("text").attr("text-anchor", "middle").attr("dy", "1.5em").style("font-size", `${Math.max(9.5, bigFont * 0.55)}px`).style("fill", "#6b7684").text("total");
+    g.append("text").attr("text-anchor", "middle").attr("dy", "1.5em").style("font-size", `${Math.max(9.5, bigFont * 0.55)}px`).style("fill", "#9aa5b4").text("total");
 
     // Légende (part la plus forte en haut, couleur assortie)
     const lgFont = R >= 120 ? 13 : 11;
@@ -1175,11 +1175,11 @@ function GrapheConcentration({ points, height = 200 }: { points: { rang: number;
       .on("mouseout", () => hideD3Tooltip(tooltip));
     svg.append("g").attr("transform", `translate(${M.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d => `${d}%`))
       .call(g => g.select(".domain").remove()).call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#6b7684").style("font-size", "10px"));
+      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
     const xticks = x.ticks(Math.min(maxRang, 6)).filter(t => Number.isInteger(t) && t >= 1);
     svg.append("g").attr("transform", `translate(0,${H - M.bottom})`).call(d3.axisBottom(x).tickValues(xticks).tickFormat(d3.format("d")).tickSizeOuter(0))
       .call(g => g.select(".domain").attr("stroke", "#E8E5E3")).call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#6b7684").style("font-size", "10px"));
+      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
   }, [points, height]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
   useEffect(() => { draw(); }, [draw]);
@@ -1218,7 +1218,7 @@ function GrapheModal({ open, onClose, titre, sous_titre, children, series, graph
                 {series?.length > 0 && series.filter((s: any) => s.data.some((d: any) => d.valeur !== null)).map((s: any) => (
                   <span key={s.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: s.couleur, background: `${s.couleur}12`, border: `1px solid ${s.couleur}30` }}>{s.nom}</span>
                 ))}
-                {sous_titre && <span style={{ fontSize: 11.5, color: "#6b7684", fontWeight: 500 }}>{sous_titre}</span>}
+                {sous_titre && <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 500 }}>{sous_titre}</span>}
               </div>
             </div>
             <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
@@ -1263,11 +1263,11 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, series, grapheI
                 ))}
               </div>
             )}
-            {!hideSousTitre && sous_titre && <p style={{ fontSize: 10.5, color: "#6b7684", marginTop: 4 }}>{sous_titre}</p>}
+            {!hideSousTitre && sous_titre && <p style={{ fontSize: 10.5, color: "#9aa5b4", marginTop: 4 }}>{sous_titre}</p>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
             <span style={{ width: 26, height: 26, borderRadius: 8, background: "#F5F4F3", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-              <Maximize2 size={11} style={{ color: "#6b7684" }} />
+              <Maximize2 size={11} style={{ color: "#9aa5b4" }} />
             </span>
           </div>
         </div>
@@ -1315,7 +1315,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
     const pct = `${variation > 0 ? "+" : ""}${variation.toFixed(1)} %`;
     return `En ${annee}, ${pays} affiche ${val} (${sens} de ${pct} par rapport à l'année précédente) pour l'indicateur « ${ind.libelle} ».`;
   })();
-  const trendColor = isPos ? "#188038" : isNeg ? "#dc2626" : "#6b7684";
+  const trendColor = isPos ? "#188038" : isNeg ? "#dc2626" : "#9aa5b4";
   const trendBg = isPos ? "rgba(24,128,56,0.06)" : isNeg ? "rgba(220,38,38,0.05)" : "#FAFAF9";
   const trendBorder = isPos ? "rgba(24,128,56,0.18)" : isNeg ? "rgba(220,38,38,0.18)" : "#F0EEEC";
   const SecTitle = ({ children }: { children: any }) => (
@@ -1352,7 +1352,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
             <SecTitle>Valeur</SecTitle>
             <div style={{ background: trendBg, border: `1px solid ${trendBorder}`, borderRadius: 12, padding: "16px 18px", display: "flex", alignItems: "baseline", gap: 10 }}>
               <span style={{ fontSize: "2.2rem", fontWeight: 800, color: signalColor, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite)}</span>
-              <span style={{ fontSize: 13, color: "#6b7684", fontWeight: 500 }}>en {annee}</span>
+              <span style={{ fontSize: 13, color: "#9aa5b4", fontWeight: 500 }}>en {annee}</span>
             </div>
           </div>
           <div>
@@ -1363,7 +1363,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
           </div>
           <div>
             <SecTitle>Définition</SecTitle>
-            <p style={{ fontSize: 12, color: "#6b7684", lineHeight: 1.65 }}>{def}</p>
+            <p style={{ fontSize: 12, color: "#9aa5b4", lineHeight: 1.65 }}>{def}</p>
           </div>
         </div>
         <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
@@ -1455,7 +1455,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
                       onMouseEnter={e => e.currentTarget.style.background = "#FAFAF9"}
                       onMouseLeave={e => e.currentTarget.style.background = "#fff"}>
                       <td style={{ padding: "9px 28px 9px 44px", position: "sticky", left: 0, background: "inherit", borderRight: "1px solid #F0EEEC", whiteSpace: "nowrap" }}>
-                        <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 500 }}>{ind.libelle} <span style={{ color: "#6b7684", fontSize: 11 }}>· {ind.unite}</span></span>
+                        <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 500 }}>{ind.libelle} <span style={{ color: "#9aa5b4", fontSize: 11 }}>· {ind.unite}</span></span>
                       </td>
                       {annees.map(a => {
                         const v = val(pays.id, ind.code, a);
@@ -1473,7 +1473,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
           </table>
         </div>
         <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
-          <span style={{ fontSize: 11, color: "#6b7684" }}>{paysSelectionnes.length} pays · {indicateurs.length} indicateurs · {annees.length} années</span>
+          <span style={{ fontSize: 11, color: "#9aa5b4" }}>{paysSelectionnes.length} pays · {indicateurs.length} indicateurs · {annees.length} années</span>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
             <button onClick={() => exportXLSXStat(donnees, indicateurs, paysSelectionnes, annees, periode)}
@@ -1644,7 +1644,7 @@ export default function StatistiquesPage() {
     setPeriodeTouchee(false); setKpisEpingles(kpiDefautSet.length ? kpiDefautSet : indicateurs.map(i => i.code).slice(0, MAX_KPI));
   };
 
-  const LBL: any = { fontSize: 11, fontWeight: 700, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.1em" };
+  const LBL: any = { fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em" };
 
   return (
     <main style={{ minHeight: "100vh", background: "#F6F5F3", fontFamily: "var(--font-google-sans)" }}>
@@ -1700,10 +1700,10 @@ export default function StatistiquesPage() {
             </div>
             {/* Recherche pays */}
             <div style={{ position: "relative", marginBottom: 18 }}>
-              <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#6b7684" }} />
+              <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
               <input value={searchPays} onChange={e => setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
                 style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-              {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#6b7684" }} /></button>}
+              {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
             </div>
             <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
             {/* Pays */}
@@ -1726,7 +1726,7 @@ export default function StatistiquesPage() {
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                       <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
                       <span style={{ fontSize: 12, color: "#4a5568", fontWeight: sel ? 700 : 400 }}>Sénégal</span>
-                      <span style={{ marginLeft: "auto", fontSize: 9, color: "#6b7684", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                      <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                     </button>
                   </div>
                 );
@@ -1754,7 +1754,7 @@ export default function StatistiquesPage() {
                               <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
                                 <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
                                 <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                                <span style={{ marginLeft: "auto", fontSize: 9, color: "#6b7684" }}>Réf.</span>
+                                <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4" }}>Réf.</span>
                               </div>
                             );
                             return (
@@ -1772,7 +1772,7 @@ export default function StatistiquesPage() {
                     </div>
                   );
                 })}
-                {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "#6b7684", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
+                {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
               </div>
             </div>
             <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
@@ -1784,7 +1784,7 @@ export default function StatistiquesPage() {
               <div style={{ display: "flex", gap: 3, background: "#F2F0EF", borderRadius: 9, padding: 3, marginBottom: 12 }}>
                 {[{ v: "plage", l: "Plage" }, { v: "specifiques", l: "Années" }].map(m => (
                   <button key={m.v} onClick={() => setModeAnnees(m.v as "plage" | "specifiques")}
-                    style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: modeAnnees === m.v ? "#fff" : "transparent", color: modeAnnees === m.v ? "#1a1a2e" : "#6b7684", boxShadow: modeAnnees === m.v ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s" }}>
+                    style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: modeAnnees === m.v ? "#fff" : "transparent", color: modeAnnees === m.v ? "#1a1a2e" : "#9aa5b4", boxShadow: modeAnnees === m.v ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s" }}>
                     {m.l}
                   </button>
                 ))}
@@ -1803,10 +1803,10 @@ export default function StatistiquesPage() {
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMin}</span>
-                    <span style={{ fontSize: 10, color: "#6b7684" }}>—</span>
+                    <span style={{ fontSize: 10, color: "#9aa5b4" }}>—</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMax}</span>
                   </div>
-                  <p style={{ fontSize: 11, color: "#6b7684", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
+                  <p style={{ fontSize: 11, color: "#9aa5b4", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
                 </div>
               ) : (
                 <div>
@@ -1823,7 +1823,7 @@ export default function StatistiquesPage() {
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ fontSize: 11, color: "#4a5568" }}>{anneesSpec.length > 0 ? `${anneesSpec.length} année${anneesSpec.length > 1 ? "s" : ""}` : ""}</span>
-                    {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "#6b7684", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
+                    {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "#9aa5b4", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
                   </div>
                 </div>
               )}
@@ -1833,7 +1833,7 @@ export default function StatistiquesPage() {
             <div style={{ marginBottom: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <span style={LBL}>Key Performance Indicators</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: kpisEpingles.length >= MAX_KPI ? "#004f91" : "#6b7684", background: kpisEpingles.length >= MAX_KPI ? "rgba(0,79,145,0.08)" : "#F2F0EF", padding: "2px 8px", borderRadius: 999 }}>{kpisEpingles.length}/{MAX_KPI}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: kpisEpingles.length >= MAX_KPI ? "#004f91" : "#9aa5b4", background: kpisEpingles.length >= MAX_KPI ? "rgba(0,79,145,0.08)" : "#F2F0EF", padding: "2px 8px", borderRadius: 999 }}>{kpisEpingles.length}/{MAX_KPI}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 2, maxHeight: 240, overflowY: "auto" }}>
                 {indicateurs.map(ind => {
@@ -1847,7 +1847,7 @@ export default function StatistiquesPage() {
                       onMouseLeave={ev => { ev.currentTarget.style.background = "transparent"; }}>
                       <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${epingle ? "#004f91" : "#C5BFBB"}`, background: epingle ? "#004f91" : "transparent", flexShrink: 0 }} />
                       <span style={{ fontSize: 12, color: "#4a5568", flex: 1, minWidth: 0, lineHeight: 1.35, fontWeight: epingle ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ind.libelle}</span>
-                      {refAnnee ? <span style={{ fontSize: 9, color: "#6b7684", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{refAnnee}</span> : null}
+                      {refAnnee ? <span style={{ fontSize: 9, color: "#9aa5b4", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{refAnnee}</span> : null}
                     </div>
                   );
                 })}
@@ -1864,7 +1864,7 @@ export default function StatistiquesPage() {
               <SkeletonChartGrid n={2} cols={2} height={320} />
             </div>
           ) : !selection.length ? (
-            <div style={{ textAlign: "center", padding: "80px 24px", color: "#6b7684" }}>
+            <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
               <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Sélectionnez un pays</p>
               <p style={{ fontSize: 14, marginTop: 6 }}>Choisissez un ou plusieurs pays dans la barre de filtre pour explorer leurs statistiques.</p>
             </div>
@@ -1906,10 +1906,10 @@ export default function StatistiquesPage() {
                           onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
                           <div style={{ marginBottom: 7 }}>
                             <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
-                            <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#6b7684", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
+                            <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
                           </div>
                           <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "#dc2626" : "#1a1a2e", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
-                          <p style={{ fontSize: 10, color: "#6b7684", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
+                          <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
                         </div>
                       );
                     })}
