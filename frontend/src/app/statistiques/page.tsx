@@ -3,6 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
+import { useDebounced } from "@/lib/useDebounced";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
@@ -100,9 +101,13 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
     setExporting(true);
     try {
       const wb = XLSX.utils.book_new();
-      for (const a of anneesTabs) {
-        const d = await fetch(`${API}/statistiques/commerce/detail?pays_id=${selId}&direction=${vue}&annee=${a}`).then(r => r.json());
-        const parts: any[] = d.partenaires || [];
+      // Récupération de toutes les années en parallèle (l'ordre des onglets
+      // reste garanti : Promise.all conserve l'ordre du tableau d'entrée).
+      const details = await Promise.all(anneesTabs.map(a =>
+        fetch(`${API}/statistiques/commerce/detail?pays_id=${selId}&direction=${vue}&annee=${a}`).then(r => r.json())
+      ));
+      anneesTabs.forEach((a, idx) => {
+        const parts: any[] = details[idx].partenaires || [];
         const aoa: any[][] = [[colSelf, colPart, "Ressource", "Valeur ($)"]];
         const merges: any[] = [];
         let r = 1; const startExp = r;
@@ -121,7 +126,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
         ws["!merges"] = merges;
         ws["!cols"] = [{ wch: 22 }, { wch: 26 }, { wch: 32 }, { wch: 18 }];
         XLSX.utils.book_append_sheet(wb, ws, String(a));
-      }
+      });
       XLSX.writeFile(wb, `Flux_${nomPays.replace(/\s/g, "_")}_${expDir ? "exportations" : "importations"}.xlsx`);
     } catch { /* noop */ }
     setExporting(false);
@@ -234,6 +239,11 @@ function CommercePanel() {
   const [anneeMax, setAnneeMax] = useState(2024);
   const [anneesSpec, setAnneesSpec] = useState<number[]>([]);
   const [periodeTouchee, setPeriodeTouchee] = useState(false);
+  // Période « stabilisée » : les fetchs attendent la fin du drag / des clics
+  // rapides au lieu de partir en rafale à chaque tick de slider.
+  const anneeMinD = useDebounced(anneeMin, 300);
+  const anneeMaxD = useDebounced(anneeMax, 300);
+  const anneesSpecD = useDebounced(anneesSpec, 300);
   // Ressources sélectionnées (nom_en)
   const [ressSel, setRessSel] = useState<string[]>([]);
   const [qRess, setQRess] = useState("");
@@ -277,37 +287,37 @@ function CommercePanel() {
     if (!selId) { setKpis(null); return; }
     setChargKpis(true);
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
-    if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
-    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
+    if (modeAnnees === "specifiques") { if (anneesSpecD.length) p.set("annees", anneesSpecD.join(",")); }
+    else { p.set("annee_min", String(anneeMinD)); p.set("annee_max", String(anneeMaxD)); }
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/kpis?${p.toString()}`)
       .then(r => r.json()).then(setKpis).catch(() => setKpis(null))
       .finally(() => setChargKpis(false));
-  }, [vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
+  }, [vue, selId, modeAnnees, anneeMinD, anneeMaxD, anneesSpecD, ressSel, ressources.length]);
 
   // Balance commerciale (exp − imp) — indépendante de la vue
   useEffect(() => {
     if (!selId) { setBalance([]); return; }
     const p = new URLSearchParams({ pays_id: String(selId) });
-    if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
-    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
+    if (modeAnnees === "specifiques") { if (anneesSpecD.length) p.set("annees", anneesSpecD.join(",")); }
+    else { p.set("annee_min", String(anneeMinD)); p.set("annee_max", String(anneeMaxD)); }
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/balance?${p.toString()}`)
       .then(r => r.json()).then(d => setBalance(Array.isArray(d) ? d : [])).catch(() => setBalance([]));
-  }, [selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
+  }, [selId, modeAnnees, anneeMinD, anneeMaxD, anneesSpecD, ressSel, ressources.length]);
 
   // Tops (débouchés / ressources) — dépend de la direction (vue)
   useEffect(() => {
     if (!selId) { setTops(null); setRepart(null); return; }
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
-    if (modeAnnees === "specifiques") { if (anneesSpec.length) p.set("annees", anneesSpec.join(",")); }
-    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
+    if (modeAnnees === "specifiques") { if (anneesSpecD.length) p.set("annees", anneesSpecD.join(",")); }
+    else { p.set("annee_min", String(anneeMinD)); p.set("annee_max", String(anneeMaxD)); }
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
       .then(r => r.json()).then(setTops).catch(() => setTops(null));
     fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
       .then(r => r.json()).then(setRepart).catch(() => setRepart(null));
-  }, [vue, selId, modeAnnees, anneeMin, anneeMax, anneesSpec, ressSel, ressources.length]);
+  }, [vue, selId, modeAnnees, anneeMinD, anneeMaxD, anneesSpecD, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
