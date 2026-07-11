@@ -7,7 +7,6 @@ import { useDebounced } from "@/lib/useDebounced";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
-import * as XLSX from "xlsx";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -100,6 +99,8 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
     if (!selId) return;
     setExporting(true);
     try {
+      // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
+      const XLSX = await import("xlsx");
       const wb = XLSX.utils.book_new();
       // Récupération de toutes les années en parallèle (l'ordre des onglets
       // reste garanti : Promise.all conserve l'ordre du tableau d'entrée).
@@ -1379,7 +1380,9 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
 }
 
 // ── Export Excel du tableau de données ────────────────────────────────────────
-function exportXLSXStat(donnees: Donnee[], indicateurs: Indicateur[], paysSelectionnes: { id: number; nom: string }[], annees: number[], periode: string) {
+async function exportXLSXStat(donnees: Donnee[], indicateurs: Indicateur[], paysSelectionnes: { id: number; nom: string }[], annees: number[], periode: string) {
+  // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
+  const XLSX = await import("xlsx");
   const wb = XLSX.utils.book_new();
   const val = (pid: number, code: string, a: number) =>
     donnees.find(d => d.pays_id === pid && d.indicateur === code && d.annee === a)?.valeur ?? null;

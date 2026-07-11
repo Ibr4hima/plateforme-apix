@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowUpDown, ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Search, X } from "lucide-react";
-import * as XLSX from "xlsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -153,7 +152,9 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
   };
 
   // Export XLSX — compatible Excel Mac/Windows/Linux
-  const exportXLSX = () => {
+  const exportXLSX = async () => {
+    // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
+    const XLSX = await import("xlsx");
     // Construire les données avec les valeurs formatées pour l'affichage
     const sheetData = [
       columns, // entête

@@ -5,7 +5,6 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
-import * as XLSX from "xlsx";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 
@@ -486,7 +485,9 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series
 }
 
 // ── Export Excel (XLSX) ───────────────────────────────────────────────────────
-function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string) {
+async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string) {
+  // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
+  const XLSX = await import("xlsx");
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const series = [
     {dir:"entrant", ind:"flux",  label:"Flux entrants (M$ USD)"},
@@ -2298,7 +2299,9 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
     : ind.unite==="jours" ? v.toFixed(0)
     : (v/scale).toFixed(scale>=1e9?2:scale>=1e6?1:0);
 
-  const exporter = () => {
+  const exporter = async () => {
+    // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
+    const XLSX = await import("xlsx");
     const wb = XLSX.utils.book_new();
     blocs.forEach((b,bi)=>{
       const header = ["Catégorie","Indicateur","Unité",...annees.map(String)];
