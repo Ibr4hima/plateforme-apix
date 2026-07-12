@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
+import ErreurChargement from "@/components/shared/ErreurChargement";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
@@ -76,6 +77,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
   const [partenaires, setPartenaires] = useState<{ nom: string; total: number; lignes: { ressource: string; valeur: number }[] }[]>([]);
   const [charg, setCharg] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportErr, setExportErr] = useState(false); // échec d'export : message transitoire
 
   useEffect(() => { if (open && anneesTabs.length) setAnnee(anneesTabs[anneesTabs.length - 1]); }, [open, anneesTabs]);
   useEffect(() => {
@@ -129,7 +131,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
         XLSX.utils.book_append_sheet(wb, ws, String(a));
       });
       XLSX.writeFile(wb, `Flux_${nomPays.replace(/\s/g, "_")}_${expDir ? "exportations" : "importations"}.xlsx`);
-    } catch { /* noop */ }
+    } catch { setExportErr(true); setTimeout(() => setExportErr(false), 5000); }
     setExporting(false);
   };
 
@@ -205,6 +207,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
         <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <span style={{ fontSize: 11.5, color: "#9aa5b4" }}>{partenaires.length} {colPart.toLowerCase()}s · total {fmtUSD(grand)} en {annee}</span>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {exportErr && <span style={{ fontSize: 11.5, fontWeight: 600, color: "#dc2626" }}>Échec de l&apos;export — réessayez.</span>}
             <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
             <button onClick={exporterExcel} disabled={exporting}
               style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: exporting ? "wait" : "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)", opacity: exporting ? 0.7 : 1 }}>
@@ -272,16 +275,20 @@ function CommercePanel() {
     window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
   };
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    fetch(`${API}/statistiques/commerce/filtres`).then(r => r.json()).then(d => {
+    setLoading(true); setErreur(false);
+    fetch(`${API}/statistiques/commerce/filtres`).then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(d => {
       const ann: number[] = (d.annees || []).slice().sort((a: number, b: number) => a - b);
       setAnnees(ann); setRessources(d.ressources || []); setPaysOpts(d.pays || []);
       setRessSel((d.ressources || []).map((r: any) => r.nom_en));
       if (ann.length) { setBornes([ann[0], ann[ann.length - 1]]); setAnneeMin(ann[0]); setAnneeMax(ann[ann.length - 1]); }
       const sen = (d.pays || []).find((p: any) => p.code_iso3 === "SEN");
       setSelId(sen ? sen.id : (d.pays && d.pays[0] ? d.pays[0].id : null));
-    }).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+    }).catch(() => setErreur(true)).finally(() => setLoading(false));
+  }, [tick]);
 
   // KPIs agrégés (période + ressources, hors recherche texte)
   useEffect(() => {
@@ -368,6 +375,7 @@ function CommercePanel() {
       <SkeletonChartGrid n={2} cols={2} height={320} />
     </div>
   );
+  if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
   if (!annees.length) return (
     <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
       <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucune donnée commerciale</p>
@@ -1558,16 +1566,20 @@ export default function StatistiquesPage() {
     window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
   };
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
+    setLoading(true); setErreur(false);
     Promise.all([
-      fetch(`${API}/statistiques/pays`).then(r => r.json()),
-      fetch(`${API}/statistiques/indicateurs`).then(r => r.json()),
+      fetch(`${API}/statistiques/pays`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+      fetch(`${API}/statistiques/indicateurs`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
     ]).then(([p, i]) => {
       setPays(p || []); setIndicateurs(i || []);
       const sen = (p || []).find((x: Pays) => x.code_iso3 === "SEN");
       if (sen) setSelection([sen.id]);
-    }).finally(() => setLoading(false));
-  }, []);
+    }).catch(() => setErreur(true)).finally(() => setLoading(false));
+  }, [tick]);
 
   // Par défaut : Population, Superficie, Densité, PIB, PIB/hab (dans la limite de 5)
   useEffect(() => {
@@ -1869,6 +1881,8 @@ export default function StatistiquesPage() {
               <SkeletonKPIs n={5} />
               <SkeletonChartGrid n={2} cols={2} height={320} />
             </div>
+          ) : erreur ? (
+            <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : !selection.length ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
               <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Sélectionnez un pays</p>
