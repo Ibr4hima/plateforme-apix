@@ -641,7 +641,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
                   {(a.fichiers||[]).length>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
                   <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:8}} onClick={ev=>ev.stopPropagation()}>
                     <button className="ro-w" onClick={()=>onEdit(a)}
-                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(54,111,227,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#366FE3",fontWeight:600}}>
+                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#004f91",fontWeight:600}}>
                       <Pencil size={11}/> Modifier
                     </button>
                     <button onClick={()=>onToggle(a)} disabled={avgToggle===a.id}

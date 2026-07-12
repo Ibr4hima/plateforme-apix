@@ -108,7 +108,7 @@ export default function AccordModal({ accord, onClose }: { accord: any; onClose:
         maxHeight: "88vh", overflowY: "auto",
         boxShadow: "0 24px 64px rgba(0,0,0,0.18)", border: "1px solid #C5BFBB",
       }}>
-        <div style={{ height: 5, background: "linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)" }} />
+        <div style={{ height: 5, background: "linear-gradient(90deg,#E35336,#FFB0A1,#004f91)" }} />
         <div style={{ padding: "24px 28px 28px" }}>
 
           {/* Header */}

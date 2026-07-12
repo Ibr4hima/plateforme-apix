@@ -635,7 +635,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"0 32px 80px rgba(0,0,0,0.2)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#366FE3)"}}/>
+        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#004f91)"}}/>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
@@ -643,7 +643,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{p.titre_projet}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
                 {p.region_nom && <span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>}
-                {p.pole_nom   && <span style={{fontSize:11,fontWeight:700,color:"#366FE3",background:"rgba(54,111,227,0.08)",border:"1px solid rgba(54,111,227,0.2)",padding:"2px 9px",borderRadius:999}}>{p.pole_nom}</span>}
+                {p.pole_nom   && <span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",border:"1px solid rgba(0,79,145,0.2)",padding:"2px 9px",borderRadius:999}}>{p.pole_nom}</span>}
                 {(p.zone_nom||p.zone_investissement) && <span style={{fontSize:11,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{p.zone_nom||p.zone_investissement}</span>}
                 <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"#15803d":"#9aa5b4",background:p.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Publié":"Non publié"}</span>
               </div>
@@ -659,7 +659,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {invest && (
-              <div style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}>
                 <LBL>Investissement</LBL>
                 <p style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>{invest}</p>
               </div>
@@ -694,8 +694,8 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                             return (
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
-                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#366FE3",flexShrink:0}}/>
-                                  <span style={{fontSize:11,fontWeight:600,color:"#366FE3"}}>{bra.nom}</span>
+                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
+                                  <span style={{fontSize:11,fontWeight:600,color:"#004f91"}}>{bra.nom}</span>
                                 </div>
                                 {actsDeBra.length > 0 && (
                                   <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
@@ -725,7 +725,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <LBL>Porteur{p.porteurs.length>1?"s":""} du projet</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {p.porteurs.map((porteur:any, i:number)=>(
-                  <div key={i} style={{background:"rgba(54,111,227,0.05)",borderRadius:10,padding:"12px 14px"}}>
+                  <div key={i} style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}>
                     <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3}}>{porteur.nom}</p>
                     {(porteur.telephone||porteur.mail) && (
                       <p style={{fontSize:12,color:"#4a5568"}}>{[porteur.telephone,porteur.mail].filter(Boolean).join(" · ")}</p>
@@ -777,7 +777,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
           )}
 
           <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#366FE3",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
+            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
               <Pencil size={13}/> Modifier
             </button>
             <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
@@ -890,7 +890,7 @@ export default function ProjetsPage() {
                 )}
                 {p.pole_nom && (
                   <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
-                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#366FE3", flexShrink:0 }}/>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/>
                     <span style={{ color:"#4a5568" }}>{p.pole_nom}</span>
                   </div>
                 )}
@@ -903,7 +903,7 @@ export default function ProjetsPage() {
               </div>
               <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={ev=>ev.stopPropagation()}>
                 <button onClick={()=>{ setEdit(p); setModal(true); }}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(54,111,227,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#366FE3", fontWeight:600 }}>
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
