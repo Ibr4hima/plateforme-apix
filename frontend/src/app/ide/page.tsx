@@ -9,6 +9,7 @@ import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis"
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
+import { useDebounced } from "@/lib/useDebounced";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -859,6 +860,10 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const [anneeMax,    setAnneeMax]    = useState(2024);
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
+  // Période stabilisée : le fetch attend la fin du drag des sliders
+  const anneeMinD   = useDebounced(anneeMin, 300);
+  const anneeMaxD   = useDebounced(anneeMax, 300);
+  const anneesSpecD = useDebounced(anneesSpec, 300);
   const [kpisOrdre,   setKpisOrdre]   = useState<string[]>(KPI_25_IDS);
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
   const [kpiActif,     setKpiActif]     = useState<KpiResult|null>(null);
@@ -887,13 +892,13 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     setLoading(true); setErreur(false);
     try {
       const params = new URLSearchParams({ pays_list: paysSelec });
-      if (modeAnnees==="specifiques" && anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
-      else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
+      if (modeAnnees==="specifiques" && anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
+      else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
       const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
       setDonnees(dataR||[]);
     } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
-  }, [paysSelec, anneeMin, anneeMax, anneesSpec, modeAnnees, tick]);
+  }, [paysSelec, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees, tick]);
 
   useEffect(() => { charger(); }, [charger]);
 
@@ -1241,6 +1246,10 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
   const [anneeMax,    setAnneeMax]    = useState(2024);
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
+  // Période stabilisée : le fetch attend la fin du drag des sliders
+  const anneeMinD   = useDebounced(anneeMin, 300);
+  const anneeMaxD   = useDebounced(anneeMax, 300);
+  const anneesSpecD = useDebounced(anneesSpec, 300);
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
@@ -1266,13 +1275,13 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
     try {
       const params = new URLSearchParams();
       params.set("pays_list", paysSelec.join(","));
-      if (modeAnnees==="specifiques" && anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
-      else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
+      if (modeAnnees==="specifiques" && anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
+      else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
       const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
       setDonnees(dataR||[]);
     } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
-  }, [paysSelec, anneeMin, anneeMax, anneesSpec, modeAnnees, tick]);
+  }, [paysSelec, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees, tick]);
 
   useEffect(() => { charger(); }, [charger]);
 
@@ -1809,6 +1818,10 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   const [anneeMax,    setAnneeMax]   = useState(2024);
   const [anneesSpec,  setAnneesSpec] = useState<number[]>([]);
   const [modeAnnees,  setModeAnnees] = useState<"plage"|"specifiques">("plage");
+  // Période stabilisée : le fetch attend la fin du drag des sliders
+  const anneeMinD   = useDebounced(anneeMin, 300);
+  const anneeMaxD   = useDebounced(anneeMax, 300);
+  const anneesSpecD = useDebounced(anneesSpec, 300);
   const [sidebarOpen, setSidebarOpen]= useState(true);
   const [sidebarWidth,setSidebarWidth]=useState(280);
   const isResizing = useRef(false);
@@ -1857,15 +1870,15 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
     try {
       const params = new URLSearchParams();
       params.set("codes_list", grpSelec.join(","));
-      if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
-      else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
+      if (modeAnnees==="specifiques"&&anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
+      else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
       const raw: any[] = await fetch(`${API}/ide/monde?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
       setDonnees((raw||[]).map(d => ({
         pays: d.code, direction: d.direction, indicateur: d.indicateur, annee: d.annee, valeur: d.somme,
       })));
     } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
-  }, [grpSelec, anneeMin, anneeMax, anneesSpec, modeAnnees, tick]);
+  }, [grpSelec, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees, tick]);
 
   useEffect(() => { charger(); }, [charger]);
 
@@ -1885,10 +1898,10 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   useEffect(() => {
     if (!modeDetail) { setDonneesDetail([]); return; }
     const params = new URLSearchParams({ code: grpSelec[0] });
-    if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees_spec", anneesSpec.join(","));
-    else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
+    if (modeAnnees==="specifiques"&&anneesSpecD.length>0) params.set("annees_spec", anneesSpecD.join(","));
+    else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
     fetch(`${API}/ide/monde/details?${params}`).then(r=>r.json()).then(d=>setDonneesDetail(d||[])).catch(()=>{});
-  }, [modeDetail, grpSelec, anneeMin, anneeMax, anneesSpec, modeAnnees]);
+  }, [modeDetail, grpSelec, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees]);
 
   const q = searchGrp.toLowerCase();
   const matchGrp = (g: {code:string; nom_fr:string}) => !q || g.nom_fr.toLowerCase().includes(q) || g.code.toLowerCase().includes(q);
