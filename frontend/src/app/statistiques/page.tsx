@@ -140,7 +140,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
           ) : partenaires.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "#9aa5b4", fontSize: 13 }}>Aucune donnée pour {annee}.</div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
+            <table className="charge-in" style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
               <thead>
                 <tr>
                   <th style={{ ...TH, borderTopLeftRadius: 8 }}>{colSelf}</th>
@@ -354,7 +354,7 @@ function CommercePanel() {
   );
 
   return (
-    <div style={{ display: "flex", alignItems: "flex-start" }}>
+    <div className="charge-in" style={{ display: "flex", alignItems: "flex-start" }}>
       {/* ── Barre de filtre ── */}
       <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "calc(100vh - 64px)", overflowY: "auto", position: "sticky", top: 64, display: "flex", flexDirection: "column" }}>
         {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
@@ -1848,7 +1848,7 @@ export default function StatistiquesPage() {
               <p style={{ fontSize: 14, marginTop: 6 }}>Choisissez un ou plusieurs pays dans la barre de filtre pour explorer leurs statistiques.</p>
             </div>
           ) : (
-            <>
+            <div className="charge-in">
               {/* ── Analyse par pays ── */}
               {vue === "pays" && (() => {
                 const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
@@ -1955,7 +1955,7 @@ export default function StatistiquesPage() {
                 </>
                 );
               })()}
-            </>
+            </div>
           )}
         </div>
       </div>

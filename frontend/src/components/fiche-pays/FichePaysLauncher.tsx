@@ -112,7 +112,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
             {!data ? (
               <SkeletonRows n={10} h={34} />
             ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <table className="charge-in" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid #ECEAE7" }}>
                   <th style={{ padding: "0 12px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur</th>
