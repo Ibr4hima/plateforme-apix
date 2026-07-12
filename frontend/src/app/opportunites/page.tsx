@@ -1179,7 +1179,7 @@ export default function OpportunitesPage() {
                     <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                   </div>
                 ) : (
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
                     {projetsFiltres.map(p=>(
                       <div key={p.id} onClick={()=>setProjSel(p)}
                         style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
@@ -1240,7 +1240,7 @@ export default function OpportunitesPage() {
                   <ErreurChargement onRetry={()=>chargerPots()}/>
                 ) : selectedNiveau===null ? (
                   /* ── Picker 4 cards ── */
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
                     {([
                       {key:"pole",           label:"Pôles territoires", unit:"Pôles",           color:"#004f91"},
                       {key:"region",         label:"Régions",           unit:"Régions",         color:"#ca631f"},
@@ -1401,7 +1401,7 @@ export default function OpportunitesPage() {
                   <ErreurChargement onRetry={()=>chargerAvgs()}/>
                 ) : selectedSecAvg===null ? (
                   /* ── Vue secteurs : 3 cards ── */
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
                     {([
                       {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
                       {key:"secondaire", label:"Secteur Secondaire", color:"#004f91"},

@@ -1211,7 +1211,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           ) : erreur ? (
             <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+            <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>(
                 <GrapheCard key={g.id} titre={g.titre} sous_titre={`M$ USD · CNUCED · ${anneeMin}–${anneeMax}`} series={g.series} grapheId={g.id}
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id}/>}>
@@ -1513,7 +1513,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
           ) : erreur ? (
             <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+            <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
                 <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Source CNUCED" series={g.series} grapheId={g.id} hideLegend
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6}/>}>
@@ -2150,7 +2150,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
         ) : erreur ? (
           <ErreurChargement onRetry={() => setTick(t => t + 1)} />
         ) : (
-          <>
+          <div className="charge-in">
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
               <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Somme pays membres · CNUCED" series={g.series} grapheId={g.id} hideLegend
@@ -2172,7 +2172,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               </GrapheCard>
             </div>
           )}
-          </>
+          </div>
         )}
       </div>
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={grpAvecCouleur} />
@@ -3087,7 +3087,7 @@ function OngletNational() {
               <SkeletonChartGrid n={8} cols={2} height={215}/>
             ) : (
               <>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+                <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
                   {BDEF_GRAPHES_DEFAUT.map(code=>{
                     const fmt = (v:number|null)=>fmtBdef(v, (compData[compSelec[0]]||[]).find(i=>i.code===code)?.unite||"FCFA");
                     const compAffichees = (modeAnnees==="specifiques"&&anneesSpec.length>0)
@@ -3168,7 +3168,7 @@ function OngletNational() {
             <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>
           </div>
         ) : (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+          <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {BDEF_GRAPHES_DEFAUT
               .map(code=>indicateurs.find(i=>i.code===code))
               .filter((i):i is BdefIndic=>!!i)

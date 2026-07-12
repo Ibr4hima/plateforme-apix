@@ -388,7 +388,7 @@ export default function EntreprisesPage() {
           {loading ? (
             <SkeletonChart height={520}/>
           ) : (
-            <VueTerritorialeSenegal zones={[]} mode="region"/>
+            <div className="charge-in"><VueTerritorialeSenegal zones={[]} mode="region"/></div>
           )}
         </section>
       )}
@@ -446,7 +446,7 @@ export default function EntreprisesPage() {
                 {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#E35336",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
               </div>
             ):(
-              <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
+              <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {entreprises.map(e=>(
                   <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}

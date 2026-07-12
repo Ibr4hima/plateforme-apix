@@ -1322,7 +1322,7 @@ function VizCard({ card, viz, onRemove }: {
           ):data.length===0?(
             <EmptyState h={160}/>
           ):(
-            <VizChart vizId={viz.id} data={data} height={160} compact/>
+            <div className="charge-in"><VizChart vizId={viz.id} data={data} height={160} compact/></div>
           )}
         </div>
       </div>
@@ -1776,9 +1776,9 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
     ? <Skeleton w="100%" h={h} r={10}/>
     : erreur ? <div style={{pointerEvents:"auto" as const}}><ErreurChargement compact onRetry={()=>setTick(t=>t+1)}/></div>
     : cardData.length===0 ? <EmptyState h={h}/>
-    : isSecteurs ? <DonutLabeled data={cardData} height={h} palette={BAR_PALETTE5} compact/>
+    : <div className="charge-in">{isSecteurs ? <DonutLabeled data={cardData} height={h} palette={BAR_PALETTE5} compact/>
     : isPays ? <VBarChart data={cardData} height={h} palette={BAR_PALETTE5}/>
-    : <HBarAxisChart data={cardData} height={h} palette={BAR_PALETTE5}/>;
+    : <HBarAxisChart data={cardData} height={h} palette={BAR_PALETTE5}/>}</div>;
 
   return (
     <>

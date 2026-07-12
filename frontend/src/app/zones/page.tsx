@@ -610,10 +610,10 @@ export default function ZonesPage() {
       {/* ── Contenu ── */}
       <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
         {onglet==="zones" && (
-          loading ? <SkeletonCards n={3} cols={3} height={190}/> : erreur ? <ErreurChargement onRetry={()=>setTick(t=>t+1)}/> : <ZonesParType zones={zones}/>
+          loading ? <SkeletonCards n={3} cols={3} height={190}/> : erreur ? <ErreurChargement onRetry={()=>setTick(t=>t+1)}/> : <div className="charge-in"><ZonesParType zones={zones}/></div>
         )}
         {onglet==="territoire" && (
-          loading ? <SkeletonChart height={520}/> : erreur ? <ErreurChargement onRetry={()=>setTick(t=>t+1)}/> : <VueTerritorialeSenegal zones={zones}/>
+          loading ? <SkeletonChart height={520}/> : erreur ? <ErreurChargement onRetry={()=>setTick(t=>t+1)}/> : <div className="charge-in"><VueTerritorialeSenegal zones={zones}/></div>
         )}
       </section>
     </main>
