@@ -8,6 +8,7 @@ import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHoriz
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
+import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -21,12 +22,8 @@ function getPaysColor(nom: string, index: number): string {
   return PAYS_COLORS[nom] || PALETTE[index % PALETTE.length];
 }
 
-function fmtVal(v: number|null) {
-  if (v === null || v === undefined) return "N/A";
-  const abs = Math.abs(v);
-  if (abs >= 1000) return `${(v/1000).toFixed(1)} Md$`;
-  return `${v.toFixed(0)} M$`;
-}
+// Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, « Md $ / M $ »)
+const fmtVal = fmtMillionsUSD;
 
 // ── Download graphe ───────────────────────────────────────────────────────────
 function downloadSVG(svgEl: SVGSVGElement, filename: string) {
@@ -219,10 +216,7 @@ function GrapheMultiPays({ series, height=280, type="line", titre="", fmt, showD
         .attr("stroke","#C5BFBB").attr("stroke-width",1.2).attr("stroke-dasharray","4,3");
 
     const tooltip = d3.select("#d3-tooltip") as any;
-    const fmtAxis = (v: d3.NumberValue) => {
-      const n = +v; const a = Math.abs(n);
-      return a>=1e9?`${(n/1e9).toFixed(1)}Md`:a>=1e6?`${(n/1e6).toFixed(0)}M`:`${n.toFixed(0)}`;
-    };
+    const fmtAxis = (v: d3.NumberValue) => fmtAxe(+v);
 
     // ── BARRES ────────────────────────────────────────────────────────────────
     if (type === "bar") {
@@ -1576,7 +1570,7 @@ function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) 
     const x = d3.scalePow().exponent(0.5).domain([0, maxVal]).range([M.left, W-M.right]);
     const y = d3.scaleBand().domain(data.map((d:any)=>d.pays)).range([M.top, H-M.bottom]).padding(0.18);
 
-    const fmtLabel = (v:number) => Math.abs(v)>=1000 ? `${(v/1000).toFixed(1)} Md$` : `${Math.round(v)} M$`;
+    const fmtLabel = (v:number) => fmtMillionsUSD(v);
     const minLabelInside = mini ? 40 : 80;
     const label = (d:any) => mini
       ? ((d.code_iso3 as string|null) ?? (d.pays as string).slice(0,3).toUpperCase())
@@ -1711,7 +1705,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
 
     const fmt = (v:number) => {
       const abs = Math.abs(v), sign = v>0?"+":"-";
-      return abs>=1000 ? `${sign}${(abs/1000).toFixed(1)}k` : `${sign}${Math.round(abs)}`;
+      return abs>=1000 ? `${sign}${(abs/1000).toLocaleString("fr-FR",{maximumFractionDigits:1})}k` : `${sign}${Math.round(abs)}`;
     };
 
     // Axes indépendants en haut (full uniquement)

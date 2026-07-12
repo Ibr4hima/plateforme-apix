@@ -5,6 +5,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import ErreurChargement from "@/components/shared/ErreurChargement";
+import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
@@ -17,27 +18,6 @@ const PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string; ordre: number; derive: boolean };
 type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };
 type Donnee = { pays_id: number; pays: string; annee: number; indicateur: string; valeur: number | null };
-
-// ── Formatage des valeurs par unité ───────────────────────────────────────────
-function fmt(valeur: number | null | undefined, unite: string): string {
-  if (valeur === null || valeur === undefined || isNaN(valeur)) return "—";
-  const v = valeur;
-  if (unite === "%") return `${v > 0 ? "+" : ""}${v.toFixed(1)} %`;
-  if (unite === "USD") {
-    const a = Math.abs(v);
-    if (a >= 1e9) return `${(v / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md $`;
-    if (a >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M $`;
-    return `${Math.round(v).toLocaleString("fr-FR")} $`;
-  }
-  if (unite === "Md USD") return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md $`;
-  if (unite === "hab/km²") return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} hab/km²`;
-  if (unite === "km²") return `${Math.round(v).toLocaleString("fr-FR")} km²`;
-  if (unite === "habitants") {
-    if (v >= 1_000_000) return `${(v / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} M hab.`;
-    return `${Math.round(v).toLocaleString("fr-FR")} hab.`;
-  }
-  return v.toLocaleString("fr-FR");
-}
 
 // ── Regroupement des pays par continent ───────────────────────────────────────
 const VUES: { v: "pays" | "comparative"; l: string }[] = [
@@ -54,16 +34,6 @@ function sortContinents(conts: string[]) {
     if (ia === -1) return 1; if (ib === -1) return -1;
     return ia - ib;
   });
-}
-
-// ── Formatage monétaire commerce (USD) ────────────────────────────────────────
-function fmtUSD(v: number | null): string {
-  if (v == null) return "—";
-  const a = Math.abs(v);
-  if (a >= 1e9) return `${(v / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Md $`;
-  if (a >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} M $`;
-  if (a >= 1e3) return `${(v / 1e3).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} k $`;
-  return `${Math.round(v).toLocaleString("fr-FR")} $`;
 }
 
 // ── Panneau Flux bilatéraux (données commerciales) ────────────────────────────
@@ -669,14 +639,6 @@ function CommercePanel() {
 }
 
 // ── Graphe D3 (repris de la page IDE) ─────────────────────────────────────────
-function fmtValGen(v: number | null) {
-  if (v === null || v === undefined) return "N/A";
-  const a = Math.abs(v);
-  if (a >= 1e9) return `${(v / 1e9).toFixed(1)} Md`;
-  if (a >= 1e6) return `${(v / 1e6).toFixed(1)} M`;
-  if (a >= 1e3) return `${(v / 1e3).toFixed(1)} k`;
-  return `${v.toFixed(0)}`;
-}
 function showD3Tooltip(tooltip: any, e: MouseEvent, html?: string) {
   if (html !== undefined) tooltip.html(html);
   tooltip.style("opacity", 1);
@@ -822,10 +784,7 @@ function GrapheMultiPays({ series, height = 280, type = "line", titre = "", fmt,
       svg.append("line").attr("x1", M.left).attr("x2", W - M.right).attr("y1", y(0)).attr("y2", y(0))
         .attr("stroke", "#C5BFBB").attr("stroke-width", 1.2).attr("stroke-dasharray", "4,3");
     const tooltip = d3.select("#d3-tooltip") as any;
-    const fmtAxis = (v: d3.NumberValue) => {
-      const n = +v; const a = Math.abs(n);
-      return a >= 1e9 ? `${(n / 1e9).toFixed(1)}Md` : a >= 1e6 ? `${(n / 1e6).toFixed(0)}M` : a >= 1e3 ? `${(n / 1e3).toFixed(0)}k` : `${n.toFixed(0)}`;
-    };
+    const fmtAxis = (v: d3.NumberValue) => fmtAxe(+v);
     if (type === "bar") {
       const nbSeries = series.length;
       const xGroup = nbSeries > 1

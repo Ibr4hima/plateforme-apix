@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, ChevronDown, FileText, Landmark, Scale, Search, X } from "lucide-react";
 import { SkeletonRows } from "@/components/shared/Skeleton";
+import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -12,27 +13,6 @@ const PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c
 
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string; ordre: number; derive: boolean };
 type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };
-
-// ── Formatage des valeurs par unité ───────────────────────────────────────────
-function fmt(valeur: number | null | undefined, unite: string): string {
-  if (valeur === null || valeur === undefined || isNaN(valeur)) return "—";
-  const v = valeur;
-  if (unite === "%") return `${v > 0 ? "+" : ""}${v.toFixed(1)} %`;
-  if (unite === "USD") {
-    const a = Math.abs(v);
-    if (a >= 1e9) return `${(v / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md $`;
-    if (a >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M $`;
-    return `${Math.round(v).toLocaleString("fr-FR")} $`;
-  }
-  if (unite === "Md USD") return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md $`;
-  if (unite === "hab/km²") return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} hab/km²`;
-  if (unite === "km²") return `${Math.round(v).toLocaleString("fr-FR")} km²`;
-  if (unite === "habitants") {
-    if (v >= 1_000_000) return `${(v / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} M hab.`;
-    return `${Math.round(v).toLocaleString("fr-FR")} hab.`;
-  }
-  return v.toLocaleString("fr-FR");
-}
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 function sortContinents(conts: string[]) {
@@ -264,15 +244,6 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
 }
 
 // ── Formatage monétaire commerce (USD) ────────────────────────────────────────
-function fmtUSD(v: number | null): string {
-  if (v == null) return "—";
-  const a = Math.abs(v);
-  if (a >= 1e9) return `${(v / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Md $`;
-  if (a >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} M $`;
-  if (a >= 1e3) return `${(v / 1e3).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} k $`;
-  return `${Math.round(v).toLocaleString("fr-FR")} $`;
-}
-
 // ── Sélecteur de pays (Fiche Pays) ────────────────────────────────────────────
 function FichePaysPicker({ pays, senId, initial, onValider, onClose }: {
   pays: Pays[]; senId: number | null; initial: number[]; onValider: (ids: number[]) => void; onClose: () => void;
