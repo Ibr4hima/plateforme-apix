@@ -7,6 +7,7 @@ import * as d3 from "d3";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
+import ErreurChargement from "@/components/shared/ErreurChargement";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -885,17 +886,20 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 
   const couleur = "#004f91";
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
   const charger = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
       const params = new URLSearchParams({ pays_list: paysSelec });
       if (modeAnnees==="specifiques" && anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
       else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
-      const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>r.json());
+      const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
       setDonnees(dataR||[]);
-    } catch(e){ console.error(e); }
+    } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
-  }, [paysSelec, anneeMin, anneeMax, anneesSpec, modeAnnees]);
+  }, [paysSelec, anneeMin, anneeMax, anneesSpec, modeAnnees, tick]);
 
   useEffect(() => { charger(); }, [charger]);
 
@@ -1210,6 +1214,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           {/* Graphes */}
           {loading ? (
             <SkeletonChartGrid n={4} cols={2} height={230}/>
+          ) : erreur ? (
+            <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>(
@@ -1257,19 +1263,22 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
   const [searchPays,  setSearchPays]  = useState("");
   const [openConts,   setOpenConts]   = useState<Set<string>>(new Set());
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
   const charger = useCallback(async () => {
     if (!paysSelec.length) return;
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
       const params = new URLSearchParams();
       params.set("pays_list", paysSelec.join(","));
       if (modeAnnees==="specifiques" && anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
       else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
-      const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>r.json());
+      const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
       setDonnees(dataR||[]);
-    } catch(e){ console.error(e); }
+    } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
-  }, [paysSelec, anneeMin, anneeMax, anneesSpec, modeAnnees]);
+  }, [paysSelec, anneeMin, anneeMax, anneesSpec, modeAnnees, tick]);
 
   useEffect(() => { charger(); }, [charger]);
 
@@ -1507,6 +1516,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
 
           {loading ? (
             <SkeletonChartGrid n={4} cols={2} height={230}/>
+          ) : erreur ? (
+            <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
@@ -1843,21 +1854,24 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
     return { nom: code, label: g?.nom_fr || code, abrege: code.replace(/_/g, " "), couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] };
   });
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
   const charger = useCallback(async () => {
     if (!grpSelec.length) { setDonnees([]); return; }
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
       const params = new URLSearchParams();
       params.set("codes_list", grpSelec.join(","));
       if (modeAnnees==="specifiques"&&anneesSpec.length>0) params.set("annees", anneesSpec.join(","));
       else { params.set("annee_min", String(anneeMin)); params.set("annee_max", String(anneeMax)); }
-      const raw: any[] = await fetch(`${API}/ide/monde?${params}`).then(r=>r.json());
+      const raw: any[] = await fetch(`${API}/ide/monde?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
       setDonnees((raw||[]).map(d => ({
         pays: d.code, direction: d.direction, indicateur: d.indicateur, annee: d.annee, valeur: d.somme,
       })));
-    } catch(e){ console.error(e); }
+    } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
-  }, [grpSelec, anneeMin, anneeMax, anneesSpec, modeAnnees]);
+  }, [grpSelec, anneeMin, anneeMax, anneesSpec, modeAnnees, tick]);
 
   useEffect(() => { charger(); }, [charger]);
 
@@ -2139,6 +2153,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           </div>
         ) : loading ? (
           <SkeletonChartGrid n={4} cols={2} height={230}/>
+        ) : erreur ? (
+          <ErreurChargement onRetry={() => setTick(t => t + 1)} />
         ) : (
           <>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
@@ -2605,11 +2621,14 @@ function OngletNational() {
 
   useEffect(()=>{ fetch(`${API}/bdef/secteurs`).then(r=>r.json()).then((d:BdefRefs)=>setRefs(d)).catch(()=>{}); }, []);
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
   const charger = useCallback(async()=>{
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
       const qs = sel.niveau==="global" ? `niveau=global` : `niveau=${sel.niveau}&cible_id=${sel.cible_id}`;
-      const d = await fetch(`${API}/bdef/valeurs?${qs}`).then(r=>r.json());
+      const d = await fetch(`${API}/bdef/valeurs?${qs}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
       setIndicateurs(d?.indicateurs||[]);
       setAnneesData(d?.annees||[]);
       if (sel.niveau==="global" && refs) {
@@ -2625,9 +2644,9 @@ function OngletNational() {
       } else {
         setMacroIndicateurs([]);
       }
-    } catch(e){ console.error(e); setIndicateurs([]); setAnneesData([]); setMacroIndicateurs([]); }
+    } catch(e){ console.error(e); setErreur(true); setIndicateurs([]); setAnneesData([]); setMacroIndicateurs([]); }
     finally { setLoading(false); }
-  }, [sel, refs]);
+  }, [sel, refs, tick]);
   useEffect(()=>{ charger(); }, [charger]);
 
   // Chargement comparatif : quand compSelec ou compType change
@@ -3147,6 +3166,8 @@ function OngletNational() {
 
         {loading ? (
           <SkeletonChartGrid n={8} cols={2} height={215}/>
+        ) : erreur ? (
+          <ErreurChargement onRetry={() => setTick(t => t + 1)} />
         ) : indicateurs.length===0 ? (
           <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"#9aa5b4" }}>
             <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>

@@ -14,6 +14,7 @@ import { CATALOGUE, TABLES_ANALYTIQUES, type Visualisation } from "./catalogue";
 import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { zoneTypeMeta } from "@/components/shared/zoneTypes";
 import { Skeleton } from "@/components/shared/Skeleton";
+import ErreurChargement from "@/components/shared/ErreurChargement";
 
 // Layout effect côté client, effet classique côté serveur (évite le warning SSR)
 const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -1718,15 +1719,18 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   const [data, setData]       = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen]       = useState(false);
+  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
+  const [erreur, setErreur]   = useState(false);
+  const [tick, setTick]       = useState(0);
 
   useEffect(()=>{
     if(!meta) return;
-    setLoading(true);
+    setLoading(true); setErreur(false);
     fetch(`${API}/dashboard/indicateur?dimension=${meta.dim.key}&indicateur=${meta.ind.key}`)
-      .then(r=>r.json()).then(d=>setData(Array.isArray(d)?d:[]))
-      .catch(()=>setData([])).finally(()=>setLoading(false));
+      .then(r=>{ if(!r.ok) throw new Error(); return r.json(); }).then(d=>setData(Array.isArray(d)?d:[]))
+      .catch(()=>{ setData([]); setErreur(true); }).finally(()=>setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[id]);
+  },[id, tick]);
 
   if(!meta) return null;
   const { dim, ind } = meta;
@@ -1770,6 +1774,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
 
   const body = (h:number) => loading
     ? <Skeleton w="100%" h={h} r={10}/>
+    : erreur ? <div style={{pointerEvents:"auto" as const}}><ErreurChargement compact onRetry={()=>setTick(t=>t+1)}/></div>
     : cardData.length===0 ? <EmptyState h={h}/>
     : isSecteurs ? <DonutLabeled data={cardData} height={h} palette={BAR_PALETTE5} compact/>
     : isPays ? <VBarChart data={cardData} height={h} palette={BAR_PALETTE5}/>
@@ -1983,8 +1988,15 @@ export default function TableauDeBordPage() {
   const [hydrated, setHydrated] = useState(false);
   const [kpis, setKpis] = useState<Record<string,any>>({});
 
+  // Chargement principal des stats : en cas d'échec, état d'erreur avec relance (tick)
+  const [erreurKpis, setErreurKpis] = useState(false);
+  const [tickKpis, setTickKpis] = useState(0);
+
   useEffect(() => { setConfig(loadConfig()); setHydrated(true); }, []);
-  useEffect(() => { fetch(`${API}/dashboard/stats`).then(r=>r.json()).then(setKpis).catch(()=>{}); }, []);
+  useEffect(() => {
+    setErreurKpis(false);
+    fetch(`${API}/dashboard/stats`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); }).then(setKpis).catch(()=>setErreurKpis(true));
+  }, [tickKpis]);
   useEffect(() => { if(hydrated) saveConfig(config); }, [config, hydrated]);
 
   const toggleCard=useCallback((viz:Visualisation)=>{
@@ -2047,9 +2059,15 @@ export default function TableauDeBordPage() {
           {/* ── Onglet Visualisation ─────────────────────────────────────────── */}
           {onglet==="viz" && (<>
             {/* Indicateurs Global fixes */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
-              {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
-            </div>
+            {erreurKpis ? (
+              <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",marginBottom:28}}>
+                <ErreurChargement compact onRetry={()=>setTickKpis(t=>t+1)}/>
+              </div>
+            ) : (
+              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
+                {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
+              </div>
+            )}
 
             {/* Visualisation permanente : Répartition des entreprises */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,marginBottom:28,alignItems:"stretch"}}>
