@@ -2185,16 +2185,17 @@ const BDEF_CAT_COULEURS = ["#004f91","#ca631f","#188038","#7c3aed","#0891b2","#d
 
 function fmtBdef(v: number|null, unite: string, short = false): string {
   if (v === null || v === undefined || isNaN(v)) return "N/A";
-  if (unite === "%")     return `${v.toFixed(2)} %`;
-  if (unite === "ratio") return v.toFixed(3);
-  if (unite === "jours") return `${v.toFixed(0)} j`;
+  const nf1 = (x: number) => x.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+  if (unite === "%")     return `${nf1(v)} %`;
+  if (unite === "ratio") return v.toLocaleString("fr-FR", { maximumFractionDigits: 3 });
+  if (unite === "jours") return `${Math.round(v)} j`;
   // Montants en FCFA réels (le fichier source était en millions de FCFA).
   const suf = short ? "" : " FCFA";
   const a = Math.abs(v);
-  if (a >= 1e9) return `${(v/1e9).toFixed(2)} Md${suf}`;
-  if (a >= 1e6) return `${(v/1e6).toFixed(1)} M${suf}`;
-  if (a >= 1e3) return `${(v/1e3).toFixed(0)} k${suf}`;
-  return `${v.toFixed(0)} FCFA`;
+  if (a >= 1e9) return `${nf1(v/1e9)} Md${suf}`;
+  if (a >= 1e6) return `${nf1(v/1e6)} M${suf}`;
+  if (a >= 1e3) return `${Math.round(v/1e3).toLocaleString("fr-FR")} k${suf}`;
+  return `${Math.round(v).toLocaleString("fr-FR")} FCFA`;
 }
 
 type BdefNode = { id:number; code:string; libelle:string; macro_secteur_id?:number; groupe_id?:number };

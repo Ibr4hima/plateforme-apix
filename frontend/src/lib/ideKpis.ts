@@ -348,18 +348,20 @@ export const KPI_DEFAUT = ["fe_last","fs_last","se_last","ss_last","fn_last"];
 export function fmtKpi(kpi: KpiResult): string {
   if (kpi.valeur === null || kpi.valeur === undefined || isNaN(kpi.valeur)) return "N/A";
   const v = kpi.valeur;
+  const nf1 = (x: number) => x.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
   switch(kpi.format) {
     case "monnaie":
     case "monnaie_signe": {
       const abs=Math.abs(v);
       const sign = kpi.format==="monnaie_signe"&&v>0?"+":"";
-      if(abs>=1000) return `${sign}${(v/1000).toFixed(1)} Md$`;
-      return `${sign}${v.toFixed(0)} M$`;
+      // Valeurs en millions USD — style commun : fr-FR, 1 décimale, « Md $ / M $ »
+      if(abs>=1000) return `${sign}${nf1(v/1000)} Md $`;
+      return `${sign}${Math.round(v).toLocaleString("fr-FR")} M $`;
     }
-    case "pourcentage": return `${v>0?"+":""}${v.toFixed(1)}%`;
-    case "ratio":       return v.toFixed(2);
-    case "entier":      return Math.round(v).toString();
+    case "pourcentage": return `${v>0?"+":""}${nf1(v)} %`;
+    case "ratio":       return v.toLocaleString("fr-FR", { maximumFractionDigits: 2 });
+    case "entier":      return Math.round(v).toLocaleString("fr-FR");
     case "annee":       return Math.round(v).toString();
-    default:            return v.toFixed(1);
+    default:            return nf1(v);
   }
 }
