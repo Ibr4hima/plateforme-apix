@@ -3,6 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge from "@/components/shared/Badge";
+import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { ArrowLeft, ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
@@ -840,6 +841,7 @@ export default function OpportunitesPage() {
   // ── Projets ──
   const [projets,    setProjets]    = useState<any[]>([]);
   const [projLoad,   setProjLoad]   = useState(true);
+  const [projErr,    setProjErr]    = useState(false);
   const [projSel,    setProjSel]    = useState<any>(null);
   const [projQ,      setProjQ]      = useState("");
   const [projPoles,  setProjPoles]  = useState<string[]>([]);
@@ -855,6 +857,7 @@ export default function OpportunitesPage() {
   // ── Potentialités ──
   const [pots,     setPots]     = useState<any[]>([]);
   const [potsLoad, setPotsLoad] = useState(true);
+  const [potsErr,  setPotsErr]  = useState(false);
   const [potSel,   setPotSel]   = useState<any>(null);
   const [potsNiveau,setPotsNiveau]=useState<string[]>([]);
   const [potsPoles, setPotsPoles]=useState<string[]>([]);
@@ -868,6 +871,7 @@ export default function OpportunitesPage() {
   // ── Avantages ──
   const [avgs,          setAvgs]          = useState<any[]>([]);
   const [avgsLoad,      setAvgsLoad]      = useState(true);
+  const [avgsErr,       setAvgsErr]       = useState(false);
   const [avgSel,        setAvgSel]        = useState<any>(null);
   const [avgSects,      setAvgSects]      = useState<string[]>([]);
   const [avgBranches,   setAvgBranches]   = useState<string[]>([]);
@@ -916,34 +920,41 @@ export default function OpportunitesPage() {
     });
   },[]);
 
+  // Chargements principaux par onglet : en cas d'échec, état d'erreur avec relance
   const chargerProjets = useCallback(async()=>{
-    setProjLoad(true);
+    setProjLoad(true); setProjErr(false);
     try {
       const res = await fetch(`${API}/projets?per_page=100`);
+      if (!res.ok) throw new Error();
       const d = await res.json();
       setProjets(d.data||[]);
       setStats(prev=>({...prev, projets:d.total||0}));
-    } finally { setProjLoad(false); }
+    } catch { setProjErr(true); }
+    finally { setProjLoad(false); }
   },[]);
 
   const chargerPots = useCallback(async()=>{
-    setPotsLoad(true);
+    setPotsLoad(true); setPotsErr(false);
     try {
       const res = await fetch(`${API}/opportunites/potentialites?per_page=100`);
+      if (!res.ok) throw new Error();
       const d = await res.json();
       setPots(d.data||[]);
       setStats(prev=>({...prev, potentialites:d.total||0}));
-    } finally { setPotsLoad(false); }
+    } catch { setPotsErr(true); }
+    finally { setPotsLoad(false); }
   },[]);
 
   const chargerAvgs = useCallback(async()=>{
-    setAvgsLoad(true);
+    setAvgsLoad(true); setAvgsErr(false);
     try {
       const res = await fetch(`${API}/opportunites/avantages?per_page=100`);
+      if (!res.ok) throw new Error();
       const d = await res.json();
       setAvgs(d.data||[]);
       setStats(prev=>({...prev, activites:d.total||0}));
-    } finally { setAvgsLoad(false); }
+    } catch { setAvgsErr(true); }
+    finally { setAvgsLoad(false); }
   },[]);
 
   useEffect(()=>{ chargerProjets(); chargerPots(); chargerAvgs(); },[chargerProjets,chargerPots,chargerAvgs]);
@@ -1160,6 +1171,8 @@ export default function OpportunitesPage() {
               <>
                 {projLoad ? (
                   <SkeletonCards n={6} cols={2} height={200}/>
+                ) : projErr ? (
+                  <ErreurChargement onRetry={()=>chargerProjets()}/>
                 ) : projetsFiltres.length===0 ? (
                   <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
                     <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun projet trouvé</p>
@@ -1223,6 +1236,8 @@ export default function OpportunitesPage() {
               <>
                 {potsLoad ? (
                   <SkeletonCards n={4} cols={4} height={190}/>
+                ) : potsErr ? (
+                  <ErreurChargement onRetry={()=>chargerPots()}/>
                 ) : selectedNiveau===null ? (
                   /* ── Picker 4 cards ── */
                   <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
@@ -1382,6 +1397,8 @@ export default function OpportunitesPage() {
               <>
                 {avgsLoad ? (
                   <SkeletonCards n={3} cols={3} height={190}/>
+                ) : avgsErr ? (
+                  <ErreurChargement onRetry={()=>chargerAvgs()}/>
                 ) : selectedSecAvg===null ? (
                   /* ── Vue secteurs : 3 cards ── */
                   <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>

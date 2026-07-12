@@ -5,6 +5,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
+import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
@@ -571,15 +572,19 @@ export default function ZonesPage() {
   const [zones,      setZones]      = useState<any[]>([]);
   const [polesCount, setPolesCount] = useState(0);
   const [loading,    setLoading]    = useState(true);
+  const [erreur,     setErreur]     = useState(false);
+  const [tick,       setTick]       = useState(0);
   const [onglet,     setOnglet]     = useState<"zones"|"territoire">("zones");
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
   useEffect(()=>{
+    setLoading(true); setErreur(false);
     fetch(`${API_BASE}/zones-types`)
-      .then(r=>r.json()).then(d=>{ setZones(d||[]); setLoading(false); })
-      .catch(()=>setLoading(false));
+      .then(r=>{ if(!r.ok) throw new Error(); return r.json(); }).then(d=>{ setZones(d||[]); })
+      .catch(()=>setErreur(true)).finally(()=>setLoading(false));
     fetch(`${API_BASE}/zones-types/poles`)
       .then(r=>r.json()).then((d:any[])=>setPolesCount(d?.length||0)).catch(()=>{});
-  },[]);
+  },[tick]);
 
   const stats = {
     total:      zones.length,
@@ -605,10 +610,10 @@ export default function ZonesPage() {
       {/* ── Contenu ── */}
       <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
         {onglet==="zones" && (
-          loading ? <SkeletonCards n={3} cols={3} height={190}/> : <ZonesParType zones={zones}/>
+          loading ? <SkeletonCards n={3} cols={3} height={190}/> : erreur ? <ErreurChargement onRetry={()=>setTick(t=>t+1)}/> : <ZonesParType zones={zones}/>
         )}
         {onglet==="territoire" && (
-          loading ? <SkeletonChart height={520}/> : <VueTerritorialeSenegal zones={zones}/>
+          loading ? <SkeletonChart height={520}/> : erreur ? <ErreurChargement onRetry={()=>setTick(t=>t+1)}/> : <VueTerritorialeSenegal zones={zones}/>
         )}
       </section>
     </main>

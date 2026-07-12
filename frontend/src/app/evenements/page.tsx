@@ -3,6 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
+import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { CalendarDays, ChevronDown, ChevronUp, FileText, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -505,6 +506,7 @@ export default function EvenementsPage() {
   const gate = useAuthGate();
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
+  const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
   const [paysHotes,   setPaysHotes]   = useState<{nom:string;code_iso2:string}[]>([]);
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
@@ -558,13 +560,15 @@ export default function EvenementsPage() {
     });
   },[]);
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance
   const charger = useCallback(async()=>{
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
       const res = await fetch(`${API_BASE}/evenements?per_page=100`);
+      if (!res.ok) throw new Error();
       const data = await res.json();
       setTous(data.data||[]);
-    } catch(e){ console.error(e); }
+    } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
   },[]);
 
@@ -687,6 +691,8 @@ export default function EvenementsPage() {
           <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
             {loading?(
               <SkeletonCards n={6} cols={2} height={220}/>
+            ):erreur?(
+              <ErreurChargement onRetry={()=>charger()}/>
             ):evenements.length===0?(
               <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
                 <CalendarDays size={48} style={{marginBottom:16,opacity:0.3}}/>

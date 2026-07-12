@@ -5,6 +5,7 @@ import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/sha
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import Badge from "@/components/shared/Badge";
+import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
 import { Building2, ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -251,6 +252,7 @@ export default function EntreprisesPage() {
   const [triDate,     setTriDate]     = useState<"desc"|"asc">("desc");
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
+  const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
@@ -306,13 +308,15 @@ export default function EntreprisesPage() {
     });
   },[]);
 
+  // Chargement principal : en cas d'échec, état d'erreur avec relance
   const charger = useCallback(async()=>{
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
       const res=await fetch(`${API_BASE}/entreprises?per_page=100`);
+      if(!res.ok) throw new Error();
       const data=await res.json();
       setTous(data.data||[]);
-    } catch(e){console.error(e);}
+    } catch(e){console.error(e); setErreur(true);}
     finally{setLoading(false);}
   },[]);
 
@@ -432,6 +436,8 @@ export default function EntreprisesPage() {
           <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
             {loading?(
               <SkeletonCards n={6} cols={2} height={200}/>
+            ):erreur?(
+              <ErreurChargement onRetry={()=>charger()}/>
             ):entreprises.length===0?(
               <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
                 <Building2 size={48} style={{marginBottom:16,opacity:0.3}}/>
