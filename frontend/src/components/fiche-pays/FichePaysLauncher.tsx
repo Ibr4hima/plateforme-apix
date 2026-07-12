@@ -177,7 +177,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                         <ArrowRight size={13} style={{ color: "#c5bfbb", flexShrink: 0 }} />
                         <span>{vers}</span>
                       </span>
-                      {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 3, display: "block" }}>soit <strong style={{ color: "#6b7684" }}>{(dep * 100).toFixed(1)} %</strong> des importations de {vers}</span>}
+                      {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 3, display: "block" }}>soit <strong style={{ color: "#6b7684" }}>{(dep * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</strong> des importations de {vers}</span>}
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{fmtUSD(val)}</div>

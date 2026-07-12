@@ -537,7 +537,7 @@ function CommercePanel() {
             { label: "Année record", sub: "", value: kpis?.annee_record ? String(kpis.annee_record.annee) : "—", indicatif: kpis?.annee_record ? fmtUSD(kpis.annee_record.valeur) : "", text: false },
             { label: expDir ? `1er client · ${ref ?? "—"}` : `1er fournisseur · ${ref ?? "—"}`, sub: "", value: kpis?.top_partenaire?.nom || "—", indicatif: kpis?.top_partenaire ? `${fmtUSD(kpis.top_partenaire.valeur)} ${enRef}` : "", text: true },
             { label: `1re ressource · ${ref ?? "—"}`, sub: "", value: kpis?.top_ressource?.ressource || "—", indicatif: kpis?.top_ressource ? `${fmtUSD(kpis.top_ressource.valeur)} ${enRef}` : "", text: true },
-            { label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", sub: `Concentration · ${ref ?? "—"}`, value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toFixed(1)} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
+            { label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", sub: `Concentration · ${ref ?? "—"}`, value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
           ];
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
@@ -1015,7 +1015,7 @@ function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposan
         const segW = (hasFloor ? floorPx : 0) + (Math.pow(v, exposant) / racSum) * reste;
         svg.append("rect").attr("x", xc).attr("y", y(p.nom)!).attr("width", Math.max(0.5, segW)).attr("height", y.bandwidth())
           .attr("fill", col(ri)).attr("stroke", "#fff").attr("stroke-width", 0.6).style("cursor", "pointer")
-          .on("mouseover", function (e) { d3.select(this).attr("opacity", 0.82); showD3Tooltip(tooltip, e, `<strong>${p.nom} — ${res}</strong><br/>${fmtV(v)} · ${(v / p.total * 100).toFixed(1)}%`); })
+          .on("mouseover", function (e) { d3.select(this).attr("opacity", 0.82); showD3Tooltip(tooltip, e, `<strong>${p.nom} — ${res}</strong><br/>${fmtV(v)} · ${(v / p.total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`); })
           .on("mousemove", (e) => showD3Tooltip(tooltip, e))
           .on("mouseout", function () { d3.select(this).attr("opacity", 1); hideD3Tooltip(tooltip); });
         xc += segW;
@@ -1068,7 +1068,7 @@ function GrapheDonut({ data, fmt, height }: { data: { label: string; valeur: num
     g.selectAll("path").data(pie(items)).enter().append("path")
       .attr("d", arc as any).attr("fill", (_d, i) => couleur(i)).attr("opacity", 0.9)
       .style("cursor", "pointer")
-      .on("mouseover", function (e, d: any) { d3.select(this).attr("d", arcH(d) as string).attr("opacity", 1); showD3Tooltip(tooltip, e, `<strong>${d.data.label}</strong><br/>${fmtV(d.data.valeur)} · ${(d.data.valeur / total * 100).toFixed(1)}%`); })
+      .on("mouseover", function (e, d: any) { d3.select(this).attr("d", arcH(d) as string).attr("opacity", 1); showD3Tooltip(tooltip, e, `<strong>${d.data.label}</strong><br/>${fmtV(d.data.valeur)} · ${(d.data.valeur / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`); })
       .on("mousemove", (e) => showD3Tooltip(tooltip, e))
       .on("mouseout", function (_e, d: any) { d3.select(this).attr("d", arc(d) as string).attr("opacity", 0.9); hideD3Tooltip(tooltip); });
 
@@ -1085,7 +1085,7 @@ function GrapheDonut({ data, fmt, height }: { data: { label: string; valeur: num
     const legend = svg.append("g");
     const maxc = Math.max(8, Math.floor((rightX - lx - 60) / (lgFont * 0.58)));
     items.forEach((d, i) => {
-      const pct = (d.valeur / total * 100).toFixed(1);
+      const pct = (d.valeur / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
       let lbl = d.label; if (lbl.length > maxc) lbl = lbl.slice(0, maxc - 1) + "…";
       const row = legend.append("g").attr("transform", `translate(${lx},${ly})`);
       row.append("rect").attr("x", 0).attr("y", -8).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", couleur(i)).attr("stroke", "#E8E5E3").attr("stroke-width", 0.5);
@@ -1145,7 +1145,7 @@ function GrapheConcentration({ points, height = 200 }: { points: { rang: number;
     svg.selectAll("rect.hit").data(points).enter().append("rect")
       .attr("x", d => x(d.rang) - bw / 2).attr("y", M.top).attr("width", bw).attr("height", H - M.bottom - M.top)
       .attr("fill", "transparent").style("cursor", "pointer")
-      .on("mouseover", (e, d) => showD3Tooltip(tooltip, e, `<strong>Top ${d.rang} — ${d.nom}</strong><br/>Part : ${d.part.toFixed(1)}% · Cumulé : ${d.part_cumulee.toFixed(1)}%`))
+      .on("mouseover", (e, d) => showD3Tooltip(tooltip, e, `<strong>Top ${d.rang} — ${d.nom}</strong><br/>Part : ${d.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % · Cumulé : ${d.part_cumulee.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`))
       .on("mousemove", (e) => showD3Tooltip(tooltip, e))
       .on("mouseout", () => hideD3Tooltip(tooltip));
     svg.append("g").attr("transform", `translate(${M.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d => `${d}%`))
@@ -1284,7 +1284,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
     const val = fmt(valeur, ind.unite);
     if (variation === null) return `En ${annee}, ${pays} affiche ${val} pour l'indicateur « ${ind.libelle} ».`;
     const sens = isPos ? "en hausse" : isNeg ? "en baisse" : "stable";
-    const pct = `${variation > 0 ? "+" : ""}${variation.toFixed(1)} %`;
+    const pct = `${variation > 0 ? "+" : ""}${variation.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
     return `En ${annee}, ${pays} affiche ${val} (${sens} de ${pct} par rapport à l'année précédente) pour l'indicateur « ${ind.libelle} ».`;
   })();
   const trendColor = isPos ? "#188038" : isNeg ? "#dc2626" : "#9aa5b4";

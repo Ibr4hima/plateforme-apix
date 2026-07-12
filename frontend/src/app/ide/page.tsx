@@ -685,7 +685,7 @@ function interpreterKpi(k: KpiResult, pays: string, couleur: string): string {
     case "tv5_fe": return v>0?`Sur 5 ans, le taux de croissance annuel des flux entrants est de ${fmt}. ${v>15?"Dynamique très forte.":v>5?"Croissance soutenue.":"Progression modeste."}`:`Taux de variation négatif sur 5 ans (${fmt}) — déclin récent des flux entrants.`;
     case "tv10_fe": return v>0?`Sur 10 ans, le taux annuel moyen est de ${fmt}. Cela confirme une trajectoire de fond ${v>10?"très positive":"positive"}.`:`Sur 10 ans, tendance négative (${fmt}). Déclin structurel sur la décennie.`;
     case "r_fe_fs": return v>1?`Avec un ratio de ${fmt}, ${pays} reçoit ${fmt} fois plus d'IDE qu'il n'en envoie. Position nette de récepteur.`:v<1?`Le ratio de ${fmt} indique que ${pays} investit davantage à l'étranger qu'il n'en reçoit — profil d'exportateur net de capitaux.`:`Équilibre parfait entre flux entrants et sortants.`;
-    case "dist_max_fe": return v>=0?`Les flux entrants actuels sont au niveau de leur pic historique — performance maximale.`:`${Math.abs(v).toFixed(1)}% en dessous du pic historique. ${Math.abs(v)<20?"Proche du sommet.":Math.abs(v)<50?"Récupération partielle.":"Loin du pic — fort potentiel de rebond."}`;
+    case "dist_max_fe": return v>=0?`Les flux entrants actuels sont au niveau de leur pic historique — performance maximale.`:`${Math.abs(v).toLocaleString("fr-FR",{maximumFractionDigits:1})} % en dessous du pic historique. ${Math.abs(v)<20?"Proche du sommet.":Math.abs(v)<50?"Récupération partielle.":"Loin du pic — fort potentiel de rebond."}`;
     case "regularite_fe": return `${fmt} des années ont connu des flux entrants positifs. ${v>80?"Très grande régularité — le pays attire des IDE de manière continue.":v>60?"Bonne régularité malgré quelques années de désinvestissement.":"Flux entrants irréguliers — forte dépendance à des cycles ou projets ponctuels."}`;
     case "vs_moy_fe": return v>0?`La dernière valeur est ${fmt} au-dessus de la moyenne historique. Performance récente supérieure à la norme.`:`La dernière valeur est ${fmt} en dessous de la moyenne historique. Performance récente inférieure à la normale.`;
     case "n_pos_fe": return `Sur la période, ${fmt} années ont connu une croissance des flux entrants. ${+fmt>20?"Majorité d'années positives — trajectoire haussière dominante.":"Autant ou plus d'années de baisse que de hausse."}`;
@@ -2305,10 +2305,10 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
     return { unite:"FCFA", scale:1 };
   };
   const fmtNu = (ind: BdefIndic, v: number, scale: number) =>
-    ind.unite==="%" ? v.toFixed(2)
-    : ind.unite==="ratio" ? v.toFixed(3)
-    : ind.unite==="jours" ? v.toFixed(0)
-    : (v/scale).toFixed(scale>=1e9?2:scale>=1e6?1:0);
+    ind.unite==="%" ? v.toLocaleString("fr-FR",{maximumFractionDigits:1})
+    : ind.unite==="ratio" ? v.toLocaleString("fr-FR",{maximumFractionDigits:3})
+    : ind.unite==="jours" ? String(Math.round(v))
+    : (v/scale).toLocaleString("fr-FR",{maximumFractionDigits:scale>=1e6?1:0});
 
   const exporter = async () => {
     // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
@@ -2468,10 +2468,10 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   const histScale = estMontant ? (histMax>=1e9 ? 1e9 : histMax>=1e6 ? 1e6 : histMax>=1e3 ? 1e3 : 1) : 1;
   const histUnite = estMontant ? (histScale===1e9 ? "Md FCFA" : histScale===1e6 ? "M FCFA" : histScale===1e3 ? "k FCFA" : "FCFA") : ind.unite;
   const fmtHist = (val:number) =>
-    ind.unite==="%" ? val.toFixed(2)
-    : ind.unite==="ratio" ? val.toFixed(3)
-    : ind.unite==="jours" ? val.toFixed(0)
-    : (val/histScale).toFixed(histScale>=1e9?2:histScale>=1e6?1:0);
+    ind.unite==="%" ? val.toLocaleString("fr-FR",{maximumFractionDigits:1})
+    : ind.unite==="ratio" ? val.toLocaleString("fr-FR",{maximumFractionDigits:3})
+    : ind.unite==="jours" ? String(Math.round(val))
+    : (val/histScale).toLocaleString("fr-FR",{maximumFractionDigits:histScale>=1e6?1:0});
   const SecTitle = ({ children }: { children: React.ReactNode }) => (
     <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
   );

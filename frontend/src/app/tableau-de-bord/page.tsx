@@ -1019,12 +1019,12 @@ function ProportionPlot({ data, height, compact = false }: { data: { label: stri
       marks.push(
         Plot.text(rows, stack({
           filter: (d: any) => d.col === "Toutes entreprises",
-          text: (d: any) => `${d.value}%`,
+          text: (d: any) => `${d.value.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`,
           textAnchor: "end", dx: -7, fill: "#4a5568", fontSize: 11,
         })),
         Plot.text(rows, stack({
           filter: (d: any) => d.col === "Entreprises en zone",
-          text: (d: any) => `${d.value}%`,
+          text: (d: any) => `${d.value.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`,
           textAnchor: "start", dx: 7, fill: "#4a5568", fontSize: 11,
         })),
         Plot.text(rows, stack({
