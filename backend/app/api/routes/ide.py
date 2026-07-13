@@ -771,6 +771,36 @@ async def associer_pays(payload: dict, db: AsyncSession = Depends(get_db), curre
     return {"success": True, "nom_fr": p.nom_fr, "nom_cnuced": p.nom_cnuced}
 
 
+# ── POST /ide/creer-pays-autre ────────────────────────────────────────────────
+# Pour les libellés UNCTAD qui ne correspondent à aucun pays (« Multi-National »,
+# entités historiques…) : crée une entrée ref_pays minimale (continent vide →
+# groupe « Autre » dans les sélecteurs), sur le modèle des partenaires créés
+# par l'import commerce. Les données sont ainsi importées au lieu d'être
+# ignorées — sans fausser les totaux.
+
+@router.post("/creer-pays-autre", status_code=200)
+async def creer_pays_autre(payload: dict, db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
+    from fastapi import HTTPException
+    from app.models.shared import RefPays
+
+    label = (payload.get("label") or "").strip()
+    if not label:
+        raise HTTPException(400, "label requis")
+
+    # Déjà résolu ? (exact ou normalisé) → renvoyer l'existant
+    existant = await _resolve_ref_pays(db, label)
+    if existant:
+        if not existant.nom_cnuced:
+            existant.nom_cnuced = label
+            await db.flush()
+        return {"success": True, "id": existant.id, "nom_fr": existant.nom_fr, "cree": False}
+
+    p = RefPays(nom_fr=label, nom_cnuced=label, actif=False, origine="import_ide")
+    db.add(p)
+    await db.flush()
+    return {"success": True, "id": p.id, "nom_fr": p.nom_fr, "cree": True}
+
+
 # ── POST /ide/rafraichir ──────────────────────────────────────────────────────
 # Fetch UNCTAD API pour tous les pays déjà importés. Nécessite les vars d'env
 # UNCTAD_CLIENT_ID et UNCTAD_CLIENT_SECRET.

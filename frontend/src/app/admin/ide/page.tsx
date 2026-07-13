@@ -194,6 +194,16 @@ export default function AdminIdePage() {
     await handleImport();
   }
 
+  // Entité non-pays (Multi-National, agrégat…) : crée une entrée ref_pays
+  // minimale rattachée au groupe « Autre », puis la marque comme associée.
+  async function handleDeplacerVersAutre(label: string) {
+    try {
+      const res = await fetch(`${API}/ide/creer-pays-autre`, { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ label }) });
+      const d = await res.json();
+      if (res.ok && d?.id) setAssociations(prev => ({ ...prev, [label]: { id: d.id, nom: `${d.nom_fr} (Autre)` } }));
+    } catch { /* le bouton reste actif, l'admin peut réessayer */ }
+  }
+
   async function handleRefresh() {
     if (!unctadOk) return;
     setRefreshing(true); setRefreshRes(null);
@@ -329,6 +339,11 @@ export default function AdminIdePage() {
                   <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>{nr.nb_lignes} lignes non importées</div>
                 </div>
                 <AssociatePicker paysList={paysList} onSelect={(id, nom) => setAssociations(prev => ({ ...prev, [nr.label]: { id, nom } }))} />
+                <button onClick={() => handleDeplacerVersAutre(nr.label)} disabled={!!associations[nr.label]}
+                  title={`Créer « ${nr.label} » comme entrée du groupe Autre (entité non-pays : multinational, agrégat…)`}
+                  style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 8, border: "1px solid #DFDBD7", background: "#F8F7F6", color: "#4a5568", fontSize: 12, fontWeight: 600, cursor: associations[nr.label] ? "default" : "pointer", opacity: associations[nr.label] ? 0.5 : 1, whiteSpace: "nowrap" }}>
+                  Déplacer vers « Autre »
+                </button>
                 {associations[nr.label] && <CheckCircle size={18} color="#27ae60" style={{ flexShrink: 0 }} />}
               </div>
             ))}
