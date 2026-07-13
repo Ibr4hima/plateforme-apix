@@ -12,7 +12,8 @@ type RefPays     = { id: number; nom_fr: string; code_iso2: string | null };
 type StatPays    = { ref_pays_id: number; pays: string; code_iso2: string | null; series: Record<string, { annee_min: number; annee_max: number; nb: number }> };
 type ImportResult= { pays: string; ref_pays_id: number; insere: number; mis_a_jour: number };
 type NonResolu   = { label: string; nb_lignes: number };
-type ImportRes   = { pays: ImportResult[]; erreurs: string[]; non_resolus: NonResolu[] };
+type ProdRes     = { success: boolean; nb_lignes?: number; nb_pays?: number; non_resolus?: number; detail?: string };
+type ImportRes   = { pays: ImportResult[]; erreurs: string[]; non_resolus: NonResolu[]; prod?: ProdRes | null };
 type MergedPays  = StatPays & { hasData: boolean };
 
 const SERIES_LABELS: Record<string, string> = {
@@ -106,6 +107,9 @@ export default function AdminIdePage() {
   const [stockSortant, setStockSortant] = useState<File[]>([]);
   // Mode d'extraction : "annex" = Annex tables WIR (format officiel), "series" = ancien format séries
   const [formatImport, setFormatImport] = useState<"annex" | "series">("annex");
+  // Relais vers la production (visible seulement si PROD_SYNC_* est configuré côté backend)
+  const [prodDispo, setProdDispo] = useState(false);
+  const [prodSync,  setProdSync]  = useState(true);
 
   const [importing,    setImporting]    = useState(false);
   const [importRes,    setImportRes]    = useState<ImportRes | null>(null);
@@ -117,14 +121,16 @@ export default function AdminIdePage() {
   const [deleting,     setDeleting]     = useState<number | null>(null);
 
   async function loadData() {
-    const [st, cfg, pr] = await Promise.all([
+    const [st, cfg, pr, sp] = await Promise.all([
       fetch(`${API}/ide/cnuced/stats`).then(r => r.json()),
       fetch(`${API}/ide/rafraichir/config`).then(r => r.json()),
       fetch(`${API}/ide/pays-ref`).then(r => r.json()),
+      fetch(`${API}/ide/sync-prod/config`).then(r => r.json()).catch(() => ({ configured: false })),
     ]);
     setStats(Array.isArray(st) ? st : []);
     setUnctadOk(cfg?.configured ?? false);
     setPaysList(Array.isArray(pr) ? pr : []);
+    setProdDispo(sp?.configured ?? false);
     setLoading(false);
   }
 
@@ -149,6 +155,7 @@ export default function AdminIdePage() {
   function buildFormData() {
     const fd = new FormData();
     fd.append("format_import", formatImport);
+    if (prodDispo && prodSync) fd.append("dupliquer_prod", "1");
     fluxEntrant.forEach(f  => fd.append("flux_entrant",  f));
     fluxSortant.forEach(f  => fd.append("flux_sortant",  f));
     stockEntrant.forEach(f => fd.append("stock_entrant", f));
@@ -253,13 +260,32 @@ export default function AdminIdePage() {
                 {importRes.erreurs.map((e, i) => <div key={i} style={{ fontSize: 13, color: "#c0392b" }}>⚠ {e}</div>)}
               </div>
             )}
+            {importRes.prod && (
+              importRes.prod.success ? (
+                <div style={{ padding: "10px 14px", borderRadius: 8, background: "#EDF4FB", border: "1px solid #B8D4EE", fontSize: 13, color: "#004f91" }}>
+                  ☁ <strong>Production synchronisée</strong> — {importRes.prod.nb_lignes} lignes pour {importRes.prod.nb_pays} pays{(importRes.prod.non_resolus ?? 0) > 0 ? ` · ${importRes.prod.non_resolus} libellés non résolus côté prod` : ""}
+                </div>
+              ) : (
+                <div style={{ padding: "10px 14px", borderRadius: 8, background: "#FFF2F2", border: "1px solid #F5C6CB", fontSize: 13, color: "#c0392b" }}>
+                  ⚠ Relais vers la production échoué : {importRes.prod.detail} — l&apos;import local a réussi, réessayez ou importez via l&apos;admin en ligne.
+                </div>
+              )
+            )}
           </div>
         )}
-        <button onClick={handleImport} disabled={importing || !hasFiles}
-          style={{ background: importing || !hasFiles ? "#ccc" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 13, fontWeight: 600, cursor: importing || !hasFiles ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
-          {importing ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />}
-          {importing ? "Import en cours…" : "Importer"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <button onClick={handleImport} disabled={importing || !hasFiles}
+            style={{ background: importing || !hasFiles ? "#ccc" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 13, fontWeight: 600, cursor: importing || !hasFiles ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+            {importing ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />}
+            {importing ? "Import en cours…" : "Importer"}
+          </button>
+          {prodDispo && (
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "#4a5568", cursor: "pointer", userSelect: "none" }}>
+              <input type="checkbox" checked={prodSync} onChange={e => setProdSync(e.target.checked)} style={{ width: 15, height: 15, accentColor: "#004f91", cursor: "pointer" }} />
+              Envoyer aussi en <strong>production</strong>
+            </label>
+          )}
+        </div>
       </div>
 
       {/* ── Pays non reconnus ── */}

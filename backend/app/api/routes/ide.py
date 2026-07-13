@@ -584,6 +584,15 @@ async def _recalc_monde(db) -> None:
     await db.execute(text("UPDATE ref_groupements SET code = code"))
 
 
+# ── GET /ide/sync-prod/config ─────────────────────────────────────────────────
+# Indique si le relais des imports vers la production est configuré (env local).
+@router.get("/sync-prod/config")
+async def sync_prod_config():
+    from app.core.config import get_settings
+    s = get_settings()
+    return {"configured": bool(s.PROD_SYNC_URL)}
+
+
 # ── POST /ide/importer ────────────────────────────────────────────────────────
 # Chaque zone accepte N fichiers (un par pays). Le pays est auto-détecté
 # depuis la colonne A (Economy_Label) et mappé vers ref_pays.
@@ -597,6 +606,8 @@ async def importer_ide(
     # Mode d'extraction : "annex" = Annex tables WIR (années en colonnes, défaut),
     # "series" = séries CNUCED historiques (Economy_Label | Year | Value).
     format_import: str = Form(default="series"),
+    # "1" = relayer les mêmes fichiers vers la production (si PROD_SYNC_* configuré)
+    dupliquer_prod: str = Form(default=""),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
@@ -608,16 +619,20 @@ async def importer_ide(
         ("entrant", "stock"): stock_entrant,
         ("sortant", "stock"): stock_sortant,
     }
+    NOMS_ZONES = {("entrant", "flux"): "flux_entrant", ("sortant", "flux"): "flux_sortant",
+                  ("entrant", "stock"): "stock_entrant", ("sortant", "stock"): "stock_sortant"}
 
     resultats:   dict[str, dict] = {}   # nom_pays → stats
     erreurs:     list[str]       = []   # erreurs techniques (lecture fichier)
     non_resolus: dict[str, int]  = {}   # label UNCTAD → nb_lignes non importées
+    fichiers_bruts: list[tuple[str, str, bytes]] = []  # (zone, nom, contenu) pour le relais prod
 
     for (direction, indicateur), fichiers in zones.items():
         for fichier in (fichiers or []):
             contenu = await fichier.read()
             if not contenu:
                 continue
+            fichiers_bruts.append((NOMS_ZONES[(direction, indicateur)], fichier.filename or "fichier", contenu))
 
             parseur = _parse_annex_file if format_import == "annex" else _parse_cnuced_file
             try:
@@ -646,6 +661,34 @@ async def importer_ide(
     if resultats:
         await _recalc_monde(db)  # tenir la vue Monde à jour automatiquement
     await db.flush()
+
+    # Relais vers la production : renvoyer les mêmes fichiers à l'API de prod
+    # (serveur → serveur, à travers son basic-auth) pour éviter le double import.
+    prod: dict | None = None
+    from app.core.config import get_settings
+    settings = get_settings()
+    if dupliquer_prod == "1" and settings.PROD_SYNC_URL and fichiers_bruts:
+        import httpx
+        try:
+            files = [(zone, (nom, contenu)) for zone, nom, contenu in fichiers_bruts]
+            auth = (settings.PROD_SYNC_USER, settings.PROD_SYNC_PASSWORD) if settings.PROD_SYNC_USER else None
+            async with httpx.AsyncClient(timeout=300) as client:
+                r = await client.post(
+                    f"{settings.PROD_SYNC_URL.rstrip('/')}/ide/importer",
+                    data={"format_import": format_import},
+                    files=files,
+                    auth=auth,
+                )
+            if r.status_code == 200:
+                d = r.json()
+                nb = sum(p.get("insere", 0) + p.get("mis_a_jour", 0) for p in d.get("pays", []))
+                prod = {"success": True, "nb_lignes": nb, "nb_pays": len(d.get("pays", [])),
+                        "non_resolus": len(d.get("non_resolus", []))}
+            else:
+                prod = {"success": False, "detail": f"HTTP {r.status_code}"}
+        except Exception as e:
+            prod = {"success": False, "detail": str(e)}
+
     return {
         "pays": [
             {"pays": nom, "ref_pays_id": d["ref_pays_id"], "insere": d["insere"], "mis_a_jour": d["mis_a_jour"]}
@@ -656,6 +699,7 @@ async def importer_ide(
             {"label": label, "nb_lignes": nb}
             for label, nb in sorted(non_resolus.items())
         ],
+        "prod": prod,
     }
 
 

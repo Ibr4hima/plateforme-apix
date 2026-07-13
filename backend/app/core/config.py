@@ -35,6 +35,14 @@ class Settings(BaseSettings):
     UNCTAD_CLIENT_ID: str = ""
     UNCTAD_CLIENT_SECRET: str = ""
 
+    # Relais des imports vers la production (optionnel — environnement local
+    # uniquement) : quand configuré, l'admin propose « Envoyer aussi en
+    # production » et le backend relaie les fichiers importés vers l'API de
+    # prod, à travers son basic-auth Caddy. Laisser vide en production.
+    PROD_SYNC_URL: str = ""       # ex. https://demo-plateforme-apix.com/api/v1
+    PROD_SYNC_USER: str = ""      # identifiant basic-auth (ex. apix)
+    PROD_SYNC_PASSWORD: str = ""  # mot de passe basic-auth
+
     # Sécurité JWT (clé interne legacy)
     SECRET_KEY: str = "changeme_in_production"
     ALGORITHM: str = "HS256"
