@@ -570,7 +570,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fl
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
-  const SERIES = (SERIES_TYPES[sousType] || SERIES_TYPES.fluxstock).map(s => ({ dir: s.dir, ind: s.ind, label: s.label }));
+  const SERIES = (SERIES_TYPES[sousType] || SERIES_TYPES.fluxstock).map(s => ({ dir: s.dir, ind: s.ind, label: s.label, unite: s.unite }));
 
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
@@ -649,7 +649,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fl
                       {annees.map(a=>{
                         const r = donnees.find((d:any)=>d.pays===pays.nom&&d.direction===s.dir&&d.indicateur===s.ind&&d.annee===a);
                         const v = r?.valeur;
-                        const display = v!==null&&v!==undefined ? fmtVal(v) : "—";
+                        const display = v!==null&&v!==undefined ? (s.unite==="nombre" ? fmtNombre(v) : fmtVal(v)) : "—";
                         const color = v===null||v===undefined ? "#C5BFBB" : v<0 ? "#dc2626" : "#4a5568";
                         return (
                           <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
@@ -668,7 +668,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fl
         {/* Pied fixe */}
         <div style={{ padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0, gap:10 }}>
           <span style={{ fontSize:11, color:"#9aa5b4" }}>
-            {paysSelectionnes.length} pays · {annees.length} années · valeurs en M$ USD · Source CNUCED
+            {paysSelectionnes.length} pays · {annees.length} années · {sousType === "fluxstock" ? "valeurs en M$ USD" : "valeurs en M$ USD, nombres en absolu"} · Source CNUCED
           </span>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
