@@ -81,13 +81,15 @@ body {
 .animate-fade-in   { animation: fadeIn 0.4s ease forwards; }
 
 /* Arrivée du contenu après un squelette de chargement : fondu discret.
-   Opacité uniquement : animer transform ferait de la zone le bloc conteneur
-   de ses modals en position:fixed (affichage cassé). */
+   Opacité uniquement (pas de transform : bloc conteneur des modals fixed)
+   et fill-mode backwards (pas de fill permanent : une animation d'opacité
+   qui « fill » crée un contexte d'empilement qui piège le z-index des
+   modals sous la navbar). */
 @keyframes chargeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-.charge-in { animation: chargeIn 0.4s ease both; }
+.charge-in { animation: chargeIn 0.4s ease backwards; }
 @media (prefers-reduced-motion: reduce) {
   .charge-in { animation: none; }
 }
