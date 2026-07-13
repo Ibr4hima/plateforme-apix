@@ -36,16 +36,16 @@ const SERIES_TYPES: Record<string, { dir: string; ind: string; label: string; un
     { dir: "sortant", ind: "stock", label: "Stock sortant", unite: "musd" },
   ],
   greenfield: [
-    { dir: "entrant", ind: "greenfield_valeur", label: "Valeur des projets — destination", unite: "musd" },
-    { dir: "sortant", ind: "greenfield_valeur", label: "Valeur des projets — source",      unite: "musd" },
-    { dir: "entrant", ind: "greenfield_nombre", label: "Nombre de projets — destination",  unite: "nombre" },
-    { dir: "sortant", ind: "greenfield_nombre", label: "Nombre de projets — source",       unite: "nombre" },
+    { dir: "entrant", ind: "greenfield_valeur", label: "Investissements reçus — valeur",           unite: "musd" },
+    { dir: "sortant", ind: "greenfield_valeur", label: "Investissements émis à l'étranger — valeur", unite: "musd" },
+    { dir: "entrant", ind: "greenfield_nombre", label: "Projets reçus — nombre",                   unite: "nombre" },
+    { dir: "sortant", ind: "greenfield_nombre", label: "Projets émis à l'étranger — nombre",        unite: "nombre" },
   ],
   fusion: [
-    { dir: "entrant", ind: "ma_valeur", label: "Ventes nettes — valeur", unite: "musd" },
-    { dir: "sortant", ind: "ma_valeur", label: "Achats nets — valeur",   unite: "musd" },
-    { dir: "entrant", ind: "ma_nombre", label: "Ventes nettes — nombre", unite: "nombre" },
-    { dir: "sortant", ind: "ma_nombre", label: "Achats nets — nombre",   unite: "nombre" },
+    { dir: "entrant", ind: "ma_valeur", label: "Rachats d'entreprises locales — valeur", unite: "musd" },
+    { dir: "sortant", ind: "ma_valeur", label: "Acquisitions à l'étranger — valeur",     unite: "musd" },
+    { dir: "entrant", ind: "ma_nombre", label: "Rachats d'entreprises locales — nombre", unite: "nombre" },
+    { dir: "sortant", ind: "ma_nombre", label: "Acquisitions à l'étranger — nombre",     unite: "nombre" },
   ],
 };
 const fmtNombre = (v: number | null) => v === null || v === undefined ? "N/A" : Math.round(v).toLocaleString("fr-FR");
@@ -1025,11 +1025,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     const taille = vE && nE && nE.valeur > 0 && vE.annee === nE.annee ? vE.valeur / nE.valeur : null;
     const gf = sousType === "greenfield";
     return [
-      { label: gf ? "Valeur — destination" : "Ventes nettes · valeur",  val: vE ? fmtVal(vE.valeur) : "N/A", ind: vE ? `en ${vE.annee}` : null },
-      { label: gf ? "Valeur — source" : "Achats nets · valeur",         val: vS ? fmtVal(vS.valeur) : "N/A", ind: vS ? `en ${vS.annee}` : null },
-      { label: gf ? "Nombre de projets — destination" : "Ventes nettes · nombre", val: nE ? fmtNombre(nE.valeur) : "N/A", ind: nE ? `en ${nE.annee}` : null },
+      { label: gf ? "Investissements reçus" : "Rachats d'entreprises locales",  val: vE ? fmtVal(vE.valeur) : "N/A", ind: vE ? `en ${vE.annee}` : null },
+      { label: gf ? "Investissements émis à l'étranger" : "Acquisitions à l'étranger", val: vS ? fmtVal(vS.valeur) : "N/A", ind: vS ? `en ${vS.annee}` : null },
+      { label: gf ? "Projets reçus" : "Rachats locaux · nombre", val: nE ? fmtNombre(nE.valeur) : "N/A", ind: nE ? `en ${nE.annee}` : null },
       { label: gf ? "Taille moyenne par projet" : "Taille moyenne par opération", val: taille !== null ? fmtVal(taille) : "N/A", ind: vE ? `en ${vE.annee}` : null },
-      { label: gf ? "Année record — destination" : "Année record · ventes", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
+      { label: gf ? "Année record · reçus" : "Année record · rachats", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
     ];
   })();
 
