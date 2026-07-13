@@ -60,12 +60,12 @@ const SOUS_TYPE_NAV = [
 
 function SousTypeNav({ value, onChange }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void }) {
   return (
-    <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:999, padding:4, gap:3, marginBottom:22, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
+    <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:999, padding:3, gap:3, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
       {SOUS_TYPE_NAV.map(o => {
         const actif = value === o.v;
         return (
           <button key={o.v} onClick={() => onChange(o.v)}
-            style={{ padding:"8px 20px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, whiteSpace:"nowrap" as const,
+            style={{ padding:"6px 18px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, whiteSpace:"nowrap" as const,
               background: actif ? "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" : "transparent",
               color: actif ? "#fff" : "#4a5568",
               boxShadow: actif ? "0 4px 14px rgba(0,79,145,0.28)" : "none",
@@ -1249,7 +1249,10 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
         {/* Zone principale */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
         <div>
-          <SousTypeNav value={sousType} onChange={setSousType}/>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
+            <SousTypeNav value={sousType} onChange={setSousType}/>
+            <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec}/>
+          </div>
 
           {/* Header */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
@@ -1262,7 +1265,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   : `${perMin} — ${perMax}`}
               </span>
             </div>
-            <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec}/>
           </div>
 
           {/* KPI cards */}
@@ -1592,7 +1594,10 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
 
         {/* Zone graphes */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-          <SousTypeNav value={sousType} onChange={setSousType}/>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
+            <SousTypeNav value={sousType} onChange={setSousType}/>
+            <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec.join(",")}/>
+          </div>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"nowrap" as const }}>
             <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
@@ -1605,7 +1610,6 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                 {p.nom}
               </span>
             ))}
-            <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec.join(",")}/>
           </div>
 
           {loading ? (
@@ -2226,7 +2230,10 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
       {/* Zone graphes */}
       <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-        <SousTypeNav value={sousType} onChange={setSousType}/>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
+          <SousTypeNav value={sousType} onChange={setSousType}/>
+          {grpSelec.length>0 && <BoutonDonnees onClick={()=>setShowTable(true)} dep={grpSelec.join(",")}/>}
+        </div>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"nowrap" as const }}>
           <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
             {modeAnnees==="specifiques"&&anneesSpec.length>0
@@ -2239,7 +2246,6 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               {g.abrege}
             </span>
           ))}
-          {grpSelec.length>0 && <BoutonDonnees onClick={()=>setShowTable(true)} dep={grpSelec.join(",")}/>}
         </div>
 
         {grpSelec.length===0 ? (
