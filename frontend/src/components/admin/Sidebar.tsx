@@ -26,9 +26,9 @@ const MODULES: NavItem[] = [
   { type: "link", label: "Découpage administratif",        href: "/admin/geo",                icon: "map",                    disabled: true },
   { type: "link", label: "Classification NAEMA",           href: "/admin/naema",              icon: "account_tree",           disabled: true },
   { type: "link", label: "Tableaux de correspondance",     href: "/admin/classifications",    icon: "table_chart",            disabled: true },
-  { type: "link", label: "Données IDE",                    href: "/admin/ide",                icon: "finance_mode",           disabled: true },
+  { type: "link", label: "Données IDE",                    href: "/admin/ide",                icon: "finance_mode", },
   { type: "link", label: "Données BDEF",                   href: "/admin/bdef",               icon: "database",               disabled: true },
-  { type: "link", label: "Code des investissements",       href: "/admin/code-investissement",icon: "gavel",                  disabled: true },
+  { type: "link", label: "Code des investissements",       href: "/admin/code-investissement",icon: "gavel", },
 ];
 
 const W = 260;
