@@ -3231,7 +3231,7 @@ function OngletNational() {
             {BDEF_NIVEAU_LABEL[sel.niveau]&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"#F2F0EF", border:"1px solid #E8E5E3", fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
               {BDEF_NIVEAU_LABEL[sel.niveau]}
             </span>}
-            {anneesAffichees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:couleur, fontSize:12, fontWeight:700, color:"#fff", flexShrink:0 }}>
+            {anneesAffichees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
               {anneesAffichees[0]} — {anneesAffichees[anneesAffichees.length-1]}
             </span>}
           </div>
