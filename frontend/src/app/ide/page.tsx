@@ -37,7 +37,7 @@ const SERIES_TYPES: Record<string, { dir: string; ind: string; label: string; un
   ],
   greenfield: [
     { dir: "entrant", ind: "greenfield_valeur", label: "Valeur des investissements greenfield reçus",             unite: "musd" },
-    { dir: "sortant", ind: "greenfield_valeur", label: "Valeur des investissements greenfield émis à l'étranger", unite: "musd" },
+    { dir: "sortant", ind: "greenfield_valeur", label: "Investissements greenfield émis à l'étranger", unite: "musd" },
     { dir: "entrant", ind: "greenfield_nombre", label: "Nombre de projets greenfield reçus",                      unite: "nombre" },
     { dir: "sortant", ind: "greenfield_nombre", label: "Nombre de projets greenfield émis à l'étranger",          unite: "nombre" },
   ],
@@ -310,7 +310,7 @@ function GrapheMultiPays({ series, height=280, type="line", titre="", fmt, showD
           .attr("x",d=>getX(d)).attr("width",getW())
           .attr("y",d=>d.valeur>=0?ys(d.valeur):ys(0))
           .attr("height",d=>Math.abs(ys(d.valeur)-ys(0)))
-          .attr("fill",s.couleur).attr("rx",3).style("cursor","pointer")
+          .attr("fill",s.couleur).style("cursor","pointer")
           .on("mouseover",(e,d)=>{
             d3.select(e.currentTarget as SVGRectElement).attr("opacity",0.75);
             showD3Tooltip(tooltip, e, `<strong>${d.annee}${nbSeries>1?" — "+s.nom:""}</strong><br/>${fmtV(d.valeur)}`);
@@ -1022,13 +1022,14 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     const vS = last(serie("sortant", stActif[1].ind));
     const nE = last(serie("entrant", stActif[2].ind));
     const record = serie("entrant", stActif[0].ind).reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
-    const taille = vE && nE && nE.valeur > 0 && vE.annee === nE.annee ? vE.valeur / nE.valeur : null;
+    // Solde net : reçus − émis sur la dernière année commune
+    const solde = vE && vS && vE.annee === vS.annee ? vE.valeur - vS.valeur : null;
     const gf = sousType === "greenfield";
     return [
-      { label: gf ? "Investissements greenfield reçus" : "Rachats d'entreprises locales",  val: vE ? fmtVal(vE.valeur) : "N/A", ind: vE ? `en ${vE.annee}` : null },
-      { label: gf ? "Investissements greenfield émis" : "Acquisitions à l'étranger", val: vS ? fmtVal(vS.valeur) : "N/A", ind: vS ? `en ${vS.annee}` : null },
+      { label: gf ? "Inv greenfield reçus" : "Rachats d'entreprises locales",  val: vE ? fmtVal(vE.valeur) : "N/A", ind: vE ? `en ${vE.annee}` : null },
+      { label: gf ? "Inv greenfield émis" : "Acquisitions à l'étranger", val: vS ? fmtVal(vS.valeur) : "N/A", ind: vS ? `en ${vS.annee}` : null },
       { label: gf ? "Nombre de projets reçus" : "Nombre de rachats locaux", val: nE ? fmtNombre(nE.valeur) : "N/A", ind: nE ? `en ${nE.annee}` : null },
-      { label: gf ? "Taille moyenne par projet" : "Taille moyenne par opération", val: taille !== null ? fmtVal(taille) : "N/A", ind: vE ? `en ${vE.annee}` : null },
+      { label: gf ? "Solde net · reçus − émis" : "Solde net · rachats − acquisitions", val: solde !== null ? `${solde > 0 ? "+" : ""}${fmtVal(solde)}` : "N/A", ind: vE && solde !== null ? `en ${vE.annee}` : null },
       { label: gf ? "Année record · reçus" : "Année record · rachats", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
     ];
   })();
