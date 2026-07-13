@@ -1259,7 +1259,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             <div style={{ display:"flex", alignItems:"center", gap:12 }}>
               <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
               <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
-              <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em", flexShrink:0 }}>
+              <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
                 {modeAnnees==="specifiques"&&anneesSpec.length>0
                   ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                   : `${perMin} — ${perMax}`}
