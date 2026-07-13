@@ -14,17 +14,20 @@ const PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string; ordre: number; derive: boolean };
 type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };
 
-// Sens de lecture des indicateurs pour la comparaison : "haut" = une valeur
-// plus élevée est favorable, "bas" = plus faible est favorable, absent/null =
-// descriptif (population, superficie…) → aucune coloration.
-const SENS_INDICATEUR: Record<string, "haut" | "bas" | null> = {
-  population: null, superficie: null, densite: null,
-  pib: "haut", pib_hab: "haut", croissance_pib: "haut",
-  exportations_marchandises: "haut", exportations_services: "haut",
-  importations_marchandises: null, importations_services: null,
-  balance_marchandises: "haut", balance_services: "haut",
-  __ide_entrant: "haut", __ide_sortant: "haut",
+// Coloration comparative : la PLUS GRANDE valeur est mise en couleur —
+// vert (favorable) ou rouge (importations). Les indicateurs absents de la
+// carte restent en noir. La catégorie « Économie » est verte par défaut.
+const COULEUR_MAX: Record<string, "vert" | "rouge"> = {
+  population: "vert", superficie: "vert",
+  exportations_marchandises: "vert", exportations_services: "vert",
+  importations_marchandises: "rouge", importations_services: "rouge",
+  __ide_entrant: "vert", __ide_sortant: "vert",
 };
+function couleurMaxPour(code: string, categorie?: string): "vert" | "rouge" | null {
+  if (code in COULEUR_MAX) return COULEUR_MAX[code];
+  if (categorie === "Économie") return "vert";
+  return null;
+}
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 function sortContinents(conts: string[]) {
@@ -140,17 +143,13 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                       <td colSpan={cols.length + 1} style={{ padding: "18px 12px 6px", fontSize: 10.5, fontWeight: 800, color: "#004f91", textTransform: "uppercase", letterSpacing: "0.1em" }}>{cat}</td>
                     </tr>
                     {parCat[cat].map(ind => {
-                      // Coloration comparative directionnelle : la valeur
-                      // favorable en vert, la défavorable en rouge (uniquement
-                      // pour les indicateurs où « mieux » a un sens)
-                      const sens = SENS_INDICATEUR[ind.code] ?? null;
-                      let meilleure: number | null = null, moinsBonne: number | null = null;
-                      if (sens && cols.length >= 2) {
+                      // La plus grande valeur est colorée (vert ou rouge selon
+                      // l'indicateur) ; tout le reste demeure en noir.
+                      const teinte = couleurMaxPour(ind.code, (ind as any).categorie);
+                      let maxVal: number | null = null;
+                      if (teinte && cols.length >= 2) {
                         const vals = cols.map((c: any) => getCell(c.id, ind.code)?.valeur).filter((x: any) => x !== null && x !== undefined) as number[];
-                        if (vals.length >= 2 && Math.max(...vals) !== Math.min(...vals)) {
-                          meilleure  = sens === "haut" ? Math.max(...vals) : Math.min(...vals);
-                          moinsBonne = sens === "haut" ? Math.min(...vals) : Math.max(...vals);
-                        }
+                        if (vals.length >= 2 && Math.max(...vals) !== Math.min(...vals)) maxVal = Math.max(...vals);
                       }
                       return (
                         <tr key={ind.code} style={{ borderBottom: "1px solid #F5F4F3" }}>
@@ -161,13 +160,13 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                           {cols.map((c: any) => {
                             const cell = getCell(c.id, ind.code);
                             const v = cell?.valeur;
+                            const estMax = maxVal !== null && v === maxVal;
                             const couleur = v === null || v === undefined ? "#C5BFBB"
-                              : v === meilleure ? "#188038"
-                              : v === moinsBonne ? "#dc2626"
+                              : estMax ? (teinte === "rouge" ? "#dc2626" : "#188038")
                               : "#1a1a2e";
                             return (
                               <td key={c.id} style={{ padding: "11px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                                <span style={{ fontSize: 13, fontWeight: v === meilleure || v === moinsBonne ? 700 : 600, color: couleur }}>
+                                <span style={{ fontSize: 13, fontWeight: estMax ? 700 : 600, color: couleur }}>
                                   {fmt(v, ind.unite)}
                                 </span>
                                 {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "#C5BFBB" }}>{cell.annee}</span>}
@@ -263,7 +262,7 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
           })()}</div>)}
         </div>
         <div data-no-pdf style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
-          <span style={{ fontSize: 11, color: "#9aa5b4" }}>Dernière année disponible · <span style={{ color: "#188038", fontWeight: 700 }}>vert</span> = position favorable, <span style={{ color: "#dc2626", fontWeight: 700 }}>rouge</span> = moins favorable</span>
+          <span style={{ fontSize: 11, color: "#9aa5b4" }}>Dernière année disponible · la valeur la plus élevée est en <span style={{ color: "#188038", fontWeight: 700 }}>vert</span> (ou en <span style={{ color: "#dc2626", fontWeight: 700 }}>rouge</span> pour les importations)</span>
           <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
         </div>
       </div>
