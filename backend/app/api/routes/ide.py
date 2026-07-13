@@ -240,6 +240,20 @@ async def get_pays_disponibles(db: AsyncSession = Depends(get_db)):
     return result
 
 
+# ── GET /ide/cnuced/annees ────────────────────────────────────────────────────
+# Bornes d'années réellement disponibles : la page publique s'aligne dessus
+# automatiquement à chaque nouvel import (ex. millésime 2026).
+@router.get("/cnuced/annees")
+async def get_cnuced_annees(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import func
+    res = await db.execute(
+        select(func.min(IdeCnuced.annee), func.max(IdeCnuced.annee))
+        .where(IdeCnuced.valeur.isnot(None))
+    )
+    mn, mx = res.one()
+    return {"annee_min": mn or 1990, "annee_max": mx or 2024}
+
+
 # ── GET /ide/cnuced/kpis-calcules ─────────────────────────────────────────────
 @router.get("/cnuced/kpis-calcules")
 async def get_kpis_calcules(db: AsyncSession = Depends(get_db)):
