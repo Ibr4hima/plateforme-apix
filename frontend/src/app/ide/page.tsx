@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
-import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
+import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet, Layers, Sprout, Handshake } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -49,6 +49,42 @@ const SERIES_TYPES: Record<string, { dir: string; ind: string; label: string; un
   ],
 };
 const fmtNombre = (v: number | null) => v === null || v === undefined ? "N/A" : Math.round(v).toLocaleString("fr-FR");
+
+// ── Navigation entre catégories d'investissement ──────────────────────────────
+// Sélecteur principal de la zone de contenu : Flux & Stocks / Greenfield / M&A.
+const SOUS_TYPE_NAV = [
+  { v: "fluxstock",  l: "Flux & Stocks",         d: "Réalisés et cumulés",   icon: Layers },
+  { v: "greenfield", l: "Greenfield",            d: "Projets annoncés",      icon: Sprout },
+  { v: "fusion",     l: "Fusion & Acquisition",  d: "M&A transfrontières",   icon: Handshake },
+] as const;
+
+function SousTypeNav({ value, onChange }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void }) {
+  return (
+    <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:16, padding:5, gap:4, marginBottom:22, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
+      {SOUS_TYPE_NAV.map(o => {
+        const actif = value === o.v;
+        const Icone = o.icon;
+        return (
+          <button key={o.v} onClick={() => onChange(o.v)}
+            style={{ display:"flex", alignItems:"center", gap:11, padding:"9px 18px 9px 12px", borderRadius:12, border:"none", cursor:"pointer", textAlign:"left" as const,
+              background: actif ? "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" : "transparent",
+              boxShadow: actif ? "0 6px 18px rgba(0,79,145,0.28)" : "none",
+              transition:"background 0.18s, box-shadow 0.18s", fontFamily:"var(--font-google-sans)" }}
+            onMouseEnter={e => { if (!actif) e.currentTarget.style.background = "#F6F5F3"; }}
+            onMouseLeave={e => { if (!actif) e.currentTarget.style.background = "transparent"; }}>
+            <span style={{ width:32, height:32, borderRadius:9, background: actif ? "rgba(255,255,255,0.16)" : "rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.18s" }}>
+              <Icone size={16} style={{ color: actif ? "#fff" : "#004f91" }} />
+            </span>
+            <span style={{ display:"flex", flexDirection:"column" as const, gap:1 }}>
+              <span style={{ fontSize:12.5, fontWeight:700, color: actif ? "#fff" : "#4a5568", lineHeight:1.2, whiteSpace:"nowrap" as const }}>{o.l}</span>
+              <span style={{ fontSize:10, fontWeight:500, color: actif ? "rgba(255,255,255,0.72)" : "#9aa5b4", lineHeight:1.2, whiteSpace:"nowrap" as const }}>{o.d}</span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 // Bornes de période des séries CNUCED — valeurs de repli avant la réponse API
 const ANNEE_MIN = 1990;
@@ -1043,34 +1079,15 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             </div>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-              {/* Sélecteur de vue (avec sous-type par vue) */}
+              {/* Sélecteur de vue */}
               <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
                 <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
                   {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                    <div key={o.v}>
-                      <button onClick={()=>setSousOnglet(o.v)}
-                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", fontSize:12, fontWeight:sousOnglet===o.v?700:600, color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                        {o.l}
-                        <ChevronDown size={14} style={{ color:sousOnglet===o.v?"#004f91":"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
-                      </button>
-                      {sousOnglet===o.v && (
-                        <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
-                          {([{t:"fluxstock",l:"Flux & Stocks"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
-                            const actif = sousType===st.t;
-                            return (
-                              <button key={st.t} onClick={()=>setSousType(st.t)}
-                                style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#4a5568":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                                <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
-                                  {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
-                                </span>
-                                {st.l}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                      {o.l}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -1238,6 +1255,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
         {/* Zone principale */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
         <div>
+          <SousTypeNav value={sousType} onChange={setSousType}/>
 
           {/* Header */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
@@ -1424,34 +1442,15 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             </div>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-              {/* Sélecteur de vue (avec sous-type par vue) */}
+              {/* Sélecteur de vue */}
               <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
                 <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
                   {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                    <div key={o.v}>
-                      <button onClick={()=>setSousOnglet(o.v)}
-                        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", fontSize:12, fontWeight:sousOnglet===o.v?700:600, color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                        {o.l}
-                        <ChevronDown size={14} style={{ color:sousOnglet===o.v?"#004f91":"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
-                      </button>
-                      {sousOnglet===o.v && (
-                        <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
-                          {([{t:"fluxstock",l:"Flux & Stocks"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
-                            const actif = sousType===st.t;
-                            return (
-                              <button key={st.t} onClick={()=>setSousType(st.t)}
-                                style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#4a5568":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                                <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
-                                  {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
-                                </span>
-                                {st.l}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                      {o.l}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -1599,6 +1598,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
 
         {/* Zone graphes */}
         <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
+          <SousTypeNav value={sousType} onChange={setSousType}/>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"nowrap" as const }}>
             <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
@@ -2052,34 +2052,15 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           </div>
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-          {/* Sélecteur de vue (avec sous-type par vue) */}
+          {/* Sélecteur de vue */}
           <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
             <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-            <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
               {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                <div key={o.v}>
-                  <button onClick={()=>setSousOnglet(o.v)}
-                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", fontSize:12, fontWeight:sousOnglet===o.v?700:600, color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                    {o.l}
-                    <ChevronDown size={14} style={{ color:sousOnglet===o.v?"#004f91":"#9aa5b4", transform:sousOnglet===o.v?"none":"rotate(-90deg)", transition:"transform 0.15s", flexShrink:0 }}/>
-                  </button>
-                  {sousOnglet===o.v && (
-                    <div style={{ display:"flex", flexDirection:"column" as const, gap:1, marginTop:3 }}>
-                      {([{t:"fluxstock",l:"Flux & Stocks"},{t:"greenfield",l:"Greenfield"},{t:"fusion",l:"Fusion & Acquisition"}] as const).map(st=>{
-                        const actif = sousType===st.t;
-                        return (
-                          <button key={st.t} onClick={()=>setSousType(st.t)}
-                            style={{ display:"flex", alignItems:"center", gap:9, width:"100%", textAlign:"left" as const, padding:"6px 10px 6px 20px", borderRadius:8, border:"none", cursor:"pointer", background:"transparent", fontSize:11.5, fontWeight:actif?600:500, color:actif?"#4a5568":"#6b7684", fontFamily:"var(--font-google-sans)" }}>
-                            <span style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${actif?"#004f91":"#C5BFBB99"}`, background:actif?"#004f91":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.12s" }}>
-                              {actif && <span style={{ width:3, height:3, borderRadius:"50%", background:"#fff" }}/>}
-                            </span>
-                            {st.l}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                <button key={o.v} onClick={()=>setSousOnglet(o.v)}
+                  style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                  {o.l}
+                </button>
               ))}
             </div>
           </div>
@@ -2251,6 +2232,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
       {/* Zone graphes */}
       <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
+        <SousTypeNav value={sousType} onChange={setSousType}/>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"nowrap" as const }}>
           <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
             {modeAnnees==="specifiques"&&anneesSpec.length>0
