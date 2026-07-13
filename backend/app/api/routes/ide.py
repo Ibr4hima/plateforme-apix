@@ -574,6 +574,16 @@ async def _upsert_serie(db, ref_pays_id: int, nom_pays: str, direction: str, ind
     return insere, mis_a_jour
 
 
+async def _recalc_monde(db) -> None:
+    """Recalcule les agrégats ide_cnuced_monde après une modification des
+    données IDE : un UPDATE no-op sur ref_groupements déclenche le trigger
+    sync_icm_on_groupement (migration 066), qui reconstruit les statistiques
+    de chaque groupement — même logique que lors d'un changement de groupement,
+    sans duplication de code."""
+    from sqlalchemy import text
+    await db.execute(text("UPDATE ref_groupements SET code = code"))
+
+
 # ── POST /ide/importer ────────────────────────────────────────────────────────
 # Chaque zone accepte N fichiers (un par pays). Le pays est auto-détecté
 # depuis la colonne A (Economy_Label) et mappé vers ref_pays.
@@ -633,6 +643,8 @@ async def importer_ide(
                 resultats[nom]["insere"] += ins
                 resultats[nom]["mis_a_jour"] += maj
 
+    if resultats:
+        await _recalc_monde(db)  # tenir la vue Monde à jour automatiquement
     await db.flush()
     return {
         "pays": [
@@ -775,6 +787,8 @@ async def _do_rafraichir(db_factory) -> dict:
 
             resultats.append({"pays": nom_fr, "insere": p_ins, "mis_a_jour": p_maj})
 
+        if resultats:
+            await _recalc_monde(db)  # tenir la vue Monde à jour automatiquement
         await db.commit()
         return {"success": True, "pays": resultats, "erreurs": erreurs}
 
@@ -862,5 +876,6 @@ async def supprimer_pays_ide(ref_pays_id: int, db: AsyncSession = Depends(get_db
     result = await db.execute(
         sqldel(IdeCnuced).where(IdeCnuced.ref_pays_id == ref_pays_id)
     )
+    await _recalc_monde(db)  # tenir la vue Monde à jour automatiquement
     await db.flush()
     return {"success": True, "supprime": result.rowcount}
