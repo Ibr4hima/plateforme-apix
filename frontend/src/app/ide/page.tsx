@@ -26,6 +26,30 @@ function getPaysColor(nom: string, index: number): string {
 // Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, « Md $ / M $ »)
 const fmtVal = fmtMillionsUSD;
 
+// Séries par sous-type de données IDE (graphes, tableau de données, export).
+// entrant = destination/ventes, sortant = source/achats selon la catégorie.
+const SERIES_TYPES: Record<string, { dir: string; ind: string; label: string; unite: "musd" | "nombre" }[]> = {
+  fluxstock: [
+    { dir: "entrant", ind: "flux",  label: "Flux entrants", unite: "musd" },
+    { dir: "sortant", ind: "flux",  label: "Flux sortants", unite: "musd" },
+    { dir: "entrant", ind: "stock", label: "Stock entrant", unite: "musd" },
+    { dir: "sortant", ind: "stock", label: "Stock sortant", unite: "musd" },
+  ],
+  greenfield: [
+    { dir: "entrant", ind: "greenfield_valeur", label: "Valeur des projets — destination", unite: "musd" },
+    { dir: "sortant", ind: "greenfield_valeur", label: "Valeur des projets — source",      unite: "musd" },
+    { dir: "entrant", ind: "greenfield_nombre", label: "Nombre de projets — destination",  unite: "nombre" },
+    { dir: "sortant", ind: "greenfield_nombre", label: "Nombre de projets — source",       unite: "nombre" },
+  ],
+  fusion: [
+    { dir: "entrant", ind: "ma_valeur", label: "Ventes nettes — valeur", unite: "musd" },
+    { dir: "sortant", ind: "ma_valeur", label: "Achats nets — valeur",   unite: "musd" },
+    { dir: "entrant", ind: "ma_nombre", label: "Ventes nettes — nombre", unite: "nombre" },
+    { dir: "sortant", ind: "ma_nombre", label: "Achats nets — nombre",   unite: "nombre" },
+  ],
+};
+const fmtNombre = (v: number | null) => v === null || v === undefined ? "N/A" : Math.round(v).toLocaleString("fr-FR");
+
 // Bornes de période des séries CNUCED — valeurs de repli avant la réponse API
 const ANNEE_MIN = 1990;
 const ANNEE_MAX = 2025;
@@ -497,16 +521,13 @@ function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series
 }
 
 // ── Export Excel (XLSX) ───────────────────────────────────────────────────────
-async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string) {
+async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string, sousType: string = "fluxstock") {
   // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
   const XLSX = await import("xlsx");
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
-  const series = [
-    {dir:"entrant", ind:"flux",  label:"Flux entrants (M$ USD)"},
-    {dir:"sortant", ind:"flux",  label:"Flux sortants (M$ USD)"},
-    {dir:"entrant", ind:"stock", label:"Stock entrant (M$ USD)"},
-    {dir:"sortant", ind:"stock", label:"Stock sortant (M$ USD)"},
-  ];
+  const series = (SERIES_TYPES[sousType] || SERIES_TYPES.fluxstock).map(s => ({
+    dir: s.dir, ind: s.ind, label: s.unite === "musd" ? `${s.label} (M$ USD)` : s.label,
+  }));
 
   const wb = XLSX.utils.book_new();
 
@@ -542,16 +563,11 @@ async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: stri
 }
 
 // ── Modal données ─────────────────────────────────────────────────────────────
-function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
+function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fluxstock" }: any) {
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
-  const SERIES = [
-    {dir:"entrant",ind:"flux",label:"Flux entrants"},
-    {dir:"sortant",ind:"flux",label:"Flux sortants"},
-    {dir:"entrant",ind:"stock",label:"Stock entrant"},
-    {dir:"sortant",ind:"stock",label:"Stock sortant"},
-  ];
+  const SERIES = (SERIES_TYPES[sousType] || SERIES_TYPES.fluxstock).map(s => ({ dir: s.dir, ind: s.ind, label: s.label }));
 
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
@@ -655,7 +671,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes }: any) {
             <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
               Fermer
             </button>
-            <button onClick={()=>exportXLSX(donnees,paysSelectionnes,periode)}
+            <button onClick={()=>exportXLSX(donnees,paysSelectionnes,periode,sousType)}
               style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgba(0,79,145,0.25)", fontFamily:"var(--font-google-sans)" }}>
               <FileSpreadsheet size={13}/> Excel
             </button>
@@ -944,12 +960,35 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     data: donnees.filter(d=>d.direction===dir && d.indicateur===ind)
   }];
 
-  const GRAPHES_PAYS = [
-    { id:"fe", titre:"Flux entrants",       series: buildSerie("entrant","flux") },
-    { id:"fs", titre:"Flux sortants",       series: buildSerie("sortant","flux") },
-    { id:"se", titre:"Stock entrant",       series: buildSerie("entrant","stock") },
-    { id:"ss", titre:"Stock sortant",       series: buildSerie("sortant","stock") },
-  ];
+  // Sous-type actif (greenfield / fusion) : graphes et KPIs basculent dessus
+  const stActif = sousType !== "fluxstock" && SERIES_TYPES[sousType] ? SERIES_TYPES[sousType] : null;
+
+  const GRAPHES_PAYS = (stActif || SERIES_TYPES.fluxstock).map((s, i) => ({
+    id: `${sousType}-${i}`, titre: s.label, unite: s.unite,
+    series: buildSerie(s.dir, s.ind),
+  }));
+
+  // KPIs dédiés greenfield / M&A (les 25 KPIs épinglables ne concernent que flux & stocks)
+  const stCards = (() => {
+    if (!stActif) return null;
+    const serie = (dir: string, ind: string) => donnees
+      .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur !== null)
+      .sort((a: any, b: any) => a.annee - b.annee);
+    const last = (rs: any[]) => rs.length ? rs[rs.length - 1] : null;
+    const vE = last(serie("entrant", stActif[0].ind));
+    const vS = last(serie("sortant", stActif[1].ind));
+    const nE = last(serie("entrant", stActif[2].ind));
+    const record = serie("entrant", stActif[0].ind).reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
+    const taille = vE && nE && nE.valeur > 0 && vE.annee === nE.annee ? vE.valeur / nE.valeur : null;
+    const gf = sousType === "greenfield";
+    return [
+      { label: gf ? "Valeur — destination" : "Ventes nettes · valeur",  val: vE ? fmtVal(vE.valeur) : "N/A", ind: vE ? `en ${vE.annee}` : null },
+      { label: gf ? "Valeur — source" : "Achats nets · valeur",         val: vS ? fmtVal(vS.valeur) : "N/A", ind: vS ? `en ${vS.annee}` : null },
+      { label: gf ? "Nombre de projets — destination" : "Ventes nettes · nombre", val: nE ? fmtNombre(nE.valeur) : "N/A", ind: nE ? `en ${nE.annee}` : null },
+      { label: gf ? "Taille moyenne par projet" : "Taille moyenne par opération", val: taille !== null ? fmtVal(taille) : "N/A", ind: vE ? `en ${vE.annee}` : null },
+      { label: gf ? "Année record — destination" : "Année record · ventes", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
+    ];
+  })();
 
   // Indicatif grisé sous la valeur
   const getIndicatif = (k: KpiResult): string | null => {
@@ -1156,8 +1195,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 )}
               </div>
               <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-              {/* KPI */}
-              <div style={{ marginBottom:18 }}>
+              {/* KPI — épinglage réservé aux Flux & Stocks (KPIs fixes pour greenfield/M&A) */}
+              {!stActif && <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
                   <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#004f91":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
@@ -1179,7 +1218,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                     );
                   })}
                 </div>
-              </div>
+              </div>}
           </div>}
         </aside>
 
@@ -1203,6 +1242,14 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 
           {/* KPI cards */}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+            {stCards ? stCards.map(c=>(
+              <div key={c.label}
+                style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
+                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
+                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
+                {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
+              </div>
+            )) : <>
             {kpisCards.map(k=>{
               const indicatif = getIndicatif(k);
               return (
@@ -1227,6 +1274,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
               </div>
             ))}
+            </>}
           </div>
 
           {/* Graphes */}
@@ -1237,9 +1285,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           ) : (
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>(
-                <GrapheCard key={g.id} titre={g.titre} sous_titre={`M$ USD · CNUCED · ${anneeMin}–${anneeMax}`} series={g.series} grapheId={g.id}
-                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id}/>
+                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${anneeMin}–${anneeMax}`} series={g.series} grapheId={g.id}
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
               ))}
             </div>
@@ -1247,7 +1295,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
         </div>
       </div>
 
-      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={[{nom:paysSelec,couleur}]} />
+      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={[{nom:paysSelec,couleur}]} sousType={sousType} />
       <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} onClose={()=>setKpiActif(null)} />
     </div>
   );
