@@ -1360,12 +1360,16 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
   const buildSeries = (dir: string, ind: string) =>
     paysAvecCouleur.map(p=>({ nom:p.nom, couleur:p.couleur, data:donnees.filter(d=>d.pays===p.nom&&d.direction===dir&&d.indicateur===ind) }));
 
-  const GRAPHES = [
-    { id:"fe", titre:"Flux d'IDE entrants",     series: buildSeries("entrant","flux") },
-    { id:"fs", titre:"Flux d'IDE sortants",      series: buildSeries("sortant","flux") },
-    { id:"se", titre:"Stock d'IDE entrant",      series: buildSeries("entrant","stock") },
-    { id:"ss", titre:"Stock d'IDE sortant",      series: buildSeries("sortant","stock") },
-  ];
+  // Graphes selon le sous-type actif (Flux & Stocks / Greenfield / M&A)
+  const stActif = sousType !== "fluxstock" && SERIES_TYPES[sousType] ? SERIES_TYPES[sousType] : null;
+  const GRAPHES = stActif
+    ? stActif.map((s, i) => ({ id:`${sousType}-${i}`, titre:s.label, unite:s.unite, series: buildSeries(s.dir, s.ind) }))
+    : [
+      { id:"fe", titre:"Flux d'IDE entrants",  unite:"musd" as const, series: buildSeries("entrant","flux") },
+      { id:"fs", titre:"Flux d'IDE sortants",  unite:"musd" as const, series: buildSeries("sortant","flux") },
+      { id:"se", titre:"Stock d'IDE entrant",  unite:"musd" as const, series: buildSeries("entrant","stock") },
+      { id:"ss", titre:"Stock d'IDE sortant",  unite:"musd" as const, series: buildSeries("sortant","stock") },
+    ];
 
   const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
   const groupedPays  = groupByContinent(filteredPays);
@@ -1594,15 +1598,15 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
           ) : (
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
-                <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Source CNUCED" series={g.series} grapheId={g.id} hideLegend
-                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} showDots={false} lineWidth={1.4}/>
+                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Source CNUCED`} series={g.series} grapheId={g.id} hideLegend
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
               ))}
             </div>
           )}
         </div>
-      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} />
+      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} sousType={sousType} />
     </div>
   );
 }
@@ -1958,12 +1962,16 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   const buildSeries = (dir:string, ind:string) =>
     grpAvecCouleur.map(g => ({ nom:g.abrege, couleur:g.couleur, data:donnees.filter(d=>d.pays===g.nom&&d.direction===dir&&d.indicateur===ind) }));
 
-  const GRAPHES = [
-    { id:"fe", titre:"Flux d'IDE entrants",  series: buildSeries("entrant","flux") },
-    { id:"fs", titre:"Flux d'IDE sortants",  series: buildSeries("sortant","flux") },
-    { id:"se", titre:"Stock d'IDE entrant",  series: buildSeries("entrant","stock") },
-    { id:"ss", titre:"Stock d'IDE sortant",  series: buildSeries("sortant","stock") },
-  ];
+  // Graphes selon le sous-type actif (Flux & Stocks / Greenfield / M&A)
+  const stActif = sousType !== "fluxstock" && SERIES_TYPES[sousType] ? SERIES_TYPES[sousType] : null;
+  const GRAPHES = stActif
+    ? stActif.map((s, i) => ({ id:`${sousType}-${i}`, titre:s.label, unite:s.unite, series: buildSeries(s.dir, s.ind) }))
+    : [
+      { id:"fe", titre:"Flux d'IDE entrants",  unite:"musd" as const, series: buildSeries("entrant","flux") },
+      { id:"fs", titre:"Flux d'IDE sortants",  unite:"musd" as const, series: buildSeries("sortant","flux") },
+      { id:"se", titre:"Stock d'IDE entrant",  unite:"musd" as const, series: buildSeries("entrant","stock") },
+      { id:"ss", titre:"Stock d'IDE sortant",  unite:"musd" as const, series: buildSeries("sortant","stock") },
+    ];
 
   const [donneesDetail, setDonneesDetail] = useState<any[]>([]);
   const modeDetail = grpSelec.length === 1;
@@ -2239,14 +2247,14 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <div className="charge-in">
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
-              <GrapheCard key={g.id} titre={g.titre} sous_titre="M$ USD · Somme pays membres · CNUCED" series={g.series} grapheId={g.id} hideLegend
-                fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6}/>}>
-                <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} showDots={false} lineWidth={1.4}/>
+              <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Somme pays membres · CNUCED`} series={g.series} grapheId={g.id} hideLegend
+                fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
+                <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
               </GrapheCard>
             ))}
           </div>
 
-          {modeDetail && (
+          {modeDetail && !stActif && (
             <div style={{ marginTop:28, display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               <GrapheCard titre={`Flux entrant — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
@@ -2261,7 +2269,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           </div>
         )}
       </div>
-      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={grpAvecCouleur} />
+      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={grpAvecCouleur} sousType={sousType} />
     </div>
   );
 }
