@@ -421,6 +421,85 @@ def _parse_cnuced_file(contenu: bytes, nom_fichier: str) -> dict[str, list[tuple
     return result
 
 
+# ── Parseur « Annex tables » (World Investment Report UNCTAD) ────────────────
+# Format large : lignes de titre, puis en-tête `Region/economy | 1990 | … | 2025`,
+# une ligne par économie avec les années en colonnes (millions USD). Les lignes
+# d'agrégats régionaux et les notes de bas de page sont ignorées.
+
+_ANNEX_AGREGATS = {
+    "world", "developed economies", "developing economies", "memorandum",
+    "europe", "european union", "other europe", "other developed europe",
+    "north america", "other developed economies",
+    "africa", "north africa", "other africa", "central africa", "east africa",
+    "southern africa", "west africa",
+    "asia", "east and south-east asia", "east asia", "south-east asia",
+    "south asia", "west asia", "central asia",
+    "latin america and the caribbean", "south and central america",
+    "south america", "central america", "caribbean", "oceania",
+    "least developed countries (ldcs)", "landlocked countries (llcs)",
+    "landlocked developing countries (lldcs)",
+    "small island developing states (sids)",
+}
+
+
+def _parse_annex_file(contenu: bytes, nom_fichier: str) -> dict[str, list[tuple[int, float | None]]]:
+    """Retourne {economy_label: [(annee, valeur), ...]} depuis une Annex table UNCTAD."""
+    ext = (nom_fichier or "").lower().rsplit(".", 1)[-1]
+
+    if ext in ("xlsx", "xls"):
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(contenu), data_only=True)
+        ws = wb.active
+        data = list(ws.iter_rows(values_only=True))
+    else:
+        texte = contenu.decode("utf-8-sig", errors="replace")
+        sep = "," if texte[:2048].count(",") >= texte[:2048].count(";") else ";"
+        data = list(csv.reader(io.StringIO(texte), delimiter=sep))
+
+    def _annee(cell) -> int | None:
+        try:
+            a = int(str(cell).strip())
+            return a if 1900 <= a <= 2100 else None
+        except (ValueError, TypeError):
+            return None
+
+    # En-tête : première ligne (parmi les 10 premières) avec au moins 5 années
+    annees_cols: dict[int, int] = {}
+    debut = 0
+    for i, row in enumerate(data[:10]):
+        cols = {ci: a for ci, cell in enumerate(row[1:], start=1) if (a := _annee(cell)) is not None}
+        if len(cols) >= 5:
+            annees_cols, debut = cols, i + 1
+            break
+    if not annees_cols:
+        raise ValueError("en-tête introuvable (ligne « Region/economy | 1990 | … » attendue)")
+
+    def _valeur(cell) -> float | None:
+        if cell is None:
+            return None
+        if isinstance(cell, (int, float)):
+            return float(cell)
+        raw = str(cell).strip()
+        if raw in ("", "...", "..", "—", "-", "n.d.", "N/A"):
+            return None
+        try:
+            return float(raw.replace(",", ".").replace(" ", "").replace("\xa0", ""))
+        except ValueError:
+            return None
+
+    result: dict[str, list[tuple[int, float | None]]] = {}
+    for row in data[debut:]:
+        label = str(row[0]).strip() if row and row[0] is not None else ""
+        low = label.lower()
+        if not label or low in _ANNEX_AGREGATS or low.startswith(("source:", "note:")):
+            continue
+        lignes = [(annee, _valeur(row[ci]) if ci < len(row) else None) for ci, annee in sorted(annees_cols.items(), key=lambda kv: kv[1])]
+        if all(v is None for _, v in lignes):
+            continue  # ligne vide / décorative
+        result.setdefault(label, []).extend(lignes)
+    return result
+
+
 def _normalize_name(s: str) -> str:
     """Normalise un nom de pays : supprime accents, minuscules, apostrophes,
     et suffixes temporels UNCTAD comme ‘(...2011)’, ‘(..1991)’, ‘(...)’."""
@@ -491,6 +570,9 @@ async def importer_ide(
     flux_sortant:  List[UploadFile] = File(default=[]),
     stock_entrant: List[UploadFile] = File(default=[]),
     stock_sortant: List[UploadFile] = File(default=[]),
+    # Mode d'extraction : "annex" = Annex tables WIR (années en colonnes, défaut),
+    # "series" = séries CNUCED historiques (Economy_Label | Year | Value).
+    format_import: str = Form(default="series"),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
@@ -513,8 +595,9 @@ async def importer_ide(
             if not contenu:
                 continue
 
+            parseur = _parse_annex_file if format_import == "annex" else _parse_cnuced_file
             try:
-                lignes_par_pays = _parse_cnuced_file(contenu, fichier.filename or "")
+                lignes_par_pays = parseur(contenu, fichier.filename or "")
             except Exception as e:
                 erreurs.append(f"{fichier.filename}: erreur de lecture — {e}")
                 continue

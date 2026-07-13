@@ -104,6 +104,8 @@ export default function AdminIdePage() {
   const [fluxSortant,  setFluxSortant]  = useState<File[]>([]);
   const [stockEntrant, setStockEntrant] = useState<File[]>([]);
   const [stockSortant, setStockSortant] = useState<File[]>([]);
+  // Mode d'extraction : "annex" = Annex tables WIR (format officiel), "series" = ancien format séries
+  const [formatImport, setFormatImport] = useState<"annex" | "series">("annex");
 
   const [importing,    setImporting]    = useState(false);
   const [importRes,    setImportRes]    = useState<ImportRes | null>(null);
@@ -146,6 +148,7 @@ export default function AdminIdePage() {
 
   function buildFormData() {
     const fd = new FormData();
+    fd.append("format_import", formatImport);
     fluxEntrant.forEach(f  => fd.append("flux_entrant",  f));
     fluxSortant.forEach(f  => fd.append("flux_sortant",  f));
     stockEntrant.forEach(f => fd.append("stock_entrant", f));
@@ -213,8 +216,24 @@ export default function AdminIdePage() {
       {/* ── Import ── */}
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 20 }}>
         <div style={SEC}>Importer des données CNUCED</div>
+        {/* Mode d'extraction */}
+        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3, marginBottom: 12 }}>
+          {([
+            { v: "annex",  l: "Format officiel (Annex tables)" },
+            { v: "series", l: "Ancien format (séries)" },
+          ] as const).map(o => (
+            <button key={o.v} onClick={() => setFormatImport(o.v)}
+              style={{ padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: formatImport === o.v ? "#fff" : "transparent", color: formatImport === o.v ? "#004f91" : "#9aa5b4", boxShadow: formatImport === o.v ? "0 1px 4px rgba(0,0,0,0.10)" : "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+              {o.l}
+            </button>
+          ))}
+        </div>
         <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
-          Déposez un ou plusieurs fichiers CSV par série. Le pays est détecté automatiquement depuis <strong>Economy_Label</strong>. Un fichier peut contenir plusieurs pays.
+          {formatImport === "annex" ? (
+            <>Déposez les Annex tables du World Investment Report (Excel/CSV) : en-tête <strong>Region/economy | 1990 | … | 2025</strong>, une ligne par pays, années en colonnes. Les agrégats régionaux (World, Europe…) et les notes sont ignorés automatiquement.</>
+          ) : (
+            <>Déposez un ou plusieurs fichiers CSV par série. Le pays est détecté automatiquement depuis <strong>Economy_Label</strong> (format <strong>Economy_Label | Year | Value</strong>, 1 ligne par année). Un fichier peut contenir plusieurs pays.</>
+          )}
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
           <MultiFileZone label="Flux entrants"  sublabel="1 ou N pays par fichier" files={fluxEntrant}  onChange={setFluxEntrant} />
