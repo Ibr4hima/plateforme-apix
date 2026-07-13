@@ -48,8 +48,15 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
   const [charg, setCharg] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportErr, setExportErr] = useState(false); // échec d'export : message transitoire
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { if (open && anneesTabs.length) setAnnee(anneesTabs[anneesTabs.length - 1]); }, [open, anneesTabs]);
+  // Faire défiler l'onglet actif dans le champ de vision (l'année par défaut
+  // est la dernière, sinon hors écran quand la période compte 20+ années)
+  useEffect(() => {
+    const el = tabsRef.current?.querySelector<HTMLElement>('[data-actif="true"]');
+    el?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [open, annee]);
   useEffect(() => {
     if (!open || !selId || annee == null) return;
     setCharg(true);
@@ -121,13 +128,13 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
               <X size={15} color="#4a5568" />
             </button>
           </div>
-          {/* Onglets années */}
-          <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #F0EEEC" }}>
+          {/* Onglets années — défilement horizontal, onglet actif centré */}
+          <div ref={tabsRef} style={{ display: "flex", gap: 4, borderBottom: "1px solid #F0EEEC", overflowX: "auto", scrollbarWidth: "thin" }}>
             {anneesTabs.map(a => {
               const on = a === annee;
               return (
-                <button key={a} onClick={() => setAnnee(a)}
-                  style={{ padding: "9px 16px", border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: on ? 800 : 600, color: on ? "#004f91" : "#9aa5b4", borderBottom: on ? "2px solid #004f91" : "2px solid transparent", marginBottom: -1, fontFamily: "var(--font-google-sans)" }}>
+                <button key={a} onClick={() => setAnnee(a)} data-actif={on ? "true" : "false"}
+                  style={{ padding: "9px 16px", border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: on ? 800 : 600, color: on ? "#004f91" : "#9aa5b4", borderBottom: on ? "2px solid #004f91" : "2px solid transparent", marginBottom: -1, fontFamily: "var(--font-google-sans)", flexShrink: 0 }}>
                   {a}
                 </button>
               );
