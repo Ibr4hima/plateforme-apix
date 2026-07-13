@@ -606,6 +606,11 @@ async def importer_ide(
     # Mode d'extraction : "annex" = Annex tables WIR (années en colonnes, défaut),
     # "series" = séries CNUCED historiques (Economy_Label | Year | Value).
     format_import: str = Form(default="series"),
+    # Catégorie de données : détermine (direction, indicateur) de chaque zone.
+    #   fluxstock  → flux/stock classiques (défaut, rétro-compatible)
+    #   greenfield → projets annoncés   (greenfield_valeur / greenfield_nombre)
+    #   fusion     → M&A transfrontières (ma_valeur / ma_nombre)
+    categorie: str = Form(default="fluxstock"),
     # "1" = relayer les mêmes fichiers vers la production (si PROD_SYNC_* configuré)
     dupliquer_prod: str = Form(default=""),
     db: AsyncSession = Depends(get_db),
@@ -613,14 +618,34 @@ async def importer_ide(
 ):
     from fastapi import HTTPException
 
-    zones = {
-        ("entrant", "flux"):  flux_entrant,
-        ("sortant", "flux"):  flux_sortant,
-        ("entrant", "stock"): stock_entrant,
-        ("sortant", "stock"): stock_sortant,
+    # Zone de dépôt → (direction, indicateur) selon la catégorie. Les noms de
+    # champs (flux_entrant…) sont conservés tels quels : seule l'interprétation
+    # change (zone 1 = valeur entrant, zone 2 = valeur sortant, zone 3 = nombre
+    # entrant, zone 4 = nombre sortant pour greenfield/fusion).
+    MAPPINGS: dict[str, dict[str, tuple[str, str]]] = {
+        "fluxstock": {
+            "flux_entrant":  ("entrant", "flux"),  "flux_sortant":  ("sortant", "flux"),
+            "stock_entrant": ("entrant", "stock"), "stock_sortant": ("sortant", "stock"),
+        },
+        "greenfield": {
+            "flux_entrant":  ("entrant", "greenfield_valeur"), "flux_sortant":  ("sortant", "greenfield_valeur"),
+            "stock_entrant": ("entrant", "greenfield_nombre"), "stock_sortant": ("sortant", "greenfield_nombre"),
+        },
+        "fusion": {
+            "flux_entrant":  ("entrant", "ma_valeur"), "flux_sortant":  ("sortant", "ma_valeur"),
+            "stock_entrant": ("entrant", "ma_nombre"), "stock_sortant": ("sortant", "ma_nombre"),
+        },
     }
-    NOMS_ZONES = {("entrant", "flux"): "flux_entrant", ("sortant", "flux"): "flux_sortant",
-                  ("entrant", "stock"): "stock_entrant", ("sortant", "stock"): "stock_sortant"}
+    mapping = MAPPINGS.get(categorie)
+    if mapping is None:
+        raise HTTPException(422, f"Catégorie inconnue : {categorie}")
+
+    fichiers_par_zone = {
+        "flux_entrant": flux_entrant, "flux_sortant": flux_sortant,
+        "stock_entrant": stock_entrant, "stock_sortant": stock_sortant,
+    }
+    zones = {mapping[nom]: fichiers for nom, fichiers in fichiers_par_zone.items()}
+    NOMS_ZONES = {di: nom for nom, di in mapping.items()}
 
     resultats:   dict[str, dict] = {}   # nom_pays → stats
     erreurs:     list[str]       = []   # erreurs techniques (lecture fichier)
@@ -675,7 +700,7 @@ async def importer_ide(
             async with httpx.AsyncClient(timeout=300) as client:
                 r = await client.post(
                     f"{settings.PROD_SYNC_URL.rstrip('/')}/ide/importer",
-                    data={"format_import": format_import},
+                    data={"format_import": format_import, "categorie": categorie},
                     files=files,
                     auth=auth,
                 )

@@ -107,6 +107,8 @@ export default function AdminIdePage() {
   const [stockSortant, setStockSortant] = useState<File[]>([]);
   // Mode d'extraction : "annex" = Annex tables WIR (format officiel), "series" = ancien format séries
   const [formatImport, setFormatImport] = useState<"annex" | "series">("annex");
+  // Catégorie de données : détermine l'interprétation des 4 zones de dépôt
+  const [categorie, setCategorie] = useState<"fluxstock" | "greenfield" | "fusion">("fluxstock");
   // Relais vers la production (visible seulement si PROD_SYNC_* est configuré côté backend)
   const [prodDispo, setProdDispo] = useState(false);
   const [prodSync,  setProdSync]  = useState(true);
@@ -155,6 +157,7 @@ export default function AdminIdePage() {
   function buildFormData() {
     const fd = new FormData();
     fd.append("format_import", formatImport);
+    fd.append("categorie", categorie);
     if (prodDispo && prodSync) fd.append("dupliquer_prod", "1");
     fluxEntrant.forEach(f  => fd.append("flux_entrant",  f));
     fluxSortant.forEach(f  => fd.append("flux_sortant",  f));
@@ -223,6 +226,19 @@ export default function AdminIdePage() {
       {/* ── Import ── */}
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 20 }}>
         <div style={SEC}>Importer des données CNUCED</div>
+        {/* Catégorie de données */}
+        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3, marginBottom: 8, marginRight: 12 }}>
+          {([
+            { v: "fluxstock",  l: "Flux & Stocks" },
+            { v: "greenfield", l: "Greenfield" },
+            { v: "fusion",     l: "Fusion & Acquisition" },
+          ] as const).map(o => (
+            <button key={o.v} onClick={() => setCategorie(o.v)}
+              style={{ padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: categorie === o.v ? "#fff" : "transparent", color: categorie === o.v ? "#004f91" : "#9aa5b4", boxShadow: categorie === o.v ? "0 1px 4px rgba(0,0,0,0.10)" : "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+              {o.l}
+            </button>
+          ))}
+        </div>
         {/* Mode d'extraction */}
         <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3, marginBottom: 12 }}>
           {([
@@ -243,10 +259,22 @@ export default function AdminIdePage() {
           )}
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-          <MultiFileZone label="Flux entrants"  sublabel="1 ou N pays par fichier" files={fluxEntrant}  onChange={setFluxEntrant} />
-          <MultiFileZone label="Flux sortants"  sublabel="1 ou N pays par fichier" files={fluxSortant}  onChange={setFluxSortant} />
-          <MultiFileZone label="Stock entrants" sublabel="1 ou N pays par fichier" files={stockEntrant} onChange={setStockEntrant} />
-          <MultiFileZone label="Stock sortants" sublabel="1 ou N pays par fichier" files={stockSortant} onChange={setStockSortant} />
+          {categorie === "fluxstock" ? (<>
+            <MultiFileZone label="Flux entrants"  sublabel="1 ou N pays par fichier" files={fluxEntrant}  onChange={setFluxEntrant} />
+            <MultiFileZone label="Flux sortants"  sublabel="1 ou N pays par fichier" files={fluxSortant}  onChange={setFluxSortant} />
+            <MultiFileZone label="Stock entrants" sublabel="1 ou N pays par fichier" files={stockEntrant} onChange={setStockEntrant} />
+            <MultiFileZone label="Stock sortants" sublabel="1 ou N pays par fichier" files={stockSortant} onChange={setStockSortant} />
+          </>) : categorie === "greenfield" ? (<>
+            <MultiFileZone label="Valeur — destination (entrants)" sublabel="Annex 14 · value by destination" files={fluxEntrant}  onChange={setFluxEntrant} />
+            <MultiFileZone label="Valeur — source (sortants)"      sublabel="Annex 13 · value by source"      files={fluxSortant}  onChange={setFluxSortant} />
+            <MultiFileZone label="Nombre — destination (entrants)" sublabel="Annex 17 · number by destination" files={stockEntrant} onChange={setStockEntrant} />
+            <MultiFileZone label="Nombre — source (sortants)"      sublabel="Annex 16 · number by source"      files={stockSortant} onChange={setStockSortant} />
+          </>) : (<>
+            <MultiFileZone label="Valeur — ventes (entrants)"  sublabel="Annex 05 · net sales by seller"     files={fluxEntrant}  onChange={setFluxEntrant} />
+            <MultiFileZone label="Valeur — achats (sortants)"  sublabel="Annex 06 · net purchases by purchaser" files={fluxSortant}  onChange={setFluxSortant} />
+            <MultiFileZone label="Nombre — ventes (entrants)"  sublabel="Annex 07 · number by seller"        files={stockEntrant} onChange={setStockEntrant} />
+            <MultiFileZone label="Nombre — achats (sortants)"  sublabel="Annex 08 · number by purchaser"     files={stockSortant} onChange={setStockSortant} />
+          </>)}
         </div>
         {importRes && (
           <div style={{ marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 }}>
