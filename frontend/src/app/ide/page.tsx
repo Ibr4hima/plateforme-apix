@@ -26,6 +26,11 @@ function getPaysColor(nom: string, index: number): string {
 // Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, « Md $ / M $ »)
 const fmtVal = fmtMillionsUSD;
 
+// Bornes de période des séries CNUCED (étendre ANNEE_MAX à chaque millésime)
+const ANNEE_MIN = 1990;
+const ANNEE_MAX = 2025;
+const NB_ANNEES = ANNEE_MAX - ANNEE_MIN + 1;
+
 // ── Download graphe ───────────────────────────────────────────────────────────
 function downloadSVG(svgEl: SVGSVGElement, filename: string) {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
@@ -856,8 +861,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
-  const [anneeMin,    setAnneeMin]    = useState(1990);
-  const [anneeMax,    setAnneeMax]    = useState(2024);
+  const [anneeMin,    setAnneeMin]    = useState(ANNEE_MIN);
+  const [anneeMax,    setAnneeMax]    = useState(ANNEE_MAX);
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
   // Période stabilisée : le fetch attend la fin du drag des sliders
@@ -946,9 +951,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     return null;
   };
 
-  const hasFilter = paysSelec!=="Sénégal" || (modeAnnees==="specifiques"&&anneesSpec.length>0) || (modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024));
-  const nbFiltres = (paysSelec!=="Sénégal"?1:0) + ((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0);
-  const reinit = () => { setPaysSelec("Sénégal"); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); setKpisEpingles(KPI_DEFAUT); };
+  const hasFilter = paysSelec!=="Sénégal" || (modeAnnees==="specifiques"&&anneesSpec.length>0) || (modeAnnees==="plage"&&(anneeMin!==ANNEE_MIN||anneeMax!==ANNEE_MAX));
+  const nbFiltres = (paysSelec!=="Sénégal"?1:0) + ((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==ANNEE_MIN||anneeMax!==ANNEE_MAX))?1:0);
+  const reinit = () => { setPaysSelec("Sénégal"); setModeAnnees("plage"); setAnneeMin(ANNEE_MIN); setAnneeMax(ANNEE_MAX); setAnneesSpec([]); setKpisEpingles(KPI_DEFAUT); };
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
@@ -1099,12 +1104,12 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                     <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
                       <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <input type="range" min={1990} max={2024} value={anneeMin}
+                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-ANNEE_MIN)/(NB_ANNEES-1))*100}%`, width:`${Math.max(0,((anneeMax-ANNEE_MIN)/(NB_ANNEES-1))*100-((anneeMin-ANNEE_MIN)/(NB_ANNEES-1))*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <input type="range" min={ANNEE_MIN} max={ANNEE_MAX} value={anneeMin}
                         onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
                         className="drs-thumb"
                         style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
-                      <input type="range" min={1990} max={2024} value={anneeMax}
+                      <input type="range" min={ANNEE_MIN} max={ANNEE_MAX} value={anneeMax}
                         onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
                         className="drs-thumb"
                         style={{zIndex:3} as React.CSSProperties}/>
@@ -1119,7 +1124,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 ) : (
                   <div>
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
-                      {Array.from({length:35},(_,i)=>1990+i).map(a=>{
+                      {Array.from({length:NB_ANNEES},(_,i)=>ANNEE_MIN+i).map(a=>{
                         const sel=anneesSpec.includes(a);
                         return (
                           <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
@@ -1242,8 +1247,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
   const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
-  const [anneeMin,    setAnneeMin]    = useState(1990);
-  const [anneeMax,    setAnneeMax]    = useState(2024);
+  const [anneeMin,    setAnneeMin]    = useState(ANNEE_MIN);
+  const [anneeMax,    setAnneeMax]    = useState(ANNEE_MAX);
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
   // Période stabilisée : le fetch attend la fin du drag des sliders
@@ -1301,9 +1306,9 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
   const groupedPays  = groupByContinent(filteredPays);
   const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
 
-  const hasFilter = paysSelec.length>1||paysSelec[0]!=="Sénégal"||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024));
-  const nbFiltres = (paysSelec.length>1||paysSelec[0]!=="Sénégal"?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0);
-  const reinit = () => { setPaysSelec(["Sénégal"]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); };
+  const hasFilter = paysSelec.length>1||paysSelec[0]!=="Sénégal"||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==ANNEE_MIN||anneeMax!==ANNEE_MAX));
+  const nbFiltres = (paysSelec.length>1||paysSelec[0]!=="Sénégal"?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==ANNEE_MIN||anneeMax!==ANNEE_MAX))?1:0);
+  const reinit = () => { setPaysSelec(["Sénégal"]); setModeAnnees("plage"); setAnneeMin(ANNEE_MIN); setAnneeMax(ANNEE_MAX); setAnneesSpec([]); };
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
@@ -1460,12 +1465,12 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                     <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
                       <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <input type="range" min={1990} max={2024} value={anneeMin}
+                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-ANNEE_MIN)/(NB_ANNEES-1))*100}%`, width:`${Math.max(0,((anneeMax-ANNEE_MIN)/(NB_ANNEES-1))*100-((anneeMin-ANNEE_MIN)/(NB_ANNEES-1))*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
+                      <input type="range" min={ANNEE_MIN} max={ANNEE_MAX} value={anneeMin}
                         onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
                         className="drs-thumb"
                         style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
-                      <input type="range" min={1990} max={2024} value={anneeMax}
+                      <input type="range" min={ANNEE_MIN} max={ANNEE_MAX} value={anneeMax}
                         onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
                         className="drs-thumb"
                         style={{zIndex:3} as React.CSSProperties}/>
@@ -1480,7 +1485,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                 ) : (
                   <div>
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
-                      {Array.from({length:35},(_,i)=>1990+i).map(a=>{
+                      {Array.from({length:NB_ANNEES},(_,i)=>ANNEE_MIN+i).map(a=>{
                         const sel=anneesSpec.includes(a);
                         return (
                           <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
@@ -1814,8 +1819,8 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
 function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
   const [loading,     setLoading]    = useState(false);
-  const [anneeMin,    setAnneeMin]   = useState(1990);
-  const [anneeMax,    setAnneeMax]   = useState(2024);
+  const [anneeMin,    setAnneeMin]   = useState(ANNEE_MIN);
+  const [anneeMax,    setAnneeMax]   = useState(ANNEE_MAX);
   const [anneesSpec,  setAnneesSpec] = useState<number[]>([]);
   const [modeAnnees,  setModeAnnees] = useState<"plage"|"specifiques">("plage");
   // Période stabilisée : le fetch attend la fin du drag des sliders
@@ -1913,9 +1918,9 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
     if (grpSelec.includes(code)) setGrpSelec(p => p.filter(c => c !== code));
     else if (grpSelec.length < 4) setGrpSelec(p => [...p, code]);
   };
-  const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024));
-  const nbFiltres = (grpSelec.length>0?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==1990||anneeMax!==2024))?1:0);
-  const reinit = () => { setGrpSelec([]); setModeAnnees("plage"); setAnneeMin(1990); setAnneeMax(2024); setAnneesSpec([]); };
+  const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==ANNEE_MIN||anneeMax!==ANNEE_MAX));
+  const nbFiltres = (grpSelec.length>0?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==ANNEE_MIN||anneeMax!==ANNEE_MAX))?1:0);
+  const reinit = () => { setGrpSelec([]); setModeAnnees("plage"); setAnneeMin(ANNEE_MIN); setAnneeMax(ANNEE_MAX); setAnneesSpec([]); };
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
@@ -1996,9 +2001,9 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
                 <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
                   <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-1990)/34)*100}%`, width:`${Math.max(0,((anneeMax-1990)/34)*100-((anneeMin-1990)/34)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <input type="range" min={1990} max={2024} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
-                  <input type="range" min={1990} max={2024} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
+                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-ANNEE_MIN)/(NB_ANNEES-1))*100}%`, width:`${Math.max(0,((anneeMax-ANNEE_MIN)/(NB_ANNEES-1))*100-((anneeMin-ANNEE_MIN)/(NB_ANNEES-1))*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
+                  <input type="range" min={ANNEE_MIN} max={ANNEE_MAX} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
+                  <input type="range" min={ANNEE_MIN} max={ANNEE_MAX} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -2010,7 +2015,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             ) : (
               <div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
-                  {Array.from({length:35},(_,i)=>1990+i).map(a=>{
+                  {Array.from({length:NB_ANNEES},(_,i)=>ANNEE_MIN+i).map(a=>{
                     const sel=anneesSpec.includes(a);
                     return (
                       <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
