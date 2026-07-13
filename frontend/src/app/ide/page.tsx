@@ -963,6 +963,16 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   // Sous-type actif (greenfield / fusion) : graphes et KPIs basculent dessus
   const stActif = sousType !== "fluxstock" && SERIES_TYPES[sousType] ? SERIES_TYPES[sousType] : null;
 
+  // Période réellement couverte par le sous-type (ex. greenfield : 2003+)
+  const stBornes = (() => {
+    if (!stActif) return null;
+    const inds = new Set(stActif.map(s => s.ind));
+    const ys = donnees.filter((d: any) => inds.has(d.indicateur) && d.valeur !== null).map((d: any) => d.annee);
+    return ys.length ? [Math.min(...ys), Math.max(...ys)] as [number, number] : null;
+  })();
+  const perMin = stBornes ? Math.max(anneeMin, stBornes[0]) : anneeMin;
+  const perMax = stBornes ? Math.min(anneeMax, stBornes[1]) : anneeMax;
+
   const GRAPHES_PAYS = (stActif || SERIES_TYPES.fluxstock).map((s, i) => ({
     id: `${sousType}-${i}`, titre: s.label, unite: s.unite,
     series: buildSerie(s.dir, s.ind),
@@ -1234,7 +1244,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 12px", borderRadius:999, background:"linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:"0.02em", flexShrink:0 }}>
                 {modeAnnees==="specifiques"&&anneesSpec.length>0
                   ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                  : `${anneeMin} — ${anneeMax}`}
+                  : `${perMin} — ${perMax}`}
               </span>
             </div>
             <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec}/>
@@ -1285,9 +1295,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           ) : (
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>(
-                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${anneeMin}–${anneeMax}`} series={g.series} grapheId={g.id}
-                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
+                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id}
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
               ))}
             </div>
@@ -1370,6 +1380,16 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
       { id:"se", titre:"Stock d'IDE entrant",  unite:"musd" as const, series: buildSeries("entrant","stock") },
       { id:"ss", titre:"Stock d'IDE sortant",  unite:"musd" as const, series: buildSeries("sortant","stock") },
     ];
+
+  // Période réellement couverte par le sous-type (ex. greenfield : 2003+)
+  const stBornes = (() => {
+    if (!stActif) return null;
+    const inds = new Set(stActif.map(s => s.ind));
+    const ys = donnees.filter((d: any) => inds.has(d.indicateur) && d.valeur !== null).map((d: any) => d.annee);
+    return ys.length ? [Math.min(...ys), Math.max(...ys)] as [number, number] : null;
+  })();
+  const perMin = stBornes ? Math.max(anneeMin, stBornes[0]) : anneeMin;
+  const perMax = stBornes ? Math.min(anneeMax, stBornes[1]) : anneeMax;
 
   const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
   const groupedPays  = groupByContinent(filteredPays);
@@ -1580,7 +1600,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                : `${anneeMin} — ${anneeMax}`}
+                : `${perMin} — ${perMax}`}
             </span>
             {paysAvecCouleur.map(p=>(
               <span key={p.nom} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:12, fontWeight:700, color:p.couleur, flexShrink:0, whiteSpace:"nowrap" as const }}>
@@ -1599,8 +1619,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
                 <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Source CNUCED`} series={g.series} grapheId={g.id} hideLegend
-                  fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
               ))}
             </div>
@@ -1973,6 +1993,16 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
       { id:"ss", titre:"Stock d'IDE sortant",  unite:"musd" as const, series: buildSeries("sortant","stock") },
     ];
 
+  // Période réellement couverte par le sous-type (ex. greenfield : 2003+)
+  const stBornes = (() => {
+    if (!stActif) return null;
+    const inds = new Set(stActif.map(s => s.ind));
+    const ys = donnees.filter((d: any) => inds.has(d.indicateur) && d.valeur !== null).map((d: any) => d.annee);
+    return ys.length ? [Math.min(...ys), Math.max(...ys)] as [number, number] : null;
+  })();
+  const perMin = stBornes ? Math.max(anneeMin, stBornes[0]) : anneeMin;
+  const perMax = stBornes ? Math.min(anneeMax, stBornes[1]) : anneeMax;
+
   const [donneesDetail, setDonneesDetail] = useState<any[]>([]);
   const modeDetail = grpSelec.length === 1;
 
@@ -2222,7 +2252,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
             {modeAnnees==="specifiques"&&anneesSpec.length>0
               ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-              : `${anneeMin} — ${anneeMax}`}
+              : `${perMin} — ${perMax}`}
           </span>
           {grpAvecCouleur.map(g=>(
             <span key={g.nom} title={g.label} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${g.couleur}0D`, border:`1px solid ${g.couleur}2E`, fontSize:12, fontWeight:700, color:g.couleur, flexShrink:0, whiteSpace:"nowrap" as const }}>
@@ -2248,8 +2278,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
               <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Somme pays membres · CNUCED`} series={g.series} grapheId={g.id} hideLegend
-                fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
-                <GrapheMultiPays series={g.series} height={145} type="line" titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
+                fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
+                <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
               </GrapheCard>
             ))}
           </div>
