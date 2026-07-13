@@ -1026,8 +1026,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     const solde = vE && vS && vE.annee === vS.annee ? vE.valeur - vS.valeur : null;
     const gf = sousType === "greenfield";
     return [
-      { label: gf ? "Inv greenfield reçus" : "Rachats d'entreprises locales",  val: vE ? fmtVal(vE.valeur) : "N/A", ind: vE ? `en ${vE.annee}` : null },
-      { label: gf ? "Inv greenfield émis" : "Acquisitions à l'étranger", val: vS ? fmtVal(vS.valeur) : "N/A", ind: vS ? `en ${vS.annee}` : null },
+      { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales",  val: vE ? fmtVal(vE.valeur) : "N/A", ind: vE ? `en ${vE.annee}` : null },
+      { label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", val: vS ? fmtVal(vS.valeur) : "N/A", ind: vS ? `en ${vS.annee}` : null },
       { label: gf ? "Nombre de projets reçus" : "Nombre de rachats locaux", val: nE ? fmtNombre(nE.valeur) : "N/A", ind: nE ? `en ${nE.annee}` : null },
       { label: gf ? "Solde net · reçus − émis" : "Solde net · rachats − acquisitions", val: solde !== null ? `${solde > 0 ? "+" : ""}${fmtVal(solde)}` : "N/A", ind: vE && solde !== null ? `en ${vE.annee}` : null },
       { label: gf ? "Année record · reçus" : "Année record · rachats", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
