@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
-import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet, Layers, Sprout, Handshake } from "lucide-react";
+import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -53,32 +53,26 @@ const fmtNombre = (v: number | null) => v === null || v === undefined ? "N/A" : 
 // ── Navigation entre catégories d'investissement ──────────────────────────────
 // Sélecteur principal de la zone de contenu : Flux & Stocks / Greenfield / M&A.
 const SOUS_TYPE_NAV = [
-  { v: "fluxstock",  l: "Flux & Stocks",         d: "Réalisés et cumulés",   icon: Layers },
-  { v: "greenfield", l: "Greenfield",            d: "Projets annoncés",      icon: Sprout },
-  { v: "fusion",     l: "Fusion & Acquisition",  d: "M&A transfrontières",   icon: Handshake },
+  { v: "fluxstock",  l: "Flux & Stocks" },
+  { v: "greenfield", l: "Greenfield" },
+  { v: "fusion",     l: "Fusion & Acquisition" },
 ] as const;
 
 function SousTypeNav({ value, onChange }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void }) {
   return (
-    <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:16, padding:5, gap:4, marginBottom:22, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
+    <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:999, padding:4, gap:3, marginBottom:22, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
       {SOUS_TYPE_NAV.map(o => {
         const actif = value === o.v;
-        const Icone = o.icon;
         return (
           <button key={o.v} onClick={() => onChange(o.v)}
-            style={{ display:"flex", alignItems:"center", gap:11, padding:"9px 18px 9px 12px", borderRadius:12, border:"none", cursor:"pointer", textAlign:"left" as const,
+            style={{ padding:"8px 20px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, whiteSpace:"nowrap" as const,
               background: actif ? "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" : "transparent",
-              boxShadow: actif ? "0 6px 18px rgba(0,79,145,0.28)" : "none",
-              transition:"background 0.18s, box-shadow 0.18s", fontFamily:"var(--font-google-sans)" }}
+              color: actif ? "#fff" : "#4a5568",
+              boxShadow: actif ? "0 4px 14px rgba(0,79,145,0.28)" : "none",
+              transition:"background 0.18s, box-shadow 0.18s, color 0.18s", fontFamily:"var(--font-google-sans)" }}
             onMouseEnter={e => { if (!actif) e.currentTarget.style.background = "#F6F5F3"; }}
             onMouseLeave={e => { if (!actif) e.currentTarget.style.background = "transparent"; }}>
-            <span style={{ width:32, height:32, borderRadius:9, background: actif ? "rgba(255,255,255,0.16)" : "rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.18s" }}>
-              <Icone size={16} style={{ color: actif ? "#fff" : "#004f91" }} />
-            </span>
-            <span style={{ display:"flex", flexDirection:"column" as const, gap:1 }}>
-              <span style={{ fontSize:12.5, fontWeight:700, color: actif ? "#fff" : "#4a5568", lineHeight:1.2, whiteSpace:"nowrap" as const }}>{o.l}</span>
-              <span style={{ fontSize:10, fontWeight:500, color: actif ? "rgba(255,255,255,0.72)" : "#9aa5b4", lineHeight:1.2, whiteSpace:"nowrap" as const }}>{o.d}</span>
-            </span>
+            {o.l}
           </button>
         );
       })}
