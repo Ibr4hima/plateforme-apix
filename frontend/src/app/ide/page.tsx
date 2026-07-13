@@ -54,16 +54,19 @@ const fmtNombre = (v: number | null) => v === null || v === undefined ? "N/A" : 
 const ANNEE_MIN = 1990;
 const ANNEE_MAX = 2025;
 
-// Bornes réelles depuis l'API : la page s'étend automatiquement dès qu'un
-// nouveau millésime est importé (ex. 2026), sans modification de code.
-function useBornesCnuced(): [number, number] {
-  const [bornes, setBornes] = useState<[number, number]>([ANNEE_MIN, ANNEE_MAX]);
+// Bornes réelles depuis l'API, par catégorie de données (fluxstock /
+// greenfield / fusion) : sliders et pastilles s'alignent sur la couverture du
+// sous-type actif, et s'étendent automatiquement à chaque nouvel import.
+function useBornesCnuced(sousType: string = "fluxstock"): [number, number] {
+  const [annees, setAnnees] = useState<any>(null);
   useEffect(() => {
-    fetch(`${API}/ide/cnuced/annees`).then(r => r.json()).then(d => {
-      if (d?.annee_min && d?.annee_max) setBornes([d.annee_min, d.annee_max]);
-    }).catch(() => {});
+    fetch(`${API}/ide/cnuced/annees`).then(r => r.json()).then(setAnnees).catch(() => {});
   }, []);
-  return bornes;
+  const cat = annees?.categories?.[sousType];
+  return [
+    cat?.annee_min ?? annees?.annee_min ?? ANNEE_MIN,
+    cat?.annee_max ?? annees?.annee_max ?? ANNEE_MAX,
+  ];
 }
 
 // ── Download graphe ───────────────────────────────────────────────────────────
@@ -888,7 +891,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
-  const [borneMin, borneMax] = useBornesCnuced();
+  const [borneMin, borneMax] = useBornesCnuced(sousType);
   const [anneeMin,    setAnneeMin]    = useState(borneMin);
   const [anneeMax,    setAnneeMax]    = useState(borneMax);
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
@@ -1319,7 +1322,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
   const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
-  const [borneMin, borneMax] = useBornesCnuced();
+  const [borneMin, borneMax] = useBornesCnuced(sousType);
   const [anneeMin,    setAnneeMin]    = useState(borneMin);
   const [anneeMax,    setAnneeMax]    = useState(borneMax);
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
@@ -1908,7 +1911,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
 function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
   const [loading,     setLoading]    = useState(false);
-  const [borneMin, borneMax] = useBornesCnuced();
+  const [borneMin, borneMax] = useBornesCnuced(sousType);
   const [anneeMin,    setAnneeMin]   = useState(borneMin);
   const [anneeMax,    setAnneeMax]   = useState(borneMax);
   const [anneesSpec,  setAnneesSpec] = useState<number[]>([]);

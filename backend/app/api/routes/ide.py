@@ -241,17 +241,35 @@ async def get_pays_disponibles(db: AsyncSession = Depends(get_db)):
 
 
 # ── GET /ide/cnuced/annees ────────────────────────────────────────────────────
-# Bornes d'années réellement disponibles : la page publique s'aligne dessus
-# automatiquement à chaque nouvel import (ex. millésime 2026).
+# Bornes d'années réellement disponibles, globales et par catégorie de données
+# (fluxstock / greenfield / fusion) : la page publique aligne ses sliders et
+# pastilles dessus automatiquement à chaque nouvel import (ex. millésime 2026).
 @router.get("/cnuced/annees")
 async def get_cnuced_annees(db: AsyncSession = Depends(get_db)):
     from sqlalchemy import func
-    res = await db.execute(
-        select(func.min(IdeCnuced.annee), func.max(IdeCnuced.annee))
+    rows = (await db.execute(
+        select(IdeCnuced.indicateur, func.min(IdeCnuced.annee), func.max(IdeCnuced.annee))
         .where(IdeCnuced.valeur.isnot(None))
-    )
-    mn, mx = res.one()
-    return {"annee_min": mn or 1990, "annee_max": mx or 2024}
+        .group_by(IdeCnuced.indicateur)
+    )).all()
+
+    def cat(ind: str) -> str:
+        if ind.startswith("greenfield"): return "greenfield"
+        if ind.startswith("ma_"): return "fusion"
+        return "fluxstock"
+
+    categories: dict[str, dict] = {}
+    for ind, mn, mx in rows:
+        c = cat(ind)
+        cur = categories.get(c)
+        categories[c] = {
+            "annee_min": mn if cur is None else min(cur["annee_min"], mn),
+            "annee_max": mx if cur is None else max(cur["annee_max"], mx),
+        }
+
+    gmin = min((c["annee_min"] for c in categories.values()), default=1990)
+    gmax = max((c["annee_max"] for c in categories.values()), default=2024)
+    return {"annee_min": gmin, "annee_max": gmax, "categories": categories}
 
 
 # ── GET /ide/cnuced/kpis-calcules ─────────────────────────────────────────────
