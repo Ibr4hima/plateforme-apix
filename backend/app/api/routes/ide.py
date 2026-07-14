@@ -240,6 +240,23 @@ async def get_pays_disponibles(db: AsyncSession = Depends(get_db)):
     return result
 
 
+# ── GET /ide/secteurs ─────────────────────────────────────────────────────────
+# Référentiel des secteurs / branches CNUCED, hiérarchisé (FR pour l'affichage).
+@router.get("/secteurs")
+async def get_secteurs(db: AsyncSession = Depends(get_db)):
+    from app.models.ide import IdeSecteur
+    rows = (await db.execute(select(IdeSecteur).order_by(IdeSecteur.parent_id.nullsfirst(), IdeSecteur.ordre))).scalars().all()
+    secteurs = [
+        {"id": r.id, "nom_en": r.nom_en, "nom_fr": r.nom_fr, "branches": []}
+        for r in rows if r.parent_id is None
+    ]
+    par_id = {sec["id"]: sec for sec in secteurs}
+    for r in rows:
+        if r.parent_id is not None and r.parent_id in par_id:
+            par_id[r.parent_id]["branches"].append({"id": r.id, "nom_en": r.nom_en, "nom_fr": r.nom_fr})
+    return secteurs
+
+
 # ── GET /ide/cnuced/annees ────────────────────────────────────────────────────
 # Bornes d'années réellement disponibles, globales et par catégorie de données
 # (fluxstock / greenfield / fusion) : la page publique aligne ses sliders et

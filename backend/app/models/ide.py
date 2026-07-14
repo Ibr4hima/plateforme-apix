@@ -42,3 +42,26 @@ class IdeAnalyse(Base):
     ordre       = Column(Integer, default=0)
     created_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at  = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+
+class IdeSecteur(Base):
+    """Référentiel des secteurs / branches CNUCED (parent_id NULL = secteur)."""
+    __tablename__ = "ide_secteurs"
+    id        = Column(Integer, primary_key=True)
+    nom_en    = Column(Text, nullable=False, unique=True)
+    nom_fr    = Column(Text, nullable=False)
+    parent_id = Column(Integer, ForeignKey("ide_secteurs.id", ondelete="CASCADE"))
+    ordre     = Column(Integer, nullable=False, default=0)
+
+
+class IdeCnucedSecteur(Base):
+    """Données IDE sectorielles (Annex tables 09-12, 15, 18)."""
+    __tablename__ = "ide_cnuced_secteurs"
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    secteur_id = Column(Integer, ForeignKey("ide_secteurs.id", ondelete="CASCADE"), nullable=False)
+    annee      = Column(SmallInteger, nullable=False)
+    direction  = Column(String(10), nullable=False)   # entrant / sortant / total
+    indicateur = Column(String(30), nullable=False)   # ma_* / greenfield_*
+    valeur     = Column(Numeric(16, 2))
+    source     = Column(String(20), nullable=False, default="CNUCED")
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
