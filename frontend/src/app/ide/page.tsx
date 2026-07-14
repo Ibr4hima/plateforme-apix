@@ -1747,34 +1747,41 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         </div>
 
         {/* Header */}
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
-            {typeAnalyse === "secteur" ? (
-              <>
-                <div style={{ width:10, height:10, borderRadius:"50%", background:accent, flexShrink:0 }} />
-                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{selecIds.length ? nomById.get(selecIds[0]) : "Secteur"}</h2>
-                {niveauSel!=="global"&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"#F2F0EF", border:"1px solid #E8E5E3", fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
-                  {niveauSel==="secteur"?"Secteur":"Branche d'activité"}
-                </span>}
-              </>
-            ) : (
-              <>
-                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>Analyse comparative</h2>
+        {(() => {
+          const badgePeriode = (
+            <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+              {modeAnnees==="specifiques"&&anneesSpec.length>0
+                ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                : `${perMin} — ${perMax}`}
+            </span>
+          );
+          return typeAnalyse === "secteur" ? (
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16, flexWrap:"wrap" as const }}>
+              <div style={{ width:10, height:10, borderRadius:"50%", background:accent, flexShrink:0 }} />
+              <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{selecIds.length ? nomById.get(selecIds[0]) : "Secteur"}</h2>
+              {niveauSel!=="global"&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"#F2F0EF", border:"1px solid #E8E5E3", fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
+                {niveauSel==="secteur"?"Secteur":"Branche d'activité"}
+              </span>}
+              {badgePeriode}
+            </div>
+          ) : (
+            <div style={{ marginBottom:16 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
+                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>Analyse comparative par {compNiveau==="secteur"?"secteur":"branche d'activité"}</h2>
+                {badgePeriode}
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" as const }}>
                 {selecIds.map((id, i) => (
                   <span key={id} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${couleurDe(i)}0D`, border:`1px solid ${couleurDe(i)}2E`, fontSize:10.5, fontWeight:700, color:couleurDe(i) }}>
                     <span style={{ width:7, height:7, borderRadius:"50%", background:couleurDe(i), display:"inline-block", flexShrink:0 }} />
                     {nomById.get(id)}
                   </span>
                 ))}
-              </>
-            )}
-            <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
-              {modeAnnees==="specifiques"&&anneesSpec.length>0
-                ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                : `${perMin} — ${perMax}`}
-            </span>
-          </div>
-        </div>
+                {selecIds.length===0&&<span style={{ fontSize:12, color:"#9aa5b4" }}>Sélectionnez jusqu&apos;à 4 {compNiveau==="secteur"?"secteurs":"branches"} dans le filtre</span>}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* KPI cards (analyse par secteur) */}
         {stCards && (
