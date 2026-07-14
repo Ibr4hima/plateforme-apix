@@ -102,56 +102,54 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                 ))}
               </div>
             </div>
-            {/* Contexte relationnel (2 pays) : appartenances communes + accords */}
-            {cols.length === 2 && bilat && (bilat.groupements_communs?.length > 0 || bilat.accords?.length > 0) && (
-              <div style={{ marginBottom: 22 }}>
-                {bilat.groupements_communs && bilat.groupements_communs.length > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, padding: "12px 16px", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 12, boxShadow: "0 1px 2px rgba(0,30,60,0.04)" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 9.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase", flexShrink: 0 }}>
-                      <Landmark size={13} /> Appartenances communes
-                    </span>
-                    {bilat.groupements_communs.map((g: any) => (
-                      <span key={g.code} title={g.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 11, fontWeight: 700, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>{g.code || g.nom}</span>
-                    ))}
-                  </div>
-                )}
-                {bilat.accords && bilat.accords.length > 0 && (
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap", marginBottom: 10, padding: "12px 16px", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 12, boxShadow: "0 1px 2px rgba(0,30,60,0.04)" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 9.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase", flexShrink: 0, paddingTop: 4 }}>
-                      <FileText size={13} /> {bilat.accords.length > 1 ? "Accords signés" : "Accord signé"}
-                    </span>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {bilat.accords.map((ac: any, i: number) => {
-                        const an = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
-                        return (
-                          <span key={i} title={ac.reference || ac.titre} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>
-                            {ac.titre}{an ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {an}</span> : null}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            {/* Fiche Sénégal × pays X : entreprises de X installées au Sénégal */}
-            {autreId !== null && entSiege && entSiege.total > 0 && (
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap", marginBottom: 22, padding: "12px 16px", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 12, boxShadow: "0 1px 2px rgba(0,30,60,0.04)" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 9.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase", flexShrink: 0, paddingTop: 4 }}>
-                  <Building2 size={13} /> Entreprises installées au Sénégal · siège {autreNom}
-                  <span style={{ fontSize: 10, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.12)", padding: "1px 8px", borderRadius: 999, letterSpacing: 0 }}>{entSiege.total}</span>
+            {/* Contexte relationnel (2 pays) : appartenances communes, accords,
+                entreprises installées — présentation homogène : en-tête (icône,
+                titre, count) puis les éléments listés à la ligne suivante */}
+            {(() => {
+              const Chip = ({ label, suffixe, title }: { label: string; suffixe?: string | null; title?: string }) => (
+                <span title={title || label} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>
+                  {label}{suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {suffixe}</span> : null}
                 </span>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {entSiege.entreprises.map((e: any) => (
-                    <span key={e.id}
-                      title={[e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · ")}
-                      style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>
-                      {e.nom}{e.region ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {e.region}</span> : null}
-                    </span>
-                  ))}
+              );
+              const BlocContexte = ({ Icone, titre, count, children }: { Icone: any; titre: string; count: number; children: React.ReactNode }) => (
+                <div style={{ marginBottom: 10, padding: "14px 18px", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 12, boxShadow: "0 1px 2px rgba(0,30,60,0.04)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <Icone size={13} style={{ color: "#004f91", flexShrink: 0 }} />
+                    <span style={{ fontSize: 9.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase" }}>{titre}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.10)", padding: "1px 8px", borderRadius: 999 }}>{count}</span>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{children}</div>
                 </div>
-              </div>
-            )}
+              );
+              const grps = (cols.length === 2 && bilat?.groupements_communs) || [];
+              const accs = (cols.length === 2 && bilat?.accords) || [];
+              const ents = (autreId !== null && entSiege?.entreprises) || [];
+              if (!grps.length && !accs.length && !ents.length) return null;
+              return (
+                <div style={{ marginBottom: 12 }}>
+                  {grps.length > 0 && (
+                    <BlocContexte Icone={Landmark} titre="Appartenances communes" count={grps.length}>
+                      {grps.map((g: any) => <Chip key={g.code} label={g.code || g.nom} title={g.nom} />)}
+                    </BlocContexte>
+                  )}
+                  {accs.length > 0 && (
+                    <BlocContexte Icone={FileText} titre={accs.length > 1 ? "Accords signés" : "Accord signé"} count={accs.length}>
+                      {accs.map((ac: any, i: number) => (
+                        <Chip key={i} label={ac.titre} suffixe={ac.date_signature ? ac.date_signature.slice(0, 4) : null} title={ac.reference || ac.titre} />
+                      ))}
+                    </BlocContexte>
+                  )}
+                  {ents.length > 0 && (
+                    <BlocContexte Icone={Building2} titre={`Entreprises installées au Sénégal · siège ${autreNom}`} count={entSiege.total}>
+                      {ents.map((e: any) => (
+                        <Chip key={e.id} label={e.nom} suffixe={e.region}
+                          title={[e.nom, e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · ")} />
+                      ))}
+                    </BlocContexte>
+                  )}
+                </div>
+              );
+            })()}
             {!data ? (
               <SkeletonRows n={10} h={34} />
             ) : (
