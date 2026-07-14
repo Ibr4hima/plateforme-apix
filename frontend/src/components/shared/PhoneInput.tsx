@@ -95,9 +95,12 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
   const [numType, setNumType] = useState<string>("");
   const ref = useRef<HTMLDivElement>(null);
 
-  // Charger les pays
+  // Charger les pays — les entrées sans code ISO2 (pseudo-pays créés par les
+  // imports IDE, ex. « Multi-National ») n'ont pas d'indicatif téléphonique
   useEffect(() => {
-    fetch(`${API_BASE}/ref-pays`).then(r => r.json()).then(setPays).catch(() => {});
+    fetch(`${API_BASE}/ref-pays`).then(r => r.json())
+      .then((d: Pays[]) => setPays((d || []).filter(p => p.code_iso2)))
+      .catch(() => {});
   }, []);
 
   // Parser valeur initiale (E.164)
@@ -221,8 +224,8 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
   function selectedPaysNom() { return pays.find(p => p.code_iso2 === iso2)?.nom_fr; }
 
   const filtered = pays.filter(p =>
-    p.nom_fr.toLowerCase().includes(search.toLowerCase()) ||
-    p.code_iso2.toLowerCase().includes(search.toLowerCase())
+    (p.nom_fr || "").toLowerCase().includes(search.toLowerCase()) ||
+    (p.code_iso2 || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const selectedPays = pays.find(p => p.code_iso2 === iso2);
