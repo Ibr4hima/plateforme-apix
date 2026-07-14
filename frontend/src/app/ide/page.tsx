@@ -47,6 +47,17 @@ const SERIES_TYPES: Record<string, { dir: string; ind: string; label: string; un
     { dir: "entrant", ind: "ma_nombre", label: "Nombre de rachats d'entreprises locales",  unite: "nombre" },
     { dir: "sortant", ind: "ma_nombre", label: "Nombre d'acquisitions à l'étranger",       unite: "nombre" },
   ],
+  // Vue Secteurs — greenfield sans direction (« total »), M&A ventes / achats
+  secteur_greenfield: [
+    { dir: "total", ind: "greenfield_valeur", label: "Valeur des projets annoncés", unite: "musd" },
+    { dir: "total", ind: "greenfield_nombre", label: "Nombre de projets annoncés",  unite: "nombre" },
+  ],
+  secteur_fusion: [
+    { dir: "entrant", ind: "ma_valeur", label: "Valeur des ventes nettes",  unite: "musd" },
+    { dir: "sortant", ind: "ma_valeur", label: "Valeur des achats nets",    unite: "musd" },
+    { dir: "entrant", ind: "ma_nombre", label: "Nombre de ventes",          unite: "nombre" },
+    { dir: "sortant", ind: "ma_nombre", label: "Nombre d'achats",           unite: "nombre" },
+  ],
 };
 const fmtNombre = (v: number | null) => v === null || v === undefined ? "N/A" : Math.round(v).toLocaleString("fr-FR");
 
@@ -93,10 +104,10 @@ function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
   );
 }
 
-function SousTypeNav({ value, onChange }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void }) {
+function SousTypeNav({ value, onChange, options }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void; options?: readonly { v: "fluxstock"|"greenfield"|"fusion"; l: string }[] }) {
   return (
     <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:999, padding:3, gap:3, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
-      {SOUS_TYPE_NAV.map(o => {
+      {(options ?? SOUS_TYPE_NAV).map(o => {
         const actif = value === o.v;
         return (
           <button key={o.v} onClick={() => onChange(o.v)}
@@ -631,7 +642,7 @@ async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: stri
 }
 
 // ── Modal données ─────────────────────────────────────────────────────────────
-function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fluxstock" }: any) {
+function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fluxstock", entite = "pays" }: any) {
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
@@ -733,7 +744,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fl
         {/* Pied fixe */}
         <div style={{ padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0, gap:10 }}>
           <span style={{ fontSize:11, color:"#9aa5b4" }}>
-            {paysSelectionnes.length} pays · {annees.length} années · {sousType === "fluxstock" ? "valeurs en M$ USD" : "valeurs en M$ USD, nombres en absolu"} · Source CNUCED
+            {paysSelectionnes.length} {entite} · {annees.length} années · {sousType === "fluxstock" ? "valeurs en M$ USD" : "valeurs en M$ USD, nombres en absolu"} · Source CNUCED
           </span>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
@@ -1355,42 +1366,354 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 }
 
 // ── Vue Secteurs (analyse sectorielle CNUCED) ─────────────────────────────────
-// Structure en place ; les secteurs/branches CNUCED seront chargés depuis la
-// base (référentiel à importer) — la zone principale s'activera à ce moment-là.
+// Greenfield (Annex 15/18, direction « total ») et M&A (Annex 09-12, ventes /
+// achats) par secteur ou branche. Les données sont chargées en une fois puis
+// filtrées côté client (référentiel : ~65 lignes, séries : quelques milliers).
+const SECTEUR_NAV = [
+  { v: "greenfield", l: "Greenfield" },
+  { v: "fusion",     l: "Fusion & Acquisition" },
+] as const;
+
 function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
   showTable: boolean; setShowTable: (v:boolean)=>void;
   sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void;
   vueP: string; setVueP: (v:"pays"|"secteurs")=>void;
   typeAnalyse: string; setTypeAnalyse: (v:"secteur"|"comparative")=>void;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Flux & Stocks n'existe pas par secteur : la vue force greenfield par défaut
+  const st = sousType === "fusion" ? "fusion" : "greenfield";
+  useEffect(() => { if (sousType === "fluxstock") setSousType("greenfield"); }, [sousType, setSousType]);
+
+  const [refSecteurs, setRefSecteurs] = useState<any[]>([]);
+  const [donnees,     setDonnees]     = useState<any[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [erreur,      setErreur]      = useState(false);
+  const [tick,        setTick]        = useState(0);
+  const [selecIds,    setSelecIds]    = useState<number[]>([1]);
+  const [openSecs,    setOpenSecs]    = useState<Set<number>>(new Set());
+  const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
+  const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
+  const [sidebarOpen,  setSidebarOpen]  = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const isResizing = useRef(false);
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
+    const startX = e.clientX, startW = sidebarWidth;
+    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
+    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+  };
+
+  // Référentiel + séries en un seul chargement (filtrage ensuite côté client)
+  useEffect(() => {
+    let actif = true;
+    (async () => {
+      setLoading(true); setErreur(false);
+      try {
+        const [ref, rows] = await Promise.all([
+          fetch(`${API}/ide/secteurs`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+          fetch(`${API}/ide/cnuced-secteurs`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+        ]);
+        if (!actif) return;
+        setRefSecteurs(ref || []);
+        setDonnees(rows || []);
+      } catch (e) { console.error(e); if (actif) setErreur(true); }
+      finally { if (actif) setLoading(false); }
+    })();
+    return () => { actif = false; };
+  }, [tick]);
+
+  // Analyse par secteur = sélection unique ; comparative = jusqu'à 4
+  useEffect(() => { if (typeAnalyse === "secteur") setSelecIds(prev => prev.length > 1 ? [prev[0]] : prev); }, [typeAnalyse]);
+  const toggleSecteur = (id: number) => {
+    if (typeAnalyse === "secteur") { setSelecIds([id]); return; }
+    setSelecIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length >= 4 ? prev : [...prev, id]);
+  };
+  const toggleOpen = (id: number) => setOpenSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+
+  const nomById = new Map<number, string>();
+  refSecteurs.forEach((s: any) => { nomById.set(s.id, s.nom_fr); (s.branches || []).forEach((b: any) => nomById.set(b.id, b.nom_fr)); });
+  const couleurDe = (i: number) => typeAnalyse === "secteur" ? "#004f91" : COMP_PALETTE[i % COMP_PALETTE.length];
+
+  // Bornes réelles de la catégorie active (greenfield : ~2003+, M&A : 1990+)
+  const prefix  = st === "greenfield" ? "greenfield" : "ma_";
+  const rowsCat = donnees.filter((d: any) => d.indicateur.startsWith(prefix) && d.valeur !== null);
+  let borneMin = ANNEE_MIN, borneMax = ANNEE_MAX;
+  if (rowsCat.length) {
+    borneMin = rowsCat[0].annee; borneMax = rowsCat[0].annee;
+    rowsCat.forEach((d: any) => { if (d.annee < borneMin) borneMin = d.annee; if (d.annee > borneMax) borneMax = d.annee; });
+  }
+  const [anneeMin, setAnneeMin] = useState(borneMin);
+  const [anneeMax, setAnneeMax] = useState(borneMax);
+  useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
+
+  const enPeriode = (a: number) => modeAnnees === "specifiques" && anneesSpec.length > 0 ? anneesSpec.includes(a) : a >= anneeMin && a <= anneeMax;
+  const rowsSel   = rowsCat.filter((d: any) => selecIds.includes(d.secteur_id) && enPeriode(d.annee));
+
+  // Période réellement couverte par la sélection (pastille grise)
+  let perMin = anneeMin, perMax = anneeMax;
+  if (rowsSel.length) {
+    perMin = rowsSel[0].annee; perMax = rowsSel[0].annee;
+    rowsSel.forEach((d: any) => { if (d.annee < perMin) perMin = d.annee; if (d.annee > perMax) perMax = d.annee; });
+  }
+
+  const SERIES = SERIES_TYPES[`secteur_${st}`];
+  const GRAPHES = SERIES.map((s, i) => ({
+    id: `secteur-${st}-${i}`, titre: s.label, unite: s.unite,
+    series: selecIds.map((id, ci) => ({
+      nom: nomById.get(id) || "?", couleur: couleurDe(ci),
+      data: rowsSel
+        .filter((d: any) => d.secteur_id === id && d.direction === s.dir && d.indicateur === s.ind)
+        .map((d: any) => ({ annee: d.annee, valeur: d.valeur }))
+        .sort((a: any, b: any) => a.annee - b.annee),
+    })),
+  }));
+
+  // KPIs (analyse par secteur) — part du total = poids dans la somme des 3
+  // grands secteurs (Primaire + Manufacturier + Services) la même année
+  const stCards = (() => {
+    if (typeAnalyse !== "secteur" || !selecIds.length) return null;
+    const sid = selecIds[0];
+    const serie = (dir: string, ind: string) => rowsSel
+      .filter((d: any) => d.secteur_id === sid && d.direction === dir && d.indicateur === ind)
+      .sort((a: any, b: any) => a.annee - b.annee);
+    const last = (rs: any[]) => rs.length ? rs[rs.length - 1] : null;
+    const dirV = st === "greenfield" ? "total" : "entrant";
+    const indV = st === "greenfield" ? "greenfield_valeur" : "ma_valeur";
+    const indN = st === "greenfield" ? "greenfield_nombre" : "ma_nombre";
+    const sV = serie(dirV, indV);
+    const vD = last(sV);
+    const nD = last(serie(dirV, indN));
+    const record = sV.reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
+    const part = (() => {
+      if (!vD) return null;
+      let total = 0, trouve = false;
+      rowsCat.forEach((d: any) => {
+        if ([1, 2, 3].includes(d.secteur_id) && d.annee === vD.annee && d.direction === dirV && d.indicateur === indV) { total += d.valeur; trouve = true; }
+      });
+      return trouve && total !== 0 ? (vD.valeur / total) * 100 : null;
+    })();
+    const gf = st === "greenfield";
+    const vSf = !gf ? last(rowsSel.filter((d: any) => d.secteur_id === sid && d.direction === "sortant" && d.indicateur === "ma_valeur").sort((a: any, b: any) => a.annee - b.annee)) : null;
+    const moy5 = (() => {
+      const rs = sV.slice(-5);
+      return rs.length ? rs.reduce((acc: number, r: any) => acc + r.valeur, 0) / rs.length : null;
+    })();
+    return [
+      { label: gf ? "Valeur des projets annoncés" : "Ventes nettes",  val: vD ? fmtVal(vD.valeur) : "N/A", ind: vD ? `en ${vD.annee}` : null },
+      gf
+        ? { label: "Nombre de projets annoncés", val: nD ? fmtNombre(nD.valeur) : "N/A", ind: nD ? `en ${nD.annee}` : null }
+        : { label: "Achats nets", val: vSf ? fmtVal(vSf.valeur) : "N/A", ind: vSf ? `en ${vSf.annee}` : null },
+      gf
+        ? { label: "Moyenne 5 ans · valeur", val: moy5 !== null ? fmtVal(moy5) : "N/A", ind: "5 dernières années" }
+        : { label: "Nombre de ventes", val: nD ? fmtNombre(nD.valeur) : "N/A", ind: nD ? `en ${nD.annee}` : null },
+      { label: gf ? "Part du total · valeur" : "Part du total · ventes", val: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "N/A", ind: vD ? `en ${vD.annee}` : null },
+      { label: gf ? "Année record · valeur" : "Année record · ventes", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
+    ];
+  })();
+
+  const aDesDonnees = rowsCat.length > 0;
+  const hasFilter   = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== borneMin || anneeMax !== borneMax);
+  const reinit      = () => { setSelecIds([1]); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); };
+
+  // Ligne du référentiel (secteur ou branche) : puce radio + libellé
+  const LigneSecteur = ({ id, nom, indent }: { id: number; nom: string; indent?: boolean }) => {
+    const sel = selecIds.includes(id);
+    return (
+      <button onClick={() => toggleSecteur(id)}
+        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%", marginLeft: indent ? 6 : 0 }}
+        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
+        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0 }}/>
+        <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400, lineHeight:1.35 }}>{nom}</span>
+      </button>
+    );
+  };
+
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
-      <aside style={{ width: sidebarOpen ? 280 : 52, flexShrink:0, transition:"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", overflowY:"auto" as const, position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
-        <div style={{ padding:"18px 16px 10px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          {sidebarOpen && <span style={{ fontSize:12, fontWeight:800, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-          <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
-            <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
-          </button>
+
+      {/* Sidebar bande */}
+      <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", overflowY:"auto" as const, position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
+        <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
+        {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+        <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
+          {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
+            </button>
+            {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgba(220,38,38,0.08)", border:"1px solid rgba(220,38,38,0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(220,38,38,0.15)";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="rgba(220,38,38,0.08)";}}>
+              <span className="material-symbols-outlined" style={{ fontSize:15, color:"#dc2626", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
+            </button>}
+          </div>
         </div>
-        {sidebarOpen && <div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+        {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
           <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={typeAnalyse} setTypeAnalyse={setTypeAnalyse}/>
-          {/* Secteurs (référentiel CNUCED à venir) */}
+          {/* Secteurs / branches */}
           <div style={{ marginBottom:18 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Secteurs</span>
-            <p style={{ fontSize:11.5, color:"#9aa5b4", marginTop:8, lineHeight:1.5 }}>Le référentiel des secteurs et branches CNUCED sera disponible après son import dans l&apos;administration.</p>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Secteurs</span>
+              <span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>{selecIds.length}{typeAnalyse==="comparative"?"/4":""}</span>
+            </div>
+            <div style={{ maxHeight:340, overflowY:"auto" as const }}>
+              {refSecteurs.map((s: any) => {
+                const isOpen = openSecs.has(s.id);
+                return (
+                  <div key={s.id} style={{ marginBottom:6 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:2 }}>
+                      <div style={{ flex:1, minWidth:0 }}><LigneSecteur id={s.id} nom={s.nom_fr}/></div>
+                      {(s.branches||[]).length>0&&<button onClick={()=>toggleOpen(s.id)}
+                        style={{ background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 5px", display:"flex", alignItems:"center", flexShrink:0 }}>
+                        <ChevronDown size={11} style={{ color:"#004f91", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                      </button>}
+                    </div>
+                    {isOpen&&(s.branches||[]).map((b: any) => (
+                      <div key={b.id} style={{ marginLeft:10 }}><LigneSecteur id={b.id} nom={b.nom_fr} indent/></div>
+                    ))}
+                  </div>
+                );
+              })}
+              {refSecteurs.length===0&&!loading&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
+            </div>
+          </div>
+          <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+          {/* Période */}
+          <div style={{ marginBottom:18 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+            </div>
+            <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
+              {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
+                <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
+                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
+                  {m.l}
+                </button>
+              ))}
+            </div>
+            {modeAnnees==="plage" ? (
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
+                <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
+                  <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
+                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-borneMin)/(borneMax-borneMin||1))*100}%`, width:`${Math.max(0,((anneeMax-borneMin)/(borneMax-borneMin||1))*100-((anneeMin-borneMin)/(borneMax-borneMin||1))*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
+                  <input type="range" min={borneMin} max={borneMax} value={anneeMin}
+                    onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
+                    className="drs-thumb"
+                    style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
+                  <input type="range" min={borneMin} max={borneMax} value={anneeMax}
+                    onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
+                    className="drs-thumb"
+                    style={{zIndex:3} as React.CSSProperties}/>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                  <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                </div>
+                <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
+                  {Array.from({length:borneMax-borneMin+1},(_,i)=>borneMin+i).map(a=>{
+                    const sel=anneesSpec.includes(a);
+                    return (
+                      <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
+                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#004f91":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                        {a}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between" }}>
+                  <span style={{ fontSize:11, color:"#4a5568" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+                  {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"#9aa5b4", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
+                </div>
+              </div>
+            )}
           </div>
         </div>}
       </aside>
+
+      {/* Zone principale */}
       <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
-          <SousTypeNav value={sousType} onChange={setSousType}/>
+          <SousTypeNav value={st} onChange={setSousType} options={SECTEUR_NAV}/>
+          <BoutonDonnees onClick={()=>setShowTable(true)} dep={selecIds.join(",")}/>
         </div>
-        <div style={{ textAlign:"center" as const, padding:"90px 24px", color:"#9aa5b4" }}>
-          <p style={{ fontSize:16, fontWeight:600, color:"#4a5568" }}>Analyse sectorielle à venir</p>
-          <p style={{ fontSize:14, marginTop:6 }}>Les données par secteur / branche (M&A et greenfield) s&apos;afficheront ici après l&apos;import du référentiel et des Annex tables sectorielles.</p>
+
+        {/* Header */}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
+            {typeAnalyse === "secteur" ? (
+              <>
+                <div style={{ width:10, height:10, borderRadius:"50%", background:"#004f91", flexShrink:0 }} />
+                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{selecIds.length ? nomById.get(selecIds[0]) : "Secteur"}</h2>
+              </>
+            ) : (
+              <>
+                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>Analyse comparative</h2>
+                {selecIds.map((id, i) => (
+                  <span key={id} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${couleurDe(i)}0D`, border:`1px solid ${couleurDe(i)}2E`, fontSize:10.5, fontWeight:700, color:couleurDe(i) }}>
+                    <span style={{ width:7, height:7, borderRadius:"50%", background:couleurDe(i), display:"inline-block", flexShrink:0 }} />
+                    {nomById.get(id)}
+                  </span>
+                ))}
+              </>
+            )}
+            <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+              {modeAnnees==="specifiques"&&anneesSpec.length>0
+                ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                : `${perMin} — ${perMax}`}
+            </span>
+          </div>
         </div>
+
+        {/* KPI cards (analyse par secteur) */}
+        {stCards && (
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+            {stCards.map(c=>(
+              <div key={c.label}
+                style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
+                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
+                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
+                {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Graphes */}
+        {loading ? (
+          <SkeletonChartGrid n={SERIES.length} cols={2} height={230}/>
+        ) : erreur ? (
+          <ErreurChargement onRetry={() => setTick(t => t + 1)} />
+        ) : !aDesDonnees ? (
+          <div style={{ textAlign:"center" as const, padding:"90px 24px", color:"#9aa5b4" }}>
+            <p style={{ fontSize:16, fontWeight:600, color:"#4a5568" }}>Aucune donnée sectorielle</p>
+            <p style={{ fontSize:14, marginTop:6 }}>Les Annex tables sectorielles ({st === "greenfield" ? "15 et 18" : "09 à 12"}) n&apos;ont pas encore été importées dans l&apos;administration.</p>
+          </div>
+        ) : (
+          <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+            {GRAPHES.map(g=>(
+              <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id}
+                fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
+                <GrapheMultiPays series={g.series} height={SERIES.length===2?220:145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
+              </GrapheCard>
+            ))}
+          </div>
+        )}
       </div>
+
+      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)}
+        donnees={rowsSel.map((d: any) => ({ ...d, pays: d.secteur }))}
+        paysSelectionnes={selecIds.map((id, i) => ({ nom: nomById.get(id) || "?", couleur: couleurDe(i) }))}
+        sousType={`secteur_${st}`} entite={selecIds.length > 1 ? "secteurs" : "secteur"} />
     </div>
   );
 }
@@ -3397,7 +3720,7 @@ export default function IdePage() {
     fetch(`${API}/ide/cnuced/pays-disponibles`).then(r=>r.json()).then(d=>setPaysDispo(d||[])).catch(()=>{});
   }, []);
 
-  useEffect(() => { setShowTable(false); }, [sousOnglet, section]);
+  useEffect(() => { setShowTable(false); }, [sousOnglet, section, vueP, typeSecteurs]);
 
   return (
     <div style={{ minHeight:"100vh", background:"#F6F5F3", fontFamily:"var(--font-google-sans)" }}>
