@@ -1442,7 +1442,13 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   const nomById = new Map<number, string>();
   nomById.set(0, "Global des secteurs");
   refSecteurs.forEach((s: any) => { nomById.set(s.id, s.nom_fr); (s.branches || []).forEach((b: any) => nomById.set(b.id, b.nom_fr)); });
-  const couleurDe = (i: number) => typeAnalyse === "secteur" ? "#004f91" : COMP_PALETTE[i % COMP_PALETTE.length];
+
+  // Niveau sélectionné (analyse par secteur) : l'accent du panneau de droite
+  // suit la couleur de la puce (secteur = bleu, branche = orange)
+  const topIds = new Set(refSecteurs.map((s: any) => s.id));
+  const niveauSel = selecIds[0] === 0 ? "global" : topIds.has(selecIds[0]) ? "secteur" : "branche";
+  const accent = niveauSel === "branche" ? "#ca631f" : "#004f91";
+  const couleurDe = (i: number) => typeAnalyse === "secteur" ? accent : COMP_PALETTE[i % COMP_PALETTE.length];
 
   // Bornes réelles de la catégorie active (greenfield : ~2003+, M&A : 1990+)
   const prefix  = st === "greenfield" ? "greenfield" : "ma_";
@@ -1683,8 +1689,11 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
             {typeAnalyse === "secteur" ? (
               <>
-                <div style={{ width:10, height:10, borderRadius:"50%", background:"#004f91", flexShrink:0 }} />
+                <div style={{ width:10, height:10, borderRadius:"50%", background:accent, flexShrink:0 }} />
                 <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{selecIds.length ? nomById.get(selecIds[0]) : "Secteur"}</h2>
+                {niveauSel!=="global"&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"#F2F0EF", border:"1px solid #E8E5E3", fontSize:9, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
+                  {niveauSel==="secteur"?"Secteur":"Branche d'activité"}
+                </span>}
               </>
             ) : (
               <>
@@ -1711,7 +1720,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
             {stCards.map(c=>(
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
-                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
+                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:accent, textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
                 <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
                 {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
               </div>
