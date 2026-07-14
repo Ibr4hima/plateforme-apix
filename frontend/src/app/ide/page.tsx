@@ -1389,7 +1389,8 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   const [loading,     setLoading]     = useState(true);
   const [erreur,      setErreur]      = useState(false);
   const [tick,        setTick]        = useState(0);
-  const [selecIds,    setSelecIds]    = useState<number[]>([1]);
+  // id 0 = « Global des secteurs » (agrégat des 3 grands secteurs)
+  const [selecIds,    setSelecIds]    = useState<number[]>([0]);
   const [openSecs,    setOpenSecs]    = useState<Set<number>>(new Set());
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
@@ -1426,8 +1427,12 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
     return () => { actif = false; };
   }, [tick]);
 
-  // Analyse par secteur = sélection unique ; comparative = jusqu'à 4
-  useEffect(() => { if (typeAnalyse === "secteur") setSelecIds(prev => prev.length > 1 ? [prev[0]] : prev); }, [typeAnalyse]);
+  // Analyse par secteur = sélection unique (Global par défaut) ;
+  // comparative = jusqu'à 4 secteurs/branches (les 3 grands secteurs par défaut)
+  useEffect(() => {
+    if (typeAnalyse === "secteur") setSelecIds(prev => prev.length > 1 ? [prev[0]] : prev);
+    else setSelecIds(prev => prev.includes(0) ? [1, 2, 3] : prev);
+  }, [typeAnalyse]);
   const toggleSecteur = (id: number) => {
     if (typeAnalyse === "secteur") { setSelecIds([id]); return; }
     setSelecIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length >= 4 ? prev : [...prev, id]);
@@ -1435,6 +1440,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   const toggleOpen = (id: number) => setOpenSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const nomById = new Map<number, string>();
+  nomById.set(0, "Global des secteurs");
   refSecteurs.forEach((s: any) => { nomById.set(s.id, s.nom_fr); (s.branches || []).forEach((b: any) => nomById.set(b.id, b.nom_fr)); });
   const couleurDe = (i: number) => typeAnalyse === "secteur" ? "#004f91" : COMP_PALETTE[i % COMP_PALETTE.length];
 
@@ -1451,7 +1457,20 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
 
   const enPeriode = (a: number) => modeAnnees === "specifiques" && anneesSpec.length > 0 ? anneesSpec.includes(a) : a >= anneeMin && a <= anneeMax;
-  const rowsSel   = rowsCat.filter((d: any) => selecIds.includes(d.secteur_id) && enPeriode(d.annee));
+  // Lignes d'un id sélectionné — le Global (id 0) agrège les 3 grands secteurs
+  const rowsPour = (id: number) => {
+    if (id !== 0) return rowsCat.filter((d: any) => d.secteur_id === id && enPeriode(d.annee));
+    const agg = new Map<string, any>();
+    rowsCat.forEach((d: any) => {
+      if (![1, 2, 3].includes(d.secteur_id) || !enPeriode(d.annee)) return;
+      const k = `${d.annee}|${d.direction}|${d.indicateur}`;
+      const cur = agg.get(k);
+      if (cur) cur.valeur += d.valeur;
+      else agg.set(k, { secteur_id: 0, secteur: "Global des secteurs", annee: d.annee, direction: d.direction, indicateur: d.indicateur, valeur: d.valeur });
+    });
+    return [...agg.values()];
+  };
+  const rowsSel = selecIds.flatMap(rowsPour);
 
   // Période réellement couverte par la sélection (pastille grise)
   let perMin = anneeMin, perMax = anneeMax;
@@ -1489,12 +1508,26 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
     const nD = last(serie(dirV, indN));
     const record = sV.reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
     const part = (() => {
-      if (!vD) return null;
+      if (!vD || sid === 0) return null;
       let total = 0, trouve = false;
       rowsCat.forEach((d: any) => {
         if ([1, 2, 3].includes(d.secteur_id) && d.annee === vD.annee && d.direction === dirV && d.indicateur === indV) { total += d.valeur; trouve = true; }
       });
       return trouve && total !== 0 ? (vD.valeur / total) * 100 : null;
+    })();
+    // Vue globale : le poids dans le total n'a pas de sens → secteur dominant
+    const dominant = (() => {
+      if (sid !== 0 || !vD) return null;
+      const NOMS_COURTS: Record<number, string> = { 1: "Primaire", 2: "Manufacturier", 3: "Services" };
+      let best: { id: number; v: number } | null = null, total = 0;
+      rowsCat.forEach((d: any) => {
+        if (![1, 2, 3].includes(d.secteur_id) || d.annee !== vD.annee || d.direction !== dirV || d.indicateur !== indV) return;
+        total += d.valeur;
+        if (!best || d.valeur > best.v) best = { id: d.secteur_id, v: d.valeur };
+      });
+      if (!best) return null;
+      const b = best as { id: number; v: number };
+      return { nom: NOMS_COURTS[b.id], part: total !== 0 ? (b.v / total) * 100 : null, annee: vD.annee };
     })();
     const gf = st === "greenfield";
     const vSf = !gf ? last(rowsSel.filter((d: any) => d.secteur_id === sid && d.direction === "sortant" && d.indicateur === "ma_valeur").sort((a: any, b: any) => a.annee - b.annee)) : null;
@@ -1510,28 +1543,17 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
       gf
         ? { label: "Moyenne 5 ans · valeur", val: moy5 !== null ? fmtVal(moy5) : "N/A", ind: "5 dernières années" }
         : { label: "Nombre de ventes", val: nD ? fmtNombre(nD.valeur) : "N/A", ind: nD ? `en ${nD.annee}` : null },
-      { label: gf ? "Part du total · valeur" : "Part du total · ventes", val: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "N/A", ind: vD ? `en ${vD.annee}` : null },
+      sid === 0
+        ? { label: "Secteur dominant", val: dominant ? dominant.nom : "N/A", ind: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % en ${dominant.annee}` : null }
+        : { label: gf ? "Part du total · valeur" : "Part du total · ventes", val: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "N/A", ind: vD ? `en ${vD.annee}` : null },
       { label: gf ? "Année record · valeur" : "Année record · ventes", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
     ];
   })();
 
   const aDesDonnees = rowsCat.length > 0;
-  const hasFilter   = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== borneMin || anneeMax !== borneMax);
-  const reinit      = () => { setSelecIds([1]); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); };
-
-  // Ligne du référentiel (secteur ou branche) : puce radio + libellé
-  const LigneSecteur = ({ id, nom, indent }: { id: number; nom: string; indent?: boolean }) => {
-    const sel = selecIds.includes(id);
-    return (
-      <button onClick={() => toggleSecteur(id)}
-        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%", marginLeft: indent ? 6 : 0 }}
-        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
-        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0 }}/>
-        <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400, lineHeight:1.35 }}>{nom}</span>
-      </button>
-    );
-  };
+  const periodeFiltree = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== borneMin || anneeMax !== borneMax);
+  const hasFilter   = periodeFiltree || (typeAnalyse === "secteur" && selecIds[0] !== 0);
+  const reinit      = () => { setSelecIds(typeAnalyse === "secteur" ? [0] : [1, 2, 3]); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); };
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
@@ -1555,27 +1577,36 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
           <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={typeAnalyse} setTypeAnalyse={setTypeAnalyse}/>
-          {/* Secteurs / branches */}
+          {/* Secteurs / branches — même présentation que l'analyse sectorielle
+              des Investissements nationaux (BdefRow : secteurs en bleu,
+              branches en orange, « Global des secteurs » surligné) */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
               <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Secteurs</span>
-              <span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>{selecIds.length}{typeAnalyse==="comparative"?"/4":""}</span>
+              {typeAnalyse==="comparative"
+                ? <span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>{selecIds.length}/4</span>
+                : selecIds[0]!==0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
             </div>
-            <div style={{ maxHeight:340, overflowY:"auto" as const }}>
+
+            {typeAnalyse==="secteur"&&<>
+              <BdefRow label="Global des secteurs" selected={selecIds[0]===0} onSelect={()=>setSelecIds([0])} />
+              <div style={{ height:1, background:"#F2F0EF", margin:"8px 0" }}/>
+            </>}
+
+            <div style={{ maxHeight:380, overflowY:"auto" as const }}>
               {refSecteurs.map((s: any) => {
                 const isOpen = openSecs.has(s.id);
                 return (
-                  <div key={s.id} style={{ marginBottom:6 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:2 }}>
-                      <div style={{ flex:1, minWidth:0 }}><LigneSecteur id={s.id} nom={s.nom_fr}/></div>
-                      {(s.branches||[]).length>0&&<button onClick={()=>toggleOpen(s.id)}
-                        style={{ background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 5px", display:"flex", alignItems:"center", flexShrink:0 }}>
-                        <ChevronDown size={11} style={{ color:"#004f91", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
-                      </button>}
-                    </div>
-                    {isOpen&&(s.branches||[]).map((b: any) => (
-                      <div key={b.id} style={{ marginLeft:10 }}><LigneSecteur id={b.id} nom={b.nom_fr} indent/></div>
-                    ))}
+                  <div key={s.id} style={{ marginBottom:1 }}>
+                    <BdefRow label={s.nom_fr} niveau="macro_secteur" selected={selecIds.includes(s.id)}
+                      onSelect={()=>toggleSecteur(s.id)} expandable={(s.branches||[]).length>0} expanded={isOpen} onToggle={()=>toggleOpen(s.id)} />
+                    {isOpen&&(
+                      <div style={{ marginLeft:17, borderLeft:"1.5px solid #EDEAE6", paddingLeft:4, marginTop:1, marginBottom:3 }}>
+                        {(s.branches||[]).map((b: any) => (
+                          <BdefRow key={b.id} label={b.nom_fr} niveau="groupe" selected={selecIds.includes(b.id)} onSelect={()=>toggleSecteur(b.id)} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
