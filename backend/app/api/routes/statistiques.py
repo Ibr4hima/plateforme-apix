@@ -1293,3 +1293,42 @@ async def commerce_balance(
         }
         for a in annees_all
     ]
+
+
+# ── GET /statistiques/entreprises-siege ──────────────────────────────────────
+# Fiche Pays (Sénégal × pays X) : entreprises installées au Sénégal dont le
+# siège est dans le pays X (table entreprises_installees, publiées uniquement).
+@router.get("/entreprises-siege")
+async def entreprises_par_siege(
+    pays_id: int = Query(...),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.entreprise import EntrepriseIntallee, RefSecteur
+
+    rows = (await db.execute(
+        select(EntrepriseIntallee)
+        .where(
+            EntrepriseIntallee.siege_pays_id == pays_id,
+            EntrepriseIntallee.is_deleted == False,  # noqa: E712
+            EntrepriseIntallee.est_publie == True,   # noqa: E712
+        )
+        .order_by(EntrepriseIntallee.nom)
+    )).scalars().all()
+
+    # Noms de secteurs pour l'affichage compact (les ids sont stockés en ARRAY)
+    sect_ids = {i for e in rows for i in (e.secteur_ids or [])}
+    secteurs: dict[int, str] = {}
+    if sect_ids:
+        secteurs = {s.id: s.nom for s in (await db.execute(
+            select(RefSecteur).where(RefSecteur.id.in_(sect_ids)))).scalars().all()}
+
+    return {
+        "total": len(rows),
+        "entreprises": [{
+            "id": e.id,
+            "nom": e.nom,
+            "forme_juridique": e.forme_juridique,
+            "region": e.region.nom if e.region else None,
+            "secteurs": [secteurs[i] for i in (e.secteur_ids or []) if i in secteurs],
+        } for e in rows],
+    }

@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, ChevronDown, FileText, Landmark, Scale, Search, X } from "lucide-react";
+import { ArrowRight, Building2, ChevronDown, FileText, Landmark, Scale, Search, X } from "lucide-react";
 import { SkeletonRows } from "@/components/shared/Skeleton";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 
@@ -44,6 +44,12 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
   const [data, setData] = useState<any>(null);
   const [ideFlux, setIdeFlux] = useState<any>(null);
   const [bilat, setBilat] = useState<any>(null);
+  const [entSiege, setEntSiege] = useState<any>(null);
+  // Fiche Sénégal × pays X : entreprises de X installées au Sénégal
+  const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
+  const autreId = paysIds.length === 2 && senId !== null && paysIds.includes(senId)
+    ? paysIds.find(id => id !== senId) ?? null : null;
+  const autreNom = autreId !== null ? (pays.find(p => p.id === autreId)?.nom ?? "") : "";
   useEffect(() => {
     fetch(`${API}/statistiques/comparaison?pays=${paysIds.join(",")}`).then(r => r.json()).then(setData).catch(() => {});
     fetch(`${API}/statistiques/ide_flux?pays=${paysIds.join(",")}`).then(r => r.json()).then(setIdeFlux).catch(() => setIdeFlux({}));
@@ -51,7 +57,11 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
     if (paysIds.length === 2) {
       fetch(`${API}/statistiques/commerce/bilateral?pays_a=${paysIds[0]}&pays_b=${paysIds[1]}`).then(r => r.json()).then(setBilat).catch(() => setBilat(null));
     }
-  }, [paysIds]);
+    setEntSiege(null);
+    if (autreId !== null) {
+      fetch(`${API}/statistiques/entreprises-siege?pays_id=${autreId}`).then(r => r.json()).then(setEntSiege).catch(() => setEntSiege(null));
+    }
+  }, [paysIds, autreId]);
   const cols = data?.pays || [];
   // Indicateurs macro + flux d'IDE entrant/sortant (source CNUCED)
   const inds: Indicateur[] = [
@@ -122,6 +132,24 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+            {/* Fiche Sénégal × pays X : entreprises de X installées au Sénégal */}
+            {autreId !== null && entSiege && entSiege.total > 0 && (
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap", marginBottom: 22, padding: "12px 16px", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 12, boxShadow: "0 1px 2px rgba(0,30,60,0.04)" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 9.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase", flexShrink: 0, paddingTop: 4 }}>
+                  <Building2 size={13} /> Entreprises installées au Sénégal · siège {autreNom}
+                  <span style={{ fontSize: 10, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.12)", padding: "1px 8px", borderRadius: 999, letterSpacing: 0 }}>{entSiege.total}</span>
+                </span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {entSiege.entreprises.map((e: any) => (
+                    <span key={e.id}
+                      title={[e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · ")}
+                      style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>
+                      {e.nom}{e.region ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {e.region}</span> : null}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
             {!data ? (
