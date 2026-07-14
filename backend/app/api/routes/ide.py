@@ -763,6 +763,184 @@ async def importer_ide(
     }
 
 
+# ── POST /ide/importer-secteurs ──────────────────────────────────────────────
+# Import des Annex tables sectorielles : M&A 09-12 (ventes/achats × valeur/
+# nombre) et Greenfield 15/18 (valeur/nombre, sans direction → « total »).
+# Même format large que les tables pays ; résolution sur ide_secteurs.nom_en
+# avec alias (les libellés varient légèrement selon les tables).
+
+_SECTEUR_ALIAS = {
+    "agriculture": "Agriculture, forestry and fishing",
+    "wood and wood products": "Wood products",
+    "non-metallic mineral products": "Other non-metallic mineral products",
+}
+
+
+@router.post("/importer-secteurs", status_code=200)
+async def importer_ide_secteurs(
+    flux_entrant:  List[UploadFile] = File(default=[]),
+    flux_sortant:  List[UploadFile] = File(default=[]),
+    stock_entrant: List[UploadFile] = File(default=[]),
+    stock_sortant: List[UploadFile] = File(default=[]),
+    categorie: str = Form(...),
+    dupliquer_prod: str = Form(default=""),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    from fastapi import HTTPException
+    from app.models.ide import IdeSecteur, IdeCnucedSecteur
+
+    MAPPINGS: dict[str, dict[str, tuple[str, str]]] = {
+        "fusion": {
+            "flux_entrant":  ("entrant", "ma_valeur"), "flux_sortant":  ("sortant", "ma_valeur"),
+            "stock_entrant": ("entrant", "ma_nombre"), "stock_sortant": ("sortant", "ma_nombre"),
+        },
+        "greenfield": {
+            "flux_entrant":  ("total", "greenfield_valeur"),
+            "stock_entrant": ("total", "greenfield_nombre"),
+        },
+    }
+    mapping = MAPPINGS.get(categorie)
+    if mapping is None:
+        raise HTTPException(422, f"Catégorie invalide pour le sectoriel : {categorie}")
+
+    # Référentiel : index par nom_en normalisé (+ alias)
+    secteurs = (await db.execute(select(IdeSecteur))).scalars().all()
+    par_nom = {s.nom_en.strip().lower(): s for s in secteurs}
+    for alias, officiel in _SECTEUR_ALIAS.items():
+        cible = par_nom.get(officiel.strip().lower())
+        if cible:
+            par_nom[alias] = cible
+
+    fichiers_par_zone = {
+        "flux_entrant": flux_entrant, "flux_sortant": flux_sortant,
+        "stock_entrant": stock_entrant, "stock_sortant": stock_sortant,
+    }
+
+    resultats: dict[str, dict] = {}
+    erreurs:   list[str]       = []
+    fichiers_bruts: list[tuple[str, str, bytes]] = []
+
+    for zone, fichiers in fichiers_par_zone.items():
+        di = mapping.get(zone)
+        for fichier in (fichiers or []):
+            contenu = await fichier.read()
+            if not contenu:
+                continue
+            if di is None:
+                erreurs.append(f"{fichier.filename}: zone inutilisée pour la catégorie {categorie}")
+                continue
+            fichiers_bruts.append((zone, fichier.filename or "fichier", contenu))
+            direction, indicateur = di
+
+            try:
+                lignes_par_label = _parse_annex_file(contenu, fichier.filename or "")
+            except Exception as e:
+                erreurs.append(f"{fichier.filename}: erreur de lecture — {e}")
+                continue
+
+            for label, lignes in lignes_par_label.items():
+                low = label.strip().lower()
+                if low == "total":
+                    continue  # agrégat toutes branches
+                sec = par_nom.get(low)
+                if not sec:
+                    erreurs.append(f"{fichier.filename}: secteur non reconnu — « {label} »")
+                    continue
+                ins = maj = 0
+                for annee, valeur in lignes:
+                    res = await db.execute(select(IdeCnucedSecteur).where(
+                        IdeCnucedSecteur.secteur_id == sec.id,
+                        IdeCnucedSecteur.annee == annee,
+                        IdeCnucedSecteur.direction == direction,
+                        IdeCnucedSecteur.indicateur == indicateur,
+                    ))
+                    row = res.scalar_one_or_none()
+                    if row:
+                        row.valeur = valeur
+                        maj += 1
+                    else:
+                        db.add(IdeCnucedSecteur(secteur_id=sec.id, annee=annee, direction=direction,
+                                                indicateur=indicateur, valeur=valeur))
+                        ins += 1
+                cle = sec.nom_fr
+                if cle not in resultats:
+                    resultats[cle] = {"insere": 0, "mis_a_jour": 0}
+                resultats[cle]["insere"] += ins
+                resultats[cle]["mis_a_jour"] += maj
+
+    await db.flush()
+
+    # Relais vers la production (même mécanisme que l'import pays)
+    prod: dict | None = None
+    from app.core.config import get_settings
+    settings = get_settings()
+    if dupliquer_prod == "1" and settings.PROD_SYNC_URL and fichiers_bruts:
+        import httpx
+        try:
+            files = [(zone, (nom, contenu)) for zone, nom, contenu in fichiers_bruts]
+            auth = (settings.PROD_SYNC_USER, settings.PROD_SYNC_PASSWORD) if settings.PROD_SYNC_USER else None
+            async with httpx.AsyncClient(timeout=300) as client:
+                r = await client.post(
+                    f"{settings.PROD_SYNC_URL.rstrip('/')}/ide/importer-secteurs",
+                    data={"categorie": categorie},
+                    files=files,
+                    auth=auth,
+                )
+            if r.status_code == 200:
+                d = r.json()
+                nb = sum(p.get("insere", 0) + p.get("mis_a_jour", 0) for p in d.get("pays", []))
+                prod = {"success": True, "nb_lignes": nb, "nb_pays": len(d.get("pays", [])),
+                        "non_resolus": len(d.get("non_resolus", []))}
+            else:
+                prod = {"success": False, "detail": f"HTTP {r.status_code}"}
+        except Exception as e:
+            prod = {"success": False, "detail": str(e)}
+
+    # Même forme de réponse que /ide/importer (le panneau admin est réutilisé ;
+    # « pays » porte ici les secteurs/branches)
+    return {
+        "pays": [
+            {"pays": nom, "ref_pays_id": 0, "insere": d["insere"], "mis_a_jour": d["mis_a_jour"]}
+            for nom, d in sorted(resultats.items())
+        ],
+        "erreurs": erreurs,
+        "non_resolus": [],
+        "prod": prod,
+    }
+
+
+# ── GET /ide/cnuced-secteurs ─────────────────────────────────────────────────
+# Données sectorielles pour la vue publique Secteurs.
+@router.get("/cnuced-secteurs")
+async def get_cnuced_secteurs(
+    secteur_ids: Optional[str] = Query(None),   # ids séparés par des virgules
+    annee_min:   Optional[int] = Query(None),
+    annee_max:   Optional[int] = Query(None),
+    annees:      Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.ide import IdeSecteur, IdeCnucedSecteur
+    q = select(IdeCnucedSecteur, IdeSecteur.nom_fr).join(IdeSecteur, IdeSecteur.id == IdeCnucedSecteur.secteur_id)
+    if secteur_ids:
+        ids = [int(x) for x in secteur_ids.split(",") if x.strip().isdigit()]
+        if ids:
+            q = q.where(IdeCnucedSecteur.secteur_id.in_(ids))
+    if annees:
+        liste = [int(a) for a in annees.split(",") if a.strip().isdigit()]
+        if liste:
+            q = q.where(IdeCnucedSecteur.annee.in_(liste))
+    else:
+        if annee_min: q = q.where(IdeCnucedSecteur.annee >= annee_min)
+        if annee_max: q = q.where(IdeCnucedSecteur.annee <= annee_max)
+    rows = (await db.execute(q.order_by(IdeCnucedSecteur.secteur_id, IdeCnucedSecteur.annee))).all()
+    return [{"secteur_id": r.IdeCnucedSecteur.secteur_id, "secteur": r.nom_fr,
+             "annee": r.IdeCnucedSecteur.annee, "direction": r.IdeCnucedSecteur.direction,
+             "indicateur": r.IdeCnucedSecteur.indicateur,
+             "valeur": float(r.IdeCnucedSecteur.valeur) if r.IdeCnucedSecteur.valeur is not None else None}
+            for r in rows]
+
+
 # ── POST /ide/associer-pays ──────────────────────────────────────────────────
 # Enregistre un alias UNCTAD → ref_pays en mettant à jour nom_cnuced.
 # Permet de résoudre manuellement les pays non reconnus lors d'un import.

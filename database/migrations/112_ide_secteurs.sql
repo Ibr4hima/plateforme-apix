@@ -69,5 +69,8 @@ INSERT INTO ide_secteurs (id, nom_en, nom_fr, parent_id, ordre) VALUES
   (61, 'Education',                             'Enseignement',                                             3, 12),
   (62, 'Health services',                       'Santé humaine et action sociale',                          3, 13),
   (63, 'Entertainment',                         'Arts, spectacles et activités récréatives',                3, 14),
-  (64, 'Other services',                        'Autres activités de services',                             3, 15)
+  (64, 'Other services',                        'Autres activités de services',                             3, 15),
+  -- Branches présentes uniquement dans les tables M&A (granularité différente)
+  (65, 'Utilities',                             'Services collectifs (électricité, gaz et eau)',            3, 16),
+  (66, 'Public administration and defence',     'Administration publique et défense',                       3, 17)
 ON CONFLICT (id) DO NOTHING;

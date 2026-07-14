@@ -109,6 +109,8 @@ export default function AdminIdePage() {
   const [formatImport, setFormatImport] = useState<"annex" | "series">("annex");
   // Catégorie de données : détermine l'interprétation des 4 zones de dépôt
   const [categorie, setCategorie] = useState<"fluxstock" | "greenfield" | "fusion">("fluxstock");
+  // Découpage : par pays (Annex 01-08, 13-17) ou par secteur/branche (09-12, 15, 18)
+  const [decoupage, setDecoupage] = useState<"pays" | "secteur">("pays");
   // Relais vers la production (visible seulement si PROD_SYNC_* est configuré côté backend)
   const [prodDispo, setProdDispo] = useState(false);
   const [prodSync,  setProdSync]  = useState(true);
@@ -159,10 +161,13 @@ export default function AdminIdePage() {
     fd.append("format_import", formatImport);
     fd.append("categorie", categorie);
     if (prodDispo && prodSync) fd.append("dupliquer_prod", "1");
+    // En sectoriel greenfield, seules 2 zones existent (valeur / nombre) :
+    // on ignore d'éventuels fichiers restés dans les zones masquées.
+    const sansSortants = decoupage === "secteur" && categorie === "greenfield";
     fluxEntrant.forEach(f  => fd.append("flux_entrant",  f));
-    fluxSortant.forEach(f  => fd.append("flux_sortant",  f));
+    if (!sansSortants) fluxSortant.forEach(f => fd.append("flux_sortant", f));
     stockEntrant.forEach(f => fd.append("stock_entrant", f));
-    stockSortant.forEach(f => fd.append("stock_sortant", f));
+    if (!sansSortants) stockSortant.forEach(f => fd.append("stock_sortant", f));
     return fd;
   }
 
@@ -170,7 +175,8 @@ export default function AdminIdePage() {
     if (!hasFiles) return;
     setImporting(true); setImportRes(null); setAssociations({});
     try {
-      const res  = await fetch(`${API}/ide/importer`, { method: "POST", headers: await authHeaders(), body: buildFormData() });
+      const url = decoupage === "secteur" ? `${API}/ide/importer-secteurs` : `${API}/ide/importer`;
+      const res  = await fetch(url, { method: "POST", headers: await authHeaders(), body: buildFormData() });
       const data = await res.json();
       if (res.ok) {
         setImportRes(data);
@@ -236,20 +242,33 @@ export default function AdminIdePage() {
       {/* ── Import ── */}
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 20 }}>
         <div style={SEC}>Importer des données CNUCED</div>
+        {/* Découpage : par pays / par secteur */}
+        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3, marginBottom: 8, marginRight: 12 }}>
+          {([
+            { v: "pays",    l: "Par pays" },
+            { v: "secteur", l: "Par secteur" },
+          ] as const).map(o => (
+            <button key={o.v} onClick={() => { setDecoupage(o.v); if (o.v === "secteur" && categorie === "fluxstock") setCategorie("fusion"); }}
+              style={{ padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: decoupage === o.v ? "#fff" : "transparent", color: decoupage === o.v ? "#004f91" : "#9aa5b4", boxShadow: decoupage === o.v ? "0 1px 4px rgba(0,0,0,0.10)" : "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+              {o.l}
+            </button>
+          ))}
+        </div>
         {/* Catégorie de données */}
         <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3, marginBottom: 8, marginRight: 12 }}>
           {([
             { v: "fluxstock",  l: "Flux & Stocks" },
             { v: "greenfield", l: "Greenfield" },
             { v: "fusion",     l: "Fusion & Acquisition" },
-          ] as const).map(o => (
+          ] as const).filter(o => decoupage === "pays" || o.v !== "fluxstock").map(o => (
             <button key={o.v} onClick={() => setCategorie(o.v)}
               style={{ padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: categorie === o.v ? "#fff" : "transparent", color: categorie === o.v ? "#004f91" : "#9aa5b4", boxShadow: categorie === o.v ? "0 1px 4px rgba(0,0,0,0.10)" : "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
               {o.l}
             </button>
           ))}
         </div>
-        {/* Mode d'extraction */}
+        {/* Mode d'extraction (le découpage sectoriel n'existe qu'au format Annex tables) */}
+        {decoupage === "pays" && (
         <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3, marginBottom: 12 }}>
           {([
             { v: "annex",  l: "Format officiel (Annex tables)" },
@@ -261,15 +280,26 @@ export default function AdminIdePage() {
             </button>
           ))}
         </div>
+        )}
         <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
-          {formatImport === "annex" ? (
+          {decoupage === "secteur" ? (
+            <>Déposez les Annex tables sectorielles du World Investment Report (Excel/CSV) : en-tête <strong>Sector/industry | 1990 | … | 2025</strong>, une ligne par secteur ou branche, années en colonnes. Les libellés sont résolus sur le référentiel CNUCED (secteurs et branches) ; la ligne <strong>Total</strong> est ignorée automatiquement.</>
+          ) : formatImport === "annex" ? (
             <>Déposez les Annex tables du World Investment Report (Excel/CSV) : en-tête <strong>Region/economy | 1990 | … | 2025</strong>, une ligne par pays, années en colonnes. Les agrégats régionaux (World, Europe…) et les notes sont ignorés automatiquement.</>
           ) : (
             <>Déposez un ou plusieurs fichiers CSV par série. Le pays est détecté automatiquement depuis <strong>Economy_Label</strong> (format <strong>Economy_Label | Year | Value</strong>, 1 ligne par année). Un fichier peut contenir plusieurs pays.</>
           )}
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-          {categorie === "fluxstock" ? (<>
+          {decoupage === "secteur" ? (categorie === "fusion" ? (<>
+            <MultiFileZone label="Valeur — ventes"  sublabel="Annex 09 · net sales by sector" files={fluxEntrant}  onChange={setFluxEntrant} />
+            <MultiFileZone label="Valeur — achats"  sublabel="Annex 10 · net purchases by sector" files={fluxSortant}  onChange={setFluxSortant} />
+            <MultiFileZone label="Nombre — ventes"  sublabel="Annex 11 · number by sector"    files={stockEntrant} onChange={setStockEntrant} />
+            <MultiFileZone label="Nombre — achats"  sublabel="Annex 12 · number by sector"    files={stockSortant} onChange={setStockSortant} />
+          </>) : (<>
+            <MultiFileZone label="Valeur des projets annoncés" sublabel="Annex 15 · value by sector"  files={fluxEntrant}  onChange={setFluxEntrant} />
+            <MultiFileZone label="Nombre de projets annoncés"  sublabel="Annex 18 · number by sector" files={stockEntrant} onChange={setStockEntrant} />
+          </>)) : categorie === "fluxstock" ? (<>
             <MultiFileZone label="Flux entrants"  sublabel="1 ou N pays par fichier" files={fluxEntrant}  onChange={setFluxEntrant} />
             <MultiFileZone label="Flux sortants"  sublabel="1 ou N pays par fichier" files={fluxSortant}  onChange={setFluxSortant} />
             <MultiFileZone label="Stock entrants" sublabel="1 ou N pays par fichier" files={stockEntrant} onChange={setStockEntrant} />
