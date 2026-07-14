@@ -58,6 +58,41 @@ const SOUS_TYPE_NAV = [
   { v: "fusion",     l: "Fusion & Acquisition" },
 ] as const;
 
+// ── Sélecteur VUE (Pays / Secteurs) + TYPE D'ANALYSE (barre de filtre) ────────
+function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
+  vueP: string; setVueP: (v: "pays"|"secteurs") => void;
+  typeAnalyse: string; setTypeAnalyse: (v: any) => void;
+}) {
+  const types = vueP === "secteurs"
+    ? [{ v: "secteur",     l: "Analyse par secteur" }, { v: "comparative", l: "Analyse comparative" }]
+    : [{ v: "pays",        l: "Analyse par pays" },    { v: "comparative", l: "Analyse comparative" }, { v: "monde", l: "Monde" }];
+  const btn = (actif: boolean): React.CSSProperties => ({
+    textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12,
+    fontWeight: actif ? 700 : 500, background: actif ? "rgba(0,79,145,0.08)" : "transparent",
+    color: actif ? "#004f91" : "#4a5568", fontFamily: "var(--font-google-sans)",
+  });
+  return (
+    <>
+      <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+        <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
+        <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+          {([{ v:"pays", l:"Pays" }, { v:"secteurs", l:"Secteurs" }] as const).map(o => (
+            <button key={o.v} onClick={() => setVueP(o.v)} style={btn(vueP === o.v)}>{o.l}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+        <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;analyse</p>
+        <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+          {types.map(o => (
+            <button key={o.v} onClick={() => setTypeAnalyse(o.v)} style={btn(typeAnalyse === o.v)}>{o.l}</button>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
 function SousTypeNav({ value, onChange }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void }) {
   return (
     <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:999, padding:3, gap:3, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
@@ -917,7 +952,7 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
   );
 }
 
-function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void }) {
+function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -1074,18 +1109,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             </div>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-              {/* Sélecteur de vue */}
-              <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
-                <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
-                  {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                      {o.l}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Sélecteurs Vue + Type d'analyse */}
+              <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet}/>
               <div style={{ position:"relative" as const, marginBottom:18 }}>
                 <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
                 <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
@@ -1329,11 +1354,52 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   );
 }
 
+// ── Vue Secteurs (analyse sectorielle CNUCED) ─────────────────────────────────
+// Structure en place ; les secteurs/branches CNUCED seront chargés depuis la
+// base (référentiel à importer) — la zone principale s'activera à ce moment-là.
+function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
+  showTable: boolean; setShowTable: (v:boolean)=>void;
+  sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void;
+  vueP: string; setVueP: (v:"pays"|"secteurs")=>void;
+  typeAnalyse: string; setTypeAnalyse: (v:"secteur"|"comparative")=>void;
+}) {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  return (
+    <div style={{ display:"flex", alignItems:"flex-start" }}>
+      <aside style={{ width: sidebarOpen ? 280 : 52, flexShrink:0, transition:"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", overflowY:"auto" as const, position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
+        <div style={{ padding:"18px 16px 10px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          {sidebarOpen && <span style={{ fontSize:12, fontWeight:800, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+          <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
+            <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
+          </button>
+        </div>
+        {sidebarOpen && <div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
+          <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={typeAnalyse} setTypeAnalyse={setTypeAnalyse}/>
+          {/* Secteurs (référentiel CNUCED à venir) */}
+          <div style={{ marginBottom:18 }}>
+            <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Secteurs</span>
+            <p style={{ fontSize:11.5, color:"#9aa5b4", marginTop:8, lineHeight:1.5 }}>Le référentiel des secteurs et branches CNUCED sera disponible après son import dans l&apos;administration.</p>
+          </div>
+        </div>}
+      </aside>
+      <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
+          <SousTypeNav value={sousType} onChange={setSousType}/>
+        </div>
+        <div style={{ textAlign:"center" as const, padding:"90px 24px", color:"#9aa5b4" }}>
+          <p style={{ fontSize:16, fontWeight:600, color:"#4a5568" }}>Analyse sectorielle à venir</p>
+          <p style={{ fontSize:14, marginTop:6 }}>Les données par secteur / branche (M&A et greenfield) s&apos;afficheront ici après l&apos;import du référentiel et des Annex tables sectorielles.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Palette fixe pour l'analyse comparative ───────────────────────────────────
 const COMP_PALETTE = ["#004f91","#ca631f","#188038","#6A1B9A"];
 
 // ── Onglet Analyse comparative ────────────────────────────────────────────────
-function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void }) {
+function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -1439,18 +1505,8 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             </div>
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-              {/* Sélecteur de vue */}
-              <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
-                <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
-                  {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                    <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                      style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                      {o.l}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Sélecteurs Vue + Type d'analyse */}
+              <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet}/>
               <div style={{ position:"relative" as const, marginBottom:18 }}>
                 <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
                 <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
@@ -1907,7 +1963,7 @@ function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean
   );
 }
 
-function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void }) {
+function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
   const [loading,     setLoading]    = useState(false);
   const [borneMin, borneMax] = useBornesCnuced(sousType);
@@ -2051,18 +2107,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           </div>
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-          {/* Sélecteur de vue */}
-          <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
-            <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
-            <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
-              {([{v:"pays",l:"Pays"},{v:"comparative",l:"Analyse comparative"},{v:"monde",l:"Monde"}] as const).map(o=>(
-                <button key={o.v} onClick={()=>setSousOnglet(o.v)}
-                  style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousOnglet===o.v?700:500, background:sousOnglet===o.v?"rgba(0,79,145,0.08)":"transparent", color:sousOnglet===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
-                  {o.l}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Sélecteurs Vue + Type d'analyse */}
+          <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet}/>
 
           {/* Recherche */}
           <div style={{ position:"relative" as const, marginBottom:18 }}>
@@ -3341,6 +3387,8 @@ export default function IdePage() {
   const [ongletPrincipal, setOngletPrincipal] = useState<"ide"|"national">("ide");
   const [section,    setSection]    = useState<"realises"|"projetes">("realises");
   const [sousOnglet, setSousOnglet] = useState<"pays"|"comparative"|"monde">("pays");
+  const [vueP, setVueP] = useState<"pays"|"secteurs">("pays");
+  const [typeSecteurs, setTypeSecteurs] = useState<"secteur"|"comparative">("secteur");
   const [sousType,   setSousType]   = useState<"fluxstock"|"greenfield"|"fusion">("fluxstock");
   const [paysDispo,  setPaysDispo]  = useState<any[]>([]);
   const [showTable,  setShowTable]  = useState(false);
@@ -3393,12 +3441,15 @@ export default function IdePage() {
       {ongletPrincipal === "ide" && (
         <>
           {/* Investissements réalisés (CNUCED) */}
-          {section === "realises" && (
+          {section === "realises" && vueP === "pays" && (
             <>
-              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType}/>}
-              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType}/>}
-              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType}/>}
+              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
+              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
+              {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
             </>
+          )}
+          {section === "realises" && vueP === "secteurs" && (
+            <OngletSecteurs showTable={showTable} setShowTable={setShowTable} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP} typeAnalyse={typeSecteurs} setTypeAnalyse={setTypeSecteurs}/>
           )}
           {/* Investissements projetés (FDI Markets) */}
           {section === "projetes" && (
