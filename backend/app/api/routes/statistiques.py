@@ -863,11 +863,21 @@ async def commerce_bilateral(
             Accord.is_deleted.is_(False),
         ).order_by(Accord.date_signature.desc().nullslast())
     )).scalars().all()
+    # Objet complet : la Fiche Pays ouvre le même modal que la page Accords
     accords = [{
+        "id": a.id,
         "titre": a.titre,
         "reference": a.reference,
+        "commentaires": a.commentaires,
         "date_signature": a.date_signature.isoformat() if a.date_signature else None,
+        "date_entree_vigueur": a.date_entree_vigueur.isoformat() if a.date_entree_vigueur else None,
+        "date_expiration": a.date_expiration.isoformat() if a.date_expiration else None,
         "statut": a.statut,
+        "parties_pays_ids": a.parties_pays_ids or [],
+        "parties_signataires": a.parties_signataires,
+        "secteur_ids": a.secteur_ids or [],
+        "branche_ids": a.branche_ids or [],
+        "activite_ids": a.activite_ids or [],
     } for a in arows]
 
     return {

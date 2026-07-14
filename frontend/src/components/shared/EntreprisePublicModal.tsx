@@ -17,9 +17,9 @@ function fmtPhone(raw: string): string {
   try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
 }
 
-interface Props { entreprise: any | null; onClose: () => void; }
+interface Props { entreprise: any | null; onClose: () => void; zIndex?: number; }
 
-export default function EntreprisePublicModal({ entreprise: e, onClose }: Props) {
+export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex = 500 }: Props) {
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
   const [branches,  setBranches]  = useState<any[]>([]);
   const [activites, setActivites] = useState<any[]>([]);
@@ -57,7 +57,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose }: Props)
   );
 
   return (
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div onClick={ev=>ev.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}

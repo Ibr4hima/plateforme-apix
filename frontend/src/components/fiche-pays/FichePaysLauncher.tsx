@@ -4,6 +4,8 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, Building2, ChevronDown, FileText, Landmark, Scale, Search, X } from "lucide-react";
 import { SkeletonRows } from "@/components/shared/Skeleton";
+import AccordVueModal from "@/components/shared/AccordVueModal";
+import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -45,6 +47,13 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
   const [ideFlux, setIdeFlux] = useState<any>(null);
   const [bilat, setBilat] = useState<any>(null);
   const [entSiege, setEntSiege] = useState<any>(null);
+  // Détails ouverts depuis les chips (mêmes modals que les pages Accords / Entreprises)
+  const [accordOuvert, setAccordOuvert] = useState<any>(null);
+  const [entOuverte, setEntOuverte] = useState<any>(null);
+  const ouvrirEntreprise = (id: number) => {
+    fetch(`${API}/entreprises/${id}`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setEntOuverte).catch(() => {});
+  };
   // Fiche Sénégal × pays X : entreprises de X installées au Sénégal
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
   const autreId = paysIds.length === 2 && senId !== null && paysIds.includes(senId)
@@ -106,8 +115,11 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                 entreprises installées — présentation homogène : en-tête (icône,
                 titre, count) puis les éléments listés à la ligne suivante */}
             {(() => {
-              const Chip = ({ label, suffixe, title }: { label: string; suffixe?: string | null; title?: string }) => (
-                <span title={title || label} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999 }}>
+              const Chip = ({ label, suffixe, title, onClick }: { label: string; suffixe?: string | null; title?: string; onClick?: () => void }) => (
+                <span title={title || label} onClick={onClick} role={onClick ? "button" : undefined}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", border: "1px solid #E8E5E2", padding: "4px 11px", borderRadius: 999, cursor: onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s, color 0.15s" }}
+                  onMouseEnter={ev => { if (onClick) { ev.currentTarget.style.background = "rgba(0,79,145,0.07)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; ev.currentTarget.style.color = "#004f91"; } }}
+                  onMouseLeave={ev => { if (onClick) { ev.currentTarget.style.background = "#F5F4F3"; ev.currentTarget.style.borderColor = "#E8E5E2"; ev.currentTarget.style.color = "#4a5568"; } }}>
                   {label}{suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {suffixe}</span> : null}
                 </span>
               );
@@ -135,7 +147,8 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                   {accs.length > 0 && (
                     <BlocContexte Icone={FileText} titre={accs.length > 1 ? "Accords signés" : "Accord signé"} count={accs.length}>
                       {accs.map((ac: any, i: number) => (
-                        <Chip key={i} label={ac.titre} suffixe={ac.date_signature ? ac.date_signature.slice(0, 4) : null} title={ac.reference || ac.titre} />
+                        <Chip key={i} label={ac.titre} suffixe={ac.date_signature ? ac.date_signature.slice(0, 4) : null} title={ac.reference || ac.titre}
+                          onClick={ac.id ? () => setAccordOuvert(ac) : undefined} />
                       ))}
                     </BlocContexte>
                   )}
@@ -143,7 +156,8 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
                     <BlocContexte Icone={Building2} titre={`Entreprises installées au Sénégal · siège ${autreNom}`} count={entSiege.total}>
                       {ents.map((e: any) => (
                         <Chip key={e.id} label={e.nom} suffixe={e.region}
-                          title={[e.nom, e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · ")} />
+                          title={[e.nom, e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · ")}
+                          onClick={() => ouvrirEntreprise(e.id)} />
                       ))}
                     </BlocContexte>
                   )}
@@ -292,6 +306,9 @@ function FicheComparaison({ paysIds, pays, onClose }: { paysIds: number[]; pays:
           <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
         </div>
       </div>
+      {/* Détails ouverts depuis les chips — au-dessus de la fiche (zIndex 500) */}
+      {accordOuvert && <div onClick={ev => ev.stopPropagation()}><AccordVueModal accord={accordOuvert} onClose={() => setAccordOuvert(null)} zIndex={800} /></div>}
+      {entOuverte && <div onClick={ev => ev.stopPropagation()}><EntreprisePublicModal entreprise={entOuverte} onClose={() => setEntOuverte(null)} zIndex={800} /></div>}
     </div>
   );
 }
