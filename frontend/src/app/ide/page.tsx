@@ -112,9 +112,9 @@ function SousTypeNav({ value, onChange, options }: { value: string; onChange: (v
         return (
           <button key={o.v} onClick={() => onChange(o.v)}
             style={{ padding:"6px 18px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, whiteSpace:"nowrap" as const,
-              background: actif ? "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" : "transparent",
+              background: actif ? "#004f91" : "transparent",
               color: actif ? "#fff" : "#4a5568",
-              boxShadow: actif ? "0 4px 14px rgba(0,79,145,0.28)" : "none",
+              boxShadow: actif ? "0 2px 8px rgba(0,79,145,0.30), inset 0 1px 0 rgba(255,255,255,0.12)" : "none",
               transition:"background 0.18s, box-shadow 0.18s, color 0.18s", fontFamily:"var(--font-google-sans)" }}
             onMouseEnter={e => { if (!actif) e.currentTarget.style.background = "#F6F5F3"; }}
             onMouseLeave={e => { if (!actif) e.currentTarget.style.background = "transparent"; }}>
