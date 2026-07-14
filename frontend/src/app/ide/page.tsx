@@ -1392,6 +1392,10 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   // id 0 = « Global des secteurs » (agrégat des 3 grands secteurs)
   const [selecIds,    setSelecIds]    = useState<number[]>([0]);
   const [openSecs,    setOpenSecs]    = useState<Set<number>>(new Set());
+  // Comparative : niveau comparé (secteurs entre eux ou branches entre elles)
+  const [compNiveau,  setCompNiveau]  = useState<"secteur"|"branche">("secteur");
+  const [compCatOuverts, setCompCatOuverts] = useState<Set<number>>(new Set());
+  const toggleCompCat = (id: number) => setCompCatOuverts(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
   const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
@@ -1431,7 +1435,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   // comparative = jusqu'à 4 secteurs/branches (les 3 grands secteurs par défaut)
   useEffect(() => {
     if (typeAnalyse === "secteur") setSelecIds(prev => prev.length > 1 ? [prev[0]] : prev);
-    else setSelecIds(prev => prev.includes(0) ? [1, 2, 3] : prev);
+    else { setCompNiveau("secteur"); setSelecIds(prev => prev.includes(0) ? [1, 2, 3] : prev); }
   }, [typeAnalyse]);
   const toggleSecteur = (id: number) => {
     if (typeAnalyse === "secteur") { setSelecIds([id]); return; }
@@ -1559,7 +1563,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   const aDesDonnees = rowsCat.length > 0;
   const periodeFiltree = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== borneMin || anneeMax !== borneMax);
   const hasFilter   = periodeFiltree || (typeAnalyse === "secteur" && selecIds[0] !== 0);
-  const reinit      = () => { setSelecIds(typeAnalyse === "secteur" ? [0] : [1, 2, 3]); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); };
+  const reinit      = () => { setSelecIds(typeAnalyse === "secteur" ? [0] : [1, 2, 3]); setCompNiveau("secteur"); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); };
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
@@ -1583,21 +1587,18 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
           <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={typeAnalyse} setTypeAnalyse={setTypeAnalyse}/>
-          {/* Secteurs / branches — même présentation que l'analyse sectorielle
-              des Investissements nationaux (BdefRow : secteurs en bleu,
-              branches en orange, « Global des secteurs » surligné) */}
+          {typeAnalyse==="secteur" ? (
+          /* Secteurs / branches — même présentation que l'analyse sectorielle
+             des Investissements nationaux (BdefRow : secteurs en bleu,
+             branches en orange, « Global des secteurs » surligné) */
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
               <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Secteurs</span>
-              {typeAnalyse==="comparative"
-                ? <span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>{selecIds.length}/4</span>
-                : selecIds[0]!==0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
+              {selecIds[0]!==0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
             </div>
 
-            {typeAnalyse==="secteur"&&<>
-              <BdefRow label="Global des secteurs" selected={selecIds[0]===0} onSelect={()=>setSelecIds([0])} />
-              <div style={{ height:1, background:"#F2F0EF", margin:"8px 0" }}/>
-            </>}
+            <BdefRow label="Global des secteurs" selected={selecIds[0]===0} onSelect={()=>setSelecIds([0])} />
+            <div style={{ height:1, background:"#F2F0EF", margin:"8px 0" }}/>
 
             <div style={{ maxHeight:380, overflowY:"auto" as const }}>
               {refSecteurs.map((s: any) => {
@@ -1619,6 +1620,67 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
               {refSecteurs.length===0&&!loading&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
             </div>
           </div>
+          ) : (
+          /* Comparative — choix du niveau comparé puis sélection (max 4),
+             même présentation que la comparative des Investissements nationaux */
+          <div style={{ marginBottom:18 }}>
+            <div style={{ marginBottom:14 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Comparer par</p>
+              <div style={{ display:"flex", gap:6 }}>
+                {([{v:"secteur",l:"Secteurs"},{v:"branche",l:"Branches"}] as const).map(o=>(
+                  <button key={o.v} onClick={()=>{ setCompNiveau(o.v); setSelecIds(o.v==="secteur"?[1,2,3]:[]); }}
+                    style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${compNiveau===o.v?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:11.5, fontWeight:compNiveau===o.v?700:500, background:compNiveau===o.v?"rgba(0,79,145,0.08)":"#F8F7F6", color:compNiveau===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Sélection</span>
+              <span style={{ fontSize:11, fontWeight:600, color:selecIds.length>=4?"#004f91":"#9aa5b4", background:selecIds.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{selecIds.length}/4</span>
+            </div>
+
+            {(()=>{
+              const renderItem = (id: number, nom: string) => {
+                const sel = selecIds.includes(id);
+                const disabled = !sel && selecIds.length >= 4;
+                const colIdx = selecIds.indexOf(id);
+                const col = colIdx >= 0 ? COMP_PALETTE[colIdx % COMP_PALETTE.length] : "#004f91";
+                return (
+                  <div key={id} onClick={()=>{ if(!disabled) toggleSecteur(id); }}
+                    style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:6, background:"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
+                    onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background="#F8F7F6"; }}
+                    onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="transparent"; }}>
+                    <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0 }}/>
+                    <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400, lineHeight:1.3, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{nom}</span>
+                  </div>
+                );
+              };
+              if (compNiveau === "secteur") {
+                return <div style={{ maxHeight:380, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:1 }}>
+                  {refSecteurs.map((s: any) => renderItem(s.id, s.nom_fr))}
+                </div>;
+              }
+              return <div style={{ maxHeight:380, overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:1 }}>
+                {refSecteurs.map((s: any) => {
+                  const open = compCatOuverts.has(s.id);
+                  if (!(s.branches||[]).length) return null;
+                  return (
+                    <div key={s.id}>
+                      <button onClick={()=>toggleCompCat(s.id)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 8px", marginTop:6, marginBottom:3 }}>
+                        <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{s.nom_fr}</span>
+                        <ChevronDown size={11} style={{ color:"#004f91", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                      </button>
+                      {open&&(s.branches||[]).map((b: any) => renderItem(b.id, b.nom_fr))}
+                    </div>
+                  );
+                })}
+              </div>;
+            })()}
+            {refSecteurs.length===0&&!loading&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
+          </div>
+          )}
           <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
           {/* Période */}
           <div style={{ marginBottom:18 }}>
