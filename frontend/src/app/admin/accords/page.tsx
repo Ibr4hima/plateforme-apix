@@ -101,6 +101,12 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     }
   },[open, editItem?.id, allPays]);
 
+  // TBI : Sénégal + un seul autre pays ; le titre est dérivé des deux noms
+  const estTbi     = form.type_accord === "tbi";
+  const senIdRef   = allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id;
+  const tbiAutreId = (form.pays_ids as number[]).find((id:number)=>id!==senIdRef) ?? null;
+  const tbiTitre   = tbiAutreId ? `Sénégal - ${allPays.find((p:any)=>p.id===tbiAutreId)?.nom_fr||""}` : "";
+
   const buildPartiesStr = () => {
     if (form.mode_signataire==="pays") {
       return (form.pays_ids as number[]).map((id:number)=>allPays.find((p:any)=>p.id===id)?.nom_fr).filter(Boolean).join(", ");
@@ -109,15 +115,21 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
   };
 
   const handleSave = async () => {
-    if (!form.titre.trim())        { setError("Le titre est obligatoire"); return; }
-    if (!form.reference.trim())    { setError("La référence est obligatoire"); return; }
+    if (estTbi) {
+      if (!tbiAutreId) { setError("Sélectionnez le pays signataire avec le Sénégal"); return; }
+    } else {
+      if (!form.titre.trim())     { setError("Le titre est obligatoire"); return; }
+      if (!form.reference.trim()) { setError("La référence est obligatoire"); return; }
+    }
     if (!form.date_signature)      { setError("La date de signature est obligatoire"); return; }
     const today = new Date().toISOString().split("T")[0];
     if (form.date_signature > today) { setError("La date de signature doit être dans le passé"); return; }
     if (form.date_entree_vigueur && form.date_entree_vigueur < form.date_signature) { setError("L'entrée en vigueur doit être après la signature"); return; }
     if (form.date_expiration && form.date_entree_vigueur && form.date_expiration <= form.date_entree_vigueur) { setError("L'expiration doit être après l'entrée en vigueur"); return; }
-    if (form.mode_signataire==="pays" && (form.pays_ids as number[]).length < 2) { setError("Ajoutez au moins deux pays signataires"); return; }
-    if (form.mode_signataire==="organisation" && (form.orgs as string[]).length === 0) { setError("Ajoutez au moins une organisation partenaire"); return; }
+    if (!estTbi && form.mode_signataire==="pays" && (form.pays_ids as number[]).length < 2) { setError("Ajoutez au moins deux pays signataires"); return; }
+    if (!estTbi && form.mode_signataire==="organisation" && (form.orgs as string[]).length === 0) { setError("Ajoutez au moins une organisation partenaire"); return; }
+    const titreEnvoye = estTbi ? tbiTitre : form.titre;
+    const paysEnvoyes = estTbi ? [senIdRef, tbiAutreId].filter(Boolean) : (form.mode_signataire==="pays" ? form.pays_ids : []);
     setSaving(true); setError("");
     try {
       const partiesStr = buildPartiesStr();
@@ -126,9 +138,9 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
           method:"PATCH", headers:{"Content-Type":"application/json", ...(await authHeaders())},
           body:JSON.stringify({
             type_accord:form.type_accord,
-            titre:form.titre, reference:form.reference||null,
-            parties_signataires: form.mode_signataire==="organisation" ? [APIX,...(form.orgs as string[])].join(", ") : null,
-            parties_pays_ids:    form.mode_signataire==="pays" ? form.pays_ids : [],
+            titre:titreEnvoye, reference:estTbi ? null : (form.reference||null),
+            parties_signataires: !estTbi && form.mode_signataire==="organisation" ? [APIX,...(form.orgs as string[])].join(", ") : null,
+            parties_pays_ids:    paysEnvoyes,
             date_signature:form.date_signature||null,
             date_entree_vigueur:form.date_entree_vigueur||null,
             date_expiration:form.date_expiration||null,
@@ -144,13 +156,13 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
       } else {
         const fd = new FormData();
         fd.append("type_accord",form.type_accord);
-        fd.append("titre",form.titre);
-        fd.append("reference",form.reference);
-        if (form.mode_signataire==="organisation") {
+        fd.append("titre",titreEnvoye);
+        if (!estTbi) fd.append("reference",form.reference);
+        if (!estTbi && form.mode_signataire==="organisation") {
           fd.append("parties_signataires",[APIX,...(form.orgs as string[])].join(", "));
           fd.append("parties_pays_ids","[]");
         } else {
-          fd.append("parties_pays_ids",JSON.stringify(form.pays_ids));
+          fd.append("parties_pays_ids",JSON.stringify(paysEnvoyes));
         }
         fd.append("secteur_ids",JSON.stringify(form.secteur_ids));
         fd.append("branche_ids",JSON.stringify(form.branche_ids));
@@ -192,6 +204,52 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         ]} value={form.type_accord} onChange={v=>update("type_accord",v)} />
       </FSection>
 
+      {form.type_accord === "tbi" ? (
+      /* TBI : Sénégal + un pays — le titre de l'accord est dérivé (ex. Sénégal - Maroc) */
+      <FSection title="Pays signataires">
+        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
+          <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(0,79,145,0.1)",color:"#004f91",border:"1px solid rgba(0,79,145,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>Sénégal</span>
+          {tbiAutreId&&(()=>{const p=allPays.find((r:any)=>r.id===tbiAutreId); return p?(
+            <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.1)",color:"#ca631f",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
+              {p.nom_fr}
+              <button onClick={()=>update("pays_ids",senIdRef?[senIdRef]:[])} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>
+            </span>
+          ):null;})()}
+        </div>
+        <div ref={paysRef} style={{position:"relative"}}>
+          <FInput value={searchPays} onChange={e=>setSearchPays(e.target.value)} onFocus={()=>setPaysOpen(true)}
+            placeholder={tbiAutreId?"Remplacer le pays signataire…":"Rechercher le pays signataire…"} style={{ padding:"10px 13px 10px 32px" }} />
+          <svg style={{position:"absolute",left:11,top:20,transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          {paysOpen && (
+          <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,zIndex:210,border:"1px solid #E4E1DE",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff",boxShadow:"0 8px 32px rgba(0,0,0,0.12)"}}>
+          {Object.entries(
+            allPays
+              .filter((p:any)=>p.nom_fr!==SENEGAL && p.id!==tbiAutreId && (!searchPays||p.nom_fr.toLowerCase().includes(searchPays.toLowerCase())))
+              .reduce((acc:any,p:any)=>{
+                const cont=p.region_monde||"Autre";
+                if(!acc[cont]) acc[cont]=[];
+                acc[cont].push(p);
+                return acc;
+              },{})
+          ).sort(([a],[b])=>a.localeCompare(b)).map(([continent,pays]:any)=>(
+            <div key={continent}>
+              <div style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.04)",padding:"5px 12px",letterSpacing:"0.1em",textTransform:"uppercase" as const,position:"sticky" as const,top:0}}>{continent}</div>
+              {pays.map((p:any)=>(
+                <button key={p.id} onClick={()=>{ update("pays_ids",senIdRef?[senIdRef,p.id]:[p.id]); setPaysOpen(false); setSearchPays(""); }}
+                  style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 14px",background:"transparent",border:"none",cursor:"pointer",textAlign:"left" as const,borderBottom:"1px solid #F2F0EF",transition:"background 0.1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                  <span style={{fontSize:12,color:"#1a1a2e",fontWeight:500}}>{p.nom_fr}</span>
+                </button>
+              ))}
+            </div>
+          ))}
+          </div>
+          )}
+        </div>
+        {tbiTitre&&<p style={{fontSize:12,color:"#9aa5b4",marginTop:10}}>Titre de l&apos;accord : <strong style={{color:"#1a1a2e"}}>{tbiTitre}</strong></p>}
+      </FSection>
+      ) : (<>
       {/* Identification */}
       <FSection title="Identification">
         <FGrid cols="2fr 1fr">
@@ -279,6 +337,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
           </>
         )}
       </FSection>
+      </>)}
 
       {/* Dates */}
       <FSection title="Dates">
