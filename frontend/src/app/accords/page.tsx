@@ -221,6 +221,8 @@ export default function AccordsPage() {
   };
 
   const accords = tous.filter(a=>{
+    // Onglet actif = Traités Bilatéraux d'Investissement (l'existant sans type est bilatéral)
+    if ((a.type_accord || "tbi") !== "tbi") return false;
     if (recherche) {
       const q=recherche.toLowerCase();
       const paysStr=getPaysNoms(a).toLowerCase();

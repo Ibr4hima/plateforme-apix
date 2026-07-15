@@ -4,6 +4,7 @@ from datetime import date, datetime
 
 
 class AccordBase(BaseModel):
+    type_accord:            str                  = "tbi"   # tbi / inter
     titre:                  str
     reference:              Optional[str]        = None
     parties_signataires:    Optional[str]        = None   # organisations libres
@@ -24,6 +25,7 @@ class AccordCreate(AccordBase):
 
 
 class AccordUpdate(BaseModel):
+    type_accord:            Optional[str]        = None
     titre:                  Optional[str]        = None
     reference:              Optional[str]        = None
     parties_signataires:    Optional[str]        = None   # organisations libres

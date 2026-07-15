@@ -9,6 +9,7 @@ class Accord(Base):
     __tablename__ = "accords_traites"
 
     id                      = Column(Integer, primary_key=True, autoincrement=True)
+    type_accord             = Column(String(30), nullable=False, default="tbi")  # tbi / inter
     titre                   = Column(String(500), nullable=False)
     reference               = Column(String(200))
     parties_signataires     = Column(Text)          # organisations libres (OMC, BM...)

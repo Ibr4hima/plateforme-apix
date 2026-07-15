@@ -125,6 +125,7 @@ async def detail_accord(accord_id: int, db: AsyncSession = Depends(get_db)):
 @router.post("", response_model=AccordResponse, status_code=201)
 async def creer_accord(
     titre:               str            = Form(...),
+    type_accord:         str            = Form("tbi"),  # tbi / inter
     reference:           Optional[str]  = Form(None),
     parties_signataires: Optional[str]  = Form(None),  # organisations libres
     parties_pays_ids:    Optional[str]  = Form(None),  # JSON array d'IDs ref_pays
@@ -155,7 +156,7 @@ async def creer_accord(
     def parse_ids(s): return json.loads(s) if s else []
 
     accord = Accord(
-        titre=titre, reference=reference,
+        titre=titre, type_accord=type_accord, reference=reference,
         parties_signataires=parties_signataires,
         parties_pays_ids=parse_ids(parties_pays_ids),
         date_signature=parse_date(date_signature),

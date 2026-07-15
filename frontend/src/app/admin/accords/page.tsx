@@ -35,6 +35,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
   open:boolean; onClose:()=>void; editItem:any; onSaved:()=>void;
 }) {
   const [form,      setForm]      = useState<any>({
+    type_accord:"tbi" as "tbi"|"inter",
     titre:"", reference:"",
     mode_signataire:"pays" as "pays"|"organisation",
     pays_ids:[] as number[], orgs:[] as string[],
@@ -76,6 +77,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         ? (editItem.parties_signataires||"").split(", ").map((s:string)=>s.trim()).filter((s:string)=>s&&s!==APIX)
         : [];
       setForm({
+        type_accord:         editItem.type_accord         || "tbi",
         titre:               editItem.titre               || "",
         reference:           editItem.reference           || "",
         mode_signataire:     mode,
@@ -94,7 +96,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         .then(r=>r.json()).then(setFichiers).catch(()=>{});
     } else {
       const senId = allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id;
-      setForm((f:any)=>({...f, titre:"", reference:"", mode_signataire:"pays", pays_ids:senId?[senId]:[], orgs:[], date_signature:"", date_entree_vigueur:"", date_expiration:"", secteur_ids:[], branche_ids:[], activite_ids:[], commentaires:""}));
+      setForm((f:any)=>({...f, type_accord:"tbi", titre:"", reference:"", mode_signataire:"pays", pays_ids:senId?[senId]:[], orgs:[], date_signature:"", date_entree_vigueur:"", date_expiration:"", secteur_ids:[], branche_ids:[], activite_ids:[], commentaires:""}));
       setFichiers([]); setSaisieOrg("");
     }
   },[open, editItem?.id, allPays]);
@@ -123,6 +125,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         const res = await fetch(`${API_BASE}/accords/${editItem.id}`,{
           method:"PATCH", headers:{"Content-Type":"application/json", ...(await authHeaders())},
           body:JSON.stringify({
+            type_accord:form.type_accord,
             titre:form.titre, reference:form.reference||null,
             parties_signataires: form.mode_signataire==="organisation" ? [APIX,...(form.orgs as string[])].join(", ") : null,
             parties_pays_ids:    form.mode_signataire==="pays" ? form.pays_ids : [],
@@ -140,6 +143,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         }
       } else {
         const fd = new FormData();
+        fd.append("type_accord",form.type_accord);
         fd.append("titre",form.titre);
         fd.append("reference",form.reference);
         if (form.mode_signataire==="organisation") {
@@ -179,6 +183,14 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
           {saveOk ? "Enregistré !" : saving ? "Sauvegarde…" : editItem ? "Modifier" : "Créer l'accord"}
         </FButton>
       </>}>
+
+      {/* Type d'accord — détermine l'onglet public et les champs proposés */}
+      <FSection title="Type d'accord">
+        <FSegmented options={[
+          {value:"tbi",   label:"Traité Bilatéral d'Investissement"},
+          {value:"inter", label:"Traité International"},
+        ]} value={form.type_accord} onChange={v=>update("type_accord",v)} />
+      </FSection>
 
       {/* Identification */}
       <FSection title="Identification">
