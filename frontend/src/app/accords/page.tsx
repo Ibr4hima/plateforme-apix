@@ -13,7 +13,7 @@ import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/Acco
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"blue", signe:"blue", expire:"gray" };
-const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
+const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé non en vigueur" };
 
 const STATUT_OPTS = [
   { value:"",           label:"Tous",        bg:"#F2F0EF",             text:"#4a5568" },
@@ -438,7 +438,7 @@ export default function AccordsPage() {
                   const statut = computeStatut(a);
                   const ST: any = {
                     en_vigueur: { label:"En vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-                    signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+                    signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
                     expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
                   };
                   const st = statut ? ST[statut] : null;
@@ -472,10 +472,17 @@ export default function AccordsPage() {
                           <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
                           <p style={{fontSize:12,fontWeight:600,color:a.date_signature?txtC:"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                         </div>
-                        <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
-                          <p style={{fontSize:12,fontWeight:600,color:a.date_expiration?txtC:"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p>
-                        </div>
+                        {a.date_expiration ? (
+                          <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
+                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
+                            <p style={{fontSize:12,fontWeight:600,color:txtC}}>{fmtDate(a.date_expiration)}</p>
+                          </div>
+                        ) : (
+                          <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
+                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Entrée en vigueur</p>
+                            <p style={{fontSize:12,fontWeight:600,color:a.date_entree_vigueur?txtC:"#9aa5b4"}}>{a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie"}</p>
+                          </div>
+                        )}
                       </div>
 
                     </div>

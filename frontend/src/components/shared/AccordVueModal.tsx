@@ -14,9 +14,8 @@ export function fmtDate(d: string) {
 export function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
   const today = new Date().toISOString().split("T")[0];
   if (a.date_expiration && a.date_expiration < today) return "expire";
-  if (a.date_signature && a.date_entree_vigueur && a.date_signature <= today && today < a.date_entree_vigueur) return "signe";
-  const ref = a.date_entree_vigueur || a.date_signature;
-  if (ref && ref <= today) return "en_vigueur";
+  if (a.date_entree_vigueur && a.date_entree_vigueur <= today) return "en_vigueur";
+  if (a.date_signature && a.date_signature <= today) return "signe";
   return null;
 }
 
@@ -41,7 +40,7 @@ export default function AccordVueModal({ accord:a, onClose, zIndex = 400 }: { ac
   const statut = computeStatut(a);
   const ST_VUE: any = {
     en_vigueur: { label:"En vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-    signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+    signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
     expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
   };
   const stV = statut ? ST_VUE[statut] : null;

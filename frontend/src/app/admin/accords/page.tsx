@@ -10,15 +10,14 @@ import { authHeaders } from "@/lib/authHeaders";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const STATUT_LABELS:  Record<string,string>      = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé" };
+const STATUT_LABELS:  Record<string,string>      = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé non en vigueur" };
 const STATUT_VARIANT: Record<string,BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"gray" };
 
 function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
   const today = new Date().toISOString().split("T")[0];
   if (a.date_expiration && a.date_expiration < today) return "expire";
-  if (a.date_signature && a.date_entree_vigueur && a.date_signature <= today && today < a.date_entree_vigueur) return "signe";
-  const ref = a.date_entree_vigueur || a.date_signature;
-  if (ref && ref <= today) return "en_vigueur";
+  if (a.date_entree_vigueur && a.date_entree_vigueur <= today) return "en_vigueur";
+  if (a.date_signature && a.date_signature <= today) return "signe";
   return null;
 }
 const SENEGAL = "Sénégal";
@@ -439,7 +438,7 @@ function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>voi
   const st = computeStatut(a);
   const ST_VUE: any = {
     en_vigueur: { label:"En vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-    signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+    signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
     expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
   };
   const stV = st ? ST_VUE[st] : null;
@@ -685,7 +684,7 @@ export default function AdminAccords() {
             const statut = computeStatut(a);
             const ST: any = {
               en_vigueur: { label:"En vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-              signe:      { label:"Signé",     c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
+              signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
               expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
             };
             const st = statut ? ST[statut] : null;
@@ -719,10 +718,17 @@ export default function AdminAccords() {
                       <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
                       <p style={{fontSize:12,fontWeight:600,color:a.date_signature?txtC:"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                     </div>
-                    <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
-                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
-                      <p style={{fontSize:12,fontWeight:600,color:a.date_expiration?txtC:"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p>
-                    </div>
+                    {a.date_expiration ? (
+                      <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
+                        <p style={{fontSize:12,fontWeight:600,color:txtC}}>{fmtDate(a.date_expiration)}</p>
+                      </div>
+                    ) : (
+                      <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Entrée en vigueur</p>
+                        <p style={{fontSize:12,fontWeight:600,color:a.date_entree_vigueur?txtC:"#9aa5b4"}}>{a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie"}</p>
+                      </div>
+                    )}
                   </div>
 
                 </div>
