@@ -39,9 +39,9 @@ export default function AccordVueModal({ accord:a, onClose, zIndex = 400 }: { ac
 
   const statut = computeStatut(a);
   const ST_VUE: any = {
-    en_vigueur: { label:"En vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
+    en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
     signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-    expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
+    expire:     { label:"Expiré", c:"#ca631f", bg:"rgba(202,99,31,0.08)" },
   };
   const stV = statut ? ST_VUE[statut] : null;
   const secIds:number[] = a.secteur_ids  || [];

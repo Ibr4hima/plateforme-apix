@@ -12,7 +12,7 @@ import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/Acco
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"blue", signe:"blue", expire:"gray" };
+const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"orange" };
 const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé non en vigueur" };
 
 const STATUT_OPTS = [
@@ -437,9 +437,9 @@ export default function AccordsPage() {
                 {accords.map(a=>{
                   const statut = computeStatut(a);
                   const ST: any = {
-                    en_vigueur: { label:"En vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
+                    en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
                     signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-                    expire:     { label:"Expiré",    c:"#6b7280", bg:"#F2F0EF"              },
+                    expire:     { label:"Expiré", c:"#ca631f", bg:"rgba(202,99,31,0.08)" },
                   };
                   const st = statut ? ST[statut] : null;
                   const estExpire = statut==="expire";
