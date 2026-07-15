@@ -104,7 +104,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
   const estTbi     = form.type_accord === "tbi";
   const senIdRef   = allPays.find((p:any)=>p.nom_fr===SENEGAL)?.id;
   const tbiAutreId = (form.pays_ids as number[]).find((id:number)=>id!==senIdRef) ?? null;
-  const tbiTitre   = tbiAutreId ? `Sénégal - ${allPays.find((p:any)=>p.id===tbiAutreId)?.nom_fr||""}` : "";
+  const tbiTitre   = tbiAutreId ? `Sénégal — ${allPays.find((p:any)=>p.id===tbiAutreId)?.nom_fr||""}` : "";
 
   const buildPartiesStr = () => {
     if (form.mode_signataire==="pays") {

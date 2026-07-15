@@ -106,8 +106,8 @@ export default function AccordVueModal({ accord:a, onClose, zIndex = 400 }: { ac
             </section>
           )}
 
-          {/* Parties signataires */}
-          {(a.parties_pays_ids?.length>0||a.parties_signataires)&&(
+          {/* Parties signataires — inutile pour un TBI : déjà dans le titre */}
+          {a.type_accord!=="tbi"&&(a.parties_pays_ids?.length>0||a.parties_signataires)&&(
             <section>
               <SecTitle>Parties signataires</SecTitle>
               <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
