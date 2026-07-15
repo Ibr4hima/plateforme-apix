@@ -164,6 +164,8 @@ export default function AccordsPage() {
 
   const [recherche,      setRecherche]      = useState("");
   const [statutFiltre,   setStatutFiltre]   = useState("");
+  // Type de traité (onglet hero) : bilatéraux d'investissement / internationaux (à venir)
+  const [typeTraite,     setTypeTraite]     = useState<"tbi"|"inter">("tbi");
   const [paysIdsFiltres, setPaysIdsFiltres] = useState<number[]>([]);
   const [secteursSel,    setSecteursSel]    = useState<string[]>([]);
   const [branchesSel,    setBranchesSel]    = useState<string[]>([]);
@@ -275,10 +277,28 @@ export default function AccordsPage() {
 
       {/* Hero */}
       <BarreTitre titre={"Accords & Traités"}>
-        <BarreTitreSegment options={[{v:"",l:"Tous"},{v:"en_vigueur",l:"En vigueur"},{v:"expire",l:"Expirés"}]} value={statutFiltre} onChange={setStatutFiltre}/>
+        <BarreTitreSegment options={[
+          {v:"tbi",   l:"Traités Bilatéraux d'Investissement"},
+          {v:"inter", l:"Traités Internationaux", badge:"Bientôt"},
+        ]} value={typeTraite} onChange={setTypeTraite}/>
       </BarreTitre>
 
-      {/* Layout sidebar + contenu */}
+      {typeTraite === "inter" ? (
+      /* Traités internationaux — à venir */
+      <div style={{maxWidth:1400,margin:"0 auto",padding:"80px 40px",textAlign:"center" as const}}>
+        <div style={{display:"inline-flex",flexDirection:"column" as const,alignItems:"center",gap:16}}>
+          <div style={{width:64,height:64,borderRadius:16,background:"rgba(0,79,145,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <FileText size={28} style={{color:"#004f91"}}/>
+          </div>
+          <h2 style={{fontWeight:800,fontSize:"1.4rem",color:"#1a1a2e"}}>Traités Internationaux</h2>
+          <p style={{fontSize:14,color:"#9aa5b4",maxWidth:380,lineHeight:1.7}}>Les traités internationaux seront disponibles prochainement.</p>
+          <div style={{background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.2)",borderRadius:10,padding:"10px 20px"}}>
+            <span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>Disponible prochainement</span>
+          </div>
+        </div>
+      </div>
+      ) : (
+      /* Layout sidebar + contenu */
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
           {/* Sidebar bande */}
@@ -313,6 +333,30 @@ export default function AccordsPage() {
                     style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
+                {/* Statut */}
+                <div style={{marginBottom:18}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+                    <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Statut</span>
+                    {statutFiltre&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>1</span>}
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
+                    {[
+                      {v:"",           l:"Tous"},
+                      {v:"en_vigueur", l:"En vigueur"},
+                      {v:"signe",      l:"Signés non en vigueur"},
+                      {v:"expire",     l:"Expirés"},
+                    ].map(o=>{const sel=statutFiltre===o.v; return (
+                      <button key={o.v} onClick={()=>setStatutFiltre(o.v)}
+                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
+                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                        onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
+                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0}}/>
+                        <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{o.l}</span>
+                      </button>
+                    );})}
+                  </div>
+                </div>
+                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 {/* Parties signataires — section personnalisée */}
                 <div style={{marginBottom:18}}>
                   <button onClick={()=>setPartiesOpen(o=>!o)}
@@ -449,6 +493,7 @@ export default function AccordsPage() {
             )}
           </div>
       </div>
+      )}
 
       {selec&&<AccordVueModal accord={selec} onClose={()=>setSelec(null)}/>}
     </main>
