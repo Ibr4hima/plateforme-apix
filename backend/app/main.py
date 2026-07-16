@@ -9,9 +9,11 @@ from app.api.routes import (
     citi, dashboard, dashboard_tables, bdef, auth_users, statistiques
 )
 from contextlib import asynccontextmanager
+import logging
 import os
 
 settings = get_settings()
+logger = logging.getLogger("apix")
 
 
 async def _scheduled_ide_refresh():
@@ -41,6 +43,14 @@ async def _scheduled_expire_accords():
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
+    if settings.AUTH_ENFORCED:
+        logger.info("Authentification active : JWT + RBAC appliqués sur les routes protégées.")
+    else:
+        logger.warning(
+            "⚠ AUTH_ENFORCED=false — API en mode démo OUVERT, aucun contrôle "
+            "d'accès. Passer AUTH_ENFORCED=true (avec des secrets réels) avant "
+            "toute exposition à des données sensibles."
+        )
     # Rattrapage au démarrage : indépendant d'apscheduler.
     try:
         await _scheduled_expire_accords()

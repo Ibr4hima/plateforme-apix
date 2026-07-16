@@ -1,6 +1,12 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 from typing import List
+
+# Valeurs de repli du mode démo (AUTH_ENFORCED=false). Dès que l'auth est
+# activée, ces valeurs sont refusées au démarrage : voir _verrouiller_secrets.
+_SECRET_KEY_DEMO = "changeme_in_production"
+_AUTH_SECRET_DEMO = "changeme_auth_secret_in_production"
 
 
 class Settings(BaseSettings):
@@ -44,12 +50,12 @@ class Settings(BaseSettings):
     PROD_SYNC_PASSWORD: str = ""  # mot de passe basic-auth
 
     # Sécurité JWT (clé interne legacy)
-    SECRET_KEY: str = "changeme_in_production"
+    SECRET_KEY: str = _SECRET_KEY_DEMO
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Auth NextAuth — même secret que le frontend
-    AUTH_SECRET: str = "changeme_auth_secret_in_production"
+    AUTH_SECRET: str = _AUTH_SECRET_DEMO
 
     # Admins : liste d'emails séparés par virgule dans la variable d'env ADMIN_EMAILS
     # Exemple : ADMIN_EMAILS=alice@apix.sn,bob@apix.sn
@@ -62,7 +68,7 @@ class Settings(BaseSettings):
 
     # Développeur(s) : accès total, défini uniquement par variable d'environnement
     # (jamais modifiable depuis l'interface). Ex : DEV_EMAILS=ibra.ba@apix.sn
-    DEV_EMAILS: str = "ibra.ba@apix.sn,ibrahima.28@outlook.com"
+    DEV_EMAILS: str = ""
 
     @property
     def dev_emails_list(self) -> List[str]:
@@ -85,6 +91,32 @@ class Settings(BaseSettings):
         "case_sensitive": True,
         "extra": "ignore",
     }
+
+    @model_validator(mode="after")
+    def _verrouiller_secrets(self) -> "Settings":
+        """Fail-safe : dès que l'authentification est activée, le backend
+        refuse de démarrer avec les secrets de démo — plutôt que de retomber
+        silencieusement sur une API « tout ouvert » validée par un secret
+        connu de tous."""
+        if not self.AUTH_ENFORCED:
+            return self
+        problemes = []
+        if self.AUTH_SECRET == _AUTH_SECRET_DEMO or len(self.AUTH_SECRET) < 32:
+            problemes.append(
+                "AUTH_SECRET doit être un secret réel d'au moins 32 caractères "
+                "(identique à AUTH_SECRET côté frontend) — ex. `openssl rand -base64 48`"
+            )
+        if self.SECRET_KEY == _SECRET_KEY_DEMO or len(self.SECRET_KEY) < 32:
+            problemes.append(
+                "SECRET_KEY doit être un secret réel d'au moins 32 caractères "
+                "— ex. `openssl rand -base64 48`"
+            )
+        if problemes:
+            raise ValueError(
+                "AUTH_ENFORCED=true mais la configuration n'est pas sûre :\n  - "
+                + "\n  - ".join(problemes)
+            )
+        return self
 
 
 @lru_cache()
