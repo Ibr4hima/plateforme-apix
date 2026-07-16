@@ -1244,65 +1244,48 @@ export default function OpportunitesPage() {
                 ) : potsErr ? (
                   <ErreurChargement onRetry={()=>chargerPots()}/>
                 ) : selectedNiveau===null ? (
-                  /* ── Picker 4 cards ── */
+                  /* ── Picker 4 cards — niveau de découpage territorial ── */
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
                     {([
-                      {key:"pole",           label:"Pôles territoires", unit:"Pôles",           color:"#004f91"},
-                      {key:"region",         label:"Régions",           unit:"Régions",         color:"#ca631f"},
-                      {key:"departement",    label:"Départements",      unit:"Départements",    color:"#188038"},
-                      {key:"arrondissement", label:"Arrondissements",   unit:"Arrondissements", color:"#6A1B9A"},
+                      {key:"pole",           label:"Pôles territoires", unit:"pôle",           color:"#004f91"},
+                      {key:"region",         label:"Régions",           unit:"région",         color:"#ca631f"},
+                      {key:"departement",    label:"Départements",      unit:"département",    color:"#188038"},
+                      {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", color:"#6A1B9A"},
                     ] as const).map(n=>{
                       const count=pots.filter((p:any)=>p.niveau===n.key).length;
                       const total = n.key==="pole" ? poles.length
                         : n.key==="region" ? regions.length
                         : n.key==="departement" ? regions.reduce((s:number,r:any)=>s+(r.departements?.length||0),0)
                         : regions.reduce((s:number,r:any)=>s+(r.departements||[]).reduce((s2:number,d:any)=>s2+(d.arrondissements?.length||0),0),0);
+                      const pct = total>0 ? Math.round(count/total*100) : 0;
                       return (
                         <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
-                          style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}40`;}
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                            });
-                          }}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                            });
-                          }}>
+                          style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}55`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
-                          <div style={{height:3,background:`linear-gradient(90deg,${n.color}CC 0%,${n.color} 50%,${n.color}99 100%)`,flexShrink:0}}/>
-                          <div style={{padding:"14px 16px 14px",flex:1}}>
-                            {/* Niveau */}
-                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                              <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:n.color,background:`${n.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>
-                                <span style={{width:6,height:6,borderRadius:"50%",background:n.color,["--pc" as any]:`${n.color}66`,animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                                {n.label}
-                              </span>
-                            </div>
-
-                            {/* Compteurs libellés */}
-                            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                              <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{n.unit}</p>
-                                <p style={{fontSize:14,fontWeight:800,color:total>0?"#1a1a2e":"#9aa5b4"}}>{total||"—"}</p>
-                              </div>
-                              <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
-                                <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Fiches définies</span></p>
-                                <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{total>0?`${count}/${total}`:count}</p>
-                              </div>
-                            </div>
+                          {/* Niveau */}
+                          <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                            <span style={{width:7,height:7,borderRadius:"50%",background:n.color,flexShrink:0}}/>
+                            <span style={{fontSize:10.5,fontWeight:800,color:n.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{n.label}</span>
                           </div>
 
-                          {/* Action */}
-                          <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
-                            <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:n.color,fontWeight:600,opacity:count>0?1:0.45,transition:"background 0.15s"}}
-                              onMouseEnter={ev=>{if(count>0)ev.currentTarget.style.background=`${n.color}0D`;}}
-                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                              Voir les détails →
+                          {/* Compteur principal */}
+                          <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                            <span style={{fontSize:"2rem",fontWeight:800,color:total>0?"#1a1a2e":"#C5BFBB",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
+                            <span style={{fontSize:12,fontWeight:600,color:"#9aa5b4"}}>{n.unit}{total>1?"s":""}</span>
+                          </div>
+
+                          {/* Couverture des fiches */}
+                          <div style={{marginTop:"auto"}}>
+                            <div style={{height:6,background:"#F2F0EF",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                              <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:n.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                             </div>
+                            <p style={{fontSize:11,fontWeight:600,color:count>0?"#4a5568":"#9aa5b4"}}>
+                              {count>0
+                                ? <>{count} fiche{count>1?"s":""} définie{count>1?"s":""}{total>0?<span style={{color:"#9aa5b4",fontWeight:500}}> · {pct} %</span>:null}</>
+                                : "Aucune fiche définie"}
+                            </p>
                           </div>
                         </div>
                       );
