@@ -191,7 +191,12 @@ export default function RechercheGlobale() {
   return createPortal(
     <div onClick={fermer}
       style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 900, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "13vh 24px 24px" }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
+      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}
+.rg-liste{scrollbar-width:thin;scrollbar-color:#D8D4D0 transparent;}
+.rg-liste::-webkit-scrollbar{width:11px;}
+.rg-liste::-webkit-scrollbar-track{background:transparent;margin:16px 0;}
+.rg-liste::-webkit-scrollbar-thumb{background:#D8D4D0;border-radius:999px;border:3.5px solid #fff;background-clip:padding-box;}
+.rg-liste::-webkit-scrollbar-thumb:hover{background:#C0BAB5;border:3.5px solid #fff;background-clip:padding-box;}`}</style>
       <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" onKeyDown={onKeyDown}
         style={{ width: "100%", maxWidth: 510, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
         {/* Barre de recherche — pilule flottante */}
@@ -203,7 +208,7 @@ export default function RechercheGlobale() {
         </div>
 
         {/* Résultats — carte détachée sous la barre */}
-        {q.trim() && <div ref={listeRef}
+        {q.trim() && <div ref={listeRef} className="rg-liste"
           style={{ overflowY: "auto", padding: "8px 12px 12px", marginTop: 10, background: "#fff", borderRadius: 22, boxShadow: "0 28px 70px rgba(2,20,38,0.32)", animation: "vueIn 0.14s ease" }}>
           {index === null && q.trim() && (
             <p style={{ padding: "22px 16px", fontSize: 12.5, color: "#9aa5b4", textAlign: "center" as const }}>Chargement de l'index…</p>
