@@ -11,6 +11,7 @@ import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
+import PanneauNuit, { NUIT } from "@/components/shared/PanneauNuit";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -543,18 +544,20 @@ function CommercePanel() {
             { label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", sub: `Concentration · ${ref ?? "—"}`, value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
           ];
           return (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
+            <PanneauNuit style={{ marginBottom: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
               {cards.map((c, i) => (
-                <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid #ECEAE7", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", minWidth: 0 }}>
+                <div key={i} style={{ background: NUIT.tuile, borderRadius: 14, padding: "13px 14px", border: `1px solid ${NUIT.tuileBord}`, minWidth: 0 }}>
                   <div style={{ marginBottom: 7 }}>
-                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
-                    {c.sub && <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>{c.sub}</p>}
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: NUIT.label, textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
+                    {c.sub && <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: NUIT.sousLabel, textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>{c.sub}</p>}
                   </div>
-                  <p title={c.text ? c.value : undefined} style={{ fontSize: c.text ? "0.95rem" : "1.15rem", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: c.text ? "normal" : "nowrap", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{c.value}</p>
-                  {c.indicatif && <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.indicatif}</p>}
+                  <p title={c.text ? c.value : undefined} style={{ fontSize: c.text ? "0.95rem" : "1.15rem", fontWeight: 800, color: NUIT.valeur, lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: c.text ? "normal" : "nowrap", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{c.value}</p>
+                  {c.indicatif && <p style={{ fontSize: 10, color: NUIT.indicatif, marginTop: 5, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.indicatif}</p>}
                 </div>
               ))}
             </div>
+            </PanneauNuit>
           );
         })()}
 
@@ -1876,31 +1879,33 @@ export default function StatistiquesPage() {
                   </div>
 
                   {/* KPI cards */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20 }}>
+                  <PanneauNuit style={{ marginBottom: 20 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10 }}>
                     {indicateursAffiches.map(ind => {
                       const v = valeur(selection[0], ind.code, refAnnee);
                       const prec = valeur(selection[0], ind.code, refAnnee - 1);
                       return (
                         <div key={ind.code} onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
-                          style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid #ECEAE7", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", minWidth: 0 }}
-                          onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
+                          style={{ background: NUIT.tuile, borderRadius: 14, padding: "13px 14px", border: `1px solid ${NUIT.tuileBord}`, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth: 0 }}
+                          onMouseEnter={e => { e.currentTarget.style.boxShadow = NUIT.ombreHover; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = NUIT.tuileBordHover; }}
+                          onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = NUIT.tuileBord; }}>
                           <div style={{ marginBottom: 7 }}>
-                            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
-                            <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
+                            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: NUIT.label, textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
+                            <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: NUIT.sousLabel, textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
                           </div>
-                          <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "#dc2626" : "#1a1a2e", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
-                          <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
+                          <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? NUIT.negatif : NUIT.valeur, lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
+                          <p style={{ fontSize: 10, color: NUIT.indicatif, marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
                         </div>
                       );
                     })}
                     {Array.from({ length: Math.max(0, MAX_KPI - indicateursAffiches.length) }).map((_, i) => (
-                      <div key={`empty-${i}`} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1.5px dashed #E8E5E3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90 }}>
-                        <span style={{ fontSize: 20, color: "#C5BFBB", lineHeight: 1 }}>+</span>
-                        <span style={{ fontSize: 10, color: "#C5BFBB", textAlign: "center", lineHeight: 1.5 }}>Choisir dans<br />le filtre</span>
+                      <div key={`empty-${i}`} style={{ background: "transparent", borderRadius: 14, padding: "13px 14px", border: `1.5px dashed ${NUIT.videBord}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90 }}>
+                        <span style={{ fontSize: 20, color: NUIT.videTexte, lineHeight: 1 }}>+</span>
+                        <span style={{ fontSize: 10, color: NUIT.videTexte, textAlign: "center", lineHeight: 1.5 }}>Choisir dans<br />le filtre</span>
                       </div>
                     ))}
                   </div>
+                  </PanneauNuit>
 
                   {/* Graphes */}
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>

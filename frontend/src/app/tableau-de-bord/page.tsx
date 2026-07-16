@@ -15,6 +15,7 @@ import { zoneTypeMeta } from "@/components/shared/zoneTypes";
 import { Skeleton } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { demarrerRedimension } from "@/lib/redimension";
+import PanneauNuit, { NUIT } from "@/components/shared/PanneauNuit";
 
 // Layout effect côté client, effet classique côté serveur (évite le warning SSR)
 const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -1371,13 +1372,13 @@ function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any })
     : def.unit==="jours" ? `${nb} jours`
     : nb;
   return (
-    <div style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
-      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
-      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";}}>
-      <p style={{ fontSize:9, fontWeight:800, color:KPI_ACCENT, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{def.label}</p>
+    <div style={{ background:NUIT.tuile, borderRadius:14, padding:"13px 14px", border:`1px solid ${NUIT.tuileBord}`, transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow=NUIT.ombreHover;e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor=NUIT.tuileBordHover;}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=NUIT.tuileBord;}}>
+      <p style={{ fontSize:9, fontWeight:800, color:NUIT.label, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{def.label}</p>
       <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
-        <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{display}</p>
-        {def.unit==="jours" && <span style={{ fontSize:8.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:5, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>moy.</span>}
+        <p style={{ fontSize:"1.1rem", fontWeight:800, color:NUIT.valeur, lineHeight:1 }}>{display}</p>
+        {def.unit==="jours" && <span style={{ fontSize:8.5, fontWeight:700, color:NUIT.sousLabel, background:"rgba(255,255,255,0.12)", padding:"1px 6px", borderRadius:5, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>moy.</span>}
       </div>
     </div>
   );
@@ -2053,9 +2054,11 @@ export default function TableauDeBordPage() {
                 <ErreurChargement compact onRetry={()=>setTickKpis(t=>t+1)}/>
               </div>
             ) : (
-              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
-                {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
-              </div>
+              <PanneauNuit style={{marginBottom:28}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
+                  {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
+                </div>
+              </PanneauNuit>
             )}
 
             {/* Visualisation permanente : Répartition des entreprises */}

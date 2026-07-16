@@ -12,6 +12,7 @@ import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
 import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
+import PanneauNuit, { NUIT } from "@/components/shared/PanneauNuit";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -1298,41 +1299,43 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           </div>
 
           {/* KPI cards */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          <PanneauNuit style={{ marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10 }}>
             {stCards ? stCards.map(c=>(
               <div key={c.label}
-                style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
-                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
-                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
-                {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
+                style={{ background:NUIT.tuile, borderRadius:14, padding:"13px 14px", border:`1px solid ${NUIT.tuileBord}`, minWidth:0 }}>
+                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:NUIT.label, textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
+                <p style={{ fontSize:"1.15rem", fontWeight:800, color:NUIT.valeur, lineHeight:1 }}>{c.val}</p>
+                {c.ind && <p style={{ fontSize:10, color:NUIT.indicatif, marginTop:5, lineHeight:1 }}>{c.ind}</p>}
               </div>
             )) : <>
             {kpisCards.map(k=>{
               const indicatif = getIndicatif(k);
               return (
                 <div key={k.id} onClick={()=>setKpiActif(k)}
-                  style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}
-                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7"; }}>
+                  style={{ background:NUIT.tuile, borderRadius:14, padding:"13px 14px", border:`1px solid ${NUIT.tuileBord}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow=NUIT.ombreHover; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor=NUIT.tuileBordHover; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=NUIT.tuileBord; }}>
                   {(()=>{ const { main, suffix } = splitKpiTitre(k.label); return (
                     <div style={{ marginBottom:7 }}>
-                      <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{main}</p>
-                      {suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:"#9aa5b4", textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
+                      <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:NUIT.label, textTransform:"uppercase" as const, lineHeight:1.4 }}>{main}</p>
+                      {suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:NUIT.sousLabel, textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
                     </div>
                   ); })()}
-                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{fmtKpi(k)}</p>
-                  {indicatif && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{indicatif}</p>}
+                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:NUIT.valeur, lineHeight:1 }}>{fmtKpi(k)}</p>
+                  {indicatif && <p style={{ fontSize:10, color:NUIT.indicatif, marginTop:5, lineHeight:1 }}>{indicatif}</p>}
                 </div>
               );
             })}
             {Array.from({length:Math.max(0,5-kpisCards.length)}).map((_,i)=>(
-              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
-                <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
-                <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
+              <div key={`empty-${i}`} style={{ background:"transparent", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${NUIT.videBord}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
+                <span style={{ fontSize:20, color:NUIT.videTexte, lineHeight:1 }}>+</span>
+                <span style={{ fontSize:10, color:NUIT.videTexte, textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
               </div>
             ))}
             </>}
           </div>
+          </PanneauNuit>
 
           {/* Graphes */}
           {loading ? (
@@ -1769,16 +1772,18 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
 
         {/* KPI cards (analyse par secteur) */}
         {stCards && (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          <PanneauNuit style={{ marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10 }}>
             {stCards.map(c=>(
               <div key={c.label}
-                style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
-                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:accent, textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
-                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
-                {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
+                style={{ background:NUIT.tuile, borderRadius:14, padding:"13px 14px", border:`1px solid ${NUIT.tuileBord}`, minWidth:0 }}>
+                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:NUIT.label, textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
+                <p style={{ fontSize:"1.15rem", fontWeight:800, color:NUIT.valeur, lineHeight:1 }}>{c.val}</p>
+                {c.ind && <p style={{ fontSize:10, color:NUIT.indicatif, marginTop:5, lineHeight:1 }}>{c.ind}</p>}
               </div>
             ))}
           </div>
+          </PanneauNuit>
         )}
 
         {/* Graphes */}
@@ -3678,30 +3683,32 @@ function OngletNational() {
 
         {/* KPI cards */}
         {kpisEpingles.length>0&&(
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          <PanneauNuit style={{ marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10 }}>
             {kpisEpingles.map(code=>{
               const ind = indicateurs.find(i=>i.code===code);
               const lastA = anneesAffichees.length ? anneesAffichees[anneesAffichees.length-1] : null;
               const v = ind&&lastA!==null ? (ind.valeurs[lastA]??null) : null;
               return (
                 <div key={code} onClick={()=>ind&&setKpiActif(ind)}
-                  style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0, overflow:"hidden" }}
-                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor=`${couleur}40`; if(ind) montrerTip(e, defBdef(ind.code, ind.libelle));}}
+                  style={{ background:NUIT.tuile, borderRadius:14, padding:"13px 14px", border:`1px solid ${NUIT.tuileBord}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0, overflow:"hidden" }}
+                  onMouseEnter={e=>{e.currentTarget.style.boxShadow=NUIT.ombreHover;e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor=NUIT.tuileBordHover; if(ind) montrerTip(e, defBdef(ind.code, ind.libelle));}}
                   onMouseMove={e=>{ if(ind) montrerTip(e, defBdef(ind.code, ind.libelle)); }}
-                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7"; setTip(null);}}>
-                  <p style={{ fontSize:9, fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{ind?.libelle??code}</p>
-                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"#1a1a2e", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
-                  {lastA&&<p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>en {lastA}</p>}
+                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=NUIT.tuileBord; setTip(null);}}>
+                  <p style={{ fontSize:9, fontWeight:800, color:NUIT.label, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{ind?.libelle??code}</p>
+                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:NUIT.valeur, lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
+                  {lastA&&<p style={{ fontSize:10, color:NUIT.indicatif, marginTop:5, lineHeight:1 }}>en {lastA}</p>}
                 </div>
               );
             })}
             {Array.from({length:Math.max(0,5-kpisEpingles.length)}).map((_,i)=>(
-              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
-                <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
-                <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
+              <div key={`empty-${i}`} style={{ background:"transparent", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${NUIT.videBord}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
+                <span style={{ fontSize:20, color:NUIT.videTexte, lineHeight:1 }}>+</span>
+                <span style={{ fontSize:10, color:NUIT.videTexte, textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
               </div>
             ))}
           </div>
+          </PanneauNuit>
         )}
 
         {loading ? (
