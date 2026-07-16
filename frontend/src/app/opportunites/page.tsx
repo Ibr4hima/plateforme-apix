@@ -1200,7 +1200,6 @@ export default function OpportunitesPage() {
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
                     {projetsFiltres.map(p=>{
                       const cPole = (p.pole_nom && POLE_COULEURS[normPole(p.pole_nom)]) || "#C5BFBB";
-                      const invest = fmtInvest(p);
                       return (
                       <div key={p.id} onClick={()=>setProjSel(p)}
                         style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
@@ -1212,13 +1211,10 @@ export default function OpportunitesPage() {
                             });
                           }}>
 
-                        {/* Titre + investissement | badge pôle à droite */}
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
-                          <div style={{minWidth:0,flex:1}}>
-                            <div style={{fontWeight:800,fontSize:15.5,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
-                            {invest&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{invest}</div>}
-                          </div>
-                          {p.pole_nom&&<BadgePole nom={p.pole_nom}/>}
+                        {/* Titre + pôle territoire en sous-titre */}
+                        <div style={{minWidth:0}}>
+                          <div style={{fontWeight:800,fontSize:15.5,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
+                          {p.pole_nom&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{p.pole_nom}</div>}
                         </div>
 
                         {/* Région · Département en rangée épurée */}
