@@ -7,7 +7,7 @@ import VueTerritorialeSenegal, { POLE_COULEURS, normPole } from "@/components/sh
 import Badge from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
-import { Building2, ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDownUp, ArrowUpDown, Building2, ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 
@@ -377,6 +377,7 @@ export default function EntreprisesPage() {
       <BarreTitre titre="Entreprises formalisées"
         droite={onglet==="liste" ? (
           <BarreTitreBadge label="Année de création" detail={triDate==="desc"?"Descendante":"Ascendante"}
+            icon={triDate==="desc"?<ArrowDownUp size={13} color="#fff"/>:<ArrowUpDown size={13} color="#fff"/>}
             onClick={()=>setTriDate(t=>t==="desc"?"asc":"desc")}/>
         ) : null}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises"},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
@@ -462,7 +463,7 @@ export default function EntreprisesPage() {
                   return (
                   <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.33)";}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=cPole;}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
                     {/* Dénomination + forme juridique | badge pôle territoire */}
