@@ -23,8 +23,9 @@ export default function RacineLayout() {
           headerTitleStyle: { fontWeight: "800" },
           contentStyle: { backgroundColor: T.fond },
         }}>
-        <Stack.Screen name="index" options={{ title: "APIX Sénégal" }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="accords" options={{ title: "Accords & Traités" }} />
+        <Stack.Screen name="recherche" options={{ title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: "#fff" }, headerTintColor: "#1a1a2e" }} />
       </Stack>
     </QueryClientProvider>
   );
