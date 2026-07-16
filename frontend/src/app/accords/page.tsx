@@ -448,13 +448,13 @@ export default function AccordsPage() {
                   const dateSec = a.date_expiration
                     ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
                     : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
+                  // Accent du survol = couleur du statut (vert / bleu / orange)
+                  const accent = st ? st.c : "#004f91";
                   return (
                   <div key={a.id} onClick={()=>gate(()=>setSelec(a))}
                     style={{background:estExpire?"#FBFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=estExpire?"#D8D4D0":"rgba(0,79,145,0.28)";
-                      const fl=ev.currentTarget.querySelector("[data-fleche]") as HTMLElement|null; if(fl){fl.style.background="#004f91";fl.style.color="#fff";fl.style.transform="translateX(2px)";}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
-                      const fl=ev.currentTarget.querySelector("[data-fleche]") as HTMLElement|null; if(fl){fl.style.background="rgba(0,79,145,0.06)";fl.style.color="#004f91";fl.style.transform="none";}}}>
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${accent}55`;}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
                     {/* Statut (pastille à point) + référence discrète */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
@@ -481,10 +481,6 @@ export default function AccordsPage() {
                         <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
                         <p style={{fontSize:12.5,fontWeight:700,color:dateSec.vide?"#C5BFBB":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
                       </div>
-                      <span data-fleche title="Voir les détails"
-                        style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,79,145,0.06)",color:"#004f91",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:14,fontSize:15,fontWeight:600,transition:"background 0.18s, color 0.18s, transform 0.18s"}}>
-                        →
-                      </span>
                     </div>
                   </div>
                   );
