@@ -727,17 +727,16 @@ export default function EvenementsPage() {
                       : estEnCours
                       ? { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label:"Événement en cours", bg:"rgba(24,128,56,0.08)" }
                       : null;
-                    const blocC  = estPasse ? "#6b7280" : estEnCours ? "#188038" : "#004f91";
-                    const blocBg = estPasse ? "#F5F4F3" : estEnCours ? "rgba(24,128,56,0.05)" : "rgba(0,79,145,0.04)";
-                    const blocBd = estPasse ? "#E8E5E3" : estEnCours ? "rgba(24,128,56,0.12)" : "rgba(0,79,145,0.10)";
                     // Rôle APIX : bleu par défaut, vert quand l'événement est en cours, gris pour les passés
                     const roleC  = estPasse ? { c:"#6b7280", bg:"#F2F0EF" } : estEnCours ? { c:"#188038", bg:"rgba(24,128,56,0.08)" } : { c:"#004f91", bg:"rgba(0,79,145,0.07)" };
                     const txtC   = estPasse ? "#4a5568" : "#1a1a2e";
+                    // Accent du survol = couleur du statut (à venir bleu, en cours vert, terminé gris)
+                    const hoverC = accent ? accent.c : st ? st.c : "#004f91";
                     return (
                       <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
-                        style={{background:estPasse?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                        style={{background:estPasse?"#FBFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                         onMouseEnter={ev=>{
-                          ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?`${accent.c}40`:estPasse?"#D8D4D0":"rgba(0,79,145,0.25)";
+                          ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${hoverC}55`;
                           // Contenus trop longs : glissent pour révéler la fin
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
@@ -745,24 +744,29 @@ export default function EvenementsPage() {
                           });
                         }}
                         onMouseLeave={ev=>{
-                          ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                          ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
                             if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                           });
                         }}>
 
-                        <div style={{height:3,background:accent?accent.grad:estPasse?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-                        <div style={{padding:"14px 16px 14px",flex:1}}>
+                        {/* Liseré épais conservé uniquement pour l'événement en cours (vert)
+                            et le prochain événement (bleu) */}
+                        {accent&&<div style={{height:3,background:accent.grad,flexShrink:0}}/>}
+                        <div style={{padding:"18px 20px 16px",flex:1,display:"flex",flexDirection:"column" as const,gap:13}}>
                           {/* Statut + rôle de l'APIX */}
-                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
                             {accent ? (
-                              <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:accent.c,background:accent.bg,padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const}}>
+                              <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:accent.c,background:accent.bg,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const}}>
                                 <span style={{width:6,height:6,borderRadius:"50%",background:accent.c,["--pc" as any]:accent.c+"66",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
                                 {accent.label}
                               </span>
                             ) : st ? (
-                              <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
+                              <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 11px",borderRadius:999}}>
+                                <span style={{width:5,height:5,borderRadius:"50%",background:st.c,flexShrink:0}}/>
+                                {st.label}
+                              </span>
                             ) : <span/>}
                             {e.role_apix ? (
                               <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999}}>
@@ -772,32 +776,26 @@ export default function EvenementsPage() {
                           </div>
 
                           {/* Titre + édition */}
-                          <div style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
-                          {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinal(e.edition)}</div>}
+                          <div>
+                            <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
+                            {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
+                          </div>
 
-                          {/* Infos libellées */}
-                          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                            <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Date</p>
-                              <p data-marquee style={{fontSize:12,fontWeight:600,color:dateStr?txtC:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                          {/* Date · Lieu en rangée épurée */}
+                          <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
+                            <div style={{flex:1,minWidth:0}}>
+                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Date</p>
+                              <p data-marquee style={{fontSize:12.5,fontWeight:700,color:dateStr?txtC:"#C5BFBB",fontVariantNumeric:"tabular-nums",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                 <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
                               </p>
                             </div>
-                            <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Lieu</p>
-                              <p data-marquee style={{fontSize:12,fontWeight:600,color:lieu?txtC:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                            <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 18px"}}/>
+                            <div style={{flex:1,minWidth:0}}>
+                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Lieu</p>
+                              <p data-marquee style={{fontSize:12.5,fontWeight:700,color:lieu?txtC:"#C5BFBB",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                 <span style={{display:"inline-block"}}>{lieu||"—"}</span>
                               </p>
                             </div>
-                          </div>
-                        </div>
-
-                        {/* Action */}
-                        <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
-                          <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:blocC,fontWeight:600,transition:"background 0.15s"}}
-                            onMouseEnter={ev=>ev.currentTarget.style.background=estEnCours?"rgba(24,128,56,0.05)":estPasse?"#F2F0EF":"rgba(0,79,145,0.05)"}
-                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                            Voir les détails →
                           </div>
                         </div>
                       </div>
