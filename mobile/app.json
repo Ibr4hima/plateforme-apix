@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "APIX Sénégal",
+    "slug": "apix-senegal",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "apix",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "sn.apix.plateforme",
+      "supportsTablet": true,
+      "icon": "./assets/expo.icon"
+    },
+    "android": {
+      "package": "sn.apix.plateforme",
+      "adaptiveIcon": {
+        "backgroundColor": "#004f91",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      }
+    },
+    "splash": {
+      "backgroundColor": "#004f91",
+      "resizeMode": "contain",
+      "image": "./assets/images/icon.png"
+    },
+    "plugins": ["expo-router", "expo-splash-screen"],
+    "experiments": { "typedRoutes": true }
+  }
+}
