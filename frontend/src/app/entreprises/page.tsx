@@ -447,32 +447,35 @@ export default function EntreprisesPage() {
               </div>
             ):(
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
-                {entreprises.map(e=>(
+                {entreprises.map(e=>{
+                  // Couleur stable par pôle territoire (8 pôles → 8 teintes)
+                  const POLE_COULEURS = ["#004f91","#ca631f","#188038","#6A1B9A","#0891b2","#b91c1c","#a16207","#db2777"];
+                  const iPole = e.pole_territoire_nom ? poles.indexOf(e.pole_territoire_nom) : -1;
+                  const cPole = POLE_COULEURS[(iPole>=0?iPole:0) % POLE_COULEURS.length];
+                  return (
                   <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.33)";}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
-                    {/* Forme juridique + pôle territoire */}
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,minWidth:0}}>
-                      {e.forme_juridique ? (
-                        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>
-                          <span style={{width:5,height:5,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                          {e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}
+                    {/* Dénomination + forme juridique | badge pôle territoire */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
+                      <div style={{minWidth:0,flex:1}}>
+                        <div style={{fontWeight:800,fontSize:15.5,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
+                        {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
+                      </div>
+                      {e.pole_territoire_nom&&(
+                        <span title={e.pole_territoire_nom} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:cPole,background:`${cPole}12`,border:`1px solid ${cPole}2E`,padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
+                          <span style={{width:5,height:5,borderRadius:"50%",background:cPole,flexShrink:0}}/>
+                          {e.pole_territoire_nom}
                         </span>
-                      ) : <span/>}
-                      {e.pole_territoire_nom ? (
-                        <span title={e.pole_territoire_nom} style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",letterSpacing:"0.04em",whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>{e.pole_territoire_nom}</span>
-                      ) : <span/>}
+                      )}
                     </div>
 
-                    {/* Dénomination */}
-                    <div style={{fontWeight:800,fontSize:15.5,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
-
-                    {/* Création · Région en rangée épurée */}
+                    {/* Date de création · Région en rangée épurée */}
                     <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Création</p>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Date de création</p>
                         <p style={{fontSize:12.5,fontWeight:700,color:e.date_creation?"#1a1a2e":"#C5BFBB",fontVariantNumeric:"tabular-nums"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
                       </div>
                       <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 18px"}}/>
@@ -482,7 +485,8 @@ export default function EntreprisesPage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
