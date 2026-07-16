@@ -8,9 +8,10 @@ import Badge from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
 import { ArrowDownUp, ArrowUpDown, Building2, ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useGeoArbre, useNaemaArbre, useRefFormesJuridiques, useRefPolesEntreprises } from "@/lib/referentiels";
+import { fetchTous } from "@/lib/fetchTous";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -302,10 +303,7 @@ export default function EntreprisesPage() {
   const charger = useCallback(async()=>{
     setLoading(true); setErreur(false);
     try {
-      const res=await fetch(`${API_BASE}/entreprises?per_page=100`);
-      if(!res.ok) throw new Error();
-      const data=await res.json();
-      setTous(data.data||[]);
+      setTous(await fetchTous(`${API_BASE}/entreprises`));
     } catch(e){console.error(e); setErreur(true);}
     finally{setLoading(false);}
   },[]);
@@ -323,7 +321,7 @@ export default function EntreprisesPage() {
 
   const isDateFiltered = dateMin<dateMax && (dateStart>dateMin||dateEnd<dateMax);
 
-  const entreprises = tous.filter(e=>{
+  const entreprises = useMemo(() => tous.filter(e=>{
     if (recherche){const q=recherche.toLowerCase();if(!e.nom?.toLowerCase().includes(q)&&!e.forme_juridique?.toLowerCase().includes(q)&&!e.adresse?.toLowerCase().includes(q))return false;}
     if (formesSel.length>0&&!formesSel.includes(e.forme_juridique||""))return false;
     if (secteursSel.length>0){const ids=secteursSel.map((n:string)=>secteurs.find((s:any)=>s.nom===n)?.id).filter(Boolean);if(!ids.some((id:number)=>(e.secteur_ids||[]).includes(id)))return false;}
@@ -340,7 +338,7 @@ export default function EntreprisesPage() {
     const da=a.date_creation||"", db_=b.date_creation||"";
     if(!da&&!db_) return 0; if(!da) return 1; if(!db_) return -1;
     return triDate==="asc" ? da.localeCompare(db_) : db_.localeCompare(da);
-  });
+  }), [tous, recherche, formesSel, secteursSel, branchesSel, activitesSel, regionsSel, deptsSel, arrondsSel, polesSel, isDateFiltered, dateStart, dateEnd, triDate, secteurs]);
 
   const hasFilter=!!recherche||formesSel.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0||regionsSel.length>0||deptsSel.length>0||arrondsSel.length>0||polesSel.length>0||isDateFiltered;
   const reinit=()=>{setRecherche("");setFormesSel([]);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);setRegionsSel([]);setDeptsSel([]);setArrondsSel([]);setPolesSel([]);setDateStart(dateMin);setDateEnd(dateMax);};

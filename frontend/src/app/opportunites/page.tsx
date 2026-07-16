@@ -11,6 +11,7 @@ import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Fuse from "@/lib/fuse";
 import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
+import { fetchTous } from "@/lib/fetchTous";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -931,11 +932,9 @@ export default function OpportunitesPage() {
   const chargerProjets = useCallback(async()=>{
     setProjLoad(true); setProjErr(false);
     try {
-      const res = await fetch(`${API}/projets?per_page=100`);
-      if (!res.ok) throw new Error();
-      const d = await res.json();
-      setProjets(d.data||[]);
-      setStats(prev=>({...prev, projets:d.total||0}));
+      const data = await fetchTous(`${API}/projets`);
+      setProjets(data);
+      setStats(prev=>({...prev, projets:data.length}));
     } catch { setProjErr(true); }
     finally { setProjLoad(false); }
   },[]);
@@ -943,11 +942,9 @@ export default function OpportunitesPage() {
   const chargerPots = useCallback(async()=>{
     setPotsLoad(true); setPotsErr(false);
     try {
-      const res = await fetch(`${API}/opportunites/potentialites?per_page=100`);
-      if (!res.ok) throw new Error();
-      const d = await res.json();
-      setPots(d.data||[]);
-      setStats(prev=>({...prev, potentialites:d.total||0}));
+      const data = await fetchTous(`${API}/opportunites/potentialites`);
+      setPots(data);
+      setStats(prev=>({...prev, potentialites:data.length}));
     } catch { setPotsErr(true); }
     finally { setPotsLoad(false); }
   },[]);
@@ -955,11 +952,9 @@ export default function OpportunitesPage() {
   const chargerAvgs = useCallback(async()=>{
     setAvgsLoad(true); setAvgsErr(false);
     try {
-      const res = await fetch(`${API}/opportunites/avantages?per_page=100`);
-      if (!res.ok) throw new Error();
-      const d = await res.json();
-      setAvgs(d.data||[]);
-      setStats(prev=>({...prev, activites:d.total||0}));
+      const data = await fetchTous(`${API}/opportunites/avantages`);
+      setAvgs(data);
+      setStats(prev=>({...prev, activites:data.length}));
     } catch { setAvgsErr(true); }
     finally { setAvgsLoad(false); }
   },[]);
@@ -967,11 +962,11 @@ export default function OpportunitesPage() {
   useEffect(()=>{ chargerProjets(); chargerPots(); chargerAvgs(); },[chargerProjets,chargerPots,chargerAvgs]);
 
   // ── Filtrage projets ──
-  // Arbre secteurs à plat pour filtrage
-  const branchesPlats = secteurs.flatMap((s:any)=>s.branches||[]);
-  const activitesPlats = branchesPlats.flatMap((b:any)=>b.activites||[]);
+  // Arbre secteurs à plat, partagé par les trois onglets (mémoïsé)
+  const branchesPlats = useMemo(()=>secteurs.flatMap((s:any)=>s.branches||[]),[secteurs]);
+  const activitesPlats = useMemo(()=>branchesPlats.flatMap((b:any)=>b.activites||[]),[branchesPlats]);
 
-  const projetsFiltres = projets.filter(p=>{
+  const projetsFiltres = useMemo(()=>projets.filter(p=>{
     if (projQ) { const q=projQ.toLowerCase(); if (!p.titre_projet?.toLowerCase().includes(q)&&!p.porteur_projet?.toLowerCase().includes(q)) return false; }
     if (projPoles.length>0&&!projPoles.includes(p.pole_nom||"")) return false;
     if (projSects.length>0) {
@@ -990,11 +985,11 @@ export default function OpportunitesPage() {
     if (projDepts.length>0&&!projDepts.includes(p.departement_nom||"")) return false;
     if (projArrs.length>0&&!projArrs.includes(p.arrondissement_nom||"")) return false;
     return true;
-  });
+  }),[projets, projQ, projPoles, projSects, projBranches, projActivites, projRegions, projDepts, projArrs, secteurs, branchesPlats, activitesPlats]);
 
   // ── Filtrage potentialités ──
-  const potBranchesPlats = secteurs.flatMap((s:any)=>s.branches||[]);
-  const potActivitesPlats = potBranchesPlats.flatMap((b:any)=>b.activites||[]);
+  const potBranchesPlats = branchesPlats;
+  const potActivitesPlats = activitesPlats;
 
   // Enrichissement texte pour recherche
   const potsWithText = useMemo(()=>pots.map(p=>({
@@ -1016,7 +1011,7 @@ export default function OpportunitesPage() {
     potsQ.trim() ? fuse.search(potsQ.trim()).map((r:any)=>r.item) : potsWithText
   ,[potsQ,fuse,potsWithText]);
 
-  const potsFiltres = potsBase.filter((p:any)=>{
+  const potsFiltres = useMemo(()=>potsBase.filter((p:any)=>{
     if (potsNiveau.length>0&&!potsNiveau.includes(p.niveau)) return false;
     if (potsPoles.length>0&&!potsPoles.includes(p.pole_nom||"")) return false;
     if (potsSects.length>0) {
@@ -1037,11 +1032,11 @@ export default function OpportunitesPage() {
       if (!atoutIds.some((id:number)=>(p.avantage_ids||[]).includes(id))) return false;
     }
     return true;
-  });
+  }),[potsBase, potsNiveau, potsPoles, potsSects, potsBranches, potsActivites, potsAtouts, secteurs, potBranchesPlats, potActivitesPlats, refAvantages]);
 
   // ── Filtrage avantages ──
-  const avgBranchesPlats = secteurs.flatMap((s:any)=>s.branches||[]);
-  const avgActivitesPlats = avgBranchesPlats.flatMap((b:any)=>b.activites||[]);
+  const avgBranchesPlats = branchesPlats;
+  const avgActivitesPlats = activitesPlats;
 
   const avgsBase = useMemo(()=>{
     const q=avgsQ.trim().toLowerCase();
@@ -1053,7 +1048,7 @@ export default function OpportunitesPage() {
     });
   },[avgsQ,avgs]);
 
-  const avgsFiltres = avgsBase.filter(a=>{
+  const avgsFiltres = useMemo(()=>avgsBase.filter(a=>{
     if (avgSects.length>0) {
       const secIds = avgSects.map(n=>secteurs.find((s:any)=>s.nom===n)?.id).filter(Boolean);
       if (!secIds.includes(a.secteur_id)) return false;
@@ -1071,7 +1066,7 @@ export default function OpportunitesPage() {
       if (!hasType) return false;
     }
     return true;
-  });
+  }),[avgsBase, avgSects, avgBranches, avgActivites, avgTypes, secteurs, avgBranchesPlats, avgActivitesPlats]);
 
   // ── Helpers filtres ──
   const hasFilterProj = projQ||projPoles.length>0||projSects.length>0||projBranches.length>0||projActivites.length>0||projRegions.length>0||projDepts.length>0||projArrs.length>0;

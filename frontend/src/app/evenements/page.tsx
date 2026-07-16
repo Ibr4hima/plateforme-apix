@@ -6,9 +6,10 @@ import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { CalendarDays, ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
+import { fetchTous } from "@/lib/fetchTous";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -608,17 +609,14 @@ export default function EvenementsPage() {
   const charger = useCallback(async()=>{
     setLoading(true); setErreur(false);
     try {
-      const res = await fetch(`${API_BASE}/evenements?per_page=100`);
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setTous(data.data||[]);
+      setTous(await fetchTous(`${API_BASE}/evenements`));
     } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
   },[]);
 
   useEffect(()=>{ charger(); },[charger]);
 
-  const evenements = tous.filter(e=>{
+  const evenements = useMemo(() => tous.filter(e=>{
     if (recherche) {
       const q = recherche.toLowerCase();
       if (!e.nom_event?.toLowerCase().includes(q) && !e.organisateur?.toLowerCase().includes(q) && !e.ville?.toLowerCase().includes(q) && !e.pays_hote_nom?.toLowerCase().includes(q)) return false;
@@ -638,10 +636,10 @@ export default function EvenementsPage() {
     if (branchesSel.length>0 && !branchesSel.some((b:string)=>(e.branche_noms||[]).includes(b))) return false;
     if (activitesSel.length>0 && !activitesSel.some((a:string)=>(e.activite_noms||[]).includes(a))) return false;
     return true;
-  });
+  }), [tous, recherche, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel]);
 
   // Prochain événement à venir (date la plus proche dans le futur)
-  const prochainId: number|null = (()=>{
+  const prochainId: number|null = useMemo(()=>{
     const today = new Date(); today.setHours(0,0,0,0);
     let best: any = null, bestD: Date|null = null;
     evenements.forEach(e=>{
@@ -650,7 +648,7 @@ export default function EvenementsPage() {
       if (d && d>today && (!bestD || d<bestD)) { bestD=d; best=e; }
     });
     return best?.id ?? null;
-  })();
+  },[evenements]);
 
   const hasFilter = !!recherche||!!statutFiltre||paysFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit = ()=>{ setRecherche(""); setStatutFiltre(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };

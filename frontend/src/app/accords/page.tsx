@@ -6,10 +6,11 @@ import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
+import { fetchTous } from "@/lib/fetchTous";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -207,10 +208,7 @@ export default function AccordsPage() {
   const charger = useCallback(async()=>{
     setLoading(true); setErreur(false);
     try {
-      const res=await fetch(`${API_BASE}/accords?per_page=100`);
-      if(!res.ok) throw new Error();
-      const data=await res.json();
-      setTous(data.data||[]);
+      setTous(await fetchTous(`${API_BASE}/accords`));
     } catch(e){console.error(e); setErreur(true);}
     finally{setLoading(false);}
   },[]);
@@ -230,7 +228,7 @@ export default function AccordsPage() {
     return noms.join(", ");
   };
 
-  const accords = tous.filter(a=>{
+  const accords = useMemo(() => tous.filter(a=>{
     // Onglet actif = Traités Bilatéraux d'Investissement (l'existant sans type est bilatéral)
     if ((a.type_accord || "tbi") !== "tbi") return false;
     if (recherche) {
@@ -263,7 +261,8 @@ export default function AccordsPage() {
     if (!a.date_expiration) return 1;
     if (!b.date_expiration) return -1;
     return a.date_expiration.localeCompare(b.date_expiration);
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [tous, recherche, statutFiltre, paysIdsFiltres, apixFiltre, secteursSel, branchesSel, activitesSel, secteurs, allPays]);
 
   const stats = {
     total:      tous.length,

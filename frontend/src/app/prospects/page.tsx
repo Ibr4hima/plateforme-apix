@@ -3,9 +3,10 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Building2, ChevronDown, ChevronUp, Clock, FileText, Globe, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Phone, Search, Send, SlidersHorizontal, User, Video, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useNaema } from "@/lib/referentiels";
+import { fetchTous } from "@/lib/fetchTous";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -628,14 +629,11 @@ export default function ProspectsPage() {
   const charger = useCallback(async () => {
     setLoading(true);
     try {
-      const [rCibles, rContact, rTermines] = await Promise.all([
-        fetch(`${API_BASE}/prospects?conclu=false&contactes=false&per_page=100`).then(r => r.json()),
-        fetch(`${API_BASE}/prospects?conclu=false&contactes=true&per_page=100`).then(r => r.json()),
-        fetch(`${API_BASE}/prospects?conclu=true&per_page=100`).then(r => r.json()),
+      const [c, e, t] = await Promise.all([
+        fetchTous(`${API_BASE}/prospects?conclu=false&contactes=false`),
+        fetchTous(`${API_BASE}/prospects?conclu=false&contactes=true`),
+        fetchTous(`${API_BASE}/prospects?conclu=true`),
       ]);
-      const c = rCibles.data   || [];
-      const e = rContact.data  || [];
-      const t = rTermines.data || [];
       setCibles(c);
       setEnContact(e);
       setTermines(t);
@@ -651,16 +649,19 @@ export default function ProspectsPage() {
 
   useEffect(() => { charger(); }, [charger]);
 
-  // Filtrage
-  const filtrer = (liste: any[]) => liste.filter(p => {
-    if (recherche) {
-      const q = recherche.toLowerCase();
-      if (!p.nom?.toLowerCase().includes(q)) return false;
-    }
-    if (paysSel.length > 0 && !paysSel.includes(p.siege_nom || "")) return false;
-    if (secteursSel.length > 0 && !secteursSel.some((s: string) => (p.secteur_noms || []).includes(s))) return false;
-    return true;
-  });
+  // Filtrage (mémoïsé : recalculé uniquement quand données ou filtres changent)
+  const listeCourante = useMemo(() => {
+    const liste = onglet === "cibles" ? cibles : onglet === "historique" ? enContact : termines;
+    return liste.filter(p => {
+      if (recherche) {
+        const q = recherche.toLowerCase();
+        if (!p.nom?.toLowerCase().includes(q)) return false;
+      }
+      if (paysSel.length > 0 && !paysSel.includes(p.siege_nom || "")) return false;
+      if (secteursSel.length > 0 && !secteursSel.some((s: string) => (p.secteur_noms || []).includes(s))) return false;
+      return true;
+    });
+  }, [onglet, cibles, enContact, termines, recherche, paysSel, secteursSel]);
 
   const togglePays    = (v: string) => setPaysSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
   const toggleSecteur = (v: string) => setSecteursSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
@@ -669,7 +670,6 @@ export default function ProspectsPage() {
   const reinit = () => { setRecherche(""); setPaysSel([]); setSecteursSel([]); };
   const nbFiltres = (recherche ? 1 : 0) + paysSel.length + secteursSel.length;
 
-  const listeCourante = filtrer(onglet === "cibles" ? cibles : onglet === "historique" ? enContact : termines);
   const total = cibles.length + enContact.length + termines.length;
 
   return (
