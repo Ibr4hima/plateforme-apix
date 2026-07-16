@@ -38,6 +38,8 @@ export default function RacineLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="accords" options={{ title: "Accords & Traités" }} />
         <Stack.Screen name="recherche" options={{ title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: "#fff" }, headerTintColor: "#1a1a2e" }} />
+        <Stack.Screen name="code/index" options={{ title: "Code des investissements" }} />
+        <Stack.Screen name="code/[chapitre]" options={{ title: "Chapitre" }} />
       </Stack>
     </QueryClientProvider>
   );
