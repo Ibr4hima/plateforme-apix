@@ -280,7 +280,7 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
                     <th key={col} onClick={() => toggleSort(col)}
                       style={{
                         padding: "11px 16px",
-                        textAlign: alignRight ? "center" as const : "left" as const,
+                        textAlign: alignRight ? "right" as const : "left" as const,
                         fontSize: 10, fontWeight: 800, color: active ? "#004f91" : "#4a5568",
                         textTransform: "uppercase" as const, letterSpacing: "0.1em",
                         whiteSpace: "nowrap", cursor: "pointer", userSelect: "none" as const,
@@ -290,7 +290,7 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
                         transition: "background 0.12s, color 0.12s",
                       }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 5,
-                        justifyContent: alignRight ? "center" as const : "flex-start" as const }}>
+                        justifyContent: alignRight ? "flex-end" as const : "flex-start" as const }}>
                         <span>{col}</span>
                         {active
                           ? (sortDir === "asc"
@@ -316,7 +316,7 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
                     return (
                       <td key={col} style={{
                         padding: "9px 16px",
-                        textAlign: alignRight ? "center" as const : "left" as const,
+                        textAlign: alignRight ? "right" as const : "left" as const,
                         color: negatif ? "#dc2626" : "#4a5568",
                         fontWeight: isNum || isRank ? 600 : 500,
                         whiteSpace: "nowrap",

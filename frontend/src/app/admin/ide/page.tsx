@@ -427,16 +427,18 @@ export default function AdminIdePage() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: "2px solid #E8E5E3" }}>
-                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#4a5568" }}>Pays</th>
+                <th style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>Pays</th>
                 {Object.keys(SERIES_LABELS).map(k => (
-                  <th key={k} style={{ padding: "8px 12px", textAlign: "center", fontWeight: 600, color: "#4a5568" }}>{SERIES_LABELS[k]}</th>
+                  <th key={k} style={{ padding: "10px 12px", textAlign: "center", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>{SERIES_LABELS[k]}</th>
                 ))}
-                <th style={{ padding: "8px 12px", textAlign: "center", fontWeight: 600, color: "#4a5568" }}>Action</th>
+                <th style={{ padding: "10px 12px", textAlign: "center", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {mergedPays.map(s => (
-                <tr key={s.ref_pays_id} style={{ borderBottom: "1px solid #F0EEEC", opacity: s.hasData ? 1 : 0.4 }}>
+                <tr key={s.ref_pays_id} style={{ borderBottom: "1px solid #F0EEEC", opacity: s.hasData ? 1 : 0.4, transition: "background 0.12s" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                   <td style={{ padding: "10px 12px" }}>
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <Flag code={s.code_iso2} />

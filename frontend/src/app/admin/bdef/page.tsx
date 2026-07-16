@@ -558,10 +558,10 @@ export default function AdminBdefPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid #E8E5E3" }}>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#4a5568" }}>Indicateur</th>
-                  <th style={{ padding: "8px 8px", textAlign: "left", fontWeight: 600, color: "#4a5568" }}>Unité</th>
+                  <th style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur</th>
+                  <th style={{ padding: "10px 8px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>Unité</th>
                   {valeurs.annees.map(a => (
-                    <th key={a} style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#4a5568" }}>{a}</th>
+                    <th key={a} style={{ padding: "10px 12px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#4a5568", letterSpacing: "0.06em" }}>{a}</th>
                   ))}
                 </tr>
               </thead>
@@ -570,7 +570,9 @@ export default function AdminBdefPage() {
                   <Fragment key={cat}>
                     <tr><td colSpan={valeurs.annees.length + 2} style={{ padding: "10px 12px 4px", fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.08em", textTransform: "uppercase" }}>{cat}</td></tr>
                     {inds.map(ind => (
-                      <tr key={ind.code} style={{ borderBottom: "1px solid #F0EEEC" }}>
+                      <tr key={ind.code} style={{ borderBottom: "1px solid #F0EEEC", transition: "background 0.12s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "#FCFBFA")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                         <td style={{ padding: "8px 12px", color: "#1a1a2e" }}>{ind.libelle}</td>
                         <td style={{ padding: "8px 8px", color: "#888", fontSize: 12 }}>{ind.unite}</td>
                         {valeurs.annees.map(a => {
@@ -615,7 +617,7 @@ export default function AdminBdefPage() {
             <thead>
               <tr style={{ borderBottom: "2px solid #E8E5E3" }}>
                 {["Fichier", "Statut", "Années", "Valeurs", "En revue", "Date"].map(h => (
-                  <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#4a5568" }}>{h}</th>
+                  <th key={h} style={{ padding: "10px 12px", textAlign: ["Valeurs", "En revue"].includes(h) ? "right" as const : "left" as const, fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -624,13 +626,15 @@ export default function AdminBdefPage() {
                 const c = im.statut === "termine" ? "#1a7a3c" : im.statut === "en_revue" ? "#B7661B" : "#888";
                 const bg = im.statut === "termine" ? "#EDFBF1" : im.statut === "en_revue" ? "#FFF9F0" : "#F2F0EF";
                 return (
-                  <tr key={im.id} style={{ borderBottom: "1px solid #F0EEEC" }}>
+                  <tr key={im.id} style={{ borderBottom: "1px solid #F0EEEC", transition: "background 0.12s" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                     <td style={{ padding: "8px 12px", color: "#1a1a2e" }}>{im.fichier}</td>
                     <td style={{ padding: "8px 12px" }}><span style={{ background: bg, color: c, borderRadius: 20, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>{im.statut}</span></td>
                     <td style={{ padding: "8px 12px", color: "#666" }}>{im.annees?.length ? `${im.annees[0]}–${im.annees[im.annees.length - 1]}` : "–"}</td>
-                    <td style={{ padding: "8px 12px", color: "#666" }}>{im.nb_valeurs || "–"}</td>
-                    <td style={{ padding: "8px 12px", color: "#666" }}>{im.nb_revue || "–"}</td>
-                    <td style={{ padding: "8px 12px", color: "#888", fontSize: 12 }}>{im.cree_le ? new Date(im.cree_le).toLocaleString("fr-FR") : "–"}</td>
+                    <td style={{ padding: "8px 12px", color: "#666", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{im.nb_valeurs ? im.nb_valeurs.toLocaleString("fr-FR") : "–"}</td>
+                    <td style={{ padding: "8px 12px", color: "#666", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{im.nb_revue ? im.nb_revue.toLocaleString("fr-FR") : "–"}</td>
+                    <td style={{ padding: "8px 12px", color: "#888", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{im.cree_le ? new Date(im.cree_le).toLocaleString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–"}</td>
                   </tr>
                 );
               })}

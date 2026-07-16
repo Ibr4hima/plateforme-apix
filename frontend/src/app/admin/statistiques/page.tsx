@@ -293,7 +293,9 @@ export default function AdminStatistiquesPage() {
               </thead>
               <tbody>
                 {couverture.map(c => (
-                  <tr key={c.pays_id} style={{ borderBottom: "1px solid #F5F4F3" }}>
+                  <tr key={c.pays_id} style={{ borderBottom: "1px solid #F5F4F3", transition: "background 0.12s" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                     <td style={{ padding: "10px 12px" }}>
                       <span style={{ fontWeight: 600, color: "#1a1a2e" }}>{c.pays}</span>
                     </td>
@@ -509,10 +511,12 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
                 ) : lignes.length === 0 ? (
                   <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "28px" }}>Aucune ligne ne correspond.</td></tr>
                 ) : lignes.map(l => (
-                  <tr key={l.id} style={{ borderTop: "1px solid #F4F2F0" }}>
+                  <tr key={l.id} style={{ borderTop: "1px solid #F4F2F0", transition: "background 0.12s" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                     <td style={{ ...TD, fontWeight: 600, color: "#2d3540" }}>{l.exportateur}</td>
                     <td style={{ ...TD, fontWeight: 600, color: "#2d3540" }}>{l.importateur}</td>
-                    <td style={TD}>{l.annee}</td>
+                    <td style={{ ...TD, fontVariantNumeric: "tabular-nums" }}>{l.annee}</td>
                     <td style={{ ...TD, color: "#4a5568" }}>{l.ressource}</td>
                     <td style={{ ...TD, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 600, color: "#004f91" }} title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtVal(l.valeur)}</td>
                   </tr>

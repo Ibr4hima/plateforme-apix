@@ -148,7 +148,9 @@ export default function UtilisateursAdminPage() {
               {users.map(u => {
                 const estDev = u.role === "dev";
                 return (
-                  <tr key={u.id} style={{ borderBottom: "1px solid #F5F4F3", opacity: u.is_active ? 1 : 0.6 }}>
+                  <tr key={u.id} style={{ borderBottom: "1px solid #F5F4F3", opacity: u.is_active ? 1 : 0.6, transition: "background 0.12s" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                     {/* Prénom / Nom — sauvegardés à la sortie du champ */}
                     <td style={TD}>
                       <input value={u.prenom || ""} placeholder="Prénom(s)" disabled={estDev && false}
