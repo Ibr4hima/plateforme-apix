@@ -46,7 +46,6 @@ const PAGES: Resultat[] = [
   { type: "page", nom: "IDE",                    sous: "Investissements directs étrangers", href: "/ide" },
   { type: "page", nom: "Statistiques",           sous: "Commerce & macroéconomie",  href: "/statistiques" },
   { type: "page", nom: "Tableau de bord",        sous: "Vue d'ensemble",            href: "/tableau-de-bord" },
-  { type: "page", nom: "Administration",         sous: "Gestion des données",       href: "/admin" },
 ];
 
 // Index chargé une seule fois par session (relancé si un chargement a échoué)
@@ -126,7 +125,7 @@ export default function RechercheGlobale() {
 
   // Résultats groupés dans l'ordre des GROUPES, plafonnés par groupe
   const resultats: Resultat[] = useMemo(() => {
-    if (!q.trim()) return PAGES;
+    if (!q.trim()) return [];
     if (!fuse) return [];
     const bruts: Resultat[] = fuse.search(q.trim(), { limit: 60 }).map((r: any) => r.item);
     const parGroupe: Record<string, Resultat[]> = {};
@@ -173,10 +172,6 @@ export default function RechercheGlobale() {
 
   if (!monte || !ouvert) return null;
 
-  const Kbd = ({ children }: { children: React.ReactNode }) => (
-    <kbd style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", background: "#F5F4F3", border: "1px solid #E8E5E3", borderBottomWidth: 2, borderRadius: 5, padding: "2px 6px", fontFamily: "var(--font-google-sans)" }}>{children}</kbd>
-  );
-
   let dernierGroupe = "";
   return createPortal(
     <div onClick={fermer}
@@ -190,11 +185,10 @@ export default function RechercheGlobale() {
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
             placeholder="Rechercher une entreprise, un pays, un accord, une page…"
             style={{ flex: 1, border: "none", outline: "none", fontSize: 14.5, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent" }} />
-          <Kbd>esc</Kbd>
         </div>
 
         {/* Résultats */}
-        <div ref={listeRef} style={{ overflowY: "auto", padding: "8px 8px 10px" }}>
+        {(q.trim() || resultats.length > 0) && <div ref={listeRef} style={{ overflowY: "auto", padding: "8px 8px 10px" }}>
           {index === null && q.trim() && (
             <p style={{ padding: "22px 16px", fontSize: 12.5, color: "#9aa5b4", textAlign: "center" as const }}>Chargement de l'index…</p>
           )}
@@ -223,19 +217,12 @@ export default function RechercheGlobale() {
                     <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.nom}</span>
                     {r.sous && <span style={{ display: "block", fontSize: 11, color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{r.sous}</span>}
                   </span>
-                  {estActif && <Kbd>↵</Kbd>}
                 </button>
               </div>
             );
           })}
-        </div>
+        </div>}
 
-        {/* Pied : aide clavier */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "9px 16px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", flexShrink: 0 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#9aa5b4" }}><Kbd>↑</Kbd><Kbd>↓</Kbd> naviguer</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#9aa5b4" }}><Kbd>↵</Kbd> ouvrir</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#9aa5b4", marginLeft: "auto" }}><Kbd>⌘K</Kbd> ou <Kbd>Ctrl K</Kbd></span>
-        </div>
       </div>
     </div>,
     document.body,

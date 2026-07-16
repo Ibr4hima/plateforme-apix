@@ -489,13 +489,11 @@ export default function Navbar() {
           {/* ── CTA Connexion ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {/* Recherche globale (⌘K) */}
-            <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)"
-              style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 34, padding: "0 12px", borderRadius: 999, border: "1px solid #ECEAE7", background: "#F5F4F3", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
-              <Search size={13} style={{ color: "#4a5568" }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#4a5568" }}>Rechercher</span>
-              <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", background: "#fff", border: "1px solid #E8E5E3", borderRadius: 5, padding: "1px 5px" }}>⌘K</span>
+            <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
+              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid #ECEAE7", background: "#F5F4F3", cursor: "pointer", transition: "all 0.18s", boxShadow: "0 1px 2px rgba(0,0,0,0.03)" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#004f91"; e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,79,145,0.30)"; e.currentTarget.style.transform = "translateY(-1px)"; (e.currentTarget.firstElementChild as any).style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; e.currentTarget.style.borderColor = "#ECEAE7"; e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; (e.currentTarget.firstElementChild as any).style.color = "#4a5568"; }}>
+              <Search size={15} style={{ color: "#4a5568", transition: "color 0.18s" }} />
             </button>
             {/* Bouton temporaire vers l'espace d'administration */}
             {isAdminRole && <Link href="/admin/evenements"
