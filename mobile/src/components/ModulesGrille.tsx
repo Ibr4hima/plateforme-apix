@@ -1,24 +1,13 @@
-// Modules — pages de 4 cards en défilement horizontal manuel, dans le même
-// langage que les cards Aperçu (blanc, ombre douce, filet bleu) avec les
-// icônes Material Symbols de la plateforme.
+// Modules — liste verticale premium : pastille d'icône Material Symbols,
+// numéro d'ordre discret (comme l'accueil du site) et chevron en médaillon.
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
 import { MODULES, POLICE, T } from "@/theme";
 
-const LARGEUR = Dimensions.get("window").width;
-
-function decouper<T>(liste: readonly T[], taille: number): T[][] {
-  const pages: T[][] = [];
-  for (let i = 0; i < liste.length; i += taille) pages.push(liste.slice(i, i + taille) as T[]);
-  return pages;
-}
-
 export default function ModulesGrille() {
   const router = useRouter();
-  const [page, setPage] = useState(0);
-  const pages = decouper(MODULES, 4);
 
   const ouvrir = (m: (typeof MODULES)[number]) => {
     if (m.href) router.push(m.href as any);
@@ -28,48 +17,41 @@ export default function ModulesGrille() {
   return (
     <View style={s.bloc}>
       <Text style={s.titre}>MODULES</Text>
-      <ScrollView
-        horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / LARGEUR))}>
-        {pages.map((modules, i) => (
-          <View key={i} style={[s.page, { width: LARGEUR }]}>
-            {modules.map(m => (
-              <Pressable key={m.cle} onPress={() => ouvrir(m)}
-                style={({ pressed }) => [s.carte, pressed && { transform: [{ scale: 0.97 }] }]}>
-                <View style={s.carteFilet} />
-                <View style={s.pastille}>
-                  <Symbole nom={m.icone} taille={20} couleur={T.bleu} />
-                </View>
-                <Text style={s.carteTitre} numberOfLines={2}>{m.titre}</Text>
-              </Pressable>
-            ))}
-          </View>
+      <View style={s.liste}>
+        {MODULES.map((m, i) => (
+          <Pressable key={m.cle} onPress={() => ouvrir(m)}
+            style={({ pressed }) => [s.ligne, pressed && s.lignePressee]}>
+            <View style={s.pastille}>
+              <Symbole nom={m.icone} taille={21} couleur={T.bleu} />
+            </View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={s.ligneTitre} numberOfLines={1}>{m.titre}</Text>
+            </View>
+            <Text style={s.numero}>{String(i + 1).padStart(2, "0")}</Text>
+            <View style={s.chevron}>
+              <Ionicons name="chevron-forward" size={13} color={T.bleu} />
+            </View>
+          </Pressable>
         ))}
-      </ScrollView>
-      {pages.length > 1 && (
-        <View style={s.points}>
-          {pages.map((_, i) => <View key={i} style={[s.point, i === page && s.pointActif]} />)}
-        </View>
-      )}
+      </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  bloc: { marginTop: 30 },
-  titre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.6, marginBottom: 12, paddingHorizontal: 18 },
-  page: { flexDirection: "row", flexWrap: "wrap", gap: 12, paddingHorizontal: 18 },
-  carte: {
-    width: (LARGEUR - 36 - 12) / 2, backgroundColor: "#fff", borderRadius: 20,
-    paddingHorizontal: 16, paddingVertical: 15, minHeight: 122, justifyContent: "space-between",
-    overflow: "hidden",
-    shadowColor: "#001e3c", shadowOpacity: 0.07, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
+  bloc: { marginTop: 30, paddingHorizontal: 18 },
+  titre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.6, marginBottom: 12 },
+  liste: { gap: 9 },
+  ligne: {
+    flexDirection: "row", alignItems: "center", gap: 14,
+    backgroundColor: "#fff", borderRadius: 18,
+    paddingVertical: 13, paddingLeft: 13, paddingRight: 15,
+    shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
+    elevation: 2,
   },
-  carteFilet: { position: "absolute", left: 16, right: 16, top: 0, height: 2.5, borderRadius: 2, backgroundColor: "rgba(0,79,145,0.14)" },
-  pastille: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,79,145,0.08)" },
-  carteTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, lineHeight: 18, marginTop: 13 },
-  points: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 13 },
-  point: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(0,79,145,0.18)" },
-  pointActif: { width: 18, backgroundColor: T.bleu },
+  lignePressee: { transform: [{ scale: 0.985 }], backgroundColor: "#FBFDFF" },
+  pastille: { width: 44, height: 44, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,79,145,0.07)" },
+  ligneTitre: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2 },
+  numero: { fontSize: 11, fontFamily: POLICE.gras, color: "#C9D4DF", letterSpacing: 0.5, fontVariant: ["tabular-nums"] },
+  chevron: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,79,145,0.06)" },
 });
