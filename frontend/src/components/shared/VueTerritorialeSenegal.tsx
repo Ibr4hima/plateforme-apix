@@ -33,8 +33,9 @@ const NAME_MAP: Record<string, string> = {
   "Kolda":"Kolda","Sedhiou":"Sédhiou","Ziguinchor":"Ziguinchor",
 };
 
-// Couleurs des pôles territoriaux (par nom normalisé)
-const POLE_COULEURS: Record<string, string> = {
+// Couleurs des pôles territoriaux (par nom normalisé) — partagées avec les
+// badges de pôle (cards Entreprises…)
+export const POLE_COULEURS: Record<string, string> = {
   "dakar": "#9DC3E6",        // bleu clair
   "thies": "#9DD3DE",        // bleu-teal
   "diourbel louga": "#9DDEC2", // menthe
@@ -44,7 +45,7 @@ const POLE_COULEURS: Record<string, string> = {
   "sud": "#E6C79D",          // pêche
   "sud est": "#E6AC9D",      // corail clair
 };
-const normPole = (s: string) =>
+export const normPole = (s: string) =>
   (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/pole/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
 
 export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {

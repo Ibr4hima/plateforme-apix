@@ -3,7 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
-import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
+import VueTerritorialeSenegal, { POLE_COULEURS, normPole } from "@/components/shared/VueTerritorialeSenegal";
 import Badge from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
@@ -448,10 +448,8 @@ export default function EntreprisesPage() {
             ):(
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {entreprises.map(e=>{
-                  // Couleur stable par pôle territoire (8 pôles → 8 teintes)
-                  const POLE_COULEURS = ["#004f91","#ca631f","#188038","#6A1B9A","#0891b2","#b91c1c","#a16207","#db2777"];
-                  const iPole = e.pole_territoire_nom ? poles.indexOf(e.pole_territoire_nom) : -1;
-                  const cPole = POLE_COULEURS[(iPole>=0?iPole:0) % POLE_COULEURS.length];
+                  // Couleur du pôle : même table que la carte des pôles territoires
+                  const cPole = (e.pole_territoire_nom && POLE_COULEURS[normPole(e.pole_territoire_nom)]) || "#E8E5E3";
                   return (
                   <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
@@ -465,8 +463,7 @@ export default function EntreprisesPage() {
                         {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
                       </div>
                       {e.pole_territoire_nom&&(
-                        <span title={e.pole_territoire_nom} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:cPole,background:`${cPole}12`,border:`1px solid ${cPole}2E`,padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
-                          <span style={{width:5,height:5,borderRadius:"50%",background:cPole,flexShrink:0}}/>
+                        <span title={e.pole_territoire_nom} style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#3a4452",background:cPole,border:"1px solid rgba(0,0,0,0.06)",padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
                           {e.pole_territoire_nom}
                         </span>
                       )}
