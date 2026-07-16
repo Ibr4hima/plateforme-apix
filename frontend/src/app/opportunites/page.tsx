@@ -1324,7 +1324,7 @@ export default function OpportunitesPage() {
                       return (
                         <>
                         {bandeau}
-                        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+                        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
                           {items.map((p:any)=>{
                             const nbActs = (p.activite_ids||[]).length;
                             // Premier bloc contextuel selon le niveau
@@ -1337,9 +1337,9 @@ export default function OpportunitesPage() {
                               : { label:"Département", value: p.departement_nom||deptDeArr(p.arrondissement_nom||"") };
                             return (
                               <div key={p.id} onClick={()=>setPotSel(p)}
-                                style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden",minWidth:0}}
+                                style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13,minWidth:0}}
                                 onMouseEnter={ev=>{
-                                  ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+                                  ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${meta.color}66`;
                                   // Contenus trop longs : glissent pour révéler la fin
                                   ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                                     const span = box.firstElementChild as HTMLElement | null;
@@ -1347,41 +1347,30 @@ export default function OpportunitesPage() {
                                   });
                                 }}
                                 onMouseLeave={ev=>{
-                                  ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                                  ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
                                   ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                                     const span = box.firstElementChild as HTMLElement | null;
                                     if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                                   });
                                 }}>
 
-                                <div style={{height:3,background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-                                <div style={{padding:"14px 16px 14px",flex:1}}>
-                                  {/* Titre (défile au survol si trop long) */}
-                                  <div data-marquee style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                    <span style={{display:"inline-block"}}>{potTitle(p)}</span>
-                                  </div>
-
-                                  {/* Infos libellées */}
-                                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                                    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{info1.label}</p>
-                                      <p data-marquee style={{fontSize:12,fontWeight:600,color:info1.value?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                        <span style={{display:"inline-block"}}>{info1.value||"—"}</span>
-                                      </p>
-                                    </div>
-                                    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                                      <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Activités porteuses</span></p>
-                                      <p style={{fontSize:14,fontWeight:800,color:nbActs>0?"#1a1a2e":"#9aa5b4"}}>{nbActs||"—"}</p>
-                                    </div>
-                                  </div>
+                                {/* Titre (défile au survol si trop long) */}
+                                <div data-marquee style={{fontWeight:800,fontSize:15,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                  <span style={{display:"inline-block"}}>{potTitle(p)}</span>
                                 </div>
 
-                                {/* Action */}
-                                <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
-                                  <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,transition:"background 0.15s"}}
-                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
-                                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                                    Voir les détails →
+                                {/* Infos en rangée épurée */}
+                                <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
+                                  <div style={{flex:1,minWidth:0}}>
+                                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>{info1.label}</p>
+                                    <p data-marquee style={{fontSize:12.5,fontWeight:700,color:info1.value?"#1a1a2e":"#C5BFBB",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                      <span style={{display:"inline-block"}}>{info1.value||"—"}</span>
+                                    </p>
+                                  </div>
+                                  <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 16px"}}/>
+                                  <div style={{flex:1,minWidth:0}}>
+                                    <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Activités porteuses</span></p>
+                                    <p style={{fontSize:12.5,fontWeight:700,color:nbActs>0?"#1a1a2e":"#C5BFBB",fontVariantNumeric:"tabular-nums"}}>{nbActs||"—"}</p>
                                   </div>
                                 </div>
                               </div>
