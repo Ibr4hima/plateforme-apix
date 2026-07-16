@@ -6,7 +6,7 @@
 // mémoire pour la session. Sélectionner un résultat navigue vers la page avec
 // « ?fiche=<id> » (voir lib/ficheUrl) ou ouvre la fiche pays via la navbar.
 
-import { Building2, CalendarDays, FileText, Globe2, LayoutGrid, MapPin, Search, Target } from "lucide-react";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -23,14 +23,14 @@ type Resultat = {
   paysId?: number;     // fiche pays via l'événement navbar
 };
 
-const GROUPES: Record<string, { label: string; icone: any }> = {
-  page:       { label: "Pages",        icone: LayoutGrid },
-  pays:       { label: "Fiches pays",  icone: Globe2 },
-  entreprise: { label: "Entreprises",  icone: Building2 },
-  accord:     { label: "Accords",      icone: FileText },
-  evenement:  { label: "Événements",   icone: CalendarDays },
-  zone:       { label: "Zones",        icone: MapPin },
-  prospect:   { label: "Prospects",    icone: Target },
+const GROUPES: Record<string, { label: string }> = {
+  page:       { label: "Pages" },
+  pays:       { label: "Fiches pays" },
+  entreprise: { label: "Entreprises" },
+  accord:     { label: "Accords" },
+  evenement:  { label: "Événements" },
+  zone:       { label: "Zones" },
+  prospect:   { label: "Prospects" },
 };
 const ORDRE_GROUPES = Object.keys(GROUPES);
 const MAX_PAR_GROUPE = 5;
@@ -178,17 +178,17 @@ export default function RechercheGlobale() {
       style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 900, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "13vh 24px 24px" }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" onKeyDown={onKeyDown}
-        style={{ background: "#fff", borderRadius: 18, width: "100%", maxWidth: 620, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.32)", animation: "vueIn 0.16s ease", display: "flex", flexDirection: "column" as const, maxHeight: "62vh" }}>
+        style={{ background: "#fff", borderRadius: q.trim() ? 26 : 999, width: "100%", maxWidth: 620, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.32)", animation: "vueIn 0.16s ease", display: "flex", flexDirection: "column" as const, maxHeight: "62vh", transition: "border-radius 0.18s ease" }}>
         {/* Champ de recherche */}
-        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "15px 18px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
-          <Search size={16} style={{ color: "#9aa5b4", flexShrink: 0 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "17px 26px", borderBottom: q.trim() ? "1px solid #F2F0EF" : "none", flexShrink: 0 }}>
+          <Search size={17} style={{ color: "#9aa5b4", flexShrink: 0 }} />
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
-            placeholder="Rechercher une entreprise, un pays, un accord, une page…"
-            style={{ flex: 1, border: "none", outline: "none", fontSize: 14.5, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent" }} />
+            placeholder="Rechercher"
+            style={{ flex: 1, border: "none", outline: "none", fontSize: 15.5, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent" }} />
         </div>
 
         {/* Résultats */}
-        {(q.trim() || resultats.length > 0) && <div ref={listeRef} style={{ overflowY: "auto", padding: "8px 8px 10px" }}>
+        {(q.trim() || resultats.length > 0) && <div ref={listeRef} style={{ overflowY: "auto", padding: "6px 12px 12px" }}>
           {index === null && q.trim() && (
             <p style={{ padding: "22px 16px", fontSize: 12.5, color: "#9aa5b4", textAlign: "center" as const }}>Chargement de l'index…</p>
           )}
@@ -201,22 +201,16 @@ export default function RechercheGlobale() {
             const grp = GROUPES[r.type];
             const entete = r.type !== dernierGroupe;
             dernierGroupe = r.type;
-            const Icone = grp.icone;
             const estActif = i === actif;
             return (
               <div key={`${r.type}-${r.nom}-${i}`}>
                 {entete && (
-                  <p style={{ fontSize: 9.5, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.1em", padding: "10px 12px 5px" }}>{grp.label}</p>
+                  <p style={{ fontSize: 9.5, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", padding: "12px 14px 5px" }}>{grp.label}</p>
                 )}
                 <button data-idx={i} onClick={() => choisir(r)} onMouseMove={() => setActif(i)}
-                  style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "9px 12px", borderRadius: 10, border: "none", cursor: "pointer", textAlign: "left" as const, background: estActif ? "rgba(0,79,145,0.06)" : "transparent" }}>
-                  <span style={{ width: 30, height: 30, borderRadius: 8, background: estActif ? "rgba(0,79,145,0.10)" : "#F5F4F3", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.1s" }}>
-                    <Icone size={14} style={{ color: estActif ? "#004f91" : "#7a8494" }} />
-                  </span>
-                  <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.nom}</span>
-                    {r.sous && <span style={{ display: "block", fontSize: 11, color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{r.sous}</span>}
-                  </span>
+                  style={{ display: "flex", alignItems: "baseline", gap: 10, width: "100%", padding: "10px 14px", borderRadius: 12, border: "none", cursor: "pointer", textAlign: "left" as const, background: estActif ? "rgba(0,79,145,0.06)" : "transparent" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: estActif ? "#004f91" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "color 0.1s" }}>{r.nom}</span>
+                  {r.sous && <span style={{ fontSize: 11, color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{r.sous}</span>}
                 </button>
               </div>
             );
