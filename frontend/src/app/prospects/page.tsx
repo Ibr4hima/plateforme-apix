@@ -13,6 +13,7 @@ import { fmtPhone } from "@/lib/telephone";
 import { foncerPastel } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
 import { SideFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
+import { useFicheUrl } from "@/lib/ficheUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -558,6 +559,9 @@ export default function ProspectsPage() {
   const [loading,   setLoading]   = useState(true);
   const [selec,     setSelec]     = useState<any>(null);
   const [selecInfos, setSelecInfos] = useState(false);
+  // Ouverture directe depuis la recherche globale (⌘K) — cherche dans les 3 onglets
+  const tousProspects = useMemo(() => [...cibles, ...enContact, ...termines], [cibles, enContact, termines]);
+  useFicheUrl(tousProspects, p => { setSelecInfos(false); setSelec(p); });
 
   // Filtres
   const [recherche,   setRecherche]   = useState("");

@@ -15,6 +15,7 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import { foncerPastel } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
+import { useFicheUrl } from "@/lib/ficheUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -46,6 +47,7 @@ export default function AccordsPage() {
   const [loading,     setLoading]     = useState(true);
   const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
+  useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);

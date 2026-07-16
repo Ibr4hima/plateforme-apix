@@ -488,6 +488,15 @@ export default function Navbar() {
 
           {/* ── CTA Connexion ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            {/* Recherche globale (⌘K) */}
+            <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)"
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 34, padding: "0 12px", borderRadius: 999, border: "1px solid #ECEAE7", background: "#F5F4F3", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
+              <Search size={13} style={{ color: "#4a5568" }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#4a5568" }}>Rechercher</span>
+              <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", background: "#fff", border: "1px solid #E8E5E3", borderRadius: 5, padding: "1px 5px" }}>⌘K</span>
+            </button>
             {/* Bouton temporaire vers l'espace d'administration */}
             {isAdminRole && <Link href="/admin/evenements"
               style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", padding: "9px 18px", borderRadius: 10, border: "1.5px solid rgba(202,99,31,0.45)", textDecoration: "none", transition: "all 0.2s", fontFamily: "var(--font-google-sans)" }}

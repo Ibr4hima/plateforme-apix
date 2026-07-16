@@ -459,6 +459,18 @@ export default function FichePaysLauncher({ textColor, textHover }: { textColor:
   useEffect(() => { setMonte(true); }, []);
   useEffect(() => { fetch(`${API}/statistiques/pays`).then(r => r.json()).then(setPays).catch(() => {}); }, []);
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
+  // Ouverture directe depuis la recherche globale (⌘K) : Sénégal × pays choisi
+  useEffect(() => {
+    const h = (e: Event) => {
+      const paysId = (e as CustomEvent).detail?.paysId;
+      if (paysId == null) return;
+      setSel(senId !== null && senId !== paysId ? [senId, paysId] : [paysId]);
+      setPickerOpen(false);
+      setFicheOpen(true);
+    };
+    window.addEventListener("apix:fiche-pays", h);
+    return () => window.removeEventListener("apix:fiche-pays", h);
+  }, [senId]);
   return (
     <>
       <button onClick={() => setPickerOpen(true)}

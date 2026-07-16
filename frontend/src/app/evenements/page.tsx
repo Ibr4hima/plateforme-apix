@@ -16,6 +16,7 @@ import { foncerPastel } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
 import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { computeStatutEvenement } from "@/lib/statuts";
+import { useFicheUrl } from "@/lib/ficheUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -418,6 +419,7 @@ export default function EvenementsPage() {
   const [loading,     setLoading]     = useState(true);
   const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
+  useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
   const [paysHotes,   setPaysHotes]   = useState<{nom:string;code_iso2:string}[]>([]);
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
