@@ -68,6 +68,14 @@ function BadgePole({ nom }: { nom:string }) {
   );
 }
 
+// Niveaux de découpage territorial des potentialités
+const NIVEAUX_POTS = [
+  {key:"pole",           label:"Pôles territoires", unit:"pôle",           abbr:"PÔLE", color:"#004f91"},
+  {key:"region",         label:"Régions",           unit:"région",         abbr:"RÉG",  color:"#ca631f"},
+  {key:"departement",    label:"Départements",      unit:"département",    abbr:"DÉP",  color:"#188038"},
+  {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", abbr:"ARR",  color:"#6A1B9A"},
+] as const;
+
 function fmtInvest(p:any) {
   const sym = devSym(p.devise_code, p.devise_symbole);
   if (!p.investissement_est_intervalle)
@@ -1243,15 +1251,11 @@ export default function OpportunitesPage() {
                   <SkeletonCards n={4} cols={4} height={190}/>
                 ) : potsErr ? (
                   <ErreurChargement onRetry={()=>chargerPots()}/>
-                ) : selectedNiveau===null ? (
-                  /* ── Picker 4 cards — niveau de découpage territorial ── */
+                ) : (
+                  <>
+                  {/* ── Picker 4 cards — niveau de découpage territorial ── */}
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
-                    {([
-                      {key:"pole",           label:"Pôles territoires", unit:"pôle",           color:"#004f91"},
-                      {key:"region",         label:"Régions",           unit:"région",         color:"#ca631f"},
-                      {key:"departement",    label:"Départements",      unit:"département",    color:"#188038"},
-                      {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", color:"#6A1B9A"},
-                    ] as const).map(n=>{
+                    {NIVEAUX_POTS.map(n=>{
                       const count=pots.filter((p:any)=>p.niveau===n.key).length;
                       const total = n.key==="pole" ? poles.length
                         : n.key==="region" ? regions.length
@@ -1259,10 +1263,10 @@ export default function OpportunitesPage() {
                         : regions.reduce((s:number,r:any)=>s+(r.departements||[]).reduce((s2:number,d:any)=>s2+(d.arrondissements?.length||0),0),0);
                       const pct = total>0 ? Math.round(count/total*100) : 0;
                       return (
-                        <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
-                          style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}55`;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+                        <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(selectedNiveau===n.key?null:n.key)}
+                          style={{background:"#fff",border:selectedNiveau===n.key?`1.5px solid ${n.color}88`:"1px solid #ECEAE7",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?`0 4px 18px ${n.color}26`:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}88`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?`0 4px 18px ${n.color}26`:"0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${n.color}88`:"#ECEAE7";}}>
 
                           {/* Niveau */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -1291,16 +1295,25 @@ export default function OpportunitesPage() {
                       );
                     })}
                   </div>
-                ) : (
-                  /* ── Fiches du niveau sélectionné ── */
-                  <>
-                    <button onClick={()=>setSelectedNiveau(null)}
-                      style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
-                      <ArrowLeft size={14}/> Retour aux zones
-                    </button>
+                  {/* ── Fiches du niveau sélectionné, affichées sous les cards ── */}
+                  {selectedNiveau!==null&&(
+                  <div className="charge-in">
                     {(()=>{
+                      const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
                       const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
-                      if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
+                      const bandeau = (
+                        <div style={{display:"flex",alignItems:"center",gap:16,background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,padding:"14px 20px",margin:"26px 0 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.03)"}}>
+                          <div style={{width:52,height:52,borderRadius:12,background:`${meta.color}12`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                            <span style={{fontSize:11,fontWeight:800,color:meta.color,letterSpacing:"0.04em"}}>{meta.abbr}</span>
+                          </div>
+                          <div style={{minWidth:0,flex:1}}>
+                            <p style={{fontSize:10,fontWeight:800,color:"#9aa5b4",letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:2}}>Niveau territorial</p>
+                            <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
+                          </div>
+                          <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:800,color:"#fff",background:meta.color,padding:"8px 18px",borderRadius:999,flexShrink:0,boxShadow:`0 4px 14px ${meta.color}4D`}}>{items.length} fiche{items.length>1?"s":""}</span>
+                        </div>
+                      );
+                      if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
                       // Rattachements géographiques via le référentiel déjà chargé
                       const regionDuDept = (nom:string) => regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.nom===nom))?.nom || null;
                       const deptDeArr = (nom:string) => {
@@ -1309,6 +1322,8 @@ export default function OpportunitesPage() {
                       };
                       const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
                       return (
+                        <>
+                        {bandeau}
                         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
                           {items.map((p:any)=>{
                             const nbActs = (p.activite_ids||[]).length;
@@ -1373,8 +1388,11 @@ export default function OpportunitesPage() {
                             );
                           })}
                         </div>
+                        </>
                       );
                     })()}
+                  </div>
+                  )}
                   </>
                 )}
               </>
