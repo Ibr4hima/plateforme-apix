@@ -23,6 +23,17 @@ const foncerPastel = (hex:string) => {
 };
 const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé non en vigueur" };
 
+// Durée écoulée depuis une date : « 3 ans », « 1 an », « 7 mois »…
+const dureeDepuis = (dstr:string): string => {
+  const d = new Date(dstr+"T00:00:00"), now = new Date();
+  let mois = (now.getFullYear()-d.getFullYear())*12 + (now.getMonth()-d.getMonth());
+  if (now.getDate() < d.getDate()) mois -= 1;
+  if (mois < 1) return "moins d'un mois";
+  const ans = Math.floor(mois/12);
+  if (ans >= 1) return `${ans} an${ans>1?"s":""}`;
+  return `${mois} mois`;
+};
+
 const STATUT_OPTS = [
   { value:"",           label:"Tous",        bg:"#F2F0EF",             text:"#4a5568" },
   { value:"en_vigueur", label:"En vigueur",  bg:"rgba(0,79,145,0.08)", text:"#004f91" },
@@ -466,18 +477,24 @@ export default function AccordsPage() {
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent;}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
-                    {/* Statut pastel à gauche + référence discrète */}
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-                      {st ? (
+                    {/* Titre + ancienneté du statut | badge pastel à droite */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
+                      <div style={{minWidth:0,flex:1}}>
+                        <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
+                        {(()=>{
+                          const sousTitre = statut==="en_vigueur"&&a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
+                            : statut==="signe"&&a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
+                            : statut==="expire"&&a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
+                            : a.reference || null;
+                          return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{sousTitre}</div>;
+                        })()}
+                      </div>
+                      {st&&(
                         <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:foncerPastel(st.p),background:`${st.p}40`,border:`1px solid ${st.p}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>
                           {st.label}
                         </span>
-                      ) : <span/>}
-                      {a.reference && <span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",letterSpacing:"0.04em",whiteSpace:"nowrap" as const}}>{a.reference}</span>}
+                      )}
                     </div>
-
-                    {/* Titre */}
-                    <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
 
                     {/* Dates en rangée épurée + flèche d'action */}
                     <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
