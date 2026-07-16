@@ -3,6 +3,8 @@
 // badge liseré orange comme le site), recherche pilule flottante, chiffres
 // clés animés, prochain événement, modules.
 import { Ionicons } from "@expo/vector-icons";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { LinearGradient } from "expo-linear-gradient";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -46,7 +48,6 @@ export default function Accueil() {
     { label: "Événements à venir",     valeur: k.evenements_a_venir ?? 0, couleur: T.orange },
     { label: "Zones d'investissement", valeur: k.zones_total ?? 0,       couleur: "#6A1B9A" },
   ];
-  const dateJour = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 
   return (
     <ScrollView
@@ -56,30 +57,20 @@ export default function Accueil() {
       showsVerticalScrollIndicator={false}>
 
       {/* ── Hero ── */}
-      <View style={[s.hero, { paddingTop: insets.top + 16 }]}>
+      <View style={[s.hero, { paddingTop: insets.top + 30 }]}>
         {/* Halos lumineux, comme le hero du site */}
         <View style={s.haloHaut} />
         <View style={s.haloBas} />
 
-        <View style={s.heroHaut}>
-          <View style={s.marque}>
-            <View style={s.marquePoint} />
-            <Text style={s.marqueTexte}>APIX S.A.</Text>
-          </View>
-          <Text style={s.date}>{dateJour}</Text>
-        </View>
+        <Text style={s.surtitre}>PLATEFORME DE GESTION DES INVESTISSEMENTS</Text>
 
-        <View style={s.chip}>
-          <View style={s.chipPoint} />
-          <Text style={s.chipTexte}>PLATEFORME DE GESTION DES INVESTISSEMENTS</Text>
-        </View>
-
-        <Text style={s.titre}>
-          Intelligence{"\n"}
-          <Text style={s.titreOrange}>Investissement</Text>{"\n"}
-          Sénégal
-        </Text>
-        <Text style={s.sousTitre}>Suivi, analyse et gestion des investissements au Sénégal.</Text>
+        <Text style={s.titre}>Intelligence</Text>
+        <MaskedView maskElement={<Text style={[s.titre, s.titreMasque]}>Investissement</Text>}>
+          <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <Text style={[s.titre, s.titreMasque, { opacity: 0 }]}>Investissement</Text>
+          </LinearGradient>
+        </MaskedView>
+        <Text style={s.titre}>Sénégal</Text>
 
         {/* Recherche — la porte d'entrée principale */}
         <Pressable onPress={() => router.push("/recherche")} style={({ pressed }) => [s.recherche, pressed && { opacity: 0.92 }]}>
@@ -143,24 +134,12 @@ export default function Accueil() {
 }
 
 const s = StyleSheet.create({
-  hero: { backgroundColor: T.bleu, paddingHorizontal: 22, paddingBottom: 58, overflow: "hidden" },
+  hero: { backgroundColor: T.bleu, paddingHorizontal: 24, paddingBottom: 64, overflow: "hidden" },
   haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
   haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
-  heroHaut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 30 },
-  marque: { flexDirection: "row", alignItems: "center", gap: 8 },
-  marquePoint: { width: 7, height: 7, borderRadius: 4, backgroundColor: T.orange },
-  marqueTexte: { color: "#fff", fontSize: 13, fontFamily: POLICE.gras, letterSpacing: 1.6 },
-  date: { color: "rgba(255,255,255,0.60)", fontSize: 11.5, fontFamily: POLICE.moyen, textTransform: "capitalize" },
-  chip: {
-    alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 7,
-    borderWidth: 1, borderColor: "rgba(202,99,31,0.75)", borderRadius: 999,
-    paddingHorizontal: 13, paddingVertical: 6, marginBottom: 18,
-  },
-  chipPoint: { width: 5, height: 5, borderRadius: 3, backgroundColor: T.orange },
-  chipTexte: { color: "#E8A876", fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.3 },
-  titre: { color: "#fff", fontSize: 36, fontFamily: POLICE.gras, lineHeight: 43, letterSpacing: -0.8 },
-  titreOrange: { color: "#E8823C" },
-  sousTitre: { color: "rgba(255,255,255,0.72)", fontSize: 13, fontFamily: POLICE.normal, lineHeight: 19, marginTop: 12, maxWidth: 300 },
+  surtitre: { color: "rgba(255,255,255,0.75)", fontSize: 10.5, fontFamily: POLICE.gras, letterSpacing: 2.2, marginBottom: 22 },
+  titre: { color: "#fff", fontSize: 40, fontFamily: POLICE.gras, lineHeight: 47, letterSpacing: -1 },
+  titreMasque: { color: "#000" },
   recherche: {
     position: "absolute", left: 22, right: 22, bottom: -26, height: 52,
     backgroundColor: "#fff", borderRadius: 999, flexDirection: "row", alignItems: "center",
