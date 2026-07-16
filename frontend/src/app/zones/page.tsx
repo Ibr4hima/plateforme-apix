@@ -7,7 +7,7 @@ import VueTerritorialeSenegal, { POLE_COULEURS, normPole } from "@/components/sh
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
-import * as d3 from "d3";
+import { d3, useD3Pret } from "@/lib/d3lazy";
 import { useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { Building2, ChevronRight, FileText, X } from "lucide-react";
@@ -588,6 +588,11 @@ export default function ZonesPage() {
     installes:  zones.reduce((s,z)=>s+(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length,0),
     eligibles:  zones.reduce((s,z)=>s+(z.entreprises||[]).filter((ze:any)=>ze.statut==="eligible").length,0),
   };
+
+  // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
+  // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
+  const d3Pret = useD3Pret();
+  if (!d3Pret) return <main style={{ minHeight:"100vh", background:"#F6F5F3" }}><Navbar/></main>;
 
   return (
     <main style={{ minHeight:"100vh", background:"#F6F5F3", fontFamily:"var(--font-google-sans)" }}>

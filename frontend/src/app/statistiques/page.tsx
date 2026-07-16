@@ -7,7 +7,7 @@ import { useDebounced } from "@/lib/useDebounced";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import * as d3 from "d3";
+import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -1629,6 +1629,11 @@ export default function StatistiquesPage() {
   };
 
   const LBL: any = { fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em" };
+
+  // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
+  // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
+  const d3Pret = useD3Pret();
+  if (!d3Pret) return <main style={{ minHeight: "100vh", background: "#F6F5F3" }}><Navbar/></main>;
 
   return (
     <main style={{ minHeight: "100vh", background: "#F6F5F3", fontFamily: "var(--font-google-sans)" }}>

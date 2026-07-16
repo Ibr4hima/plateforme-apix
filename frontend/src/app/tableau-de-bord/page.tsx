@@ -2,8 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import * as d3 from "d3";
-import * as Plot from "@observablehq/plot";
+import { d3, Plot, useD3Pret } from "@/lib/d3lazy";
 import {
   Activity, BarChart2, Building2, Calendar, ChevronDown, ChevronUp,
   DollarSign, Handshake, Layers, MapPin, Maximize2, Search,
@@ -2034,6 +2033,10 @@ export default function TableauDeBordPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const resetConfig = useCallback((scope:"viz"|"tables") => setConfig(p=> scope==="tables" ? {...p, tableCards:[]} : {...p, kpisActifs:[], cards:[]}), []);
+
+  // d3 + Plot chargés dans un chunk séparé : garde avant tout rendu graphique
+  const d3Pret = useD3Pret(true);
+  if (!d3Pret) return <div style={{minHeight:"100vh",background:"#F6F5F3"}}><Navbar/></div>;
 
   return (
     <div style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>

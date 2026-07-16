@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import * as d3 from "d3";
+import { d3, useD3Pret } from "@/lib/d3lazy";
 import { useRefPolesTerritoires, useRefSecteurs } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -82,7 +82,9 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
   };
 
 
+  const d3Pret = useD3Pret();
   useEffect(() => {
+    if (!d3Pret) return;
     const container = containerRef.current;
     if (!container) return;
     let cancelled = false;
@@ -244,7 +246,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       cancelled = true;
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [poles, zones, mode]);
+  }, [poles, zones, mode, d3Pret]);
 
   const poleZones = activePole ? zones.filter((z: any) => z.pole_id === activePole.id) : [];
   const poleEnts = poleZones.reduce((acc: any[], z: any) => {

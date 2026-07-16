@@ -3,7 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
-import * as d3 from "d3";
+import { d3, useD3Pret } from "@/lib/d3lazy";
 import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
@@ -3830,6 +3830,11 @@ export default function IdePage() {
   }, []);
 
   useEffect(() => { setShowTable(false); }, [sousOnglet, section, vueP, typeSecteurs]);
+
+  // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
+  // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
+  const d3Pret = useD3Pret();
+  if (!d3Pret) return <div style={{ minHeight:"100vh", background:"#F6F5F3" }}><Navbar/></div>;
 
   return (
     <div style={{ minHeight:"100vh", background:"#F6F5F3", fontFamily:"var(--font-google-sans)" }}>
