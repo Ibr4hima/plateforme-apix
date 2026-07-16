@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, ChevronRight, ChevronDown } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -98,7 +99,7 @@ export default function AdminNaema() {
 
   const handleDelete = async (type: "branche"|"activite", id: number) => {
     const label = type === "branche" ? "cette branche et toutes ses activités" : "cette activité";
-    if (!confirm(`Supprimer ${label} ?`)) return;
+    if (!(await confirmer(`Supprimer ${label} ?`))) return;
     setDeleting(id);
     try {
       const endpoint = type === "branche" ? "branches" : "activites";

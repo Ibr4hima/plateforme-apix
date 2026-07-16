@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, Upload, FileText, ChevronRight, ChevronDown, BookOpen } from "lucide-react";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -162,7 +163,7 @@ export default function CodeInvestissementPage() {
   };
 
   const delChap = async (chapId:string) => {
-    if (!confirm("Supprimer ce chapitre et tous ses contenus ?")) return;
+    if (!(await confirmer("Supprimer ce chapitre et tous ses contenus ?"))) return;
     await fetch(`${base}/chapitres/${chapId}`, {method:"DELETE", headers:await authHeaders()});
     charger();
   };
@@ -185,7 +186,7 @@ export default function CodeInvestissementPage() {
   };
 
   const delSec = async (secId:string) => {
-    if (!confirm("Supprimer cette section ?")) return;
+    if (!(await confirmer("Supprimer cette section ?"))) return;
     await fetch(`${base}/sections/${secId}`, {method:"DELETE", headers:await authHeaders()});
     charger();
   };
@@ -205,7 +206,7 @@ export default function CodeInvestissementPage() {
   };
 
   const delArt = async (artId:string) => {
-    if (!confirm("Supprimer cet article ?")) return;
+    if (!(await confirmer("Supprimer cet article ?"))) return;
     await fetch(`${base}/articles/${artId}`, {method:"DELETE", headers:await authHeaders()});
     charger();
   };

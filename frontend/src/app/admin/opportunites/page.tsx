@@ -8,6 +8,7 @@ import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FSegmented, FInfo, FB
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -1033,7 +1034,7 @@ export default function OpportunitesAdminPage() {
   useEffect(()=>{ fetch(`${API}/projets?per_page=1&admin=true`).then(r=>r.json()).then(d=>setProjetsCount(d.total||0)).catch(()=>{}); },[onglet]);
 
   const deletePot=async(id:number)=>{
-    if(!confirm("Supprimer cette fiche ?"))return;
+    if(!(await confirmer("Supprimer cette fiche ?")))return;
     setPotDel(id);
     await fetch(`${API}/opportunites/potentialites/${id}`,{method:"DELETE",headers:await authHeaders()});
     setPotDel(null);chargerPots();
@@ -1044,7 +1045,7 @@ export default function OpportunitesAdminPage() {
     setPotToggle(null);chargerPots();
   };
   const deleteAvg=async(id:number)=>{
-    if(!confirm("Supprimer cet avantage ?"))return;
+    if(!(await confirmer("Supprimer cet avantage ?")))return;
     setAvgDel(id);
     await fetch(`${API}/opportunites/avantages/${id}`,{method:"DELETE",headers:await authHeaders()});
     setAvgDel(null);chargerAvgs();

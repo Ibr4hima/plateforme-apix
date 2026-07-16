@@ -3,6 +3,7 @@
 import { Check, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -180,7 +181,7 @@ export default function PolesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Supprimer ce pôle ? Les zones associées perdront leur référence.")) return;
+    if (!(await confirmer("Supprimer ce pôle ? Les zones associées perdront leur référence."))) return;
     setDeletingId(id);
     try {
       await fetch(`${API_BASE}/zones-types/poles/${id}`, { method: "DELETE", headers: await authHeaders() });

@@ -10,6 +10,7 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 import PaysSelect from "@/components/shared/PaysSelect";
 import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FSegmented, FToggle, FButton, FButtonGhost, FError, FInfo } from "@/components/shared/FormUI";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -566,7 +567,7 @@ export default function EvenementsPage() {
   const openEdit   = (e: any) => { setEditItem(e); setModal(true); };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer cet événement ?")) return;
+    if (!(await confirmer("Supprimer cet événement ?"))) return;
     setDeleting(id);
     try { await api.evenements.supprimer(id); charger(); }
     finally { setDeleting(null); }

@@ -7,6 +7,7 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -642,7 +643,7 @@ export default function AdminAccords() {
   const openEdit   = (a:any) => { setEditItem(a); setModal(true); };
 
   const handleDelete = async (id:number) => {
-    if (!confirm("Supprimer cet accord ?")) return;
+    if (!(await confirmer("Supprimer cet accord ?"))) return;
     setDeleting(id);
     try { await fetch(`${API_BASE}/accords/${id}`,{method:"DELETE",headers:await authHeaders()}); charger(); }
     finally { setDeleting(null); }

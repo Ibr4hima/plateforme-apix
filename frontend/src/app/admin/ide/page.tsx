@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { CheckCircle, Link2, Loader2, RefreshCw, Trash2, UploadCloud, X } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
@@ -228,7 +229,7 @@ export default function AdminIdePage() {
   }
 
   async function handleDelete(rpid: number, pays: string) {
-    if (!confirm(`Supprimer toutes les données IDE pour ${pays} ?`)) return;
+    if (!(await confirmer(`Supprimer toutes les données IDE pour ${pays} ?`))) return;
     setDeleting(rpid);
     try { const res = await fetch(`${API}/ide/cnuced/pays/${rpid}`, { method: "DELETE", headers: await authHeaders() }); if (res.ok) await loadData(); } catch {}
     setDeleting(null);

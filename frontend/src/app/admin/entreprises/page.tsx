@@ -9,6 +9,7 @@ import { parsePhoneNumber } from "libphonenumber-js";
 import { Building2, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -642,7 +643,7 @@ export default function AdminEntreprises() {
   useEffect(()=>{ charger(); },[charger]);
 
   const handleDelete = async (id:string) => {
-    if (!confirm("Supprimer cette entreprise ?")) return;
+    if (!(await confirmer("Supprimer cette entreprise ?"))) return;
     setDeleting(id);
     try { await fetch(`${API_BASE}/entreprises/${id}`,{method:"DELETE",headers:await authHeaders()}); charger(); }
     finally { setDeleting(null); }

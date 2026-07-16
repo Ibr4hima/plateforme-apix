@@ -9,6 +9,7 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FButtonGhost, FError, FInfo, fuiLabel, fuiInput } from "@/components/shared/FormUI";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -1113,7 +1114,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleDeleteEchange = async (id:number) => {
-    if (!confirm("Supprimer cet échange ?")) return;
+    if (!(await confirmer("Supprimer cet échange ?"))) return;
     setDeletingEchange(id);
     await fetch(`${API}/prospects/echanges/${id}`, { method:"DELETE", headers:await authHeaders() });
     setDeletingEchange(null);
@@ -1768,7 +1769,7 @@ export default function ProspectsPage() {
   useEffect(()=>{ chargerCounts(); }, [chargerCounts, prospects]);
 
   const handleDelete = async (id:number) => {
-    if (!confirm("Supprimer ce prospect ?")) return;
+    if (!(await confirmer("Supprimer ce prospect ?"))) return;
     setDeleting(id);
     await fetch(`${API}/prospects/${id}`, { method:"DELETE", headers:await authHeaders() });
     setDeleting(null); charger();
@@ -1791,7 +1792,7 @@ export default function ProspectsPage() {
 
   // Re-contacter une entreprise « Déclinée » : nouvelle prospection, historique conservé.
   const handleRecontact = async (id:number) => {
-    if (!confirm("Re-contacter cette entreprise ?\n\nUne nouvelle prospection démarre. Tout l'historique précédent (échanges, contraintes, conclusion) est conservé et consultable.")) return;
+    if (!(await confirmer("Re-contacter cette entreprise ?\n\nUne nouvelle prospection démarre. Tout l'historique précédent (échanges, contraintes, conclusion) est conservé et consultable."))) return;
     const res = await fetch(`${API}/prospects/${id}/recontact`, { method:"POST", headers:await authHeaders() });
     if (res.ok) { setVue(null); setOnglet("historique"); }
     else { const d=await res.json().catch(()=>({})); alert(d.detail||"Erreur lors du re-contact"); }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, ChevronRight, ChevronDown, MapPin, Upload } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -95,7 +96,7 @@ export default function AdminGeo() {
       departement:    `Supprimer le département "${nom}" et tous ses arrondissements ?`,
       arrondissement: `Supprimer l'arrondissement "${nom}" ?`,
     };
-    if (!confirm(warnings[type])) return;
+    if (!(await confirmer(warnings[type]))) return;
     setDeleting(id);
     const endpoints: Record<string, string> = {
       region:         `/entreprises/ref/regions/${id}`,

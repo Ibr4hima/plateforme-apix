@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { CheckCircle, Link2, Loader2, UploadCloud, X, FileSpreadsheet, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -147,8 +148,8 @@ export default function AdminBdefPage() {
   const [correcting, setCorrecting]     = useState<Record<string, boolean>>({});
 
   async function viderDonnees() {
-    if (!window.confirm("Supprimer TOUTES les données BDEF (valeurs, imports, corrections) ?\n\nCette action est irréversible.")) return;
-    if (!window.confirm("Confirmez une seconde fois : vider définitivement toutes les données BDEF ?")) return;
+    if (!(await confirmer("Supprimer TOUTES les données BDEF (valeurs, imports, corrections) ?\n\nCette action est irréversible."))) return;
+    if (!(await confirmer("Confirmez une seconde fois : vider définitivement toutes les données BDEF ?"))) return;
     setViding(true);
     try {
       const r = await fetch(`${API}/bdef/vider`, { method: "DELETE", headers: await authHeaders() });

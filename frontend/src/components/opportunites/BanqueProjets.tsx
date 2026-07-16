@@ -10,6 +10,7 @@ import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FToggle, FButton, FBu
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
+import { confirmer } from "@/components/shared/Confirmation";
 
 // Bouton « + Ajouter » d'une liste de contacts : actif seulement si toutes les entrées sont valides
 function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void; titre:string }) {
@@ -757,7 +758,7 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
   };
 
   const handleDelete = async(id:string)=>{
-    if (!confirm("Supprimer ce projet ?")) return;
+    if (!(await confirmer("Supprimer ce projet ?"))) return;
     setDeleting(id);
     await fetch(`${API}/projets/${id}`,{method:"DELETE"});
     setDeleting(null); charger();

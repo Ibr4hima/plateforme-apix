@@ -6,6 +6,7 @@ import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/compone
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import { authHeaders } from "@/lib/authHeaders";
 import { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
@@ -835,7 +836,7 @@ export default function ProjetsPage() {
   };
 
   const handleDelete = async (id:string) => {
-    if (!confirm("Supprimer ce projet ?")) return;
+    if (!(await confirmer("Supprimer ce projet ?"))) return;
     setDeleting(id);
     await fetch(`${API}/projets/${id}`, { method:"DELETE", headers:await authHeaders() });
     setDeleting(null); charger();

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { CheckCircle, ChevronDown, Link2, Loader2, Search, Trash2, UploadCloud, X } from "lucide-react";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
@@ -151,14 +152,14 @@ export default function AdminStatistiquesPage() {
 
   async function handleVider() {
     if (!indicateur) return;
-    if (!confirm(`Vider TOUTES les données de « ${indActuel?.libelle} » pour tous les pays ?\n\nCette action est irréversible.`)) return;
+    if (!(await confirmer(`Vider TOUTES les données de « ${indActuel?.libelle} » pour tous les pays ?\n\nCette action est irréversible.`))) return;
     setViding(true);
     try { const r = await fetch(`${API}/statistiques/indicateur/${indicateur}`, { method: "DELETE", headers: headers() }); if (r.ok) await load(); } catch {}
     setViding(false);
   }
 
   async function handleDelete(pid: number, pays: string) {
-    if (!confirm(`Supprimer toutes les données statistiques de ${pays} ?`)) return;
+    if (!(await confirmer(`Supprimer toutes les données statistiques de ${pays} ?`))) return;
     setDeleting(pid);
     try { const r = await fetch(`${API}/statistiques/pays/${pid}`, { method: "DELETE", headers: headers() }); if (r.ok) await load(); } catch {}
     setDeleting(null);
@@ -400,7 +401,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
     setImporting(false);
   }
   async function delAnnee(a: number) {
-    if (!confirm(`Supprimer toutes les transactions de ${a} ?`)) return;
+    if (!(await confirmer(`Supprimer toutes les transactions de ${a} ?`))) return;
     setDeleting(a);
     try { const r = await fetch(`${API}/statistiques/transactions/${a}`, { method: "DELETE", headers: headers() }); if (r.ok) await load(); } catch {}
     setDeleting(null);

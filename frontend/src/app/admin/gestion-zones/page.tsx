@@ -8,6 +8,7 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 import { Building2, Check, ChevronDown, ChevronRight, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -575,7 +576,7 @@ function OngletPoles() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Supprimer ce pôle ? Les zones liées perdront leur pôle.")) return;
+    if (!(await confirmer("Supprimer ce pôle ? Les zones liées perdront leur pôle."))) return;
     await fetch(`${API_BASE}/zones-types/poles/${id}`, { method: "DELETE", headers: await authHeaders() });
     charger();
   };
@@ -969,7 +970,7 @@ export default function GestionZonesPage() {
   const openEditZone    = (z: any)        => { setZoneModalType(z.type_zone); setEditZone(z); setZoneModal(true); };
 
   const handleDeleteZone = async (id: string) => {
-    if (!confirm("Supprimer cette zone et toutes ses associations ?")) return;
+    if (!(await confirmer("Supprimer cette zone et toutes ses associations ?"))) return;
     setDeleting(id);
     try { await fetch(`${API_BASE}/zones-types/${id}`, { method: "DELETE", headers: await authHeaders() }); charger(); }
     finally { setDeleting(null); }

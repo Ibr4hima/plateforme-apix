@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Check, ChevronDown, Loader2, Trash2 } from "lucide-react";
+import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -92,7 +93,7 @@ export default function UtilisateursAdminPage() {
   };
 
   const supprimer = async (u: any) => {
-    if (!confirm(`Supprimer le compte de ${u.email} ?\n\nLa personne ne pourra plus se connecter (elle pourra recréer un compte, qui repassera par la validation).`)) return;
+    if (!(await confirmer(`Supprimer le compte de ${u.email} ?\n\nLa personne ne pourra plus se connecter (elle pourra recréer un compte, qui repassera par la validation).`))) return;
     setSaving(u.id); setError("");
     try {
       const res = await fetch(`${API}/auth/users/${u.id}`, { method: "DELETE", headers: headers() });
