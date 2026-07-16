@@ -194,13 +194,13 @@ export default function RechercheGlobale() {
       style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 900, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "13vh 24px 24px" }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" onKeyDown={onKeyDown}
-        style={{ width: "100%", maxWidth: 620, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
+        style={{ width: "100%", maxWidth: 510, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
         {/* Barre de recherche — pilule flottante */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 26px", height: 58, background: "rgba(255,255,255,0.97)", borderRadius: 999, border: "1px solid rgba(255,255,255,0.55)", boxShadow: "0 22px 60px rgba(2,20,38,0.38), 0 2px 8px rgba(2,20,38,0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>
-          <Search size={18} strokeWidth={2.4} style={{ color: "#004f91", flexShrink: 0 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "0 19px", height: 47, background: "rgba(255,255,255,0.97)", borderRadius: 999, border: "1px solid rgba(255,255,255,0.55)", boxShadow: "0 22px 60px rgba(2,20,38,0.38), 0 2px 8px rgba(2,20,38,0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>
+          <Search size={16} strokeWidth={2.4} style={{ color: "#004f91", flexShrink: 0 }} />
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
             placeholder="Rechercher"
-            style={{ flex: 1, border: "none", outline: "none", fontSize: 16.5, fontWeight: 500, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent", letterSpacing: "-0.01em" }} />
+            style={{ flex: 1, border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent", letterSpacing: "-0.01em" }} />
         </div>
 
         {/* Résultats — carte détachée sous la barre */}
