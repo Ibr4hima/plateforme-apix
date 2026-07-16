@@ -5,7 +5,7 @@ import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/sha
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { CalendarDays, ChevronDown, ChevronUp, FileText, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 
@@ -412,41 +412,67 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
     // Rôle APIX : bleu par défaut, vert quand l'événement est en cours, gris pour les passés
     const roleC = estPasse ? { c:"#6b7280", bg:"#F2F0EF" } : estEnCours ? { c:"#188038", bg:"rgba(24,128,56,0.08)" } : { c:"#004f91", bg:"rgba(0,79,145,0.07)" };
     const txtC  = estPasse ? "#4a5568" : "#1a1a2e";
+    const hoverC = accent ? null : st ? st.c : "#004f91";
     return (
       <div onClick={()=>onOpen(e)}
-        onMouseEnter={ev=>{ hoverIn(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b2; } else if(estPasse){ ev.currentTarget.style.borderColor="#D8D4D0"; } }}
-        onMouseLeave={ev=>{ hoverOut(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b; ev.currentTarget.style.boxShadow=accent.sh; } else if(estPasse){ ev.currentTarget.style.borderColor="#ECEAE7"; } }}
-        style={{background:estPasse?"#FAFAF9":"#fff",border:accent?`1.5px solid ${accent.b}`:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"0 1px 3px rgba(0,0,0,0.03)",overflow:"hidden",minWidth:0}}>
-        {accent ? (
-          <div style={{display:"flex",alignItems:"center",gap:7,background:accent.grad,padding:"6px 16px"}}>
+        onMouseEnter={ev=>{ hoverIn(ev); ev.currentTarget.style.borderColor = accent ? accent.b2 : `${hoverC}55`; }}
+        onMouseLeave={ev=>{ hoverOut(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b; ev.currentTarget.style.boxShadow=accent.sh; } }}
+        style={{background:estPasse?"#FBFAF9":"#fff",border:accent?`1.5px solid ${accent.b}`:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"0 1px 2px rgba(0,0,0,0.03)",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
+        {/* Bande épaisse : événement en cours (vert) et prochain événement (bleu) */}
+        {accent&&(
+          <div style={{display:"flex",alignItems:"center",gap:7,background:accent.grad,padding:"6px 16px",flexShrink:0}}>
             <span style={{width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
             <span style={{fontSize:10,fontWeight:800,color:"#fff",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
           </div>
-        ) : (
-          <div style={{height:3,background:estPasse?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
         )}
-        <div style={{padding:"14px 16px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9,minWidth:0}}>
-          {dateStr
-            ? <span style={{fontSize:10.5,fontWeight:800,color:estPasse?"#6b7280":st?st.c:"#004f91",letterSpacing:"0.07em",textTransform:"uppercase" as const,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis"}}>{dateStr}</span>
-            : <span/>}
-          <div style={{display:"flex",gap:6,flexShrink:0}}>
-            {st&&!estEnCours&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>}
-            {e.role_apix&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999}}>{ROLES_APIX[e.role_apix]||e.role_apix}</span>}
+        <div style={{padding:"16px 18px 14px",flex:1,display:"flex",flexDirection:"column" as const,gap:12}}>
+          {accent ? (
+            /* Bande = statut : le titre monte sur la ligne du rôle APIX */
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
+              <div style={{minWidth:0,flex:1}}>
+                <div data-marquee style={{fontWeight:800,fontSize:14.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                  <span style={{display:"inline-block"}}>{e.nom_event}</span>
+                </div>
+                {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
+              </div>
+              {e.role_apix&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999,flexShrink:0}}>
+                {ROLES_APIX[e.role_apix]||e.role_apix}
+              </span>}
+            </div>
+          ) : (<>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,minWidth:0}}>
+              {st ? (
+                <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 11px",borderRadius:999,flexShrink:0}}>
+                  <span style={{width:5,height:5,borderRadius:"50%",background:st.c,flexShrink:0}}/>
+                  {st.label}
+                </span>
+              ) : <span/>}
+              {e.role_apix&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999,flexShrink:0}}>{ROLES_APIX[e.role_apix]||e.role_apix}</span>}
+            </div>
+            <div>
+              <div data-marquee style={{fontWeight:800,fontSize:14.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                <span style={{display:"inline-block"}}>{e.nom_event}</span>
+              </div>
+              {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
+            </div>
+          </>)}
+
+          {/* Date · Lieu en rangée épurée */}
+          <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:11,marginTop:"auto"}}>
+            <div style={{flex:1,minWidth:0}}>
+              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Date</p>
+              <p data-marquee style={{fontSize:12,fontWeight:700,color:dateStr?txtC:"#C5BFBB",fontVariantNumeric:"tabular-nums",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
+              </p>
+            </div>
+            <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 14px"}}/>
+            <div style={{flex:1,minWidth:0}}>
+              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Lieu</p>
+              <p data-marquee style={{fontSize:12,fontWeight:700,color:lieu?txtC:"#C5BFBB",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                <span style={{display:"inline-block"}}>{lieu||"—"}</span>
+              </p>
+            </div>
           </div>
-        </div>
-        <div data-marquee style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
-          <span style={{display:"inline-block"}}>{e.nom_event}</span>
-        </div>
-        {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinal(e.edition)}</div>}
-        {lieu&&(
-          <div style={{display:"flex",alignItems:"center",gap:5,marginTop:7,minWidth:0}}>
-            <MapPin size={11} style={{color:"#9aa5b4",flexShrink:0}}/>
-            <span data-marquee style={{fontSize:11.5,color:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const,minWidth:0}}>
-              <span style={{display:"inline-block"}}>{lieu}</span>
-            </span>
-          </div>
-        )}
         </div>
       </div>
     );
