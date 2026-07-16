@@ -22,6 +22,31 @@ const ROLE_PILL: Record<string,{c:string;bg:string}> = {
   "Invité":          { c:"#6b7280", bg:"#F2F0EF"               },
 };
 const ROLES_APIX: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
+// Badges de rôle APIX — pastels dérivés de la carte des pôles territoires :
+// fond très clair, texte dans une version foncée et saturée de la même teinte
+const ROLE_PASTEL: Record<string,string> = {
+  "Organisateur":    "#B4DE9D", // vert tendre
+  "Co-organisateur": "#9DDEC2", // menthe
+  "Participant":     "#9DC3E6", // bleu clair
+  "Partenaire":      "#9DD3DE", // bleu-teal
+  "Sponsor":         "#E6C79D", // pêche
+  "Invité":          "#E6AC9D", // corail
+};
+const foncerPastel = (hex:string) => {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  const mn=Math.min(r,g,b);
+  const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
+  return `rgb(${f(r)},${f(g)},${f(b)})`;
+};
+function BadgeRole({ role }: { role:string }) {
+  const c = ROLE_PASTEL[role] || "#C5BFBB";
+  return (
+    <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:foncerPastel(c),background:`${c}40`,border:`1px solid ${c}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>
+      {ROLES_APIX[role]||role}
+    </span>
+  );
+}
+
 const ROLE_VARIANT: Record<string, BadgeVariant> = {
   "Organisateur":    "green",
   "Co-organisateur": "yellow",
@@ -426,36 +451,16 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
           </div>
         )}
         <div style={{padding:"16px 18px 14px",flex:1,display:"flex",flexDirection:"column" as const,gap:12}}>
-          {accent ? (
-            /* Bande = statut : le titre monte sur la ligne du rôle APIX */
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
-              <div style={{minWidth:0,flex:1}}>
-                <div data-marquee style={{fontWeight:800,fontSize:14.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                  <span style={{display:"inline-block"}}>{e.nom_event}</span>
-                </div>
-                {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
-              </div>
-              {e.role_apix&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999,flexShrink:0}}>
-                {ROLES_APIX[e.role_apix]||e.role_apix}
-              </span>}
-            </div>
-          ) : (<>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,minWidth:0}}>
-              {st ? (
-                <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 11px",borderRadius:999,flexShrink:0}}>
-                  <span style={{width:5,height:5,borderRadius:"50%",background:st.c,flexShrink:0}}/>
-                  {st.label}
-                </span>
-              ) : <span/>}
-              {e.role_apix&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999,flexShrink:0}}>{ROLES_APIX[e.role_apix]||e.role_apix}</span>}
-            </div>
-            <div>
+          {/* Titre + édition | rôle APIX (le statut se lit sur la bande / les dates) */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
+            <div style={{minWidth:0,flex:1}}>
               <div data-marquee style={{fontWeight:800,fontSize:14.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                 <span style={{display:"inline-block"}}>{e.nom_event}</span>
               </div>
               {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
             </div>
-          </>)}
+            {e.role_apix&&<BadgeRole role={e.role_apix}/>}
+          </div>
 
           {/* Date · Lieu en rangée épurée */}
           <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:11,marginTop:"auto"}}>
@@ -786,39 +791,14 @@ export default function EvenementsPage() {
                           </div>
                         )}
                         <div style={{padding:"18px 20px 16px",flex:1,display:"flex",flexDirection:"column" as const,gap:13}}>
-                          {accent ? (
-                            /* Bande = statut : le titre monte sur la ligne du rôle APIX */
-                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
-                              <div style={{minWidth:0,flex:1}}>
-                                <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
-                                {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
-                              </div>
-                              {e.role_apix&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999,flexShrink:0}}>
-                                {ROLES_APIX[e.role_apix]||e.role_apix}
-                              </span>}
+                          {/* Titre + édition | rôle APIX (le statut se lit sur la bande / les dates) */}
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
+                            <div style={{minWidth:0,flex:1}}>
+                              <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
+                              {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
                             </div>
-                          ) : (<>
-                          {/* Statut + rôle de l'APIX */}
-                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-                            {st ? (
-                              <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 11px",borderRadius:999}}>
-                                <span style={{width:5,height:5,borderRadius:"50%",background:st.c,flexShrink:0}}/>
-                                {st.label}
-                              </span>
-                            ) : <span/>}
-                            {e.role_apix ? (
-                              <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999}}>
-                                {ROLES_APIX[e.role_apix]||e.role_apix}
-                              </span>
-                            ) : <span/>}
+                            {e.role_apix&&<BadgeRole role={e.role_apix}/>}
                           </div>
-
-                          {/* Titre + édition */}
-                          <div>
-                            <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
-                            {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
-                          </div>
-                          </>)}
 
                           {/* Date · Lieu en rangée épurée */}
                           <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
