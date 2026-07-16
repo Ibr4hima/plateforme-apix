@@ -37,6 +37,7 @@ const NAME_MAP: Record<string, string> = {
 // Couleurs des pôles : centralisées dans lib/couleurs (ré-exportées ici pour
 // ne pas casser les imports existants des pages)
 import { POLE_COULEURS, normPole } from "@/lib/couleurs";
+import { CHIFFRE_KPI } from "@/lib/typo";
 export { POLE_COULEURS, normPole };
 
 export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {
@@ -445,7 +446,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
               {/* Entreprises installées */}
               <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"12px 14px" }}>
                 <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{nbInst!==1?"s":""} installée{nbInst!==1?"s":""}</p>
-                <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{nbInst}</p>
+                <p style={{ ...CHIFFRE_KPI, color:nbInst>0?"#004f91":"#9aa5b4" }}>{nbInst}</p>
               </div>
 
               {/* Zones d'investissement */}
@@ -579,7 +580,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                 {/* Total entreprises */}
                 <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"12px 14px" }}>
                   <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</p>
-                  <p style={{ fontSize:26, fontWeight:800, color:total>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{total}</p>
+                  <p style={{ ...CHIFFRE_KPI, color:total>0?"#004f91":"#9aa5b4" }}>{total}</p>
                 </div>
 
                 {/* Répartition sectorielle */}

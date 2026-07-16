@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { CHIFFRE_HERO } from "@/lib/typo";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -247,7 +248,7 @@ export default function HomePage() {
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                     <span className="material-symbols-outlined" style={{fontSize:16,color:"#E8823C",opacity:0.9,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{k.icon}</span>
                   </div>
-                  <div style={{fontWeight:800,fontSize:"1.8rem",color:"#fff",lineHeight:1,marginBottom:6}}>
+                  <div style={{...CHIFFRE_HERO,color:"#fff",marginBottom:6}}>
                     <AnimatedCounter target={k.val}/>
                   </div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,0.55)"}}>{k.label}</div>
