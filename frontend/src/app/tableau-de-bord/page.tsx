@@ -2053,7 +2053,7 @@ export default function TableauDeBordPage() {
                 <ErreurChargement compact onRetry={()=>setTickKpis(t=>t+1)}/>
               </div>
             ) : (
-              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
+              <div className="cascade" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
                 {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
               </div>
             )}

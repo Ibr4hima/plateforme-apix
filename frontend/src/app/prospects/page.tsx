@@ -266,7 +266,7 @@ export default function ProspectsPage() {
               {hasFilter && <BoutonEffacerFiltres onClick={reinit}/>}
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>
+            <div className="cascade" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>
               {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onOpen={() => { setSelecInfos(false); setSelec(p); }} onOpenInfos={() => { setSelecInfos(true); setSelec(p); }} />)}
             </div>
           )}

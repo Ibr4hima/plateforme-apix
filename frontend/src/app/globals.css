@@ -90,8 +90,42 @@ body {
   to   { opacity: 1; }
 }
 .charge-in { animation: chargeIn 0.4s ease backwards; }
+
+/* ── Langage de motion ────────────────────────────────────────────────────────
+   Entrée en cascade des cards : chaque enfant direct d'un conteneur .cascade
+   monte de 12px en fondu, décalé de 45ms par rang (plafonné au 12e — au-delà,
+   tout arrive ensemble : la cascade guide l'œil, elle ne fait pas attendre).
+   fill-mode backwards uniquement : aucun transform ne persiste après l'entrée
+   (voir note z-index ci-dessus). */
+@keyframes carteIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.cascade > * { animation: carteIn 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) backwards; animation-delay: 0.54s; }
+.cascade > *:nth-child(1)  { animation-delay: 0ms; }
+.cascade > *:nth-child(2)  { animation-delay: 45ms; }
+.cascade > *:nth-child(3)  { animation-delay: 90ms; }
+.cascade > *:nth-child(4)  { animation-delay: 135ms; }
+.cascade > *:nth-child(5)  { animation-delay: 180ms; }
+.cascade > *:nth-child(6)  { animation-delay: 225ms; }
+.cascade > *:nth-child(7)  { animation-delay: 270ms; }
+.cascade > *:nth-child(8)  { animation-delay: 315ms; }
+.cascade > *:nth-child(9)  { animation-delay: 360ms; }
+.cascade > *:nth-child(10) { animation-delay: 405ms; }
+.cascade > *:nth-child(11) { animation-delay: 450ms; }
+.cascade > *:nth-child(12) { animation-delay: 495ms; }
+
+/* Fondu de page entre routes (appliqué par app/template.tsx — opacité seule,
+   jamais de transform : la navbar fixe et ses portails ne doivent pas être
+   piégés dans un bloc conteneur). */
+@keyframes pageIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.page-in { animation: pageIn 0.22s ease backwards; }
+
 @media (prefers-reduced-motion: reduce) {
-  .charge-in { animation: none; }
+  .charge-in, .cascade > *, .page-in { animation: none; }
 }
 .animate-delay-100 { animation-delay: 100ms; }
 .animate-delay-200 { animation-delay: 200ms; }

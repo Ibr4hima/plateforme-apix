@@ -184,7 +184,7 @@ export default function HomePage() {
               Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
             </p>
           </div>
-          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#ECEAE7",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.03)"}}>
+          <div className="lp-modules-grid cascade" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#ECEAE7",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.03)"}}>
             {MODULES.map((m,i)=>(
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,transition:"background 0.15s",position:"relative" as const}}
                   onMouseEnter={e=>{e.currentTarget.style.background="#FAFAF9";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="1";(e.currentTarget.querySelector(".mod-num") as HTMLElement)!.style.color=m.color;}}
@@ -236,7 +236,7 @@ export default function HomePage() {
             </div>
           </div>
           {/* Aperçu KPIs */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div className="cascade" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             {[
               {label:"Entreprises installées",  val:stats.entreprises,        icon:"enterprise"},
               {label:"Accords en vigueur",       val:stats.accords_en_vigueur, icon:"signature"},

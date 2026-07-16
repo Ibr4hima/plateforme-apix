@@ -216,7 +216,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
       {sansDate.length>0&&(
         <div style={{marginTop:36}}>
           <p style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",letterSpacing:"0.14em",textTransform:"uppercase" as const,textAlign:"center" as const,marginBottom:14}}>Date à confirmer</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
+          <div className="cascade" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
             {sansDate.map(e=><Carte key={e.id} e={e}/>)}
           </div>
         </div>
@@ -409,7 +409,7 @@ export default function EvenementsPage() {
               <FriseChronologique evenements={evenements} onOpen={(e:any)=>gate(()=>setSelec(e))} prochainId={prochainId}/>
             ):(
               <>
-                <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
+                <div className="charge-in cascade" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                   {evenements.map(e=>{
                     const dateStr = e.date_debut
                       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)

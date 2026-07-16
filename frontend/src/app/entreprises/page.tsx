@@ -252,7 +252,7 @@ export default function EntreprisesPage() {
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ):(
-              <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
+              <div className="charge-in cascade" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {entreprises.map(e=>{
                   // Couleur du pôle : même table que la carte des pôles territoires.
                   // Fond très léger (pastel transparent), texte dans une version
