@@ -11,7 +11,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Fuse from "@/lib/fuse";
 import { fetchTous } from "@/lib/fetchTous";
-import { slugPays } from "@/lib/slug";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -27,7 +26,7 @@ type Resultat = {
 
 const GROUPES: Record<string, { label: string }> = {
   page:         { label: "Pages" },
-  pays:         { label: "Dossiers pays" },
+  pays:         { label: "Fiches pays" },
   entreprise:   { label: "Entreprises" },
   accord:       { label: "Accords" },
   evenement:    { label: "Événements" },
@@ -84,7 +83,7 @@ async function chargerIndex(): Promise<Resultat[]> {
     const ok = (r: PromiseSettledResult<any>): any[] => r.status === "fulfilled" && Array.isArray(r.value) ? r.value : [];
     const index: Resultat[] = [
       ...PAGES,
-      ...ok(pays).map((p: any) => ({ type: "pays", nom: p.nom, sous: p.continent || undefined, href: `/pays/${slugPays(p.nom)}` })),
+      ...ok(pays).map((p: any) => ({ type: "pays", nom: p.nom, sous: p.continent || undefined, paysId: p.id })),
       ...ok(entreprises).map((e: any) => ({ type: "entreprise", nom: e.nom, sous: e.sigle || undefined, item: e })),
       ...ok(accords).map((a: any) => ({ type: "accord", nom: a.titre, item: a })),
       ...ok(evenements).map((e: any) => ({ type: "evenement", nom: e.nom_event, sous: e.pays_nom || undefined, item: e })),
@@ -161,6 +160,10 @@ export default function RechercheGlobale() {
 
   const choisir = useCallback((r: Resultat) => {
     fermer();
+    if (r.type === "pays" && r.paysId != null) {
+      window.dispatchEvent(new CustomEvent("apix:fiche-pays", { detail: { paysId: r.paysId } }));
+      return;
+    }
     if (r.item) {
       // Fiche ouverte sur place, où qu'on soit (voir FichesGlobales)
       window.dispatchEvent(new CustomEvent("apix:fiche-item", { detail: { type: r.type, item: r.item, onglet: r.onglet } }));
