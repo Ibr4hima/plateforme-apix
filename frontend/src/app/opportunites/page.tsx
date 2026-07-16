@@ -1312,7 +1312,6 @@ export default function OpportunitesPage() {
                             <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
                             <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
                           </div>
-                          <span style={{display:"inline-flex",alignItems:"center",fontSize:12.5,fontWeight:700,color:"#fff",background:meta.color,padding:"6px 15px",borderRadius:999,flexShrink:0,whiteSpace:"nowrap" as const,boxShadow:`0 2px 8px ${meta.color}40`}}>{items.length} fiche{items.length>1?"s":""}</span>
                         </div>
                       );
                       if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
@@ -1334,6 +1333,39 @@ export default function OpportunitesPage() {
                       return (
                         <>
                         {bandeau}
+                        {(()=>{
+                          const Tuile = ({p}:{p:any}) => {
+                            const nbActs = (p.activite_ids||[]).length;
+                            return (
+                              <div onClick={()=>setPotSel(p)}
+                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                onMouseEnter={ev=>{
+                                  ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="0 8px 20px rgba(0,30,60,0.08)";
+                                  // Nom trop long : glisse pour révéler la fin
+                                  const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                                  const span = box?.firstElementChild as HTMLElement | null;
+                                  if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                                }}
+                                onMouseLeave={ev=>{
+                                  ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                                  const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                                  if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                                }}>
+                                <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
+                                <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                  <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                                </div>
+                                {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
+                              </div>
+                            );
+                          };
+                          // Pôles : pas de regroupement pertinent → tuiles directes
+                          if (selectedNiveau==="pole") return (
+                            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+                              {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                            </div>
+                          );
+                          return (
                         <div style={{display:"flex",flexDirection:"column" as const,gap:16}}>
                           {cles.map(cle=>{
                             const fiches = groupes.get(cle)!;
@@ -1343,40 +1375,17 @@ export default function OpportunitesPage() {
                                 <div style={{display:"flex",alignItems:"center",gap:9,padding:"13px 20px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA",minWidth:0}}>
                                   <span style={{width:8,height:8,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
                                   <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const,flex:1,minWidth:0}}>{cle}</span>
-                                  <span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",flexShrink:0}}>{fiches.length} fiche{fiches.length>1?"s":""}</span>
                                 </div>
                                 {/* Fiches du groupe */}
                                 <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
-                                  {fiches.map((p:any)=>{
-                                    const nbActs = (p.activite_ids||[]).length;
-                                    return (
-                                      <div key={p.id} onClick={()=>setPotSel(p)}
-                                        style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
-                                        onMouseEnter={ev=>{
-                                          ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="0 8px 20px rgba(0,30,60,0.08)";
-                                          // Nom trop long : glisse pour révéler la fin
-                                          const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
-                                          const span = box?.firstElementChild as HTMLElement | null;
-                                          if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                                        }}
-                                        onMouseLeave={ev=>{
-                                          ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
-                                          const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
-                                          if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                                        }}>
-                                        <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                        <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                          <span style={{display:"inline-block"}}>{potTitle(p)}</span>
-                                        </div>
-                                        {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
-                                      </div>
-                                    );
-                                  })}
+                                  {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
                                 </div>
                               </div>
                             );
                           })}
                         </div>
+                          );
+                        })()}
                         </>
                       );
                     })()}
