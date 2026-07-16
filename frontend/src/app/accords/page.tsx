@@ -13,6 +13,14 @@ import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/Acco
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"orange" };
+
+// Badges de statut — pastels (fond très clair, texte foncé de la même teinte)
+const foncerPastel = (hex:string) => {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  const mn=Math.min(r,g,b);
+  const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
+  return `rgb(${f(r)},${f(g)},${f(b)})`;
+};
 const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé non en vigueur" };
 
 const STATUT_OPTS = [
@@ -436,10 +444,12 @@ export default function AccordsPage() {
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);
+                  // Pastels alignés sur les rôles des événements : en vigueur
+                  // vert tendre, signé bleu clair, expiré pêche
                   const ST: any = {
-                    en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
-                    signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-                    expire:     { label:"Expiré", c:"#ca631f", bg:"rgba(202,99,31,0.08)" },
+                    en_vigueur: { label:"En vigueur",            p:"#B4DE9D" },
+                    signe:      { label:"Signé non en vigueur",  p:"#9DC3E6" },
+                    expire:     { label:"Expiré",                p:"#E6C79D" },
                   };
                   const st = statut ? ST[statut] : null;
                   const estExpire = statut==="expire";
@@ -448,27 +458,26 @@ export default function AccordsPage() {
                   const dateSec = a.date_expiration
                     ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
                     : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
-                  // Accent du survol = couleur du statut (vert / bleu / orange)
-                  const accent = st ? st.c : "#004f91";
+                  // Accent du survol = pastel du statut
+                  const accent = st ? st.p : "#C5BFBB";
                   return (
                   <div key={a.id} onClick={()=>gate(()=>setSelec(a))}
                     style={{background:estExpire?"#FBFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${accent}55`;}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent;}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
-                    {/* Statut (pastille à point) + référence discrète */}
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-                      {st ? (
-                        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 11px",borderRadius:999}}>
-                          <span style={{width:5,height:5,borderRadius:"50%",background:st.c,flexShrink:0}}/>
+                    {/* Titre + référence | statut pastel à droite */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
+                      <div style={{minWidth:0,flex:1}}>
+                        <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
+                        {a.reference&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{a.reference}</div>}
+                      </div>
+                      {st&&(
+                        <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:foncerPastel(st.p),background:`${st.p}40`,border:`1px solid ${st.p}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>
                           {st.label}
                         </span>
-                      ) : <span/>}
-                      {a.reference && <span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",letterSpacing:"0.04em",whiteSpace:"nowrap" as const}}>{a.reference}</span>}
+                      )}
                     </div>
-
-                    {/* Titre */}
-                    <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
 
                     {/* Dates en rangée épurée + flèche d'action */}
                     <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
