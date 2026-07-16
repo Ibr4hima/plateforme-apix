@@ -155,7 +155,7 @@ function SunburstZones({ zones }: { zones:any[] }) {
         x0:(d.x0-p.x0)/(p.x1-p.x0)*H, x1:(d.x1-p.x0)/(p.x1-p.x0)*H,
         y0:d.y0-p.y0, y1:d.y1-p.y0,
       };});
-      const t=cell.transition().duration(750).ease(d3.easeCubicInOut)
+      const t: any = cell.transition().duration(750).ease(d3.easeCubicInOut)
         .attr("transform",(d:any)=>`translate(${d.target.y0},${d.target.x0})`);
       cell.select("rect").transition(t).attr("height",(d:any)=>rectH(d.target));
       text.transition(t).attr("fill-opacity",(d:any)=>+labelOk(d.target));

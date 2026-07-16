@@ -367,7 +367,7 @@ export default function EntreprisesPage() {
         droite={onglet==="liste" ? (
           <BarreTitreBadge label="Année de création" detail={triDate==="desc"?"Descendante":"Ascendante"}
             icon={triDate==="desc"?<ArrowDownUp size={13} color="#fff"/>:<ArrowUpDown size={13} color="#fff"/>}
-            onClick={()=>setTriDate(t=>t==="desc"?"asc":"desc")}/>
+            onClick={()=>setTriDate(triDate==="desc"?"asc":"desc")}/>
         ) : null}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises"},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>

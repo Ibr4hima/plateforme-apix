@@ -105,6 +105,3 @@ export function ArrondissementSelect({ departementId, value, onChange, required 
     </select>
   );
 }
-
-// Composants multi-sélection utilisés dans les filtres publics (LocalisationCascade)
-export { default as GeoCascadeMulti } from "./LocalisationCascade";
