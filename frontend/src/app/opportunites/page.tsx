@@ -6,6 +6,7 @@ import Badge from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { ArrowLeft, ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, User, X } from "lucide-react";
+import { POLE_COULEURS, normPole } from "@/components/shared/VueTerritorialeSenegal";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Fuse from "@/lib/fuse";
@@ -49,6 +50,23 @@ function ScrollTitle({ text, speed=25, delay=2.5 }: { text:string; speed?:number
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const DEVISE_SYM: Record<string,string> = { XOF:"FCFA", USD:"$", EUR:"€", GBP:"£", CNY:"¥" };
 const devSym = (code?:string, sym?:string) => sym || (code ? DEVISE_SYM[code]||code : "");
+
+// Badges de pôle — pastels de la carte territoriale : fond très clair, texte
+// dans une version foncée et saturée de la même teinte
+const foncerPastel = (hex:string) => {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  const mn=Math.min(r,g,b);
+  const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
+  return `rgb(${f(r)},${f(g)},${f(b)})`;
+};
+function BadgePole({ nom }: { nom:string }) {
+  const c = POLE_COULEURS[normPole(nom)] || "#C5BFBB";
+  return (
+    <span title={nom} style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:foncerPastel(c),background:`${c}40`,border:`1px solid ${c}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
+      {nom}
+    </span>
+  );
+}
 
 function fmtInvest(p:any) {
   const sym = devSym(p.devise_code, p.devise_symbole);
@@ -1180,52 +1198,44 @@ export default function OpportunitesPage() {
                   </div>
                 ) : (
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
-                    {projetsFiltres.map(p=>(
+                    {projetsFiltres.map(p=>{
+                      const cPole = (p.pole_nom && POLE_COULEURS[normPole(p.pole_nom)]) || "#C5BFBB";
+                      const invest = fmtInvest(p);
+                      return (
                       <div key={p.id} onClick={()=>setProjSel(p)}
-                        style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
-                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                        style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=p.pole_nom?cPole:"rgba(0,79,145,0.33)";}}
+                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
                             ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                               const span = box.firstElementChild as HTMLElement | null;
                               if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                             });
                           }}>
 
-                        <div style={{height:3,background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-                        <div style={{padding:"14px 16px 14px",flex:1}}>
-                          {/* Pôle territoire */}
-                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                            {p.pole_nom ? (
-                              <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{p.pole_nom}</span>
-                            ) : <span/>}
+                        {/* Titre + investissement | badge pôle à droite */}
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
+                          <div style={{minWidth:0,flex:1}}>
+                            <div style={{fontWeight:800,fontSize:15.5,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
+                            {invest&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{invest}</div>}
                           </div>
-
-                          {/* Titre */}
-                          <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
-
-                          {/* Infos libellées */}
-                          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                            <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Région</p>
-                              <p style={{fontSize:12,fontWeight:600,color:p.region_nom?"#1a1a2e":"#9aa5b4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
-                            </div>
-                            <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Département</p>
-                              <p style={{fontSize:12,fontWeight:600,color:p.departement_nom?"#1a1a2e":"#9aa5b4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
-                            </div>
-                          </div>
+                          {p.pole_nom&&<BadgePole nom={p.pole_nom}/>}
                         </div>
 
-                        {/* Action */}
-                        <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
-                          <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,transition:"background 0.15s"}}
-                            onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
-                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                            Voir les détails →
+                        {/* Région · Département en rangée épurée */}
+                        <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
+                            <p style={{fontSize:12.5,fontWeight:700,color:p.region_nom?"#1a1a2e":"#C5BFBB",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
+                          </div>
+                          <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 18px"}}/>
+                          <div style={{flex:1,minWidth:0}}>
+                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Département</p>
+                            <p style={{fontSize:12.5,fontWeight:700,color:p.departement_nom?"#1a1a2e":"#C5BFBB",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </>
