@@ -18,6 +18,56 @@ async def safe(db, query, params=None):
         print(f"Dashboard query error: {e}")
         return []
 
+# ── Briefing de l'accueil ─────────────────────────────────────────────────────
+# Synthèse « situation » : prochain événement, derniers accords signés,
+# prospects transformés, dernières entreprises — avec compteurs 90 jours.
+@router.get("/briefing")
+async def get_briefing(db: AsyncSession = Depends(get_db)):
+    prochain = await safe(db, """
+        SELECT id, nom_event, date_debut, ville
+        FROM evenements
+        WHERE is_deleted = FALSE AND date_debut >= CURRENT_DATE
+        ORDER BY date_debut ASC LIMIT 1
+    """)
+    accords = await safe(db, """
+        SELECT id, titre, date_signature
+        FROM accords_traites
+        WHERE is_deleted = FALSE AND date_signature IS NOT NULL
+        ORDER BY date_signature DESC LIMIT 3
+    """)
+    transformes = await safe(db, """
+        SELECT id, nom, issue_conclu_le
+        FROM prospects
+        WHERE is_deleted = FALSE AND issue = 'installe' AND issue_conclu_le IS NOT NULL
+        ORDER BY issue_conclu_le DESC LIMIT 3
+    """)
+    entreprises = await safe(db, """
+        SELECT id, nom, created_at
+        FROM entreprises_installees
+        WHERE is_deleted = FALSE
+        ORDER BY created_at DESC NULLS LAST LIMIT 3
+    """)
+    compteurs = await safe(db, """
+        SELECT
+          (SELECT COUNT(*) FROM accords_traites
+             WHERE is_deleted = FALSE AND date_signature >= CURRENT_DATE - INTERVAL '90 days')    AS accords_90j,
+          (SELECT COUNT(*) FROM prospects
+             WHERE is_deleted = FALSE AND issue = 'installe'
+               AND issue_conclu_le >= NOW() - INTERVAL '90 days')                                 AS transformes_90j,
+          (SELECT COUNT(*) FROM entreprises_installees
+             WHERE is_deleted = FALSE AND created_at >= NOW() - INTERVAL '90 days')               AS entreprises_90j,
+          (SELECT COUNT(*) FROM evenements
+             WHERE is_deleted = FALSE
+               AND date_debut BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days')         AS evenements_30j
+    """)
+    return {
+        "prochain_evenement":    prochain[0] if prochain else None,
+        "derniers_accords":      accords,
+        "prospects_transformes": transformes,
+        "dernieres_entreprises": entreprises,
+        "compteurs":             compteurs[0] if compteurs else {},
+    }
+
 # ── KPIs globaux ──────────────────────────────────────────────────────────────
 @router.get("/stats")
 async def get_kpis(db: AsyncSession = Depends(get_db)):

@@ -48,12 +48,29 @@ const MODULES = [
   { num:"08", icon:"event",                  label:"Événements",                    href:"/evenements",   color:"#004f91", desc:"Forums, salons, missions de prospection et rencontres B2B" },
 ];
 
+// Écarts relatifs du briefing : « Dans 12 jours », « Il y a 2 mois »…
+function ecartRelatif(dstr: string | null | undefined, futur: boolean): string | null {
+  if (!dstr) return null;
+  const d = new Date(dstr.slice(0, 10) + "T00:00:00");
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const jours = Math.round(Math.abs(d.getTime() - now.getTime()) / 86400000);
+  const prefixe = futur ? "Dans" : "Il y a";
+  if (jours === 0) return futur ? "Aujourd'hui" : "Aujourd'hui";
+  if (jours < 31) return `${prefixe} ${jours} jour${jours > 1 ? "s" : ""}`;
+  const mois = Math.round(jours / 30.44);
+  if (mois < 12) return `${prefixe} ${mois} mois`;
+  const ans = Math.floor(mois / 12);
+  return `${prefixe} ${ans} an${ans > 1 ? "s" : ""}`;
+}
+
 export default function HomePage() {
   const [stats, setStats] = useState({ entreprises:0, accords_en_vigueur:0, evenements_a_venir:0, zones:0 });
+  const [briefing, setBriefing] = useState<any>(null);
 
   useEffect(()=>{
     // Source unique et fiable : /dashboard/stats agrège déjà les comptes sur
     // les bonnes tables (entreprises_installees, accords_traites, evenements, zones).
+    fetch(`${API_BASE}/dashboard/briefing`).then(r=>r.json()).then(setBriefing).catch(()=>{});
     fetch(`${API_BASE}/dashboard/stats`)
       .then(r=>r.json())
       .then(k=>setStats({
@@ -169,6 +186,61 @@ export default function HomePage() {
           })}
         </div>
       </section>
+
+      {/* ── LA SITUATION — briefing du jour ─────────────────────────────────── */}
+      {briefing && (() => {
+        const ev  = briefing.prochain_evenement;
+        const acc = (briefing.derniers_accords || [])[0];
+        const tra = briefing.prospects_transformes || [];
+        const ent = briefing.dernieres_entreprises || [];
+        const cpt = briefing.compteurs || {};
+        const fmtCourt = (d?: string | null) => d ? new Date(d.slice(0,10)+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}) : "";
+        const CarteSituation = ({ surtitre, valeur, titre, sous, href }: { surtitre:string; valeur:string; titre?:string|null; sous?:string|null; href:string }) => (
+          <Link href={href} style={{textDecoration:"none",background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:0,minWidth:0,transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)"}}
+            onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.33)";}}
+            onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";e.currentTarget.style.transform="none";e.currentTarget.style.borderColor="#ECEAE7";}}>
+            <p style={{fontSize:9.5,fontWeight:800,color:"#9aa5b4",letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:10}}>{surtitre}</p>
+            <p style={{fontSize:19,fontWeight:800,color:"#004f91",lineHeight:1.15,letterSpacing:"-0.01em"}}>{valeur}</p>
+            {titre && <p style={{fontSize:12.5,fontWeight:700,color:"#1a1a2e",lineHeight:1.4,marginTop:8,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical" as any,overflow:"hidden"}}>{titre}</p>}
+            {sous && <p style={{fontSize:11,color:"#9aa5b4",marginTop:5,lineHeight:1.5,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{sous}</p>}
+          </Link>
+        );
+        return (
+          <section className="lp-pad" style={{background:"#fff",padding:"64px 60px",borderBottom:"1px solid #F0EEEC"}}>
+            <div style={{maxWidth:1200,margin:"0 auto"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:28,flexWrap:"wrap" as const,gap:12}}>
+                <div>
+                  <p style={{fontSize:11,fontWeight:700,color:"#ca631f",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:8}}>La situation</p>
+                  <h2 style={{fontWeight:800,fontSize:"1.45rem",color:"#1a1a2e",lineHeight:1.2}}>Ce qu'il faut savoir aujourd'hui</h2>
+                </div>
+                <p style={{fontSize:12,color:"#9aa5b4"}}>{new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</p>
+              </div>
+              <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+                <CarteSituation surtitre="Prochain événement"
+                  valeur={ev ? (ecartRelatif(ev.date_debut, true) || "—") : "Aucun à venir"}
+                  titre={ev?.nom_event}
+                  sous={ev ? [fmtCourt(ev.date_debut), ev.ville].filter(Boolean).join(" · ") : "Aucun événement planifié"}
+                  href={ev ? `/evenements?fiche=${ev.id}` : "/evenements"}/>
+                <CarteSituation surtitre="Dernier accord signé"
+                  valeur={acc ? (ecartRelatif(acc.date_signature, false) || "—") : "—"}
+                  titre={acc?.titre}
+                  sous={Number(cpt.accords_90j) > 0 ? `${cpt.accords_90j} accord${Number(cpt.accords_90j) > 1 ? "s" : ""} signé${Number(cpt.accords_90j) > 1 ? "s" : ""} en 90 jours` : acc ? fmtCourt(acc.date_signature) : "Aucun accord signé"}
+                  href={acc ? `/accords?fiche=${acc.id}` : "/accords"}/>
+                <CarteSituation surtitre="Investisseurs transformés"
+                  valeur={`${cpt.transformes_90j ?? 0} en 90 jours`}
+                  titre={tra.length ? tra.map((t:any)=>t.nom).slice(0,2).join(" · ") : null}
+                  sous={tra[0]?.issue_conclu_le ? `Dernier : ${ecartRelatif(tra[0].issue_conclu_le, false)?.toLowerCase()}` : "Aucune transformation récente"}
+                  href={tra[0] ? `/prospects?onglet=termines&fiche=${tra[0].id}` : "/prospects?onglet=termines"}/>
+                <CarteSituation surtitre="Nouvelles entreprises"
+                  valeur={`${cpt.entreprises_90j ?? 0} en 90 jours`}
+                  titre={ent.length ? ent.map((e:any)=>e.nom).slice(0,2).join(" · ") : null}
+                  sous={ent[0]?.created_at ? `Dernière : ${ecartRelatif(ent[0].created_at, false)?.toLowerCase()}` : "Aucun ajout récent"}
+                  href={ent[0] ? `/entreprises?fiche=${ent[0].id}` : "/entreprises"}/>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── MODULES ──────────────────────────────────────────────────────────── */}
       <section className="lp-pad" style={{background:"#F6F5F3",padding:"80px 60px"}}>
