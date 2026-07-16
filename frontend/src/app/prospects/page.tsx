@@ -16,6 +16,21 @@ function fmtDate(d: string) {
   return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
+// Ancienneté relative : « Il y a 3 jours / 2 mois / 1 an », « Aujourd'hui »
+function ilYa(dstr: string | null): string | null {
+  if (!dstr) return null;
+  const d = new Date(dstr.slice(0, 10) + "T00:00:00"), now = new Date();
+  const jours = Math.floor((now.getTime() - d.getTime()) / 86400000);
+  if (jours < 0) return null;
+  if (jours === 0) return "Aujourd'hui";
+  let mois = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+  if (now.getDate() < d.getDate()) mois -= 1;
+  const ans = Math.floor(mois / 12);
+  if (ans >= 1) return `Il y a ${ans} an${ans > 1 ? "s" : ""}`;
+  if (mois >= 1) return `Il y a ${mois} mois`;
+  return `Il y a ${jours} jour${jours > 1 ? "s" : ""}`;
+}
+
 function badgeProspect(p: any) {
   if (p?.issue === "installe") return { label: "Installation à venir", color: "#188038", bg: "rgba(24,128,56,0.08)" };
   if (p?.issue === "decline")  return { label: "Décliné",  color: "#6b7280", bg: "#F2F0EF" };
@@ -177,7 +192,10 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 15.5, color: "#1a1a2e", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</div>
-            {p.siege_nom && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{p.siege_nom}</div>}
+            {(() => {
+              const sousTitre = onglet === "historique" ? (ilYa(p.date_dernier_echange) ?? p.siege_nom) : p.siege_nom;
+              return sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{sousTitre}</div>;
+            })()}
           </div>
           {onglet !== "cibles" && badge && pastel && (
             <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: foncerPastel(pastel), background: `${pastel}40`, border: `1px solid ${pastel}90`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" as const, flexShrink: 0 }}>
@@ -192,6 +210,9 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
             {onglet === "cibles" ? <>
               <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Activités spécialisées</p>
               <p style={{ fontSize: 12.5, fontWeight: 700, color: nbActs > 0 ? "#1a1a2e" : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{nbActs || "—"}</p>
+            </> : onglet === "historique" ? <>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Pays</p>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: p.siege_nom ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.siege_nom || "—"}</p>
             </> : <>
               <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Email</p>
               <p style={{ fontSize: 12.5, fontWeight: 700, color: mail ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{mail || "—"}</p>
