@@ -43,11 +43,11 @@ export default function Accueil() {
 
   const k = stats.data || {};
   const CHIFFRES = [
-    { label: "Entreprises installées", valeur: k.entreprises_total ?? 0, couleur: T.bleu },
-    { label: "Accords en vigueur",     valeur: k.accords_vigueur ?? 0,   couleur: T.vert },
-    { label: "Événements à venir",     valeur: k.evenements_a_venir ?? 0, couleur: T.orange },
-    { label: "Zones d'investissement", valeur: k.zones_total ?? 0,       couleur: "#6A1B9A" },
-  ];
+    { label: "Entreprises installées", valeur: k.entreprises_total ?? 0,  couleur: T.bleu,    icone: "business" },
+    { label: "Accords en vigueur",     valeur: k.accords_vigueur ?? 0,    couleur: T.vert,    icone: "document-text" },
+    { label: "Événements à venir",     valeur: k.evenements_a_venir ?? 0, couleur: T.orange,  icone: "calendar" },
+    { label: "Zones d'investissement", valeur: k.zones_total ?? 0,        couleur: "#6A1B9A", icone: "map" },
+  ] as const;
 
   return (
     <ScrollView
@@ -111,9 +111,15 @@ export default function Accueil() {
       <View style={s.tuiles}>
         {CHIFFRES.map(c => (
           <View key={c.label} style={s.tuile}>
-            <View style={[s.tuileBarre, { backgroundColor: c.couleur }]} />
+            <View style={[s.tuileHalo, { backgroundColor: `${c.couleur}0A` }]} />
+            <View style={s.tuileHaut}>
+              <View style={[s.tuileIcone, { backgroundColor: `${c.couleur}12` }]}>
+                <Ionicons name={`${c.icone}-outline` as any} size={16} color={c.couleur} />
+              </View>
+              <View style={[s.tuilePoint, { backgroundColor: c.couleur }]} />
+            </View>
             <Compteur valeur={c.valeur} style={s.tuileChiffre} />
-            <Text style={s.tuileLabel}>{c.label}</Text>
+            <Text style={s.tuileLabel} numberOfLines={1}>{c.label}</Text>
           </View>
         ))}
       </View>
@@ -158,14 +164,19 @@ const s = StyleSheet.create({
     elevation: 8,
   },
   rechercheTexte: { color: T.gris, fontSize: 14.5, fontFamily: POLICE.moyen, flex: 1 },
-  tuiles: { flexDirection: "row", flexWrap: "wrap", gap: 11, paddingHorizontal: 18, marginTop: 24 },
+  tuiles: { flexDirection: "row", flexWrap: "wrap", gap: 12, paddingHorizontal: 18, marginTop: 24 },
   tuile: {
-    width: "47.8%", backgroundColor: T.carte, borderRadius: 16,
-    borderWidth: 1, borderColor: T.bordure, padding: 16, overflow: "hidden",
+    width: "47.8%", backgroundColor: T.carte, borderRadius: 20,
+    padding: 16, paddingTop: 14, overflow: "hidden",
+    shadowColor: "#001e3c", shadowOpacity: 0.07, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
-  tuileBarre: { position: "absolute", left: 0, top: 14, bottom: 14, width: 3, borderTopRightRadius: 3, borderBottomRightRadius: 3 },
-  tuileChiffre: { fontSize: 28, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.5, fontVariant: ["tabular-nums"] },
-  tuileLabel: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 5, letterSpacing: 0.2 },
+  tuileHalo: { position: "absolute", top: -34, right: -34, width: 110, height: 110, borderRadius: 55 },
+  tuileHaut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
+  tuileIcone: { width: 34, height: 34, borderRadius: 11, alignItems: "center", justifyContent: "center" },
+  tuilePoint: { width: 6, height: 6, borderRadius: 3, opacity: 0.85 },
+  tuileChiffre: { fontSize: 31, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.8, lineHeight: 34, fontVariant: ["tabular-nums"] },
+  tuileLabel: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 4, letterSpacing: 0.2 },
   section: { paddingHorizontal: 18, marginTop: 28 },
   sectionTitre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.6, marginBottom: 11 },
   eventOmbre: {
