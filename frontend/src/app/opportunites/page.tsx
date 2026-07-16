@@ -1302,15 +1302,17 @@ export default function OpportunitesPage() {
                       const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
                       const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                       const bandeau = (
-                        <div style={{display:"flex",alignItems:"center",gap:16,background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,padding:"14px 20px",margin:"26px 0 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.03)"}}>
-                          <div style={{width:52,height:52,borderRadius:12,background:`${meta.color}12`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                            <span style={{fontSize:11,fontWeight:800,color:meta.color,letterSpacing:"0.04em"}}>{meta.abbr}</span>
+                        <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:16,
+                          background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
+                          border:`1px solid ${meta.color}22`}}>
+                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                            <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
                           </div>
                           <div style={{minWidth:0,flex:1}}>
-                            <p style={{fontSize:10,fontWeight:800,color:"#9aa5b4",letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:2}}>Niveau territorial</p>
+                            <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
                             <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
                           </div>
-                          <span style={{display:"inline-flex",alignItems:"center",fontSize:12,fontWeight:800,color:"#fff",background:meta.color,padding:"8px 18px",borderRadius:999,flexShrink:0,boxShadow:`0 4px 14px ${meta.color}4D`}}>{items.length} fiche{items.length>1?"s":""}</span>
+                          <span style={{display:"inline-flex",alignItems:"center",fontSize:12.5,fontWeight:700,color:"#fff",background:meta.color,padding:"6px 15px",borderRadius:999,flexShrink:0,whiteSpace:"nowrap" as const,boxShadow:`0 2px 8px ${meta.color}40`}}>{items.length} fiche{items.length>1?"s":""}</span>
                         </div>
                       );
                       if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
@@ -1324,7 +1326,7 @@ export default function OpportunitesPage() {
                       return (
                         <>
                         {bandeau}
-                        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+                        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
                           {items.map((p:any)=>{
                             const nbActs = (p.activite_ids||[]).length;
                             // Premier bloc contextuel selon le niveau
