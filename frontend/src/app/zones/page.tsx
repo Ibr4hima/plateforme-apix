@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { Building2, ChevronRight, FileText, X } from "lucide-react";
 import { useNaema, useRefPolesTerritoires } from "@/lib/referentiels";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -569,7 +570,7 @@ export default function ZonesPage() {
   const [loading,    setLoading]    = useState(true);
   const [erreur,     setErreur]     = useState(false);
   const [tick,       setTick]       = useState(0);
-  const [onglet,     setOnglet]     = useState<"zones"|"territoire">("zones");
+  const [onglet,     setOnglet]     = useEtatUrl<"zones"|"territoire">("onglet", "zones", ["zones","territoire"]);
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
   useEffect(()=>{

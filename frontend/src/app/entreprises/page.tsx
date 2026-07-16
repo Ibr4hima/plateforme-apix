@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useGeoArbre, useNaemaArbre, useRefFormesJuridiques, useRefPolesEntreprises } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -250,8 +251,8 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function EntreprisesPage() {
   const gate = useAuthGate();
-  const [onglet,      setOnglet]      = useState<"liste"|"territoire">("liste");
-  const [triDate,     setTriDate]     = useState<"desc"|"asc">("desc");
+  const [onglet,      setOnglet]      = useEtatUrl<"liste"|"territoire">("onglet", "liste", ["liste","territoire"]);
+  const [triDate,     setTriDate]     = useEtatUrl<"desc"|"asc">("tri", "desc", ["desc","asc"]);
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [erreur,      setErreur]      = useState(false);

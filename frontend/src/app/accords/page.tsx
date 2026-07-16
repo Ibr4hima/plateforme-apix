@@ -11,6 +11,7 @@ import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -186,7 +187,7 @@ export default function AccordsPage() {
   const [recherche,      setRecherche]      = useState("");
   const [statutFiltre,   setStatutFiltre]   = useState("");
   // Type de traité (onglet hero) : bilatéraux d'investissement / internationaux (à venir)
-  const [typeTraite,     setTypeTraite]     = useState<"tbi"|"inter">("tbi");
+  const [typeTraite,     setTypeTraite]     = useEtatUrl<"tbi"|"inter">("type", "tbi", ["tbi","inter"]);
   const [paysIdsFiltres, setPaysIdsFiltres] = useState<number[]>([]);
   const [secteursSel,    setSecteursSel]    = useState<string[]>([]);
   const [branchesSel,    setBranchesSel]    = useState<string[]>([]);

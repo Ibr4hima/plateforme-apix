@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -578,7 +579,7 @@ export default function EvenementsPage() {
   const [stats,       setStats]       = useState<any>({a_venir:0,en_cours:0,total:0});
 
   const [recherche,    setRecherche]    = useState("");
-  const [vueMode,      setVueMode]      = useState<"liste"|"frise">("liste");
+  const [vueMode,      setVueMode]      = useEtatUrl<"liste"|"frise">("vue", "liste", ["liste","frise"]);
   const [statutFiltre, setStatutFiltre] = useState("");
   const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
   const [secteursSel,  setSecteursSel]  = useState<string[]>([]);

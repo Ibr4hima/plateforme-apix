@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useNaema } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -594,7 +595,7 @@ function ProspectPublicVue({ p, onglet, onClose }: { p: any; onglet: "cibles" | 
 // ── Page principale ───────────────────────────────────────────────────────────
 
 export default function ProspectsPage() {
-  const [onglet, setOnglet] = useState<"cibles" | "historique" | "termines">("cibles");
+  const [onglet, setOnglet] = useEtatUrl<"cibles" | "historique" | "termines">("onglet", "cibles", ["cibles","historique","termines"]);
 
   // Données
   const [cibles,    setCibles]    = useState<any[]>([]);

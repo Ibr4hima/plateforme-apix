@@ -9,6 +9,7 @@ import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -1495,8 +1496,8 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
-  const [mode, setMode] = useState<"indicateurs" | "commerce">("indicateurs");
-  const [vue, setVue] = useState<"pays" | "comparative">("pays");
+  const [mode, setMode] = useEtatUrl<"indicateurs" | "commerce">("mode", "indicateurs", ["indicateurs","commerce"]);
+  const [vue, setVue] = useEtatUrl<"pays" | "comparative">("vue", "pays", ["pays","comparative"]);
   const [pays, setPays] = useState<Pays[]>([]);
   const [indicateurs, setIndicateurs] = useState<Indicateur[]>([]);
   const [selection, setSelection] = useState<number[]>([]);

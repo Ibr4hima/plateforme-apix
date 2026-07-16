@@ -10,6 +10,7 @@ import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
 import { useDebounced } from "@/lib/useDebounced";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -3816,12 +3817,13 @@ function OngletNational() {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function IdePage() {
-  const [ongletPrincipal, setOngletPrincipal] = useState<"ide"|"national">("ide");
-  const [section,    setSection]    = useState<"realises"|"projetes">("realises");
-  const [sousOnglet, setSousOnglet] = useState<"pays"|"comparative"|"monde">("pays");
-  const [vueP, setVueP] = useState<"pays"|"secteurs">("pays");
-  const [typeSecteurs, setTypeSecteurs] = useState<"secteur"|"comparative">("secteur");
-  const [sousType,   setSousType]   = useState<"fluxstock"|"greenfield"|"fusion">("fluxstock");
+  // Navigation de la page dans l'URL : vues partageables par lien, F5 conserve l'état
+  const [ongletPrincipal, setOngletPrincipal] = useEtatUrl<"ide"|"national">("onglet", "ide", ["ide","national"]);
+  const [section,    setSection]    = useEtatUrl<"realises"|"projetes">("section", "realises", ["realises","projetes"]);
+  const [sousOnglet, setSousOnglet] = useEtatUrl<"pays"|"comparative"|"monde">("analyse", "pays", ["pays","comparative","monde"]);
+  const [vueP, setVueP] = useEtatUrl<"pays"|"secteurs">("vue", "pays", ["pays","secteurs"]);
+  const [typeSecteurs, setTypeSecteurs] = useEtatUrl<"secteur"|"comparative">("typesec", "secteur", ["secteur","comparative"]);
+  const [sousType,   setSousType]   = useEtatUrl<"fluxstock"|"greenfield"|"fusion">("categorie", "fluxstock", ["fluxstock","greenfield","fusion"]);
   const [paysDispo,  setPaysDispo]  = useState<any[]>([]);
   const [showTable,  setShowTable]  = useState(false);
 

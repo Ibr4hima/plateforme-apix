@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Fuse from "@/lib/fuse";
 import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -829,7 +830,7 @@ function AvantageModal({ avg: a, onClose }: { avg:any; onClose:()=>void }) {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function OpportunitesPage() {
-  const [onglet, setOnglet] = useState<"projets"|"potentialites"|"avantages">("projets");
+  const [onglet, setOnglet] = useEtatUrl<"projets"|"potentialites"|"avantages">("onglet", "projets", ["projets","potentialites","avantages"]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
