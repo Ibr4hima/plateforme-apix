@@ -3,14 +3,12 @@
 import { FileText, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNaema, useRefPays } from "@/lib/referentiels";
+import { fmtDate } from "@/lib/format";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-export function fmtDate(d: string) {
-  if (!d) return "—";
-  const [y,m,j] = d.split("-").map(Number);
-  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
-}
+// fmtDate : centralisé dans lib/format (ré-exporté pour les imports existants)
+export { fmtDate } from "@/lib/format";
 
 export function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
   const today = new Date().toISOString().split("T")[0];

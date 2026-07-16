@@ -8,6 +8,7 @@ import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
+import { fmtDate as fmtDateLib } from "@/lib/format";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -24,11 +25,7 @@ function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
 const SENEGAL = "Sénégal";
 const APIX    = "APIX S.A";
 
-const fmtDate = (d: string) => {
-  if (!d) return "—";
-  const [y,m,j] = d.split("-").map(Number);
-  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
-};
+const fmtDate = (d: string) => fmtDateLib(d) || "—";
 
 // ── Modal formulaire accord ───────────────────────────────────────────────────
 function AccordModal({ open, onClose, editItem, onSaved }: {

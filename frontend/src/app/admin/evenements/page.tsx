@@ -11,6 +11,7 @@ import PaysSelect from "@/components/shared/PaysSelect";
 import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FSegmented, FToggle, FButton, FButtonGhost, FError, FInfo } from "@/components/shared/FormUI";
 import { confirmer } from "@/components/shared/Confirmation";
+import { fmtDate } from "@/lib/format";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -57,11 +58,7 @@ function computeStatut(e: any): "a_venir"|"en_cours"|"termine"|null {
   return "en_cours";
 }
 
-function fmtDateFR(d: string) {
-  if (!d) return "";
-  const [y,m,j] = d.split("-").map(Number);
-  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
-}
+const fmtDateFR = fmtDate;
 
 const LBL = ({children}:{children:string}) => (
   <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>

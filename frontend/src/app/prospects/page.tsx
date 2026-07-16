@@ -8,16 +8,16 @@ import { parsePhoneNumber } from "libphonenumber-js";
 import { useNaema } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { fmtDate } from "@/lib/format";
+import { fmtPhone } from "@/lib/telephone";
+import { foncerPastel } from "@/lib/couleurs";
+import { demarrerRedimension } from "@/lib/redimension";
+import { SideFilter } from "@/components/shared/FiltresLateraux";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function fmtDate(d: string) {
-  if (!d) return "";
-  const [y, m, j] = d.split("-").map(Number);
-  return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-}
 
 // Ancienneté relative : « Il y a 3 jours / 2 mois / 1 an », « Aujourd'hui »
 function ilYa(dstr: string | null): string | null {
@@ -105,48 +105,8 @@ function canalContactDisplay(canal: string, contact: string): string {
   return contact;
 }
 
-function fmtPhone(raw: string): string {
-  if (!raw) return raw;
-  try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
-}
 
 // ── Filtre latéral générique ──────────────────────────────────────────────────
-
-function SideFilter({ label, items, selected, onToggle, color }: {
-  label: string; items: string[]; selected: string[]; onToggle: (v: string) => void; color: string;
-}) {
-  const [open, setOpen] = useState(true);
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <button onClick={() => setOpen(o => !o)}
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", cursor: "pointer", padding: "4px 0", marginBottom: open ? 8 : 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>{label}</span>
-          {selected.length > 0 && <span style={{ fontSize: 10, fontWeight: 700, color, background: color + "18", padding: "1px 6px", borderRadius: 999 }}>{selected.length}</span>}
-        </div>
-        <span style={{ width: 20, height: 20, borderRadius: "50%", background: "#F5F4F3", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {open ? <ChevronUp size={11} style={{ color: "#4a5568" }} /> : <ChevronDown size={11} style={{ color: "#4a5568" }} />}
-        </span>
-      </button>
-      {open && (
-        <div style={{ display: "flex", flexDirection: "column" as const, gap: 2, maxHeight: 180, overflowY: "auto" as const }}>
-          {items.map(item => {
-            const sel = selected.includes(item);
-            return (
-              <button key={item} onClick={() => onToggle(item)}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? color : "#C5BFBB"}`, background: sel ? color : "transparent", flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: "#4a5568", fontWeight: sel ? 700 : 400 }}>{item}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── Carte prospect ────────────────────────────────────────────────────────────
 
@@ -174,12 +134,6 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
     "À recontacter":        "#9DC3E6", // bleu clair
     "Installation à venir": "#B4DE9D", // vert tendre
     "Décliné":              "#D5D2CE", // gris chaud
-  };
-  const foncerPastel = (hex:string) => {
-    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-    const mn=Math.min(r,g,b);
-    const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
-    return `rgb(${f(r)},${f(g)},${f(b)})`;
   };
   const pastel = badge ? (PASTELS[badge.label] || "#C5BFBB") : null;
   const hoverC = pastel || "rgba(0,79,145,0.33)";
@@ -616,16 +570,7 @@ export default function ProspectsPage() {
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(480, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
-    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 480);
 
   const charger = useCallback(async () => {
     setLoading(true);
@@ -719,8 +664,8 @@ export default function ProspectsPage() {
                 {recherche && <button onClick={() => setRecherche("")} style={{ position: "absolute" as const, right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
               </div>
               <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
-              {paysOpts.length > 0 && <SideFilter label="Pays / Siège" color="#004f91" items={paysOpts} selected={paysSel} onToggle={togglePays} />}
-              {secteurOpts.length > 0 && <><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /><SideFilter label="Secteur" color="#004f91" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} /></>}
+              {paysOpts.length > 0 && <SideFilter label="Pays / Siège" color="#004f91" items={paysOpts} selected={paysSel} onToggle={togglePays} listMaxHeight={180} />}
+              {secteurOpts.length > 0 && <><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /><SideFilter label="Secteur" color="#004f91" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} listMaxHeight={180} /></>}
             </div>
           )}
         </aside>

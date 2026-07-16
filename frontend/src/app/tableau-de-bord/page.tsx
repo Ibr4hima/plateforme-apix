@@ -14,6 +14,7 @@ import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { zoneTypeMeta } from "@/components/shared/zoneTypes";
 import { Skeleton } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
+import { demarrerRedimension } from "@/lib/redimension";
 
 // Layout effect côté client, effet classique côté serveur (évite le warning SSR)
 const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -1870,22 +1871,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
 
   const tablesFiltered = TABLES_ANALYTIQUES.filter(t=>!q||t.titre.toLowerCase().includes(q)||t.description.toLowerCase().includes(q));
 
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    const startX = e.clientX, startW = sidebarWidth;
-    // Empêche la sélection de texte et fige le curseur pendant le glisser
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(220, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp   = () => {
-      isResizing.current = false;
-      document.body.style.userSelect = "";
-      document.body.style.cursor = "";
-      document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
-    };
-    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 520);
 
   const hasAdded = onglet==="tables" ? config.tableCards.length>0 : (config.kpisActifs.length>0||config.cards.length>0);
   const nbActifs = onglet==="tables" ? config.tableCards.length : config.kpisActifs.length+config.cards.length;

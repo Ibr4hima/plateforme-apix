@@ -13,189 +13,12 @@ import { useAuthGate } from "@/lib/authGate";
 import { useGeoArbre, useNaemaArbre, useRefFormesJuridiques, useRefPolesEntreprises } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { fmtDate } from "@/lib/format";
+import { foncerPastel } from "@/lib/couleurs";
+import { demarrerRedimension } from "@/lib/redimension";
+import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter } from "@/components/shared/FiltresLateraux";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-function fmtDate(d: string) {
-  if (!d) return "";
-  const [y,m,j] = d.split("-").map(Number);
-  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
-}
-
-function SideFilter({ label, items, selected, onToggle, color, searchable=false, format }: {
-  label:string; items:string[]; selected:string[]; onToggle:(v:string)=>void; color:string; searchable?:boolean; format?:(v:string)=>string;
-}) {
-  const [open, setOpen]     = useState(true);
-  const [search, setSearch] = useState("");
-  const filtered = searchable ? items.filter(i=>i.toLowerCase().includes(search.toLowerCase())) : items;
-  return (
-    <div style={{marginBottom:18}}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
-          {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"18",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
-        </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
-        </span>
-      </button>
-      {open&&(
-        <>
-          {searchable&&<div style={{position:"relative" as const,marginBottom:6}}>
-            <Search size={11} style={{position:"absolute" as const,left:8,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
-              style={{width:"100%",paddingLeft:24,paddingRight:8,paddingTop:6,paddingBottom:6,borderRadius:7,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:11,outline:"none",boxSizing:"border-box" as const}}/>
-          </div>}
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:180,overflowY:"auto" as const}}>
-            {filtered.map(item=>{
-              const sel=selected.includes(item);
-              return (
-                <button key={item} onClick={()=>onToggle(item)}
-                  style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                  <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                      </div>
-                  <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{format?format(item):item}</span>
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activitesSel, onSecteur, onBranche, onActivite }: {
-  secteurs:any[]; secteursSel:string[]; branchesSel:string[]; activitesSel:string[];
-  onSecteur:(v:string)=>void; onBranche:(v:string)=>void; onActivite:(v:string)=>void;
-}) {
-  const [open, setOpen] = useState(true);
-  const branches  = secteurs.filter(s=>secteursSel.includes(s.nom)).flatMap((s:any)=>s.branches||[]);
-  const activites = branches.filter((b:any)=>branchesSel.includes(b.nom)).flatMap((b:any)=>b.activites||[]);
-  return (
-    <div style={{marginBottom:18}}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
-          {secteursSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{secteursSel.length}</span>}
-          {branchesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{branchesSel.length}</span>}
-          {activitesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{activitesSel.length}</span>}
-        </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
-        </span>
-      </button>
-      {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-        <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#004f91",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-            {secteurs.map((s:any)=>{const sel=secteursSel.includes(s.nom); return (
-              <button key={s.nom} onClick={()=>onSecteur(s.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
-              </button>);})}
-          </div>
-        </div>
-        {secteursSel.length>0&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(0,79,145,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#ca631f",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-            {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
-              <button key={b.nom} onClick={()=>onBranche(b.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{b.nom}</span>
-              </button>);})}
-          </div>
-        </div>}
-        {branchesSel.length>0&&activites.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-            {activites.map((a:any)=>{const sel=activitesSel.includes(a.nom); return (
-              <button key={a.nom} onClick={()=>onActivite(a.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{a.nom}</span>
-              </button>);})}
-          </div>
-        </div>}
-      </div>}
-    </div>
-  );
-}
-
-function LocalisationFilter({ regions, regionsSel, departementsSel, arrondissementsSel, onRegion, onDepartement, onArrond }: {
-  regions:any[]; regionsSel:string[]; departementsSel:string[]; arrondissementsSel:string[];
-  onRegion:(v:string)=>void; onDepartement:(v:string)=>void; onArrond:(v:string)=>void;
-}) {
-  const [open, setOpen] = useState(true);
-  const departements    = regions.filter(r=>regionsSel.includes(r.nom)).flatMap((r:any)=>r.departements||[]);
-  const arrondissements = departements.filter(d=>departementsSel.includes(d.nom)).flatMap((d:any)=>d.arrondissements||[]);
-  return (
-    <div style={{marginBottom:18}}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Localisation</span>
-          {regionsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{regionsSel.length}</span>}
-          {departementsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{departementsSel.length}</span>}
-          {arrondissementsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{arrondissementsSel.length}</span>}
-        </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
-        </span>
-      </button>
-      {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-        <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#004f91",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Région</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:160,overflowY:"auto" as const}}>
-            {regions.map((r:any)=>{const sel=regionsSel.includes(r.nom); return (
-              <button key={r.nom} onClick={()=>onRegion(r.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div><span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{r.nom}</span>
-              </button>);})}
-          </div>
-        </div>
-        {regionsSel.length>0&&departements.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(0,79,145,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#ca631f",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Département</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:140,overflowY:"auto" as const}}>
-            {departements.map((d:any)=>{const sel=departementsSel.includes(d.nom); return (
-              <button key={d.nom} onClick={()=>onDepartement(d.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div><span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{d.nom}</span>
-              </button>);})}
-          </div>
-        </div>}
-        {departementsSel.length>0&&arrondissements.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Arrondissement</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:120,overflowY:"auto" as const}}>
-            {arrondissements.map((a:any)=>{const sel=arrondissementsSel.includes(a.nom); return (
-              <button key={a.nom} onClick={()=>onArrond(a.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div><span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{a.nom}</span>
-              </button>);})}
-          </div>
-        </div>}
-      </div>}
-    </div>
-  );
-}
 
 function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
   minYear: number; maxYear: number; startYear: number; endYear: number;
@@ -260,16 +83,7 @@ export default function EntreprisesPage() {
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
-    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
   const [formeOpts,   setFormeOpts]   = useState<string[]>([]);
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
   const [regions,     setRegions]     = useState<any[]>([]);
@@ -411,15 +225,15 @@ export default function EntreprisesPage() {
                   {recherche&&<button onClick={()=>setRecherche("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                 </div>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Forme juridique" color="#004f91" items={formeOpts} selected={formesSel} onToggle={toggleForme} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
+                <SideFilter label="Forme juridique" color="#004f91" items={formeOpts} selected={formesSel} onToggle={toggleForme} listMaxHeight={180} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 {dateMin<dateMax&&<DateRangeFilter minYear={dateMin} maxYear={dateMax} startYear={dateStart} endYear={dateEnd} onChange={(s,e)=>{setDateStart(s);setDateEnd(e);}}/>}
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
                 <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <LocalisationFilter regions={regions} regionsSel={regionsSel} departementsSel={deptsSel} arrondissementsSel={arrondsSel} onRegion={toggleRegion} onDepartement={toggleDept} onArrond={toggleArr}/>
+                <LocalisationFilter regions={regions} regionsSel={regionsSel} departementsSel={deptsSel} arrondissementsSel={arrondsSel} onRegion={toggleRegion} onDepartement={toggleDept} onArrondissement={toggleArr}/>
                 {poles.length>0&&<><div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Pôle territoire" color="#004f91" items={poles} selected={polesSel} onToggle={togglePole}/></>}
+                <SideFilter label="Pôle territoire" color="#004f91" items={poles} selected={polesSel} onToggle={togglePole} listMaxHeight={180}/></>}
             </div>}
           </aside>
           {/* Grille */}
@@ -442,13 +256,7 @@ export default function EntreprisesPage() {
                   // Fond très léger (pastel transparent), texte dans une version
                   // foncée et saturée de la même teinte pour rester lisible.
                   const cPole = (e.pole_territoire_nom && POLE_COULEURS[normPole(e.pole_territoire_nom)]) || "#C5BFBB";
-                  const fonce = (hex:string) => {
-                    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-                    const mn=Math.min(r,g,b);
-                    const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
-                    return `rgb(${f(r)},${f(g)},${f(b)})`;
-                  };
-                  const cPoleTxt = fonce(cPole);
+                  const cPoleTxt = foncerPastel(cPole);
                   return (
                   <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}

@@ -1,22 +1,13 @@
 "use client";
 
 import { X } from "lucide-react";
-import { parsePhoneNumber } from "libphonenumber-js";
 import { useEffect, useState } from "react";
 import { useNaema } from "@/lib/referentiels";
+import { fmtDateLong } from "@/lib/format";
+import { fmtPhone } from "@/lib/telephone";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-function fmtDate(d: string) {
-  if (!d) return "";
-  const [y,m,j] = d.split("-").map(Number);
-  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
-}
-
-function fmtPhone(raw: string): string {
-  if (!raw) return raw;
-  try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
-}
 
 interface Props { entreprise: any | null; onClose: () => void; zIndex?: number; }
 
@@ -76,7 +67,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex =
           <section>
             <SecTitle>Informations</SecTitle>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {e.date_creation && <Bloc label="Création"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(e.date_creation)}</p></Bloc>}
+              {e.date_creation && <Bloc label="Création"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{fmtDateLong(e.date_creation)}</p></Bloc>}
               {paysStr && <Bloc label="Pays du siège"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{paysStr}</p></Bloc>}
               {locStr && <Bloc label="Localisation"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{locStr}</p></Bloc>}
               {e.adresse && <Bloc label="Adresse"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{e.adresse}</p></Bloc>}

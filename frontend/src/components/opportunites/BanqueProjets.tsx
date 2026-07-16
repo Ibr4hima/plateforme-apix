@@ -4,13 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Pencil, Trash2, Loader2, X, Check, Eye, EyeOff, FileText, Upload, Plus } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 
-function fmtPhone(raw: string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
 import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FToggle, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 import { confirmer } from "@/components/shared/Confirmation";
+import { fmtPhone } from "@/lib/telephone";
 
 // Bouton « + Ajouter » d'une liste de contacts : actif seulement si toutes les entrées sont valides
 function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void; titre:string }) {

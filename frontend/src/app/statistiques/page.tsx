@@ -10,6 +10,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { demarrerRedimension } from "@/lib/redimension";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -245,13 +246,7 @@ function CommercePanel() {
   const TAILLE = 50;
 
   const isResizing = useRef(false);
-  const startResize = (e: any) => {
-    isResizing.current = true;
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(220, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
-    window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 520);
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
   const [erreur, setErreur] = useState(false);
@@ -1525,13 +1520,7 @@ export default function StatistiquesPage() {
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
 
   const isResizing = useRef(false);
-  const startResize = (e: any) => {
-    isResizing.current = true;
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(220, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
-    window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 520);
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
   const [erreur, setErreur] = useState(false);

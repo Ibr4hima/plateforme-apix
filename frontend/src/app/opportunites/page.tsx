@@ -13,12 +13,15 @@ import Fuse from "@/lib/fuse";
 import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { foncerPastel, COMP_PALETTE } from "@/lib/couleurs";
+import { fmtPhone } from "@/lib/telephone";
+import { demarrerRedimension } from "@/lib/redimension";
+import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter } from "@/components/shared/FiltresLateraux";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 
 const devSymbole = (code?:string, sym?:string) => sym || (code ? ({XOF:"FCFA",USD:"$",EUR:"€"}[code]||code) : "");
-function fmtPhone(raw:string) { try { return parsePhoneNumber(raw.trim()).formatInternational(); } catch { return raw.trim(); } }
 
 function ScrollTitle({ text, speed=25, delay=2.5 }: { text:string; speed?:number; delay?:number }) {
   const cRef = useRef<HTMLDivElement>(null);
@@ -54,14 +57,6 @@ function ScrollTitle({ text, speed=25, delay=2.5 }: { text:string; speed?:number
 const DEVISE_SYM: Record<string,string> = { XOF:"FCFA", USD:"$", EUR:"€", GBP:"£", CNY:"¥" };
 const devSym = (code?:string, sym?:string) => sym || (code ? DEVISE_SYM[code]||code : "");
 
-// Badges de pôle — pastels de la carte territoriale : fond très clair, texte
-// dans une version foncée et saturée de la même teinte
-const foncerPastel = (hex:string) => {
-  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  const mn=Math.min(r,g,b);
-  const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
-  return `rgb(${f(r)},${f(g)},${f(b)})`;
-};
 function BadgePole({ nom }: { nom:string }) {
   const c = POLE_COULEURS[normPole(nom)] || "#C5BFBB";
   return (
@@ -94,179 +89,6 @@ function fmtInvest(p:any) {
   const min = Number(p.investissement_min).toLocaleString("fr-FR");
   const max = p.investissement_max ? Number(p.investissement_max).toLocaleString("fr-FR") : "…";
   return `${min} – ${max} ${sym}`;
-}
-
-// ── Composant filtre latéral générique ────────────────────────────────────────
-function SideFilter({ label, items, selected, onToggle, color }: {
-  label:string; items:{value:string;label:string}[];
-  selected:string[]; onToggle:(v:string)=>void; color:string;
-}) {
-  const [open, setOpen] = useState(true);
-  return (
-    <div style={{marginBottom:18}}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
-          {selected.length>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"18",padding:"1px 6px",borderRadius:999}}>{selected.length}</span>}
-        </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
-        </span>
-      </button>
-      {open&&(
-        <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-          {items.map(item=>{
-            const sel=selected.includes(item.value);
-            return (
-              <button key={item.value} onClick={()=>onToggle(item.value)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Filtre thématiques cascade ────────────────────────────────────────────────
-function ThematiquesCascadeFilter({ secteurs, secteursSel, branchesSel, activitesSel, onSecteur, onBranche, onActivite }: {
-  secteurs:any[]; secteursSel:string[]; branchesSel:string[]; activitesSel:string[];
-  onSecteur:(v:string)=>void; onBranche:(v:string)=>void; onActivite:(v:string)=>void;
-}) {
-  const [open, setOpen] = useState(true);
-  const branches  = secteurs.filter(s=>secteursSel.includes(s.nom)).flatMap((s:any)=>s.branches||[]);
-  const activites = branches.filter((b:any)=>branchesSel.includes(b.nom)).flatMap((b:any)=>b.activites||[]);
-  return (
-    <div style={{marginBottom:18}}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Thématiques</span>
-          {secteursSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{secteursSel.length}</span>}
-          {branchesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{branchesSel.length}</span>}
-          {activitesSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{activitesSel.length}</span>}
-        </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
-        </span>
-      </button>
-      {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-        <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#004f91",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Secteur</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-            {secteurs.map((s:any)=>{const sel=secteursSel.includes(s.nom); return (
-              <button key={s.nom} onClick={()=>onSecteur(s.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{s.nom}</span>
-              </button>);})}
-          </div>
-        </div>
-        {secteursSel.length>0&&branches.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(0,79,145,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#ca631f",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Branche</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-            {branches.map((b:any)=>{const sel=branchesSel.includes(b.nom); return (
-              <button key={b.nom} onClick={()=>onBranche(b.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{b.nom}</span>
-              </button>);})}
-          </div>
-        </div>}
-        {branchesSel.length>0&&activites.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Activité</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
-            {activites.map((a:any)=>{const sel=activitesSel.includes(a.nom); return (
-              <button key={a.nom} onClick={()=>onActivite(a.nom)}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{a.nom}</span>
-              </button>);})}
-          </div>
-        </div>}
-      </div>}
-    </div>
-  );
-}
-
-// ── Filtre localisation cascade ───────────────────────────────────────────────
-function LocalisationFilter({ regions, regionsSel, departementsSel, arrondissementsSel, onRegion, onDepartement, onArrondissement }: {
-  regions:any[]; regionsSel:string[]; departementsSel:string[]; arrondissementsSel:string[];
-  onRegion:(v:string)=>void; onDepartement:(v:string)=>void; onArrondissement:(v:string)=>void;
-}) {
-  const [open, setOpen] = useState(true);
-  const departements    = regions.filter(r=>regionsSel.includes(r.nom)).flatMap((r:any)=>r.departements||[]);
-  const arrondissements = departements.filter((d:any)=>departementsSel.includes(d.nom)).flatMap((d:any)=>d.arrondissements||[]);
-  return (
-    <div style={{marginBottom:18}}>
-      <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?10:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Localisation</span>
-          {regionsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{regionsSel.length}</span>}
-          {departementsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.1)",padding:"1px 6px",borderRadius:999}}>{departementsSel.length}</span>}
-          {arrondissementsSel.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",padding:"1px 6px",borderRadius:999}}>{arrondissementsSel.length}</span>}
-        </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
-        </span>
-      </button>
-      {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-        <div>
-          <p style={{fontSize:10,fontWeight:700,color:"#004f91",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Région</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:160,overflowY:"auto" as const}}>
-            {regions.map((r:any)=>{const sel=regionsSel.includes(r.nom); return (
-              <button key={r.nom} onClick={()=>onRegion(r.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{r.nom}</span>
-              </button>);})}
-          </div>
-        </div>
-        {regionsSel.length>0&&departements.length>0&&<div style={{paddingLeft:12,borderLeft:"2px solid rgba(0,79,145,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#ca631f",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Département</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:140,overflowY:"auto" as const}}>
-            {departements.map((d:any)=>{const sel=departementsSel.includes(d.nom); return (
-              <button key={d.nom} onClick={()=>onDepartement(d.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#ca631f":"#C5BFBB"}`,background:sel?"#ca631f":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{d.nom}</span>
-              </button>);})}
-          </div>
-        </div>}
-        {departementsSel.length>0&&arrondissements.length>0&&<div style={{paddingLeft:24,borderLeft:"2px solid rgba(202,99,31,0.15)"}}>
-          <p style={{fontSize:10,fontWeight:700,color:"#188038",marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>Arrondissement</p>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:120,overflowY:"auto" as const}}>
-            {arrondissements.map((a:any)=>{const sel=arrondissementsSel.includes(a.nom); return (
-              <button key={a.nom} onClick={()=>onArrondissement(a.nom)}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#188038":"#C5BFBB"}`,background:sel?"#188038":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                  </div>
-                <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{a.nom}</span>
-              </button>);})}
-          </div>
-        </div>}
-      </div>}
-    </div>
-  );
 }
 
 // ── Filtre Atouts & Potentialités ────────────────────────────────────────────
@@ -551,7 +373,7 @@ function PotentialiteModal({ pot: p, refAvantages, onClose }: { pot:any; refAvan
   const nivColor = NIVEAU_COLORS[p.niveau] || "#004f91";
   const zoneNom = p.pole_nom||p.region_nom||p.departement_nom||p.arrondissement_nom||"";
   // Couleurs des catégories d'atouts : cycle sur la palette
-  const PALETTE = ["#004f91","#ca631f","#188038","#6A1B9A"];
+  const PALETTE = COMP_PALETTE;
   const [fichiers,  setFichiers]  = useState<any[]>(p.fichiers||[]);
   // Référentiels NAEMA servis par le cache partagé
   const { secteurs, branches, activites } = useNaema();
@@ -835,27 +657,7 @@ export default function OpportunitesPage() {
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
 
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const startX = e.clientX;
-    const startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => {
-      if (!isResizing.current) return;
-      setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX)));
-    };
-    const onUp = () => {
-      isResizing.current = false;
-      document.body.style.userSelect = "";
-      document.body.style.cursor = "";
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
 
   // Données référentielles
   const [poles,       setPoles]       = useState<any[]>([]);

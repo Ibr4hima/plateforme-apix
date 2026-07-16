@@ -57,3 +57,19 @@ export function fmtUnite(valeur: number | null | undefined, unite: string): stri
   }
   return v.toLocaleString("fr-FR");
 }
+
+// ── Dates fr-FR (format court par défaut : « 5 août 2016 » → « 5 août 2016 ») ─
+// Deux conventions officielles seulement : courte (listes, cards) et longue
+// (fiches détaillées). Renvoie "" si la date est absente — les vues gèrent
+// leur propre marqueur de vide (« — », « Non définie »…).
+export function fmtDate(d?: string | null): string {
+  if (!d) return "";
+  const [y, m, j] = d.split("-").map(Number);
+  return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+}
+
+export function fmtDateLong(d?: string | null): string {
+  if (!d) return "";
+  const [y, m, j] = d.split("-").map(Number);
+  return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+}

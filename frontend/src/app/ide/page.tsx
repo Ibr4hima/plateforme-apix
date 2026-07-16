@@ -11,6 +11,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
 import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { demarrerRedimension } from "@/lib/redimension";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -987,16 +988,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
-    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
 
   const couleur = "#004f91";
 
@@ -1402,16 +1394,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
-    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
 
   // Référentiel + séries en un seul chargement (filtrage ensuite côté client)
   useEffect(() => {
@@ -1850,16 +1833,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
-    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
   const [searchPays,  setSearchPays]  = useState("");
   const [openConts,   setOpenConts]   = useState<Set<string>>(new Set());
 
@@ -2413,16 +2387,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   const [sidebarOpen, setSidebarOpen]= useState(true);
   const [sidebarWidth,setSidebarWidth]=useState(280);
   const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(200, Math.min(520, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
-    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
 
   const [groupements, setGroupements] = useState<{code:string; nom_fr:string; categorie:string}[]>([]);
   const [grpSelec,    setGrpSelec]    = useState<string[]>([]);
@@ -3192,16 +3157,7 @@ function OngletNational() {
   // Couleur d'accent du panneau de droite = couleur du niveau sélectionné
   const couleur = (sel.niveau && BDEF_NIVEAU_STYLE[sel.niveau]?.color) || "#004f91";
 
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
-    const startX = e.clientX, startW = sidebarWidth;
-    const onMove = (ev: MouseEvent) => { if (!isResizing.current) return; setSidebarWidth(Math.max(220, Math.min(540, startW + ev.clientX - startX))); };
-    const onUp = () => { isResizing.current = false; document.body.style.userSelect = ""; document.body.style.cursor = ""; document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
-    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
-  };
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 540);
 
   useEffect(()=>{ fetch(`${API}/bdef/secteurs`).then(r=>r.json()).then((d:BdefRefs)=>setRefs(d)).catch(()=>{}); }, []);
 

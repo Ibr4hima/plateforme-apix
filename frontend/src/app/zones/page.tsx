@@ -13,14 +13,10 @@ import { useAuthGate } from "@/lib/authGate";
 import { Building2, ChevronRight, FileText, X } from "lucide-react";
 import { useNaema, useRefPolesTerritoires } from "@/lib/referentiels";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { fmtDate } from "@/lib/format";
+import { foncerPastel } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-function fmtDate(d: string) {
-  if (!d) return "";
-  const [y,m,j] = d.split("-").map(Number);
-  return new Date(y,m-1,j).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
-}
 
 const TYPE_META = ZONE_TYPE_META;
 
@@ -301,15 +297,6 @@ function ZonesParType({ zones }: { zones: any[] }) {
 }
 
 // ── Grande card zone (ouvre le modal détail) ──────────────────────────────────
-// Badges de pôle — pastels de la carte territoriale : fond très clair, texte
-// dans une version foncée et saturée de la même teinte
-const foncerPastel = (hex:string) => {
-  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  const mn=Math.min(r,g,b);
-  const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
-  return `rgb(${f(r)},${f(g)},${f(b)})`;
-};
-
 function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:string; onClick:()=>void }) {
   const entreprises = (zone.entreprises||[]).length;
   const cPole = (zone.pole_nom && POLE_COULEURS[normPole(zone.pole_nom)]) || "#C5BFBB";
