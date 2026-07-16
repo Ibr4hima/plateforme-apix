@@ -26,14 +26,23 @@ type Resultat = {
 };
 
 const GROUPES: Record<string, { label: string }> = {
-  page:       { label: "Pages" },
-  pays:       { label: "Fiches pays" },
-  entreprise: { label: "Entreprises" },
-  accord:     { label: "Accords" },
-  evenement:  { label: "Événements" },
-  zone:       { label: "Zones" },
-  prospect:   { label: "Prospects" },
+  page:         { label: "Pages" },
+  pays:         { label: "Fiches pays" },
+  entreprise:   { label: "Entreprises" },
+  accord:       { label: "Accords" },
+  evenement:    { label: "Événements" },
+  zone:         { label: "Zones" },
+  projet:       { label: "Banque de projets" },
+  potentialite: { label: "Potentialités" },
+  avantage:     { label: "Avantages & incitations" },
+  prospect:     { label: "Prospects" },
 };
+
+// Même nettoyage de titre que la page Opportunités
+const potTitle = (t: string) => (t || "")
+  .replace(/^[Pp]otentialités?\s+(de\s+l[''’]|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
+  .replace(/^(.)/, (_: string, c: string) => c.toUpperCase());
+const geoNom = (x: any) => x.pole_nom || x.region_nom || x.departement_nom || x.arrondissement_nom || undefined;
 const ORDRE_GROUPES = Object.keys(GROUPES);
 const MAX_PAR_GROUPE = 5;
 
@@ -58,7 +67,7 @@ async function chargerIndex(): Promise<Resultat[]> {
   if (indexCache) return indexCache;
   if (indexEnCours) return indexEnCours;
   indexEnCours = (async () => {
-    const [entreprises, accords, evenements, prospects1, prospects2, prospects3, zones, pays] =
+    const [entreprises, accords, evenements, prospects1, prospects2, prospects3, zones, pays, projets, potentialites, avantages] =
       await Promise.allSettled([
         fetchTous(`${API}/entreprises`),
         fetchTous(`${API}/accords`),
@@ -68,6 +77,9 @@ async function chargerIndex(): Promise<Resultat[]> {
         fetchTous(`${API}/prospects?conclu=true`),
         fetch(`${API}/zones`).then(r => r.json()),
         fetch(`${API}/statistiques/pays`).then(r => r.json()),
+        fetchTous(`${API}/projets`),
+        fetchTous(`${API}/opportunites/potentialites`),
+        fetchTous(`${API}/opportunites/avantages`),
       ]);
     const ok = (r: PromiseSettledResult<any>): any[] => r.status === "fulfilled" && Array.isArray(r.value) ? r.value : [];
     const index: Resultat[] = [
@@ -79,7 +91,10 @@ async function chargerIndex(): Promise<Resultat[]> {
       ...ok(prospects1).map((p: any) => ({ type: "prospect", nom: p.nom, sous: p.pays || undefined, item: p, onglet: "cibles" })),
       ...ok(prospects2).map((p: any) => ({ type: "prospect", nom: p.nom, sous: p.pays || undefined, item: p, onglet: "historique" })),
       ...ok(prospects3).map((p: any) => ({ type: "prospect", nom: p.nom, sous: p.pays || undefined, item: p, onglet: "termines" })),
-      ...ok(zones).map((z: any) => ({ type: "zone", nom: z.denomination || z.nom, sous: z.type_zone || undefined, href: "/zones" })),
+      ...ok(zones).map((z: any) => ({ type: "zone", nom: z.denomination || z.nom, sous: z.type_zone || undefined, item: z })),
+      ...ok(projets).map((p: any) => ({ type: "projet", nom: p.titre_projet, sous: p.pole_nom || p.pole_territoire || undefined, item: p })),
+      ...ok(potentialites).map((p: any) => ({ type: "potentialite", nom: potTitle(p.titre), sous: geoNom(p), item: p })),
+      ...ok(avantages).map((a: any) => ({ type: "avantage", nom: a.activite_nom, sous: geoNom(a), item: a })),
     ].filter(r => r.nom);
     // Ne mettre en cache que si l'essentiel a répondu
     if (index.length > PAGES.length) indexCache = index;
