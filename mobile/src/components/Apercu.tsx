@@ -24,8 +24,16 @@ async function chargerKpis(): Promise<Kpi[]> {
   const ok = (r: PromiseSettledResult<any>) => (r.status === "fulfilled" ? r.value : null);
   const f = ok(flux)?.[String(sen.id)] || {};
   const s = ok(stock)?.[String(sen.id)] || {};
-  const vals = ok(comp)?.valeurs?.[String(sen.id)] || {};
-  const macro = (code: string) => vals[code] || null;
+  const donnees = ok(comp);
+  const vals = donnees?.valeurs?.[String(sen.id)] || {};
+  // Unité déclarée par la plateforme pour chaque indicateur (pas d'hypothèse
+  // locale : le PIB peut être stocké en USD ou en Md USD selon les imports)
+  const unites: Record<string, string> = Object.fromEntries(
+    (donnees?.indicateurs || []).map((i: any) => [i.code, i.unite]));
+  const macro = (code: string, label: string): Kpi | null => {
+    const c = vals[code];
+    return c ? { label, valeur: fmtUnite(c.valeur, unites[code] || ""), annee: c.annee } : null;
+  };
 
   const kpis: (Kpi | null)[] = [
     f.entrant && { label: "Flux d'IDE entrants",  valeur: fmtUSD(f.entrant.valeur), annee: f.entrant.annee },
@@ -36,10 +44,9 @@ async function chargerKpis(): Promise<Kpi[]> {
     },
     s.entrant && { label: "Stock d'IDE entrant",  valeur: fmtUSD(s.entrant.valeur), annee: s.entrant.annee },
     s.sortant && { label: "Stock d'IDE sortant",  valeur: fmtUSD(s.sortant.valeur), annee: s.sortant.annee },
-    macro("pib") && { label: "PIB",               valeur: fmtUnite(macro("pib").valeur, "Md USD"), annee: macro("pib").annee },
-    macro("population") && { label: "Population", valeur: fmtUnite(macro("population").valeur, "habitants"), annee: macro("population").annee },
-    macro("exportations_marchandises") && { label: "Total exportations", valeur: fmtUSD(macro("exportations_marchandises").valeur), annee: macro("exportations_marchandises").annee },
-    macro("importations_marchandises") && { label: "Total importations", valeur: fmtUSD(macro("importations_marchandises").valeur), annee: macro("importations_marchandises").annee },
+    macro("pib", "PIB"),
+    macro("population", "Population"),
+    macro("superficie", "Superficie"),
   ];
   return kpis.filter(Boolean) as Kpi[];
 }
