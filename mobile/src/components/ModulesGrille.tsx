@@ -1,7 +1,6 @@
-// Modules — pages de 4 cards en défilement horizontal manuel.
-// Glassmorphism bleu clair : dégradé translucide, liseré blanc, pastille
-// d'icône en verre, les mêmes icônes Material Symbols que le site.
-import { LinearGradient } from "expo-linear-gradient";
+// Modules — pages de 4 cards en défilement horizontal manuel, dans le même
+// langage que les cards Aperçu (blanc, ombre douce, filet bleu) avec les
+// icônes Material Symbols de la plateforme.
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -35,17 +34,13 @@ export default function ModulesGrille() {
         {pages.map((modules, i) => (
           <View key={i} style={[s.page, { width: LARGEUR }]}>
             {modules.map(m => (
-              <Pressable key={m.cle} onPress={() => ouvrir(m)} style={({ pressed }) => [s.carteOmbre, pressed && { transform: [{ scale: 0.97 }] }]}>
-                <LinearGradient
-                  colors={["rgba(255,255,255,0.96)", "rgba(219,233,247,0.82)"]}
-                  start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }}
-                  style={s.carte}>
-                  <View style={s.carteHalo} />
-                  <View style={s.pastille}>
-                    <Symbole nom={m.icone} taille={21} couleur={T.bleu} />
-                  </View>
-                  <Text style={s.carteTitre} numberOfLines={2}>{m.titre}</Text>
-                </LinearGradient>
+              <Pressable key={m.cle} onPress={() => ouvrir(m)}
+                style={({ pressed }) => [s.carte, pressed && { transform: [{ scale: 0.97 }] }]}>
+                <View style={s.carteFilet} />
+                <View style={s.pastille}>
+                  <Symbole nom={m.icone} taille={20} couleur={T.bleu} />
+                </View>
+                <Text style={s.carteTitre} numberOfLines={2}>{m.titre}</Text>
               </Pressable>
             ))}
           </View>
@@ -64,22 +59,16 @@ const s = StyleSheet.create({
   bloc: { marginTop: 30 },
   titre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.6, marginBottom: 12, paddingHorizontal: 18 },
   page: { flexDirection: "row", flexWrap: "wrap", gap: 12, paddingHorizontal: 18 },
-  carteOmbre: {
-    width: (LARGEUR - 36 - 12) / 2, borderRadius: 22,
-    shadowColor: "#0b3f73", shadowOpacity: 0.14, shadowRadius: 16, shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
-  },
   carte: {
-    borderRadius: 22, padding: 15, minHeight: 128, justifyContent: "space-between",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.95)", overflow: "hidden",
+    width: (LARGEUR - 36 - 12) / 2, backgroundColor: "#fff", borderRadius: 20,
+    paddingHorizontal: 16, paddingVertical: 15, minHeight: 122, justifyContent: "space-between",
+    overflow: "hidden",
+    shadowColor: "#001e3c", shadowOpacity: 0.07, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
-  carteHalo: { position: "absolute", top: -46, right: -40, width: 130, height: 130, borderRadius: 65, backgroundColor: "rgba(0,79,145,0.06)" },
-  pastille: {
-    width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)",
-    shadowColor: "#0b3f73", shadowOpacity: 0.10, shadowRadius: 7, shadowOffset: { width: 0, height: 3 },
-  },
-  carteTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, lineHeight: 18, marginTop: 14 },
+  carteFilet: { position: "absolute", left: 16, right: 16, top: 0, height: 2.5, borderRadius: 2, backgroundColor: "rgba(0,79,145,0.14)" },
+  pastille: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,79,145,0.08)" },
+  carteTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, lineHeight: 18, marginTop: 13 },
   points: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 13 },
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(0,79,145,0.18)" },
   pointActif: { width: 18, backgroundColor: T.bleu },
