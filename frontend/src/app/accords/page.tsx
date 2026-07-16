@@ -443,57 +443,48 @@ export default function AccordsPage() {
                   };
                   const st = statut ? ST[statut] : null;
                   const estExpire = statut==="expire";
-                  const blocC  = estExpire ? "#6b7280" : "#004f91";
-                  const blocBg = estExpire ? "#F5F4F3" : "rgba(0,79,145,0.04)";
-                  const blocBd = estExpire ? "#E8E5E3" : "rgba(0,79,145,0.10)";
-                  const txtC   = estExpire ? "#4a5568" : "#1a1a2e";
+                  const txtC = estExpire ? "#4a5568" : "#1a1a2e";
+                  // Date secondaire : expiration si renseignée, sinon entrée en vigueur
+                  const dateSec = a.date_expiration
+                    ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
+                    : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
                   return (
                   <div key={a.id} onClick={()=>gate(()=>setSelec(a))}
-                    style={{background:estExpire?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=estExpire?"#D8D4D0":"rgba(0,79,145,0.25)";}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+                    style={{background:estExpire?"#FBFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=estExpire?"#D8D4D0":"rgba(0,79,145,0.28)";
+                      const fl=ev.currentTarget.querySelector("[data-fleche]") as HTMLElement|null; if(fl){fl.style.background="#004f91";fl.style.color="#fff";fl.style.transform="translateX(2px)";}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                      const fl=ev.currentTarget.querySelector("[data-fleche]") as HTMLElement|null; if(fl){fl.style.background="rgba(0,79,145,0.06)";fl.style.color="#004f91";fl.style.transform="none";}}}>
 
-                    <div style={{height:3,background:estExpire?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-                    <div style={{padding:"14px 16px 14px",flex:1}}>
-                      {/* Statut + référence */}
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                        {st ? (
-                          <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
-                        ) : <span/>}
-                        {a.reference && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:estExpire?"#6b7280":"#004f91",background:estExpire?"#F2F0EF":"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{a.reference}</span>}
-                      </div>
-
-                      {/* Titre */}
-                      <div style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35}}>{a.titre}</div>
-
-                      {/* Dates libellées */}
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                        <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
-                          <p style={{fontSize:12,fontWeight:600,color:a.date_signature?txtC:"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
-                        </div>
-                        {a.date_expiration ? (
-                          <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
-                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
-                            <p style={{fontSize:12,fontWeight:600,color:txtC}}>{fmtDate(a.date_expiration)}</p>
-                          </div>
-                        ) : (
-                          <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
-                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Entrée en vigueur</p>
-                            <p style={{fontSize:12,fontWeight:600,color:a.date_entree_vigueur?txtC:"#9aa5b4"}}>{a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie"}</p>
-                          </div>
-                        )}
-                      </div>
-
+                    {/* Statut (pastille à point) + référence discrète */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+                      {st ? (
+                        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 11px",borderRadius:999}}>
+                          <span style={{width:5,height:5,borderRadius:"50%",background:st.c,flexShrink:0}}/>
+                          {st.label}
+                        </span>
+                      ) : <span/>}
+                      {a.reference && <span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",letterSpacing:"0.04em",whiteSpace:"nowrap" as const}}>{a.reference}</span>}
                     </div>
 
-                    {/* Action */}
-                    <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
-                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:blocC,fontWeight:600,transition:"background 0.15s"}}
-                        onMouseEnter={ev=>ev.currentTarget.style.background=estExpire?"#F2F0EF":"rgba(0,79,145,0.05)"}
-                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        Voir les détails →
+                    {/* Titre */}
+                    <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
+
+                    {/* Dates en rangée épurée + flèche d'action */}
+                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Signature</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:a.date_signature?txtC:"#C5BFBB",fontVariantNumeric:"tabular-nums"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                       </div>
+                      <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 18px"}}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:dateSec.vide?"#C5BFBB":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
+                      </div>
+                      <span data-fleche title="Voir les détails"
+                        style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,79,145,0.06)",color:"#004f91",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:14,fontSize:15,fontWeight:600,transition:"background 0.18s, color 0.18s, transform 0.18s"}}>
+                        →
+                      </span>
                     </div>
                   </div>
                   );
