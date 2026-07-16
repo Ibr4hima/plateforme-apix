@@ -19,8 +19,10 @@ type Resultat = {
   type: string;        // clé de groupe
   nom: string;         // texte affiché + indexé
   sous?: string;       // sous-titre grisé
-  href?: string;       // navigation (absent pour les pays)
+  href?: string;       // navigation (pages, zones)
   paysId?: number;     // fiche pays via l'événement navbar
+  item?: any;          // objet complet — la fiche s'ouvre sur place
+  onglet?: string;     // onglet d'origine (prospects)
 };
 
 const GROUPES: Record<string, { label: string }> = {
@@ -71,10 +73,12 @@ async function chargerIndex(): Promise<Resultat[]> {
     const index: Resultat[] = [
       ...PAGES,
       ...ok(pays).map((p: any) => ({ type: "pays", nom: p.nom, sous: p.continent || undefined, paysId: p.id })),
-      ...ok(entreprises).map((e: any) => ({ type: "entreprise", nom: e.nom, sous: e.sigle || undefined, href: `/entreprises?fiche=${e.id}` })),
-      ...ok(accords).map((a: any) => ({ type: "accord", nom: a.titre, href: `/accords?fiche=${a.id}` })),
-      ...ok(evenements).map((e: any) => ({ type: "evenement", nom: e.nom_event, sous: e.pays_nom || undefined, href: `/evenements?fiche=${e.id}` })),
-      ...[...ok(prospects1), ...ok(prospects2), ...ok(prospects3)].map((p: any) => ({ type: "prospect", nom: p.nom, sous: p.pays || undefined, href: `/prospects?fiche=${p.id}` })),
+      ...ok(entreprises).map((e: any) => ({ type: "entreprise", nom: e.nom, sous: e.sigle || undefined, item: e })),
+      ...ok(accords).map((a: any) => ({ type: "accord", nom: a.titre, item: a })),
+      ...ok(evenements).map((e: any) => ({ type: "evenement", nom: e.nom_event, sous: e.pays_nom || undefined, item: e })),
+      ...ok(prospects1).map((p: any) => ({ type: "prospect", nom: p.nom, sous: p.pays || undefined, item: p, onglet: "cibles" })),
+      ...ok(prospects2).map((p: any) => ({ type: "prospect", nom: p.nom, sous: p.pays || undefined, item: p, onglet: "historique" })),
+      ...ok(prospects3).map((p: any) => ({ type: "prospect", nom: p.nom, sous: p.pays || undefined, item: p, onglet: "termines" })),
       ...ok(zones).map((z: any) => ({ type: "zone", nom: z.denomination || z.nom, sous: z.type_zone || undefined, href: "/zones" })),
     ].filter(r => r.nom);
     // Ne mettre en cache que si l'essentiel a répondu
@@ -146,15 +150,12 @@ export default function RechercheGlobale() {
       window.dispatchEvent(new CustomEvent("apix:fiche-pays", { detail: { paysId: r.paysId } }));
       return;
     }
-    if (!r.href) return;
-    const [chemin] = r.href.split("?");
-    if (window.location.pathname === chemin && r.href.includes("?fiche=")) {
-      // Déjà sur la page : on pose le paramètre et on signale (pas de navigation)
-      window.history.replaceState(null, "", r.href);
-      window.dispatchEvent(new Event("apix:fiche"));
-    } else {
-      router.push(r.href);
+    if (r.item) {
+      // Fiche ouverte sur place, où qu'on soit (voir FichesGlobales)
+      window.dispatchEvent(new CustomEvent("apix:fiche-item", { detail: { type: r.type, item: r.item, onglet: r.onglet } }));
+      return;
     }
+    if (r.href) router.push(r.href);
   }, [fermer, router]);
 
   // Navigation clavier
@@ -178,7 +179,7 @@ export default function RechercheGlobale() {
       style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 900, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "13vh 24px 24px" }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" onKeyDown={onKeyDown}
-        style={{ background: "#fff", borderRadius: q.trim() ? 26 : 999, width: "100%", maxWidth: 620, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.32)", animation: "vueIn 0.16s ease", display: "flex", flexDirection: "column" as const, maxHeight: "62vh", transition: "border-radius 0.18s ease" }}>
+        style={{ background: "#fff", borderRadius: 26, width: "100%", maxWidth: 620, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.32)", animation: "vueIn 0.16s ease", display: "flex", flexDirection: "column" as const, maxHeight: "62vh" }}>
         {/* Champ de recherche */}
         <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "17px 26px", borderBottom: q.trim() ? "1px solid #F2F0EF" : "none", flexShrink: 0 }}>
           <Search size={17} style={{ color: "#9aa5b4", flexShrink: 0 }} />
