@@ -448,8 +448,17 @@ export default function EntreprisesPage() {
             ):(
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {entreprises.map(e=>{
-                  // Couleur du pôle : même table que la carte des pôles territoires
-                  const cPole = (e.pole_territoire_nom && POLE_COULEURS[normPole(e.pole_territoire_nom)]) || "#E8E5E3";
+                  // Couleur du pôle : même table que la carte des pôles territoires.
+                  // Fond très léger (pastel transparent), texte dans une version
+                  // foncée et saturée de la même teinte pour rester lisible.
+                  const cPole = (e.pole_territoire_nom && POLE_COULEURS[normPole(e.pole_territoire_nom)]) || "#C5BFBB";
+                  const fonce = (hex:string) => {
+                    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+                    const mn=Math.min(r,g,b);
+                    const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
+                    return `rgb(${f(r)},${f(g)},${f(b)})`;
+                  };
+                  const cPoleTxt = fonce(cPole);
                   return (
                   <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
@@ -463,7 +472,7 @@ export default function EntreprisesPage() {
                         {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
                       </div>
                       {e.pole_territoire_nom&&(
-                        <span title={e.pole_territoire_nom} style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#3a4452",background:cPole,border:"1px solid rgba(0,0,0,0.06)",padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
+                        <span title={e.pole_territoire_nom} style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:cPoleTxt,background:`${cPole}40`,border:`1px solid ${cPole}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
                           {e.pole_territoire_nom}
                         </span>
                       )}
