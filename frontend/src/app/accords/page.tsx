@@ -466,18 +466,18 @@ export default function AccordsPage() {
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent;}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
-                    {/* Titre + référence | statut pastel à droite */}
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
-                      <div style={{minWidth:0,flex:1}}>
-                        <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
-                        {a.reference&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{a.reference}</div>}
-                      </div>
-                      {st&&(
+                    {/* Statut pastel à gauche + référence discrète */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+                      {st ? (
                         <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:foncerPastel(st.p),background:`${st.p}40`,border:`1px solid ${st.p}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>
                           {st.label}
                         </span>
-                      )}
+                      ) : <span/>}
+                      {a.reference && <span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",letterSpacing:"0.04em",whiteSpace:"nowrap" as const}}>{a.reference}</span>}
                     </div>
+
+                    {/* Titre */}
+                    <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
 
                     {/* Dates en rangée épurée + flèche d'action */}
                     <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
