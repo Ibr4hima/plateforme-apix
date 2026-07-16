@@ -5,7 +5,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { ArrowLeft, ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, User, X } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, User, X } from "lucide-react";
 import { POLE_COULEURS, normPole } from "@/components/shared/VueTerritorialeSenegal";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -67,6 +67,13 @@ function BadgePole({ nom }: { nom:string }) {
     </span>
   );
 }
+
+// Secteurs économiques des avantages & incitations
+const SECTEURS_AVGS = [
+  {key:"primaire",   label:"Secteur Primaire",   color:"#188038"},
+  {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
+  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#004f91"},
+] as const;
 
 // Niveaux de découpage territorial des potentialités
 const NIVEAUX_POTS = [
@@ -1416,14 +1423,11 @@ export default function OpportunitesPage() {
                   <SkeletonCards n={3} cols={3} height={190}/>
                 ) : avgsErr ? (
                   <ErreurChargement onRetry={()=>chargerAvgs()}/>
-                ) : selectedSecAvg===null ? (
-                  /* ── Vue secteurs : 3 cards compteur ── */
+                ) : (
+                  <>
+                  {/* ── Vue secteurs : 3 cards compteur ── */}
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
-                    {([
-                      {key:"primaire",   label:"Secteur Primaire",   color:"#188038"},
-                      {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
-                      {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#004f91"},
-                    ] as const).map(s=>{
+                    {SECTEURS_AVGS.map(s=>{
                       const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
                       const count = items.length;
                       const sec = secteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
@@ -1432,10 +1436,10 @@ export default function OpportunitesPage() {
                       const actCount = activites.filter((a:any)=>branchIds.has(a.branche_id)).length;
                       const pct = actCount>0 ? Math.round(count/actCount*100) : 0;
                       return (
-                        <div key={s.key} onClick={()=>count>0&&setSelectedSecAvg(s.key)}
-                          style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}55`;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+                        <div key={s.key} onClick={()=>count>0&&setSelectedSecAvg(selectedSecAvg===s.key?null:s.key)}
+                          style={{background:"#fff",border:selectedSecAvg===s.key?`1.5px solid ${s.color}88`:"1px solid #ECEAE7",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedSecAvg===s.key?`0 4px 18px ${s.color}26`:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}88`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedSecAvg===s.key?`0 4px 18px ${s.color}26`:"0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${s.color}88`:"#ECEAE7";}}>
 
                           {/* Secteur */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -1464,75 +1468,64 @@ export default function OpportunitesPage() {
                       );
                     })}
                   </div>
-                ) : (
-                  /* ── Vue du secteur sélectionné : une card par branche ── */
-                  <>
-                    <button onClick={()=>setSelectedSecAvg(null)}
-                      style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:24,background:"#fff",border:"1px solid #E4E1DE",borderRadius:999,cursor:"pointer",color:"#4a5568",fontSize:12.5,fontWeight:600,padding:"8px 16px",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",transition:"border-color 0.15s, color 0.15s, box-shadow 0.15s",fontFamily:"var(--font-google-sans)"}}
-                      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.35)";ev.currentTarget.style.color="#004f91";ev.currentTarget.style.boxShadow="0 4px 12px rgba(0,30,60,0.08)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="translateX(-3px)";}}
-                      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E4E1DE";ev.currentTarget.style.color="#4a5568";ev.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="none";}}>
-                      <ArrowLeft size={14} style={{transition:"transform 0.18s"}}/> Retour aux secteurs
-                    </button>
-                    {(()=>{
-                      const filtered=avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg!));
-                      const secNom = filtered[0]?.secteur_nom || "";
-                      const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
-                      filtered.forEach((a:any)=>{
-                        const bid=a.branche_id||0;
-                        if(!braMap.has(bid)) braMap.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
-                        braMap.get(bid)!.items.push(a);
-                      });
-                      const bras=Array.from(braMap.values());
-                      return (
-                        <div>
-                          {/* En-tête du secteur */}
-                          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-                            <span style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:11,fontWeight:800,color:"#1a1a2e",background:"#fff",border:"1px solid #ECEAE7",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",padding:"5px 14px",borderRadius:999,whiteSpace:"nowrap" as const}}>
-                              <span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",["--pc" as any]:"rgba(0,79,145,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                              {secNom}
-                            </span>
-                            <span style={{flex:1,height:1,background:"#ECEAE7"}}/>
-                          </div>
-
-                          {/* Une card par branche */}
-                          <div style={{display:"flex",flexDirection:"column" as const,gap:16}}>
-                            {bras.map(bra=>(
-                              <div key={bra.id} style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.03)"}}>
-                                {/* En-tête de branche */}
-                                <div style={{display:"flex",alignItems:"center",gap:9,padding:"12px 18px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA",minWidth:0}}>
-                                  <span style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                                  <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</span>
-                                </div>
-                                {/* Activités */}
-                                <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSecAvg==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
-                                  {bra.items.map((a:any)=>(
-                                    <div key={a.id} onClick={()=>setAvgSel(a)}
-                                      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
-                                      onMouseEnter={ev=>{
-                                        ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="0 8px 20px rgba(0,30,60,0.08)";
-                                        // Nom trop long : glisse pour révéler la fin
-                                        const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
-                                        const span = box?.firstElementChild as HTMLElement | null;
-                                        if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                                      }}
-                                      onMouseLeave={ev=>{
-                                        ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
-                                        const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
-                                        if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                                      }}>
-                                      <span style={{width:6,height:6,borderRadius:"50%",background:"#188038",["--pc" as any]:"rgba(24,128,56,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                                      <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                        <span style={{display:"inline-block"}}>{a.activite_nom}</span>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
+                  {/* ── Branches et activités du secteur sélectionné, sous les cards ── */}
+                  {selectedSecAvg!==null&&(()=>{
+                    const meta = SECTEURS_AVGS.find(x=>x.key===selectedSecAvg)!;
+                    const filtered=avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg!));
+                    const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
+                    filtered.forEach((a:any)=>{
+                      const bid=a.branche_id||0;
+                      if(!braMap.has(bid)) braMap.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
+                      braMap.get(bid)!.items.push(a);
+                    });
+                    const bras=Array.from(braMap.values()).sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
+                    return (
+                      <div className="charge-in" style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
+                        {bras.map(bra=>(
+                          <div key={bra.id}>
+                            {/* Bandeau de la branche */}
+                            <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
+                              background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
+                              border:`1px solid ${meta.color}22`}}>
+                              <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                                <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
                               </div>
-                            ))}
+                              <div style={{minWidth:0,flex:1}}>
+                                <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
+                                <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
+                              </div>
+                            </div>
+                            {/* Activités de la branche */}
+                            <div style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,boxShadow:"0 1px 2px rgba(0,0,0,0.03)"}}>
+                              <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSecAvg==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
+                                {bra.items.map((a:any)=>(
+                                  <div key={a.id} onClick={()=>setAvgSel(a)}
+                                    style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                    onMouseEnter={ev=>{
+                                      ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="0 8px 20px rgba(0,30,60,0.08)";
+                                      // Nom trop long : glisse pour révéler la fin
+                                      const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                                      const span = box?.firstElementChild as HTMLElement | null;
+                                      if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                                    }}
+                                    onMouseLeave={ev=>{
+                                      ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                                      const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                                      if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                                    }}>
+                                    <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
+                                    <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                      <span style={{display:"inline-block"}}>{a.activite_nom}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })()}
+                        ))}
+                      </div>
+                    );
+                  })()}
                   </>
                 )}
               </>
