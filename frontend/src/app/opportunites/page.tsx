@@ -1199,11 +1199,10 @@ export default function OpportunitesPage() {
                 ) : (
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
                     {projetsFiltres.map(p=>{
-                      const cPole = (p.pole_nom && POLE_COULEURS[normPole(p.pole_nom)]) || "#C5BFBB";
                       return (
                       <div key={p.id} onClick={()=>setProjSel(p)}
                         style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=p.pole_nom?cPole:"rgba(0,79,145,0.33)";}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.33)";}}
                         onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
                             ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                               const span = box.firstElementChild as HTMLElement | null;
