@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.core.auth import require_admin
 from app.models.opportunites_model import Potentialite, AvantageIncitation
 import os, shutil, uuid
+from app.core.uploads import lire_pdf
 
 router = APIRouter(prefix="/opportunites", tags=["opportunites"])
 
@@ -216,10 +217,10 @@ async def delete_potentialite(id: int, db: AsyncSession = Depends(get_db), curre
 
 @router.post("/potentialites/{id}/fichiers")
 async def upload_fichier_pot(id: int, fichier: UploadFile = File(...), titre: str = Form(""), db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
-    ext = os.path.splitext(fichier.filename or "")[1]
-    nom = f"{uuid.uuid4()}{ext}"
+    contenu = await lire_pdf(fichier)
+    nom = f"{uuid.uuid4()}.pdf"
     path = os.path.join(UPLOAD_DIR_POT, nom)
-    with open(path, "wb") as f: shutil.copyfileobj(fichier.file, f)
+    with open(path, "wb") as f: f.write(contenu)
     await db.execute(text("""
         INSERT INTO potentialites_fichiers (potentialite_id, fichier_nom, titre)
         VALUES (:pid, :nom, :titre)
@@ -333,10 +334,10 @@ async def delete_avantage(id: int, db: AsyncSession = Depends(get_db), current_u
 
 @router.post("/avantages/{id}/fichiers")
 async def upload_fichier(id: int, fichier: UploadFile = File(...), titre: str = Form(""), db: AsyncSession = Depends(get_db), current_user: dict = Depends(require_admin)):
-    ext = os.path.splitext(fichier.filename or "")[1]
-    nom = f"{uuid.uuid4()}{ext}"
+    contenu = await lire_pdf(fichier)
+    nom = f"{uuid.uuid4()}.pdf"
     path = os.path.join(UPLOAD_DIR_AVG, nom)
-    with open(path, "wb") as f: shutil.copyfileobj(fichier.file, f)
+    with open(path, "wb") as f: f.write(contenu)
     await db.execute(text("""
         INSERT INTO avantages_incitations_fichiers (avantage_id, fichier_nom, titre)
         VALUES (:avantage_id, :fichier_nom, :titre)

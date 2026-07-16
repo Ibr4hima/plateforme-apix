@@ -25,6 +25,7 @@ from app.services.bdef_verification import (
 from app.utils.bdef_matching import (
     NIVEAU_GLOBAL, NIVEAU_SECTEUR, NIVEAU_GROUPE, NIVEAU_MACRO,
 )
+from app.core.uploads import lire_import
 
 # Niveau → colonne FK de bdef_valeurs
 _FK_PAR_NIVEAU = {
@@ -44,7 +45,7 @@ async def importer_bdef(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
-    contenu = await fichier.read()
+    contenu = await lire_import(fichier)
     if not contenu:
         raise HTTPException(400, "Fichier vide.")
     try:

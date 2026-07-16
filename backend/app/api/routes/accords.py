@@ -14,6 +14,7 @@ from app.schemas.accord import (
     AccordCreate, AccordUpdate,
     AccordResponse, AccordListResponse
 )
+from app.core.uploads import lire_pdf
 
 router = APIRouter(prefix="/accords", tags=["Accords & Traités"])
 
@@ -145,12 +146,11 @@ async def creer_accord(
 ):
     fichier_nom, fichier_path = None, None
     if fichier and fichier.filename:
-        if not fichier.filename.lower().endswith(".pdf"):
-            raise HTTPException(status_code=422, detail="Seuls les fichiers PDF sont acceptés")
+        contenu = await lire_pdf(fichier)
         unique_name = f"{uuid_lib.uuid4()}.pdf"
         dest = os.path.join(UPLOAD_DIR, unique_name)
         with open(dest, "wb") as f:
-            shutil.copyfileobj(fichier.file, f)
+            f.write(contenu)
         fichier_nom, fichier_path = fichier.filename, dest
 
     def parse_ids(s): return json.loads(s) if s else []
@@ -220,11 +220,11 @@ async def ajouter_fichier(
     result = await db.execute(select(Accord).where(Accord.id == accord_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Accord introuvable")
-    ext = os.path.splitext(fichier.filename)[1]
-    nom_fichier = f"{uuid_lib.uuid4()}{ext}"
+    contenu = await lire_pdf(fichier)
+    nom_fichier = f"{uuid_lib.uuid4()}.pdf"
     chemin = os.path.join(UPLOAD_DIR, nom_fichier)
     with open(chemin, "wb") as f:
-        shutil.copyfileobj(fichier.file, f)
+        f.write(contenu)
     af = AccordFichier(accord_id=accord_id, titre=titre, nom_fichier=fichier.filename, chemin=f"/uploads/accords/{nom_fichier}")
     db.add(af)
     await db.flush()

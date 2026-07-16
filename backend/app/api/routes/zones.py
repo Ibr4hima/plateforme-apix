@@ -16,6 +16,7 @@ UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "../../../uploads/zones")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 from sqlalchemy.orm import selectinload
+from app.core.uploads import lire_pdf
 
 LOAD_OPTS = [
     selectinload(ZoneInvestissement.fichiers),
@@ -221,12 +222,11 @@ async def ajouter_fichier(
     db:      AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
-    ext = os.path.splitext(fichier.filename)[1].lower()
-    if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
-    unique_name = f"{uuid_lib.uuid4()}{ext}"
+    contenu = await lire_pdf(fichier)
+    unique_name = f"{uuid_lib.uuid4()}.pdf"
     dest = os.path.join(UPLOAD_DIR, unique_name)
     with open(dest, "wb") as f:
-        shutil.copyfileobj(fichier.file, f)
+        f.write(contenu)
     zf = ZoneFichier(zone_id=zone_id, titre=titre or fichier.filename, fichier_nom=fichier.filename, fichier_path=dest)
     db.add(zf)
     await db.flush()

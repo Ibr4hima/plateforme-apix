@@ -14,6 +14,7 @@ from app.schemas.evenement import (
     EvenementCreate, EvenementUpdate,
     EvenementResponse, EvenementListResponse
 )
+from app.core.uploads import lire_pdf
 
 router = APIRouter(prefix="/evenements", tags=["Événements"])
 
@@ -256,12 +257,11 @@ async def ajouter_fichier_evenement(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
-    ext = os.path.splitext(fichier.filename)[1].lower()
-    if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
-    unique_name = f"{uuid_lib.uuid4()}{ext}"
+    contenu = await lire_pdf(fichier)
+    unique_name = f"{uuid_lib.uuid4()}.pdf"
     dest = os.path.join(UPLOAD_DIR, unique_name)
     with open(dest, "wb") as f:
-        shutil.copyfileobj(fichier.file, f)
+        f.write(contenu)
     res = await db.execute(sql_text("""
         INSERT INTO evenement_fichiers (evenement_id, nom, url, type_fichier)
         VALUES (:eid, :nom, :url, 'PDF')

@@ -167,3 +167,7 @@ postgres_data/
 *.log
 logs/.claude/
 .claude/
+
+# Fichiers téléversés (documents métier — jamais versionnés ; volume Docker en prod)
+backend/uploads/*
+!backend/uploads/.gitkeep

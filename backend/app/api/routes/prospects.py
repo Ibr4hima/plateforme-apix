@@ -18,6 +18,7 @@ from app.models.prospect import (
 )
 from app.models.projet import Projet
 from app.utils.dedup import collect_contacts, LABELS
+from app.core.uploads import lire_pdf
 
 router = APIRouter(prefix="/prospects", tags=["Prospects"])
 
@@ -821,11 +822,11 @@ async def ajouter_fichier_echange(
         raise HTTPException(status_code=404, detail="Échange introuvable")
     if categorie not in ("compte_rendu", "autre"):
         categorie = "autre"
-    ext = os.path.splitext(fichier.filename)[1]
-    nom_fichier = f"{uuid_lib.uuid4()}{ext}"
+    contenu = await lire_pdf(fichier)
+    nom_fichier = f"{uuid_lib.uuid4()}.pdf"
     chemin_disque = os.path.join(UPLOAD_DIR, nom_fichier)
     with open(chemin_disque, "wb") as f:
-        shutil.copyfileobj(fichier.file, f)
+        f.write(contenu)
     pef = ProspectEchangeFichier(
         echange_id=echange_id,
         titre=titre,

@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.shared import RefPays, StatIndicateur, StatPays
+from app.core.uploads import lire_import
 
 router = APIRouter(prefix="/statistiques", tags=["Statistiques"])
 
@@ -344,7 +345,7 @@ async def importer(
 
     resultats, erreurs, non_resolus = {}, [], {}
     for fichier in (fichiers or []):
-        contenu = await fichier.read()
+        contenu = await lire_import(fichier)
         if not contenu:
             continue
         try:
@@ -503,7 +504,7 @@ async def importer_transactions(
         return p.id
 
     for fichier in (fichiers or []):
-        contenu = await fichier.read()
+        contenu = await lire_import(fichier)
         if not contenu:
             continue
         ext = (fichier.filename or "").lower().rsplit(".", 1)[-1]

@@ -14,6 +14,7 @@ from app.models.entreprise import (
     EntrepriseIntallee, RefSecteur, RefBranche, RefActivite,
     RefRegion, RefDepartement, RefArrondissement
 )
+from app.core.uploads import lire_pdf
 
 router = APIRouter(prefix="/zones-types", tags=["Zones ZES/ZAI/ZFI"])
 
@@ -295,12 +296,11 @@ async def ajouter_fichier_pole(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
-    ext = os.path.splitext(fichier.filename)[1].lower()
-    if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
-    unique_name = f"{uuid_lib.uuid4()}{ext}"
+    contenu = await lire_pdf(fichier)
+    unique_name = f"{uuid_lib.uuid4()}.pdf"
     dest = os.path.join(UPLOAD_DIR, unique_name)
     with open(dest, "wb") as f:
-        shutil.copyfileobj(fichier.file, f)
+        f.write(contenu)
     res = await db.execute(text("""
         INSERT INTO pole_fichiers (pole_id, nom, url, type_fichier)
         VALUES (:pole_id, :nom, :url, 'PDF')
@@ -661,12 +661,11 @@ async def ajouter_fichier(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
-    ext = os.path.splitext(fichier.filename)[1].lower()
-    if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
-    unique_name = f"{uuid_lib.uuid4()}{ext}"
+    contenu = await lire_pdf(fichier)
+    unique_name = f"{uuid_lib.uuid4()}.pdf"
     dest = os.path.join(UPLOAD_DIR, unique_name)
     with open(dest, "wb") as f:
-        shutil.copyfileobj(fichier.file, f)
+        f.write(contenu)
     res = await db.execute(text("""
         INSERT INTO zone_fichiers (zone_id, nom, url, type_fichier)
         VALUES (:zone_id, :nom, :url, 'PDF')

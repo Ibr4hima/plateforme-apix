@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.auth import require_admin
 from app.models.code_investissement import CodePdf, CodeChapitre, CodeSection, CodeArticle
+from app.core.uploads import lire_pdf
 
 router = APIRouter(prefix="/code-investissement", tags=["Code des investissements"])
 
@@ -98,7 +99,8 @@ async def upload_pdf(
     if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
     unique_name = f"{uuid_lib.uuid4()}{ext}"
     dest = os.path.join(UPLOAD_DIR, unique_name)
-    with open(dest, "wb") as f: shutil.copyfileobj(fichier.file, f)
+    contenu = await lire_pdf(fichier)
+    with open(dest, "wb") as f: f.write(contenu)
     # Remplacer l'ancien PDF s'il existe
     res = await db.execute(select(CodePdf).order_by(CodePdf.created_at.desc()).limit(1))
     old = res.scalar_one_or_none()

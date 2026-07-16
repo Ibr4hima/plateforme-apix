@@ -12,6 +12,7 @@ from app.core.auth import require_admin
 from app.models.modalites_application import (
     ModalitesPdf, ModalitesChapitre, ModalitesSection, ModalitesArticle,
 )
+from app.core.uploads import lire_pdf
 
 router = APIRouter(prefix="/modalites-application", tags=["Modalités d'application"])
 
@@ -92,7 +93,8 @@ async def upload_pdf(
     if ext != ".pdf": raise HTTPException(422, "PDF uniquement")
     unique_name = f"{uuid_lib.uuid4()}{ext}"
     dest = os.path.join(UPLOAD_DIR, unique_name)
-    with open(dest, "wb") as f: shutil.copyfileobj(fichier.file, f)
+    contenu = await lire_pdf(fichier)
+    with open(dest, "wb") as f: f.write(contenu)
     res = await db.execute(select(ModalitesPdf).order_by(ModalitesPdf.created_at.desc()).limit(1))
     old = res.scalar_one_or_none()
     if old:

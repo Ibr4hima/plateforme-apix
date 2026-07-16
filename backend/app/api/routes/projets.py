@@ -13,6 +13,7 @@ from app.core.auth import require_admin
 from app.models.projet import Projet, PorteurProjet, ProjetPointFocal, ProjetFichier, RefDevise
 from app.models.entreprise import RefRegion, RefDepartement, RefArrondissement, RefSecteur, RefBranche, RefActivite
 from app.models.zone_types import PoleTerritoire
+from app.core.uploads import lire_pdf
 
 router = APIRouter(prefix="/projets", tags=["Projets"])
 
@@ -326,12 +327,11 @@ async def ajouter_fichier(
     db:        AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_admin),
 ):
-    if not fichier.filename.lower().endswith(".pdf"):
-        raise HTTPException(422, "PDF uniquement")
+    contenu = await lire_pdf(fichier)
     unique_name = f"{uuid_lib.uuid4()}.pdf"
     dest = os.path.join(UPLOAD_DIR, unique_name)
     with open(dest, "wb") as f:
-        shutil.copyfileobj(fichier.file, f)
+        f.write(contenu)
     pf = ProjetFichier(projet_id=projet_id, titre=titre or fichier.filename,
                        fichier_nom=fichier.filename, fichier_path=dest)
     db.add(pf)

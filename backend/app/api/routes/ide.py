@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.core.auth import require_admin
 from app.models.ide import IdeCnuced, IdeAnalyse, IdeKpiConfig
 from app.models.shared import IdeCnucedMonde, RefGroupement, RefPays
+from app.core.uploads import lire_import
 
 router = APIRouter(prefix="/ide", tags=["IDE"])
 
@@ -689,7 +690,7 @@ async def importer_ide(
 
     for (direction, indicateur), fichiers in zones.items():
         for fichier in (fichiers or []):
-            contenu = await fichier.read()
+            contenu = await lire_import(fichier)
             if not contenu:
                 continue
             fichiers_bruts.append((NOMS_ZONES[(direction, indicateur)], fichier.filename or "fichier", contenu))
@@ -824,7 +825,7 @@ async def importer_ide_secteurs(
     for zone, fichiers in fichiers_par_zone.items():
         di = mapping.get(zone)
         for fichier in (fichiers or []):
-            contenu = await fichier.read()
+            contenu = await lire_import(fichier)
             if not contenu:
                 continue
             if di is None:
