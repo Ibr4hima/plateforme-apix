@@ -148,88 +148,78 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         ? { label: "Décliné le", value: p.issue_conclu_le ? fmtDate(p.issue_conclu_le.slice(0, 10)) : null }
         : { label: "Conclusion", value: null });
 
-  // Statut (onglet En contact) : liseré haut + pilule pleine avec point pulsant, contenu teinté
-  const ACCENTS: Record<string, { c:string; grad:string }> = {
-    "En cours":      { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)" },
-    "En attente":    { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
-    "Inactif":       { c:"#dc2626", grad:"linear-gradient(90deg,#991b1b 0%,#dc2626 60%,#ef4444 100%)" },
-    "À recontacter": { c:"#004f91", grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" },
-    "Installation à venir": { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)" },
-    "Décliné":       { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
+  // Statuts en pastels (fond très clair, texte foncé de la même teinte)
+  const PASTELS: Record<string, string> = {
+    "En cours":             "#B4DE9D", // vert tendre
+    "En attente":           "#D5D2CE", // gris chaud
+    "Inactif":              "#E6AC9D", // corail
+    "À recontacter":        "#9DC3E6", // bleu clair
+    "Installation à venir": "#B4DE9D", // vert tendre
+    "Décliné":              "#D5D2CE", // gris chaud
   };
-  const accent = (onglet === "historique" || onglet === "termines") && badge ? (ACCENTS[badge.label] || null) : null;
-  const blocC  = accent ? accent.c : "#004f91";
-  const blocBg = accent ? `${accent.c}0A` : "rgba(0,79,145,0.04)";
-  const blocBd = accent ? `${accent.c}1F` : "rgba(0,79,145,0.10)";
+  const foncerPastel = (hex:string) => {
+    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    const mn=Math.min(r,g,b);
+    const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
+    return `rgb(${f(r)},${f(g)},${f(b)})`;
+  };
+  const pastel = badge ? (PASTELS[badge.label] || "#C5BFBB") : null;
+  const hoverC = pastel || "rgba(0,79,145,0.33)";
 
   return (
     <div onClick={onOpen}
-      style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = accent ? `${accent.c}40` : "rgba(0,79,145,0.25)"; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
+      style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 16, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 2px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 14px 32px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = hoverC; }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
 
-      {accent ? <div style={{ height: 3, background: accent.grad, flexShrink: 0 }}/>
-        : onglet === "cibles" ? <div style={{ height: 3, background: "linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink: 0 }}/> : null}
-      <div style={{ padding: "14px 16px 14px", flex: 1 }}>
-        {/* Statut / email + siège */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          {onglet === "cibles" ? (
-            mail ? (
-              <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, minWidth: 0 }}>{mail}</span>
-            ) : <span />
-          ) : badge ? (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: accent ? 7 : 0, fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" as const }}>
-              {accent && <span style={{ width: 6, height: 6, borderRadius: "50%", background: badge.color, ["--pc" as any]: badge.color + "66", animation: "pulseDotC 1.6s ease-out infinite", flexShrink: 0 }}/>}
+      <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
+        {/* Dénomination + siège | badge de statut à droite */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 15.5, color: "#1a1a2e", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</div>
+            {p.siege_nom && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{p.siege_nom}</div>}
+          </div>
+          {onglet !== "cibles" && badge && pastel && (
+            <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: foncerPastel(pastel), background: `${pastel}40`, border: `1px solid ${pastel}90`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" as const, flexShrink: 0 }}>
               {badge.label}
             </span>
-          ) : <span />}
-          {p.siege_nom && <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color: accent ? accent.c : "#004f91", background: accent ? `${accent.c}0D` : "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "45%", flexShrink: 0 }}>{p.siege_nom}</span>}
+          )}
         </div>
 
-        {/* Dénomination */}
-        <div style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</div>
-
-        {/* Infos libellées */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-          <div style={{ background: blocBg, border: `1px solid ${blocBd}`, borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
+        {/* Infos en rangée épurée */}
+        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             {onglet === "cibles" ? <>
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: blocC, textTransform: "uppercase" as const, marginBottom: 3 }}>Activités spécialisées</p>
-              <p style={{ fontSize: 12, fontWeight: 600, color: nbActs > 0 ? "#1a1a2e" : "#9aa5b4" }}>{nbActs || "—"}</p>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Activités spécialisées</p>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: nbActs > 0 ? "#1a1a2e" : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{nbActs || "—"}</p>
             </> : <>
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: blocC, textTransform: "uppercase" as const, marginBottom: 3 }}>Email</p>
-              <p style={{ fontSize: 12, fontWeight: 600, color: mail ? "#1a1a2e" : "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{mail || "—"}</p>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Email</p>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: mail ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{mail || "—"}</p>
             </>}
           </div>
-          <div style={{ background: blocBg, border: `1px solid ${blocBd}`, borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: blocC, textTransform: "uppercase" as const, marginBottom: 3 }}>{info2.label}</p>
-            <p style={{ fontSize: 12, fontWeight: 600, color: info2.value ? "#1a1a2e" : "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{info2.value || "—"}</p>
+          <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }}/>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>{info2.label}</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: info2.value ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{info2.value || "—"}</p>
           </div>
         </div>
       </div>
 
-      {/* Actions */}
-      {(onglet === "historique" || onglet === "termines") ? (
+      {/* Actions (deux cibles de clic distinctes : la barre reste nécessaire) */}
+      {(onglet === "historique" || onglet === "termines") && (
         <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
           <div onClick={ev => { ev.stopPropagation(); onOpenInfos?.(); }}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: accent ? accent.c : "#004f91", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
-            onMouseEnter={ev => ev.currentTarget.style.background = accent ? `${accent.c}0D` : "rgba(0,79,145,0.05)"}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
+            onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
             onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
             Infos investisseur
           </div>
           <div style={{ width: 1, background: "#F2F0EF" }}/>
           <div onClick={ev => { ev.stopPropagation(); onOpen?.(); }}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: accent ? accent.c : "#004f91", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
-            onMouseEnter={ev => ev.currentTarget.style.background = accent ? `${accent.c}0D` : "rgba(0,79,145,0.05)"}
-            onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-            Voir les échanges
-          </div>
-        </div>
-      ) : onOpen && (
-        <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, transition: "background 0.15s" }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
             onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
             onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-            Voir la fiche →
+            Voir les échanges
           </div>
         </div>
       )}
