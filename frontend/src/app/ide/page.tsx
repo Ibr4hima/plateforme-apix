@@ -12,7 +12,6 @@ import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
 import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
-import { CHIFFRE_KPI, CHIFFRE_HERO } from "@/lib/typo";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -879,7 +878,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pa
           <div>
             <SecTitle>Valeur</SecTitle>
             <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:12, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
-              <span style={{ ...CHIFFRE_HERO, fontSize:"2.2rem", color:signalColor }}>{fmtKpi(kpi)}</span>
+              <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtKpi(kpi)}</span>
               {kpi.annee && <span style={{ fontSize:13, color:"#9aa5b4", fontWeight:500 }}>en {kpi.annee}</span>}
             </div>
           </div>
@@ -1304,7 +1303,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
                 <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
-                <p style={{ ...CHIFFRE_KPI }}>{c.val}</p>
+                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
                 {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
               </div>
             )) : <>
@@ -1321,7 +1320,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                       {suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:"#9aa5b4", textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
                     </div>
                   ); })()}
-                  <p style={{ ...CHIFFRE_KPI }}>{fmtKpi(k)}</p>
+                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{fmtKpi(k)}</p>
                   {indicatif && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{indicatif}</p>}
                 </div>
               );
@@ -1775,7 +1774,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
                 <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:accent, textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
-                <p style={{ ...CHIFFRE_KPI }}>{c.val}</p>
+                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
                 {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
               </div>
             ))}
@@ -3069,7 +3068,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
           <div>
             <SecTitle>Valeur</SecTitle>
             <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:12, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
-              <span style={{ ...CHIFFRE_HERO, fontSize:"2.2rem", color:signalColor }}>{fmtBdef(v, ind.unite)}</span>
+              <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtBdef(v, ind.unite)}</span>
               {lastA && <span style={{ fontSize:13, color:"#9aa5b4", fontWeight:500 }}>en {lastA}</span>}
             </div>
           </div>

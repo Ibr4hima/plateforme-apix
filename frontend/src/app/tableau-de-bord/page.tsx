@@ -15,7 +15,6 @@ import { zoneTypeMeta } from "@/components/shared/zoneTypes";
 import { Skeleton } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { demarrerRedimension } from "@/lib/redimension";
-import { CHIFFRE_KPI } from "@/lib/typo";
 
 // Layout effect côté client, effet classique côté serveur (évite le warning SSR)
 const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -1377,7 +1376,7 @@ function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any })
       onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";}}>
       <p style={{ fontSize:9, fontWeight:800, color:KPI_ACCENT, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{def.label}</p>
       <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
-        <p style={{ ...CHIFFRE_KPI }}>{display}</p>
+        <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{display}</p>
         {def.unit==="jours" && <span style={{ fontSize:8.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:5, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>moy.</span>}
       </div>
     </div>
