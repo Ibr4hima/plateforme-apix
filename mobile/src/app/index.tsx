@@ -84,7 +84,7 @@ export default function Accueil() {
         const d = new Date(prochain.data.date_debut.slice(0, 10) + "T00:00:00");
         return (
           <View style={s.eventOmbre}>
-            <LinearGradient colors={["#083a6b", "#004f91"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.event}>
+            <LinearGradient colors={["#00417a", "#004c8c"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.event}>
               <View style={s.eventHalo} />
               <View style={s.eventDate}>
                 <Text style={s.eventJour}>{d.getDate()}</Text>
