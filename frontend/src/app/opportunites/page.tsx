@@ -1323,57 +1323,55 @@ export default function OpportunitesPage() {
                         return null;
                       };
                       const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
+                      // Regroupement des fiches par rattachement territorial
+                      const groupeDe = (p:any): string => selectedNiveau==="pole" ? meta.label
+                        : selectedNiveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
+                        : selectedNiveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
+                        : (p.departement_nom || deptDeArr(p.arrondissement_nom||"") || "Autres");
+                      const groupes = new Map<string, any[]>();
+                      items.forEach((p:any)=>{ const k=groupeDe(p); if(!groupes.has(k)) groupes.set(k,[]); groupes.get(k)!.push(p); });
+                      const cles = Array.from(groupes.keys()).sort((a,b)=>a.localeCompare(b,"fr"));
                       return (
                         <>
                         {bandeau}
-                        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
-                          {items.map((p:any)=>{
-                            const nbActs = (p.activite_ids||[]).length;
-                            // Premier bloc contextuel selon le niveau
-                            const info1 = selectedNiveau==="pole"
-                              ? { label:(poles.find((x:any)=>x.id===p.pole_id)?.localisation||"").includes(",")?"Régions":"Région", value: poles.find((x:any)=>x.id===p.pole_id)?.localisation||null }
-                              : selectedNiveau==="region"
-                              ? { label:"Pôle", value: poleDeRegion(p.region_nom||"") }
-                              : selectedNiveau==="departement"
-                              ? { label:"Région", value: p.region_nom||regionDuDept(p.departement_nom||"") }
-                              : { label:"Département", value: p.departement_nom||deptDeArr(p.arrondissement_nom||"") };
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:16}}>
+                          {cles.map(cle=>{
+                            const fiches = groupes.get(cle)!;
                             return (
-                              <div key={p.id} onClick={()=>setPotSel(p)}
-                                style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13,minWidth:0}}
-                                onMouseEnter={ev=>{
-                                  ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${meta.color}66`;
-                                  // Contenus trop longs : glissent pour révéler la fin
-                                  ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                                    const span = box.firstElementChild as HTMLElement | null;
-                                    if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                                  });
-                                }}
-                                onMouseLeave={ev=>{
-                                  ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
-                                  ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                                    const span = box.firstElementChild as HTMLElement | null;
-                                    if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                                  });
-                                }}>
-
-                                {/* Titre (défile au survol si trop long) */}
-                                <div data-marquee style={{fontWeight:800,fontSize:15,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                  <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                              <div key={cle} style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.03)"}}>
+                                {/* En-tête du groupe */}
+                                <div style={{display:"flex",alignItems:"center",gap:9,padding:"13px 20px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA",minWidth:0}}>
+                                  <span style={{width:8,height:8,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
+                                  <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const,flex:1,minWidth:0}}>{cle}</span>
+                                  <span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",flexShrink:0}}>{fiches.length} fiche{fiches.length>1?"s":""}</span>
                                 </div>
-
-                                {/* Infos en rangée épurée */}
-                                <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
-                                  <div style={{flex:1,minWidth:0}}>
-                                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>{info1.label}</p>
-                                    <p data-marquee style={{fontSize:12.5,fontWeight:700,color:info1.value?"#1a1a2e":"#C5BFBB",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                      <span style={{display:"inline-block"}}>{info1.value||"—"}</span>
-                                    </p>
-                                  </div>
-                                  <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 16px"}}/>
-                                  <div style={{flex:1,minWidth:0}}>
-                                    <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Activités porteuses</span></p>
-                                    <p style={{fontSize:12.5,fontWeight:700,color:nbActs>0?"#1a1a2e":"#C5BFBB",fontVariantNumeric:"tabular-nums"}}>{nbActs||"—"}</p>
-                                  </div>
+                                {/* Fiches du groupe */}
+                                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+                                  {fiches.map((p:any)=>{
+                                    const nbActs = (p.activite_ids||[]).length;
+                                    return (
+                                      <div key={p.id} onClick={()=>setPotSel(p)}
+                                        style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                        onMouseEnter={ev=>{
+                                          ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="0 8px 20px rgba(0,30,60,0.08)";
+                                          // Nom trop long : glisse pour révéler la fin
+                                          const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                                          const span = box?.firstElementChild as HTMLElement | null;
+                                          if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                                        }}
+                                        onMouseLeave={ev=>{
+                                          ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                                          const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                                          if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                                        }}>
+                                        <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
+                                        <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                          <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                                        </div>
+                                        {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             );
