@@ -193,7 +193,12 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 15.5, color: "#1a1a2e", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</div>
             {(() => {
-              const rel = onglet === "historique" ? ilYa(p.date_dernier_echange)
+              const rel = onglet === "cibles" && p.created_at ? (() => {
+                    const r = ilYa(p.created_at);
+                    if (!r) return null;
+                    return r === "Aujourd'hui" ? "Ciblé aujourd'hui" : `Ciblé depuis ${r.replace("Il y a ", "")}`;
+                  })()
+                : onglet === "historique" ? ilYa(p.date_dernier_echange)
                 : onglet === "termines" && p.issue_conclu_le ? (() => {
                     const r = ilYa(p.issue_conclu_le);
                     if (!r) return null;
@@ -215,13 +220,8 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         {/* Infos en rangée épurée */}
         <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            {onglet === "cibles" ? <>
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Activités spécialisées</p>
-              <p style={{ fontSize: 12.5, fontWeight: 700, color: nbActs > 0 ? "#1a1a2e" : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{nbActs || "—"}</p>
-            </> : <>
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Pays</p>
-              <p style={{ fontSize: 12.5, fontWeight: 700, color: p.siege_nom ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.siege_nom || "—"}</p>
-            </>}
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Pays</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: p.siege_nom ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.siege_nom || "—"}</p>
           </div>
           <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }}/>
           <div style={{ flex: 1, minWidth: 0 }}>
