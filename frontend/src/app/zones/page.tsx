@@ -3,7 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
-import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
+import VueTerritorialeSenegal, { POLE_COULEURS, normPole } from "@/components/shared/VueTerritorialeSenegal";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
@@ -299,14 +299,24 @@ function ZonesParType({ zones }: { zones: any[] }) {
 }
 
 // ── Grande card zone (ouvre le modal détail) ──────────────────────────────────
+// Badges de pôle — pastels de la carte territoriale : fond très clair, texte
+// dans une version foncée et saturée de la même teinte
+const foncerPastel = (hex:string) => {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  const mn=Math.min(r,g,b);
+  const f=(v:number)=>Math.round(Math.max(0,Math.min(255,((v-mn)*2+mn*0.22)*0.85)));
+  return `rgb(${f(r)},${f(g)},${f(b)})`;
+};
+
 function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:string; onClick:()=>void }) {
   const entreprises = (zone.entreprises||[]).length;
-  const c = color;
+  const cPole = (zone.pole_nom && POLE_COULEURS[normPole(zone.pole_nom)]) || "#C5BFBB";
+  const hoverC = zone.pole_nom ? cPole : `${color}55`;
   return (
     <div onClick={onClick}
-      style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
+      style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 2px rgba(0,0,0,0.03)", padding:"18px 20px 16px", display:"flex", flexDirection:"column" as const, gap:13 }}
       onMouseEnter={e=>{
-        e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor=`${c}40`;
+        e.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor=hoverC;
         // Contenus trop longs : glissent pour révéler la fin
         e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
           const span = box.firstElementChild as HTMLElement | null;
@@ -314,46 +324,40 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
         });
       }}
       onMouseLeave={e=>{
-        e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7";
+        e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7";
         e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
           const span = box.firstElementChild as HTMLElement | null;
           if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
         });
       }}>
 
-      <div style={{ height:3, background:`linear-gradient(90deg,${c}CC 0%,${c} 50%,${c}99 100%)`, flexShrink:0 }}/>
-      <div style={{ padding:"14px 16px 14px", flex:1 }}>
-        {/* Pôle */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-          {zone.pole_nom ? (
-            <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:c, background:`${c}12`, padding:"3px 10px", borderRadius:999, overflow:"hidden", whiteSpace:"nowrap" as const, maxWidth:"100%" }}>{zone.pole_nom}</span>
-          ) : <span/>}
-        </div>
-
-        {/* Nom de la zone */}
-        <div style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", lineHeight:1.35, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{zone.nom_zone}</div>
-
-        {/* Infos libellées */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
-          <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-            <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Localisation</p>
-            <p data-marquee style={{ fontSize:12, fontWeight:600, color:(zone.departement_nom||zone.region_nom)?"#1a1a2e":"#9aa5b4", overflow:"hidden", whiteSpace:"nowrap" as const }}>
-              <span style={{ display:"inline-block" }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</span>
-            </p>
+      {/* Nom + superficie | badge pôle à droite */}
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
+        <div style={{ minWidth:0, flex:1 }}>
+          <div data-marquee style={{ fontWeight:800, fontSize:15.5, color:"#1a1a2e", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap" as const }}>
+            <span style={{ display:"inline-block" }}>{zone.nom_zone}</span>
           </div>
-          <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px" }}>
-            <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
-            <p style={{ fontSize:12, fontWeight:600, color:entreprises>0?"#1a1a2e":"#9aa5b4" }}>{entreprises}</p>
-          </div>
+          {zone.superficie&&<div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginTop:3 }}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</div>}
         </div>
+        {zone.pole_nom&&(
+          <span title={zone.pole_nom} style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:foncerPastel(cPole), background:`${cPole}40`, border:`1px solid ${cPole}90`, padding:"3px 11px", borderRadius:999, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis", flexShrink:1, minWidth:0 }}>
+            {zone.pole_nom}
+          </span>
+        )}
       </div>
 
-      {/* Action */}
-      <div style={{ display:"flex", borderTop:"1px solid #F2F0EF" }}>
-        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"10px 0", fontSize:11.5, color:c, fontWeight:600, transition:"background 0.15s" }}
-          onMouseEnter={ev=>ev.currentTarget.style.background=`${c}0D`}
-          onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-          Voir les détails →
+      {/* Localisation · Entreprises en rangée épurée */}
+      <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #F2F0EF", paddingTop:13, marginTop:"auto" }}>
+        <div style={{ flex:1, minWidth:0 }}>
+          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>Localisation</p>
+          <p data-marquee style={{ fontSize:12.5, fontWeight:700, color:(zone.departement_nom||zone.region_nom)?"#1a1a2e":"#C5BFBB", overflow:"hidden", whiteSpace:"nowrap" as const }}>
+            <span style={{ display:"inline-block" }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</span>
+          </p>
+        </div>
+        <div style={{ width:1, alignSelf:"stretch", background:"#F2F0EF", margin:"0 18px" }}/>
+        <div style={{ flex:1, minWidth:0 }}>
+          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{entreprises>1?"s":""}</p>
+          <p style={{ fontSize:12.5, fontWeight:700, color:entreprises>0?"#1a1a2e":"#C5BFBB", fontVariantNumeric:"tabular-nums" }}>{entreprises}</p>
         </div>
       </div>
     </div>
