@@ -194,17 +194,18 @@ export default function RechercheGlobale() {
       style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 900, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "13vh 24px 24px" }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" onKeyDown={onKeyDown}
-        style={{ background: "#fff", borderRadius: 26, width: "100%", maxWidth: 620, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.32)", animation: "vueIn 0.16s ease", display: "flex", flexDirection: "column" as const, maxHeight: "62vh" }}>
-        {/* Champ de recherche */}
-        <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "17px 26px", borderBottom: q.trim() ? "1px solid #F2F0EF" : "none", flexShrink: 0 }}>
-          <Search size={17} style={{ color: "#9aa5b4", flexShrink: 0 }} />
+        style={{ width: "100%", maxWidth: 620, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
+        {/* Barre de recherche — pilule flottante */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 26px", height: 58, background: "rgba(255,255,255,0.97)", borderRadius: 999, border: "1px solid rgba(255,255,255,0.55)", boxShadow: "0 22px 60px rgba(2,20,38,0.38), 0 2px 8px rgba(2,20,38,0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>
+          <Search size={18} strokeWidth={2.4} style={{ color: "#004f91", flexShrink: 0 }} />
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
             placeholder="Rechercher"
-            style={{ flex: 1, border: "none", outline: "none", fontSize: 15.5, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent" }} />
+            style={{ flex: 1, border: "none", outline: "none", fontSize: 16.5, fontWeight: 500, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent", letterSpacing: "-0.01em" }} />
         </div>
 
-        {/* Résultats */}
-        {(q.trim() || resultats.length > 0) && <div ref={listeRef} style={{ overflowY: "auto", padding: "6px 12px 12px" }}>
+        {/* Résultats — carte détachée sous la barre */}
+        {q.trim() && <div ref={listeRef}
+          style={{ overflowY: "auto", padding: "8px 12px 12px", marginTop: 10, background: "#fff", borderRadius: 22, boxShadow: "0 28px 70px rgba(2,20,38,0.32)", animation: "vueIn 0.14s ease" }}>
           {index === null && q.trim() && (
             <p style={{ padding: "22px 16px", fontSize: 12.5, color: "#9aa5b4", textAlign: "center" as const }}>Chargement de l'index…</p>
           )}
