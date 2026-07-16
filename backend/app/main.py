@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import get_settings
 from app.api.routes import (
-    evenements, accords, entreprises, prospects, zones, zones_types,
+    evenements, accords, entreprises, prospects, zones_types,
     projets, code_investissement, modalites_application, suivi_projets, classifications,
     ide, ref_pays, opportunites, ref_potentialites, ref_avantages,
     citi, dashboard, dashboard_tables, bdef, auth_users, statistiques
@@ -105,7 +105,6 @@ app.include_router(evenements.router,          prefix=settings.API_PREFIX)
 app.include_router(accords.router,             prefix=settings.API_PREFIX)
 app.include_router(entreprises.router,         prefix=settings.API_PREFIX)
 app.include_router(prospects.router,           prefix=settings.API_PREFIX)
-app.include_router(zones.router,               prefix=settings.API_PREFIX)
 app.include_router(zones_types.router,         prefix=settings.API_PREFIX)
 app.include_router(projets.router,             prefix=settings.API_PREFIX)
 app.include_router(code_investissement.router,   prefix=settings.API_PREFIX)
