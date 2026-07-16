@@ -492,7 +492,7 @@ export default function OpportunitesPage() {
                     <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                   </div>
                 ) : (
-                  <div className="charge-in cascade" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
                     {projetsFiltres.map(p=>{
                       return (
                       <div key={p.id} onClick={()=>setProjSel(p)}
@@ -541,7 +541,7 @@ export default function OpportunitesPage() {
                 ) : (
                   <>
                   {/* ── Picker 4 cards — niveau de découpage territorial ── */}
-                  <div className="charge-in cascade" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
                     {NIVEAUX_POTS.map(n=>{
                       const count=pots.filter((p:any)=>p.niveau===n.key).length;
                       const total = n.key==="pole" ? poles.length
@@ -706,7 +706,7 @@ export default function OpportunitesPage() {
                 ) : (
                   <>
                   {/* ── Vue secteurs : 3 cards compteur ── */}
-                  <div className="charge-in cascade" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
                     {SECTEURS_AVGS.map(s=>{
                       const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
                       const count = items.length;

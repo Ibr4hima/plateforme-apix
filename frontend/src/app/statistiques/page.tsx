@@ -543,7 +543,7 @@ function CommercePanel() {
             { label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", sub: `Concentration · ${ref ?? "—"}`, value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
           ];
           return (
-            <div className="cascade" style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
               {cards.map((c, i) => (
                 <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid #ECEAE7", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", minWidth: 0 }}>
                   <div style={{ marginBottom: 7 }}>
@@ -1876,7 +1876,7 @@ export default function StatistiquesPage() {
                   </div>
 
                   {/* KPI cards */}
-                  <div className="cascade" style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20 }}>
                     {indicateursAffiches.map(ind => {
                       const v = valeur(selection[0], ind.code, refAnnee);
                       const prec = valeur(selection[0], ind.code, refAnnee - 1);

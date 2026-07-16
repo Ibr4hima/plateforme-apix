@@ -1298,7 +1298,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           </div>
 
           {/* KPI cards */}
-          <div className="cascade" style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
@@ -1340,7 +1340,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           ) : erreur ? (
             <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : (
-            <div className="charge-in cascade" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+            <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>(
                 <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id}
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
@@ -1769,7 +1769,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
 
         {/* KPI cards (analyse par secteur) */}
         {stCards && (
-          <div className="cascade" style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
             {stCards.map(c=>(
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}>
@@ -1792,7 +1792,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
             <p style={{ fontSize:14, marginTop:6 }}>Les Annex tables sectorielles ({st === "greenfield" ? "15 et 18" : "09 à 12"}) n&apos;ont pas encore été importées dans l&apos;administration.</p>
           </div>
         ) : (
-          <div className="charge-in cascade" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+          <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
               <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
@@ -2081,7 +2081,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
           ) : erreur ? (
             <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : (
-            <div className="charge-in cascade" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+            <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
                 <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Source CNUCED`} series={g.series} grapheId={g.id} hideLegend
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
@@ -3632,7 +3632,7 @@ function OngletNational() {
               <SkeletonChartGrid n={8} cols={2} height={215}/>
             ) : (
               <>
-                <div className="charge-in cascade" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+                <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
                   {BDEF_GRAPHES_DEFAUT.map(code=>{
                     const fmt = (v:number|null)=>fmtBdef(v, (compData[compSelec[0]]||[]).find(i=>i.code===code)?.unite||"FCFA");
                     const compAffichees = (modeAnnees==="specifiques"&&anneesSpec.length>0)
@@ -3678,7 +3678,7 @@ function OngletNational() {
 
         {/* KPI cards */}
         {kpisEpingles.length>0&&(
-          <div className="cascade" style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
             {kpisEpingles.map(code=>{
               const ind = indicateurs.find(i=>i.code===code);
               const lastA = anneesAffichees.length ? anneesAffichees[anneesAffichees.length-1] : null;
@@ -3713,7 +3713,7 @@ function OngletNational() {
             <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>
           </div>
         ) : (
-          <div className="charge-in cascade" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+          <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {BDEF_GRAPHES_DEFAUT
               .map(code=>indicateurs.find(i=>i.code===code))
               .filter((i):i is BdefIndic=>!!i)

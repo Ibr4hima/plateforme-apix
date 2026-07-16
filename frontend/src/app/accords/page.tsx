@@ -316,7 +316,7 @@ export default function AccordsPage() {
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ) : (
-              <div className="charge-in cascade" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
+              <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);
                   // Pastels alignés sur les rôles des événements : en vigueur
