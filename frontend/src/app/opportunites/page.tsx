@@ -1359,10 +1359,12 @@ export default function OpportunitesPage() {
                               </div>
                             );
                           };
-                          // Pôles : pas de regroupement pertinent → tuiles directes
+                          // Pôles : pas de regroupement pertinent → conteneur sans en-tête
                           if (selectedNiveau==="pole") return (
-                            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-                              {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                            <div style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,boxShadow:"0 1px 2px rgba(0,0,0,0.03)"}}>
+                              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+                                {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                              </div>
                             </div>
                           );
                           return (
