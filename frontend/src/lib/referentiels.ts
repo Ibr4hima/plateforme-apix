@@ -18,6 +18,10 @@ const j = (url: string) => fetch(url).then(r => {
 // gcTime long : le cache survit aux démontages (navigation entre pages)
 const OPTS = { staleTime: Infinity, gcTime: 24 * 60 * 60 * 1000, retry: 1 } as const;
 
+// Repli stable : un littéral [] recréé à chaque render invaliderait les
+// useMemo/useEffect qui dépendent de ces tableaux (boucle de rendus infinie)
+const VIDE: any[] = [];
+
 const REFS = {
   pays:            `${API}/entreprises/ref/pays`,
   secteurs:        `${API}/entreprises/ref/secteurs`,
@@ -55,9 +59,9 @@ export function useNaema() {
   });
   const [s, b, a] = rs;
   return {
-    secteurs:  (s.data as any[]) || [],
-    branches:  (b.data as any[]) || [],
-    activites: (a.data as any[]) || [],
+    secteurs:  (s.data as any[]) ?? VIDE,
+    branches:  (b.data as any[]) ?? VIDE,
+    activites: (a.data as any[]) ?? VIDE,
     isLoading: rs.some(r => r.isLoading),
   };
 }
