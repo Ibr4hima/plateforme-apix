@@ -140,16 +140,18 @@ async def comparaison(
 @router.get("/ide_flux")
 async def ide_flux(
     pays: str = Query(..., description="ids de pays séparés par virgule"),
+    indicateur: str = Query("flux", pattern="^(flux|stock)$"),
     db: AsyncSession = Depends(get_db),
 ):
-    """Dernier flux d'IDE entrant et sortant (source CNUCED) par pays, en USD.
-    Les valeurs CNUCED sont en millions USD → converties en USD (×1e6)."""
+    """Dernière valeur d'IDE entrante et sortante (source CNUCED) par pays,
+    en USD — flux par défaut, stock via ?indicateur=stock. Les valeurs CNUCED
+    sont en millions USD → converties en USD (×1e6)."""
     from app.models.ide import IdeCnuced
     ids = [int(x) for x in pays.split(",") if x.strip().isdigit()]
     if not ids:
         return {}
     rows = (await db.execute(
-        select(IdeCnuced).where(IdeCnuced.ref_pays_id.in_(ids), IdeCnuced.indicateur == "flux")
+        select(IdeCnuced).where(IdeCnuced.ref_pays_id.in_(ids), IdeCnuced.indicateur == indicateur)
     )).scalars().all()
     latest: dict = {}
     for r in rows:
