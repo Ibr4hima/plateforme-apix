@@ -9,6 +9,7 @@ import { ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
+import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -192,24 +193,14 @@ export default function AccordsPage() {
   const [apixFiltre,     setApixFiltre]     = useState(false);
   const [partiesOpen,    setPartiesOpen]    = useState(true);
 
+  // Référentiels servis par le cache partagé ; parties-distinctes reste métier
+  const { arbre: naemaArbre } = useNaemaArbre();
+  const { data: paysData } = useRefPays();
+  useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
+  useEffect(()=>{ setAllPays((paysData as any[])||[]); },[paysData]);
   useEffect(()=>{
-    const safe = (p:Promise<any>,fb:any)=>p.catch(()=>fb);
-    Promise.all([
-      safe(fetch(`${API_BASE}/accords/parties-distinctes`).then(r=>r.json()), {}),
-      safe(fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),   []),
-      safe(fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),   []),
-      safe(fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),  []),
-      safe(fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()),       []),
-    ]).then(([partiesData,secsData,brasData,actsData,paysData])=>{
-      setPaysDistincts(partiesData?.pays||[]);
-      setAllPays(paysData||[]);
-      const tree=(secsData||[]).map((s:any)=>({...s,
-        branches:(brasData||[]).filter((b:any)=>b.secteur_id===s.id).map((b:any)=>({...b,
-          activites:(actsData||[]).filter((a:any)=>a.branche_id===b.id)
-        }))
-      }));
-      setSecteurs(tree);
-    });
+    fetch(`${API_BASE}/accords/parties-distinctes`).then(r=>r.json())
+      .then(d=>setPaysDistincts(d?.pays||[])).catch(()=>{});
   },[]);
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance

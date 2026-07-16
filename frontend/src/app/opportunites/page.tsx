@@ -10,6 +10,7 @@ import { POLE_COULEURS, normPole } from "@/components/shared/VueTerritorialeSene
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Fuse from "@/lib/fuse";
+import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -550,21 +551,14 @@ function PotentialiteModal({ pot: p, refAvantages, onClose }: { pot:any; refAvan
   // Couleurs des catégories d'atouts : cycle sur la palette
   const PALETTE = ["#004f91","#ca631f","#188038","#6A1B9A"];
   const [fichiers,  setFichiers]  = useState<any[]>(p.fichiers||[]);
-  const [secteurs,  setSecteurs]  = useState<any[]>([]);
-  const [branches,  setBranches]  = useState<any[]>([]);
-  const [activites, setActivites] = useState<any[]>([]);
+  // Référentiels NAEMA servis par le cache partagé
+  const { secteurs, branches, activites } = useNaema();
 
   useEffect(()=>{
     fetch(`${API}/opportunites/potentialites/${p.id}`)
       .then(r=>r.json())
       .then(d=>setFichiers(d.fichiers||[]))
       .catch(()=>{});
-    const safe = (url:string) => fetch(url).then(r=>r.json()).catch(()=>[]);
-    Promise.all([
-      safe(`${API}/entreprises/ref/secteurs`),
-      safe(`${API}/entreprises/ref/branches`),
-      safe(`${API}/entreprises/ref/activites`),
-    ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); });
   }, [p.id]);
 
   const avantagesSelected = refAvantages.filter(a=>(p.avantage_ids||[]).includes(a.id));
@@ -919,38 +913,18 @@ export default function OpportunitesPage() {
 
   useEffect(()=>{ setSelectedSecAvg(null); setSelectedNiveau(null); },[onglet]);
 
+  // Référentiels servis par le cache partagé
+  const naemaPage = useNaema();
+  const { arbre: naemaArbrePage } = useNaemaArbre();
+  const { arbre: geoArbrePage } = useGeoArbre();
+  const { data: polesRefData } = useRefPolesTerritoires();
+  useEffect(()=>{ setPoles(((polesRefData as any[])||[])); },[polesRefData]);
+  useEffect(()=>{ setBranches(naemaPage.branches); setActivites(naemaPage.activites); },[naemaPage.branches, naemaPage.activites]);
+  useEffect(()=>{ setSecteurs(naemaArbrePage); },[naemaArbrePage]);
+  useEffect(()=>{ setRegions(geoArbrePage); },[geoArbrePage]);
   useEffect(()=>{
-    const safe = (p:Promise<any>) => p.catch(()=>[]);
-    Promise.all([
-      safe(fetch(`${API}/zones-types/poles`).then(r=>r.json())),
-      safe(fetch(`${API}/entreprises/ref/secteurs`).then(r=>r.json())),
-      safe(fetch(`${API}/entreprises/ref/branches`).then(r=>r.json())),
-      safe(fetch(`${API}/entreprises/ref/activites`).then(r=>r.json())),
-      safe(fetch(`${API}/ref-potentialites/flat`).then(r=>r.json())),
-      safe(fetch(`${API}/entreprises/ref/regions`).then(r=>r.json())),
-      safe(fetch(`${API}/entreprises/ref/departements`).then(r=>r.json())),
-      safe(fetch(`${API}/entreprises/ref/arrondissements`).then(r=>r.json())),
-    ]).then(([p,s,b,a,ra,regsData,deptsData,arrsData])=>{
-      setPoles(p||[]);
-      setBranches(b||[]);
-      setActivites(a||[]);
-      const tree=(s||[]).map((sec:any)=>({...sec,
-        branches:(b||[]).filter((br:any)=>br.secteur_id===sec.id).map((br:any)=>({...br,
-          activites:(a||[]).filter((ac:any)=>ac.branche_id===br.id)
-        }))
-      }));
-      setSecteurs(tree);
-      setRefAvantages(ra||[]);
-      fetch(`${API}/ref-avantages`).then(r=>r.json()).then(setRefAvgTypes).catch(()=>[]);
-      const regTree = (regsData||[]).map((r:any)=>({
-        ...r,
-        departements: (deptsData||[]).filter((d:any)=>d.region_id===r.id).map((d:any)=>({
-          ...d,
-          arrondissements: (arrsData||[]).filter((a:any)=>a.departement_id===d.id)
-        }))
-      }));
-      setRegions(regTree);
-    });
+    fetch(`${API}/ref-potentialites/flat`).then(r=>r.json()).then(d=>setRefAvantages(d||[])).catch(()=>{});
+    fetch(`${API}/ref-avantages`).then(r=>r.json()).then(setRefAvgTypes).catch(()=>{});
   },[]);
 
   // Chargements principaux par onglet : en cas d'échec, état d'erreur avec relance

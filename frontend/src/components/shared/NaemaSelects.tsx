@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { X, ChevronDown, ChevronUp, Filter } from "lucide-react";
+import { useNaema } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -132,11 +133,10 @@ export function NaemaCascadeMulti({
   const filteredBranches  = allBranches.filter(b => selSecIds.includes(b.secteur_id!));
   const filteredActivites = allActivites.filter(a => selBraIds.includes(a.branche_id!));
 
-  useEffect(() => {
-    fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(setAllSecteurs).catch(() => {});
-    fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()).then(setAllBranches).catch(() => {});
-    fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()).then(setAllActivites).catch(() => {});
-  }, []);
+  const naema = useNaema();
+  useEffect(() => { setAllSecteurs(naema.secteurs as NaemaItem[]); }, [naema.secteurs]);
+  useEffect(() => { setAllBranches(naema.branches as NaemaItem[]); }, [naema.branches]);
+  useEffect(() => { setAllActivites(naema.activites as NaemaItem[]); }, [naema.activites]);
 
   const toggleSec = (id: number) => {
     const next = selSecIds.includes(id) ? selSecIds.filter(x => x !== id) : [...selSecIds, id];

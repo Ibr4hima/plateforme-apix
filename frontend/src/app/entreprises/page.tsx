@@ -10,6 +10,7 @@ import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
 import { ArrowDownUp, ArrowUpDown, Building2, ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
+import { useGeoArbre, useNaemaArbre, useRefFormesJuridiques, useRefPolesEntreprises } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -287,26 +288,15 @@ export default function EntreprisesPage() {
   const [dateEnd,   setDateEnd]   = useState(0);
   const dateInitRef = useRef(false);
 
-  useEffect(()=>{
-    const safe=(p:Promise<any>,fb:any)=>p.catch(()=>fb);
-    Promise.all([
-      safe(fetch(`${API_BASE}/entreprises/ref/formes-juridiques`).then(r=>r.json()),[]),
-      safe(fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),         []),
-      safe(fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),         []),
-      safe(fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),        []),
-      safe(fetch(`${API_BASE}/entreprises/ref/regions`).then(r=>r.json()),          []),
-      safe(fetch(`${API_BASE}/entreprises/ref/departements`).then(r=>r.json()),     []),
-      safe(fetch(`${API_BASE}/entreprises/ref/arrondissements`).then(r=>r.json()), []),
-      safe(fetch(`${API_BASE}/entreprises/ref/poles`).then(r=>r.json()),            []),
-    ]).then(([formes,secsData,brasData,actsData,regsData,deptsData,arrsData,polesData])=>{
-      setFormeOpts(Array.isArray(formes)?formes:[]);
-      const tree=(secsData||[]).map((s:any)=>({...s,branches:(brasData||[]).filter((b:any)=>b.secteur_id===s.id).map((b:any)=>({...b,activites:(actsData||[]).filter((a:any)=>a.branche_id===b.id)}))}));
-      setSecteurs(tree);
-      const regTree=(regsData||[]).map((r:any)=>({...r,departements:(deptsData||[]).filter((d:any)=>d.region_id===r.id).map((d:any)=>({...d,arrondissements:(arrsData||[]).filter((a:any)=>a.departement_id===d.id)}))}));
-      setRegions(regTree);
-      setPoles((polesData||[]).map((p:any)=>p.nom));
-    });
-  },[]);
+  // Référentiels servis par le cache partagé (une requête par session)
+  const { data: formesData } = useRefFormesJuridiques();
+  const { arbre: naemaArbre } = useNaemaArbre();
+  const { arbre: geoArbre } = useGeoArbre();
+  const { data: polesData } = useRefPolesEntreprises();
+  useEffect(()=>{ setFormeOpts(Array.isArray(formesData)?(formesData as string[]):[]); },[formesData]);
+  useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
+  useEffect(()=>{ setRegions(geoArbre); },[geoArbre]);
+  useEffect(()=>{ setPoles((((polesData as any[])||[])).map((p:any)=>p.nom)); },[polesData]);
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance
   const charger = useCallback(async()=>{

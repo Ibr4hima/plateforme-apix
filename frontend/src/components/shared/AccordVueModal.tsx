@@ -2,6 +2,7 @@
 
 import { FileText, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNaema, useRefPays } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -22,19 +23,13 @@ export function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
 // ── Modal vue accord (partagé : page Accords, Fiche Pays…) ────────────────────
 export default function AccordVueModal({ accord:a, onClose, zIndex = 400 }: { accord:any; onClose:()=>void; zIndex?:number }) {
   const [fichiers,  setFichiers]  = useState<any[]>([]);
-  const [secteurs,  setSecteurs]  = useState<any[]>([]);
-  const [branches,  setBranches]  = useState<any[]>([]);
-  const [activites, setActivites] = useState<any[]>([]);
-  const [allPays,   setAllPays]   = useState<any[]>([]);
+  // Référentiels servis par le cache partagé ; seuls les fichiers dépendent de l'accord
+  const { secteurs, branches, activites } = useNaema();
+  const { data: paysData } = useRefPays();
+  const allPays: any[] = (paysData as any[]) || [];
 
   useEffect(()=>{
     fetch(`${API_BASE}/accords/${a.id}/fichiers`).then(r=>r.json()).then(setFichiers).catch(()=>{});
-    fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()).then(setAllPays).catch(()=>{});
-    Promise.all([
-      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
-    ]).then(([s,b,ac])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(ac||[]); }).catch(()=>{});
   },[a.id]);
 
   const statut = computeStatut(a);

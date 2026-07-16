@@ -5,6 +5,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Building2, ChevronDown, ChevronUp, Clock, FileText, Globe, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Phone, Search, Send, SlidersHorizontal, User, Video, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { parsePhoneNumber } from "libphonenumber-js";
+import { useNaema } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -256,20 +257,11 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
 // ── Modal fiche prospect (lecture seule) ──────────────────────────────────────
 
 function ProspectPublicVue({ p, onglet, onClose }: { p: any; onglet: "cibles" | "historique" | "termines"; onClose: () => void }) {
-  const [secteurs,  setSecteurs]  = useState<any[]>([]);
-  const [branches,  setBranches]  = useState<any[]>([]);
-  const [activites, setActivites] = useState<any[]>([]);
   const [openCycles, setOpenCycles] = useState<Set<number>>(new Set());
   const toggleCycle = (id:number) => setOpenCycles(prev=>{ const st=new Set(prev); st.has(id)?st.delete(id):st.add(id); return st; });
 
-  useEffect(() => {
-    if (onglet !== "cibles") return;
-    Promise.all([
-      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()),
-      fetch(`${API_BASE}/entreprises/ref/branches`).then(r => r.json()),
-      fetch(`${API_BASE}/entreprises/ref/activites`).then(r => r.json()),
-    ]).then(([s, b, a]) => { setSecteurs(s || []); setBranches(b || []); setActivites(a || []); }).catch(() => {});
-  }, [p.id, onglet]);
+  // Référentiels NAEMA servis par le cache partagé
+  const { secteurs, branches, activites } = useNaema();
 
   const badge = badgeProspect(p);
   const secIds: number[] = p.secteur_ids || [];

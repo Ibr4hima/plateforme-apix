@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useEffect, useState } from "react";
+import { useNaema } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -20,21 +21,8 @@ function fmtPhone(raw: string): string {
 interface Props { entreprise: any | null; onClose: () => void; zIndex?: number; }
 
 export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex = 500 }: Props) {
-  const [secteurs,  setSecteurs]  = useState<any[]>([]);
-  const [branches,  setBranches]  = useState<any[]>([]);
-  const [activites, setActivites] = useState<any[]>([]);
-
-  // Recharger les référentiels NAEMA à chaque ouverture (pas de cache inter-modales)
-  useEffect(() => {
-    setSecteurs([]); setBranches([]); setActivites([]);
-    if (!e) return;
-    Promise.all([
-      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
-    ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); })
-      .catch(()=>{});
-  }, [e?.id]);
+  // Référentiels NAEMA servis par le cache partagé (une seule requête par session)
+  const { secteurs, branches, activites } = useNaema();
 
   if (!e) return null;
 

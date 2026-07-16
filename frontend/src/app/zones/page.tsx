@@ -11,6 +11,7 @@ import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { Building2, ChevronRight, FileText, X } from "lucide-react";
+import { useNaema, useRefPolesTerritoires } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -368,19 +369,8 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
 function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
   const gate = useAuthGate();
   const [ficheEnt,  setFicheEnt]  = useState<any>(null);
-  const [secteurs,  setSecteurs]  = useState<any[]>([]);
-  const [branches,  setBranches]  = useState<any[]>([]);
-  const [activites, setActivites] = useState<any[]>([]);
-
-  useEffect(() => {
-    setSecteurs([]); setBranches([]); setActivites([]);
-    Promise.all([
-      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
-    ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); })
-      .catch(()=>{});
-  }, [zone.id]);
+  // Référentiels NAEMA servis par le cache partagé
+  const { secteurs, branches, activites } = useNaema();
 
   const ouvrirFiche = (id:number) => gate(async () => {
     try { const res=await fetch(`${API_BASE}/entreprises/${id}`); setFicheEnt(await res.json()); }
@@ -574,7 +564,8 @@ function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function ZonesPage() {
   const [zones,      setZones]      = useState<any[]>([]);
-  const [polesCount, setPolesCount] = useState(0);
+  const { data: polesRefData } = useRefPolesTerritoires();
+  const polesCount = ((polesRefData as any[]) || []).length;
   const [loading,    setLoading]    = useState(true);
   const [erreur,     setErreur]     = useState(false);
   const [tick,       setTick]       = useState(0);
@@ -586,8 +577,6 @@ export default function ZonesPage() {
     fetch(`${API_BASE}/zones-types`)
       .then(r=>{ if(!r.ok) throw new Error(); return r.json(); }).then(d=>{ setZones(d||[]); })
       .catch(()=>setErreur(true)).finally(()=>setLoading(false));
-    fetch(`${API_BASE}/zones-types/poles`)
-      .then(r=>r.json()).then((d:any[])=>setPolesCount(d?.length||0)).catch(()=>{});
   },[tick]);
 
   const stats = {

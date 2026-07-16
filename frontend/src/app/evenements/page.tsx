@@ -8,6 +8,7 @@ import { SkeletonCards } from "@/components/shared/Skeleton";
 import { CalendarDays, ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
+import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -583,32 +584,25 @@ export default function EvenementsPage() {
   const [branchesSel,  setBranchesSel]  = useState<string[]>([]);
   const [activitesSel, setActivitesSel] = useState<string[]>([]);
 
+  // Référentiels servis par le cache partagé
+  const { data: refPaysData } = useRefPays();
+  const { arbre: naemaArbre } = useNaemaArbre();
+  useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
   useEffect(()=>{
     const safe = (p:Promise<any>, fb:any) => p.catch(()=>fb);
     Promise.all([
       safe(fetch(`${API_BASE}/evenements/pays-hotes`).then(r=>r.json()), []),
-      safe(fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()),  []),
       safe(fetch(`${API_BASE}/evenements/stats`).then(r=>r.json()),      {}),
-      safe(fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()), []),
-      safe(fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()), []),
-      safe(fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()), []),
-    ]).then(([hotes,refPays,statsData,secsData,brasData,actsData])=>{
+    ]).then(([hotes,statsData])=>{
+      const refPays = (refPaysData as any[]) || [];
       const enrichis=(hotes||[]).map((nom:string)=>{
-        const ref=(refPays||[]).find((p:any)=>p.nom_fr===nom);
+        const ref=refPays.find((p:any)=>p.nom_fr===nom);
         return {nom,code_iso2:ref?.code_iso2||""};
       });
       setPaysHotes(enrichis);
       setStats(statsData||{});
-      const tree = (secsData||[]).map((s:any)=>({
-        ...s,
-        branches: (brasData||[]).filter((b:any)=>b.secteur_id===s.id).map((b:any)=>({
-          ...b,
-          activites: (actsData||[]).filter((a:any)=>a.branche_id===b.id)
-        }))
-      }));
-      setSecteurs(tree);
     });
-  },[]);
+  },[refPaysData]);
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance
   const charger = useCallback(async()=>{

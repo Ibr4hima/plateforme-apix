@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+import { useRefPolesTerritoires, useRefSecteurs } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -54,16 +55,16 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
   useEffect(() => { onPoleClickRef.current = onPoleClick; }, [onPoleClick]);
   const onRegionClickRef = useRef(onRegionClick);
   useEffect(() => { onRegionClickRef.current = onRegionClick; }, [onRegionClick]);
-  const [poles, setPoles] = useState<any[]>([]);
+  const { data: polesData } = useRefPolesTerritoires();
+  const poles: any[] = (polesData as any[]) || [];
   const [activePole, setActivePole] = useState<any>(null);
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [regionStats, setRegionStats] = useState<Record<string, { total: number; primaire: number; secondaire: number; tertiaire: number }>>({});
   const [tooltip, setTooltip] = useState<{ nom: string; x: number; y: number; pole?: any; region?: string } | null>(null);
-  const [secteurRef, setSecteurRef] = useState<any[]>([]);
+  const { data: secteurRefData } = useRefSecteurs();
+  const secteurRef: any[] = (secteurRefData as any[]) || [];
 
   useEffect(() => {
-    fetch(`${API_BASE}/zones-types/poles`).then(r => r.json()).then(setPoles).catch(() => {});
-    fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r => r.json()).then(setSecteurRef).catch(() => {});
     fetch(`${API_BASE}/dashboard/viz/region-stats`)
       .then(r => r.json())
       .then((rows: any[]) => {

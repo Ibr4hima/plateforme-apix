@@ -12,6 +12,7 @@
 
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNaema } from "@/lib/referentiels";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -59,26 +60,11 @@ function ColSection({ title, color, children, open, onToggle, count }: { title:s
 }
 
 export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onChangeSecteurs, onChangeBranches, onChangeActivites }: Props) {
-  const [secteurs,  setSecteurs]  = useState<RefItem[]>([]);
-  const [branches,  setBranches]  = useState<RefItem[]>([]);
-  const [activites, setActivites] = useState<RefItem[]>([]);
+  const { secteurs, branches, activites, isLoading } = useNaema();
+  const loaded = !isLoading;
   const [openSec,   setOpenSec]   = useState(true);
   const [openBra,   setOpenBra]   = useState(false);
   const [openAct,   setOpenAct]   = useState(false);
-  const [loaded,    setLoaded]    = useState(false);
-
-  useEffect(() => {
-    Promise.all([
-      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
-    ]).then(([s,b,a]) => {
-      setSecteurs(s||[]);
-      setBranches(b||[]);
-      setActivites(a||[]);
-      setLoaded(true);
-    }).catch(()=>{});
-  }, []);
 
   // Ouvrir automatiquement les colonnes si des sélections existent
   useEffect(() => {
