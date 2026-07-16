@@ -14,7 +14,8 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { foncerPastel } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
-import { SideFilter, ThematiquesCascadeFilter } from "@/components/shared/FiltresLateraux";
+import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
+import { computeStatutEvenement } from "@/lib/statuts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -57,15 +58,6 @@ const ROLE_VARIANT: Record<string, BadgeVariant> = {
   "Invité":          "gray",
 };
 
-function computeStatutEvenement(e: any): "a_venir" | "en_cours" | "termine" | null {
-  if (!e.date_debut) return null;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const debut = new Date(e.date_debut + "T00:00:00");
-  const fin   = e.date_fin ? new Date(e.date_fin + "T00:00:00") : debut;
-  if (debut > today) return "a_venir";
-  if (fin   < today) return "termine";
-  return "en_cours";
-}
 
 function ordinal(n: number) { return n === 1 ? "1ère édition" : `${n}ème édition`; }
 
@@ -597,7 +589,7 @@ export default function EvenementsPage() {
                 <CalendarDays size={48} style={{marginBottom:16,opacity:0.3}}/>
                 <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun événement trouvé</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
-                {hasFilter&&<button onClick={reinit} style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#ca631f",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>Effacer les filtres</button>}
+                {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ):vueMode==="frise"?(
               <FriseChronologique evenements={evenements} onOpen={(e:any)=>gate(()=>setSelec(e))} prochainId={prochainId}/>

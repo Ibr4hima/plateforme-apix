@@ -80,6 +80,16 @@ export function SideFilter({ label, items, selected, onToggle, color, searchable
   );
 }
 
+// Bouton « Effacer les filtres » des états vides — même bleu partout.
+export function BoutonEffacerFiltres({ onClick }: { onClick: () => void }) {
+  return (
+    <button onClick={onClick}
+      style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>
+      Effacer les filtres
+    </button>
+  );
+}
+
 // Cascade générique à 3 niveaux (bleu → orange → vert) utilisée par les deux
 // filtres ci-dessous : chaque niveau n'apparaît que si le parent est coché.
 const NIVEAUX = [

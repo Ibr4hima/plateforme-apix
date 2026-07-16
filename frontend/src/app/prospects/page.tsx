@@ -12,7 +12,7 @@ import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { foncerPastel } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
-import { SideFilter } from "@/components/shared/FiltresLateraux";
+import { SideFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -681,7 +681,7 @@ export default function ProspectsPage() {
               <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
               <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun prospect trouvé</p>
               <p style={{ fontSize: 14, marginTop: 6 }}>Modifiez vos filtres pour affiner la recherche.</p>
-              {hasFilter && <button onClick={reinit} style={{ marginTop: 16, padding: "8px 18px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Effacer les filtres</button>}
+              {hasFilter && <BoutonEffacerFiltres onClick={reinit}/>}
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>

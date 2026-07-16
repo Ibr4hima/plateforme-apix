@@ -4,19 +4,14 @@ import { FileText, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNaema, useRefPays } from "@/lib/referentiels";
 import { fmtDate } from "@/lib/format";
+import { computeStatutAccord as computeStatut } from "@/lib/statuts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // fmtDate : centralisé dans lib/format (ré-exporté pour les imports existants)
 export { fmtDate } from "@/lib/format";
 
-export function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
-  const today = new Date().toISOString().split("T")[0];
-  if (a.date_expiration && a.date_expiration < today) return "expire";
-  if (a.date_entree_vigueur && a.date_entree_vigueur <= today) return "en_vigueur";
-  if (a.date_signature && a.date_signature <= today) return "signe";
-  return null;
-}
+export { computeStatutAccord as computeStatut } from "@/lib/statuts";
 
 // ── Modal vue accord (partagé : page Accords, Fiche Pays…) ────────────────────
 export default function AccordVueModal({ accord:a, onClose, zIndex = 400 }: { accord:any; onClose:()=>void; zIndex?:number }) {

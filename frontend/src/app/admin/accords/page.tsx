@@ -9,19 +9,12 @@ import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGh
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import { fmtDate as fmtDateLib } from "@/lib/format";
+import { computeStatutAccord as computeStatut } from "@/lib/statuts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const STATUT_LABELS:  Record<string,string>      = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé non en vigueur" };
 const STATUT_VARIANT: Record<string,BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"orange" };
-
-function computeStatut(a: any): "en_vigueur"|"expire"|"signe"|null {
-  const today = new Date().toISOString().split("T")[0];
-  if (a.date_expiration && a.date_expiration < today) return "expire";
-  if (a.date_entree_vigueur && a.date_entree_vigueur <= today) return "en_vigueur";
-  if (a.date_signature && a.date_signature <= today) return "signe";
-  return null;
-}
 const SENEGAL = "Sénégal";
 const APIX    = "APIX S.A";
 

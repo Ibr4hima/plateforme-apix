@@ -12,6 +12,7 @@ import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FSegmented, FToggle, FButton, FButtonGhost, FError, FInfo } from "@/components/shared/FormUI";
 import { confirmer } from "@/components/shared/Confirmation";
 import { fmtDate } from "@/lib/format";
+import { computeStatutEvenement as computeStatut } from "@/lib/statuts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -48,15 +49,6 @@ const ROLE_PILL: Record<string,{c:string;bg:string}> = {
   "Invité":          { c:"#6b7280", bg:"#F2F0EF"               },
 };
 
-function computeStatut(e: any): "a_venir"|"en_cours"|"termine"|null {
-  if (!e.date_debut) return null;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const debut = new Date(e.date_debut+"T00:00:00");
-  const fin   = e.date_fin ? new Date(e.date_fin+"T00:00:00") : debut;
-  if (debut > today) return "a_venir";
-  if (fin   < today) return "termine";
-  return "en_cours";
-}
 
 const fmtDateFR = fmtDate;
 
