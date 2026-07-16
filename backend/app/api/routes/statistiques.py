@@ -297,14 +297,16 @@ def _norm(s: str) -> str:
     return s.lower().strip()
 
 
-async def _resolve_pays(db: AsyncSession, label: str):
+async def _resolve_pays(db: AsyncSession, label: str, tous: list | None = None):
     from sqlalchemy import or_
     res = await db.execute(select(RefPays).where(or_(RefPays.nom_cnuced == label, RefPays.nom_fr == label, RefPays.code_iso3 == label.upper())).limit(1))
     obj = res.scalar_one_or_none()
     if obj:
         return obj
     ln = _norm(label)
-    for p in (await db.execute(select(RefPays))).scalars().all():
+    if tous is None:
+        tous = (await db.execute(select(RefPays))).scalars().all()
+    for p in tous:
         if _norm(p.nom_fr or "") == ln or _norm(p.nom_cnuced or "") == ln:
             return p
     return None
@@ -344,6 +346,8 @@ async def importer(
         raise HTTPException(400, f"Indicateur « {indicateur} » non importable (densité et PIB/hab sont calculés automatiquement).")
 
     resultats, erreurs, non_resolus = {}, [], {}
+    # Référentiel préchargé une fois pour la résolution normalisée des labels
+    tous_pays = (await db.execute(select(RefPays))).scalars().all()
     for fichier in (fichiers or []):
         contenu = await lire_import(fichier)
         if not contenu:
@@ -357,24 +361,35 @@ async def importer(
             erreurs.append(f"{fichier.filename}: aucune ligne valide trouvée")
             continue
         for label, lignes in par_pays.items():
-            pays_obj = await _resolve_pays(db, label)
+            pays_obj = await _resolve_pays(db, label, tous_pays)
             if not pays_obj:
                 non_resolus[label] = non_resolus.get(label, 0) + len(lignes)
                 continue
-            ins = maj = 0
+            # Conversion d'unités puis upsert en masse sur la PK (pays_id, annee, indicateur)
+            par_annee: dict = {}
             for annee, valeur in lignes:
                 if valeur is not None:
                     if indicateur == "population":
                         valeur = valeur * 1000            # milliers d'habitants → habitants
                     elif indicateur in _MILLIONS_USD:
                         valeur = valeur * 1_000_000        # millions USD → USD
-                row = (await db.execute(select(_StatPays).where(
-                    _StatPays.pays_id == pays_obj.id, _StatPays.annee == annee, _StatPays.indicateur == indicateur
-                ))).scalar_one_or_none()
-                if row:
-                    row.valeur = valeur; maj += 1
-                else:
-                    db.add(_StatPays(pays_id=pays_obj.id, annee=annee, indicateur=indicateur, valeur=valeur)); ins += 1
+                par_annee[annee] = valeur
+            annees = list(par_annee.keys())
+            existants = set((await db.execute(select(_StatPays.annee).where(
+                _StatPays.pays_id == pays_obj.id, _StatPays.indicateur == indicateur, _StatPays.annee.in_(annees)
+            ))).scalars().all()) if annees else set()
+            if annees:
+                from sqlalchemy.dialects.postgresql import insert as pg_insert
+                stmt = pg_insert(_StatPays).values([
+                    {"pays_id": pays_obj.id, "annee": annee, "indicateur": indicateur, "valeur": valeur}
+                    for annee, valeur in par_annee.items()
+                ])
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=["pays_id", "annee", "indicateur"],
+                    set_={"valeur": stmt.excluded.valeur},
+                )
+                await db.execute(stmt)
+            ins = sum(1 for a in annees if a not in existants); maj = len(annees) - ins
             d = resultats.setdefault(pays_obj.nom_fr, {"pays_id": pays_obj.id, "insere": 0, "mis_a_jour": 0})
             d["insere"] += ins; d["mis_a_jour"] += maj
     await db.flush()

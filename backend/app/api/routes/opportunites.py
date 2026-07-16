@@ -122,6 +122,55 @@ async def enrichir_avantage(id: int, db: AsyncSession) -> dict:
                        for r in s_res.fetchall()]
     return d
 
+async def enrichir_avantages_bulk(ids: list[int], db: AsyncSession) -> list[dict]:
+    """Version en masse d'enrichir_avantage : 3 requêtes au total (lignes,
+    fichiers, sélections) au lieu de 3 requêtes PAR avantage listé."""
+    if not ids:
+        return []
+    from sqlalchemy import bindparam
+    q_ids = bindparam("ids", expanding=True)
+
+    res = await db.execute(text("""
+        SELECT a.id, a.secteur_id, a.branche_id, a.activite_id, a.avantages,
+               a.est_publie, a.is_deleted, a.created_at, a.updated_at,
+               s.nom as secteur_nom, b.nom as branche_nom, ac.nom as activite_nom
+        FROM avantages_incitations a
+        LEFT JOIN ref_secteurs s ON s.id = a.secteur_id
+        LEFT JOIN ref_branches b ON b.id = a.branche_id
+        LEFT JOIN ref_activites ac ON ac.id = a.activite_id
+        WHERE a.id IN :ids
+    """).bindparams(q_ids), {"ids": ids})
+    par_id: dict[int, dict] = {}
+    for row in res.fetchall():
+        par_id[row[0]] = {
+            "id": row[0], "secteur_id": row[1], "branche_id": row[2],
+            "activite_id": row[3], "avantages": row[4],
+            "est_publie": row[5], "is_deleted": row[6],
+            "created_at": str(row[7]), "updated_at": str(row[8]),
+            "secteur_nom": row[9], "branche_nom": row[10], "activite_nom": row[11],
+            "fichiers": [], "selections": [],
+        }
+
+    f_res = await db.execute(text(
+        "SELECT avantage_id, id, fichier_nom, titre FROM avantages_incitations_fichiers WHERE avantage_id IN :ids ORDER BY id"
+    ).bindparams(q_ids), {"ids": ids})
+    for r in f_res.fetchall():
+        if r[0] in par_id:
+            par_id[r[0]]["fichiers"].append({"id": r[1], "fichier_nom": r[2], "titre": r[3]})
+
+    s_res = await db.execute(text("""
+        SELECT s.avantage_id, s.id, s.type_id, s.commentaire, t.libelle
+        FROM avantages_incitations_selections s
+        JOIN ref_avantages_types t ON t.id = s.type_id
+        WHERE s.avantage_id IN :ids
+        ORDER BY t.ordre
+    """).bindparams(q_ids), {"ids": ids})
+    for r in s_res.fetchall():
+        if r[0] in par_id:
+            par_id[r[0]]["selections"].append({"id": r[1], "type_id": r[2], "commentaire": r[3], "type_libelle": r[4]})
+
+    return [par_id[i] for i in ids if i in par_id]
+
 # ─── Routes Potentialités ─────────────────────────────────────────────────────
 
 
@@ -282,7 +331,7 @@ async def list_avantages(
         LIMIT :limit OFFSET :offset
     """), {**params, "limit": per_page, "offset": (page-1)*per_page})
     ids = [r[0] for r in res.fetchall()]
-    data = [await enrichir_avantage(id, db) for id in ids]
+    data = await enrichir_avantages_bulk(ids, db)
     return {"total": total, "data": data}
 
 @router.get("/avantages/{id}")

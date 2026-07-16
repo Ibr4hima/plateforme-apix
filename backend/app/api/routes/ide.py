@@ -220,17 +220,22 @@ async def get_pays_disponibles(db: AsyncSession = Depends(get_db)):
     """Retourne les pays qui ont des données IDE, avec leur code ISO"""
     from sqlalchemy import distinct
     from app.models.shared import RefPays
+    from sqlalchemy import or_
     res = await db.execute(select(distinct(IdeCnuced.pays)).order_by(IdeCnuced.pays))
     noms = [r[0] for r in res.fetchall()]
-    # Enrichir avec les infos de ref_pays (code_iso2 pour le drapeau)
+    # Enrichir avec ref_pays en une seule requête (indexé par nom_fr et nom_cnuced)
+    refs = (await db.execute(
+        select(RefPays).where(or_(RefPays.nom_fr.in_(noms), RefPays.nom_cnuced.in_(noms)))
+    )).scalars().all() if noms else []
+    par_nom: dict = {}
+    for p in refs:
+        if p.nom_fr:
+            par_nom.setdefault(p.nom_fr, p)
+        if p.nom_cnuced:
+            par_nom.setdefault(p.nom_cnuced, p)
     result = []
     for nom in noms:
-        rp = await db.execute(
-            select(RefPays).where(
-                (RefPays.nom_fr == nom) | (RefPays.nom_cnuced == nom)
-            ).limit(1)
-        )
-        pays_obj = rp.scalar_one_or_none()
+        pays_obj = par_nom.get(nom)
         result.append({
             "nom": nom,
             "code_iso2":   pays_obj.code_iso2   if pays_obj else None,
@@ -561,8 +566,10 @@ def _normalize_name(s: str) -> str:
     return s.lower().strip()
 
 
-async def _resolve_ref_pays(db, label: str):
-    """Résout un nom UNCTAD → RefPays. Essaie d'abord exact, puis normalisé (sans accents)."""
+async def _resolve_ref_pays(db, label: str, tous: list | None = None):
+    """Résout un nom UNCTAD → RefPays. Essaie d'abord exact, puis normalisé
+    (sans accents). `tous` : liste préchargée de RefPays pour éviter de
+    recharger la table à chaque label non résolu pendant un import."""
     from app.models.shared import RefPays
     from sqlalchemy import or_
 
@@ -576,8 +583,9 @@ async def _resolve_ref_pays(db, label: str):
 
     # 2. Correspondance normalisée (gère accents, apostrophes, casse)
     label_norm = _normalize_name(label)
-    all_res = await db.execute(select(RefPays))
-    for p in all_res.scalars().all():
+    if tous is None:
+        tous = (await db.execute(select(RefPays))).scalars().all()
+    for p in tous:
         if _normalize_name(p.nom_fr or "") == label_norm or _normalize_name(p.nom_cnuced or "") == label_norm:
             return p
 
@@ -586,28 +594,42 @@ async def _resolve_ref_pays(db, label: str):
 
 async def _upsert_serie(db, ref_pays_id: int, nom_pays: str, direction: str, indicateur: str,
                         lignes: list[tuple[int, float | None]]) -> tuple[int, int]:
-    insere = mis_a_jour = 0
-    for annee, valeur in lignes:
-        res = await db.execute(
-            select(IdeCnuced).where(
-                IdeCnuced.ref_pays_id == ref_pays_id,
-                IdeCnuced.annee == annee,
-                IdeCnuced.direction == direction,
-                IdeCnuced.indicateur == indicateur,
-            )
+    """Upsert en masse d'une série : une lecture des années existantes (pour le
+    rapport inséré/mis à jour) puis un seul INSERT … ON CONFLICT DO UPDATE sur
+    l'index unique uq_ide_cnuced_serie (migration 115) — au lieu d'un SELECT +
+    INSERT/UPDATE par année."""
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+
+    # Dédoublonner par année (la dernière valeur gagne) : ON CONFLICT interdit
+    # de toucher deux fois la même ligne dans un même INSERT
+    par_annee: dict[int, float | None] = {annee: valeur for annee, valeur in lignes}
+    if not par_annee:
+        return 0, 0
+    annees = list(par_annee.keys())
+
+    existants = set((await db.execute(
+        select(IdeCnuced.annee).where(
+            IdeCnuced.ref_pays_id == ref_pays_id,
+            IdeCnuced.direction == direction,
+            IdeCnuced.indicateur == indicateur,
+            IdeCnuced.annee.in_(annees),
         )
-        row = res.scalar_one_or_none()
-        if row:
-            row.valeur = valeur
-            row.pays = nom_pays
-            mis_a_jour += 1
-        else:
-            db.add(IdeCnuced(
-                pays=nom_pays, annee=annee, direction=direction, indicateur=indicateur,
-                valeur=valeur, source="CNUCED", ref_pays_id=ref_pays_id,
-            ))
-            insere += 1
-    return insere, mis_a_jour
+    )).scalars().all())
+
+    stmt = pg_insert(IdeCnuced).values([
+        {"pays": nom_pays, "annee": annee, "direction": direction, "indicateur": indicateur,
+         "valeur": valeur, "source": "CNUCED", "ref_pays_id": ref_pays_id}
+        for annee, valeur in par_annee.items()
+    ])
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["ref_pays_id", "annee", "direction", "indicateur"],
+        index_where=IdeCnuced.ref_pays_id.isnot(None),
+        set_={"valeur": stmt.excluded.valeur, "pays": stmt.excluded.pays},
+    )
+    await db.execute(stmt)
+
+    insere = sum(1 for a in annees if a not in existants)
+    return insere, len(annees) - insere
 
 
 async def _recalc_monde(db) -> None:
@@ -687,6 +709,8 @@ async def importer_ide(
     erreurs:     list[str]       = []   # erreurs techniques (lecture fichier)
     non_resolus: dict[str, int]  = {}   # label UNCTAD → nb_lignes non importées
     fichiers_bruts: list[tuple[str, str, bytes]] = []  # (zone, nom, contenu) pour le relais prod
+    # Référentiel préchargé une fois pour la résolution normalisée des labels
+    tous_pays = (await db.execute(select(RefPays))).scalars().all()
 
     for (direction, indicateur), fichiers in zones.items():
         for fichier in (fichiers or []):
@@ -707,7 +731,7 @@ async def importer_ide(
                 continue
 
             for label, lignes in lignes_par_pays.items():
-                pays_obj = await _resolve_ref_pays(db, label)
+                pays_obj = await _resolve_ref_pays(db, label, tous_pays)
                 if not pays_obj:
                     non_resolus[label] = non_resolus.get(label, 0) + len(lignes)
                     continue
@@ -848,22 +872,31 @@ async def importer_ide_secteurs(
                 if not sec:
                     erreurs.append(f"{fichier.filename}: secteur non reconnu — « {label} »")
                     continue
-                ins = maj = 0
-                for annee, valeur in lignes:
-                    res = await db.execute(select(IdeCnucedSecteur).where(
+                # Upsert en masse sur uq_ide_cnuced_secteurs_serie (migration 115)
+                from sqlalchemy.dialects.postgresql import insert as pg_insert
+                par_annee = {annee: valeur for annee, valeur in lignes}
+                annees = list(par_annee.keys())
+                existants = set((await db.execute(
+                    select(IdeCnucedSecteur.annee).where(
                         IdeCnucedSecteur.secteur_id == sec.id,
-                        IdeCnucedSecteur.annee == annee,
                         IdeCnucedSecteur.direction == direction,
                         IdeCnucedSecteur.indicateur == indicateur,
-                    ))
-                    row = res.scalar_one_or_none()
-                    if row:
-                        row.valeur = valeur
-                        maj += 1
-                    else:
-                        db.add(IdeCnucedSecteur(secteur_id=sec.id, annee=annee, direction=direction,
-                                                indicateur=indicateur, valeur=valeur))
-                        ins += 1
+                        IdeCnucedSecteur.annee.in_(annees),
+                    )
+                )).scalars().all()) if annees else set()
+                if annees:
+                    stmt = pg_insert(IdeCnucedSecteur).values([
+                        {"secteur_id": sec.id, "annee": annee, "direction": direction,
+                         "indicateur": indicateur, "valeur": valeur}
+                        for annee, valeur in par_annee.items()
+                    ])
+                    stmt = stmt.on_conflict_do_update(
+                        index_elements=["secteur_id", "annee", "direction", "indicateur"],
+                        set_={"valeur": stmt.excluded.valeur},
+                    )
+                    await db.execute(stmt)
+                ins = sum(1 for a in annees if a not in existants)
+                maj = len(annees) - ins
                 cle = sec.nom_fr
                 if cle not in resultats:
                     resultats[cle] = {"insere": 0, "mis_a_jour": 0}
@@ -1160,11 +1193,13 @@ async def get_cnuced_stats(db: AsyncSession = Depends(get_db)):
             "nb": row.nb,
         }
 
-    # Enrichir avec code_iso2
+    # Enrichir avec code_iso2 (une seule requête IN)
+    refs = {p.id: p for p in (await db.execute(
+        select(RefPays).where(RefPays.id.in_(list(pays_dict.keys())))
+    )).scalars().all()} if pays_dict else {}
     result = []
     for rpid, data in pays_dict.items():
-        rp = await db.execute(select(RefPays).where(RefPays.id == rpid))
-        pays_obj = rp.scalar_one_or_none()
+        pays_obj = refs.get(rpid)
         result.append({
             "ref_pays_id": rpid,
             "pays": data["pays"],
