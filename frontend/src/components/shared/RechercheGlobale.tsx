@@ -6,7 +6,6 @@
 // mémoire pour la session. Sélectionner un résultat navigue vers la page avec
 // « ?fiche=<id> » (voir lib/ficheUrl) ou ouvre la fiche pays via la navbar.
 
-import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -197,7 +196,7 @@ export default function RechercheGlobale() {
         style={{ width: "100%", maxWidth: 510, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
         {/* Barre de recherche — pilule flottante */}
         <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "0 19px", height: 47, background: "rgba(255,255,255,0.97)", borderRadius: 999, border: "1px solid rgba(255,255,255,0.55)", boxShadow: "0 22px 60px rgba(2,20,38,0.38), 0 2px 8px rgba(2,20,38,0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>
-          <Search size={16} strokeWidth={2.4} style={{ color: "#004f91", flexShrink: 0 }} />
+          <span className="material-symbols-outlined" style={{ fontSize: 19, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0 }}>search</span>
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
             placeholder="Rechercher"
             style={{ flex: 1, border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent", letterSpacing: "-0.01em" }} />
