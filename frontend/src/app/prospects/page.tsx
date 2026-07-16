@@ -193,7 +193,15 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 15.5, color: "#1a1a2e", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</div>
             {(() => {
-              const sousTitre = onglet === "historique" ? (ilYa(p.date_dernier_echange) ?? p.siege_nom) : p.siege_nom;
+              const rel = onglet === "historique" ? ilYa(p.date_dernier_echange)
+                : onglet === "termines" && p.issue_conclu_le ? (() => {
+                    const r = ilYa(p.issue_conclu_le);
+                    if (!r) return null;
+                    const suffixe = r === "Aujourd'hui" ? "aujourd'hui" : r.replace("Il y a", "il y a");
+                    return `${p.issue === "decline" ? "Décliné" : "Conclu"} ${suffixe}`;
+                  })()
+                : null;
+              const sousTitre = rel ?? p.siege_nom;
               return sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{sousTitre}</div>;
             })()}
           </div>
@@ -210,12 +218,9 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
             {onglet === "cibles" ? <>
               <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Activités spécialisées</p>
               <p style={{ fontSize: 12.5, fontWeight: 700, color: nbActs > 0 ? "#1a1a2e" : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{nbActs || "—"}</p>
-            </> : onglet === "historique" ? <>
+            </> : <>
               <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Pays</p>
               <p style={{ fontSize: 12.5, fontWeight: 700, color: p.siege_nom ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.siege_nom || "—"}</p>
-            </> : <>
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Email</p>
-              <p style={{ fontSize: 12.5, fontWeight: 700, color: mail ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{mail || "—"}</p>
             </>}
           </div>
           <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }}/>
