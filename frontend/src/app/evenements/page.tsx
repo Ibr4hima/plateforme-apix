@@ -760,9 +760,21 @@ export default function EvenementsPage() {
                           </div>
                         )}
                         <div style={{padding:"18px 20px 16px",flex:1,display:"flex",flexDirection:"column" as const,gap:13}}>
+                          {accent ? (
+                            /* Bande = statut : le titre monte sur la ligne du rôle APIX */
+                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
+                              <div style={{minWidth:0,flex:1}}>
+                                <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
+                                {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
+                              </div>
+                              {e.role_apix&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999,flexShrink:0}}>
+                                {ROLES_APIX[e.role_apix]||e.role_apix}
+                              </span>}
+                            </div>
+                          ) : (<>
                           {/* Statut + rôle de l'APIX */}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-                            {st&&!estEnCours ? (
+                            {st ? (
                               <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 11px",borderRadius:999}}>
                                 <span style={{width:5,height:5,borderRadius:"50%",background:st.c,flexShrink:0}}/>
                                 {st.label}
@@ -780,6 +792,7 @@ export default function EvenementsPage() {
                             <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
                             {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
                           </div>
+                          </>)}
 
                           {/* Date · Lieu en rangée épurée */}
                           <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
