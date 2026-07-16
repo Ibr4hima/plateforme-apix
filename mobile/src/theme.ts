@@ -31,12 +31,15 @@ export const BADGE = {
   expire:     { label: "Expiré",                c: "#b45309", bg: "rgba(202,99,31,0.10)" },
 } as const;
 
-// Modules de la plateforme — pastille de couleur + icône Ionicons
+// Les 8 modules de la plateforme — mêmes intitulés que le site, pastilles
+// monochromes bleues (équivalents Ionicons des Material Symbols du site)
 export const MODULES = [
-  { cle: "accords",      titre: "Accords & Traités", sous: "Accords internationaux",    icone: "document-text",   couleur: "#004f91", href: "/accords",  actif: true },
-  { cle: "entreprises",  titre: "Entreprises",       sous: "Installées au Sénégal",     icone: "business",        couleur: "#ca631f", href: "/",         actif: false },
-  { cle: "evenements",   titre: "Événements",        sous: "Agenda économique",         icone: "calendar",        couleur: "#188038", href: "/",         actif: false },
-  { cle: "zones",        titre: "Zones",             sous: "Zones d'investissement",    icone: "map",             couleur: "#6A1B9A", href: "/",         actif: false },
-  { cle: "ide",          titre: "IDE",               sous: "Investissements étrangers", icone: "trending-up",     couleur: "#0891b2", href: "/",         actif: false },
-  { cle: "statistiques", titre: "Statistiques",      sous: "Commerce & macro",          icone: "stats-chart",     couleur: "#b91c1c", href: "/",         actif: false },
+  { cle: "ide",          titre: "Investissements privés",        icone: "trending-up",     href: "/",         actif: false },
+  { cle: "statistiques", titre: "Échanges commerciaux",          icone: "swap-horizontal", href: "/",         actif: false },
+  { cle: "prospects",    titre: "Prospects",                     icone: "scan",            href: "/",         actif: false },
+  { cle: "entreprises",  titre: "Entreprises installées",        icone: "business",        href: "/",         actif: false },
+  { cle: "zones",        titre: "Zones d'investissement",        icone: "map",             href: "/",         actif: false },
+  { cle: "opportunites", titre: "Opportunités d'investissement", icone: "layers",          href: "/",         actif: false },
+  { cle: "accords",      titre: "Accords & Traités",             icone: "document-text",   href: "/accords",  actif: true },
+  { cle: "evenements",   titre: "Événements",                    icone: "calendar",        href: "/",         actif: false },
 ] as const;

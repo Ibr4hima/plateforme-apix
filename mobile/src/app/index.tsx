@@ -102,21 +102,22 @@ export default function Accueil() {
       {/* ── Aperçu — KPIs officiels du Sénégal ── */}
       <Apercu />
 
-      {/* ── Modules ── */}
+      {/* ── Modules — grille premium monochrome bleu ── */}
       <View style={s.section}>
         <Text style={s.sectionTitre}>MODULES</Text>
-        <View style={{ gap: 10 }}>
+        <View style={s.modulesGrille}>
           {MODULES.map(m => (
             <Pressable key={m.cle} disabled={!m.actif} onPress={() => router.push(m.href as any)}
-              style={({ pressed }) => [s.module, pressed && s.modulePresse, !m.actif && { opacity: 0.5 }]}>
-              <View style={[s.moduleIcone, { backgroundColor: `${m.couleur}14` }]}>
-                <Ionicons name={`${m.icone}-outline` as any} size={19} color={m.couleur} />
+              style={({ pressed }) => [s.module, pressed && s.modulePresse]}>
+              <View style={s.moduleHaut}>
+                <View style={[s.moduleIcone, !m.actif && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
+                  <Ionicons name={`${m.icone}-outline` as any} size={19} color={m.actif ? T.bleu : "rgba(0,79,145,0.35)"} />
+                </View>
+                {m.actif
+                  ? <View style={s.moduleFleche}><Ionicons name="arrow-forward" size={13} color={T.bleu} /></View>
+                  : <View style={s.moduleBientot}><Text style={s.moduleBientotTexte}>BIENTÔT</Text></View>}
               </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={s.moduleTitre} numberOfLines={1}>{m.titre}</Text>
-                <Text style={s.moduleSous} numberOfLines={1}>{m.actif ? m.sous : "Bientôt"}</Text>
-              </View>
-              {m.actif && <Ionicons name="chevron-forward" size={15} color={T.grisClair} />}
+              <Text style={[s.moduleTitre, !m.actif && { color: T.gris }]} numberOfLines={2}>{m.titre}</Text>
             </Pressable>
           ))}
         </View>
@@ -166,14 +167,19 @@ const s = StyleSheet.create({
   eventEcheanceTexte: { color: "#fff", fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 0.3 },
   eventNom: { fontSize: 16.5, fontFamily: POLICE.gras, color: "#fff", marginTop: 7, lineHeight: 21 },
   eventSous: { fontSize: 12, fontFamily: POLICE.moyen, color: "rgba(255,255,255,0.65)", marginTop: 5 },
+  modulesGrille: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   module: {
-    flexDirection: "row", alignItems: "center", gap: 13,
-    backgroundColor: T.carte, borderRadius: 16,
-    borderWidth: 1, borderColor: T.bordure, paddingHorizontal: 15, paddingVertical: 13,
+    width: "47.9%", backgroundColor: T.carte, borderRadius: 20,
+    padding: 15, minHeight: 118, justifyContent: "space-between",
+    shadowColor: "#001e3c", shadowOpacity: 0.07, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
-  modulePresse: { transform: [{ scale: 0.985 }], borderColor: "rgba(0,79,145,0.35)" },
-  moduleIcone: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center" },
-  moduleTitre: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre },
-  moduleSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  modulePresse: { transform: [{ scale: 0.97 }] },
+  moduleHaut: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 },
+  moduleIcone: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,79,145,0.08)" },
+  moduleFleche: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,79,145,0.07)" },
+  moduleBientot: { backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
+  moduleBientotTexte: { fontSize: 8, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 0.8 },
+  moduleTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, lineHeight: 18 },
   pied: { textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal, color: T.grisClair, marginTop: 34 },
 });
