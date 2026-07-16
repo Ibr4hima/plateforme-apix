@@ -1297,7 +1297,7 @@ export default function OpportunitesPage() {
                   </div>
                   {/* ── Fiches du niveau sélectionné, affichées sous les cards ── */}
                   {selectedNiveau!==null&&(
-                  <div className="charge-in">
+                  <div className="charge-in" style={{marginTop:selectedNiveau==="pole"?0:26}}>
                     {(()=>{
                       const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
                       const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
@@ -1327,12 +1327,13 @@ export default function OpportunitesPage() {
                         : selectedNiveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
                         : selectedNiveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
                         : (p.departement_nom || deptDeArr(p.arrondissement_nom||"") || "Autres");
+                      const rattachement = selectedNiveau==="region" ? "Pôle" : selectedNiveau==="departement" ? "Région" : "Département";
                       const groupes = new Map<string, any[]>();
                       items.forEach((p:any)=>{ const k=groupeDe(p); if(!groupes.has(k)) groupes.set(k,[]); groupes.get(k)!.push(p); });
                       const cles = Array.from(groupes.keys()).sort((a,b)=>a.localeCompare(b,"fr"));
                       return (
                         <>
-                        {bandeau}
+                        {selectedNiveau==="pole"&&bandeau}
                         {(()=>{
                           const Tuile = ({p}:{p:any}) => {
                             const nbActs = (p.activite_ids||[]).length;
@@ -1367,20 +1368,30 @@ export default function OpportunitesPage() {
                               </div>
                             </div>
                           );
+                          // Autres niveaux : un bandeau de rattachement par groupe
                           return (
-                        <div style={{display:"flex",flexDirection:"column" as const,gap:16}}>
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:22}}>
                           {cles.map(cle=>{
                             const fiches = groupes.get(cle)!;
                             return (
-                              <div key={cle} style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.03)"}}>
-                                {/* En-tête du groupe */}
-                                <div style={{display:"flex",alignItems:"center",gap:9,padding:"13px 20px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA",minWidth:0}}>
-                                  <span style={{width:8,height:8,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                  <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const,flex:1,minWidth:0}}>{cle}</span>
+                              <div key={cle}>
+                                {/* Bandeau du rattachement territorial */}
+                                <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
+                                  background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
+                                  border:`1px solid ${meta.color}22`}}>
+                                  <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                                    <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
+                                  </div>
+                                  <div style={{minWidth:0,flex:1}}>
+                                    <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
+                                    <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
+                                  </div>
                                 </div>
                                 {/* Fiches du groupe */}
-                                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
-                                  {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                                <div style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,boxShadow:"0 1px 2px rgba(0,0,0,0.03)"}}>
+                                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+                                    {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                                  </div>
                                 </div>
                               </div>
                             );
