@@ -31,15 +31,15 @@ export const BADGE = {
   expire:     { label: "Expiré",                c: "#b45309", bg: "rgba(202,99,31,0.10)" },
 } as const;
 
-// Les 8 modules de la plateforme — mêmes intitulés que le site, pastilles
-// monochromes bleues (équivalents Ionicons des Material Symbols du site)
+// Les 8 modules de la plateforme — mêmes intitulés et mêmes icônes
+// Material Symbols que le menu Modules du site.
 export const MODULES = [
-  { cle: "ide",          titre: "Investissements privés",        icone: "trending-up",     href: "/",         actif: false },
-  { cle: "statistiques", titre: "Échanges commerciaux",          icone: "swap-horizontal", href: "/",         actif: false },
-  { cle: "prospects",    titre: "Prospects",                     icone: "scan",            href: "/",         actif: false },
-  { cle: "entreprises",  titre: "Entreprises installées",        icone: "business",        href: "/",         actif: false },
-  { cle: "zones",        titre: "Zones d'investissement",        icone: "map",             href: "/",         actif: false },
-  { cle: "opportunites", titre: "Opportunités d'investissement", icone: "layers",          href: "/",         actif: false },
-  { cle: "accords",      titre: "Accords & Traités",             icone: "document-text",   href: "/accords",  actif: true },
-  { cle: "evenements",   titre: "Événements",                    icone: "calendar",        href: "/",         actif: false },
+  { cle: "ide",          titre: "Investissements privés",        icone: "finance_mode",      href: "" },
+  { cle: "statistiques", titre: "Échanges commerciaux",          icone: "currency_exchange", href: "" },
+  { cle: "prospects",    titre: "Prospects",                     icone: "frame_inspect",     href: "" },
+  { cle: "entreprises",  titre: "Entreprises installées",        icone: "enterprise",        href: "" },
+  { cle: "zones",        titre: "Zones d'investissement",        icone: "real_estate_agent", href: "" },
+  { cle: "opportunites", titre: "Opportunités d'investissement", icone: "bookmark_stacks",   href: "" },
+  { cle: "accords",      titre: "Accords & Traités",             icone: "signature",         href: "/accords" },
+  { cle: "evenements",   titre: "Événements",                    icone: "event",             href: "" },
 ] as const;

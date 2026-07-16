@@ -18,6 +18,8 @@ export default function RacineLayout() {
   }));
   const [polices] = useFonts({
     GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold,
+    // La police d'icônes de la plateforme (Material Symbols, rendu par ligature)
+    MaterialSymbols: require("../../assets/fonts/MaterialSymbolsOutlined.ttf"),
   });
   useEffect(() => { if (polices) SplashScreen.hideAsync(); }, [polices]);
   if (!polices) return null;

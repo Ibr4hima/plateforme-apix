@@ -10,8 +10,9 @@ import { useRouter } from "expo-router";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Apercu from "@/components/Apercu";
+import ModulesGrille from "@/components/ModulesGrille";
 import { fetchTous } from "@/lib/api";
-import { MODULES, POLICE, T } from "@/theme";
+import { POLICE, T } from "@/theme";
 
 function dansCombien(dstr: string): string {
   const d = new Date(dstr.slice(0, 10) + "T00:00:00");
@@ -102,26 +103,8 @@ export default function Accueil() {
       {/* ── Aperçu — KPIs officiels du Sénégal ── */}
       <Apercu />
 
-      {/* ── Modules — grille premium monochrome bleu ── */}
-      <View style={s.section}>
-        <Text style={s.sectionTitre}>MODULES</Text>
-        <View style={s.modulesGrille}>
-          {MODULES.map(m => (
-            <Pressable key={m.cle} disabled={!m.actif} onPress={() => router.push(m.href as any)}
-              style={({ pressed }) => [s.module, pressed && s.modulePresse]}>
-              <View style={s.moduleHaut}>
-                <View style={[s.moduleIcone, !m.actif && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
-                  <Ionicons name={`${m.icone}-outline` as any} size={19} color={m.actif ? T.bleu : "rgba(0,79,145,0.35)"} />
-                </View>
-                {m.actif
-                  ? <View style={s.moduleFleche}><Ionicons name="arrow-forward" size={13} color={T.bleu} /></View>
-                  : <View style={s.moduleBientot}><Text style={s.moduleBientotTexte}>BIENTÔT</Text></View>}
-              </View>
-              <Text style={[s.moduleTitre, !m.actif && { color: T.gris }]} numberOfLines={2}>{m.titre}</Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
+      {/* ── Modules ── */}
+      <ModulesGrille />
 
       <Text style={s.pied}>Plateforme APIX · données en direct</Text>
     </ScrollView>
@@ -167,19 +150,5 @@ const s = StyleSheet.create({
   eventEcheanceTexte: { color: "#fff", fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 0.3 },
   eventNom: { fontSize: 16.5, fontFamily: POLICE.gras, color: "#fff", marginTop: 7, lineHeight: 21 },
   eventSous: { fontSize: 12, fontFamily: POLICE.moyen, color: "rgba(255,255,255,0.65)", marginTop: 5 },
-  modulesGrille: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  module: {
-    width: "47.9%", backgroundColor: T.carte, borderRadius: 20,
-    padding: 15, minHeight: 118, justifyContent: "space-between",
-    shadowColor: "#001e3c", shadowOpacity: 0.07, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
-  },
-  modulePresse: { transform: [{ scale: 0.97 }] },
-  moduleHaut: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 },
-  moduleIcone: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,79,145,0.08)" },
-  moduleFleche: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,79,145,0.07)" },
-  moduleBientot: { backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
-  moduleBientotTexte: { fontSize: 8, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 0.8 },
-  moduleTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, lineHeight: 18 },
   pied: { textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal, color: T.grisClair, marginTop: 34 },
 });
