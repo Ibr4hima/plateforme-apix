@@ -33,7 +33,7 @@ fi
 CIBLE="database/migrations/116_baseline_schema.sql"
 HORODATAGE="$(date '+%Y-%m-%d %H:%M')"
 
-echo "→ Dump du schéma de « $DB » via le conteneur $CONTENEUR…"
+echo "→ Dump du schéma de « ${DB} » via le conteneur ${CONTENEUR} ..."
 {
   echo "-- ============================================================================="
   echo "-- Migration 116 — BASELINE du schéma ($HORODATAGE)"
@@ -43,7 +43,7 @@ echo "→ Dump du schéma de « $DB » via le conteneur $CONTENEUR…"
   echo "-- vierge joue CE fichier puis les migrations 117+. Les bases existantes"
   echo "-- sont déjà à ce niveau — ne pas rejouer ce fichier dessus."
   echo "-- ============================================================================="
-  docker exec -i "$CONTENEUR" pg_dump -U "$USR" -d "$DB" \
+  docker exec -i "${CONTENEUR}" pg_dump -U "$USR" -d "$DB" \
     --schema-only --no-owner --no-privileges --no-comments
 } > "$CIBLE"
 
