@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import FicheSheet from "@/components/FicheSheet";
 import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRecherche";
-import { T } from "@/theme";
+import { T, POLICE } from "@/theme";
 
 const MAX_PAR_GROUPE = 6;
 
@@ -76,11 +76,11 @@ const s = StyleSheet.create({
     backgroundColor: "#fff", margin: 16, marginBottom: 8, paddingHorizontal: 17, height: 48,
     borderRadius: 999, borderWidth: 1, borderColor: T.bordure,
   },
-  champ: { flex: 1, fontSize: 15.5, color: T.encre, fontWeight: "500" },
+  champ: { flex: 1, fontSize: 15.5, color: T.encre, fontFamily: POLICE.moyen },
   centre: { alignItems: "center", padding: 28, gap: 8 },
   info: { fontSize: 12.5, color: T.gris },
-  groupe: { fontSize: 10, fontWeight: "800", color: T.gris, letterSpacing: 1.4, marginTop: 16, marginBottom: 6, marginLeft: 4 },
+  groupe: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginTop: 16, marginBottom: 6, marginLeft: 4 },
   ligne: { backgroundColor: "#fff", borderRadius: 13, borderWidth: 1, borderColor: T.bordure, paddingHorizontal: 15, paddingVertical: 12, marginBottom: 7 },
-  nom: { fontSize: 13.5, fontWeight: "700", color: T.encre },
+  nom: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre },
   sous: { fontSize: 11.5, color: T.gris, marginTop: 3 },
 });

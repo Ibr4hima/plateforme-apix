@@ -5,7 +5,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord, computeStatutEvenement } from "@/lib/statuts";
 import type { Resultat } from "@/lib/indexRecherche";
-import { BADGE, T } from "@/theme";
+import { BADGE, T, POLICE } from "@/theme";
 
 function Champ({ label, valeur }: { label: string; valeur?: string | null }) {
   if (!valeur) return null;
@@ -102,13 +102,13 @@ const s = StyleSheet.create({
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
   entete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  type: { fontSize: 10, fontWeight: "800", color: T.bleu, letterSpacing: 1.6 },
+  type: { fontSize: 10, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6 },
   fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
-  titre: { fontSize: 19, fontWeight: "800", color: T.encre, marginTop: 8, lineHeight: 25 },
+  titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 8, lineHeight: 25 },
   badge: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginTop: 10 },
-  badgeTexte: { fontSize: 11, fontWeight: "700" },
+  badgeTexte: { fontSize: 11, fontFamily: POLICE.gras },
   champ: { backgroundColor: "rgba(0,79,145,0.04)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
-  champLabel: { fontSize: 9, fontWeight: "800", color: T.bleu, letterSpacing: 1 },
-  champValeur: { fontSize: 13.5, fontWeight: "600", color: T.encre, marginTop: 3 },
+  champLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1 },
+  champValeur: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, marginTop: 3 },
   vide: { fontSize: 12.5, color: T.gris, textAlign: "center", paddingVertical: 18 },
 });

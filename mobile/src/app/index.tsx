@@ -1,16 +1,16 @@
-// Accueil — le tableau de situation de la plateforme, pensé mobile :
-// hero immersif, recherche, chiffres clés animés, prochain événement,
-// modules. Tout se rafraîchit d'un tirer-vers-le-bas.
+// Accueil — le tableau de situation de la plateforme, pensé mobile.
+// Hero aux couleurs APIX (bleu institutionnel, « Investissement » en orange,
+// badge liseré orange comme le site), recherche pilule flottante, chiffres
+// clés animés, prochain événement, modules.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Compteur from "@/components/Compteur";
 import { fetchTous, getJson } from "@/lib/api";
-import { MODULES, T } from "@/theme";
+import { MODULES, POLICE, T } from "@/theme";
 
-// « Dans 12 jours » pour le prochain événement
 function dansCombien(dstr: string): string {
   const d = new Date(dstr.slice(0, 10) + "T00:00:00");
   const now = new Date(); now.setHours(0, 0, 0, 0);
@@ -55,21 +55,36 @@ export default function Accueil() {
       refreshControl={<RefreshControl refreshing={stats.isRefetching} onRefresh={() => { stats.refetch(); prochain.refetch(); }} tintColor="#fff" progressViewOffset={insets.top + 40} />}
       showsVerticalScrollIndicator={false}>
 
-      {/* ── Hero immersif ── */}
-      <View style={[s.hero, { paddingTop: insets.top + 14 }]}>
+      {/* ── Hero ── */}
+      <View style={[s.hero, { paddingTop: insets.top + 16 }]}>
+        {/* Halos lumineux, comme le hero du site */}
+        <View style={s.haloHaut} />
+        <View style={s.haloBas} />
+
         <View style={s.heroHaut}>
           <View style={s.marque}>
-            <View style={s.pointPulse} />
-            <Text style={s.marqueTexte}>APIX SÉNÉGAL</Text>
+            <View style={s.marquePoint} />
+            <Text style={s.marqueTexte}>APIX S.A.</Text>
           </View>
           <Text style={s.date}>{dateJour}</Text>
         </View>
-        <Text style={s.titre}>Intelligence{"\n"}Investissement{"\n"}Sénégal</Text>
+
+        <View style={s.chip}>
+          <View style={s.chipPoint} />
+          <Text style={s.chipTexte}>PLATEFORME DE GESTION DES INVESTISSEMENTS</Text>
+        </View>
+
+        <Text style={s.titre}>
+          Intelligence{"\n"}
+          <Text style={s.titreOrange}>Investissement</Text>{"\n"}
+          Sénégal
+        </Text>
+        <Text style={s.sousTitre}>Suivi, analyse et gestion des investissements au Sénégal.</Text>
 
         {/* Recherche — la porte d'entrée principale */}
         <Pressable onPress={() => router.push("/recherche")} style={({ pressed }) => [s.recherche, pressed && { opacity: 0.92 }]}>
           <Ionicons name="search" size={17} color={T.bleu} />
-          <Text style={s.rechercheTexte}>Rechercher un pays, une entreprise, un accord…</Text>
+          <Text style={s.rechercheTexte}>Rechercher</Text>
         </Pressable>
       </View>
 
@@ -105,20 +120,19 @@ export default function Accueil() {
       {/* ── Modules ── */}
       <View style={s.section}>
         <Text style={s.sectionTitre}>MODULES</Text>
-        <View style={s.grille}>
+        <View style={{ gap: 10 }}>
           {MODULES.map(m => (
-            <Link key={m.cle} href={m.href as any} asChild disabled={!m.actif}>
-              <Pressable style={({ pressed }) => [s.module, pressed && s.modulePresse, !m.actif && { opacity: 0.5 }]}>
-                <View style={[s.moduleIcone, { backgroundColor: `${m.couleur}14` }]}>
-                  <Ionicons name={`${m.icone}-outline` as any} size={19} color={m.couleur} />
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={s.moduleTitre} numberOfLines={1}>{m.titre}</Text>
-                  <Text style={s.moduleSous} numberOfLines={1}>{m.actif ? m.sous : "Bientôt"}</Text>
-                </View>
-                {m.actif && <Ionicons name="chevron-forward" size={15} color={T.grisClair} />}
-              </Pressable>
-            </Link>
+            <Pressable key={m.cle} disabled={!m.actif} onPress={() => router.push(m.href as any)}
+              style={({ pressed }) => [s.module, pressed && s.modulePresse, !m.actif && { opacity: 0.5 }]}>
+              <View style={[s.moduleIcone, { backgroundColor: `${m.couleur}14` }]}>
+                <Ionicons name={`${m.icone}-outline` as any} size={19} color={m.couleur} />
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={s.moduleTitre} numberOfLines={1}>{m.titre}</Text>
+                <Text style={s.moduleSous} numberOfLines={1}>{m.actif ? m.sous : "Bientôt"}</Text>
+              </View>
+              {m.actif && <Ionicons name="chevron-forward" size={15} color={T.grisClair} />}
+            </Pressable>
           ))}
         </View>
       </View>
@@ -129,48 +143,58 @@ export default function Accueil() {
 }
 
 const s = StyleSheet.create({
-  hero: { backgroundColor: T.bleu, paddingHorizontal: 22, paddingBottom: 54 },
-  heroHaut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 26 },
+  hero: { backgroundColor: T.bleu, paddingHorizontal: 22, paddingBottom: 58, overflow: "hidden" },
+  haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
+  haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
+  heroHaut: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 30 },
   marque: { flexDirection: "row", alignItems: "center", gap: 8 },
-  pointPulse: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#fff" },
-  marqueTexte: { color: "#fff", fontSize: 12, fontWeight: "800", letterSpacing: 2 },
-  date: { color: "rgba(255,255,255,0.6)", fontSize: 11.5, fontWeight: "600", textTransform: "capitalize" },
-  titre: { color: "#fff", fontSize: 34, fontWeight: "800", lineHeight: 40, letterSpacing: -0.8 },
+  marquePoint: { width: 7, height: 7, borderRadius: 4, backgroundColor: T.orange },
+  marqueTexte: { color: "#fff", fontSize: 13, fontFamily: POLICE.gras, letterSpacing: 1.6 },
+  date: { color: "rgba(255,255,255,0.60)", fontSize: 11.5, fontFamily: POLICE.moyen, textTransform: "capitalize" },
+  chip: {
+    alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 7,
+    borderWidth: 1, borderColor: "rgba(202,99,31,0.75)", borderRadius: 999,
+    paddingHorizontal: 13, paddingVertical: 6, marginBottom: 18,
+  },
+  chipPoint: { width: 5, height: 5, borderRadius: 3, backgroundColor: T.orange },
+  chipTexte: { color: "#E8A876", fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.3 },
+  titre: { color: "#fff", fontSize: 36, fontFamily: POLICE.gras, lineHeight: 43, letterSpacing: -0.8 },
+  titreOrange: { color: "#E8823C" },
+  sousTitre: { color: "rgba(255,255,255,0.72)", fontSize: 13, fontFamily: POLICE.normal, lineHeight: 19, marginTop: 12, maxWidth: 300 },
   recherche: {
     position: "absolute", left: 22, right: 22, bottom: -26, height: 52,
     backgroundColor: "#fff", borderRadius: 999, flexDirection: "row", alignItems: "center",
     paddingHorizontal: 20, gap: 11,
-    shadowColor: "#001e3c", shadowOpacity: 0.22, shadowRadius: 18, shadowOffset: { width: 0, height: 10 },
+    shadowColor: "#001e3c", shadowOpacity: 0.25, shadowRadius: 18, shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
-  rechercheTexte: { color: T.gris, fontSize: 14, fontWeight: "500", flex: 1 },
+  rechercheTexte: { color: T.gris, fontSize: 14.5, fontFamily: POLICE.moyen, flex: 1 },
   tuiles: { flexDirection: "row", flexWrap: "wrap", gap: 11, paddingHorizontal: 18, marginTop: 48 },
   tuile: {
-    width: "47.8%", backgroundColor: T.carte, borderRadius: T.rayonCarte,
+    width: "47.8%", backgroundColor: T.carte, borderRadius: 16,
     borderWidth: 1, borderColor: T.bordure, padding: 16, overflow: "hidden",
   },
   tuileBarre: { position: "absolute", left: 0, top: 14, bottom: 14, width: 3, borderTopRightRadius: 3, borderBottomRightRadius: 3 },
-  tuileChiffre: { fontSize: 29, fontWeight: "800", color: T.encre, letterSpacing: -0.6, fontVariant: ["tabular-nums"] },
-  tuileLabel: { fontSize: 10.5, fontWeight: "700", color: T.gris, marginTop: 5, letterSpacing: 0.2 },
+  tuileChiffre: { fontSize: 28, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.5, fontVariant: ["tabular-nums"] },
+  tuileLabel: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 5, letterSpacing: 0.2 },
   section: { paddingHorizontal: 18, marginTop: 28 },
-  sectionTitre: { fontSize: 10.5, fontWeight: "800", color: T.gris, letterSpacing: 1.6, marginBottom: 11 },
+  sectionTitre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.6, marginBottom: 11 },
   event: {
-    flexDirection: "row", backgroundColor: T.carte, borderRadius: T.rayonCarte,
+    flexDirection: "row", backgroundColor: T.carte, borderRadius: 16,
     borderWidth: 1, borderColor: T.bordure, overflow: "hidden",
   },
   eventBande: { width: 4, backgroundColor: T.bleu },
-  eventEcheance: { fontSize: 11, fontWeight: "800", color: T.bleu, letterSpacing: 0.4, textTransform: "uppercase" },
-  eventNom: { fontSize: 15.5, fontWeight: "800", color: T.encre, marginTop: 6, lineHeight: 20 },
-  eventSous: { fontSize: 12, color: T.gris, marginTop: 6 },
-  grille: { gap: 10 },
+  eventEcheance: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.6, textTransform: "uppercase" },
+  eventNom: { fontSize: 15.5, fontFamily: POLICE.gras, color: T.encre, marginTop: 6, lineHeight: 20 },
+  eventSous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 6 },
   module: {
     flexDirection: "row", alignItems: "center", gap: 13,
-    backgroundColor: T.carte, borderRadius: T.rayonCarte,
+    backgroundColor: T.carte, borderRadius: 16,
     borderWidth: 1, borderColor: T.bordure, paddingHorizontal: 15, paddingVertical: 13,
   },
   modulePresse: { transform: [{ scale: 0.985 }], borderColor: "rgba(0,79,145,0.35)" },
   moduleIcone: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center" },
-  moduleTitre: { fontSize: 14.5, fontWeight: "800", color: T.encre },
-  moduleSous: { fontSize: 11.5, color: T.gris, marginTop: 2 },
-  pied: { textAlign: "center", fontSize: 10.5, color: T.grisClair, marginTop: 34 },
+  moduleTitre: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre },
+  moduleSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  pied: { textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal, color: T.grisClair, marginTop: 34 },
 });

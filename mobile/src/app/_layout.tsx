@@ -1,9 +1,13 @@
+import {
+  GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold,
+  useFonts,
+} from "@expo-google-fonts/google-sans";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { T } from "@/theme";
+import { useEffect, useState } from "react";
+import { POLICE, T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -12,7 +16,12 @@ export default function RacineLayout() {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 1 } },
   }));
-  useEffect(() => { SplashScreen.hideAsync(); }, []);
+  const [polices] = useFonts({
+    GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold,
+  });
+  useEffect(() => { if (polices) SplashScreen.hideAsync(); }, [polices]);
+  if (!polices) return null;
+
   return (
     <QueryClientProvider client={queryClient}>
       <StatusBar style="light" />
@@ -20,7 +29,8 @@ export default function RacineLayout() {
         screenOptions={{
           headerStyle: { backgroundColor: T.bleu },
           headerTintColor: "#fff",
-          headerTitleStyle: { fontWeight: "800" },
+          headerTitleStyle: { fontFamily: POLICE.gras },
+          headerBackTitleStyle: { fontFamily: POLICE.moyen },
           contentStyle: { backgroundColor: T.fond },
         }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />

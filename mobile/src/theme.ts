@@ -1,5 +1,13 @@
 // Jetons de design APIX — l'identité du site, adaptée aux codes du mobile.
 
+// Google Sans — mêmes graisses que la plateforme web (400/500/600/700)
+export const POLICE = {
+  normal:   "GoogleSans_400Regular",
+  moyen:    "GoogleSans_500Medium",
+  demi:     "GoogleSans_600SemiBold",
+  gras:     "GoogleSans_700Bold",
+} as const;
+
 export const T = {
   bleu:        "#004f91",
   bleuNuit:    "#003a6e",

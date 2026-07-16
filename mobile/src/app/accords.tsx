@@ -5,7 +5,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "
 import { fetchTous } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { BADGE, T } from "@/theme";
+import { BADGE, T, POLICE } from "@/theme";
 
 function CarteAccord({ a }: { a: any }) {
   const st = BADGE[(computeStatutAccord(a) || "") as keyof typeof BADGE];
@@ -60,17 +60,17 @@ export default function Accords() {
 
 const s = StyleSheet.create({
   centre: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 8 },
-  erreur: { fontSize: 14.5, fontWeight: "700", color: T.encre, textAlign: "center" },
+  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
   erreurSous: { fontSize: 12, color: T.gris, textAlign: "center" },
   bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { padding: 16, gap: 11, paddingBottom: 40 },
-  compte: { fontSize: 11, fontWeight: "800", color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
+  compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
   carte: { backgroundColor: T.carte, borderRadius: T.rayonCarte, borderWidth: 1, borderColor: T.bordure, padding: 16 },
   cartePressee: { transform: [{ scale: 0.99 }], borderColor: "rgba(0,79,145,0.35)" },
   ligneTitre: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 10 },
-  titre: { flex: 1, fontSize: 13.5, fontWeight: "800", color: T.encre, lineHeight: 18 },
+  titre: { flex: 1, fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, lineHeight: 18 },
   badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
-  badgeTexte: { fontSize: 10, fontWeight: "700" },
+  badgeTexte: { fontSize: 10, fontFamily: POLICE.gras },
   sous: { fontSize: 11.5, color: T.gris, marginTop: 8 },
 });
