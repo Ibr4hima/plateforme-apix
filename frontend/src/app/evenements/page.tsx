@@ -73,6 +73,22 @@ function fmtDate(d: string) {
 }
 function ordinal(n: number) { return n === 1 ? "1ère édition" : `${n}ème édition`; }
 
+// Échéance d'un événement à venir : « Dans 2 ans », « Dans 3 mois », « Dans 12 jours »
+function dansCombien(e: any): string | null {
+  const d = e.date_debut ? new Date(e.date_debut+"T00:00:00")
+    : e.prochain_annee ? new Date(e.prochain_annee,(e.prochain_mois||1)-1,e.prochain_jour||1) : null;
+  if (!d) return null;
+  const now = new Date();
+  const jours = Math.ceil((d.getTime()-now.getTime())/86400000);
+  if (jours <= 0) return null;
+  let mois = (d.getFullYear()-now.getFullYear())*12 + (d.getMonth()-now.getMonth());
+  if (d.getDate() < now.getDate()) mois -= 1;
+  const ans = Math.floor(mois/12);
+  if (ans >= 1) return `Dans ${ans} an${ans>1?"s":""}`;
+  if (mois >= 1) return `Dans ${mois} mois`;
+  return `Dans ${jours} jour${jours>1?"s":""}`;
+}
+
 const STATUT_OPTS = [
   { value:"",         label:"Tous",     bg:"#F2F0EF", text:"#4a5568" },
   { value:"a_venir",  label:"À venir",  bg:"rgba(0,79,145,0.08)", text:"#004f91" },
@@ -457,7 +473,10 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
               <div data-marquee style={{fontWeight:800,fontSize:14.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                 <span style={{display:"inline-block"}}>{e.nom_event}</span>
               </div>
-              {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
+              {(()=>{
+                const sousTitre = statut==="a_venir" ? (dansCombien(e) ?? (e.edition!=null?ordinal(e.edition):null)) : (e.edition!=null?ordinal(e.edition):null);
+                return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{sousTitre}</div>;
+              })()}
             </div>
             {e.role_apix&&<BadgeRole role={e.role_apix}/>}
           </div>
@@ -795,7 +814,10 @@ export default function EvenementsPage() {
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                             <div style={{minWidth:0,flex:1}}>
                               <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
-                              {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{ordinal(e.edition)}</div>}
+                              {(()=>{
+                                const sousTitre = statutAff==="a_venir" ? (dansCombien(e) ?? (e.edition!=null?ordinal(e.edition):null)) : (e.edition!=null?ordinal(e.edition):null);
+                                return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{sousTitre}</div>;
+                              })()}
                             </div>
                             {e.role_apix&&<BadgeRole role={e.role_apix}/>}
                           </div>
