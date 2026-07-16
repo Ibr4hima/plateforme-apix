@@ -1,25 +1,24 @@
-// Modules — liste groupée sur une seule surface, séparateurs en retrait.
-// Icônes Material Symbols en graisse 600 (instance dédiée de la police),
-// titre + descriptif court par module.
+// Modules & Plus — listes groupées sur une seule surface, séparateurs en
+// retrait, icônes Material Symbols (graisse 600) sur pastille dégradée.
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
-import { MODULES, POLICE, T } from "@/theme";
+import { MODULES, PLUS, POLICE, T } from "@/theme";
 
-export default function ModulesGrille() {
+type Entree = { cle: string; titre: string; sous: string; icone: string; href: string };
+
+function ListeGroupee({ titre, entrees }: { titre: string; entrees: readonly Entree[] }) {
   const router = useRouter();
-
-  const ouvrir = (m: (typeof MODULES)[number]) => {
+  const ouvrir = (m: Entree) => {
     if (m.href) router.push(m.href as any);
-    else Alert.alert(m.titre, "Ce module arrive dans une prochaine version de l'application.");
+    else Alert.alert(m.titre, "Cette section arrive dans une prochaine version de l'application.");
   };
-
   return (
     <View style={s.bloc}>
-      <Text style={s.titre}>MODULES</Text>
+      <Text style={s.titre}>{titre}</Text>
       <View style={s.surface}>
-        {MODULES.map((m, i) => (
+        {entrees.map((m, i) => (
           <View key={m.cle}>
             {i > 0 && <View style={s.separateur} />}
             <Pressable onPress={() => ouvrir(m)}
@@ -39,6 +38,15 @@ export default function ModulesGrille() {
         ))}
       </View>
     </View>
+  );
+}
+
+export default function ModulesGrille() {
+  return (
+    <>
+      <ListeGroupee titre="MODULES" entrees={MODULES} />
+      <ListeGroupee titre="PLUS" entrees={PLUS} />
+    </>
   );
 }
 

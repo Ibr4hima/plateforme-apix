@@ -34,12 +34,18 @@ export const BADGE = {
 // Les 8 modules de la plateforme — mêmes intitulés et mêmes icônes
 // Material Symbols que le menu Modules du site.
 export const MODULES = [
-  { cle: "ide",          titre: "Investissements privés",        sous: "Flux & stocks d'IDE",       icone: "finance_mode",      href: "" },
-  { cle: "statistiques", titre: "Échanges commerciaux",          sous: "Commerce international",    icone: "currency_exchange", href: "" },
-  { cle: "prospects",    titre: "Prospects",                     sous: "Investisseurs suivis",      icone: "frame_inspect",     href: "" },
-  { cle: "entreprises",  titre: "Entreprises installées",        sous: "Présence au Sénégal",       icone: "enterprise",        href: "" },
-  { cle: "zones",        titre: "Zones d'investissement",        sous: "ZES, ZAI & pôles",          icone: "real_estate_agent", href: "" },
-  { cle: "opportunites", titre: "Opportunités",                  sous: "Projets & potentialités",   icone: "bookmark_stacks",   href: "" },
-  { cle: "accords",      titre: "Accords & Traités",             sous: "Accords internationaux",    icone: "signature",         href: "/accords" },
-  { cle: "evenements",   titre: "Événements",                    sous: "Agenda économique",         icone: "event",             href: "" },
+  { cle: "ide",          titre: "Investissements privés",        sous: "Flux & stocks d'IDE",            icone: "finance_mode",      href: "" },
+  { cle: "statistiques", titre: "Échanges commerciaux",          sous: "Flux bilatéraux",                icone: "currency_exchange", href: "" },
+  { cle: "prospects",    titre: "Prospects",                     sous: "Investisseurs suivis",           icone: "frame_inspect",     href: "" },
+  { cle: "entreprises",  titre: "Entreprises installées",        sous: "Registre des entreprises",       icone: "enterprise",        href: "" },
+  { cle: "zones",        titre: "Zones d'investissement",        sous: "ZES, ZAI & pôles",               icone: "real_estate_agent", href: "" },
+  { cle: "opportunites", titre: "Opportunités",                  sous: "Projets & potentialités",        icone: "bookmark_stacks",   href: "" },
+  { cle: "accords",      titre: "Accords & Traités",             sous: "TBI & traités internationaux",   icone: "signature",         href: "/accords" },
+  { cle: "evenements",   titre: "Événements",                    sous: "Agenda des investisseurs",       icone: "event",             href: "" },
+] as const;
+
+// Section « Plus » — les entrées transverses de la plateforme
+export const PLUS = [
+  { cle: "fiche-pays", titre: "Fiche Pays",               sous: "Relations bilatérales",           icone: "public", href: "" },
+  { cle: "code",       titre: "Code des investissements", sous: "Code et modalités d'application", icone: "gavel",  href: "" },
 ] as const;

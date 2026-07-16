@@ -106,7 +106,7 @@ export default function Accueil() {
       {/* ── Modules ── */}
       <ModulesGrille />
 
-      <Text style={s.pied}>Plateforme APIX · données en direct</Text>
+      <Text style={s.pied}>Direction de l'Intelligence et des Perspectives Économiques</Text>
     </ScrollView>
   );
 }
