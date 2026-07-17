@@ -5,7 +5,7 @@
 // pôles territoires en cards pastel (fiche pôle au tap).
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import HeroModule from "@/components/HeroModule";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
@@ -63,6 +63,8 @@ export default function Zones() {
   const [type, setType] = useState("ZES");
   const [zoneSelec, setZoneSelec] = useState<any>(null);
   const [poleSelec, setPoleSelec] = useState<any>(null);
+  const chipsRef = useRef<ScrollView>(null);
+  const chipsPos = useRef<Record<string, number>>({});
 
   const { data: zones, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["zones-types"], queryFn: () => getJson<any[]>("/zones-types"),
@@ -101,14 +103,20 @@ export default function Zones() {
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: VUES, valeur: vue, onChange: setVue }} />
       {vue === "zones" && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
+        <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
           {ZONE_TYPE_ORDER.map(t => {
             const actif = type === t;
             const couleur = ZONE_TYPE_META[t].color;
             return (
-              <Pressable key={t} onPress={() => setType(t)}
-                style={[s.chipFiltre, actif && { backgroundColor: couleur, borderColor: couleur }]}>
-                <Text style={[s.chipFiltreTexte, { color: actif ? "#fff" : couleur }]}>{ZONE_TYPE_META[t].label}</Text>
+              <Pressable key={t}
+                onLayout={ev => { chipsPos.current[t] = ev.nativeEvent.layout.x; }}
+                onPress={() => {
+                  setType(t);
+                  // Glisse la chip choisie vers la gauche : la suivante reste visible
+                  chipsRef.current?.scrollTo({ x: Math.max(0, (chipsPos.current[t] ?? 0) - 16), animated: true });
+                }}
+                style={[s.chipFiltre, actif && { backgroundColor: `${couleur}14`, borderColor: `${couleur}66` }]}>
+                <Text style={[s.chipFiltreTexte, { color: couleur }, actif && { fontFamily: POLICE.gras }]}>{ZONE_TYPE_META[t].label}</Text>
               </Pressable>
             );
           })}
