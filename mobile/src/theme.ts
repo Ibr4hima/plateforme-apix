@@ -41,7 +41,7 @@ export const MODULES = [
   { cle: "zones",        titre: "Zones d'investissement",        sous: "ZES, ZAI & pôles",               icone: "real_estate_agent", href: "" },
   { cle: "opportunites", titre: "Opportunités",                  sous: "Projets & potentialités",        icone: "bookmark_stacks",   href: "" },
   { cle: "accords",      titre: "Accords & Traités",             sous: "TBI & traités internationaux",   icone: "signature",         href: "/accords" },
-  { cle: "evenements",   titre: "Événements",                    sous: "Agenda des investisseurs",       icone: "event",             href: "" },
+  { cle: "evenements",   titre: "Événements",                    sous: "Agenda des investisseurs",       icone: "event",             href: "/evenements" },
 ] as const;
 
 // Section « Plus » — les entrées transverses de la plateforme
