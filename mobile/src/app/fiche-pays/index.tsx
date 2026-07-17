@@ -6,8 +6,8 @@
 // autre pays remplace le précédent.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Animated, Easing, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import FichePaysContenu from "@/components/FichePaysContenu";
 import HeroModule from "@/components/HeroModule";
 import { getJson } from "@/lib/api";
@@ -17,6 +17,37 @@ const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre
 
 type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | null; continent: string; region_geo: string | null };
 type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb: number };
+
+// Nom trop long pour la pilule : il défile lentement (aller-retour) pour se
+// lire en entier ; le drapeau, lui, reste fixe.
+function NomDefilant({ nom, style }: { nom: string; style?: any }) {
+  const dx = useRef(new Animated.Value(0)).current;
+  const [boite, setBoite] = useState(0);
+  const [texte, setTexte] = useState(0);
+  useEffect(() => {
+    const d = texte - boite;
+    if (d > 4) {
+      const anim = Animated.loop(Animated.sequence([
+        Animated.delay(1100),
+        Animated.timing(dx, { toValue: -d, duration: Math.max(1400, d * 45), easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.delay(1400),
+        Animated.timing(dx, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ]));
+      anim.start();
+      return () => anim.stop();
+    }
+    dx.setValue(0);
+  }, [boite, texte, dx]);
+  return (
+    <View style={{ flexShrink: 1, overflow: "hidden", flexDirection: "row" }}
+      onLayout={e => setBoite(e.nativeEvent.layout.width)}>
+      <Animated.Text style={[style, { flexShrink: 0, transform: [{ translateX: dx }] }]}
+        onLayout={e => setTexte(e.nativeEvent.layout.width)}>
+        {nom}
+      </Animated.Text>
+    </View>
+  );
+}
 
 export default function FichePaysIndex() {
   const [q, setQ] = useState("");
@@ -75,7 +106,7 @@ export default function FichePaysIndex() {
           // Le tap retire le pays et ramène à la liste
           <Pressable onPress={() => { setSelec(null); setQ(""); }} style={({ pressed }) => [s.slotSen, pressed && { opacity: 0.75 }]}>
             {selec.code_iso2 ? <Image source={{ uri: `https://flagcdn.com/w80/${selec.code_iso2.toLowerCase()}.png` }} style={s.drapeau} /> : null}
-            <Text style={[s.slotSenTexte, { flexShrink: 1 }]} numberOfLines={1}>{selec.nom}</Text>
+            <NomDefilant nom={selec.nom} style={s.slotSenTexte} />
           </Pressable>
         ) : (
           <View style={s.slotAjout}>
