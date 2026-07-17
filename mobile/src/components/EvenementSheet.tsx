@@ -53,8 +53,14 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
   const statut = statutEvenement(e);
   const st = statut ? ST_EVENT[statut] : null;
   const roleP = e.role_apix ? ROLE_PASTEL[e.role_apix] || "#C5BFBB" : null;
-  const paysInvites: string[] = e.pays_invites_noms || [];
-  const entreprisesInvitees: string[] = e.entreprises_invitees || [];
+  // pays_invites_noms est une chaîne « Maroc, Canada » côté API ;
+  // entreprises_invitees peut être tableau ou chaîne selon les fiches
+  const enListe = (v: any): string[] =>
+    Array.isArray(v) ? v.filter(Boolean)
+    : typeof v === "string" ? v.split(",").map(x => x.trim()).filter(Boolean)
+    : [];
+  const paysInvites = enListe(e.pays_invites_noms);
+  const entreprisesInvitees = enListe(e.entreprises_invitees);
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
