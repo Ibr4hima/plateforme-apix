@@ -214,7 +214,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
       {/* Entreprises installées au Sénégal */}
       {ents.length > 0 && (
         <View style={{ marginTop: 24 }}>
-          <Text style={s.secTitle}>{`ENTREPRISES AU SÉNÉGAL · SIÈGE ${autreNom.toUpperCase()}`}</Text>
+          <Text style={s.secTitle}>ENTREPRISES AU SÉNÉGAL</Text>
           <View style={s.surface}>
             {entsVisibles.map((e: any, i: number) => (
               <Pressable key={e.id} onPress={() => ouvrirEntreprise(e.id)}
@@ -237,11 +237,13 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
 
       {/* Indicateurs en duels */}
       <View style={{ marginTop: 24 }}>
-        <Text style={s.secTitle}>INDICATEURS</Text>
-        {/* Légende des deux couleurs */}
-        <View style={s.legendeCouleurs}>
-          <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_SEN }]} /><Text style={s.legendeTexte}>Sénégal</Text></View>
-          <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_AUTRE }]} /><Text style={s.legendeTexte}>{colAutre?.nom || autreNom}</Text></View>
+        {/* Titre + légende des deux couleurs sur la même ligne */}
+        <View style={s.indicEntete}>
+          <Text style={[s.secTitle, { marginBottom: 0 }]}>INDICATEURS</Text>
+          <View style={s.legendeCouleurs}>
+            <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_SEN }]} /><Text style={s.legendeTexte}>Sénégal</Text></View>
+            <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_AUTRE }]} /><Text style={s.legendeTexte} numberOfLines={1}>{colAutre?.nom || autreNom}</Text></View>
+          </View>
         </View>
         {cats.map(cat => (
           <Fragment key={cat}>
@@ -315,7 +317,8 @@ const s = StyleSheet.create({
   itemTitre: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 17 },
   itemSous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
   voirTout: { fontSize: 12, fontFamily: POLICE.demi, color: T.bleu },
-  legendeCouleurs: { flexDirection: "row", gap: 16, marginBottom: 2 },
+  indicEntete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  legendeCouleurs: { flexDirection: "row", gap: 14, flexShrink: 1 },
   legendeItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   legendePoint: { width: 8, height: 8, borderRadius: 4 },
   legendeTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
