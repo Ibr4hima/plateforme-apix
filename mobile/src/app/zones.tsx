@@ -6,7 +6,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import HeroModule from "@/components/HeroModule";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
@@ -64,7 +64,7 @@ export default function Zones() {
   const [zoneSelec, setZoneSelec] = useState<any>(null);
   const [poleSelec, setPoleSelec] = useState<any>(null);
   const chipsRef = useRef<ScrollView>(null);
-  const chipsPos = useRef<Record<string, number>>({});
+  const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   const { data: zones, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["zones-types"], queryFn: () => getJson<any[]>("/zones-types"),
@@ -109,11 +109,12 @@ export default function Zones() {
             const couleur = ZONE_TYPE_META[t].color;
             return (
               <Pressable key={t}
-                onLayout={ev => { chipsPos.current[t] = ev.nativeEvent.layout.x; }}
+                onLayout={ev => { const { x, width } = ev.nativeEvent.layout; chipsPos.current[t] = { x, largeur: width }; }}
                 onPress={() => {
                   setType(t);
-                  // Glisse la chip choisie vers la gauche : la suivante reste visible
-                  chipsRef.current?.scrollTo({ x: Math.max(0, (chipsPos.current[t] ?? 0) - 16), animated: true });
+                  // Centre la chip choisie : les voisines restent visibles des deux côtés
+                  const p = chipsPos.current[t];
+                  if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
                 }}
                 style={[s.chipFiltre, actif && { backgroundColor: `${couleur}14`, borderColor: `${couleur}66` }]}>
                 <Text style={[s.chipFiltreTexte, { color: couleur }, actif && { fontFamily: POLICE.gras }]}>{ZONE_TYPE_META[t].label}</Text>
