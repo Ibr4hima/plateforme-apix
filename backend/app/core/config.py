@@ -2,6 +2,7 @@ from pydantic import model_validator
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 from typing import List
+from urllib.parse import quote
 
 # Valeurs de repli du mode démo (AUTH_ENFORCED=false). Dès que l'auth est
 # activée, ces valeurs sont refusées au démarrage : voir _verrouiller_secrets.
@@ -23,17 +24,19 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
 
+    # Identifiants encodés : un @ ou un : dans le mot de passe casserait le
+    # parsing de l'URL (l'hôte deviendrait « mdp@hôte » → erreur DNS).
     @property
     def DATABASE_URL(self) -> str:
         return (
-            f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"postgresql+asyncpg://{quote(self.POSTGRES_USER, safe='')}:{quote(self.POSTGRES_PASSWORD, safe='')}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
     @property
     def DATABASE_URL_SYNC(self) -> str:
         return (
-            f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"postgresql://{quote(self.POSTGRES_USER, safe='')}:{quote(self.POSTGRES_PASSWORD, safe='')}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
