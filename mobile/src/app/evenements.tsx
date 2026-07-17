@@ -5,7 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, SectionList, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, SectionList, StyleSheet, Text, View } from "react-native";
 import EvenementSheet, { ROLE_PASTEL, dateEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import HeroModule from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
@@ -18,11 +18,6 @@ const STATUTS = [
   { cle: "en_cours", label: "En cours" },
   { cle: "termine",  label: "Terminés" },
 ] as const;
-const VUES = [
-  { cle: "liste", label: "Liste" },
-  { cle: "frise", label: "Frise chronologique" },
-] as const;
-
 // « Dans 2 ans / 3 mois / 12 jours » — port du dansCombien du site
 function dansCombien(e: any): string | null {
   const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
@@ -56,7 +51,7 @@ function CarteEvenement({ e, prochainId, onPress }: { e: any; prochainId: number
   const sousTitre = statut === "a_venir" ? (dansCombien(e) || (e.edition != null ? ordinal(e.edition) : null))
     : e.edition != null ? ordinal(e.edition) : null;
   const accent = estProchain
-    ? { grad: ["#003a6e", "#004f91", "#1a6ab0"] as const, label: "PROCHAIN ÉVÉNEMENT" }
+    ? { grad: [T.bleu, T.bleu] as const, label: "PROCHAIN ÉVÉNEMENT" }
     : estEnCours
     ? { grad: ["#0d5c26", "#188038", "#2aa14e"] as const, label: "ÉVÉNEMENT EN COURS" }
     : null;
@@ -100,7 +95,6 @@ function CarteEvenement({ e, prochainId, onPress }: { e: any; prochainId: number
 export default function Evenements() {
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("tous");
-  const [vue, setVue] = useState("liste");
   const [selec, setSelec] = useState<any>(null);
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
@@ -153,16 +147,6 @@ export default function Evenements() {
       <HeroModule titre="Événements"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: STATUTS, valeur: statut, onChange: setStatut }} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
-        {VUES.map(o => {
-          const actif = vue === o.cle;
-          return (
-            <Pressable key={o.cle} onPress={() => setVue(o.cle)} style={[s.chipFiltre, actif && s.chipFiltreActif]}>
-              <Text style={[s.chipFiltreTexte, actif && s.chipFiltreTexteActif]}>{o.label}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
       {!isLoading && !isError && (
         <Text style={s.compte}>{filtres.length} événement{filtres.length > 1 ? "s" : ""}</Text>
       )}
@@ -183,19 +167,34 @@ export default function Evenements() {
     <>
       <SectionList
         style={{ backgroundColor: T.fond }}
-        sections={isLoading || isError ? [] : (vue === "frise" ? sections : [{ title: "", data: filtres }])}
+        sections={isLoading || isError ? [] : sections}
         keyExtractor={(e: any) => String(e.id)}
-        renderItem={({ item }) => (
-          <View style={s.rangee}>
-            <CarteEvenement e={item} prochainId={prochainId} onPress={() => setSelec(item)} />
+        renderItem={({ item, index, section }) => {
+          const st = statutEvenement(item);
+          const pointC = item.id === prochainId ? T.bleu : st === "en_cours" ? T.vert : st === "a_venir" ? T.bleu : "#C9D4DF";
+          const dernier = index === section.data.length - 1;
+          return (
+            <View style={s.rangee}>
+              {/* Rail chronologique */}
+              <View style={s.rail}>
+                <View style={[s.railLigne, index === 0 && { top: 22 }, dernier && { bottom: undefined, height: 22 }]} />
+                <View style={[s.railPoint, { borderColor: pointC }]}>
+                  <View style={[s.railPointCoeur, { backgroundColor: pointC }]} />
+                </View>
+              </View>
+              <View style={{ flex: 1, marginBottom: 12 }}>
+                <CarteEvenement e={item} prochainId={prochainId} onPress={() => setSelec(item)} />
+              </View>
+            </View>
+          );
+        }}
+        renderSectionHeader={({ section }) => (
+          <View style={s.annee}>
+            <View style={s.anneePastille}><Text style={s.anneeTexte}>{section.title}</Text></View>
+            <View style={s.anneeFilet} />
+            <Text style={s.anneeCompte}>{section.data.length}</Text>
           </View>
         )}
-        renderSectionHeader={({ section }) => section.title && vue === "frise" ? (
-          <View style={s.annee}>
-            <Text style={s.anneeTexte}>{section.title}</Text>
-            <View style={s.anneeFilet} />
-          </View>
-        ) : null}
         contentContainerStyle={s.liste}
         stickySectionHeadersEnabled={false}
         refreshing={isRefetching}
@@ -216,16 +215,20 @@ const s = StyleSheet.create({
   bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
-  rangee: { paddingHorizontal: 16, marginBottom: 11 },
-  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: "#fff", borderWidth: 1, borderColor: T.bordure },
-  chipFiltreActif: { backgroundColor: T.bleu, borderColor: T.bleu },
-  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
-  chipFiltreTexteActif: { color: "#fff" },
-  compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 12, marginBottom: 8, paddingHorizontal: 16 },
-  annee: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, marginTop: 10, marginBottom: 12 },
-  anneeTexte: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  rangee: { paddingLeft: 12, paddingRight: 16, flexDirection: "row" },
+  compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
+  annee: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, marginTop: 8, marginBottom: 12 },
+  anneePastille: { backgroundColor: "rgba(0,79,145,0.08)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 5 },
+  anneeTexte: { fontSize: 14, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"], letterSpacing: 0.5 },
   anneeFilet: { flex: 1, height: 1, backgroundColor: "#E4E1DE" },
+  anneeCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  rail: { width: 26, alignItems: "center" },
+  railLigne: { position: "absolute", top: 0, bottom: 0, width: 2, backgroundColor: "rgba(0,30,60,0.09)", borderRadius: 1 },
+  railPoint: {
+    marginTop: 16, width: 13, height: 13, borderRadius: 7, borderWidth: 2,
+    backgroundColor: T.fond, alignItems: "center", justifyContent: "center",
+  },
+  railPointCoeur: { width: 5, height: 5, borderRadius: 3 },
   carte: {
     backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden",
   },

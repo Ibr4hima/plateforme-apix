@@ -96,12 +96,52 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
               <Text style={s.description}>{e.description}</Text>
             </View>
           ) : null}
-          {(paysInvites.length > 0 || entreprisesInvitees.length > 0) && (
+          {Object.keys(e.thematiques_tree || {}).length > 0 && (
             <View style={s.bloc}>
-              <Text style={s.blocLabel}>PARTICIPANTS</Text>
+              <Text style={s.blocLabel}>THÉMATIQUES</Text>
+              <View style={{ gap: 8 }}>
+                {Object.entries(e.thematiques_tree).map(([sec, branches]: any) => (
+                  <View key={sec}>
+                    <View style={s.themeLigne}>
+                      <View style={[s.themePoint, { width: 8, height: 8, backgroundColor: T.bleu }]} />
+                      <Text style={[s.themeTexte, { color: T.bleu, fontFamily: POLICE.gras }]}>{sec}</Text>
+                    </View>
+                    {Object.entries(branches).map(([bra, acts]: any) => (
+                      <View key={bra} style={s.themeBranche}>
+                        <View style={s.themeLigne}>
+                          <View style={[s.themePoint, { width: 6, height: 6, backgroundColor: T.orange }]} />
+                          <Text style={[s.themeTexte, { color: T.orange }]}>{bra}</Text>
+                        </View>
+                        {acts.length > 0 && (
+                          <View style={{ paddingLeft: 18, gap: 3, marginTop: 3 }}>
+                            {acts.map((act: string) => (
+                              <View key={act} style={s.themeLigne}>
+                                <View style={[s.themePoint, { width: 5, height: 5, backgroundColor: T.vert }]} />
+                                <Text style={[s.themeTexte, { color: T.vert, fontFamily: POLICE.moyen }]}>{act}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          {paysInvites.length > 0 && (
+            <View style={s.bloc}>
+              <Text style={s.blocLabel}>PAYS INVITÉS</Text>
               <View style={s.chips}>
-                {paysInvites.map(n => <View key={`p-${n}`} style={s.chip}><Text style={s.chipTexte}>{n}</Text></View>)}
-                {entreprisesInvitees.map(n => <View key={`e-${n}`} style={[s.chip, { backgroundColor: "rgba(0,79,145,0.05)", borderColor: "rgba(0,79,145,0.15)" }]}><Text style={[s.chipTexte, { color: T.bleu }]}>{n}</Text></View>)}
+                {paysInvites.map(n => <View key={n} style={s.chip}><Text style={s.chipTexte}>{n}</Text></View>)}
+              </View>
+            </View>
+          )}
+          {entreprisesInvitees.length > 0 && (
+            <View style={s.bloc}>
+              <Text style={s.blocLabel}>ENTREPRISES INVITÉES</Text>
+              <View style={s.chips}>
+                {entreprisesInvitees.map(n => <View key={n} style={[s.chip, { backgroundColor: "rgba(0,79,145,0.05)", borderColor: "rgba(0,79,145,0.15)" }]}><Text style={[s.chipTexte, { color: T.bleu }]}>{n}</Text></View>)}
               </View>
             </View>
           )}
@@ -129,6 +169,10 @@ const s = StyleSheet.create({
   blocValeur: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
   description: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  themeLigne: { flexDirection: "row", alignItems: "center", gap: 7 },
+  themePoint: { borderRadius: 99 },
+  themeBranche: { paddingLeft: 15, borderLeftWidth: 2, borderLeftColor: "rgba(0,79,145,0.15)", marginLeft: 3, marginTop: 5 },
+  themeTexte: { fontSize: 12, fontFamily: POLICE.demi },
   chip: { backgroundColor: "#F5F4F3", borderWidth: 1, borderColor: "#E8E5E2", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
 });
