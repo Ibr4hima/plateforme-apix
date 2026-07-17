@@ -41,7 +41,6 @@ export default function RacineLayout() {
         <Stack.Screen name="entreprises" options={{ headerShown: false }} />
         <Stack.Screen name="zones" options={{ headerShown: false }} />
         <Stack.Screen name="fiche-pays/index" options={{ headerShown: false }} />
-        <Stack.Screen name="fiche-pays/[pays]" options={{ headerShown: false }} />
         <Stack.Screen name="recherche" options={{ title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: "#fff" }, headerTintColor: "#1a1a2e" }} />
         <Stack.Screen name="code/index" options={{ headerShown: false }} />
         <Stack.Screen name="code/[chapitre]" options={{ headerShown: false }} />

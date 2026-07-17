@@ -1,11 +1,13 @@
-// Fiche Pays — sélecteur : le Sénégal est la référence, on choisit le pays
-// à comparer. Pays groupés par continent (accordéons) puis zone géographique,
-// comme le sélecteur du site. Le tap ouvre la fiche Sénégal × pays.
+// Fiche Pays — tout sur un seul écran : le hero porte les deux
+// emplacements (Sénégal référence + pays choisi) et la recherche.
+// Sans pays choisi (ou pendant une recherche) : liste des pays par
+// continent. Pays choisi : la fiche s'affiche en place, le ✕ ou la
+// recherche ramènent à la liste.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import FichePaysContenu from "@/components/FichePaysContenu";
 import HeroModule from "@/components/HeroModule";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
@@ -16,13 +18,14 @@ type Pays = { id: number; nom: string; code_iso3: string; continent: string; reg
 type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb: number };
 
 export default function FichePaysIndex() {
-  const router = useRouter();
   const [q, setQ] = useState("");
+  const [selec, setSelec] = useState<Pays | null>(null);
   const [ouverts, setOuverts] = useState<Set<string>>(new Set(["Afrique"]));
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["stat-pays"], queryFn: () => getJson<Pays[]>("/statistiques/pays"),
   });
+  const senId = useMemo(() => (data || []).find(p => p.code_iso3 === "SEN")?.id ?? null, [data]);
 
   const sections: Section[] = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -52,29 +55,46 @@ export default function FichePaysIndex() {
   }, [data, q]);
 
   const recherche = q.trim().length > 0;
+  // La fiche s'affiche quand un pays est choisi ; taper une recherche ramène à la liste
+  const modeFiche = !!selec && !recherche && senId !== null;
+
+  const choisir = (p: Pays) => { setSelec(p); setQ(""); };
 
   const hero = (
-    <>
-      <HeroModule titre="Fiche Pays"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher un pays" }}>
-        {/* Les deux emplacements de la comparaison : Sénégal (référence) + pays à choisir */}
-        <View style={s.slots}>
-          <View style={s.slotSen}>
-            <Image source={{ uri: "https://flagcdn.com/w80/sn.png" }} style={s.drapeau} />
-            <Text style={s.slotSenTexte}>Sénégal</Text>
-            <View style={s.slotSenRef}><Text style={s.slotSenRefTexte}>Réf.</Text></View>
+    <HeroModule titre="Fiche Pays"
+      recherche={{ valeur: q, onChange: setQ, placeholder: selec ? "Changer de pays" : "Rechercher un pays" }}>
+      {/* Les deux emplacements de la comparaison */}
+      <View style={s.slots}>
+        <View style={s.slotSen}>
+          <Image source={{ uri: "https://flagcdn.com/w80/sn.png" }} style={s.drapeau} />
+          <Text style={s.slotSenTexte}>Sénégal</Text>
+          <View style={s.slotSenRef}><Text style={s.slotSenRefTexte}>Réf.</Text></View>
+        </View>
+        {selec ? (
+          <View style={[s.slotSen, { backgroundColor: "#FFDFC2" }]}>
+            <Text style={[s.slotSenTexte, { color: "#8a4a12", flexShrink: 1 }]} numberOfLines={1}>{selec.nom}</Text>
+            <Pressable onPress={() => { setSelec(null); setQ(""); }} hitSlop={8} style={s.slotRetirer}>
+              <Ionicons name="close" size={11} color="#8a4a12" />
+            </Pressable>
           </View>
+        ) : (
           <View style={s.slotAjout}>
             <Ionicons name="add" size={15} color="rgba(255,255,255,0.85)" />
             <Text style={s.slotAjoutTexte}>Ajouter un pays</Text>
           </View>
-        </View>
-      </HeroModule>
-      {!isLoading && !isError && (
-        <Text style={s.compte}>{sections.reduce((n, c) => n + c.nb, 0)} pays</Text>
-      )}
-    </>
+        )}
+      </View>
+    </HeroModule>
   );
+
+  if (modeFiche) {
+    return (
+      <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }} keyboardShouldPersistTaps="handled">
+        {hero}
+        <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
+      </ScrollView>
+    );
+  }
 
   return (
     <FlatList
@@ -83,7 +103,14 @@ export default function FichePaysIndex() {
       keyExtractor={c => c.continent}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={s.liste}
-      ListHeaderComponent={hero}
+      ListHeaderComponent={
+        <>
+          {hero}
+          {!isLoading && !isError && (
+            <Text style={s.compte}>{sections.reduce((n, c) => n + c.nb, 0)} pays</Text>
+          )}
+        </>
+      }
       renderItem={({ item: c }) => {
         const ouvert = recherche || ouverts.has(c.continent);
         return (
@@ -104,7 +131,7 @@ export default function FichePaysIndex() {
                   <View key={z.zone}>
                     <Text style={[s.zone, zi > 0 && { borderTopWidth: 1, borderTopColor: T.filet }]}>{z.zone.toUpperCase()}</Text>
                     {z.pays.map(p => (
-                      <Pressable key={p.id} onPress={() => router.push(`/fiche-pays/${p.id}` as any)}
+                      <Pressable key={p.id} onPress={() => choisir(p)}
                         style={({ pressed }) => [s.pays, pressed && { backgroundColor: "rgba(0,79,145,0.04)" }]}>
                         <Text style={s.paysNom} numberOfLines={1}>{p.nom}</Text>
                         <Text style={s.paysIso}>{p.code_iso3}</Text>
@@ -150,6 +177,10 @@ const s = StyleSheet.create({
   slotSenTexte: { fontSize: 13, fontFamily: POLICE.gras, color: T.bleu },
   slotSenRef: { backgroundColor: "rgba(0,79,145,0.10)", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
   slotSenRefTexte: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
+  slotRetirer: {
+    width: 17, height: 17, borderRadius: 9, backgroundColor: "rgba(138,74,18,0.14)",
+    alignItems: "center", justifyContent: "center",
+  },
   slotAjout: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
     borderRadius: 999, borderWidth: 1.5, borderStyle: "dashed", borderColor: "rgba(255,255,255,0.45)",
