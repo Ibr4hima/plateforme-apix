@@ -10,11 +10,12 @@ import { POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string };
 
-export default function HeroModule({ titre, sousTitre, recherche, segments }: {
+export default function HeroModule({ titre, sousTitre, recherche, segments, children }: {
   titre: string;
   sousTitre?: string;
   recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string };
   segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
+  children?: React.ReactNode; // contenu libre inséré entre le titre et la recherche
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -29,6 +30,7 @@ export default function HeroModule({ titre, sousTitre, recherche, segments }: {
         </LinearGradient>
       </MaskedView>
       {sousTitre ? <Text style={s.sousTitre}>{sousTitre}</Text> : null}
+      {children}
 
       {recherche && (
         <View style={s.barre}>

@@ -55,19 +55,21 @@ export default function FichePaysIndex() {
 
   const hero = (
     <>
-      <HeroModule titre="Fiche Pays" sousTitre="Relations bilatérales du Sénégal"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher un pays" }} />
-      {/* Référence épinglée : le Sénégal est toujours la base de comparaison */}
-      <View style={s.rangee}>
-        <View style={s.reference}>
-          <Image source={{ uri: "https://flagcdn.com/w80/sn.png" }} style={s.drapeau} />
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.refNom}>Sénégal</Text>
-            <Text style={s.refSous}>Chaque fiche compare le Sénégal au pays choisi</Text>
+      <HeroModule titre="Fiche Pays"
+        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher un pays" }}>
+        {/* Les deux emplacements de la comparaison : Sénégal (référence) + pays à choisir */}
+        <View style={s.slots}>
+          <View style={s.slotSen}>
+            <Image source={{ uri: "https://flagcdn.com/w80/sn.png" }} style={s.drapeau} />
+            <Text style={s.slotSenTexte}>Sénégal</Text>
+            <View style={s.slotSenRef}><Text style={s.slotSenRefTexte}>Réf.</Text></View>
           </View>
-          <View style={s.refPastille}><Text style={s.refPastilleTexte}>RÉFÉRENCE</Text></View>
+          <View style={s.slotAjout}>
+            <Ionicons name="add" size={15} color="rgba(255,255,255,0.85)" />
+            <Text style={s.slotAjoutTexte}>Ajouter un pays</Text>
+          </View>
         </View>
-      </View>
+      </HeroModule>
       {!isLoading && !isError && (
         <Text style={s.compte}>{sections.reduce((n, c) => n + c.nb, 0)} pays</Text>
       )}
@@ -139,17 +141,21 @@ const s = StyleSheet.create({
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 9 },
-  reference: {
-    flexDirection: "row", alignItems: "center", gap: 13, marginTop: 14,
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 15, paddingVertical: 13,
-    shadowColor: "#001e3c", shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 2,
+  slots: { flexDirection: "row", gap: 8, marginTop: 16 },
+  slotSen: {
+    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    backgroundColor: "#fff", borderRadius: 999, paddingVertical: 9.5, paddingHorizontal: 14,
   },
-  drapeau: { width: 34, height: 24, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.12)" },
-  refNom: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre },
-  refSous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
-  refPastille: { backgroundColor: "rgba(0,79,145,0.08)", borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3.5 },
-  refPastilleTexte: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1 },
+  drapeau: { width: 21, height: 15, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.12)" },
+  slotSenTexte: { fontSize: 13, fontFamily: POLICE.gras, color: T.bleu },
+  slotSenRef: { backgroundColor: "rgba(0,79,145,0.10)", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
+  slotSenRefTexte: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
+  slotAjout: {
+    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
+    borderRadius: 999, borderWidth: 1.5, borderStyle: "dashed", borderColor: "rgba(255,255,255,0.45)",
+    paddingVertical: 9.5, paddingHorizontal: 14,
+  },
+  slotAjoutTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.85)" },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   continent: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
