@@ -1,6 +1,6 @@
 // Zones d'investissement — adaptation fidèle de la page web : vues
 // Zones d'investissement / Pôles territoires dans le hero, chips de type
-// ZES / ZAI / ZFI colorées, bandeau du type sélectionné, cards du site
+// colorées (noms complets ZES / ZAI / ZFI), cards du site
 // (nom, superficie, badge pôle pastel, rangée Localisation | Entreprises),
 // pôles territoires en cards pastel (fiche pôle au tap).
 import { Ionicons } from "@expo/vector-icons";
@@ -19,8 +19,6 @@ const VUES = [
   { cle: "zones",      label: "Zones d'investissement" },
   { cle: "territoire", label: "Pôles territoires" },
 ] as const;
-
-const ordreType = (t: string) => { const i = ZONE_TYPE_ORDER.indexOf(t); return i === -1 ? ZONE_TYPE_ORDER.length : i; };
 
 function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
   const tc = zoneTypeMeta(z.type_zone).color;
@@ -62,7 +60,7 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
 export default function Zones() {
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("zones");
-  const [type, setType] = useState("tous");
+  const [type, setType] = useState("ZES");
   const [zoneSelec, setZoneSelec] = useState<any>(null);
   const [poleSelec, setPoleSelec] = useState<any>(null);
 
@@ -74,8 +72,7 @@ export default function Zones() {
   });
 
   const filtres = useMemo(() => {
-    let liste = zones || [];
-    if (type !== "tous") liste = liste.filter((z: any) => z.type_zone === type);
+    let liste = (zones || []).filter((z: any) => z.type_zone === type);
     if (q.trim()) {
       const t = q.trim().toLowerCase();
       liste = liste.filter((z: any) =>
@@ -84,8 +81,7 @@ export default function Zones() {
         (z.departement_nom || "").toLowerCase().includes(t) ||
         (z.pole_nom || "").toLowerCase().includes(t));
     }
-    // Ordre du site : ZES puis ZAI puis ZFI, ordre de l'API à l'intérieur
-    return [...liste].sort((a: any, b: any) => ordreType(a.type_zone) - ordreType(b.type_zone));
+    return liste;
   }, [zones, q, type]);
 
   const polesFiltres = useMemo(() => {
@@ -99,17 +95,6 @@ export default function Zones() {
     return [...liste].sort((a: any, b: any) => (a.pole_territoire || "").localeCompare(b.pole_territoire || "", "fr"));
   }, [poles, q]);
 
-  // Bandeau du type sélectionné : mêmes compteurs que les cards types du site
-  const typeInfo = useMemo(() => {
-    if (type === "tous") return null;
-    const zs = (zones || []).filter((z: any) => z.type_zone === type);
-    return {
-      meta: zoneTypeMeta(type),
-      zones: zs.length,
-      entreprises: zs.reduce((n: number, z: any) => n + (z.entreprises || []).length, 0),
-    };
-  }, [zones, type]);
-
   const hero = (
     <>
       <HeroModule titre="Zones d'investissement"
@@ -117,32 +102,17 @@ export default function Zones() {
         segments={{ options: VUES, valeur: vue, onChange: setVue }} />
       {vue === "zones" && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
-          {[{ cle: "tous", label: "Toutes", couleur: T.bleu }, ...ZONE_TYPE_ORDER.map(t => ({ cle: t, label: t, couleur: ZONE_TYPE_META[t].color }))].map(o => {
-            const actif = type === o.cle;
+          {ZONE_TYPE_ORDER.map(t => {
+            const actif = type === t;
+            const couleur = ZONE_TYPE_META[t].color;
             return (
-              <Pressable key={o.cle} onPress={() => setType(o.cle)}
-                style={[s.chipFiltre, actif && { backgroundColor: o.couleur, borderColor: o.couleur }]}>
-                <Text style={[s.chipFiltreTexte, o.cle !== "tous" && !actif && { color: o.couleur }, actif && { color: "#fff" }]}>{o.label}</Text>
+              <Pressable key={t} onPress={() => setType(t)}
+                style={[s.chipFiltre, actif && { backgroundColor: couleur, borderColor: couleur }]}>
+                <Text style={[s.chipFiltreTexte, { color: actif ? "#fff" : couleur }]}>{ZONE_TYPE_META[t].label}</Text>
               </Pressable>
             );
           })}
         </ScrollView>
-      )}
-      {vue === "zones" && typeInfo && (
-        <View style={s.rangee}>
-          <View style={[s.bandeau, { borderColor: `${typeInfo.meta.color}22`, backgroundColor: `${typeInfo.meta.color}0A` }]}>
-            <View style={[s.bandeauTuile, { borderColor: `${typeInfo.meta.color}33` }]}>
-              <Text style={[s.bandeauAcronyme, { color: typeInfo.meta.color }]}>{type}</Text>
-            </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[s.bandeauSur, { color: typeInfo.meta.color }]}>TYPE DE ZONE</Text>
-              <Text style={s.bandeauLabel} numberOfLines={2}>{typeInfo.meta.label}</Text>
-            </View>
-            <View style={[s.bandeauPilule, { backgroundColor: typeInfo.meta.color }]}>
-              <Text style={s.bandeauPiluleTexte}>{typeInfo.zones} zone{typeInfo.zones > 1 ? "s" : ""}</Text>
-            </View>
-          </View>
-        </View>
       )}
       {!isLoading && !isError && (
         <Text style={s.compte}>
@@ -229,19 +199,6 @@ const s = StyleSheet.create({
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: "#fff", borderWidth: 1, borderColor: T.bordure },
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
-  bandeau: {
-    flexDirection: "row", alignItems: "center", gap: 13,
-    borderWidth: 1, borderRadius: 16, paddingHorizontal: 15, paddingVertical: 13, marginTop: 12,
-  },
-  bandeauTuile: {
-    width: 44, height: 44, borderRadius: 13, backgroundColor: "#fff", borderWidth: 1,
-    alignItems: "center", justifyContent: "center",
-  },
-  bandeauAcronyme: { fontSize: 12, fontFamily: POLICE.gras, letterSpacing: 0.3 },
-  bandeauSur: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.2, marginBottom: 3 },
-  bandeauLabel: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre, lineHeight: 18 },
-  bandeauPilule: { borderRadius: 999, paddingHorizontal: 13, paddingVertical: 5.5 },
-  bandeauPiluleTexte: { fontSize: 11.5, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   carte: {
     backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
