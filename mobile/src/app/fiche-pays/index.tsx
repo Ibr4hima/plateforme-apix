@@ -39,13 +39,16 @@ function NomDefilant({ nom, style }: { nom: string; style?: any }) {
     dx.setValue(0);
   }, [boite, texte, dx]);
   return (
-    <View style={{ flexShrink: 1, overflow: "hidden", flexDirection: "row" }}
+    // ScrollView horizontale figée : le texte garde sa largeur naturelle sur
+    // une seule ligne (pas de repli), le débordement est masqué.
+    <ScrollView horizontal scrollEnabled={false} showsHorizontalScrollIndicator={false}
+      style={{ flexShrink: 1, flexGrow: 0 }}
       onLayout={e => setBoite(e.nativeEvent.layout.width)}>
-      <Animated.Text style={[style, { flexShrink: 0, transform: [{ translateX: dx }] }]}
+      <Animated.Text numberOfLines={1} style={[style, { transform: [{ translateX: dx }] }]}
         onLayout={e => setTexte(e.nativeEvent.layout.width)}>
         {nom}
       </Animated.Text>
-    </View>
+    </ScrollView>
   );
 }
 
