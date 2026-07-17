@@ -2,6 +2,8 @@
 // Peut embarquer une recherche (verre dépoli) et des segments (pilule active
 // blanche). Pas de bouton retour : le glissement iOS fait le retour.
 import { Ionicons } from "@expo/vector-icons";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { POLICE, T } from "@/theme";
@@ -20,7 +22,12 @@ export default function HeroModule({ titre, sousTitre, recherche, segments }: {
       <View style={s.haloHaut} />
       <View style={s.haloBas} />
 
-      <Text style={s.titre}>{titre}</Text>
+      <MaskedView maskElement={<Text style={[s.titre, { color: "#000" }]}>{titre}</Text>}>
+        <LinearGradient colors={["#FFFFFF", "#FFFFFF", "#FFDFC2"]} locations={[0, 0.55, 1]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+          <Text style={[s.titre, { opacity: 0 }]}>{titre}</Text>
+        </LinearGradient>
+      </MaskedView>
       {sousTitre ? <Text style={s.sousTitre}>{sousTitre}</Text> : null}
 
       {recherche && (

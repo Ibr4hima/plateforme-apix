@@ -96,7 +96,7 @@ export default function Accords() {
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: STATUTS, valeur: statut, onChange: setStatut }} />
       {/* Types de traités — extensible */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipsRangee}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
         {TYPES.map(o => {
           const actif = onglet === o.cle;
           return (
