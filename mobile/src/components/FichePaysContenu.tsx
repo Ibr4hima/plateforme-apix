@@ -120,38 +120,46 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
     const maxR = res?.length ? res[0].valeur : 1;
     return (
       <View style={s.dir}>
-        <View style={s.dirEntete}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <View style={s.dirSens}>
-              <View style={[s.dirPoint, { backgroundColor: couleur }]} />
-              <Text style={[s.dirDe, { color: couleur }]} numberOfLines={1}>{de}</Text>
-              <Symbole nom="arrow_right_alt" taille={16} couleur={T.grisClair} />
-              <Text style={s.dirVers} numberOfLines={1}>{vers}</Text>
-            </View>
-            {dep != null && dep > 0 && (
-              <Text style={s.dirDep}>{(dep * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % des importations de {vers}</Text>
-            )}
-          </View>
-          <Text style={[s.dirTotal, { color: couleur }]}>{fmtUSD(val)}</Text>
-        </View>
-        {res?.length > 0 && (
-          <View style={s.dirRes}>
-            {res.map((r: any) => {
-              const pct = val > 0 ? r.valeur / val * 100 : 0;
-              return (
-                <View key={r.ressource}>
-                  <View style={s.resLigne}>
-                    <Text style={s.resNom} numberOfLines={1}>{r.ressource}</Text>
-                    <Text style={s.resVal}>{fmtUSD(r.valeur)} <Text style={{ color: T.grisClair }}>· {pct.toFixed(0)} %</Text></Text>
-                  </View>
-                  <View style={s.resBarFond}>
-                    <View style={[s.resBar, { width: `${Math.max(4, Math.sqrt(r.valeur / maxR) * 100)}%`, backgroundColor: couleur }]} />
-                  </View>
+        {/* Liseré d'accent à gauche, couleur du pays exportateur */}
+        <View style={[s.dirLisere, { backgroundColor: couleur }]} />
+        <View style={{ flex: 1 }}>
+          <View style={s.dirEntete}>
+            <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
+              <View style={s.dirSens}>
+                <Text style={[s.dirDe, { color: couleur }]} numberOfLines={1}>{de}</Text>
+                <Symbole nom="arrow_right_alt" taille={17} couleur={T.grisClair} />
+                <Text style={s.dirVers} numberOfLines={1}>{vers}</Text>
+              </View>
+              {dep != null && dep > 0 && (
+                <View style={[s.dirDepChip, { backgroundColor: `${couleur}0D` }]}>
+                  <Text style={[s.dirDepTexte, { color: couleur }]}>{(dep * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % des importations de {vers}</Text>
                 </View>
-              );
-            })}
+              )}
+            </View>
+            <View style={{ alignItems: "flex-end", gap: 3 }}>
+              <Text style={[s.dirTotal, { color: couleur }]}>{fmtUSD(val)}</Text>
+              <Text style={s.dirTotalLabel}>EXPORTÉ</Text>
+            </View>
           </View>
-        )}
+          {res?.length > 0 && (
+            <View style={s.dirRes}>
+              {res.map((r: any) => {
+                const pct = val > 0 ? r.valeur / val * 100 : 0;
+                return (
+                  <View key={r.ressource}>
+                    <View style={s.resLigne}>
+                      <Text style={s.resNom} numberOfLines={1}>{r.ressource}</Text>
+                      <Text style={s.resVal}>{fmtUSD(r.valeur)} <Text style={s.resPct}>· {pct.toFixed(0)} %</Text></Text>
+                    </View>
+                    <View style={s.resBarFond}>
+                      <View style={[s.resBar, { width: `${Math.max(4, Math.sqrt(r.valeur / maxR) * 100)}%`, backgroundColor: couleur }]} />
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
       </View>
     );
   };
@@ -259,7 +267,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
           </View>
           {/* Balance commerciale */}
           <View style={s.balance}>
-            <View style={s.balanceIcone}><Symbole nom="balance" taille={19} couleur={T.bleu} /></View>
+            <View style={s.balanceIcone}><Symbole nom="balance" taille={19} couleur="#5F6368" /></View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={s.balanceTitre}>BALANCE COMMERCIALE</Text>
               <Text style={s.balanceTexte}>
@@ -320,30 +328,37 @@ const s = StyleSheet.create({
   duelVal: { flex: 1, fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   duelAnnee: { fontSize: 9, fontFamily: POLICE.normal, color: T.grisClair },
   duelPiste: { flexDirection: "row", gap: 3, height: 6 },
-  dir: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden" },
+  dir: {
+    flexDirection: "row", backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    overflow: "hidden",
+    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2,
+  },
+  dirLisere: { width: 3.5 },
   dirEntete: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12,
-    paddingHorizontal: 16, paddingVertical: 13,
+    flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12,
+    paddingHorizontal: 16, paddingVertical: 14,
   },
   dirSens: { flexDirection: "row", alignItems: "center", gap: 7, flexShrink: 1 },
-  dirPoint: { width: 7, height: 7, borderRadius: 4 },
-  dirDe: { fontSize: 13, fontFamily: POLICE.gras, flexShrink: 1 },
-  dirVers: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, flexShrink: 1 },
-  dirDep: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 3, marginLeft: 14 },
-  dirTotal: { fontSize: 15, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  dirRes: { paddingHorizontal: 16, paddingBottom: 13, gap: 11, borderTopWidth: 1, borderTopColor: "#F4F2F0", paddingTop: 12 },
+  dirDe: { fontSize: 13.5, fontFamily: POLICE.gras, flexShrink: 1, letterSpacing: -0.2 },
+  dirVers: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, flexShrink: 1, letterSpacing: -0.2 },
+  dirDepChip: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 },
+  dirDepTexte: { fontSize: 10, fontFamily: POLICE.demi },
+  dirTotal: { fontSize: 15.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"], letterSpacing: -0.2 },
+  dirTotalLabel: { fontSize: 7.5, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1.2 },
+  dirRes: { paddingHorizontal: 16, paddingBottom: 14, gap: 11, borderTopWidth: 1, borderTopColor: T.filet, paddingTop: 12 },
   resLigne: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 4 },
-  resNom: { flex: 1, fontSize: 11.5, fontFamily: POLICE.normal, color: T.texte },
+  resNom: { flex: 1, fontSize: 11.5, fontFamily: POLICE.moyen, color: T.texte },
   resVal: { fontSize: 11.5, fontFamily: POLICE.gras, color: "#2d3540", fontVariant: ["tabular-nums"] },
-  resBarFond: { height: 6, backgroundColor: "#F0EEEC", borderRadius: 99, overflow: "hidden" },
+  resPct: { fontFamily: POLICE.normal, color: T.grisClair },
+  resBarFond: { height: 5, backgroundColor: "#F1EFED", borderRadius: 99, overflow: "hidden" },
   resBar: { height: "100%", borderRadius: 99 },
   balance: {
     flexDirection: "row", alignItems: "center", gap: 13, marginTop: 12,
-    backgroundColor: "rgba(0,79,145,0.06)", borderWidth: 1, borderColor: "rgba(0,79,145,0.20)",
+    backgroundColor: "#F8F9FA", borderWidth: 1, borderColor: "#5F6368",
     borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14,
   },
-  balanceIcone: { width: 40, height: 40, borderRadius: 11, backgroundColor: "rgba(0,79,145,0.12)", alignItems: "center", justifyContent: "center" },
-  balanceTitre: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.3, marginBottom: 3 },
+  balanceIcone: { width: 40, height: 40, borderRadius: 11, backgroundColor: "rgba(95,99,104,0.10)", alignItems: "center", justifyContent: "center" },
+  balanceTitre: { fontSize: 9.5, fontFamily: POLICE.gras, color: "#5F6368", letterSpacing: 1.3, marginBottom: 3 },
   balanceTexte: { fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 17 },
   balanceVal: { fontSize: 16, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   note: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, lineHeight: 16, marginTop: 20, textAlign: "center" },

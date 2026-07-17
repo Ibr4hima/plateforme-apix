@@ -1,8 +1,9 @@
 // Fiche Pays — tout sur un seul écran : le hero porte les deux
 // emplacements (Sénégal référence + pays choisi) et la recherche.
 // Sans pays choisi (ou pendant une recherche) : liste des pays par
-// continent. Pays choisi : la fiche s'affiche en place, le ✕ ou la
-// recherche ramènent à la liste.
+// continent. Pays choisi : la fiche s'affiche en place ; un tap sur la
+// pilule du pays (ou une recherche) ramène à la liste, et choisir un
+// autre pays remplace le précédent.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -14,7 +15,7 @@ import { POLICE, T } from "@/theme";
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
-type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };
+type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | null; continent: string; region_geo: string | null };
 type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb: number };
 
 export default function FichePaysIndex() {
@@ -62,7 +63,7 @@ export default function FichePaysIndex() {
 
   const hero = (
     <HeroModule titre="Fiche Pays"
-      recherche={{ valeur: q, onChange: setQ, placeholder: selec ? "Changer de pays" : "Rechercher un pays" }}>
+      recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}>
       {/* Les deux emplacements de la comparaison */}
       <View style={s.slots}>
         <View style={s.slotSen}>
@@ -71,12 +72,11 @@ export default function FichePaysIndex() {
           <View style={s.slotSenRef}><Text style={s.slotSenRefTexte}>Réf.</Text></View>
         </View>
         {selec ? (
-          <View style={[s.slotSen, { backgroundColor: "#FFDFC2" }]}>
-            <Text style={[s.slotSenTexte, { color: "#8a4a12", flexShrink: 1 }]} numberOfLines={1}>{selec.nom}</Text>
-            <Pressable onPress={() => { setSelec(null); setQ(""); }} hitSlop={8} style={s.slotRetirer}>
-              <Ionicons name="close" size={11} color="#8a4a12" />
-            </Pressable>
-          </View>
+          // Le tap retire le pays et ramène à la liste
+          <Pressable onPress={() => { setSelec(null); setQ(""); }} style={({ pressed }) => [s.slotSen, pressed && { opacity: 0.75 }]}>
+            {selec.code_iso2 ? <Image source={{ uri: `https://flagcdn.com/w80/${selec.code_iso2.toLowerCase()}.png` }} style={s.drapeau} /> : null}
+            <Text style={[s.slotSenTexte, { flexShrink: 1 }]} numberOfLines={1}>{selec.nom}</Text>
+          </Pressable>
         ) : (
           <View style={s.slotAjout}>
             <Ionicons name="add" size={15} color="rgba(255,255,255,0.85)" />
@@ -177,10 +177,6 @@ const s = StyleSheet.create({
   slotSenTexte: { fontSize: 13, fontFamily: POLICE.gras, color: T.bleu },
   slotSenRef: { backgroundColor: "rgba(0,79,145,0.10)", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
   slotSenRefTexte: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
-  slotRetirer: {
-    width: 17, height: 17, borderRadius: 9, backgroundColor: "rgba(138,74,18,0.14)",
-    alignItems: "center", justifyContent: "center",
-  },
   slotAjout: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
     borderRadius: 999, borderWidth: 1.5, borderStyle: "dashed", borderColor: "rgba(255,255,255,0.45)",

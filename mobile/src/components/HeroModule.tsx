@@ -15,7 +15,7 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, chil
   sousTitre?: string;
   recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string };
   segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
-  children?: React.ReactNode; // contenu libre inséré entre le titre et la recherche
+  children?: React.ReactNode; // contenu libre inséré sous la recherche
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -30,7 +30,6 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, chil
         </LinearGradient>
       </MaskedView>
       {sousTitre ? <Text style={s.sousTitre}>{sousTitre}</Text> : null}
-      {children}
 
       {recherche && (
         <View style={s.barre}>
@@ -43,6 +42,7 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, chil
             style={s.champ} keyboardAppearance="dark" />
         </View>
       )}
+      {children}
 
       {segments && (
         <View style={s.segments}>
