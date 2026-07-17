@@ -59,7 +59,7 @@ export default function CodeSommaire() {
       <HeroModule titre="Code des investissements"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher dans le code…" }}
         segments={{
-          options: [{ cle: "code-investissement", label: "Le Code" }, { cle: "modalites-application", label: "Modalités" }],
+          options: [{ cle: "code-investissement", label: "Code des inv." }, { cle: "modalites-application", label: "Modalités d'app." }],
           valeur: base, onChange: cle => setBase(cle as BaseCode),
         }} />
 
@@ -95,7 +95,7 @@ export default function CodeSommaire() {
                       <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
                         style={({ pressed }) => [s.ligne, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
                         <View style={s.numeroColonne}>
-                          <Text style={s.numeroRomain}>{c.numero === 1 ? "Ier" : c.num_display}</Text>
+                          <Text style={s.numeroRomain}>{c.num_display}</Text>
                           <Text style={s.numeroLegende}>CHAP.</Text>
                         </View>
                         <View style={{ flex: 1, minWidth: 0 }}>

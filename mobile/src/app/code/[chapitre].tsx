@@ -8,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
@@ -24,7 +24,12 @@ export default function Lecteur() {
   const positions = useRef<Record<string, number>>({});
   const [surligneId, setSurligneId] = useState<string | null>(art || null);
   const [cran, setCran] = useState(1);
-  const [progression, setProgression] = useState(0);
+  // Progression de lecture : valeur animée alimentée par le défilement
+  const defilementY = useRef(new Animated.Value(0)).current;
+  const [hauteurMax, setHauteurMax] = useState(1);
+  const hauteurEcran = useRef(0);
+  const hauteurContenu = useRef(0);
+  const majMax = () => setHauteurMax(Math.max(1, hauteurContenu.current - hauteurEcran.current));
 
   const { data: chapitres, isLoading } = useQuery({
     queryKey: ["code", base],
@@ -57,7 +62,6 @@ export default function Lecteur() {
 
   const allerA = (id: string) => {
     positions.current = {};
-    setProgression(0);
     defileur.current?.scrollTo({ y: 0, animated: false });
     router.replace({ pathname: "/code/[chapitre]", params: { chapitre: id, base } } as any);
   };
@@ -79,16 +83,14 @@ export default function Lecteur() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView
-        ref={defileur}
+      <Animated.ScrollView
+        ref={defileur as any}
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingTop: insets.top + 62, paddingBottom: 60 }}
-        scrollEventThrottle={32}
-        onScroll={e => {
-          const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
-          const max = contentSize.height - layoutMeasurement.height;
-          setProgression(max > 0 ? Math.min(1, Math.max(0, contentOffset.y / max)) : 0);
-        }}>
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: defilementY } } }], { useNativeDriver: false })}
+        onLayout={e => { hauteurEcran.current = e.nativeEvent.layout.height; majMax(); }}
+        onContentSizeChange={(_, h) => { hauteurContenu.current = h; majMax(); }}>
         {isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 40 }} />}
         {chap && (
           <>
@@ -122,34 +124,35 @@ export default function Lecteur() {
               </View>
             ))}
 
-            {/* Navigation entre chapitres */}
+            {/* Fin de chapitre : ornement centré */}
+            <View style={s.fin}>
+              <View style={s.finPoint} />
+              <View style={[s.finPoint, { width: 5, height: 5, borderRadius: 3 }]} />
+              <View style={s.finPoint} />
+            </View>
+
+            {/* Navigation entre chapitres : pilules */}
             {(precedent || suivant) && (
               <View style={s.navigation}>
                 {precedent ? (
                   <Pressable onPress={() => allerA(precedent.id)}
-                    style={({ pressed }) => [s.navCarte, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
-                    <View style={s.navLigne}>
-                      <Ionicons name="arrow-back" size={12} color={T.gris} />
-                      <Text style={s.navLabel}>PRÉCÉDENT</Text>
-                    </View>
-                    <Text style={s.navTitre} numberOfLines={2}>{precedent.titre}</Text>
+                    style={({ pressed }) => [s.navPilule, pressed && { backgroundColor: "rgba(202,99,31,0.12)" }]}>
+                    <Ionicons name="chevron-back" size={13} color={T.orange} />
+                    <Text style={s.navTexte} numberOfLines={1}>{precedent.num_display}. {precedent.titre}</Text>
                   </Pressable>
-                ) : <View style={{ flex: 1 }} />}
+                ) : null}
                 {suivant ? (
                   <Pressable onPress={() => allerA(suivant.id)}
-                    style={({ pressed }) => [s.navCarte, { alignItems: "flex-end" }, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
-                    <View style={s.navLigne}>
-                      <Text style={s.navLabel}>SUIVANT</Text>
-                      <Ionicons name="arrow-forward" size={12} color={T.gris} />
-                    </View>
-                    <Text style={[s.navTitre, { textAlign: "right" }]} numberOfLines={2}>{suivant.titre}</Text>
+                    style={({ pressed }) => [s.navPilule, pressed && { backgroundColor: "rgba(202,99,31,0.12)" }]}>
+                    <Text style={s.navTexte} numberOfLines={1}>{suivant.num_display}. {suivant.titre}</Text>
+                    <Ionicons name="chevron-forward" size={13} color={T.orange} />
                   </Pressable>
-                ) : <View style={{ flex: 1 }} />}
+                ) : null}
               </View>
             )}
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Barre haute : chapitre courant, réglage du texte, progression */}
       <View style={[s.barre, { paddingTop: insets.top + 6 }]}>
@@ -170,9 +173,15 @@ export default function Lecteur() {
             </Pressable>
           </View>
         </View>
-        {/* Progression de lecture */}
+        {/* Progression de lecture — suit le défilement image par image */}
         <View style={s.progFond}>
-          <View style={[s.progBarre, { width: `${Math.round(progression * 100)}%` }]} />
+          <Animated.View style={[s.progBarre, {
+            width: defilementY.interpolate({
+              inputRange: [0, hauteurMax],
+              outputRange: ["0%", "100%"],
+              extrapolate: "clamp",
+            }),
+          }]} />
         </View>
       </View>
     </View>
@@ -191,13 +200,13 @@ const s = StyleSheet.create({
   barreChapitre: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, marginTop: 1.5, letterSpacing: -0.2 },
   tailleGroupe: {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: "rgba(0,79,145,0.06)", borderRadius: 999, paddingHorizontal: 4, paddingVertical: 3,
+    backgroundColor: "rgba(60,64,67,0.06)", borderRadius: 999, paddingHorizontal: 4, paddingVertical: 3,
   },
   tailleBouton: { width: 34, height: 28, borderRadius: 999, alignItems: "center", justifyContent: "center" },
-  tailleTexte: { fontFamily: POLICE.demi, color: T.bleu },
-  tailleSep: { width: 1, height: 14, backgroundColor: "rgba(0,79,145,0.15)" },
+  tailleTexte: { fontFamily: POLICE.demi, color: "#5F6368" },
+  tailleSep: { width: 1, height: 14, backgroundColor: "rgba(60,64,67,0.18)" },
   progFond: { height: 2.5, backgroundColor: T.filet },
-  progBarre: { height: "100%", backgroundColor: T.bleu },
+  progBarre: { height: "100%", backgroundColor: T.orange },
   ouverture: { alignItems: "center", paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 4 },
   ouvertureSur: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 2.4 },
   ouvertureTitre: {
@@ -220,12 +229,13 @@ const s = StyleSheet.create({
     fontSize: 16.5, fontFamily: POLICE.demi, color: T.encre, textAlign: "center",
     lineHeight: 22, letterSpacing: -0.2, marginTop: 7,
   },
-  navigation: {
-    flexDirection: "row", gap: 10, marginTop: 44, marginHorizontal: MARGE,
-    borderTopWidth: 1, borderTopColor: T.filet, paddingTop: 16,
+  fin: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 40 },
+  finPoint: { width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: "rgba(202,99,31,0.55)" },
+  navigation: { flexDirection: "row", gap: 10, marginTop: 26, marginHorizontal: MARGE },
+  navPilule: {
+    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
+    borderWidth: 1, borderColor: "rgba(202,99,31,0.42)", backgroundColor: "rgba(202,99,31,0.05)",
+    borderRadius: 999, paddingVertical: 13, paddingHorizontal: 14, minWidth: 0,
   },
-  navCarte: { flex: 1, borderRadius: 14, padding: 12, gap: 6 },
-  navLigne: { flexDirection: "row", alignItems: "center", gap: 6 },
-  navLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4 },
-  navTitre: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 17.5, letterSpacing: -0.2 },
+  navTexte: { fontSize: 13, fontFamily: POLICE.demi, color: T.orange, letterSpacing: -0.2, flexShrink: 1 },
 });
