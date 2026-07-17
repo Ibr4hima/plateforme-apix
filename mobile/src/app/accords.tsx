@@ -74,11 +74,12 @@ export default function Accords() {
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["accords"], queryFn: () => fetchTous("/accords"),
   });
+  // L'endpoint renvoie { pays: [...], organisations: [...] } (comme sur le site)
   const paysDistincts = useQuery({
-    queryKey: ["accords-parties"], queryFn: () => getJson<any[]>("/accords/parties-distinctes"), staleTime: 30 * 60 * 1000,
+    queryKey: ["accords-parties"], queryFn: () => getJson<{ pays: any[] }>("/accords/parties-distinctes"), staleTime: 30 * 60 * 1000,
   });
   const autresPays = useMemo(() =>
-    (paysDistincts.data || []).filter((p: any) => p.nom !== "Sénégal").sort((a: any, b: any) => a.nom.localeCompare(b.nom, "fr")),
+    (paysDistincts.data?.pays || []).filter((p: any) => p.nom !== "Sénégal").sort((a: any, b: any) => a.nom.localeCompare(b.nom, "fr")),
     [paysDistincts.data]);
 
   const filtres = useMemo(() => {
