@@ -1,10 +1,14 @@
 name: Déploiement démo
 
-# Redéploie la démo à chaque push sur la branche de travail.
+# Redéploie la démo à chaque publication sur main (git sync-main).
+# Les commits qui ne touchent que l'app mobile ne concernent pas la
+# plateforme web : ils ne déclenchent aucun déploiement.
 on:
   push:
     branches:
-      - claude/modest-ritchie-DlitS
+      - main
+    paths-ignore:
+      - "mobile/**"
   workflow_dispatch: {}
 
 concurrency:
@@ -41,5 +45,5 @@ jobs:
             set -e
             cd ${{ secrets.DEPLOY_PATH }}
             git fetch --all --prune
-            git reset --hard origin/claude/modest-ritchie-DlitS
+            git reset --hard origin/main
             bash scripts/deploy.sh
