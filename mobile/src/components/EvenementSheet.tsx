@@ -99,25 +99,25 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
           {Object.keys(e.thematiques_tree || {}).length > 0 && (
             <View style={s.bloc}>
               <Text style={s.blocLabel}>THÉMATIQUES</Text>
-              <View style={{ gap: 8 }}>
+              <View style={{ gap: 16 }}>
                 {Object.entries(e.thematiques_tree).map(([sec, branches]: any) => (
-                  <View key={sec}>
+                  <View key={sec} style={{ gap: 9 }}>
                     <View style={s.themeLigne}>
-                      <View style={[s.themePoint, { width: 8, height: 8, backgroundColor: T.bleu }]} />
-                      <Text style={[s.themeTexte, { color: T.bleu, fontFamily: POLICE.gras }]}>{sec}</Text>
+                      <View style={[s.themePoint, { width: 8, height: 8, backgroundColor: T.bleu, marginTop: 5 }]} />
+                      <Text style={s.themeSecteur}>{sec}</Text>
                     </View>
                     {Object.entries(branches).map(([bra, acts]: any) => (
                       <View key={bra} style={s.themeBranche}>
                         <View style={s.themeLigne}>
-                          <View style={[s.themePoint, { width: 6, height: 6, backgroundColor: T.orange }]} />
-                          <Text style={[s.themeTexte, { color: T.orange }]}>{bra}</Text>
+                          <View style={[s.themePoint, { width: 6, height: 6, backgroundColor: T.orange, marginTop: 6 }]} />
+                          <Text style={s.themeBrancheTexte}>{bra}</Text>
                         </View>
                         {acts.length > 0 && (
-                          <View style={{ paddingLeft: 18, gap: 3, marginTop: 3 }}>
+                          <View style={{ paddingLeft: 16, gap: 6, marginTop: 7 }}>
                             {acts.map((act: string) => (
                               <View key={act} style={s.themeLigne}>
-                                <View style={[s.themePoint, { width: 5, height: 5, backgroundColor: T.vert }]} />
-                                <Text style={[s.themeTexte, { color: T.vert, fontFamily: POLICE.moyen }]}>{act}</Text>
+                                <View style={[s.themePoint, { width: 5, height: 5, backgroundColor: T.vert, marginTop: 6 }]} />
+                                <Text style={s.themeActivite}>{act}</Text>
                               </View>
                             ))}
                           </View>
@@ -169,10 +169,12 @@ const s = StyleSheet.create({
   blocValeur: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
   description: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  themeLigne: { flexDirection: "row", alignItems: "center", gap: 7 },
-  themePoint: { borderRadius: 99 },
-  themeBranche: { paddingLeft: 15, borderLeftWidth: 2, borderLeftColor: "rgba(0,79,145,0.15)", marginLeft: 3, marginTop: 5 },
-  themeTexte: { fontSize: 12, fontFamily: POLICE.demi },
+  themeLigne: { flexDirection: "row", alignItems: "flex-start", gap: 9 },
+  themePoint: { borderRadius: 99, flexShrink: 0 },
+  themeBranche: { paddingLeft: 17, borderLeftWidth: 1.5, borderLeftColor: "rgba(0,79,145,0.12)", marginLeft: 3.5 },
+  themeSecteur: { flex: 1, fontSize: 13, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 18 },
+  themeBrancheTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: "#b5722f", lineHeight: 18 },
+  themeActivite: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: "#4d8a63", lineHeight: 17 },
   chip: { backgroundColor: "#F5F4F3", borderWidth: 1, borderColor: "#E8E5E2", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
 });
