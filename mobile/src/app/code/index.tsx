@@ -1,6 +1,8 @@
-// Code des investissements — sommaire : bascule Code / Modalités
-// d'application, recherche full-text avec extraits surlignés, chapitres
-// en liste groupée (médaillon en chiffres romains).
+// Code des investissements — sommaire façon table des matières d'un
+// livre : bascule Code / Modalités, recherche full-text avec extraits
+// surlignés, chapitres en rangées typographiques (numéro romain en
+// colonne, titre, compte d'articles).
+import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -12,7 +14,7 @@ import { POLICE, T } from "@/theme";
 export type BaseCode = "code-investissement" | "modalites-application";
 
 // Extrait de recherche : « … <mark>investisseur</mark> … » → segments stylés
-export function Extrait({ html }: { html: string }) {
+function Extrait({ html }: { html: string }) {
   const morceaux = (html || "").split(/<\/?mark>/);
   return (
     <Text style={s.resExtrait} numberOfLines={2}>
@@ -22,6 +24,9 @@ export function Extrait({ html }: { html: string }) {
     </Text>
   );
 }
+
+const nbArticlesDe = (c: any) =>
+  (c.articles?.length || 0) + (c.sections || []).reduce((n: number, sec: any) => n + (sec.articles?.length || 0), 0);
 
 export default function CodeSommaire() {
   const router = useRouter();
@@ -46,6 +51,8 @@ export default function CodeSommaire() {
   });
 
   const enRecherche = qDebounce.length >= 2;
+  const liste = chapitres.data || [];
+  const totalArticles = liste.reduce((n: number, c: any) => n + nbArticlesDe(c), 0);
 
   return (
     <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 46 }} keyboardShouldPersistTaps="handled">
@@ -71,29 +78,38 @@ export default function CodeSommaire() {
           ))}
         </View>
       ) : (
-        /* Sommaire des chapitres */
+        /* Table des matières */
         <View style={s.liste}>
           {chapitres.isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 24 }} />}
-          <View style={chapitres.data?.length ? s.surface : undefined}>
-            {(chapitres.data || []).map((c: any, i: number) => {
-              const nbArticles = (c.articles?.length || 0) + (c.sections || []).reduce((n: number, sec: any) => n + (sec.articles?.length || 0), 0);
-              return (
-                <View key={c.id}>
-                  {i > 0 && <View style={s.separateur} />}
-                  <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
-                    style={({ pressed }) => [s.ligne, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
-                    <View style={s.medaillon}>
-                      <Text style={s.medaillonTexte}>{c.numero === 1 ? "Ier" : c.num_display}</Text>
+          {liste.length > 0 && (
+            <>
+              <Text style={s.meta}>
+                {liste.length} CHAPITRE{liste.length > 1 ? "S" : ""} · {totalArticles} ARTICLE{totalArticles > 1 ? "S" : ""}
+              </Text>
+              <View style={s.surface}>
+                {liste.map((c: any, i: number) => {
+                  const nb = nbArticlesDe(c);
+                  return (
+                    <View key={c.id}>
+                      {i > 0 && <View style={s.separateur} />}
+                      <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
+                        style={({ pressed }) => [s.ligne, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
+                        <View style={s.numeroColonne}>
+                          <Text style={s.numeroRomain}>{c.numero === 1 ? "Ier" : c.num_display}</Text>
+                          <Text style={s.numeroLegende}>CHAP.</Text>
+                        </View>
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <Text style={s.ligneTitre} numberOfLines={2}>{c.titre}</Text>
+                          <Text style={s.ligneSous}>{nb} article{nb > 1 ? "s" : ""}{c.sections?.length ? ` · ${c.sections.length} section${c.sections.length > 1 ? "s" : ""}` : ""}</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={14} color={T.grisClair} />
+                      </Pressable>
                     </View>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={s.ligneTitre} numberOfLines={2}>{c.titre}</Text>
-                      <Text style={s.ligneSous}>{nbArticles} article{nbArticles > 1 ? "s" : ""}{c.sections?.length ? ` · ${c.sections.length} section${c.sections.length > 1 ? "s" : ""}` : ""}</Text>
-                    </View>
-                  </Pressable>
-                </View>
-              );
-            })}
-          </View>
+                  );
+                })}
+              </View>
+            </>
+          )}
         </View>
       )}
     </ScrollView>
@@ -103,19 +119,18 @@ export default function CodeSommaire() {
 const s = StyleSheet.create({
   liste: { paddingHorizontal: 18, marginTop: 16 },
   vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 24 },
+  meta: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 10, marginLeft: 4 },
   surface: {
     backgroundColor: "#fff", borderRadius: 22, overflow: "hidden",
     shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 16, shadowOffset: { width: 0, height: 7 },
     elevation: 3,
   },
-  separateur: { height: 1, backgroundColor: "rgba(0,30,60,0.07)", marginLeft: 70 },
-  ligne: { flexDirection: "row", alignItems: "center", gap: 15, paddingVertical: 14, paddingHorizontal: 16 },
-  medaillon: {
-    width: 39, height: 39, borderRadius: 12, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(0,79,145,0.08)", borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,79,145,0.22)",
-  },
-  medaillonTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu },
-  ligneTitre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 19 },
+  separateur: { height: 1, backgroundColor: "rgba(0,30,60,0.07)", marginLeft: 74 },
+  ligne: { flexDirection: "row", alignItems: "center", gap: 16, paddingVertical: 15, paddingHorizontal: 18 },
+  numeroColonne: { width: 40, alignItems: "center" },
+  numeroRomain: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.3, lineHeight: 21 },
+  numeroLegende: { fontSize: 7.5, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1.2, marginTop: 2 },
+  ligneTitre: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
   ligneSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 3 },
   resultat: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure, padding: 15, marginBottom: 10 },
   resNumero: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },

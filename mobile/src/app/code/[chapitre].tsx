@@ -1,37 +1,46 @@
-// Chapitre du code — articles directs puis sections, chaque article en
-// carte lisible. Arrivée depuis la recherche : défilement automatique
-// jusqu'à l'article et surbrillance temporaire.
+// Lecteur du code — expérience de lecture immersive (façon Apple Books) :
+// page blanche pleine, barre haute discrète (chapitre courant, réglage de
+// la taille du texte, progression de lecture), ouverture de chapitre
+// typographique centrée, articles en flux continu avec titres courants,
+// sections en séparateurs centrés, navigation chapitre précédent/suivant
+// en bas. Arrivée depuis la recherche : défilement + surbrillance douce.
+import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
-import HeroModule from "@/components/HeroModule";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
 
-function Article({ a, surligne, onPosition }: { a: any; surligne: boolean; onPosition: (id: string, y: number) => void }) {
-  return (
-    <View onLayout={e => onPosition(a.id, e.nativeEvent.layout.y)}
-      style={[s.article, surligne && s.articleSurligne]}>
-      <Text style={s.artNumero}>ARTICLE {String(a.num_display).toUpperCase()}</Text>
-      {a.titre ? <Text style={s.artTitre}>{a.titre}</Text> : null}
-      <Text style={s.artContenu}>{a.contenu}</Text>
-    </View>
-  );
-}
+// Échelle typographique réglable (5 crans, Apple Books-like)
+const CORPS = [15, 16.5, 18, 19.5, 21];
 
-export default function Chapitre() {
+export default function Lecteur() {
   const { chapitre, base = "code-investissement", art } = useLocalSearchParams<{ chapitre: string; base?: string; art?: string }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
   const defileur = useRef<ScrollView>(null);
   const positions = useRef<Record<string, number>>({});
   const [surligneId, setSurligneId] = useState<string | null>(art || null);
+  const [cran, setCran] = useState(1);
+  const [progression, setProgression] = useState(0);
 
   const { data: chapitres, isLoading } = useQuery({
     queryKey: ["code", base],
     queryFn: () => getJson<any[]>(`/${base}`),
     staleTime: 30 * 60 * 1000,
   });
-  const chap = (chapitres || []).find((c: any) => c.id === chapitre);
+  const liste = chapitres || [];
+  const index = liste.findIndex((c: any) => c.id === chapitre);
+  const chap = index >= 0 ? liste[index] : null;
+  const precedent = index > 0 ? liste[index - 1] : null;
+  const suivant = index >= 0 && index < liste.length - 1 ? liste[index + 1] : null;
+
+  // Tailles dérivées du cran choisi
+  const corps = CORPS[cran];
+  const interligne = Math.round(corps * 1.66);
+  const artTitreTaille = corps + 1;
 
   const enregistrerPosition = (id: string, y: number) => { positions.current[id] = y; };
 
@@ -40,64 +49,183 @@ export default function Chapitre() {
     if (!art || !chap) return;
     const t = setTimeout(() => {
       const y = positions.current[art];
-      if (y != null) defileur.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
-      setTimeout(() => setSurligneId(null), 2200);
-    }, 350);
+      if (y != null) defileur.current?.scrollTo({ y: Math.max(0, y - insets.top - 70), animated: true });
+      setTimeout(() => setSurligneId(null), 2600);
+    }, 400);
     return () => clearTimeout(t);
   }, [art, chap?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return (
-    <ScrollView ref={defileur} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 50 }}>
-      <HeroModule
-        titre={`Chapitre ${chap ? (chap.numero === 1 ? "premier" : chap.num_display) : "…"}`}
-        sousTitre={base === "modalites-application" ? "Modalités d'application" : "Code des investissements"} />
-      <View style={{ padding: 18 }}>
-      {isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 30 }} />}
-      {chap && (
-        <>
-          <Text style={s.chapTitre}>{chap.titre}</Text>
-          {chap.contenu ? <Text style={s.chapContenu}>{chap.contenu}</Text> : null}
+  const allerA = (id: string) => {
+    positions.current = {};
+    setProgression(0);
+    defileur.current?.scrollTo({ y: 0, animated: false });
+    router.replace({ pathname: "/code/[chapitre]", params: { chapitre: id, base } } as any);
+  };
 
-          <View style={{ marginTop: 18, gap: 12 }}>
-            {(chap.articles || []).map((a: any) => (
-              <Article key={a.id} a={a} surligne={a.id === surligneId} onPosition={enregistrerPosition} />
-            ))}
-          </View>
+  const etiquette = `${base === "modalites-application" ? "MODALITÉS D'APPLICATION" : "CODE DES INVESTISSEMENTS"}`;
+  const numeroChap = chap ? (chap.numero === 1 ? "PREMIER" : String(chap.num_display).toUpperCase()) : "";
 
-          {(chap.sections || []).map((sec: any) => (
-            <View key={sec.id} style={{ marginTop: 26 }}>
-              <View style={s.sectionEntete}>
-                <View style={s.sectionFilet} />
-                <Text style={s.sectionTitre}>SECTION {String(sec.num_display).toUpperCase()} — {sec.titre}</Text>
-              </View>
-              {sec.contenu ? <Text style={s.chapContenu}>{sec.contenu}</Text> : null}
-              <View style={{ marginTop: 12, gap: 12 }}>
-                {(sec.articles || []).map((a: any) => (
-                  <Article key={a.id} a={a} surligne={a.id === surligneId} onPosition={enregistrerPosition} />
-                ))}
-              </View>
-            </View>
-          ))}
-        </>
-      )}
+  const Article = ({ a }: { a: any }) => (
+    <View onLayout={e => enregistrerPosition(a.id, e.nativeEvent.layout.y)}
+      style={[s.article, a.id === surligneId && s.articleSurligne]}>
+      <View style={s.artEntete}>
+        <Text style={s.artNumero}>Article {a.num_display}</Text>
+        <View style={s.artFilet} />
       </View>
-    </ScrollView>
+      {a.titre ? <Text style={[s.artTitre, { fontSize: artTitreTaille, lineHeight: Math.round(artTitreTaille * 1.35) }]}>{a.titre}</Text> : null}
+      <Text style={[s.artContenu, { fontSize: corps, lineHeight: interligne }]}>{a.contenu}</Text>
+    </View>
+  );
+
+  return (
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <ScrollView
+        ref={defileur}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingTop: insets.top + 62, paddingBottom: 60 }}
+        scrollEventThrottle={32}
+        onScroll={e => {
+          const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+          const max = contentSize.height - layoutMeasurement.height;
+          setProgression(max > 0 ? Math.min(1, Math.max(0, contentOffset.y / max)) : 0);
+        }}>
+        {isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 40 }} />}
+        {chap && (
+          <>
+            {/* Ouverture de chapitre */}
+            <View style={s.ouverture}>
+              <Text style={s.ouvertureSur}>CHAPITRE {numeroChap}</Text>
+              <Text style={s.ouvertureTitre}>{chap.titre}</Text>
+              <View style={s.ornement} />
+            </View>
+            {chap.contenu ? (
+              <Text style={[s.chapContenu, { fontSize: corps, lineHeight: interligne }]}>{chap.contenu}</Text>
+            ) : null}
+
+            {/* Articles directs */}
+            <View>
+              {(chap.articles || []).map((a: any) => <Article key={a.id} a={a} />)}
+            </View>
+
+            {/* Sections */}
+            {(chap.sections || []).map((sec: any) => (
+              <View key={sec.id}>
+                <View style={s.section}>
+                  <View style={s.sectionFilet} />
+                  <Text style={s.sectionNumero}>SECTION {String(sec.num_display).toUpperCase()}</Text>
+                  <Text style={s.sectionTitre}>{sec.titre}</Text>
+                </View>
+                {sec.contenu ? (
+                  <Text style={[s.chapContenu, { fontSize: corps, lineHeight: interligne }]}>{sec.contenu}</Text>
+                ) : null}
+                {(sec.articles || []).map((a: any) => <Article key={a.id} a={a} />)}
+              </View>
+            ))}
+
+            {/* Navigation entre chapitres */}
+            {(precedent || suivant) && (
+              <View style={s.navigation}>
+                {precedent ? (
+                  <Pressable onPress={() => allerA(precedent.id)}
+                    style={({ pressed }) => [s.navCarte, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
+                    <View style={s.navLigne}>
+                      <Ionicons name="arrow-back" size={12} color={T.gris} />
+                      <Text style={s.navLabel}>PRÉCÉDENT</Text>
+                    </View>
+                    <Text style={s.navTitre} numberOfLines={2}>{precedent.titre}</Text>
+                  </Pressable>
+                ) : <View style={{ flex: 1 }} />}
+                {suivant ? (
+                  <Pressable onPress={() => allerA(suivant.id)}
+                    style={({ pressed }) => [s.navCarte, { alignItems: "flex-end" }, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
+                    <View style={s.navLigne}>
+                      <Text style={s.navLabel}>SUIVANT</Text>
+                      <Ionicons name="arrow-forward" size={12} color={T.gris} />
+                    </View>
+                    <Text style={[s.navTitre, { textAlign: "right" }]} numberOfLines={2}>{suivant.titre}</Text>
+                  </Pressable>
+                ) : <View style={{ flex: 1 }} />}
+              </View>
+            )}
+          </>
+        )}
+      </ScrollView>
+
+      {/* Barre haute : chapitre courant, réglage du texte, progression */}
+      <View style={[s.barre, { paddingTop: insets.top + 6 }]}>
+        <View style={s.barreContenu}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.barreEtiquette} numberOfLines={1}>{etiquette}</Text>
+            {chap ? <Text style={s.barreChapitre} numberOfLines={1}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</Text> : null}
+          </View>
+          <View style={s.tailleGroupe}>
+            <Pressable onPress={() => setCran(c => Math.max(0, c - 1))} disabled={cran === 0} hitSlop={6}
+              style={({ pressed }) => [s.tailleBouton, pressed && { backgroundColor: "rgba(0,79,145,0.10)" }, cran === 0 && { opacity: 0.35 }]}>
+              <Text style={[s.tailleTexte, { fontSize: 12 }]}>A</Text>
+            </Pressable>
+            <View style={s.tailleSep} />
+            <Pressable onPress={() => setCran(c => Math.min(CORPS.length - 1, c + 1))} disabled={cran === CORPS.length - 1} hitSlop={6}
+              style={({ pressed }) => [s.tailleBouton, pressed && { backgroundColor: "rgba(0,79,145,0.10)" }, cran === CORPS.length - 1 && { opacity: 0.35 }]}>
+              <Text style={[s.tailleTexte, { fontSize: 17 }]}>A</Text>
+            </Pressable>
+          </View>
+        </View>
+        {/* Progression de lecture */}
+        <View style={s.progFond}>
+          <View style={[s.progBarre, { width: `${Math.round(progression * 100)}%` }]} />
+        </View>
+      </View>
+    </View>
   );
 }
 
+const MARGE = 26;
+
 const s = StyleSheet.create({
-  chapTitre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27 },
-  chapContenu: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21, marginTop: 10 },
-  sectionEntete: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 4 },
-  sectionFilet: { width: 22, height: 2.5, borderRadius: 2, backgroundColor: T.orange },
-  sectionTitre: { flex: 1, fontSize: 11.5, fontFamily: POLICE.gras, color: "#8a5a30", letterSpacing: 0.8, lineHeight: 16 },
-  article: {
-    backgroundColor: "#fff", borderRadius: 18, padding: 17,
-    shadowColor: "#001e3c", shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
-    elevation: 2,
+  barre: {
+    position: "absolute", top: 0, left: 0, right: 0,
+    backgroundColor: "rgba(255,255,255,0.97)",
   },
-  articleSurligne: { backgroundColor: "#FFF8EF", borderWidth: 1, borderColor: "rgba(202,99,31,0.35)" },
-  artNumero: { fontSize: 10, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.4 },
-  artTitre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 19, marginTop: 6 },
-  artContenu: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21.5, marginTop: 8 },
+  barreContenu: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: MARGE, paddingBottom: 8 },
+  barreEtiquette: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 1.6 },
+  barreChapitre: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, marginTop: 1.5, letterSpacing: -0.2 },
+  tailleGroupe: {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "rgba(0,79,145,0.06)", borderRadius: 999, paddingHorizontal: 4, paddingVertical: 3,
+  },
+  tailleBouton: { width: 34, height: 28, borderRadius: 999, alignItems: "center", justifyContent: "center" },
+  tailleTexte: { fontFamily: POLICE.demi, color: T.bleu },
+  tailleSep: { width: 1, height: 14, backgroundColor: "rgba(0,79,145,0.15)" },
+  progFond: { height: 2.5, backgroundColor: T.filet },
+  progBarre: { height: "100%", backgroundColor: T.bleu },
+  ouverture: { alignItems: "center", paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 4 },
+  ouvertureSur: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 2.4 },
+  ouvertureTitre: {
+    fontSize: 25, fontFamily: POLICE.gras, color: T.encre, textAlign: "center",
+    lineHeight: 32, letterSpacing: -0.4, marginTop: 12,
+  },
+  ornement: { width: 34, height: 2.5, borderRadius: 2, backgroundColor: T.orange, marginTop: 18, marginBottom: 8 },
+  chapContenu: { fontFamily: POLICE.normal, color: T.texte, paddingHorizontal: MARGE, marginTop: 14 },
+  article: { paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 6, borderRadius: 14 },
+  articleSurligne: { backgroundColor: "#FFF6EB" },
+  artEntete: { flexDirection: "row", alignItems: "center", gap: 12 },
+  artNumero: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.1, textTransform: "uppercase" },
+  artFilet: { flex: 1, height: 1, backgroundColor: T.filet },
+  artTitre: { fontFamily: POLICE.demi, color: T.encre, marginTop: 9, letterSpacing: -0.2 },
+  artContenu: { fontFamily: POLICE.normal, color: "#33383F", marginTop: 9 },
+  section: { alignItems: "center", paddingHorizontal: MARGE, paddingTop: 38, paddingBottom: 2 },
+  sectionFilet: { width: 26, height: 2, borderRadius: 2, backgroundColor: T.orange, marginBottom: 12 },
+  sectionNumero: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 2.2 },
+  sectionTitre: {
+    fontSize: 16.5, fontFamily: POLICE.demi, color: T.encre, textAlign: "center",
+    lineHeight: 22, letterSpacing: -0.2, marginTop: 7,
+  },
+  navigation: {
+    flexDirection: "row", gap: 10, marginTop: 44, marginHorizontal: MARGE,
+    borderTopWidth: 1, borderTopColor: T.filet, paddingTop: 16,
+  },
+  navCarte: { flex: 1, borderRadius: 14, padding: 12, gap: 6 },
+  navLigne: { flexDirection: "row", alignItems: "center", gap: 6 },
+  navLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4 },
+  navTitre: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 17.5, letterSpacing: -0.2 },
 });
