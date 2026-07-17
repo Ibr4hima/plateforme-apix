@@ -38,7 +38,7 @@ export const MODULES = [
   { cle: "statistiques", titre: "Échanges commerciaux",          sous: "Flux bilatéraux",                icone: "currency_exchange", href: "" },
   { cle: "prospects",    titre: "Prospects",                     sous: "Investisseurs suivis",           icone: "frame_inspect",     href: "" },
   { cle: "entreprises",  titre: "Entreprises installées",        sous: "Registre des entreprises",       icone: "enterprise",        href: "/entreprises" },
-  { cle: "zones",        titre: "Zones d'investissement",        sous: "ZES, ZAI & pôles",               icone: "real_estate_agent", href: "" },
+  { cle: "zones",        titre: "Zones d'investissement",        sous: "ZES, ZAI & pôles",               icone: "real_estate_agent", href: "/zones" },
   { cle: "opportunites", titre: "Opportunités",                  sous: "Projets & potentialités",        icone: "bookmark_stacks",   href: "" },
   { cle: "accords",      titre: "Accords & Traités",             sous: "TBI & traités internationaux",   icone: "signature",         href: "/accords" },
   { cle: "evenements",   titre: "Événements",                    sous: "Agenda des investisseurs",       icone: "event",             href: "/evenements" },
