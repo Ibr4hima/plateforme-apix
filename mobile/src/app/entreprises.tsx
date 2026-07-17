@@ -1,8 +1,8 @@
 // Entreprises installées — adaptation fidèle de la page web : vues Liste /
 // Vue territoriale dans le hero, cards du site (dénomination, forme
 // juridique, badge pôle pastel, rangée Date de création | Région).
-// La vue territoriale devient une lecture par pôle : cards pastel avec
-// compte, dépliables sur les entreprises du pôle.
+// La vue territoriale est une lecture par région : cards pastel avec
+// compte, dépliables sur les entreprises de la région.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -74,17 +74,20 @@ export default function Entreprises() {
     return [...liste].sort((a: any, b: any) => (a.nom || "").localeCompare(b.nom || "", "fr"));
   }, [data, q]);
 
-  // Vue territoriale : groupes par pôle (comptes + entreprises)
+  // Vue territoriale : groupes par région (pastel stable par région)
+  const PASTELS = Object.values(POLE_COULEURS);
   const poles = useMemo(() => {
     const groupes = new Map<string, any[]>();
     for (const e of filtres) {
-      const cle = e.pole_territoire_nom || "Sans pôle";
+      const cle = e.region_nom || "Sans région";
       if (!groupes.has(cle)) groupes.set(cle, []);
       groupes.get(cle)!.push(e);
     }
     return Array.from(groupes.entries())
-      .map(([nom, entreprises]) => ({ nom, entreprises, couleur: POLE_COULEURS[normPole(nom)] || "#C5BFBB" }))
-      .sort((a, b) => b.entreprises.length - a.entreprises.length || a.nom.localeCompare(b.nom, "fr"));
+      .map(([nom, entreprises]) => ({ nom, entreprises }))
+      .sort((a, b) => b.entreprises.length - a.entreprises.length || a.nom.localeCompare(b.nom, "fr"))
+      .map((g, i) => ({ ...g, couleur: PASTELS[i % PASTELS.length] }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtres]);
 
   const hero = (
@@ -96,7 +99,7 @@ export default function Entreprises() {
         <Text style={s.compte}>
           {vue === "liste"
             ? `${filtres.length} entreprise${filtres.length > 1 ? "s" : ""}`
-            : `${poles.length} pôle${poles.length > 1 ? "s" : ""} · ${filtres.length} entreprise${filtres.length > 1 ? "s" : ""}`}
+            : `${poles.length} région${poles.length > 1 ? "s" : ""} · ${filtres.length} entreprise${filtres.length > 1 ? "s" : ""}`}
         </Text>
       )}
     </>
@@ -154,7 +157,7 @@ export default function Entreprises() {
                         <View style={{ flex: 1, minWidth: 0 }}>
                           <Text style={s.poleEntNom} numberOfLines={1}>{e.nom}</Text>
                           <Text style={s.poleEntSous} numberOfLines={1}>
-                            {[formeCourte(e.forme_juridique), e.region_nom].filter(Boolean).join(" · ") || "—"}
+                            {[formeCourte(e.forme_juridique), e.pole_territoire_nom].filter(Boolean).join(" · ") || "—"}
                           </Text>
                         </View>
                         <Ionicons name="chevron-forward" size={13} color={T.grisClair} />
