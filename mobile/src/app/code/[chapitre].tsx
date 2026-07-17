@@ -5,16 +5,19 @@
 // sections en séparateurs centrés, navigation chapitre précédent/suivant
 // en bas. Arrivée depuis la recherche : défilement + surbrillance douce.
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { htmlEnTexte } from "@/components/ZoneSheet";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
 
 // Échelle typographique réglable (5 crans, Apple Books-like)
 const CORPS = [15, 16.5, 18, 19.5, 21];
+const CLE_TAILLE = "code.taille";
 
 export default function Lecteur() {
   const { chapitre, base = "code-investissement", art } = useLocalSearchParams<{ chapitre: string; base?: string; art?: string }>();
@@ -23,7 +26,19 @@ export default function Lecteur() {
   const defileur = useRef<ScrollView>(null);
   const positions = useRef<Record<string, number>>({});
   const [surligneId, setSurligneId] = useState<string | null>(art || null);
+  // Taille du texte : mémorisée entre les sessions
   const [cran, setCran] = useState(1);
+  useEffect(() => {
+    AsyncStorage.getItem(CLE_TAILLE).then(v => {
+      const n = Number(v);
+      if (v !== null && !isNaN(n)) setCran(Math.min(CORPS.length - 1, Math.max(0, n)));
+    }).catch(() => {});
+  }, []);
+  const changerCran = (delta: number) => setCran(c => {
+    const n = Math.min(CORPS.length - 1, Math.max(0, c + delta));
+    AsyncStorage.setItem(CLE_TAILLE, String(n)).catch(() => {});
+    return n;
+  });
   // Progression de lecture : valeur animée alimentée par le défilement
   const defilementY = useRef(new Animated.Value(0)).current;
   const [hauteurMax, setHauteurMax] = useState(1);
@@ -77,7 +92,8 @@ export default function Lecteur() {
         <View style={s.artFilet} />
       </View>
       {a.titre ? <Text style={[s.artTitre, { fontSize: artTitreTaille, lineHeight: Math.round(artTitreTaille * 1.35) }]}>{a.titre}</Text> : null}
-      <Text style={[s.artContenu, { fontSize: corps, lineHeight: interligne }]}>{a.contenu}</Text>
+      {/* Le contenu est stocké en HTML riche (listes…) : converti en texte à puces */}
+      <Text style={[s.artContenu, { fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(a.contenu || "")}</Text>
     </View>
   );
 
@@ -101,7 +117,7 @@ export default function Lecteur() {
               <View style={s.ornement} />
             </View>
             {chap.contenu ? (
-              <Text style={[s.chapContenu, { fontSize: corps, lineHeight: interligne }]}>{chap.contenu}</Text>
+              <Text style={[s.chapContenu, { fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(chap.contenu)}</Text>
             ) : null}
 
             {/* Articles directs */}
@@ -118,7 +134,7 @@ export default function Lecteur() {
                   <Text style={s.sectionTitre}>{sec.titre}</Text>
                 </View>
                 {sec.contenu ? (
-                  <Text style={[s.chapContenu, { fontSize: corps, lineHeight: interligne }]}>{sec.contenu}</Text>
+                  <Text style={[s.chapContenu, { fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(sec.contenu)}</Text>
                 ) : null}
                 {(sec.articles || []).map((a: any) => <Article key={a.id} a={a} />)}
               </View>
@@ -162,12 +178,12 @@ export default function Lecteur() {
             {chap ? <Text style={s.barreChapitre} numberOfLines={1}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</Text> : null}
           </View>
           <View style={s.tailleGroupe}>
-            <Pressable onPress={() => setCran(c => Math.max(0, c - 1))} disabled={cran === 0} hitSlop={6}
+            <Pressable onPress={() => changerCran(-1)} disabled={cran === 0} hitSlop={6}
               style={({ pressed }) => [s.tailleBouton, pressed && { backgroundColor: "rgba(0,79,145,0.10)" }, cran === 0 && { opacity: 0.35 }]}>
               <Text style={[s.tailleTexte, { fontSize: 12 }]}>A</Text>
             </Pressable>
             <View style={s.tailleSep} />
-            <Pressable onPress={() => setCran(c => Math.min(CORPS.length - 1, c + 1))} disabled={cran === CORPS.length - 1} hitSlop={6}
+            <Pressable onPress={() => changerCran(1)} disabled={cran === CORPS.length - 1} hitSlop={6}
               style={({ pressed }) => [s.tailleBouton, pressed && { backgroundColor: "rgba(0,79,145,0.10)" }, cran === CORPS.length - 1 && { opacity: 0.35 }]}>
               <Text style={[s.tailleTexte, { fontSize: 17 }]}>A</Text>
             </Pressable>
@@ -193,7 +209,7 @@ const MARGE = 26;
 const s = StyleSheet.create({
   barre: {
     position: "absolute", top: 0, left: 0, right: 0,
-    backgroundColor: "rgba(255,255,255,0.97)",
+    backgroundColor: "#fff",
   },
   barreContenu: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: MARGE, paddingBottom: 8 },
   barreEtiquette: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 1.6 },
