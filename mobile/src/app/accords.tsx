@@ -8,15 +8,15 @@ import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, V
 import AccordSheet, { ST_PASTEL, sousTitreStatut } from "@/components/AccordSheet";
 import HeroModule from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
-import { fetchTous, getJson } from "@/lib/api";
+import { fetchTous } from "@/lib/api";
 import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { POLICE, T } from "@/theme";
 
-const ONGLETS = [
-  { cle: "tbi",   label: "Bilatéraux (TBI)" },
-  { cle: "inter", label: "Internationaux" },
+const TYPES = [
+  { cle: "tbi",   label: "Traités Bilatéraux" },
+  { cle: "inter", label: "Traités Internationaux" },
 ] as const;
 const STATUTS = [
   { cle: "tous",       label: "Tous" },
@@ -68,24 +68,15 @@ export default function Accords() {
   const [onglet, setOnglet] = useState("tbi");
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("tous");
-  const [paysIds, setPaysIds] = useState<number[]>([]);
   const [selec, setSelec] = useState<any>(null);
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["accords"], queryFn: () => fetchTous("/accords"),
   });
   // L'endpoint renvoie { pays: [...], organisations: [...] } (comme sur le site)
-  const paysDistincts = useQuery({
-    queryKey: ["accords-parties"], queryFn: () => getJson<{ pays: any[] }>("/accords/parties-distinctes"), staleTime: 30 * 60 * 1000,
-  });
-  const autresPays = useMemo(() =>
-    (paysDistincts.data?.pays || []).filter((p: any) => p.nom !== "Sénégal").sort((a: any, b: any) => a.nom.localeCompare(b.nom, "fr")),
-    [paysDistincts.data]);
-
   const filtres = useMemo(() => {
     let liste = (data || []).filter((a: any) => (a.type_accord || "tbi") === "tbi");
     if (statut !== "tous") liste = liste.filter((a: any) => computeStatutAccord(a) === statut);
-    if (paysIds.length > 0) liste = liste.filter((a: any) => paysIds.some(id => (a.parties_pays_ids || []).includes(id)));
     if (q.trim()) {
       const t = q.trim().toLowerCase();
       liste = liste.filter((a: any) => (a.titre || "").toLowerCase().includes(t) || (a.reference || "").toLowerCase().includes(t));
@@ -97,45 +88,26 @@ export default function Accords() {
       if (!b.date_expiration) return -1;
       return a.date_expiration.localeCompare(b.date_expiration);
     });
-  }, [data, q, statut, paysIds]);
-
-  const togglePays = (id: number) => setPaysIds(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  }, [data, q, statut]);
 
   const hero = (
     <>
       <HeroModule titre="Accords & Traités"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher un accord…" }}
-        segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }} />
-      {onglet === "tbi" && (
-        <>
-          {/* Filtres de statut */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipsRangee}>
-            {STATUTS.map(o => {
-              const actif = statut === o.cle;
-              return (
-                <Pressable key={o.cle} onPress={() => setStatut(o.cle)} style={[s.chipFiltre, actif && s.chipFiltreActif]}>
-                  <Text style={[s.chipFiltreTexte, actif && s.chipFiltreTexteActif]}>{o.label}</Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-          {/* Pays signataires */}
-          {autresPays.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[s.chipsRangee, { paddingTop: 0 }]}>
-              {autresPays.map((p: any) => {
-                const actif = paysIds.includes(p.id);
-                return (
-                  <Pressable key={p.id} onPress={() => togglePays(p.id)} style={[s.chipPays, actif && s.chipPaysActif]}>
-                    <Text style={[s.chipPaysTexte, actif && s.chipPaysTexteActif]}>{p.nom}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          )}
-          {!isLoading && !isError && (
-            <Text style={s.compte}>{filtres.length} accord{filtres.length > 1 ? "s" : ""}</Text>
-          )}
-        </>
+        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
+        segments={{ options: STATUTS, valeur: statut, onChange: setStatut }} />
+      {/* Types de traités — extensible */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipsRangee}>
+        {TYPES.map(o => {
+          const actif = onglet === o.cle;
+          return (
+            <Pressable key={o.cle} onPress={() => setOnglet(o.cle)} style={[s.chipFiltre, actif && s.chipFiltreActif]}>
+              <Text style={[s.chipFiltreTexte, actif && s.chipFiltreTexteActif]}>{o.label}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+      {onglet === "tbi" && !isLoading && !isError && (
+        <Text style={s.compte}>{filtres.length} accord{filtres.length > 1 ? "s" : ""}</Text>
       )}
     </>
   );
@@ -195,10 +167,6 @@ const s = StyleSheet.create({
   chipFiltreActif: { backgroundColor: T.bleu, borderColor: T.bleu },
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
   chipFiltreTexteActif: { color: "#fff" },
-  chipPays: { paddingHorizontal: 13, paddingVertical: 6.5, borderRadius: 999, backgroundColor: "rgba(0,79,145,0.05)", borderWidth: 1, borderColor: "rgba(0,79,145,0.12)" },
-  chipPaysActif: { backgroundColor: "rgba(0,79,145,0.12)", borderColor: T.bleu },
-  chipPaysTexte: { fontSize: 12, fontFamily: POLICE.moyen, color: T.texte },
-  chipPaysTexteActif: { color: T.bleu, fontFamily: POLICE.demi },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 12, marginBottom: 4, paddingHorizontal: 16 },
   carte: {
     backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
