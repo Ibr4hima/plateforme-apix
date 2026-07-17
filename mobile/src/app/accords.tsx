@@ -1,12 +1,20 @@
-// Accords & Traités — première vue branchée sur l'API de la plateforme.
-// Mêmes règles que le site : computeStatutAccord, badges pastel, fmtDate.
+// Accords & Traités — hero avec recherche et filtres de statut intégrés,
+// liste des accords aux règles de la plateforme (computeStatutAccord).
 import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import HeroModule from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { BADGE, T, POLICE } from "@/theme";
+import { BADGE, POLICE, T } from "@/theme";
+
+const SEGMENTS = [
+  { cle: "tous",       label: "Tous" },
+  { cle: "en_vigueur", label: "En vigueur" },
+  { cle: "signe",      label: "Signés" },
+  { cle: "expire",     label: "Expirés" },
+] as const;
 
 function CarteAccord({ a }: { a: any }) {
   const st = BADGE[(computeStatutAccord(a) || "") as keyof typeof BADGE];
@@ -30,28 +38,41 @@ function CarteAccord({ a }: { a: any }) {
 }
 
 export default function Accords() {
+  const [q, setQ] = useState("");
+  const [statut, setStatut] = useState("tous");
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["accords"],
     queryFn: () => fetchTous("/accords"),
   });
 
-  const hero = (
-    <HeroModule surtitre="Module" titre="Accords & Traités" sousTitre="TBI & traités internationaux" />
-  );
+  const filtres = useMemo(() => {
+    let liste = data || [];
+    if (statut !== "tous") liste = liste.filter((a: any) => computeStatutAccord(a) === statut);
+    if (q.trim()) {
+      const t = q.trim().toLowerCase();
+      liste = liste.filter((a: any) => (a.titre || "").toLowerCase().includes(t));
+    }
+    return liste;
+  }, [data, q, statut]);
 
   return (
     <FlatList
       style={{ backgroundColor: T.fond }}
-      data={isLoading || isError ? [] : (data || [])}
+      data={isLoading || isError ? [] : filtres}
       keyExtractor={(a: any) => String(a.id)}
       renderItem={({ item }) => <View style={s.rangee}><CarteAccord a={item} /></View>}
       contentContainerStyle={s.liste}
       refreshing={isRefetching}
       onRefresh={refetch}
+      keyboardShouldPersistTaps="handled"
       ListHeaderComponent={
         <>
-          {hero}
-          {!isLoading && !isError && <Text style={s.compte}>{(data || []).length} accords</Text>}
+          <HeroModule titre="Accords & Traités"
+            recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher un accord…" }}
+            segments={{ options: SEGMENTS, valeur: statut, onChange: setStatut }} />
+          {!isLoading && !isError && (
+            <Text style={s.compte}>{filtres.length} accord{filtres.length > 1 ? "s" : ""}</Text>
+          )}
         </>
       }
       ListEmptyComponent={
@@ -59,10 +80,11 @@ export default function Accords() {
         : isError ? (
           <View style={s.centre}>
             <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-            <Text style={s.erreurSous}>Vérifier EXPO_PUBLIC_API_URL et que le backend est démarré.</Text>
             <Pressable onPress={() => refetch()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
           </View>
-        ) : null
+        ) : (
+          <View style={s.centre}><Text style={s.erreurSous}>Aucun accord ne correspond.</Text></View>
+        )
       }
     />
   );
@@ -71,7 +93,7 @@ export default function Accords() {
 const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  erreurSous: { fontSize: 12, color: T.gris, textAlign: "center" },
+  erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
   bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { gap: 11, paddingBottom: 40 },
@@ -83,5 +105,5 @@ const s = StyleSheet.create({
   titre: { flex: 1, fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, lineHeight: 18 },
   badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
   badgeTexte: { fontSize: 10, fontFamily: POLICE.gras },
-  sous: { fontSize: 11.5, color: T.gris, marginTop: 8 },
+  sous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 8 },
 });

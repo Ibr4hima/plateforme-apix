@@ -1,44 +1,79 @@
-// Hero partagé des écrans de modules — même langage que l'accueil :
-// bleu APIX, halos lumineux, surtitre espacé, titre Google Sans gras.
-// Remplace l'en-tête natif (bouton retour en verre dépoli intégré).
+// Hero partagé des écrans de modules — bleu APIX, halos, coins bas arrondis.
+// Peut embarquer une recherche (verre dépoli) et des segments (pilule active
+// blanche). Pas de bouton retour : le glissement iOS fait le retour.
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { POLICE, T } from "@/theme";
 
-export default function HeroModule({ surtitre, titre, sousTitre, droite }: {
-  surtitre: string; titre: string; sousTitre?: string; droite?: React.ReactNode;
+export type SegmentOption = { cle: string; label: string };
+
+export default function HeroModule({ titre, sousTitre, recherche, segments }: {
+  titre: string;
+  sousTitre?: string;
+  recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string };
+  segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
 }) {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   return (
-    <View style={[s.hero, { paddingTop: insets.top + 8 }]}>
+    <View style={[s.hero, { paddingTop: insets.top + 22 }]}>
       <View style={s.haloHaut} />
       <View style={s.haloBas} />
-      <View style={s.rangee}>
-        <Pressable onPress={() => router.back()} hitSlop={8} style={({ pressed }) => [s.retour, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
-          <Ionicons name="chevron-back" size={19} color="#fff" />
-        </Pressable>
-        {droite}
-      </View>
-      <Text style={s.surtitre}>{surtitre.toUpperCase()}</Text>
+
       <Text style={s.titre}>{titre}</Text>
       {sousTitre ? <Text style={s.sousTitre}>{sousTitre}</Text> : null}
+
+      {recherche && (
+        <View style={s.barre}>
+          <Ionicons name="search" size={16} color="rgba(255,255,255,0.65)" />
+          <TextInput
+            value={recherche.valeur} onChangeText={recherche.onChange}
+            placeholder={recherche.placeholder || "Rechercher…"}
+            placeholderTextColor="rgba(255,255,255,0.55)"
+            autoCorrect={false} clearButtonMode="while-editing"
+            style={s.champ} keyboardAppearance="dark" />
+        </View>
+      )}
+
+      {segments && (
+        <View style={s.segments}>
+          {segments.options.map(o => {
+            const actif = segments.valeur === o.cle;
+            return (
+              <Pressable key={o.cle} onPress={() => segments.onChange(o.cle)}
+                style={[s.segment, actif && s.segmentActif]}>
+                <Text style={[s.segmentTexte, actif && s.segmentTexteActif]} numberOfLines={1}>{o.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  hero: { backgroundColor: T.bleu, paddingHorizontal: 22, paddingBottom: 26, overflow: "hidden" },
+  hero: {
+    backgroundColor: T.bleu, paddingHorizontal: 22, paddingBottom: 24,
+    borderBottomLeftRadius: 28, borderBottomRightRadius: 28, overflow: "hidden",
+  },
   haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
   haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
-  rangee: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 },
-  retour: {
-    width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)",
+  titre: { color: "#fff", fontSize: 29, fontFamily: POLICE.gras, lineHeight: 35, letterSpacing: -0.6 },
+  sousTitre: { color: "rgba(255,255,255,0.70)", fontSize: 12.5, fontFamily: POLICE.normal, marginTop: 6 },
+  barre: {
+    flexDirection: "row", alignItems: "center", gap: 10, marginTop: 18,
+    backgroundColor: "rgba(255,255,255,0.10)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)",
+    borderRadius: 999, paddingHorizontal: 17, height: 47,
   },
-  surtitre: { color: "rgba(255,255,255,0.75)", fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 2, marginBottom: 8 },
-  titre: { color: "#fff", fontSize: 28, fontFamily: POLICE.gras, lineHeight: 34, letterSpacing: -0.6 },
-  sousTitre: { color: "rgba(255,255,255,0.70)", fontSize: 12.5, fontFamily: POLICE.normal, marginTop: 7 },
+  champ: { flex: 1, fontSize: 14.5, fontFamily: POLICE.moyen, color: "#fff" },
+  segments: {
+    flexDirection: "row", marginTop: 12, padding: 4, gap: 4,
+    backgroundColor: "rgba(255,255,255,0.10)", borderWidth: 1, borderColor: "rgba(255,255,255,0.16)",
+    borderRadius: 999,
+  },
+  segment: { flex: 1, alignItems: "center", paddingVertical: 8.5, borderRadius: 999 },
+  segmentActif: { backgroundColor: "#fff" },
+  segmentTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.85)" },
+  segmentTexteActif: { color: T.bleu },
 });

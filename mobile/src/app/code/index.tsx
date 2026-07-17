@@ -1,13 +1,12 @@
 // Code des investissements — sommaire : bascule Code / Modalités
 // d'application, recherche full-text avec extraits surlignés, chapitres
 // en liste groupée (médaillon en chiffres romains).
-import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import HeroModule from "@/components/HeroModule";
-import { API, getJson } from "@/lib/api";
+import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
 
 export type BaseCode = "code-investissement" | "modalites-application";
@@ -50,31 +49,12 @@ export default function CodeSommaire() {
 
   return (
     <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 46 }} keyboardShouldPersistTaps="handled">
-      <HeroModule surtitre="Plateforme de gestion des investissements"
-        titre="Code des investissements" sousTitre="Code et modalités d'application"
-        droite={
-          <Pressable onPress={() => Linking.openURL(`${API}/${base}/pdf/download`)} hitSlop={8}
-            style={({ pressed }) => [s.telecharger, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
-            <Ionicons name="download-outline" size={17} color="#fff" />
-          </Pressable>
-        } />
-
-      {/* Bascule Code / Modalités */}
-      <View style={s.segments}>
-        {([["code-investissement", "Le Code"], ["modalites-application", "Modalités d'application"]] as const).map(([cle, label]) => (
-          <Pressable key={cle} onPress={() => setBase(cle)}
-            style={[s.segment, base === cle && s.segmentActif]}>
-            <Text style={[s.segmentTexte, base === cle && s.segmentTexteActif]}>{label}</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {/* Recherche */}
-      <View style={s.barre}>
-        <Ionicons name="search" size={16} color={T.gris} />
-        <TextInput value={q} onChangeText={setQ} placeholder="Rechercher dans le code"
-          placeholderTextColor={T.gris} autoCorrect={false} clearButtonMode="while-editing" style={s.champ} />
-      </View>
+      <HeroModule titre="Code des investissements"
+        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher dans le code…" }}
+        segments={{
+          options: [{ cle: "code-investissement", label: "Le Code" }, { cle: "modalites-application", label: "Modalités" }],
+          valeur: base, onChange: cle => setBase(cle as BaseCode),
+        }} />
 
       {/* Résultats de recherche */}
       {enRecherche ? (
@@ -121,21 +101,6 @@ export default function CodeSommaire() {
 }
 
 const s = StyleSheet.create({
-  telecharger: {
-    width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)",
-  },
-  segments: { flexDirection: "row", gap: 8, paddingHorizontal: 18, marginTop: 16 },
-  segment: { paddingHorizontal: 16, paddingVertical: 8.5, borderRadius: 999, backgroundColor: "rgba(0,79,145,0.06)" },
-  segmentActif: { backgroundColor: T.bleu },
-  segmentTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
-  segmentTexteActif: { color: "#fff" },
-  barre: {
-    flexDirection: "row", alignItems: "center", gap: 10,
-    backgroundColor: "#fff", marginHorizontal: 18, marginTop: 14, paddingHorizontal: 16, height: 46,
-    borderRadius: 999, borderWidth: 1, borderColor: T.bordure,
-  },
-  champ: { flex: 1, fontSize: 14.5, fontFamily: POLICE.moyen, color: T.encre },
   liste: { paddingHorizontal: 18, marginTop: 16 },
   vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 24 },
   surface: {

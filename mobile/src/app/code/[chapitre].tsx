@@ -49,8 +49,8 @@ export default function Chapitre() {
   return (
     <ScrollView ref={defileur} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 50 }}>
       <HeroModule
-        surtitre={base === "modalites-application" ? "Modalités d'application" : "Code des investissements"}
-        titre={`Chapitre ${chap ? (chap.numero === 1 ? "premier" : chap.num_display) : "…"}`} />
+        titre={`Chapitre ${chap ? (chap.numero === 1 ? "premier" : chap.num_display) : "…"}`}
+        sousTitre={base === "modalites-application" ? "Modalités d'application" : "Code des investissements"} />
       <View style={{ padding: 18 }}>
       {isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 30 }} />}
       {chap && (
