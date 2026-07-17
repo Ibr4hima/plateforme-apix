@@ -112,10 +112,10 @@ export default function Accueil() {
 }
 
 const s = StyleSheet.create({
-  hero: { backgroundColor: T.bleu, paddingHorizontal: 24, paddingBottom: 64, overflow: "hidden" },
+  hero: { backgroundColor: T.bleu, paddingHorizontal: 24, paddingBottom: 64, overflow: "hidden", borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
   haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
-  surtitre: { color: "rgba(255,255,255,0.75)", fontSize: 10.5, fontFamily: POLICE.gras, letterSpacing: 2.2, marginBottom: 22 },
+  surtitre: { color: "rgba(255,255,255,0.75)", fontSize: 10.5, fontFamily: POLICE.gras, letterSpacing: 2.2, marginBottom: 22, textAlign: "center" },
   titre: { color: "#fff", fontSize: 40, fontFamily: POLICE.gras, lineHeight: 47, letterSpacing: -1 },
   titreMasque: { color: "#000" },
   recherche: {
