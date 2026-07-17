@@ -2,9 +2,10 @@
 // carte lisible. Arrivée depuis la recherche : défilement automatique
 // jusqu'à l'article et surbrillance temporaire.
 import { useQuery } from "@tanstack/react-query";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import HeroModule from "@/components/HeroModule";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
 
@@ -46,12 +47,14 @@ export default function Chapitre() {
   }, [art, chap?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <ScrollView ref={defileur} style={{ backgroundColor: T.fond }} contentContainerStyle={{ padding: 18, paddingBottom: 50 }}>
-      <Stack.Screen options={{ title: chap ? `Chapitre ${chap.numero === 1 ? "premier" : chap.num_display}` : "Chapitre" }} />
+    <ScrollView ref={defileur} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 50 }}>
+      <HeroModule
+        surtitre={base === "modalites-application" ? "Modalités d'application" : "Code des investissements"}
+        titre={`Chapitre ${chap ? (chap.numero === 1 ? "premier" : chap.num_display) : "…"}`} />
+      <View style={{ padding: 18 }}>
       {isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 30 }} />}
       {chap && (
         <>
-          <Text style={s.chapSurtitre}>CHAPITRE {String(chap.num_display).toUpperCase()}</Text>
           <Text style={s.chapTitre}>{chap.titre}</Text>
           {chap.contenu ? <Text style={s.chapContenu}>{chap.contenu}</Text> : null}
 
@@ -77,13 +80,13 @@ export default function Chapitre() {
           ))}
         </>
       )}
+      </View>
     </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
-  chapSurtitre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.8 },
-  chapTitre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, marginTop: 7 },
+  chapTitre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27 },
   chapContenu: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21, marginTop: 10 },
   sectionEntete: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 4 },
   sectionFilet: { width: 22, height: 2.5, borderRadius: 2, backgroundColor: T.orange },

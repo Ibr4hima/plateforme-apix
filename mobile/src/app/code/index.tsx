@@ -3,9 +3,10 @@
 // en liste groupée (médaillon en chiffres romains).
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import HeroModule from "@/components/HeroModule";
 import { API, getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
 
@@ -49,14 +50,14 @@ export default function CodeSommaire() {
 
   return (
     <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 46 }} keyboardShouldPersistTaps="handled">
-      <Stack.Screen options={{
-        title: "Code des investissements",
-        headerRight: () => (
-          <Pressable onPress={() => Linking.openURL(`${API}/${base}/pdf/download`)} hitSlop={10}>
-            <Ionicons name="download-outline" size={20} color="#fff" />
+      <HeroModule surtitre="Plateforme de gestion des investissements"
+        titre="Code des investissements" sousTitre="Code et modalités d'application"
+        droite={
+          <Pressable onPress={() => Linking.openURL(`${API}/${base}/pdf/download`)} hitSlop={8}
+            style={({ pressed }) => [s.telecharger, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
+            <Ionicons name="download-outline" size={17} color="#fff" />
           </Pressable>
-        ),
-      }} />
+        } />
 
       {/* Bascule Code / Modalités */}
       <View style={s.segments}>
@@ -120,6 +121,10 @@ export default function CodeSommaire() {
 }
 
 const s = StyleSheet.create({
+  telecharger: {
+    width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)",
+  },
   segments: { flexDirection: "row", gap: 8, paddingHorizontal: 18, marginTop: 16 },
   segment: { paddingHorizontal: 16, paddingVertical: 8.5, borderRadius: 999, backgroundColor: "rgba(0,79,145,0.06)" },
   segmentActif: { backgroundColor: T.bleu },
