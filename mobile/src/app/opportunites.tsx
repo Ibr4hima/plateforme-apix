@@ -194,7 +194,7 @@ export default function Opportunites() {
 
   const hero = (
     <>
-      <HeroModule titre="Opportunités"
+      <HeroModule titre={"Opportunités\nd'investissement"}
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: VUES, valeur: vue, onChange: v => { setVue(v); setNiveauSel(null); setSecteurSel(null); } }} />
       {!chargement && !enErreur && (
