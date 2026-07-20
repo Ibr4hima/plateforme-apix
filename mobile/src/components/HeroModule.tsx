@@ -2,12 +2,84 @@
 // Peut embarquer une recherche (verre dépoli) et des segments (pilule active
 // blanche). Pas de bouton retour : le glissement iOS fait le retour.
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Symbole from "@/components/Symbole";
 import { POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string };
+
+// ── Hero réductible (pattern App Store) ──────────────────────────────────────
+// Le grand hero défile avec le contenu ; passé le seuil, une barre compacte
+// (titre + action) apparaît en fondu, pilotée par le fil natif.
+export function useHeroDefilant() {
+  const defilY = useRef(new Animated.Value(0)).current;
+  const onScroll = useRef(Animated.event(
+    [{ nativeEvent: { contentOffset: { y: defilY } } }],
+    { useNativeDriver: true },
+  )).current;
+  return { defilY, onScroll };
+}
+
+export function BarreHero({ titre, defilY, bouton, seuil = 118 }: {
+  titre: string;
+  defilY: Animated.Value;
+  bouton?: { icone: string; onPress: () => void; badge?: number };
+  seuil?: number; // défilement à partir duquel la barre est pleinement visible
+}) {
+  const insets = useSafeAreaInsets();
+  // La barre ne doit pas intercepter les touches tant qu'elle est invisible
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const id = defilY.addListener(({ value }) => setVisible(value > seuil - 30));
+    return () => defilY.removeListener(id);
+  }, [defilY, seuil]);
+
+  const opacity = defilY.interpolate({ inputRange: [seuil - 42, seuil], outputRange: [0, 1], extrapolate: "clamp" });
+  const glisse  = defilY.interpolate({ inputRange: [seuil - 42, seuil], outputRange: [12, 0], extrapolate: "clamp" });
+
+  return (
+    <Animated.View pointerEvents={visible ? "box-none" : "none"}
+      style={[sb.barre, { paddingTop: insets.top, height: insets.top + 54, opacity }]}>
+      <Animated.View style={[sb.contenu, { transform: [{ translateY: glisse }] }]}>
+        <Text style={sb.titre} numberOfLines={1}>{titre}</Text>
+        {bouton && (
+          <Pressable onPress={bouton.onPress} hitSlop={8}
+            style={({ pressed }) => [sb.action, pressed && { backgroundColor: "rgba(255,255,255,0.24)" }]}>
+            <Symbole nom={bouton.icone} taille={18} couleur="#fff" />
+            {bouton.badge ? (
+              <View style={sb.badge}><Text style={sb.badgeTexte}>{bouton.badge}</Text></View>
+            ) : null}
+          </Pressable>
+        )}
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
+const sb = StyleSheet.create({
+  barre: {
+    position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
+    backgroundColor: T.heroFond,
+    shadowColor: "#001e3c", shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  contenu: {
+    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 20, gap: 12,
+  },
+  titre: { flex: 1, color: "#fff", fontSize: 16.5, fontFamily: POLICE.gras, letterSpacing: -0.3 },
+  action: {
+    width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.13)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)",
+  },
+  badge: {
+    position: "absolute", top: -3, right: -3, minWidth: 15, height: 15, borderRadius: 8,
+    backgroundColor: T.orange, alignItems: "center", justifyContent: "center", paddingHorizontal: 3.5,
+  },
+  badgeTexte: { fontSize: 9, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
+});
 
 export default function HeroModule({ titre, sousTitre, recherche, segments, bascule, bouton, children }: {
   titre: string;

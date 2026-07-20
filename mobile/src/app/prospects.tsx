@@ -4,9 +4,9 @@
 // rangée Pays | info contextuelle), fiche ProspectSheet.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import ProspectSheet, { OngletProspect, PROSPECT_PASTELS, badgeProspect, ilYa } from "@/components/ProspectSheet";
 import { fetchTous } from "@/lib/api";
 import { foncerPastel } from "@/lib/couleurs";
@@ -89,6 +89,7 @@ export default function Prospects() {
   const [vue, setVue] = useState<OngletProspect>("cibles");
   const [q, setQ] = useState("");
   const [selec, setSelec] = useState<any>(null);
+  const { defilY, onScroll } = useHeroDefilant();
 
   const cibles = useQuery({ queryKey: ["prospects", "cibles"], queryFn: () => fetchTous("/prospects?conclu=false&contactes=false") });
   const contact = useQuery({ queryKey: ["prospects", "contact"], queryFn: () => fetchTous("/prospects?conclu=false&contactes=true") });
@@ -112,11 +113,13 @@ export default function Prospects() {
 
   return (
     <>
-      <FlatList
+      <Animated.FlatList
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         style={{ backgroundColor: T.fond }}
         data={courante.isLoading || courante.isError ? [] : filtres}
         keyExtractor={(p: any) => String(p.id)}
-        renderItem={({ item }) => <View style={s.rangee}><CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} /></View>}
+        renderItem={({ item }: any) => <View style={s.rangee}><CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} /></View>}
         contentContainerStyle={s.liste}
         refreshing={courante.isRefetching} onRefresh={courante.refetch}
         keyboardShouldPersistTaps="handled"
@@ -137,6 +140,7 @@ export default function Prospects() {
           )
         }
       />
+      <BarreHero titre="Prospects" defilY={defilY} />
       {selec && <ProspectSheet prospect={selec} onglet={vue} onClose={() => setSelec(null)} />}
     </>
   );

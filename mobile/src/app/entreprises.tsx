@@ -5,11 +5,11 @@
 // compte, dépliables sur les entreprises de la région.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
@@ -58,6 +58,8 @@ export default function Entreprises() {
   const [vue, setVue] = useState("liste");
   const [poleOuvert, setPoleOuvert] = useState<string | null>(null);
   const [selec, setSelec] = useState<any>(null);
+  const { defilY, onScroll } = useHeroDefilant();
+  useEffect(() => { defilY.setValue(0); }, [vue, defilY]);
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["entreprises"], queryFn: () => fetchTous("/entreprises"),
@@ -116,11 +118,13 @@ export default function Entreprises() {
   return (
     <>
       {vue === "liste" ? (
-        <FlatList
+        <Animated.FlatList
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : filtres}
           keyExtractor={(e: any) => String(e.id)}
-          renderItem={({ item }) => <View style={s.rangee}><CarteEntreprise e={item} onPress={() => setSelec(item)} /></View>}
+          renderItem={({ item }: any) => <View style={s.rangee}><CarteEntreprise e={item} onPress={() => setSelec(item)} /></View>}
           contentContainerStyle={s.liste}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
@@ -128,11 +132,13 @@ export default function Entreprises() {
           ListEmptyComponent={vide}
         />
       ) : (
-        <FlatList
+        <Animated.FlatList
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : poles}
           keyExtractor={p => p.nom}
-          renderItem={({ item: p }) => {
+          renderItem={({ item: p }: any) => {
             const ouvert = poleOuvert === p.nom;
             return (
               <View style={s.rangee}>
@@ -173,6 +179,7 @@ export default function Entreprises() {
           ListEmptyComponent={vide}
         />
       )}
+      <BarreHero titre="Entreprises installées" defilY={defilY} />
       {selec && <EntrepriseSheet entreprise={selec} onClose={() => setSelec(null)} />}
     </>
   );

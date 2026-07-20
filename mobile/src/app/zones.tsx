@@ -5,10 +5,10 @@
 // pôles territoires en cards pastel (fiche pôle au tap).
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
-import { Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
 import { getJson } from "@/lib/api";
@@ -63,6 +63,8 @@ export default function Zones() {
   const [vue, setVue] = useState("zones");
   const [type, setType] = useState("ZES");
   const [zoneSelec, setZoneSelec] = useState<any>(null);
+  const { defilY, onScroll } = useHeroDefilant();
+  useEffect(() => { defilY.setValue(0); }, [vue, defilY]);
   const [poleSelec, setPoleSelec] = useState<any>(null);
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
@@ -144,11 +146,13 @@ export default function Zones() {
   return (
     <>
       {vue === "zones" ? (
-        <FlatList
+        <Animated.FlatList
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : filtres}
           keyExtractor={(z: any) => String(z.id)}
-          renderItem={({ item }) => <View style={s.rangee}><CarteZone z={item} onPress={() => setZoneSelec(item)} /></View>}
+          renderItem={({ item }: any) => <View style={s.rangee}><CarteZone z={item} onPress={() => setZoneSelec(item)} /></View>}
           contentContainerStyle={s.liste}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
@@ -156,11 +160,13 @@ export default function Zones() {
           ListEmptyComponent={vide}
         />
       ) : (
-        <FlatList
+        <Animated.FlatList
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : polesFiltres}
           keyExtractor={(p: any) => String(p.id)}
-          renderItem={({ item: p }) => {
+          renderItem={({ item: p }: any) => {
             const couleur = POLE_COULEURS[normPole(p.pole_territoire)] || "#C5BFBB";
             const nbZones = (zones || []).filter((z: any) => z.pole_id === p.id).length;
             const regions = splitLocalisation(p.localisation);
@@ -189,6 +195,7 @@ export default function Zones() {
           ListEmptyComponent={vide}
         />
       )}
+      <BarreHero titre="Zones d'investissement" defilY={defilY} />
       {zoneSelec && <ZoneSheet zone={zoneSelec} onClose={() => setZoneSelec(null)} />}
       {poleSelec && <PoleSheet pole={poleSelec} zones={zones || []} onClose={() => setPoleSelec(null)} />}
     </>

@@ -6,11 +6,11 @@
 // autre pays remplace le précédent.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Animated, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import FichePaysContenu from "@/components/FichePaysContenu";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import TexteDefilant from "@/components/TexteDefilant";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
@@ -22,7 +22,9 @@ type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb:
 
 export default function FichePaysIndex() {
   const [q, setQ] = useState("");
+  const { defilY, onScroll } = useHeroDefilant();
   const [selec, setSelec] = useState<Pays | null>(null);
+  useEffect(() => { defilY.setValue(0); }, [selec, defilY]);
   const [ouverts, setOuverts] = useState<Set<string>>(new Set(["Afrique"]));
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -91,15 +93,21 @@ export default function FichePaysIndex() {
 
   if (modeFiche) {
     return (
-      <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }} keyboardShouldPersistTaps="handled">
-        {hero}
-        <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
-      </ScrollView>
+      <>
+        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }} keyboardShouldPersistTaps="handled">
+          {hero}
+          <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
+        </Animated.ScrollView>
+        <BarreHero titre={selec!.nom} defilY={defilY} />
+      </>
     );
   }
 
   return (
-    <FlatList
+    <>
+    <Animated.FlatList
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       style={{ backgroundColor: T.fond }}
       data={isLoading || isError ? [] : sections}
       keyExtractor={c => c.continent}
@@ -156,6 +164,8 @@ export default function FichePaysIndex() {
         )
       }
     />
+    <BarreHero titre="Fiche Pays" defilY={defilY} />
+    </>
   );
 }
 

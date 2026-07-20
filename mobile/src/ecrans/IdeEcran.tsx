@@ -8,11 +8,11 @@
 // L'onglet Investissements nationaux arrive à l'étape suivante.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import type { BasculeModule } from "@/ecrans/basculeModule";
 import IdeFiltres, { FiltresIde } from "@/components/IdeFiltres";
 import NationalPanel from "@/components/NationalPanel";
@@ -106,6 +106,7 @@ export default function IdeEcran({ bascule }: { bascule?: BasculeModule }) {
   const [sousType, setSousType] = useState<string>("fluxstock");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [nbFiltresNat, setNbFiltresNat] = useState(0);
+  const { defilY, onScroll } = useHeroDefilant();
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
@@ -417,7 +418,7 @@ export default function IdeEcran({ bascule }: { bascule?: BasculeModule }) {
 
   return (
     <>
-      <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
         <HeroModule titre="Investissements privés" bascule={bascule}
           segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
           bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />
@@ -503,7 +504,9 @@ export default function IdeEcran({ bascule }: { bascule?: BasculeModule }) {
             )}
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <BarreHero titre="Investissements privés" defilY={defilY}
+        bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />
 
       {filtresOuverts && onglet === "ide" && (
         <IdeFiltres

@@ -7,12 +7,12 @@
 // multi-pays en comparaison. Flux bilatéraux : étape suivante.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import CommercePanel from "@/components/CommercePanel";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import type { BasculeModule } from "@/ecrans/basculeModule";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
 import { getJson } from "@/lib/api";
@@ -28,6 +28,7 @@ const ONGLETS = [
 export default function StatistiquesEcran({ bascule }: { bascule?: BasculeModule }) {
   const [onglet, setOnglet] = useState("indicateurs");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const { defilY, onScroll } = useHeroDefilant();
   const [nbFiltresCom, setNbFiltresCom] = useState(0);
 
   const { data: pays } = useQuery({ queryKey: ["stat-pays"], queryFn: () => getJson<any[]>("/statistiques/pays") });
@@ -119,7 +120,7 @@ export default function StatistiquesEcran({ bascule }: { bascule?: BasculeModule
 
   return (
     <>
-      <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
         <HeroModule titre="Échanges commerciaux" bascule={bascule}
           segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
           bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "indicateurs" ? nbFiltres : nbFiltresCom) || undefined }} />
@@ -190,7 +191,9 @@ export default function StatistiquesEcran({ bascule }: { bascule?: BasculeModule
             </View>
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <BarreHero titre="Échanges commerciaux" defilY={defilY}
+        bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "indicateurs" ? nbFiltres : nbFiltresCom) || undefined }} />
 
       {filtresOuverts && onglet === "indicateurs" && (
         <StatistiquesFiltres

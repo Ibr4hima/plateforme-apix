@@ -4,10 +4,10 @@
 // rangée de dates), tri par échéance d'expiration.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import AccordSheet, { ST_PASTEL, sousTitreStatut } from "@/components/AccordSheet";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
 import { fetchTous } from "@/lib/api";
 import { foncerPastel } from "@/lib/couleurs";
@@ -70,6 +70,7 @@ export default function Accords() {
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("tous");
   const [selec, setSelec] = useState<any>(null);
+  const { defilY, onScroll } = useHeroDefilant();
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["accords"], queryFn: () => fetchTous("/accords"),
@@ -128,11 +129,13 @@ export default function Accords() {
 
   return (
     <>
-      <FlatList
+      <Animated.FlatList
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         style={{ backgroundColor: T.fond }}
         data={isLoading || isError ? [] : filtres}
         keyExtractor={(a: any) => String(a.id)}
-        renderItem={({ item }) => <View style={s.rangee}><CarteAccord a={item} onPress={() => setSelec(item)} /></View>}
+        renderItem={({ item }: any) => <View style={s.rangee}><CarteAccord a={item} onPress={() => setSelec(item)} /></View>}
         contentContainerStyle={s.liste}
         refreshing={isRefetching}
         onRefresh={refetch}
@@ -147,6 +150,7 @@ export default function Accords() {
           )
         }
       />
+      <BarreHero titre="Accords & Traités" defilY={defilY} />
       {selec && <AccordSheet accord={selec} onClose={() => setSelec(null)} />}
     </>
   );

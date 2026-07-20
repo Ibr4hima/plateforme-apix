@@ -5,12 +5,12 @@
 // rattachement), avantages & incitations par secteur économique
 // (3 cards compteur puis activités groupées par branche).
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import { useNaema } from "@/components/ArbreNaema";
 import AvantageSheet from "@/components/AvantageSheet";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
 import { fetchTous, getJson } from "@/lib/api";
@@ -124,6 +124,8 @@ export default function Opportunites() {
   const [projetOuvert, setProjetOuvert] = useState<any>(null);
   const [potOuverte, setPotOuverte] = useState<any>(null);
   const [avgOuvert, setAvgOuvert] = useState<any>(null);
+  const { defilY, onScroll } = useHeroDefilant();
+  useEffect(() => { defilY.setValue(0); }, [vue, defilY]);
 
   const projetsQ = useQuery({ queryKey: ["projets"], queryFn: () => fetchTous("/projets") });
   const potsQ    = useQuery({ queryKey: ["potentialites"], queryFn: () => fetchTous("/opportunites/potentialites") });
@@ -219,17 +221,20 @@ export default function Opportunites() {
   if (vue === "projets") {
     return (
       <>
-        <FlatList
+        <Animated.FlatList
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={chargement || enErreur ? [] : projetsFiltres}
           keyExtractor={(p: any) => String(p.id)}
-          renderItem={({ item }) => <View style={s.rangee}><CarteProjet p={item} onPress={() => setProjetOuvert(item)} /></View>}
+          renderItem={({ item }: any) => <View style={s.rangee}><CarteProjet p={item} onPress={() => setProjetOuvert(item)} /></View>}
           contentContainerStyle={s.liste}
           refreshing={projetsQ.isRefetching} onRefresh={projetsQ.refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
           ListEmptyComponent={vide}
         />
+        <BarreHero titre="Opportunités d'investissement" defilY={defilY} />
         {projetOuvert && <ProjetSheet projet={projetOuvert} onClose={() => setProjetOuvert(null)} />}
       </>
     );
@@ -255,7 +260,7 @@ export default function Opportunites() {
     }
     return (
       <>
-        <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={s.liste} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={s.liste} keyboardShouldPersistTaps="handled">
           {hero}
           {chargement || enErreur ? vide : (
             <View style={{ paddingHorizontal: 16 }}>
@@ -294,7 +299,8 @@ export default function Opportunites() {
               )}
             </View>
           )}
-        </ScrollView>
+        </Animated.ScrollView>
+        <BarreHero titre="Opportunités d'investissement" defilY={defilY} />
         {potOuverte && <PotentialiteSheet pot={potOuverte} refAvantages={refAvantages || []} onClose={() => setPotOuverte(null)} />}
       </>
     );
@@ -313,7 +319,7 @@ export default function Opportunites() {
   branchesGroupes.sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
   return (
     <>
-      <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={s.liste} keyboardShouldPersistTaps="handled">
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={s.liste} keyboardShouldPersistTaps="handled">
         {hero}
         {chargement || enErreur ? vide : (
           <View style={{ paddingHorizontal: 16 }}>
@@ -349,7 +355,8 @@ export default function Opportunites() {
             )}
           </View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <BarreHero titre="Opportunités d'investissement" defilY={defilY} />
       {avgOuvert && <AvantageSheet avantage={avgOuvert} onClose={() => setAvgOuvert(null)} />}
     </>
   );

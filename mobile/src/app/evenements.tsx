@@ -5,10 +5,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo, useState } from "react";
-import { Pressable, SectionList, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, SectionList, StyleSheet, Text, View } from "react-native";
 import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import EvenementSheet, { ROLE_PASTEL, dateEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
-import HeroModule from "@/components/HeroModule";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
 import { foncerPastel } from "@/lib/couleurs";
 import { POLICE, T } from "@/theme";
@@ -97,6 +97,7 @@ export default function Evenements() {
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("tous");
   const [selec, setSelec] = useState<any>(null);
+  const { defilY, onScroll } = useHeroDefilant();
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["evenements"], queryFn: () => fetchTous("/evenements"),
@@ -163,11 +164,13 @@ export default function Evenements() {
 
   return (
     <>
-      <SectionList
+      <Animated.SectionList
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         style={{ backgroundColor: T.fond }}
         sections={isLoading || isError ? [] : sections}
         keyExtractor={(e: any) => String(e.id)}
-        renderItem={({ item, index, section }) => {
+        renderItem={({ item, index, section }: any) => {
           const st = statutEvenement(item);
           const pointC = item.id === prochainId ? T.bleu : st === "en_cours" ? T.vert : st === "a_venir" ? T.bleu : "#C9D4DF";
           const dernier = index === section.data.length - 1;
@@ -186,7 +189,7 @@ export default function Evenements() {
             </View>
           );
         }}
-        renderSectionHeader={({ section }) => (
+        renderSectionHeader={({ section }: any) => (
           <View style={s.annee}>
             <View style={s.anneePastille}><Text style={s.anneeTexte}>{section.title}</Text></View>
             <View style={s.anneeFilet} />
@@ -201,6 +204,7 @@ export default function Evenements() {
         ListHeaderComponent={hero}
         ListEmptyComponent={vide}
       />
+      <BarreHero titre="Événements" defilY={defilY} />
       {selec && <EvenementSheet ev={selec} onClose={() => setSelec(null)} />}
     </>
   );
