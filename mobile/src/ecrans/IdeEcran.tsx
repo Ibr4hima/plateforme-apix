@@ -468,7 +468,7 @@ export default function IdeEcran() {
                 {/* KPIs (analyses mono-sélection) */}
                 {kpisVisibles && (
                   <View style={{ marginTop: 14 }}>
-                    <CarrouselKpis kpis={kpis} source={{ id: "ide", label: "Inv. privés", href: "/investissements" }} />
+                    <CarrouselKpis kpis={kpis} />
                   </View>
                 )}
 

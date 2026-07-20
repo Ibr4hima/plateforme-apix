@@ -139,7 +139,7 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onNbFil
 
       {/* KPIs du commerce */}
       <View style={{ marginTop: 14 }}>
-        <CarrouselKpis kpis={kpisCartes} source={{ id: "commerce", label: "Flux bilatéraux", href: "/flux" }} />
+        <CarrouselKpis kpis={kpisCartes} />
       </View>
 
       {/* Graphes */}
