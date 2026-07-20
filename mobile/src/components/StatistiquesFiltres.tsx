@@ -13,6 +13,7 @@ export const MAX_SEL = 4;
 
 export type FiltresStatistiques = {
   vue: string;
+  typeAnalyse?: string;
   selection: number[];
   modeAnnees: "plage" | "specifiques";
   anneeMin: number;
@@ -36,26 +37,27 @@ const VUES_DEFAUT = [
   { cle: "comparative", label: "Analyse comparative" },
 ] as const;
 
-export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs, vues = VUES_DEFAUT, multiPour, onAppliquer, onClose }: {
+export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs, vues = VUES_DEFAUT, analyses, multiPour, onAppliquer, onClose }: {
   pays: any[]; senId: number | null; anneesDispo: number[];
   valeurs: FiltresStatistiques;
   vues?: readonly { cle: string; label: string }[];
-  multiPour?: (vue: string) => boolean;
+  analyses?: readonly { cle: string; label: string }[]; // second groupe « Type d'analyse »
+  multiPour?: (f: FiltresStatistiques) => boolean;
   onAppliquer: (f: FiltresStatistiques) => void;
   onClose: () => void;
 }) {
-  const estMulti = multiPour ?? ((v: string) => v === "comparative");
+  const estMulti = multiPour ?? ((x: FiltresStatistiques) => x.vue === "comparative");
   const [f, setF] = useState<FiltresStatistiques>({ ...valeurs, selection: [...valeurs.selection], anneesSpec: [...valeurs.anneesSpec] });
   const [qPays, setQPays] = useState("");
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
 
-  const multi = estMulti(f.vue);
+  const multi = estMulti(f);
   const bornes: [number, number] = anneesDispo.length ? [anneesDispo[0], anneesDispo[anneesDispo.length - 1]] : [f.anneeMin, f.anneeMax];
 
   const couleurDe = (id: number) => COMP_PALETTE[Math.max(0, f.selection.indexOf(id)) % COMP_PALETTE.length];
 
   const clicPays = (id: number) => setF(prev => {
-    if (!estMulti(prev.vue)) return { ...prev, selection: [id] };
+    if (!estMulti(prev)) return { ...prev, selection: [id] };
     if (prev.selection.includes(id)) {
       return prev.selection.length > 1 ? { ...prev, selection: prev.selection.filter(x => x !== id) } : prev;
     }
@@ -63,15 +65,20 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
     return { ...prev, selection: [...prev.selection, id] };
   });
 
-  const changerVue = (vue: string) => setF(prev => ({
-    ...prev, vue,
-    // Retour en vue mono-pays : on garde le premier pays sélectionné
-    selection: estMulti(vue) ? prev.selection : prev.selection.slice(0, 1),
-  }));
+  const changerVue = (vue: string) => setF(prev => {
+    const suivant = { ...prev, vue };
+    // Retour en mode mono-pays : on garde le premier pays sélectionné
+    return { ...suivant, selection: estMulti(suivant) ? suivant.selection : suivant.selection.slice(0, 1) };
+  });
+  const changerAnalyse = (typeAnalyse: string) => setF(prev => {
+    const suivant = { ...prev, typeAnalyse };
+    return { ...suivant, selection: estMulti(suivant) ? suivant.selection : suivant.selection.slice(0, 1) };
+  });
 
 
   const reinitialiser = () => setF({
-    vue: vues[0].cle, selection: senId !== null ? [senId] : [],
+    vue: vues[0].cle, typeAnalyse: analyses ? analyses[0].cle : undefined,
+    selection: senId !== null ? [senId] : [],
     modeAnnees: "plage", anneeMin: bornes[0], anneeMax: bornes[1], anneesSpec: [],
   });
 
@@ -147,6 +154,20 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
               ))}
             </View>
           </View>
+
+          {/* Type d'analyse */}
+          {analyses && (
+            <View>
+              <SecTitle>Type d'analyse</SecTitle>
+              <View style={s.segments}>
+                {analyses.map(o => (
+                  <Pressable key={o.cle} onPress={() => changerAnalyse(o.cle)} style={[s.segment, f.typeAnalyse === o.cle && s.segmentActif]}>
+                    <Text style={[s.segmentTexte, f.typeAnalyse === o.cle && s.segmentTexteActif]} numberOfLines={1}>{o.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
 
           {/* Pays */}
           <View>

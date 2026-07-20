@@ -14,12 +14,13 @@ import HeroModule from "@/components/HeroModule";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
 import Symbole from "@/components/Symbole";
 import { getJson } from "@/lib/api";
+import { COMP_PALETTE } from "@/lib/couleurs";
 import { KpiResult, calculerKpis, fmtKpi } from "@/lib/ideKpis";
 import { POLICE, T } from "@/theme";
 
 const ONGLETS = [
-  { cle: "ide",       label: "IDE" },
-  { cle: "nationaux", label: "Nationaux" },
+  { cle: "ide",       label: "Inv. Directs Étrangers" },
+  { cle: "nationaux", label: "Inv. Nationaux" },
 ] as const;
 
 // Catégories d'analyse (mêmes séries que le site)
@@ -57,7 +58,7 @@ const KPI_25_IDS = [
   "moy_fe", "med_fe", "max_fe", "min_fe", "std_fe",
   "trend_fe", "accel_fe", "tv5_fe", "tv10_fe",
   "r_fe_fs", "dist_max_fe", "regularite_fe", "vs_moy_fe",
-  "n_pos_fe", "cur_streak_fe",
+  "n_pos_fe",
 ];
 
 // Valeurs CNUCED en millions USD (règle d'affichage du site)
@@ -113,20 +114,26 @@ export default function Ide() {
 
   const [filtres, setFiltres] = useState<FiltresStatistiques | null>(null);
   const f: FiltresStatistiques = filtres ?? {
-    vue: "pays", selection: senId !== null ? [senId] : [],
+    vue: "pays", typeAnalyse: "pays", selection: senId !== null ? [senId] : [],
     modeAnnees: "plage", anneeMin: borneMin, anneeMax: borneMax, anneesSpec: [],
   };
-  const paysSelec = paysListe.find((p: any) => p.id === f.selection[0])?.nom ?? "Sénégal";
+  const comparative = f.typeAnalyse === "comparative";
+  const nomsSelec = f.selection
+    .map(id => paysListe.find((p: any) => p.id === id)?.nom)
+    .filter(Boolean) as string[];
+  const paysSelec = nomsSelec[0] ?? "Sénégal";
+  const couleurPays = (nom: string) => COMP_PALETTE[Math.max(0, nomsSelec.indexOf(nom)) % COMP_PALETTE.length];
   const anneeMin = Math.max(f.anneeMin, borneMin);
   const anneeMax = Math.min(Math.max(f.anneeMax, anneeMin), borneMax);
 
   // Données CNUCED du pays sur la période
   const params = useMemo(() => {
-    const p = new URLSearchParams({ pays_list: paysSelec });
+    const p = new URLSearchParams({ pays_list: (comparative ? nomsSelec : [paysSelec]).join(",") });
     if (f.modeAnnees === "specifiques" && f.anneesSpec.length) p.set("annees", f.anneesSpec.join(","));
     else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
     return p.toString();
-  }, [paysSelec, f.modeAnnees, f.anneesSpec, anneeMin, anneeMax]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nomsSelec.join(","), comparative, f.modeAnnees, f.anneesSpec, anneeMin, anneeMax]);
   const { data: donnees, isLoading, isError, refetch } = useQuery({
     queryKey: ["ide-cnuced", params], enabled: !!paysDispo,
     queryFn: () => getJson<any[]>(`/ide/cnuced?${params}`),
@@ -136,7 +143,7 @@ export default function Ide() {
   // Flux & Stocks : les 25 indicateurs du site, calculés par le moteur partagé
   const kpisFluxStock: KpiCarrousel[] = useMemo(() => {
     if (sousType !== "fluxstock") return [];
-    const tous = calculerKpis(donnees || []);
+    const tous = calculerKpis((donnees || []).filter((d: any) => !comparative || d.pays === paysSelec));
     return KPI_25_IDS
       .map(id => tous.find(k => k.id === id))
       .filter(Boolean)
@@ -157,7 +164,6 @@ export default function Ide() {
     const vE = dernier(serie("entrant", st[0].ind));
     const vS = dernier(serie("sortant", st[1].ind));
     const nE = dernier(serie("entrant", st[2].ind));
-    const record = serie("entrant", st[0].ind).reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
     const solde = vE && vS && vE.annee === vS.annee ? vE.valeur - vS.valeur : null;
     const gf = sousType === "greenfield";
     return [
@@ -165,18 +171,21 @@ export default function Ide() {
       { cle: "emis", label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", valeur: vS ? fmtMusd(vS.valeur) : "N/A", note: vS ? `en ${vS.annee}` : null },
       { cle: "nombre", label: gf ? "Nombre de projets reçus" : "Nombre de rachats locaux", valeur: nE ? fmtNombre(nE.valeur) : "N/A", note: nE ? `en ${nE.annee}` : null },
       { cle: "solde", label: gf ? "Solde net · reçus − émis" : "Solde net · rachats − acquisitions", valeur: solde !== null ? `${solde > 0 ? "+" : ""}${fmtMusd(solde)}` : "N/A", note: vE && solde !== null ? `en ${vE.annee}` : null, negatif: solde !== null && solde < 0 },
-      { cle: "record", label: gf ? "Année record · reçus" : "Année record · rachats", valeur: record ? String(record.annee) : "N/A", note: record ? fmtMusd(record.valeur) : null },
     ];
   }, [donnees, sousType]);
   const kpis = sousType === "fluxstock" ? kpisFluxStock : kpisCategorie;
 
   // ── Graphes : les 4 séries de la catégorie ──
+  const noms = comparative ? nomsSelec : [paysSelec];
   const graphes = (SERIES_TYPES[sousType] || SERIES_TYPES.fluxstock).map(st => {
-    const data = (donnees || [])
-      .filter((d: any) => d.direction === st.dir && d.indicateur === st.ind)
-      .sort((a: any, b: any) => a.annee - b.annee)
-      .map((d: any) => ({ annee: d.annee, valeur: d.valeur }));
-    return { ...st, series: [{ nom: paysSelec, couleur: "#004f91", data }] as Serie[] };
+    const series: Serie[] = noms.map(nom => ({
+      nom, couleur: couleurPays(nom),
+      data: (donnees || [])
+        .filter((d: any) => d.direction === st.dir && d.indicateur === st.ind && (!comparative || d.pays === nom))
+        .sort((a: any, b: any) => a.annee - b.annee)
+        .map((d: any) => ({ annee: d.annee, valeur: d.valeur })),
+    }));
+    return { ...st, series };
   });
   const fmtDe = (unite: "musd" | "nombre") => (v: number | null) => unite === "nombre" ? fmtNombre(v) : fmtMusd(v);
 
@@ -195,7 +204,9 @@ export default function Ide() {
   };
 
   const nbFiltres =
-    (senId !== null && f.selection[0] !== senId ? 1 : 0) +
+    (f.vue !== "pays" ? 1 : 0) +
+    (f.typeAnalyse !== "pays" ? 1 : 0) +
+    (senId !== null && (f.selection.length > 1 || f.selection[0] !== senId) ? 1 : 0) +
     (f.modeAnnees === "specifiques" ? (f.anneesSpec.length ? 1 : 0) : (filtres && (f.anneeMin > borneMin || f.anneeMax < borneMax) ? 1 : 0));
   const perLabel = f.modeAnnees === "specifiques" && f.anneesSpec.length
     ? (f.anneesSpec.length === 1 ? `${f.anneesSpec[0]}` : `${f.anneesSpec[0]} — ${f.anneesSpec[f.anneesSpec.length - 1]}`)
@@ -236,7 +247,13 @@ export default function Ide() {
               })}
             </ScrollView>
 
-            {isLoading || !paysDispo ? (
+            {f.vue === "secteurs" || f.typeAnalyse === "monde" ? (
+              <View style={s.centre}>
+                <View style={s.bientotPastille}><Symbole nom={f.vue === "secteurs" ? "category" : "public"} taille={26} couleur={T.bleu} /></View>
+                <Text style={s.bientotTitre}>{f.vue === "secteurs" ? "Vue Secteurs" : "Vue Monde"}</Text>
+                <Text style={s.bientotTexte}>Cette vue arrive à la prochaine étape.{"\n"}L'analyse par pays reste disponible via le filtre.</Text>
+              </View>
+            ) : isLoading || !paysDispo ? (
               <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
             ) : isError ? (
               <View style={s.centre}>
@@ -245,19 +262,23 @@ export default function Ide() {
               </View>
             ) : (
               <>
-                {/* Période puis pays */}
-                <View style={s.pastilles}>
+                {/* Période puis pays — une seule ligne à défilement */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.pastilles}>
                   <View style={s.periodePastille}><Text style={s.periodePastilleTexte}>{perLabel}</Text></View>
-                  <View style={s.paysPastille}>
-                    <View style={s.paysPoint} />
-                    <Text style={s.paysPastilleTexte} numberOfLines={1}>{paysSelec}</Text>
-                  </View>
-                </View>
+                  {(comparative ? nomsSelec : [paysSelec]).map(nom => (
+                    <View key={nom} style={[s.paysPastille, comparative && { borderColor: `${couleurPays(nom)}2E`, backgroundColor: `${couleurPays(nom)}0D` }]}>
+                      <View style={[s.paysPoint, comparative && { backgroundColor: couleurPays(nom) }]} />
+                      <Text style={[s.paysPastilleTexte, comparative && { color: couleurPays(nom) }]} numberOfLines={1}>{nom}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
 
-                {/* Tous les KPIs en carrousel */}
-                <View style={{ marginTop: 14 }}>
-                  <CarrouselKpis kpis={kpis} />
-                </View>
+                {/* Tous les KPIs en carrousel (analyse par pays) */}
+                {!comparative && (
+                  <View style={{ marginTop: 14 }}>
+                    <CarrouselKpis kpis={kpis} />
+                  </View>
+                )}
 
                 {/* Courbes de la catégorie */}
                 <View style={{ gap: 12, marginTop: 16, paddingHorizontal: 16 }}>
@@ -298,7 +319,9 @@ export default function Ide() {
         <StatistiquesFiltres
           pays={paysListe} senId={senId}
           anneesDispo={anneesDispo}
-          vues={[{ cle: "pays", label: "Analyse par pays" }]} multiPour={() => false}
+          vues={[{ cle: "pays", label: "Pays" }, { cle: "secteurs", label: "Secteurs" }]}
+          analyses={[{ cle: "pays", label: "Par pays" }, { cle: "comparative", label: "Comparative" }, { cle: "monde", label: "Monde" }]}
+          multiPour={x => x.typeAnalyse === "comparative"}
           valeurs={{ ...f, anneeMin, anneeMax }}
           onAppliquer={setFiltres} onClose={() => setFiltresOuverts(false)} />
       )}
@@ -314,7 +337,7 @@ const s = StyleSheet.create({
   bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: T.bleuVoile, alignItems: "center", justifyContent: "center", marginBottom: 6 },
   bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
   bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
-  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  chipsRangee: { flexGrow: 1, justifyContent: "center", gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
   chipFiltreActif: { backgroundColor: T.blocFond, borderColor: T.blocBord },
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
