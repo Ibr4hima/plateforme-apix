@@ -124,14 +124,10 @@ export default function HomePage() {
 
           {/* CTAs */}
           <div className="hero-cta" style={{display:"flex",flexWrap:"wrap" as const,gap:12,marginBottom:72}}>
-            <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"#ca631f",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.4)",letterSpacing:"0.01em",transition:"all 0.2s"}}
-              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 32px rgba(202,99,31,0.5)";}}
-              onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(202,99,31,0.4)";}}>
+            <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--accent ds-bouton--grand">
               <BarChart2 size={16}/> Tableau de bord <ChevronRight size={15}/>
             </Link>
-            <Link href="/ide" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.10)",backdropFilter:"blur(12px)",color:"#fff",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.25)",transition:"all 0.2s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.18)";e.currentTarget.style.borderColor="rgba(255,255,255,0.4)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";e.currentTarget.style.borderColor="rgba(255,255,255,0.25)";}}>
+            <Link href="/ide" className="lp-cta-verre" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.10)",backdropFilter:"blur(12px)",color:"#fff",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.25)",transition:"all 0.2s"}}>
               <span className="material-symbols-outlined" style={{fontSize:18,color:"#fff",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>finance_mode</span> Investissements Privés <ChevronRight size={15}/>
             </Link>
           </div>
@@ -151,9 +147,7 @@ export default function HomePage() {
           ].map((item:any,i)=>{
             const Icon=item.icon;
             return (
-              <Link key={i} href={item.href} className="lp-quick-item" style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none",transition:"background 0.15s"}}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,0,0,0.1)";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
+              <Link key={i} href={item.href} className="lp-quick-item" style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none",transition:"background 0.15s"}}>
                 <div style={{width:36,height:36,borderRadius:9,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                   {item.mat
                     ? <span className="material-symbols-outlined" style={{fontSize:18,color:"#fff",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{item.mat}</span>
@@ -186,9 +180,7 @@ export default function HomePage() {
           </div>
           <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#ECEAE7",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.03)"}}>
             {MODULES.map((m,i)=>(
-                <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,transition:"background 0.15s",position:"relative" as const}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="#FAFAF9";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="1";(e.currentTarget.querySelector(".mod-num") as HTMLElement)!.style.color=m.color;}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="#fff";(e.currentTarget.querySelector(".mod-arrow") as HTMLElement)!.style.opacity="0";(e.currentTarget.querySelector(".mod-num") as HTMLElement)!.style.color="#C5BFBB";}}>
+                <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,position:"relative" as const,"--mod-couleur":m.color} as React.CSSProperties}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                     <div style={{width:40,height:40,borderRadius:10,background:`${m.color}10`,display:"flex",alignItems:"center",justifyContent:"center"}}>
                       <span className="material-symbols-outlined" style={{fontSize:20,color:m.color,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{m.icon}</span>
@@ -228,9 +220,7 @@ export default function HomePage() {
               Vue consolidée de l'attractivité de la Destination Sénégal — Tendances sectorielles, répartition géographique, taux d'occupation des zones d'investissement et flux d'IDE
             </p>
             <div style={{display:"flex",gap:10}}>
-              <Link href="/tableau-de-bord" style={{display:"inline-flex",alignItems:"center",gap:8,background:"#ca631f",color:"#fff",fontWeight:700,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",boxShadow:"0 4px 20px rgba(202,99,31,0.35)",transition:"all 0.2s"}}
-                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 28px rgba(202,99,31,0.45)";}}
-                onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 20px rgba(202,99,31,0.35)";}}>
+              <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--accent ds-bouton--grand">
                 Ouvrir le tableau de bord <ArrowRight size={15}/>
               </Link>
             </div>

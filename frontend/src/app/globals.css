@@ -17,6 +17,45 @@
   --text-muted:         #9aa5b4;
   --font-display: var(--font-google-sans), sans-serif;
   --font-body: var(--font-google-sans), sans-serif;
+
+  /* ── Design system v1 : jetons sémantiques ── */
+  --ds-primaire:       var(--apix-blue);
+  --ds-accent:         var(--apix-orange);
+  --ds-succes:         #188038;
+  --ds-alerte:         #b45309;
+  --ds-danger:         #b91c1c;
+  --ds-fond:           #F6F5F3;
+  --ds-carte:          #ffffff;
+  --ds-carte-douce:    #FAFAF9;
+  --ds-champ:          #F8F7F6;
+  --ds-bordure:        #ECEAE7;
+  --ds-filet:          #F2F0EF;
+  --ds-voile-bleu:     rgba(0, 79, 145, 0.07);
+  --ds-focus:          rgba(0, 79, 145, 0.45);
+
+  /* Espacement : 4 8 12 16 24 32 48 64 */
+  --esp-1: 4px;  --esp-2: 8px;  --esp-3: 12px; --esp-4: 16px;
+  --esp-5: 24px; --esp-6: 32px; --esp-7: 48px; --esp-8: 64px;
+
+  /* Rayons */
+  --rayon-sm: 8px; --rayon-md: 12px; --rayon-lg: 16px; --rayon-xl: 22px; --rayon-pilule: 999px;
+
+  /* Ombres : posé / carte / flottant / modal */
+  --ombre-subtile:   0 1px 3px rgba(0, 30, 60, 0.06);
+  --ombre-carte:     0 4px 16px rgba(0, 30, 60, 0.07);
+  --ombre-flottante: 0 8px 30px rgba(0, 30, 60, 0.12);
+  --ombre-modale:    0 16px 60px rgba(0, 30, 60, 0.22);
+
+  /* Typographie : display / titre / corps / légende / donnée */
+  --typo-display: 700 clamp(30px, 4vw, 44px)/1.15 var(--font-display);
+  --typo-titre:   700 19px/1.3 var(--font-display);
+  --typo-corps:   400 14px/1.6 var(--font-body);
+  --typo-legende: 400 12px/1.5 var(--font-body);
+  --typo-micro:   700 10.5px/1.3 var(--font-body);
+
+  /* Motion */
+  --duree-courte: 160ms; --duree-moyenne: 300ms; --duree-longue: 480ms;
+  --sortie: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -100,3 +139,80 @@ body {
 .animate-delay-500 { animation-delay: 500ms; }
 
 .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: inherit; display: inline-flex; align-items: center; justify-content: center; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-smoothing: antialiased; }
+
+/* ── Design system v1 : focus visible et mouvement réduit ── */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+  border-radius: var(--rayon-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Bouton : états gérés en CSS, plus de hover en JS ── */
+.ds-bouton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  border: 1px solid transparent; border-radius: var(--rayon-md);
+  font: 700 13px/1 var(--font-body); cursor: pointer;
+  padding: 10px 20px; text-decoration: none;
+  transition: background var(--duree-courte) var(--sortie),
+              box-shadow var(--duree-courte) var(--sortie),
+              transform var(--duree-courte) var(--sortie),
+              border-color var(--duree-courte) var(--sortie);
+}
+.ds-bouton:active { transform: scale(0.97); }
+.ds-bouton:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.ds-bouton--primaire { background: var(--ds-primaire); color: #fff; }
+.ds-bouton--primaire:hover:not(:disabled) { background: #00427a; box-shadow: var(--ombre-flottante); }
+.ds-bouton--accent { background: linear-gradient(135deg, #ca631f 0%, #a84e18 100%); color: #fff; }
+.ds-bouton--accent:hover:not(:disabled) { box-shadow: 0 8px 30px rgba(202, 99, 31, 0.35); transform: translateY(-1px); }
+.ds-bouton--accent:active { transform: scale(0.97); }
+.ds-bouton--secondaire { background: var(--ds-carte); color: var(--text-secondary); border-color: var(--ds-bordure); }
+.ds-bouton--secondaire:hover:not(:disabled) { border-color: var(--ds-primaire); color: var(--ds-primaire); background: var(--ds-voile-bleu); }
+.ds-bouton--fantome { background: transparent; color: var(--ds-primaire); }
+.ds-bouton--fantome:hover:not(:disabled) { background: var(--ds-voile-bleu); }
+.ds-bouton--petit { padding: 7px 14px; font-size: 12px; border-radius: var(--rayon-sm); }
+.ds-bouton--grand { padding: 13px 26px; font-size: 14.5px; border-radius: var(--rayon-lg); }
+
+/* ── Carte : surface de base, variante interactive ── */
+.ds-carte {
+  background: var(--ds-carte); border: 1px solid var(--ds-bordure);
+  border-radius: var(--rayon-lg); box-shadow: var(--ombre-carte);
+}
+.ds-carte--interactive {
+  cursor: pointer;
+  transition: box-shadow var(--duree-moyenne) var(--sortie),
+              transform var(--duree-moyenne) var(--sortie),
+              border-color var(--duree-moyenne) var(--sortie);
+}
+.ds-carte--interactive:hover { box-shadow: var(--ombre-flottante); transform: translateY(-2px); border-color: rgba(0, 79, 145, 0.25); }
+.ds-carte--interactive:active { transform: translateY(0) scale(0.99); }
+
+/* ── Chip / segment actif ── */
+.ds-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--ds-bordure); border-radius: var(--rayon-pilule);
+  background: var(--ds-carte); color: var(--text-secondary);
+  font: 600 12px/1 var(--font-body); padding: 7px 14px; cursor: pointer;
+  transition: background var(--duree-courte) var(--sortie), color var(--duree-courte) var(--sortie), border-color var(--duree-courte) var(--sortie);
+}
+.ds-chip:hover { border-color: var(--ds-primaire); color: var(--ds-primaire); }
+.ds-chip[aria-pressed="true"], .ds-chip--actif { background: var(--ds-primaire); border-color: var(--ds-primaire); color: #fff; }
+
+/* Nombre de donnée : chiffres tabulaires obligatoires */
+.ds-donnee { font-variant-numeric: tabular-nums; }
+
+/* ── Home : états hover pilotés en CSS (pilote design system) ── */
+.lp-cta-verre { transition: background var(--duree-courte) var(--sortie), border-color var(--duree-courte) var(--sortie); }
+.lp-cta-verre:hover { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.4) !important; }
+.lp-quick-item:hover { background: rgba(0,0,0,0.1); }
+.mod-card { transition: background var(--duree-courte) var(--sortie); }
+.mod-card:hover { background: var(--ds-carte-douce) !important; }
+.mod-card:hover .mod-arrow { opacity: 1; }
+.mod-card:hover .mod-num { color: var(--mod-couleur, var(--ds-primaire)); }
+
