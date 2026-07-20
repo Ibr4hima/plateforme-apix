@@ -1,11 +1,17 @@
 // Recherche globale — pays, accords, événements, entreprises, zones.
-// Résultats groupés ; un tap ouvre la fiche en feuille de détail.
+// Résultats groupés ; un tap ouvre la VRAIE fiche du module (entreprise,
+// zone, accord, événement — tout le contenu, pas un résumé générique).
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AccordSheet from "@/components/AccordSheet";
+import EntrepriseSheet from "@/components/EntrepriseSheet";
+import EvenementSheet from "@/components/EvenementSheet";
 import FicheSheet from "@/components/FicheSheet";
+import ZoneSheet from "@/components/ZoneSheet";
+import { getJson } from "@/lib/api";
 import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRecherche";
 import { T, POLICE } from "@/theme";
 
@@ -14,6 +20,13 @@ const MAX_PAR_GROUPE = 6;
 export default function Recherche() {
   const [q, setQ] = useState("");
   const [fiche, setFiche] = useState<Resultat | null>(null);
+
+  // L'entreprise mérite son détail complet (points focaux, NAEMA…)
+  const detailEntreprise = useQuery({
+    queryKey: ["entreprise-detail", fiche?.type === "entreprise" ? fiche.item.id : null],
+    enabled: fiche?.type === "entreprise",
+    queryFn: () => getJson<any>(`/entreprises/${fiche!.item.id}`).catch(() => fiche!.item),
+  });
   const { data: index, isLoading } = useQuery({ queryKey: ["index-recherche"], queryFn: chargerIndex, staleTime: Infinity });
   const fuse = useMemo(() => (index ? creerFuse(index) : null), [index]);
 
@@ -37,7 +50,7 @@ export default function Recherche() {
       <View style={s.barre}>
         <Ionicons name="search" size={17} color={T.gris} />
         <TextInput
-          value={q} onChangeText={setQ} placeholder="Pays, accords, entreprises, zones…" placeholderTextColor={T.gris}
+          value={q} onChangeText={setQ} placeholder="Rechercher…" placeholderTextColor={T.gris}
           autoCorrect={false} style={s.champ} clearButtonMode="while-editing" />
       </View>
 
@@ -67,7 +80,14 @@ export default function Recherche() {
           );
         }}
       />
-      {fiche && <FicheSheet resultat={fiche} onClose={() => setFiche(null)} />}
+      {/* La fiche complète du module correspondant au résultat */}
+      {fiche?.type === "accord" && <AccordSheet accord={fiche.item} onClose={() => setFiche(null)} />}
+      {fiche?.type === "evenement" && <EvenementSheet ev={fiche.item} onClose={() => setFiche(null)} />}
+      {fiche?.type === "zone" && <ZoneSheet zone={fiche.item} onClose={() => setFiche(null)} />}
+      {fiche?.type === "entreprise" && (
+        <EntrepriseSheet entreprise={detailEntreprise.data || fiche.item} onClose={() => setFiche(null)} />
+      )}
+      {fiche?.type === "pays" && <FicheSheet resultat={fiche} onClose={() => setFiche(null)} />}
     </View>
   );
 }

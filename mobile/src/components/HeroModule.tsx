@@ -22,6 +22,28 @@ export function useHeroDefilant() {
   return { defilY, onScroll };
 }
 
+// Point blanc pulsant à côté du titre — le même signe de vie que la plateforme
+function PointPulsant() {
+  const pouls = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(Animated.sequence([
+      Animated.timing(pouls, { toValue: 1, duration: 1100, useNativeDriver: true }),
+      Animated.timing(pouls, { toValue: 0, duration: 0, useNativeDriver: true }),
+    ])).start();
+    return () => pouls.stopAnimation();
+  }, [pouls]);
+  const halo = {
+    opacity: pouls.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0.7, 0, 0] }),
+    transform: [{ scale: pouls.interpolate({ inputRange: [0, 1], outputRange: [1, 2.6] }) }],
+  };
+  return (
+    <View style={sb.pointZone}>
+      <Animated.View style={[sb.pointHalo, halo]} />
+      <View style={sb.point} />
+    </View>
+  );
+}
+
 export function BarreHero({ titre, defilY, bouton, seuil = 118 }: {
   titre: string;
   defilY: Animated.Value;
@@ -43,6 +65,7 @@ export function BarreHero({ titre, defilY, bouton, seuil = 118 }: {
     <Animated.View pointerEvents={visible ? "box-none" : "none"}
       style={[sb.barre, { paddingTop: insets.top, height: insets.top + 54, opacity }]}>
       <Animated.View style={[sb.contenu, { transform: [{ translateY: glisse }] }]}>
+        <PointPulsant />
         <Text style={sb.titre} numberOfLines={1}>{titre}</Text>
         {bouton && (
           <Pressable onPress={bouton.onPress} hitSlop={8}
@@ -67,8 +90,11 @@ const sb = StyleSheet.create({
   },
   contenu: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, gap: 12,
+    paddingHorizontal: 20, gap: 10,
   },
+  pointZone: { width: 14, height: 14, alignItems: "center", justifyContent: "center" },
+  point: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#fff" },
+  pointHalo: { position: "absolute", width: 7, height: 7, borderRadius: 4, backgroundColor: "#fff" },
   titre: { flex: 1, color: "#fff", fontSize: 16.5, fontFamily: POLICE.gras, letterSpacing: -0.3 },
   action: {
     width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",

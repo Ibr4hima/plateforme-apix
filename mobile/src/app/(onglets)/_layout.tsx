@@ -1,17 +1,25 @@
-// Barre d'onglets native — Accueil · Données · Recherche · Plus.
-// L'app de consultation quotidienne : chaque destination majeure à un tap,
-// la recherche globale (l'outil n° 1 d'un décideur) a son onglet dédié.
+// Barre d'onglets native — Accueil · Investissements · Flux commerciaux ·
+// Recherche. Style signature : surface blanche détachée par une ombre douce
+// (pas de filet), icône active posée sur une pastille bleu voilé.
 import { Tabs } from "expo-router";
-import { Platform } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Symbole from "@/components/Symbole";
-import { POLICE, T } from "@/theme";
+import { OMBRE, POLICE, T } from "@/theme";
 
 const ONGLETS = [
-  { nom: "index",     titre: "Accueil",   icone: "home" },
-  { nom: "donnees",   titre: "Données",   icone: "monitoring" },
-  { nom: "recherche", titre: "Recherche", icone: "search" },
-  { nom: "plus",      titre: "Plus",      icone: "apps" },
+  { nom: "index",           titre: "Accueil",          icone: "home" },
+  { nom: "investissements", titre: "Investissements",  icone: "finance_mode" },
+  { nom: "flux",            titre: "Flux commerciaux", icone: "currency_exchange" },
+  { nom: "recherche",       titre: "Recherche",        icone: "search" },
 ] as const;
+
+function IconeOnglet({ icone, couleur, actif }: { icone: string; couleur: string; actif: boolean }) {
+  return (
+    <View style={[s.pastille, actif && s.pastilleActive]}>
+      <Symbole nom={icone} taille={23} couleur={couleur} />
+    </View>
+  );
+}
 
 export default function OngletsLayout() {
   return (
@@ -22,21 +30,31 @@ export default function OngletsLayout() {
         tabBarInactiveTintColor: T.gris,
         tabBarStyle: {
           backgroundColor: T.carte,
-          borderTopWidth: StyleSheetHairline,
-          borderTopColor: T.bordure,
+          borderTopWidth: 0,
+          height: 86,
+          paddingTop: 8,
+          ...OMBRE.n3,
+          shadowOffset: { width: 0, height: -6 },
         },
-        tabBarLabelStyle: { fontFamily: POLICE.demi, fontSize: 10.5 },
+        tabBarItemStyle: { gap: 1 },
+        tabBarLabelStyle: { fontFamily: POLICE.demi, fontSize: 9.5, letterSpacing: 0.1 },
         sceneStyle: { backgroundColor: T.fond },
       }}>
       {ONGLETS.map(o => (
         <Tabs.Screen key={o.nom} name={o.nom}
           options={{
             title: o.titre,
-            tabBarIcon: ({ color }) => <Symbole nom={o.icone} taille={24} couleur={color} />,
+            tabBarIcon: ({ color, focused }) => <IconeOnglet icone={o.icone} couleur={color} actif={focused} />,
           }} />
       ))}
     </Tabs>
   );
 }
 
-const StyleSheetHairline = Platform.OS === "ios" ? 0.5 : 1;
+const s = StyleSheet.create({
+  pastille: {
+    width: 54, height: 30, borderRadius: 999,
+    alignItems: "center", justifyContent: "center",
+  },
+  pastilleActive: { backgroundColor: T.bleuVoile },
+});
