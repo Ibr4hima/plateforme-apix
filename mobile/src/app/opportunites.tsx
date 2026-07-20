@@ -107,7 +107,7 @@ function Bandeau({ couleur, surtitre, titre, count }: { couleur: string; surtitr
 function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; titre: string; droite?: string | null; onPress: () => void; dernier: boolean }) {
   return (
     <Pressable onPress={onPress}
-      style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: "rgba(0,79,145,0.04)" }]}>
+      style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: T.blocFond }]}>
       <View style={[s.tuilePoint, { backgroundColor: couleur }]} />
       <Text style={s.tuileTitre} numberOfLines={1}>{titre}</Text>
       {droite ? <Text style={s.tuileDroite}>{droite}</Text> : null}
@@ -361,13 +361,13 @@ const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
   erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   carte: {
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
     paddingHorizontal: 18, paddingTop: 16, paddingBottom: 14, gap: 13,
   },
   titre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
@@ -378,7 +378,7 @@ const s = StyleSheet.create({
   basVal: { fontSize: 12.5, fontFamily: POLICE.gras },
   grilleCompteurs: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   compteur: {
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
     paddingHorizontal: 15, paddingTop: 14, paddingBottom: 13, gap: 10,
   },
   compteurDemi: { flexGrow: 1, flexBasis: "45%" },
@@ -396,13 +396,13 @@ const s = StyleSheet.create({
     borderWidth: 1, borderRadius: 16, paddingHorizontal: 15, paddingVertical: 12, marginBottom: 10,
   },
   bandeauTuile: {
-    width: 42, height: 42, borderRadius: 12, backgroundColor: "#fff", borderWidth: 1,
+    width: 42, height: 42, borderRadius: 12, backgroundColor: T.carte, borderWidth: 1,
     alignItems: "center", justifyContent: "center",
   },
   bandeauCompte: { fontSize: 14, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   bandeauSur: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.2, marginBottom: 3 },
   bandeauTitre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre },
-  groupe: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden" },
+  groupe: { backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden" },
   tuile: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   tuileBord: { borderBottomWidth: 1, borderBottomColor: T.filet },
   tuilePoint: { width: 6, height: 6, borderRadius: 3 },

@@ -37,7 +37,7 @@ function CarteAccord({ a, onPress }: { a: any; onPress: () => void }) {
     : { label: "ENTRÉE EN VIGUEUR", val: a.date_entree_vigueur ? fmtDate(a.date_entree_vigueur) : "Non définie", vide: !a.date_entree_vigueur };
   return (
     <Pressable onPress={onPress}
-      style={({ pressed }) => [s.carte, estExpire && { backgroundColor: "#FBFAF9" }, pressed && { transform: [{ scale: 0.99 }], borderColor: st ? st.p : T.grisClair }]}>
+      style={({ pressed }) => [s.carte, estExpire && { backgroundColor: T.carteDouce }, pressed && { transform: [{ scale: 0.99 }], borderColor: st ? st.p : T.grisClair }]}>
       <View style={s.ligneTitre}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[s.titre, { color: txtC }]} numberOfLines={2}>{a.titre}</Text>
@@ -158,18 +158,18 @@ const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
   erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { gap: 11, paddingBottom: 40 },
   rangee: { paddingHorizontal: 16 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: "#fff", borderWidth: 1, borderColor: T.bordure },
-  chipFiltreActif: { backgroundColor: T.bleu, borderColor: T.bleu },
+  chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
+  chipFiltreActif: { backgroundColor: T.bleuAction, borderColor: T.bleuAction },
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
   chipFiltreTexteActif: { color: "#fff" },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 12, marginBottom: 4, paddingHorizontal: 16 },
   carte: {
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
     paddingHorizontal: 18, paddingTop: 16, paddingBottom: 14, gap: 13,
   },
   ligneTitre: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
@@ -181,7 +181,7 @@ const s = StyleSheet.create({
   dateSep: { width: 1, alignSelf: "stretch", backgroundColor: T.filet, marginHorizontal: 18 },
   dateLabel: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
   dateVal: { fontSize: 12.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: "rgba(0,79,145,0.08)", alignItems: "center", justifyContent: "center", marginBottom: 6 },
+  bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: T.bleuVoile, alignItems: "center", justifyContent: "center", marginBottom: 6 },
   bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
   bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
 });

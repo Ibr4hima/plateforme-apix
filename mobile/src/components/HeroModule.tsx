@@ -76,7 +76,7 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, bout
 
 const s = StyleSheet.create({
   hero: {
-    backgroundColor: T.bleu, paddingHorizontal: 22, paddingBottom: 24,
+    backgroundColor: T.heroFond, paddingHorizontal: 22, paddingBottom: 24,
     borderBottomLeftRadius: 28, borderBottomRightRadius: 28, overflow: "hidden",
   },
   haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },

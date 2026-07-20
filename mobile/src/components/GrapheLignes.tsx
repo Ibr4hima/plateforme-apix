@@ -155,11 +155,11 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
         {ticksGauche.map(t => {
           const gy = yDe(bi ? 0 : 0)(t);
           return <Line key={t} x1={M.gauche} x2={largeur - M.droite} y1={gy} y2={gy}
-            stroke={t === 0 ? "#DDD9D4" : "#F0EEEB"} strokeWidth={1} />;
+            stroke={t === 0 ? T.grilleZero : T.grille} strokeWidth={1} />;
         })}
         {ticksGauche.map(t => (
           <TexteSvg key={`g${t}`} x={M.gauche} y={yDe(0)(t) - 4} fontSize={9}
-            fill={bi ? series[0].couleur : "#B3AEA8"} opacity={bi ? 0.75 : 1}>{fmt(t)}</TexteSvg>
+            fill={bi ? series[0].couleur : T.grisClair} opacity={bi ? 0.75 : 1}>{fmt(t)}</TexteSvg>
         ))}
         {ticksDroite && ticksDroite.map(t => (
           <TexteSvg key={`d${t}`} x={largeur - M.droite} y={yDe(1)(t) - 4} fontSize={9}
@@ -184,7 +184,7 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
         {series.map((sr, i) => {
           const pts = pointsDe(i);
           const fin = pts[pts.length - 1];
-          return fin ? <Circle key={`f${sr.nom}`} cx={fin.x} cy={fin.y} r={3.6} fill={sr.couleur} stroke="#fff" strokeWidth={1.6} /> : null;
+          return fin ? <Circle key={`f${sr.nom}`} cx={fin.x} cy={fin.y} r={3.6} fill={sr.couleur} stroke={T.carte as any} strokeWidth={1.6} /> : null;
         })}
 
         {/* Curseur : ligne + points */}
@@ -193,7 +193,7 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
             <Line x1={x(curseur)} x2={x(curseur)} y1={M.haut} y2={hauteur - M.bas}
               stroke="rgba(26,26,46,0.28)" strokeWidth={1} strokeDasharray="3,3" />
             {lecturesCurseur.map(l => (
-              <Circle key={l.nom} cx={x(curseur)} cy={yDe(l.i)(l.valeur)} r={4} fill={l.couleur} stroke="#fff" strokeWidth={1.8} />
+              <Circle key={l.nom} cx={x(curseur)} cy={yDe(l.i)(l.valeur)} r={4} fill={l.couleur} stroke={T.carte as any} strokeWidth={1.8} />
             ))}
           </>
         )}

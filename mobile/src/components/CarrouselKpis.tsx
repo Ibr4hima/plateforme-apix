@@ -65,17 +65,17 @@ export default function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
 const s = StyleSheet.create({
   page: { flexDirection: "row", flexWrap: "wrap", gap: 11, paddingHorizontal: 16 },
   carte: {
-    width: (LARGEUR - 32 - 11) / 2, backgroundColor: "#fff", borderRadius: 18,
+    width: (LARGEUR - 32 - 11) / 2, backgroundColor: T.carte, borderRadius: 18,
     paddingHorizontal: 15, paddingVertical: 13, overflow: "hidden",
     shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
     elevation: 3,
   },
-  filet: { position: "absolute", left: 15, right: 15, top: 0, height: 2.5, borderRadius: 2, backgroundColor: "rgba(0,79,145,0.14)" },
+  filet: { position: "absolute", left: 15, right: 15, top: 0, height: 2.5, borderRadius: 2, backgroundColor: T.blocBord },
   label: { fontSize: 9, fontFamily: POLICE.gras, color: "#7d95ad", letterSpacing: 0.9, lineHeight: 12, marginTop: 4, minHeight: 24 },
   valeur: { fontSize: 20, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -0.4, marginTop: 7, fontVariant: ["tabular-nums"] },
-  note: { alignSelf: "flex-start", maxWidth: "100%", backgroundColor: "rgba(0,79,145,0.07)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 8 },
+  note: { alignSelf: "flex-start", maxWidth: "100%", backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 8 },
   noteTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   points: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 12 },
-  point: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(0,79,145,0.18)" },
+  point: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.blocBord },
   pointActif: { width: 18, backgroundColor: T.bleu },
 });

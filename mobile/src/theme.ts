@@ -1,4 +1,8 @@
 // Jetons de design APIX — l'identité du site, adaptée aux codes du mobile.
+// Chaque couleur est dynamique (DynamicColorIOS) : l'app suit l'apparence
+// du système et bascule nativement en mode sombre — nuit bleutée
+// institutionnelle, accents éclaircis pour rester lisibles.
+import { DynamicColorIOS, Platform } from "react-native";
 
 // Google Sans — mêmes graisses que la plateforme web (400/500/600/700)
 export const POLICE = {
@@ -8,20 +12,41 @@ export const POLICE = {
   gras:     "GoogleSans_700Bold",
 } as const;
 
+// Couleur dynamique clair/sombre (repli clair hors iOS)
+const dyn = (clair: string, sombre: string): any =>
+  Platform.OS === "ios" ? DynamicColorIOS({ light: clair, dark: sombre }) : clair;
+
 export const T = {
-  bleu:        "#004f91",
+  // Accents (textes, icônes, points) — éclaircis la nuit pour le contraste
+  bleu:        dyn("#004f91", "#85B9EC"),
+  orange:      dyn("#ca631f", "#E8935A"),
+  vert:        dyn("#188038", "#57B87D"),
+  // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
+  bleuAction:  dyn("#004f91", "#2E64A6"),
+  // Hero et barres de navigation
+  heroFond:    dyn("#004f91", "#0E3355"),
   bleuNuit:    "#003a6e",
   bleuClair:   "#1a6ab0",
-  orange:      "#ca631f",
-  vert:        "#188038",
-  encre:       "#1a1a2e",
-  texte:       "#4a5568",
-  gris:        "#9aa5b4",
-  grisClair:   "#C5BFBB",
-  fond:        "#F6F5F3",
-  carte:       "#fff",
-  bordure:     "#ECEAE7",
-  filet:       "#F2F0EF",
+  // Encres
+  encre:       dyn("#1a1a2e", "#EDF1F7"),
+  texte:       dyn("#4a5568", "#B9C2CF"),
+  gris:        dyn("#9aa5b4", "#8291A3"),
+  grisClair:   dyn("#C5BFBB", "#5B6B7E"),
+  // Surfaces
+  fond:        dyn("#F6F5F3", "#0B1220"),
+  carte:       dyn("#FFFFFF", "#151E2E"),
+  carteDouce:  dyn("#FAFAF9", "#1B2536"),
+  champ:       dyn("#F8F7F6", "#101927"),
+  bordure:     dyn("#ECEAE7", "#263248"),
+  bordureDouce: dyn("#F0EEEC", "#222D40"),
+  filet:       dyn("#F2F0EF", "#1E293B"),
+  // Graphes
+  grille:      dyn("#F0EEEB", "#243044"),
+  grilleZero:  dyn("#DDD9D4", "#33415A"),
+  // Voiles bleus (blocs d'information, chips)
+  bleuVoile:   dyn("rgba(0,79,145,0.07)", "rgba(133,185,236,0.13)"),
+  blocFond:    dyn("rgba(0,79,145,0.04)", "rgba(133,185,236,0.07)"),
+  blocBord:    dyn("rgba(0,79,145,0.10)", "rgba(133,185,236,0.16)"),
   rayonCarte:  18,
 } as const;
 

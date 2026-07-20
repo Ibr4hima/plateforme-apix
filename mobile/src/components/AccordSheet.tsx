@@ -139,7 +139,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "78%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -150,17 +150,17 @@ const s = StyleSheet.create({
   titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 10, lineHeight: 25, letterSpacing: -0.3 },
   sousTitre: { fontSize: 12, fontFamily: POLICE.moyen, color: T.gris, marginTop: 5 },
   datesRangee: {
-    flexDirection: "row", backgroundColor: "rgba(0,79,145,0.04)",
-    borderWidth: 1, borderColor: "rgba(0,79,145,0.10)", borderRadius: 14, paddingVertical: 12,
+    flexDirection: "row", backgroundColor: T.blocFond,
+    borderWidth: 1, borderColor: T.blocBord, borderRadius: 14, paddingVertical: 12,
   },
   dateCase: { flex: 1, alignItems: "center", paddingHorizontal: 6 },
-  dateCaseBord: { borderLeftWidth: 1, borderLeftColor: "rgba(0,79,145,0.10)" },
+  dateCaseBord: { borderLeftWidth: 1, borderLeftColor: T.blocBord },
   dateLabel: { fontSize: 8, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.8, textAlign: "center" },
   dateVal: { fontSize: 12, fontFamily: POLICE.gras, color: T.encre, marginTop: 4, fontVariant: ["tabular-nums"], textAlign: "center" },
   bloc: { backgroundColor: "#FCFBFA", borderWidth: 1, borderColor: T.filet, borderRadius: 14, padding: 13 },
   blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2, marginBottom: 9 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  chip: { backgroundColor: "#F5F4F3", borderWidth: 1, borderColor: "#E8E5E2", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
+  chip: { backgroundColor: T.filet, borderWidth: 1, borderColor: "#E8E5E2", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
   commentaires: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20 },
 });

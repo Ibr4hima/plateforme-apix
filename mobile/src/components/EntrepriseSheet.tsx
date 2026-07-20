@@ -50,9 +50,9 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
           </Pressable>
         </View>
         <View style={s.pilules}>
-          {e.forme_juridique ? <View style={[s.pilule, { backgroundColor: T.filet }]}><Text style={[s.piluleTexte, { color: "#6b7280" }]}>{e.forme_juridique}</Text></View> : null}
+          {e.forme_juridique ? <View style={[s.pilule, { backgroundColor: T.filet }]}><Text style={[s.piluleTexte, { color: T.texte }]}>{e.forme_juridique}</Text></View> : null}
           {e.pole_territoire_nom ? <View style={[s.pilule, { backgroundColor: "rgba(106,27,154,0.07)" }]}><Text style={[s.piluleTexte, { color: "#6A1B9A" }]}>{e.pole_territoire_nom}</Text></View> : null}
-          {e.region_nom ? <View style={[s.pilule, { backgroundColor: "rgba(0,79,145,0.07)" }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>Région de {e.region_nom}</Text></View> : null}
+          {e.region_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>Région de {e.region_nom}</Text></View> : null}
         </View>
 
         <ScrollView style={{ marginTop: 16 }} contentContainerStyle={{ gap: 20, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
@@ -116,7 +116,7 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
                     {(pf.telephone || pf.mail) ? (
                       <View style={s.focalChips}>
                         {pf.telephone ? pf.telephone.split(",").map((t: string, ti: number) => (
-                          <View key={`t${ti}`} style={[s.focalChip, { backgroundColor: "rgba(0,79,145,0.07)" }]}>
+                          <View key={`t${ti}`} style={[s.focalChip, { backgroundColor: T.bleuVoile }]}>
                             <Text style={[s.focalChipTexte, { color: T.bleu }]}>{fmtPhone(t.trim())}</Text>
                           </View>
                         )) : null}
@@ -141,7 +141,7 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "82%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -154,12 +154,12 @@ const s = StyleSheet.create({
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginBottom: 10 },
   grille: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   bloc: {
-    backgroundColor: "rgba(0,79,145,0.04)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)",
+    backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord,
     borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, flexGrow: 1, flexBasis: "45%",
   },
   blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1, marginBottom: 4 },
   blocValeur: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-  focal: { backgroundColor: "#FAFAF9", borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11 },
+  focal: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11 },
   focalEntete: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
   focalNom: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre },
   focalPoste: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },

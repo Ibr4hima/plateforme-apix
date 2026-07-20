@@ -26,8 +26,8 @@ const CLE_SOMBRE = "code.sombre";
 // Palettes de lecture jour / nuit
 const PALETTES = {
   jour: {
-    fond: "#fff", titre: T.encre, corps: "#33383F", intro: T.texte,
-    bleu: T.bleu, filet: T.filet, surligne: "#FFF6EB",
+    fond: "#fff", titre: "#1a1a2e", corps: "#33383F", intro: "#4a5568",
+    bleu: "#004f91", filet: "#F2F0EF", surligne: "#FFF6EB",
     neutreFond: "rgba(60,64,67,0.06)", neutreTexte: "#5F6368", neutreSep: "rgba(60,64,67,0.18)",
   },
   // Nuit bleue : le bleu du hero poussé vers la nuit, encres claires contrastées

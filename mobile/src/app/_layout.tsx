@@ -29,7 +29,7 @@ export default function RacineLayout() {
       <StatusBar style="light" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: T.bleu },
+          headerStyle: { backgroundColor: T.heroFond },
           headerTintColor: "#fff",
           headerTitleStyle: { fontFamily: POLICE.gras },
           headerBackTitleStyle: { fontFamily: POLICE.moyen },
@@ -44,7 +44,7 @@ export default function RacineLayout() {
         <Stack.Screen name="prospects" options={{ headerShown: false }} />
         <Stack.Screen name="statistiques" options={{ headerShown: false }} />
         <Stack.Screen name="fiche-pays/index" options={{ headerShown: false }} />
-        <Stack.Screen name="recherche" options={{ title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: "#fff" }, headerTintColor: "#1a1a2e" }} />
+        <Stack.Screen name="recherche" options={{ title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: T.carte }, headerTintColor: T.encre }} />
         <Stack.Screen name="code/index" options={{ headerShown: false }} />
         <Stack.Screen name="code/[chapitre]" options={{ headerShown: false }} />
       </Stack>

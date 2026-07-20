@@ -199,7 +199,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
           <View style={s.surface}>
             {accs.map((ac: any, i: number) => (
               <Pressable key={i} onPress={() => setAccordOuvert(ac)}
-                style={({ pressed }) => [s.rangeeItem, i > 0 && s.rangeeBord, pressed && { backgroundColor: "rgba(0,79,145,0.04)" }]}>
+                style={({ pressed }) => [s.rangeeItem, i > 0 && s.rangeeBord, pressed && { backgroundColor: T.blocFond }]}>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={s.itemTitre} numberOfLines={2}>{ac.titre}</Text>
                   {ac.date_signature ? <Text style={s.itemSous}>Signé en {ac.date_signature.slice(0, 4)}</Text> : null}
@@ -218,7 +218,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
           <View style={s.surface}>
             {entsVisibles.map((e: any, i: number) => (
               <Pressable key={e.id} onPress={() => ouvrirEntreprise(e.id)}
-                style={({ pressed }) => [s.rangeeItem, i > 0 && s.rangeeBord, pressed && { backgroundColor: "rgba(0,79,145,0.04)" }]}>
+                style={({ pressed }) => [s.rangeeItem, i > 0 && s.rangeeBord, pressed && { backgroundColor: T.blocFond }]}>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={s.itemTitre} numberOfLines={1}>{e.nom}</Text>
                   {(e.region || e.forme_juridique) ? <Text style={s.itemSous} numberOfLines={1}>{[e.forme_juridique, e.region].filter(Boolean).join(" · ")}</Text> : null}
@@ -296,12 +296,12 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
 const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 48, gap: 8 },
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   reperes: { flexDirection: "row", gap: 8, marginTop: 16 },
   repere: {
     flex: 1, alignItems: "center", gap: 5,
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
     paddingVertical: 14, paddingHorizontal: 8,
     shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2,
   },
@@ -309,9 +309,9 @@ const s = StyleSheet.create({
   repereLabel: { fontSize: 8, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8, textAlign: "center", lineHeight: 11 },
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.4, marginBottom: 10 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  chip: { backgroundColor: "#fff", borderWidth: 1, borderColor: T.bordure, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5.5 },
+  chip: { backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
-  surface: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden" },
+  surface: { backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden" },
   rangeeItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 11.5 },
   rangeeBord: { borderTopWidth: 1, borderTopColor: T.filet },
   itemTitre: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 17 },
@@ -332,7 +332,7 @@ const s = StyleSheet.create({
   duelAnnee: { fontSize: 9, fontFamily: POLICE.normal, color: T.grisClair },
   duelPiste: { flexDirection: "row", gap: 3, height: 6 },
   dir: {
-    flexDirection: "row", backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    flexDirection: "row", backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
     overflow: "hidden",
     shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2,
   },
@@ -351,9 +351,9 @@ const s = StyleSheet.create({
   dirRes: { paddingHorizontal: 16, paddingBottom: 14, gap: 11, borderTopWidth: 1, borderTopColor: T.filet, paddingTop: 12 },
   resLigne: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 4 },
   resNom: { flex: 1, fontSize: 11.5, fontFamily: POLICE.moyen, color: T.texte },
-  resVal: { fontSize: 11.5, fontFamily: POLICE.gras, color: "#2d3540", fontVariant: ["tabular-nums"] },
+  resVal: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
   resPct: { fontFamily: POLICE.normal, color: T.grisClair },
-  resBarFond: { height: 5, backgroundColor: "#F1EFED", borderRadius: 99, overflow: "hidden" },
+  resBarFond: { height: 5, backgroundColor: T.grille, borderRadius: 99, overflow: "hidden" },
   resBar: { height: "100%", borderRadius: 99 },
   balance: {
     flexDirection: "row", alignItems: "center", gap: 13, marginTop: 12,

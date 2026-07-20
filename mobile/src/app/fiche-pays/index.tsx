@@ -119,7 +119,7 @@ export default function FichePaysIndex() {
             <Pressable onPress={() => setOuverts(prev => {
               const n = new Set(prev); n.has(c.continent) ? n.delete(c.continent) : n.add(c.continent); return n;
             })}
-              style={({ pressed }) => [s.continent, pressed && { backgroundColor: "rgba(0,79,145,0.08)" }]}>
+              style={({ pressed }) => [s.continent, pressed && { backgroundColor: T.bleuVoile }]}>
               <Text style={s.continentTexte}>{c.continent.toUpperCase()}</Text>
               <View style={s.continentDroite}>
                 <Text style={s.continentCompte}>{c.nb}</Text>
@@ -133,7 +133,7 @@ export default function FichePaysIndex() {
                     <Text style={[s.zone, zi > 0 && { borderTopWidth: 1, borderTopColor: T.filet }]}>{z.zone.toUpperCase()}</Text>
                     {z.pays.map(p => (
                       <Pressable key={p.id} onPress={() => choisir(p)}
-                        style={({ pressed }) => [s.pays, pressed && { backgroundColor: "rgba(0,79,145,0.04)" }]}>
+                        style={({ pressed }) => [s.pays, pressed && { backgroundColor: T.blocFond }]}>
                         <Text style={s.paysNom} numberOfLines={1}>{p.nom}</Text>
                         <Text style={s.paysIso}>{p.code_iso3}</Text>
                         <Ionicons name="chevron-forward" size={13} color={T.grisClair} />
@@ -165,7 +165,7 @@ const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
   erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 9 },
@@ -176,7 +176,7 @@ const s = StyleSheet.create({
   },
   drapeau: { width: 21, height: 15, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.12)" },
   slotSenTexte: { fontSize: 13, fontFamily: POLICE.gras, color: T.bleu },
-  slotSenRef: { backgroundColor: "rgba(0,79,145,0.10)", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
+  slotSenRef: { backgroundColor: T.blocBord, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
   slotSenRefTexte: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
   slotAjout: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
@@ -187,12 +187,12 @@ const s = StyleSheet.create({
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   continent: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    backgroundColor: "rgba(0,79,145,0.05)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
+    backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
   },
   continentTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
   continentDroite: { flexDirection: "row", alignItems: "center", gap: 7 },
-  continentCompte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, backgroundColor: "rgba(0,79,145,0.10)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 1.5, overflow: "hidden", fontVariant: ["tabular-nums"] },
-  surface: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure, marginTop: 8, overflow: "hidden" },
+  continentCompte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, backgroundColor: T.blocBord, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 1.5, overflow: "hidden", fontVariant: ["tabular-nums"] },
+  surface: { backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure, marginTop: 8, overflow: "hidden" },
   zone: { fontSize: 9, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1.1, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 3 },
   pays: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 10.5 },
   paysNom: { flex: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },

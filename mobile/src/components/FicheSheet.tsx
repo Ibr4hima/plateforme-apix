@@ -18,9 +18,9 @@ function Champ({ label, valeur }: { label: string; valeur?: string | null }) {
 }
 
 const ST_EVENT: Record<string, { label: string; c: string; bg: string }> = {
-  a_venir:  { label: "À venir",  c: T.bleu,    bg: "rgba(0,79,145,0.07)" },
+  a_venir:  { label: "À venir",  c: T.bleu,    bg: T.bleuVoile },
   en_cours: { label: "En cours", c: T.vert,    bg: "rgba(24,128,56,0.08)" },
-  termine:  { label: "Terminé",  c: "#6b7280", bg: T.filet },
+  termine:  { label: "Terminé",  c: T.texte, bg: T.filet },
 };
 
 export default function FicheSheet({ resultat: r, onClose }: { resultat: Resultat; onClose: () => void }) {
@@ -97,7 +97,7 @@ export default function FicheSheet({ resultat: r, onClose }: { resultat: Resulta
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    backgroundColor: T.carte, borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "72%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -107,7 +107,7 @@ const s = StyleSheet.create({
   titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 8, lineHeight: 25 },
   badge: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginTop: 10 },
   badgeTexte: { fontSize: 11, fontFamily: POLICE.gras },
-  champ: { backgroundColor: "rgba(0,79,145,0.04)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
+  champ: { backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
   champLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1 },
   champValeur: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, marginTop: 3 },
   vide: { fontSize: 12.5, color: T.gris, textAlign: "center", paddingVertical: 18 },

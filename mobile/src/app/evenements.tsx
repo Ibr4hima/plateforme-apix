@@ -58,7 +58,7 @@ function CarteEvenement({ e, prochainId, onPress }: { e: any; prochainId: number
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
   return (
     <Pressable onPress={onPress}
-      style={({ pressed }) => [s.carte, estPasse && { backgroundColor: "#FBFAF9" }, pressed && { transform: [{ scale: 0.99 }] }]}>
+      style={({ pressed }) => [s.carte, estPasse && { backgroundColor: T.carteDouce }, pressed && { transform: [{ scale: 0.99 }] }]}>
       {accent && (
         <LinearGradient colors={accent.grad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.accentBande}>
           <Text style={s.accentTexte}>{accent.label}</Text>
@@ -212,13 +212,13 @@ const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
   erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
   rangee: { paddingLeft: 12, paddingRight: 16, flexDirection: "row" },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   annee: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, marginTop: 8, marginBottom: 12 },
-  anneePastille: { backgroundColor: "rgba(0,79,145,0.08)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 5 },
+  anneePastille: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 5 },
   anneeTexte: { fontSize: 14, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"], letterSpacing: 0.5 },
   anneeFilet: { flex: 1, height: 1, backgroundColor: "#E4E1DE" },
   anneeCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.grisClair, fontVariant: ["tabular-nums"] },
@@ -230,7 +230,7 @@ const s = StyleSheet.create({
   },
   railPointCoeur: { width: 5, height: 5, borderRadius: 3 },
   carte: {
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden",
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden",
   },
   accentBande: { paddingVertical: 5, alignItems: "center" },
   accentTexte: { color: "#fff", fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1.4 },

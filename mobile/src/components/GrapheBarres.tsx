@@ -89,7 +89,7 @@ const s = StyleSheet.create({
   ligne: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 5 },
   label: { flex: 1, fontSize: 12, fontFamily: POLICE.demi, color: T.encre },
   valeur: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
-  piste: { height: 8, backgroundColor: "#F1EFED", borderRadius: 99, overflow: "hidden" },
+  piste: { height: 8, backgroundColor: T.grille, borderRadius: 99, overflow: "hidden" },
   barre: { height: "100%", borderRadius: 99 },
   legendeCarre: { width: 9, height: 9, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.15)" },
   separation: { height: 1, backgroundColor: T.filet, marginVertical: 13 },

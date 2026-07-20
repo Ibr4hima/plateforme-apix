@@ -61,7 +61,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
 
   const LigneEnt = ({ ze }: { ze: any }) => (
     <Pressable onPress={() => ouvrirFiche(ze.entreprise?.id)}
-      style={({ pressed }) => [s.ent, pressed && { backgroundColor: "#fff", borderColor: "rgba(0,79,145,0.25)" }]}>
+      style={({ pressed }) => [s.ent, pressed && { backgroundColor: T.carte, borderColor: "rgba(0,79,145,0.25)" }]}>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={s.entNom} numberOfLines={1}>{ze.entreprise?.nom}</Text>
         {ze.entreprise?.forme_juridique ? <Text style={s.entForme} numberOfLines={1}>{ze.entreprise.forme_juridique}</Text> : null}
@@ -84,7 +84,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
         </View>
         <View style={s.pilules}>
           <View style={[s.pilule, { backgroundColor: `${col}12` }]}><Text style={[s.piluleTexte, { color: col, letterSpacing: 0.4 }]}>{zone.type_zone}</Text></View>
-          {zone.pole_nom ? <View style={[s.pilule, { backgroundColor: "rgba(0,79,145,0.07)" }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{zone.pole_nom}</Text></View> : null}
+          {zone.pole_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{zone.pole_nom}</Text></View> : null}
         </View>
 
         <ScrollView style={{ marginTop: 16 }} contentContainerStyle={{ gap: 20, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
@@ -166,7 +166,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "82%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -179,25 +179,25 @@ const s = StyleSheet.create({
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginBottom: 10 },
   grille: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   bloc: {
-    backgroundColor: "rgba(0,79,145,0.04)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)",
+    backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord,
     borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, flexGrow: 1, flexBasis: "45%",
   },
   blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1, marginBottom: 4 },
   blocValeur: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-  description: { backgroundColor: "#FAFAF9", borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 12, paddingHorizontal: 15, paddingVertical: 13 },
+  description: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 13 },
   descriptionTexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
   ent: {
     flexDirection: "row", alignItems: "center", gap: 10,
-    backgroundColor: "#FAFAF9", borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 12,
+    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 10,
   },
   entNom: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
   entForme: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
-  entFiche: { flexDirection: "row", alignItems: "center", gap: 2, backgroundColor: "rgba(0,79,145,0.07)", borderRadius: 7, paddingHorizontal: 9, paddingVertical: 4.5 },
+  entFiche: { flexDirection: "row", alignItems: "center", gap: 2, backgroundColor: T.bleuVoile, borderRadius: 7, paddingHorizontal: 9, paddingVertical: 4.5 },
   entFicheTexte: { fontSize: 11, fontFamily: POLICE.demi, color: T.bleu },
   doc: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: "rgba(0,79,145,0.05)", borderWidth: 1, borderColor: "rgba(0,79,145,0.15)",
+    backgroundColor: T.bleuVoile, borderWidth: 1, borderColor: T.blocBord,
     borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },

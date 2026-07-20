@@ -152,7 +152,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           <View style={s.fichiers}>
             {e.fichiers.map((f: any) => (
               <Pressable key={f.id} onPress={() => Linking.openURL(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`)}
-                style={({ pressed }) => [s.fichierChip, pressed && { backgroundColor: "rgba(0,79,145,0.12)" }]}>
+                style={({ pressed }) => [s.fichierChip, pressed && { backgroundColor: T.bleuVoile }]}>
                 <Ionicons name="document-text-outline" size={11} color={T.bleu} />
                 <Text style={s.fichierChipTexte} numberOfLines={1}>{f.titre}</Text>
               </Pressable>
@@ -196,11 +196,11 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
     return (
       <View style={s.cycle}>
         <Pressable onPress={() => basculerCycle(id)}
-          style={({ pressed }) => [s.cycleEntete, (ouvert || pressed) && { backgroundColor: "#FAFAF9" }]}>
+          style={({ pressed }) => [s.cycleEntete, (ouvert || pressed) && { backgroundColor: T.carteDouce }]}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={s.cycleLigne}>
               <Text style={s.cycleNum}>CYCLE {num}</Text>
-              <Text style={[s.cycleIssue, { color: inst ? T.vert : "#6b7280" }]}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</Text>
+              <Text style={[s.cycleIssue, { color: inst ? T.vert : T.texte }]}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</Text>
             </View>
             {concluLe ? <Text style={s.cycleDate}>Conclu le {fmtDateLong(concluLe.slice(0, 10))}</Text> : null}
           </View>
@@ -246,7 +246,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               <Text style={[s.piluleTexte, { color: "#3d4450" }]}>{badge.label}</Text>
             </View>
           ) : null}
-          {p.siege_nom ? <View style={[s.pilule, { backgroundColor: "rgba(0,79,145,0.07)" }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.siege_nom}</Text></View> : null}
+          {p.siege_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.siege_nom}</Text></View> : null}
         </View>
 
         {/* Bascule Échanges ⇄ Infos (hors ciblés) */}
@@ -356,7 +356,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "84%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -368,57 +368,57 @@ const s = StyleSheet.create({
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
   bascule: {
     flexDirection: "row", marginTop: 12, padding: 3.5, gap: 4,
-    backgroundColor: "rgba(0,30,60,0.05)", borderRadius: 999,
+    backgroundColor: T.filet, borderRadius: 999,
   },
   basculeBouton: { flex: 1, alignItems: "center", paddingVertical: 7.5, borderRadius: 999 },
-  basculeActif: { backgroundColor: "#fff", shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+  basculeActif: { backgroundColor: T.carte, shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
   basculeTexte: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris },
   basculeTexteActif: { color: T.bleu },
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginBottom: 10 },
   sousTitreGris: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, marginBottom: 8 },
   grille: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   bloc: {
-    backgroundColor: "rgba(0,79,145,0.04)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)",
+    backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord,
     borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, flexGrow: 1, flexBasis: "45%",
   },
   blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1, marginBottom: 4 },
   blocValeur: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
   frise: { position: "relative" },
-  friseRail: { position: "absolute", left: 4, top: 10, bottom: 10, width: 2, borderRadius: 2, backgroundColor: "#F0EEEC" },
+  friseRail: { position: "absolute", left: 4, top: 10, bottom: 10, width: 2, borderRadius: 2, backgroundColor: T.bordureDouce },
   echangeRangee: { paddingLeft: 18, position: "relative" },
   echangePoint: {
     position: "absolute", left: 0, top: 15, width: 10, height: 10, borderRadius: 5,
-    backgroundColor: T.bleu, borderWidth: 2, borderColor: "#fff",
+    backgroundColor: T.bleu, borderWidth: 2, borderColor: T.carte,
   },
-  echange: { backgroundColor: "#FAFAF9", borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  echange: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
   echangeDate: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
   echangeMeta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 8 },
   canalChip: {
     flexDirection: "row", alignItems: "center", gap: 5,
-    backgroundColor: "#F2F0EF", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, maxWidth: "100%",
+    backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, maxWidth: "100%",
   },
   canalChipTexte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.texte, flexShrink: 1 },
   echangeQui: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
-  echangeCommentaire: { backgroundColor: "#fff", borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 10, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
-  echangeCommentaireTexte: { fontSize: 12, fontFamily: POLICE.normal, color: "#5b6472", lineHeight: 19 },
+  echangeCommentaire: { backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 10, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
+  echangeCommentaireTexte: { fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19 },
   fichiers: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 8 },
   fichierChip: {
     flexDirection: "row", alignItems: "center", gap: 5,
-    backgroundColor: "rgba(0,79,145,0.06)", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4,
+    backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4,
   },
   fichierChipTexte: { fontSize: 11, fontFamily: POLICE.demi, color: T.bleu, flexShrink: 1 },
-  echangePied: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 10, paddingTop: 9, borderTopWidth: 1, borderTopColor: "#F2F0EF" },
+  echangePied: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 10, paddingTop: 9, borderTopWidth: 1, borderTopColor: T.filet },
   echangePiedTexte: { flex: 1, fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris },
   contrainte: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   contraintePoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu, marginTop: 6 },
-  contrainteTexte: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: "#5b6472", lineHeight: 18 },
-  cycle: { borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 12, overflow: "hidden" },
+  contrainteTexte: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 18 },
+  cycle: { borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, overflow: "hidden" },
   cycleEntete: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   cycleLigne: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
   cycleNum: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   cycleIssue: { fontSize: 11, fontFamily: POLICE.gras },
   cycleDate: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 3 },
-  cycleCorps: { borderTopWidth: 1, borderTopColor: "#F0EEEC", paddingHorizontal: 15, paddingVertical: 14, gap: 14 },
-  cycleCommentaire: { fontSize: 12.5, fontFamily: POLICE.normal, color: "#5b6472", lineHeight: 20, fontStyle: "italic" },
+  cycleCorps: { borderTopWidth: 1, borderTopColor: T.bordureDouce, paddingHorizontal: 15, paddingVertical: 14, gap: 14 },
+  cycleCommentaire: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20, fontStyle: "italic" },
   videTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 12 },
 });

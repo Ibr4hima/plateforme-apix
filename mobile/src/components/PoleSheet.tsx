@@ -91,7 +91,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
                   const nbEnts = (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length;
                   return (
                     <Pressable key={z.id} onPress={() => setZoneOuverte(z)}
-                      style={({ pressed }) => [s.zone, pressed && { backgroundColor: "#fff", borderColor: "rgba(0,79,145,0.25)" }]}>
+                      style={({ pressed }) => [s.zone, pressed && { backgroundColor: T.carte, borderColor: "rgba(0,79,145,0.25)" }]}>
                       <View style={[s.zoneType, { backgroundColor: `${tc}12` }]}><Text style={[s.zoneTypeTexte, { color: tc }]}>{z.type_zone}</Text></View>
                       <Text style={s.zoneNom} numberOfLines={1}>{z.nom_zone}</Text>
                       <View style={[s.zoneCompte, { backgroundColor: `${tc}12` }]}><Text style={[s.zoneCompteTexte, { color: tc }]}>{nbEnts} ent.</Text></View>
@@ -152,7 +152,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "82%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -163,18 +163,18 @@ const s = StyleSheet.create({
   titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, lineHeight: 25, letterSpacing: -0.3 },
   fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 9 },
-  pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, backgroundColor: "rgba(0,79,145,0.07)" },
+  pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, backgroundColor: T.bleuVoile },
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu },
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginBottom: 10 },
   kpi: {
-    backgroundColor: "rgba(0,79,145,0.04)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)",
+    backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord,
     borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
   },
   kpiLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1, marginBottom: 4 },
   kpiValeur: { fontSize: 26, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 30, fontVariant: ["tabular-nums"] },
   zone: {
     flexDirection: "row", alignItems: "center", gap: 10,
-    backgroundColor: "#FAFAF9", borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 12,
+    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 10,
   },
   zoneType: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
@@ -189,7 +189,7 @@ const s = StyleSheet.create({
   barRempli: { height: "100%", borderRadius: 99 },
   doc: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: "rgba(0,79,145,0.05)", borderWidth: 1, borderColor: "rgba(0,79,145,0.15)",
+    backgroundColor: T.bleuVoile, borderWidth: 1, borderColor: T.blocBord,
     borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },

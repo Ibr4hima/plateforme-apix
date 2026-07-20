@@ -108,7 +108,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
     const col = sel ? couleurDe(p.id) : T.grisClair;
     return (
       <Pressable onPress={() => !desactive && clicPays(p.id)}
-        style={({ pressed }) => [s.paysLigne, pressed && { backgroundColor: "#F8F7F6" }, desactive && { opacity: 0.4 }]}>
+        style={({ pressed }) => [s.paysLigne, pressed && { backgroundColor: T.champ }, desactive && { opacity: 0.4 }]}>
         <View style={[s.point, { borderColor: col, backgroundColor: sel ? col : "transparent" }]} />
         <Text style={[s.paysNom, sel && { fontFamily: POLICE.gras }]} numberOfLines={1}>{p.nom}</Text>
       </Pressable>
@@ -159,7 +159,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
             {/* Sénégal épinglé */}
             {senId !== null && sen && (
               <Pressable onPress={() => clicPays(senId)}
-                style={({ pressed }) => [s.paysLigne, pressed && { backgroundColor: "#F8F7F6" }]}>
+                style={({ pressed }) => [s.paysLigne, pressed && { backgroundColor: T.champ }]}>
                 <View style={[s.point, { borderColor: sen.sel ? couleurDe(senId) : T.grisClair, backgroundColor: sen.sel ? couleurDe(senId) : "transparent" }]} />
                 <Text style={[s.paysNom, sen.sel && { fontFamily: POLICE.gras }]}>Sénégal</Text>
                 <View style={s.refBadge}><Text style={s.refBadgeTexte}>Réf.</Text></View>
@@ -237,7 +237,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
 
         {/* Pied : réinitialiser + appliquer */}
         <View style={s.pied}>
-          <Pressable onPress={reinitialiser} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: "#F2F0EF" }]}>
+          <Pressable onPress={reinitialiser} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
             <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
           </Pressable>
           <Pressable onPress={() => { onAppliquer(f); onClose(); }}
@@ -253,7 +253,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "88%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -263,17 +263,17 @@ const s = StyleSheet.create({
   secLigne: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6 },
   compteBadge: {
-    fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, backgroundColor: "rgba(0,79,145,0.10)",
+    fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, backgroundColor: T.blocBord,
     borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, overflow: "hidden", fontVariant: ["tabular-nums"],
   },
-  segments: { flexDirection: "row", padding: 3.5, gap: 4, backgroundColor: "rgba(0,30,60,0.05)", borderRadius: 999 },
+  segments: { flexDirection: "row", padding: 3.5, gap: 4, backgroundColor: T.filet, borderRadius: 999 },
   segment: { flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 999 },
-  segmentActif: { backgroundColor: "#fff", shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+  segmentActif: { backgroundColor: T.carte, shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
   segmentTexte: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris },
   segmentTexteActif: { color: T.bleu },
   recherche: {
     flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10,
-    backgroundColor: "#F8F7F6", borderWidth: 1, borderColor: T.bordure, borderRadius: 10,
+    backgroundColor: T.champ, borderWidth: 1, borderColor: T.bordure, borderRadius: 10,
     paddingHorizontal: 11, height: 38,
   },
   rechercheChamp: { flex: 1, fontSize: 13, fontFamily: POLICE.moyen, color: T.encre },
@@ -286,7 +286,7 @@ const s = StyleSheet.create({
   filet: { height: 1, backgroundColor: T.filet, marginVertical: 8 },
   continent: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    backgroundColor: "rgba(0,79,145,0.05)", borderRadius: 9, paddingHorizontal: 10, paddingVertical: 7, marginBottom: 3,
+    backgroundColor: T.bleuVoile, borderRadius: 9, paddingHorizontal: 10, paddingVertical: 7, marginBottom: 3,
   },
   continentTexte: { fontSize: 10, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1 },
   zone: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1, paddingHorizontal: 8, paddingTop: 6, paddingBottom: 2 },
@@ -296,9 +296,9 @@ const s = StyleSheet.create({
   anneesGrille: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   anneeChip: {
     paddingHorizontal: 12, paddingVertical: 6.5, borderRadius: 9,
-    backgroundColor: "#F8F7F6", borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.champ, borderWidth: 1, borderColor: T.bordure,
   },
-  anneeChipActif: { backgroundColor: T.bleu, borderColor: T.bleu },
+  anneeChipActif: { backgroundColor: T.bleuAction, borderColor: T.bleuAction },
   anneeChipTexte: { fontSize: 12, fontFamily: POLICE.demi, color: T.texte, fontVariant: ["tabular-nums"] },
   plageResume: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.gris, textAlign: "center" },
   pied: {
@@ -307,9 +307,9 @@ const s = StyleSheet.create({
   },
   boutonSecondaire: {
     flex: 1, alignItems: "center", paddingVertical: 12, borderRadius: 12,
-    borderWidth: 1, borderColor: T.bordure, backgroundColor: "#fff",
+    borderWidth: 1, borderColor: T.bordure, backgroundColor: T.carte,
   },
   boutonSecondaireTexte: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.texte },
-  boutonPrincipal: { flex: 1.4, alignItems: "center", paddingVertical: 12, borderRadius: 12, backgroundColor: T.bleu },
+  boutonPrincipal: { flex: 1.4, alignItems: "center", paddingVertical: 12, borderRadius: 12, backgroundColor: T.bleuAction },
   boutonPrincipalTexte: { fontSize: 13.5, fontFamily: POLICE.gras, color: "#fff" },
 });

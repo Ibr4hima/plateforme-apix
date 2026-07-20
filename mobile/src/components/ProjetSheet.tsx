@@ -49,7 +49,7 @@ export function CarteContact({ nom, sous, telephones, mails }: { nom: string; so
       {(telephones.length > 0 || mails.length > 0) && (
         <View style={s.contactChips}>
           {telephones.map((t, i) => (
-            <View key={`t${i}`} style={[s.contactChip, { backgroundColor: "rgba(0,79,145,0.07)" }]}>
+            <View key={`t${i}`} style={[s.contactChip, { backgroundColor: T.bleuVoile }]}>
               <Text style={[s.contactChipTexte, { color: T.bleu }]}>{fmtPhone(t.trim())}</Text>
             </View>
           ))}
@@ -85,7 +85,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
           </Pressable>
         </View>
         <View style={s.pilules}>
-          {p.pole_nom ? <View style={[s.pilule, { backgroundColor: "rgba(0,79,145,0.07)" }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.pole_nom}</Text></View> : null}
+          {p.pole_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.pole_nom}</Text></View> : null}
           {p.region_nom ? <View style={[s.pilule, { backgroundColor: "rgba(202,99,31,0.08)" }]}><Text style={[s.piluleTexte, { color: T.orange }]}>Région de {p.region_nom}</Text></View> : null}
           {p.departement_nom ? <View style={[s.pilule, { backgroundColor: "rgba(24,128,56,0.08)" }]}><Text style={[s.piluleTexte, { color: T.vert }]}>Département de {p.departement_nom}</Text></View> : null}
           {p.arrondissement_nom ? <View style={[s.pilule, { backgroundColor: "rgba(106,27,154,0.07)" }]}><Text style={[s.piluleTexte, { color: "#6A1B9A" }]}>Arrondissement de {p.arrondissement_nom}</Text></View> : null}
@@ -169,7 +169,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "82%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -182,14 +182,14 @@ const s = StyleSheet.create({
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginBottom: 10 },
   grille: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   bloc: {
-    backgroundColor: "rgba(0,79,145,0.04)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)",
+    backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord,
     borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, flexGrow: 1, flexBasis: "45%",
   },
   blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1, marginBottom: 4 },
   blocValeur: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-  description: { backgroundColor: "#FAFAF9", borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 12, paddingHorizontal: 15, paddingVertical: 13 },
+  description: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 13 },
   descriptionTexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
-  contact: { backgroundColor: "#FAFAF9", borderWidth: 1, borderColor: "#F0EEEC", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11 },
+  contact: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11 },
   contactEntete: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
   contactNom: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre },
   contactSous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
@@ -198,7 +198,7 @@ const s = StyleSheet.create({
   contactChipTexte: { fontSize: 11, fontFamily: POLICE.demi },
   doc: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: "rgba(0,79,145,0.05)", borderWidth: 1, borderColor: "rgba(0,79,145,0.15)",
+    backgroundColor: T.bleuVoile, borderWidth: 1, borderColor: T.blocBord,
     borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },

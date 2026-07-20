@@ -17,9 +17,9 @@ export const ROLE_PASTEL: Record<string, string> = {
   "Invité":          "#E6AC9D",
 };
 export const ST_EVENT: Record<string, { label: string; c: string; bg: string }> = {
-  a_venir:  { label: "À venir",  c: "#004f91", bg: "rgba(0,79,145,0.07)" },
+  a_venir:  { label: "À venir",  c: "#004f91", bg: T.bleuVoile },
   en_cours: { label: "En cours", c: "#188038", bg: "rgba(24,128,56,0.08)" },
-  termine:  { label: "Terminé",  c: "#6b7280", bg: "#F2F0EF" },
+  termine:  { label: "Terminé",  c: T.texte, bg: T.filet },
 };
 export const ordinal = (n: number) => (n === 1 ? "1ère édition" : `${n}ème édition`);
 const MOIS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
@@ -70,7 +70,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
         <View style={s.entete}>
           <View style={s.pilules}>
             {st && <View style={[s.pilule, { backgroundColor: st.bg }]}><Text style={[s.piluleTexte, { color: st.c }]}>{st.label}</Text></View>}
-            {e.edition != null && <View style={[s.pilule, { backgroundColor: "rgba(0,79,145,0.07)" }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{ordinal(e.edition)}</Text></View>}
+            {e.edition != null && <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{ordinal(e.edition)}</Text></View>}
             {roleP && (
               <View style={[s.pilule, { backgroundColor: `${roleP}40`, borderWidth: 1, borderColor: `${roleP}90` }]}>
                 <Text style={[s.piluleTexte, { color: foncerPastel(roleP) }]}>{e.role_apix}</Text>
@@ -141,7 +141,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
             <View style={s.bloc}>
               <Text style={s.blocLabel}>ENTREPRISES INVITÉES</Text>
               <View style={s.chips}>
-                {entreprisesInvitees.map(n => <View key={n} style={[s.chip, { backgroundColor: "rgba(0,79,145,0.05)", borderColor: "rgba(0,79,145,0.15)" }]}><Text style={[s.chipTexte, { color: T.bleu }]}>{n}</Text></View>)}
+                {entreprisesInvitees.map(n => <View key={n} style={[s.chip, { backgroundColor: T.bleuVoile, borderColor: T.blocBord }]}><Text style={[s.chipTexte, { color: T.bleu }]}>{n}</Text></View>)}
               </View>
             </View>
           )}
@@ -154,7 +154,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
 const s = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, maxHeight: "78%",
   },
   poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
@@ -164,17 +164,17 @@ const s = StyleSheet.create({
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
   fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 10, lineHeight: 25, letterSpacing: -0.3 },
-  bloc: { backgroundColor: "rgba(0,79,145,0.04)", borderWidth: 1, borderColor: "rgba(0,79,145,0.10)", borderRadius: 14, padding: 13 },
+  bloc: { backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord, borderRadius: 14, padding: 13 },
   blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2, marginBottom: 6 },
   blocValeur: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
   description: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   themeLigne: { flexDirection: "row", alignItems: "flex-start", gap: 9 },
   themePoint: { borderRadius: 99, flexShrink: 0 },
-  themeBranche: { paddingLeft: 17, borderLeftWidth: 1.5, borderLeftColor: "rgba(0,79,145,0.12)", marginLeft: 3.5 },
+  themeBranche: { paddingLeft: 17, borderLeftWidth: 1.5, borderLeftColor: T.bleuVoile, marginLeft: 3.5 },
   themeSecteur: { flex: 1, fontSize: 13, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 18 },
   themeBrancheTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: "#b5722f", lineHeight: 18 },
   themeActivite: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: "#4d8a63", lineHeight: 17 },
-  chip: { backgroundColor: "#F5F4F3", borderWidth: 1, borderColor: "#E8E5E2", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
+  chip: { backgroundColor: T.filet, borderWidth: 1, borderColor: "#E8E5E2", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
 });

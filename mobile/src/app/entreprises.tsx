@@ -153,7 +153,7 @@ export default function Entreprises() {
                   <View style={s.poleListe}>
                     {p.entreprises.map((e: any, i: number) => (
                       <Pressable key={e.id} onPress={() => setSelec(e)}
-                        style={({ pressed }) => [s.poleEntreprise, i > 0 && s.poleEntrepriseBord, pressed && { backgroundColor: "rgba(0,79,145,0.04)" }]}>
+                        style={({ pressed }) => [s.poleEntreprise, i > 0 && s.poleEntrepriseBord, pressed && { backgroundColor: T.blocFond }]}>
                         <View style={{ flex: 1, minWidth: 0 }}>
                           <Text style={s.poleEntNom} numberOfLines={1}>{e.nom}</Text>
                           <Text style={s.poleEntSous} numberOfLines={1}>
@@ -184,13 +184,13 @@ const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
   erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   carte: {
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
     paddingHorizontal: 18, paddingTop: 16, paddingBottom: 14, gap: 13,
   },
   ligneTitre: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
@@ -204,7 +204,7 @@ const s = StyleSheet.create({
   basVal: { fontSize: 12.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   pole: {
     flexDirection: "row", alignItems: "center", gap: 14,
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1,
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1,
     paddingHorizontal: 15, paddingVertical: 13,
   },
   poleTuile: { width: 46, height: 46, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center" },
@@ -212,7 +212,7 @@ const s = StyleSheet.create({
   poleNom: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre },
   poleSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
   poleListe: {
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
     marginTop: 8, overflow: "hidden",
   },
   poleEntreprise: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 11.5 },

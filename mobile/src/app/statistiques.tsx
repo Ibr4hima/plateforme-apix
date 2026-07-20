@@ -207,7 +207,7 @@ export default function Statistiques() {
 const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 44, gap: 8 },
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 16, paddingHorizontal: 16 },
   paysPastille: {
@@ -218,11 +218,11 @@ const s = StyleSheet.create({
   paysPastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, flexShrink: 1 },
   periodePastille: {
     borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5,
-    backgroundColor: "#ECEAE8", borderWidth: 1, borderColor: "#DFDBD7",
+    backgroundColor: T.filet, borderWidth: 1, borderColor: T.bordure,
   },
-  periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: "#3a4452", fontVariant: ["tabular-nums"] },
+  periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
   graphe: {
-    backgroundColor: "#fff", borderRadius: 18, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.bordure,
     paddingHorizontal: 15, paddingTop: 13, paddingBottom: 10,
     shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
     elevation: 2,

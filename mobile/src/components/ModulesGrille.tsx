@@ -54,7 +54,7 @@ const s = StyleSheet.create({
   bloc: { marginTop: 30, paddingHorizontal: 18 },
   titre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.6, marginBottom: 12 },
   surface: {
-    backgroundColor: "#fff", borderRadius: 22, overflow: "hidden",
+    backgroundColor: T.carte, borderRadius: 22, overflow: "hidden",
     shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 16, shadowOffset: { width: 0, height: 7 },
     elevation: 3,
   },

@@ -97,7 +97,7 @@ export default function CodeSommaire() {
                     <View key={c.id}>
                       {i > 0 && <View style={s.separateur} />}
                       <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
-                        style={({ pressed }) => [s.ligne, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
+                        style={({ pressed }) => [s.ligne, pressed && { backgroundColor: T.bleuVoile }]}>
                         <View style={s.numeroColonne}>
                           <Text style={s.numeroRomain}>{romainDe(c)}</Text>
                           <Text style={s.numeroLegende}>CHAP.</Text>
@@ -125,18 +125,18 @@ const s = StyleSheet.create({
   vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 24 },
   meta: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 10, marginLeft: 4 },
   surface: {
-    backgroundColor: "#fff", borderRadius: 22, overflow: "hidden",
+    backgroundColor: T.carte, borderRadius: 22, overflow: "hidden",
     shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 16, shadowOffset: { width: 0, height: 7 },
     elevation: 3,
   },
-  separateur: { height: 1, backgroundColor: "rgba(0,30,60,0.07)", marginLeft: 74 },
+  separateur: { height: 1, backgroundColor: T.filet, marginLeft: 74 },
   ligne: { flexDirection: "row", alignItems: "center", gap: 16, paddingVertical: 15, paddingHorizontal: 18 },
   numeroColonne: { width: 40, alignItems: "center" },
   numeroRomain: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.3, lineHeight: 21 },
   numeroLegende: { fontSize: 7.5, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1.2, marginTop: 2 },
   ligneTitre: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
   ligneSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 3 },
-  resultat: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure, padding: 15, marginBottom: 10 },
+  resultat: { backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure, padding: 15, marginBottom: 10 },
   resNumero: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
   resTitre: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, marginTop: 5 },
   resExtrait: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19, marginTop: 6 },

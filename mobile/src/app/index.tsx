@@ -112,7 +112,7 @@ export default function Accueil() {
 }
 
 const s = StyleSheet.create({
-  hero: { backgroundColor: T.bleu, paddingHorizontal: 24, paddingBottom: 64, overflow: "hidden", borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  hero: { backgroundColor: T.heroFond, paddingHorizontal: 24, paddingBottom: 64, overflow: "hidden", borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
   haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
   surtitre: { color: "rgba(255,255,255,0.75)", fontSize: 10.5, fontFamily: POLICE.gras, letterSpacing: 2.2, marginBottom: 22, textAlign: "center" },
@@ -120,7 +120,7 @@ const s = StyleSheet.create({
   titreMasque: { color: "#000" },
   recherche: {
     marginTop: -26, marginHorizontal: 22, height: 52, zIndex: 2,
-    backgroundColor: "#fff", borderRadius: 999, flexDirection: "row", alignItems: "center",
+    backgroundColor: T.carte, borderRadius: 999, flexDirection: "row", alignItems: "center",
     paddingHorizontal: 20, gap: 11,
     shadowColor: "#001e3c", shadowOpacity: 0.25, shadowRadius: 18, shadowOffset: { width: 0, height: 10 },
     elevation: 8,
