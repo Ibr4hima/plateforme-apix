@@ -3,7 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Apparition, ChiffreAnime } from "@/components/ui";
 import { getJson } from "@/lib/api";
+import { tick } from "@/lib/haptique";
 import { fmtUSD, fmtUnite } from "@/lib/format";
 import { POLICE, T } from "@/theme";
 
@@ -63,6 +65,7 @@ export default function Apercu() {
   const [page, setPage] = useState(0);
   const defileur = useRef<ScrollView>(null);
   const pageRef = useRef(0);
+  const parGeste = useRef(false);
   pageRef.current = page;
 
   // Rotation automatique — reprend après un défilement manuel
@@ -82,16 +85,22 @@ export default function Apercu() {
       <Text style={s.titre}>APERÇU · SÉNÉGAL</Text>
       <ScrollView
         ref={defileur} horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / LARGEUR))}>
+        onScrollBeginDrag={() => { parGeste.current = true; }}
+        onMomentumScrollEnd={e => {
+          const suivante = Math.round(e.nativeEvent.contentOffset.x / LARGEUR);
+          if (parGeste.current && suivante !== pageRef.current) tick();
+          parGeste.current = false;
+          setPage(suivante);
+        }}>
         {pages.map((kpis, i) => (
           <View key={i} style={[s.page, { width: LARGEUR }]}>
-            {kpis.map(kpi => (
-              <View key={kpi.label} style={s.carte}>
+            {kpis.map((kpi, k) => (
+              <Apparition key={kpi.label} index={k} style={s.carte}>
                 <View style={s.carteFilet} />
                 <Text style={s.carteLabel} numberOfLines={1}>{kpi.label.toUpperCase()}</Text>
-                <Text style={s.carteValeur} numberOfLines={1} adjustsFontSizeToFit>{kpi.valeur}</Text>
+                <ChiffreAnime texte={kpi.valeur} style={s.carteValeur} />
                 {kpi.annee ? <View style={s.anneePille}><Text style={s.anneeTexte}>{kpi.annee}</Text></View> : null}
-              </View>
+              </Apparition>
             ))}
           </View>
         ))}

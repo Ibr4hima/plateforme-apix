@@ -7,7 +7,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import { useNaema } from "@/components/ArbreNaema";
 import AvantageSheet from "@/components/AvantageSheet";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
@@ -227,7 +227,7 @@ export default function Opportunites() {
           style={{ backgroundColor: T.fond }}
           data={chargement || enErreur ? [] : projetsFiltres}
           keyExtractor={(p: any) => String(p.id)}
-          renderItem={({ item }: any) => <View style={s.rangee}><CarteProjet p={item} onPress={() => setProjetOuvert(item)} /></View>}
+          renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteProjet p={item} onPress={() => setProjetOuvert(item)} /></Apparition>}
           contentContainerStyle={s.liste}
           refreshing={projetsQ.isRefetching} onRefresh={projetsQ.refetch}
           keyboardShouldPersistTaps="handled"

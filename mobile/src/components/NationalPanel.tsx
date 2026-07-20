@@ -13,6 +13,7 @@ import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
+import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 // ── Règles du site ──
@@ -377,10 +378,10 @@ function NationalFiltres({ refs, anneesDispo, valeurs, onAppliquer, onClose }: {
     <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
       pied={
         <View style={s.pied}>
-          <Pressable onPress={reinitialiser} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
+          <Pressable onPress={() => { tick(); reinitialiser(); }} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
             <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
           </Pressable>
-          <Pressable onPress={() => { onAppliquer(f); onClose(); }}
+          <Pressable onPress={() => { succes(); onAppliquer(f); onClose(); }}
             style={({ pressed }) => [s.boutonPrincipal, pressed && { opacity: 0.85 }]}>
             <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
           </Pressable>

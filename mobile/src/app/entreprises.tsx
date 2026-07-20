@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
@@ -124,7 +124,7 @@ export default function Entreprises() {
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : filtres}
           keyExtractor={(e: any) => String(e.id)}
-          renderItem={({ item }: any) => <View style={s.rangee}><CarteEntreprise e={item} onPress={() => setSelec(item)} /></View>}
+          renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteEntreprise e={item} onPress={() => setSelec(item)} /></Apparition>}
           contentContainerStyle={s.liste}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"

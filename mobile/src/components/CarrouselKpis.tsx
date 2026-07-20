@@ -3,6 +3,8 @@
 // Partagé entre Indicateurs économiques et Flux bilatéraux.
 import { useEffect, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Apparition, ChiffreAnime } from "@/components/ui";
+import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 export type KpiCarrousel = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
@@ -21,6 +23,7 @@ export default function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
   const [page, setPage] = useState(0);
   const defileur = useRef<ScrollView>(null);
   const pageRef = useRef(0);
+  const parGeste = useRef(false); // tick haptique sur geste seulement, pas sur la rotation auto
   pageRef.current = page;
 
   useEffect(() => {
@@ -37,18 +40,24 @@ export default function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
     <View>
       <ScrollView
         ref={defileur} horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / LARGEUR))}>
+        onScrollBeginDrag={() => { parGeste.current = true; }}
+        onMomentumScrollEnd={e => {
+          const suivante = Math.round(e.nativeEvent.contentOffset.x / LARGEUR);
+          if (parGeste.current && suivante !== pageRef.current) tick();
+          parGeste.current = false;
+          setPage(suivante);
+        }}>
         {pages.map((groupe, i) => (
           <View key={i} style={[s.page, { width: LARGEUR }]}>
-            {groupe.map(kpi => (
-              <View key={kpi.cle} style={s.carte}>
+            {groupe.map((kpi, k) => (
+              <Apparition key={kpi.cle} index={k} style={s.carte}>
                 <View style={s.filet} />
                 <Text style={s.label} numberOfLines={2}>{kpi.label.toUpperCase()}</Text>
-                <Text style={[s.valeur, kpi.negatif && { color: "#dc2626" }]} numberOfLines={1} adjustsFontSizeToFit>{kpi.valeur}</Text>
+                <ChiffreAnime texte={kpi.valeur} style={[s.valeur, kpi.negatif && { color: "#dc2626" }]} />
                 {kpi.note ? (
                   <View style={s.note}><Text style={s.noteTexte} numberOfLines={1}>{kpi.note}</Text></View>
                 ) : null}
-              </View>
+              </Apparition>
             ))}
           </View>
         ))}

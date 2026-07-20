@@ -2,8 +2,26 @@
 // versions app des graphes de flux bilatéraux du site. Longueurs en
 // racine carrée (même règle que le web) pour garder les petites valeurs
 // visibles ; dégradé bleu institutionnel pour les segments empilés.
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { POLICE, T } from "@/theme";
+
+// Barre qui croît de 0 à sa largeur à l'apparition (stagger de 55 ms)
+function BarreCroissante({ pct, index, style, children }: {
+  pct: number; index: number; style?: any; children?: React.ReactNode;
+}) {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(anim, { toValue: 1, duration: 550, delay: index * 55, useNativeDriver: false }).start();
+  }, [anim, index]);
+  return (
+    <Animated.View style={[style, {
+      width: anim.interpolate({ inputRange: [0, 1], outputRange: ["0%", `${pct}%`] }),
+    }]}>
+      {children}
+    </Animated.View>
+  );
+}
 
 // Dégradé du site : interpolation #003468 → #EDF4FB
 export function degradeBleu(i: number, n: number): string {
@@ -21,14 +39,15 @@ export function BarresH({ data, fmt, couleur = T.bleu }: {
   const max = Math.max(...data.map(d => d.valeur));
   return (
     <View style={{ gap: 11 }}>
-      {data.map(d => (
+      {data.map((d, i) => (
         <View key={d.label}>
           <View style={s.ligne}>
             <Text style={s.label} numberOfLines={1}>{d.label}</Text>
             <Text style={s.valeur}>{fmt(d.valeur)}</Text>
           </View>
           <View style={s.piste}>
-            <View style={[s.barre, { width: `${Math.max(3, Math.sqrt(d.valeur / max) * 100)}%`, backgroundColor: couleur }]} />
+            <BarreCroissante index={i} pct={Math.max(3, Math.sqrt(d.valeur / max) * 100)}
+              style={[s.barre, { backgroundColor: couleur }]} />
           </View>
         </View>
       ))}
@@ -62,11 +81,12 @@ export function BarresEmpilees({ partenaires, ressources, fmt }: {
               <Text style={s.valeur}>{fmt(p.total)}</Text>
             </View>
             <View style={[s.piste, { flexDirection: "row", overflow: "hidden" }]}>
-              <View style={{ flexDirection: "row", width: `${Math.max(3, Math.sqrt(p.total / max) * 100)}%` }}>
+              <BarreCroissante index={pi} pct={Math.max(3, Math.sqrt(p.total / max) * 100)}
+                style={{ flexDirection: "row" }}>
                 {parts.map(r => (
                   <View key={r.i} style={{ flex: r.valeur / p.total, backgroundColor: degradeBleu(r.i, ressources.length) }} />
                 ))}
-              </View>
+              </BarreCroissante>
             </View>
             <View style={s.repartition}>
               {parts.map(r => (

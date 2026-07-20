@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
+import { Apparition } from "@/components/ui";
 import { MODULES, PLUS, POLICE, T } from "@/theme";
 
 type Entree = { cle: string; titre: string; sous: string; icone: string; href: string };
@@ -19,7 +20,7 @@ function ListeGroupee({ titre, entrees }: { titre: string; entrees: readonly Ent
       <Text style={s.titre}>{titre}</Text>
       <View style={s.surface}>
         {entrees.map((m, i) => (
-          <View key={m.cle}>
+          <Apparition key={m.cle} index={i}>
             {i > 0 && <View style={s.separateur} />}
             <Pressable onPress={() => ouvrir(m)}
               style={({ pressed }) => [s.ligne, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
@@ -34,7 +35,7 @@ function ListeGroupee({ titre, entrees }: { titre: string; entrees: readonly Ent
                 <Text style={s.ligneSous} numberOfLines={1}>{m.sous}</Text>
               </View>
             </Pressable>
-          </View>
+          </Apparition>
         ))}
       </View>
     </View>

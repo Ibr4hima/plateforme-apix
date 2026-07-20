@@ -19,6 +19,7 @@ import Symbole from "@/components/Symbole";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { KpiResult, calculerKpis, fmtKpi } from "@/lib/ideKpis";
+import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 const ONGLETS = [
@@ -436,7 +437,7 @@ export default function IdeEcran() {
                 return (
                   <Pressable key={o.cle}
                     onLayout={ev => { const { x, width } = ev.nativeEvent.layout; chipsPos.current[o.cle] = { x, largeur: width }; }}
-                    onPress={() => { setSousType(o.cle); centrerChip(o.cle); }}
+                    onPress={() => { tick(); setSousType(o.cle); centrerChip(o.cle); }}
                     style={[s.chipFiltre, actif && s.chipFiltreActif]}>
                     <Text style={[s.chipFiltreTexte, actif && s.chipFiltreTexteActif]}>{o.label}</Text>
                   </Pressable>

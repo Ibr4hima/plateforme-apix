@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Feuille } from "@/components/ui";
 import { COMP_PALETTE } from "@/lib/couleurs";
+import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 export const MAX_SEL = 4;
@@ -135,10 +136,10 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
     <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
       pied={
         <View style={s.pied}>
-          <Pressable onPress={reinitialiser} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
+          <Pressable onPress={() => { tick(); reinitialiser(); }} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
             <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
           </Pressable>
-          <Pressable onPress={() => { onAppliquer(f); onClose(); }}
+          <Pressable onPress={() => { succes(); onAppliquer(f); onClose(); }}
             style={({ pressed }) => [s.boutonPrincipal, pressed && { opacity: 0.85 }]}>
             <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
           </Pressable>

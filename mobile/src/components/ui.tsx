@@ -7,11 +7,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator, Animated, Dimensions, Modal, Pressable, ScrollView,
+  ActivityIndicator, Animated, Dimensions, Modal, PanResponder, Pressable, ScrollView,
   StyleProp, StyleSheet, Text, View, ViewStyle,
 } from "react-native";
 import Symbole from "@/components/Symbole";
 import { foncerPastel } from "@/lib/couleurs";
+import { tick } from "@/lib/haptique";
 import { origineRecente } from "@/lib/origineTap";
 import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
@@ -74,7 +75,7 @@ export function Chip({ label, actif, onPress, variante = "pastel", couleur, desa
     : { backgroundColor: `${c}14`, borderColor: `${c}66` };
   const texteActif = variante === "pleine" ? { color: "#fff" } : { color: c, fontFamily: POLICE.gras };
   return (
-    <Tapable onPress={onPress} disabled={desactive} style={[sc.chip, actif && fondActif]}>
+    <Tapable onPress={() => { tick(); onPress(); }} disabled={desactive} style={[sc.chip, actif && fondActif]}>
       <Text style={[sc.texte, couleur && !actif && { color: c }, actif && texteActif]}>{label}</Text>
     </Tapable>
   );
@@ -146,8 +147,28 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
     Animated.timing(anim, { toValue: 0, duration: 160, useNativeDriver: true }).start(() => onClose());
   };
 
+  // Poignée physique : la feuille suit le doigt vers le bas ; au-delà du
+  // seuil (ou d'un geste vif) elle se ferme, sinon elle revient au ressort.
+  const tirage = useRef(new Animated.Value(0)).current;
+  const fermerRef = useRef(fermer);
+  fermerRef.current = fermer;
+  const pan = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 4 && Math.abs(g.dy) > Math.abs(g.dx) * 1.4,
+    onPanResponderMove: (_, g) => tirage.setValue(Math.max(0, g.dy)),
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 130 || g.vy > 0.9) fermerRef.current();
+      else Animated.spring(tirage, { toValue: 0, speed: 22, bounciness: 7, useNativeDriver: true }).start();
+    },
+    onPanResponderTerminate: () => {
+      Animated.spring(tirage, { toValue: 0, speed: 22, bounciness: 7, useNativeDriver: true }).start();
+    },
+  })).current;
+
   const fondOpacite = anim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
-  const glisse = anim.interpolate({ inputRange: [0, 1], outputRange: [depart, 0] });
+  const glisse = Animated.add(
+    anim.interpolate({ inputRange: [0, 1], outputRange: [depart, 0] }),
+    tirage,
+  );
   const zoom = anim.interpolate({ inputRange: [0, 1], outputRange: [0.86, 1] });
   const opacite = anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1, 1] });
 
@@ -155,7 +176,9 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
     <Modal visible transparent animationType="none" onRequestClose={fermer}>
       <PressableAnime style={[sf.fond, { opacity: fondOpacite }]} onPress={fermer} />
       <Animated.View style={[sf.feuille, { maxHeight: hauteur, opacity: opacite, transform: [{ translateY: glisse }, { scale: zoom }] }]}>
-        <View style={sf.poignee} />
+        <View {...pan.panHandlers} style={sf.zonePoignee}>
+          <View style={sf.poignee} />
+        </View>
         <View style={sf.entete}>
           {typeof titre === "string"
             ? <Text style={sf.titre}>{titre}</Text>
@@ -175,6 +198,55 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
       </Animated.View>
     </Modal>
   );
+}
+
+// ── Apparition : entrée en cascade (fondu + 12 px de translation) ────────────
+// À poser autour des cards de liste et des KPIs : `index` décale chaque
+// entrée de 40 ms pour l'effet de cascade.
+export function Apparition({ index = 0, style, children }: {
+  index?: number; style?: StyleProp<ViewStyle>; children: React.ReactNode;
+}) {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: 1, duration: 300, delay: Math.min(index, 14) * 40, useNativeDriver: true,
+    }).start();
+  }, [anim, index]);
+  return (
+    <Animated.View style={[style, {
+      opacity: anim,
+      transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
+    }]}>
+      {children}
+    </Animated.View>
+  );
+}
+
+// ── ChiffreAnime : le nombre compte jusqu'à sa valeur ────────────────────────
+// Reçoit le texte déjà formaté (« 1 234,5 M $ ») : le premier nombre est
+// animé de 0 à sa valeur en conservant préfixe, suffixe et décimales.
+export function ChiffreAnime({ texte, style, duree = 750 }: {
+  texte: string; style?: any; duree?: number;
+}) {
+  const m = /-?\d[\d\u202F\u00A0 ]*(?:,\d+)?/.exec(texte);
+  const [affiche, setAffiche] = useState(m ? texte.replace(m[0], "0") : texte);
+  useEffect(() => {
+    if (!m) { setAffiche(texte); return; }
+    const brut = m[0];
+    const cible = parseFloat(brut.replace(/[\u202F\u00A0 ]/g, "").replace(",", "."));
+    const decimales = brut.includes(",") ? brut.split(",")[1].length : 0;
+    const anim = new Animated.Value(0);
+    const id = anim.addListener(({ value }) => {
+      const courant = (cible * value).toLocaleString("fr-FR", {
+        minimumFractionDigits: decimales, maximumFractionDigits: decimales,
+      });
+      setAffiche(texte.replace(brut, courant));
+    });
+    Animated.timing(anim, { toValue: 1, duration: duree, useNativeDriver: false }).start(() => setAffiche(texte));
+    return () => { anim.removeListener(id); anim.stopAnimation(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [texte]);
+  return <Text style={style} numberOfLines={1} adjustsFontSizeToFit>{affiche}</Text>;
 }
 
 // ── États : chargement / erreur / vide ───────────────────────────────────────
@@ -253,7 +325,8 @@ const sf = StyleSheet.create({
     backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 22, paddingTop: 10, ...OMBRE.n3,
   },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: ESPACE.s },
+  zonePoignee: { alignSelf: "stretch", alignItems: "center", paddingTop: 2, paddingBottom: ESPACE.s, marginTop: -6 },
+  poignee: { width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginTop: 6 },
   entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: ESPACE.s },
   titre: { ...TYPO.titre, flex: 1, color: T.encre },
   fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },

@@ -5,7 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import ProspectSheet, { OngletProspect, PROSPECT_PASTELS, badgeProspect, ilYa } from "@/components/ProspectSheet";
 import { fetchTous } from "@/lib/api";
@@ -119,7 +119,7 @@ export default function Prospects() {
         style={{ backgroundColor: T.fond }}
         data={courante.isLoading || courante.isError ? [] : filtres}
         keyExtractor={(p: any) => String(p.id)}
-        renderItem={({ item }: any) => <View style={s.rangee}><CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} /></View>}
+        renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} /></Apparition>}
         contentContainerStyle={s.liste}
         refreshing={courante.isRefetching} onRefresh={courante.refetch}
         keyboardShouldPersistTaps="handled"

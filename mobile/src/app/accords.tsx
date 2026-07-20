@@ -5,7 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import AccordSheet, { ST_PASTEL, sousTitreStatut } from "@/components/AccordSheet";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
@@ -13,6 +13,7 @@ import { fetchTous } from "@/lib/api";
 import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
+import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 const TYPES = [
@@ -102,7 +103,7 @@ export default function Accords() {
         {TYPES.map(o => {
           const actif = onglet === o.cle;
           return (
-            <Pressable key={o.cle} onPress={() => setOnglet(o.cle)} style={[s.chipFiltre, actif && s.chipFiltreActif]}>
+            <Pressable key={o.cle} onPress={() => { tick(); setOnglet(o.cle); }} style={[s.chipFiltre, actif && s.chipFiltreActif]}>
               <Text style={[s.chipFiltreTexte, actif && s.chipFiltreTexteActif]}>{o.label}</Text>
             </Pressable>
           );
@@ -135,7 +136,7 @@ export default function Accords() {
         style={{ backgroundColor: T.fond }}
         data={isLoading || isError ? [] : filtres}
         keyExtractor={(a: any) => String(a.id)}
-        renderItem={({ item }: any) => <View style={s.rangee}><CarteAccord a={item} onPress={() => setSelec(item)} /></View>}
+        renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteAccord a={item} onPress={() => setSelec(item)} /></Apparition>}
         contentContainerStyle={s.liste}
         refreshing={isRefetching}
         onRefresh={refetch}

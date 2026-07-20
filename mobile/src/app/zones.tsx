@@ -7,13 +7,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
 import { getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER, zoneTypeMeta } from "@/lib/zoneTypes";
+import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 const VUES = [
@@ -114,6 +115,7 @@ export default function Zones() {
               <Pressable key={t}
                 onLayout={ev => { const { x, width } = ev.nativeEvent.layout; chipsPos.current[t] = { x, largeur: width }; }}
                 onPress={() => {
+                  tick();
                   setType(t);
                   // Centre la chip choisie : les voisines restent visibles des deux côtés
                   const p = chipsPos.current[t];
@@ -152,7 +154,7 @@ export default function Zones() {
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : filtres}
           keyExtractor={(z: any) => String(z.id)}
-          renderItem={({ item }: any) => <View style={s.rangee}><CarteZone z={item} onPress={() => setZoneSelec(item)} /></View>}
+          renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteZone z={item} onPress={() => setZoneSelec(item)} /></Apparition>}
           contentContainerStyle={s.liste}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"

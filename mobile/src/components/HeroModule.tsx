@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Symbole from "@/components/Symbole";
+import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string };
@@ -128,7 +129,7 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, basc
           {bascule.options.map(o => {
             const actif = bascule.valeur === o.cle;
             return (
-              <Pressable key={o.cle} onPress={() => bascule.onChange(o.cle)}
+              <Pressable key={o.cle} onPress={() => { tick(); bascule.onChange(o.cle); }}
                 style={[s.basculePilule, actif && s.basculePiluleActive]}>
                 <Text style={[s.basculeTexte, actif && s.basculeTexteActif]}>{o.label}</Text>
               </Pressable>
@@ -169,7 +170,7 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, basc
           {segments.options.map(o => {
             const actif = segments.valeur === o.cle;
             return (
-              <Pressable key={o.cle} onPress={() => segments.onChange(o.cle)}
+              <Pressable key={o.cle} onPress={() => { tick(); segments.onChange(o.cle); }}
                 style={[s.segment, actif && s.segmentActif]}>
                 <Text style={[s.segmentTexte, actif && s.segmentTexteActif]} numberOfLines={1}>{o.label}</Text>
               </Pressable>

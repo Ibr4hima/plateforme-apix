@@ -5,9 +5,16 @@
 // (règle du site : ratio d'amplitudes > 4 → une échelle par série,
 // graduations gauche/droite aux couleurs des deux premières), point
 // terminal souligné et curseur tactile fluide avec bulle de lecture.
-import { useMemo, useRef, useState } from "react";
-import { Text as TexteRN, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Text as TexteRN, View } from "react-native";
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop, Text as TexteSvg } from "react-native-svg";
+import { cran } from "@/lib/haptique";
+
+// Courbes qui se tracent à l'apparition (dash-offset animé)
+const PathAnime = Animated.createAnimatedComponent(Path);
+const CircleAnime = Animated.createAnimatedComponent(Circle);
+// Longueur majorante de n'importe quelle courbe du graphe
+const LONGUEUR_TRACE = 1600;
 import { POLICE, T } from "@/theme";
 
 export type Serie = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
@@ -47,6 +54,13 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
 }) {
   const [largeur, setLargeur] = useState(0);
   const [curseur, setCurseur] = useState<number | null>(null);
+  // Tracé progressif : rejoué quand les séries changent
+  const trace = useRef(new Animated.Value(0)).current;
+  const signature = series.map(sr => `${sr.nom}:${sr.data.length}`).join("|");
+  useEffect(() => {
+    trace.setValue(0);
+    Animated.timing(trace, { toValue: 1, duration: 900, useNativeDriver: false }).start();
+  }, [signature, trace]);
   const gradBase = useMemo(() => `gl${++gradSeq}`, []);
   const largeurRef = useRef(0);
   largeurRef.current = largeur;
@@ -115,7 +129,11 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
     const borne = Math.min(Math.max(px, 0), l);
     let meilleur = annees[0], dist = Infinity;
     for (const a of annees) { const d = Math.abs(x(a) - borne); if (d < dist) { dist = d; meilleur = a; } }
-    setCurseur(prev => (prev === meilleur ? prev : meilleur));
+    setCurseur(prev => {
+      if (prev === meilleur) return prev;
+      if (prev !== null) cran(); // crantage haptique à chaque changement d'année
+      return meilleur;
+    });
   };
   const lecturesCurseur = curseur === null ? [] : series
     .map((s, i) => ({ nom: s.nom, couleur: s.couleur, i, valeur: s.data.find(d => d.annee === curseur)?.valeur ?? null }))
@@ -171,20 +189,24 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
           const pts = pointsDe(i);
           if (pts.length < 2) return null;
           const d = `${lisser(pts)}L${pts[pts.length - 1].x.toFixed(1)},${(hauteur - M.bas).toFixed(1)}L${pts[0].x.toFixed(1)},${(hauteur - M.bas).toFixed(1)}Z`;
-          return <Path key={`a${i}`} d={d} fill={`url(#${gradBase}-${i})`} />;
+          return <PathAnime key={`a${i}`} d={d} fill={`url(#${gradBase}-${i})`}
+            opacity={trace.interpolate({ inputRange: [0, 0.55, 1], outputRange: [0, 0.1, 1] }) as any} />;
         })}
 
         {/* Courbes lissées */}
         {series.map((sr, i) => (
-          <Path key={sr.nom} d={lisser(pointsDe(i))} stroke={sr.couleur}
-            strokeWidth={seule ? 2.4 : 2} fill="none" strokeLinejoin="round" strokeLinecap="round" />
+          <PathAnime key={sr.nom} d={lisser(pointsDe(i))} stroke={sr.couleur}
+            strokeWidth={seule ? 2.4 : 2} fill="none" strokeLinejoin="round" strokeLinecap="round"
+            strokeDasharray={`${LONGUEUR_TRACE},${LONGUEUR_TRACE}`}
+            strokeDashoffset={trace.interpolate({ inputRange: [0, 1], outputRange: [LONGUEUR_TRACE, 0] }) as any} />
         ))}
 
         {/* Point terminal de chaque série */}
         {series.map((sr, i) => {
           const pts = pointsDe(i);
           const fin = pts[pts.length - 1];
-          return fin ? <Circle key={`f${sr.nom}`} cx={fin.x} cy={fin.y} r={3.6} fill={sr.couleur} stroke={T.carte as any} strokeWidth={1.6} /> : null;
+          return fin ? <CircleAnime key={`f${sr.nom}`} cx={fin.x} cy={fin.y} r={3.6} fill={sr.couleur} stroke={T.carte as any} strokeWidth={1.6}
+            opacity={trace.interpolate({ inputRange: [0, 0.85, 1], outputRange: [0, 0, 1] }) as any} /> : null;
         })}
 
         {/* Curseur : ligne + points */}

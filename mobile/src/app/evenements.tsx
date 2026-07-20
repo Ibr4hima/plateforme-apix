@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo, useState } from "react";
 import { Animated, Pressable, SectionList, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import EvenementSheet, { ROLE_PASTEL, dateEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
@@ -175,7 +175,7 @@ export default function Evenements() {
           const pointC = item.id === prochainId ? T.bleu : st === "en_cours" ? T.vert : st === "a_venir" ? T.bleu : "#C9D4DF";
           const dernier = index === section.data.length - 1;
           return (
-            <View style={s.rangee}>
+            <Apparition index={Math.min(index, 8)} style={s.rangee}>
               {/* Rail chronologique */}
               <View style={s.rail}>
                 <View style={[s.railLigne, index === 0 && { top: 22 }, dernier && { bottom: undefined, height: 22 }]} />
@@ -186,7 +186,7 @@ export default function Evenements() {
               <View style={{ flex: 1, marginBottom: 12 }}>
                 <CarteEvenement e={item} prochainId={prochainId} onPress={() => setSelec(item)} />
               </View>
-            </View>
+            </Apparition>
           );
         }}
         renderSectionHeader={({ section }: any) => (
