@@ -10,6 +10,7 @@ import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EvenementSheet from "@/components/EvenementSheet";
 import FicheSheet from "@/components/FicheSheet";
 import ZoneSheet from "@/components/ZoneSheet";
+import { EtatVide } from "@/components/ui";
 import { getJson } from "@/lib/api";
 import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRecherche";
 import { T, POLICE } from "@/theme";
@@ -55,7 +56,9 @@ export default function Recherche() {
         <View style={s.centre}><ActivityIndicator color={T.bleu} /><Text style={s.info}>Chargement de l'index…</Text></View>
       )}
       {!isLoading && q.trim().length > 1 && resultats.length === 0 && (
-        <View style={s.centre}><Text style={s.info}>Aucun résultat pour « {q.trim()} »</Text></View>
+        <EtatVide texte={`Aucun résultat pour « ${q.trim()} »`}
+          sousTexte="Pays, accords, événements, entreprises et zones sont couverts."
+          action={{ label: "Effacer la recherche", onPress: () => setQ("") }} />
       )}
 
       <FlatList

@@ -6,7 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo, useState } from "react";
 import { Animated, Pressable, SectionList, StyleSheet, Text, View } from "react-native";
-import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { SqueletteListe } from "@/components/Squelette";
+import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import EvenementSheet, { ROLE_PASTEL, dateEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
@@ -155,7 +156,7 @@ export default function Evenements() {
     </>
   );
 
-  const vide = isLoading ? <EtatCharge />
+  const vide = isLoading ? <SqueletteListe />
     : isError ? (
       <EtatErreur onRetry={() => refetch()} />
     ) : (

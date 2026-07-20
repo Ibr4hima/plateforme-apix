@@ -7,7 +7,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur } from "@/components/ui";
+import { SqueletteDonnees } from "@/components/Squelette";
+import { EtatErreur } from "@/components/ui";
 import AccordSheet from "@/components/AccordSheet";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import Symbole from "@/components/Symbole";
@@ -43,7 +44,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
     queryFn: () => getJson<any>(`/statistiques/entreprises-siege?pays_id=${autreId}`).catch(() => null),
   });
 
-  if (isLoading) return <EtatCharge />;
+  if (isLoading) return <SqueletteDonnees />;
   if (isError) return (
     <EtatErreur onRetry={() => refetch()} />
   );

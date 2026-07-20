@@ -266,14 +266,16 @@ export function EtatErreur({ onRetry, texte = "Impossible de joindre la platefor
   );
 }
 
-export function EtatVide({ texte, icone = "search_off", sousTexte }: {
+export function EtatVide({ texte, icone = "search_off", sousTexte, action }: {
   texte: string; icone?: string; sousTexte?: string;
+  action?: { label: string; onPress: () => void };
 }) {
   return (
     <View style={se.centre}>
       <View style={se.pastille}><Symbole nom={icone} taille={24} couleur={T.gris} /></View>
       <Text style={se.titre}>{texte}</Text>
       {sousTexte ? <Text style={se.sous}>{sousTexte}</Text> : null}
+      {action ? <Bouton label={action.label} onPress={action.onPress} variante="secondaire" taille="petite" style={{ marginTop: ESPACE.xs }} /> : null}
     </View>
   );
 }

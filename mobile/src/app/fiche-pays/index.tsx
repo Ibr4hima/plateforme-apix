@@ -8,7 +8,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Animated, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { SqueletteListe } from "@/components/Squelette";
+import { EtatErreur, EtatVide } from "@/components/ui";
 import FichePaysContenu from "@/components/FichePaysContenu";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import TexteDefilant from "@/components/TexteDefilant";
@@ -156,7 +157,7 @@ export default function FichePaysIndex() {
         );
       }}
       ListEmptyComponent={
-        isLoading ? <EtatCharge />
+        isLoading ? <SqueletteListe />
         : isError ? (
           <EtatErreur onRetry={() => refetch()} />
         ) : (

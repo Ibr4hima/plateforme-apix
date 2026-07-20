@@ -9,7 +9,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { SqueletteDonnees } from "@/components/Squelette";
+import { EtatErreur, EtatVide } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
@@ -446,7 +447,7 @@ export default function IdeEcran() {
             </ScrollView>
 
             {chargement ? (
-              <EtatCharge />
+              <SqueletteDonnees />
             ) : enErreur ? (
               <EtatErreur onRetry={() => recharger()} />
             ) : monde && !f.grpSelection.length ? (

@@ -7,7 +7,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { SqueletteListe } from "@/components/Squelette";
+import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
@@ -138,7 +139,7 @@ export default function Zones() {
     </>
   );
 
-  const vide = isLoading ? <EtatCharge />
+  const vide = isLoading ? <SqueletteListe />
     : isError ? (
       <EtatErreur onRetry={() => refetch()} />
     ) : (

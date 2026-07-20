@@ -8,7 +8,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur } from "@/components/ui";
+import { SqueletteDonnees } from "@/components/Squelette";
+import { EtatErreur } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import CommercePanel from "@/components/CommercePanel";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
@@ -130,7 +131,7 @@ export default function StatistiquesEcran() {
             onFermerFiltres={() => setFiltresOuverts(false)}
             onNbFiltres={setNbFiltresCom} />
         ) : isLoading || !indicateurs || !pays ? (
-          <EtatCharge />
+          <SqueletteDonnees />
         ) : isError ? (
           <EtatErreur onRetry={() => refetch()} />
         ) : (

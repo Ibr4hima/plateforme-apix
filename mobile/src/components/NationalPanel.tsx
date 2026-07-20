@@ -8,7 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { EtatCharge, EtatErreur, EtatVide, Feuille } from "@/components/ui";
+import { SqueletteDonnees } from "@/components/Squelette";
+import { EtatErreur, EtatVide, Feuille } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import { getJson } from "@/lib/api";
@@ -208,7 +209,7 @@ export default function NationalPanel({ filtresOuverts, onFermerFiltres, onNbFil
   return (
     <>
       {chargement ? (
-        <EtatCharge />
+        <SqueletteDonnees />
       ) : !comparative && isError ? (
         <EtatErreur onRetry={() => refetch()} />
       ) : (comparative ? !compResultats?.some(r => r.inds.length) : indicateurs.length === 0) ? (

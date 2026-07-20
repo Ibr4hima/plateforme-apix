@@ -5,7 +5,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { SqueletteListe } from "@/components/Squelette";
+import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import AccordSheet, { ST_PASTEL, sousTitreStatut } from "@/components/AccordSheet";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
@@ -143,7 +144,7 @@ export default function Accords() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={hero}
         ListEmptyComponent={
-          isLoading ? <EtatCharge />
+          isLoading ? <SqueletteListe />
           : isError ? (
             <EtatErreur onRetry={() => refetch()} />
           ) : (

@@ -7,7 +7,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { SqueletteDonnees } from "@/components/Squelette";
+import { EtatErreur, EtatVide } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import { BarresEmpilees, BarresH } from "@/components/GrapheBarres";
 import GrapheDonut from "@/components/GrapheDonut";
@@ -82,7 +83,7 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onNbFil
     ? (f.anneesSpec.length === 1 ? `${f.anneesSpec[0]}` : `${f.anneesSpec[0]} — ${f.anneesSpec[f.anneesSpec.length - 1]}`)
     : `${anneeMin} — ${anneeMax}`;
 
-  if (isLoading) return <EtatCharge />;
+  if (isLoading) return <SqueletteDonnees />;
   if (isError) return (
     <EtatErreur onRetry={() => refetch()} />
   );

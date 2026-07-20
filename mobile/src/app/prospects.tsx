@@ -5,7 +5,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { SqueletteListe } from "@/components/Squelette";
+import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import ProspectSheet, { OngletProspect, PROSPECT_PASTELS, badgeProspect, ilYa } from "@/components/ProspectSheet";
 import { fetchTous } from "@/lib/api";
@@ -132,7 +133,7 @@ export default function Prospects() {
           </>
         }
         ListEmptyComponent={
-          courante.isLoading ? <EtatCharge />
+          courante.isLoading ? <SqueletteListe />
           : courante.isError ? (
             <EtatErreur onRetry={() => courante.refetch()} />
           ) : (

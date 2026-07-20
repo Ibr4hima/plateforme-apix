@@ -7,7 +7,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Apparition, EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
+import { SqueletteListe } from "@/components/Squelette";
+import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import { useNaema } from "@/components/ArbreNaema";
 import AvantageSheet from "@/components/AvantageSheet";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
@@ -210,7 +211,7 @@ export default function Opportunites() {
     </>
   );
 
-  const vide = chargement ? <EtatCharge />
+  const vide = chargement ? <SqueletteListe />
     : enErreur ? (
       <EtatErreur onRetry={() => recharger()} />
     ) : (
