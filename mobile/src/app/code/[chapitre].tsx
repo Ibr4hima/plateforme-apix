@@ -30,10 +30,11 @@ const PALETTES = {
     bleu: T.bleu, filet: T.filet, surligne: "#FFF6EB",
     neutreFond: "rgba(60,64,67,0.06)", neutreTexte: "#5F6368", neutreSep: "rgba(60,64,67,0.18)",
   },
+  // Nuit bleue : le bleu du hero poussé vers la nuit, encres claires contrastées
   nuit: {
-    fond: "#141416", titre: "#ECEAE4", corps: "#CFCCC6", intro: "#B8B5AF",
-    bleu: "#8AB8E8", filet: "rgba(255,255,255,0.10)", surligne: "rgba(224,138,76,0.14)",
-    neutreFond: "rgba(255,255,255,0.08)", neutreTexte: "#B8BCC2", neutreSep: "rgba(255,255,255,0.16)",
+    fond: "#04294A", titre: "#F2F6FA", corps: "#C9D8E6", intro: "#A9BFD2",
+    bleu: "#8FC4F2", filet: "rgba(255,255,255,0.13)", surligne: "rgba(255,223,194,0.13)",
+    neutreFond: "rgba(255,255,255,0.10)", neutreTexte: "#BFD3E4", neutreSep: "rgba(255,255,255,0.22)",
   },
 } as const;
 
