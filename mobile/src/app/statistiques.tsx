@@ -6,12 +6,13 @@
 // curseur tactile), valeur du moment et variation annuelle en en-tête,
 // multi-pays en comparaison. Flux bilatéraux : étape suivante.
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
+import CommercePanel from "@/components/CommercePanel";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule from "@/components/HeroModule";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
-import Symbole from "@/components/Symbole";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { fmtUnite } from "@/lib/format";
@@ -22,63 +23,10 @@ const ONGLETS = [
   { cle: "commerce",    label: "Flux bilatéraux" },
 ] as const;
 
-const LARGEUR = Dimensions.get("window").width;
-const ROTATION_MS = 6000;
-
-function decouper<T>(liste: T[], taille: number): T[][] {
-  const pages: T[][] = [];
-  for (let i = 0; i < liste.length; i += taille) pages.push(liste.slice(i, i + taille));
-  return pages;
-}
-
-// Carrousel de KPIs : pages de 4, défilement manuel + rotation douce
-function CarrouselKpis({ kpis }: { kpis: { code: string; label: string; valeur: string; negatif: boolean; annee: number }[] }) {
-  const pages = decouper(kpis, 4);
-  const [page, setPage] = useState(0);
-  const defileur = useRef<ScrollView>(null);
-  const pageRef = useRef(0);
-  pageRef.current = page;
-
-  useEffect(() => {
-    if (pages.length < 2) return;
-    const minuteur = setInterval(() => {
-      const suivante = (pageRef.current + 1) % pages.length;
-      defileur.current?.scrollTo({ x: suivante * LARGEUR, animated: true });
-    }, ROTATION_MS);
-    return () => clearInterval(minuteur);
-  }, [pages.length]);
-
-  if (!pages.length) return null;
-  return (
-    <View>
-      <ScrollView
-        ref={defileur} horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / LARGEUR))}>
-        {pages.map((groupe, i) => (
-          <View key={i} style={[s.kpiPage, { width: LARGEUR }]}>
-            {groupe.map(kpi => (
-              <View key={kpi.code} style={s.kpi}>
-                <View style={s.kpiFilet} />
-                <Text style={s.kpiLabel} numberOfLines={2}>{kpi.label.toUpperCase()}</Text>
-                <Text style={[s.kpiValeur, kpi.negatif && { color: "#dc2626" }]} numberOfLines={1} adjustsFontSizeToFit>{kpi.valeur}</Text>
-                <View style={s.kpiAnnee}><Text style={s.kpiAnneeTexte}>{kpi.annee}</Text></View>
-              </View>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
-      {pages.length > 1 && (
-        <View style={s.points}>
-          {pages.map((_, i) => <View key={i} style={[s.pointNav, i === page && s.pointNavActif]} />)}
-        </View>
-      )}
-    </View>
-  );
-}
-
 export default function Statistiques() {
   const [onglet, setOnglet] = useState("indicateurs");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [nbFiltresCom, setNbFiltresCom] = useState(0);
 
   const { data: pays } = useQuery({ queryKey: ["stat-pays"], queryFn: () => getJson<any[]>("/statistiques/pays") });
   const { data: indicateurs } = useQuery({ queryKey: ["stat-indicateurs"], queryFn: () => getJson<any[]>("/statistiques/indicateurs"), staleTime: Infinity });
@@ -134,10 +82,10 @@ export default function Statistiques() {
     return (indicateurs || []).map((ind: any) => {
       const d = derniereValeur(f.selection[0], ind.code);
       return d ? {
-        code: ind.code, label: ind.libelle, annee: d.annee,
+        cle: ind.code, label: ind.libelle, note: String(d.annee),
         valeur: fmtUnite(d.valeur, ind.unite), negatif: ind.unite === "%" && d.valeur < 0,
       } : null;
-    }).filter(Boolean) as any[];
+    }).filter(Boolean) as KpiCarrousel[];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indicateurs, donnees, anneesActives, f.selection]);
 
@@ -172,14 +120,13 @@ export default function Statistiques() {
       <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
         <HeroModule titre="Échanges commerciaux"
           segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
-          bouton={onglet === "indicateurs" ? { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined } : undefined} />
+          bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "indicateurs" ? nbFiltres : nbFiltresCom) || undefined }} />
 
         {onglet === "commerce" ? (
-          <View style={s.centre}>
-            <View style={s.bientotPastille}><Symbole nom="currency_exchange" taille={26} couleur={T.bleu} /></View>
-            <Text style={s.bientotTitre}>Flux bilatéraux</Text>
-            <Text style={s.bientotTexte}>Cette section arrive à la prochaine étape.{"\n"}Les indicateurs économiques restent disponibles.</Text>
-          </View>
+          <CommercePanel
+            filtresOuverts={filtresOuverts && onglet === "commerce"}
+            onFermerFiltres={() => setFiltresOuverts(false)}
+            onNbFiltres={setNbFiltresCom} />
         ) : isLoading || !indicateurs || !pays ? (
           <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
         ) : isError ? (
@@ -246,7 +193,7 @@ export default function Statistiques() {
         )}
       </ScrollView>
 
-      {filtresOuverts && (
+      {filtresOuverts && onglet === "indicateurs" && (
         <StatistiquesFiltres
           pays={pays || []} senId={senId}
           anneesDispo={anneesDispo}
@@ -262,9 +209,6 @@ const s = StyleSheet.create({
   erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
   bouton: { marginTop: 12, backgroundColor: T.bleu, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
-  bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: "rgba(0,79,145,0.08)", alignItems: "center", justifyContent: "center", marginBottom: 6 },
-  bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
-  bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
   pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 16, paddingHorizontal: 16 },
   paysPastille: {
     flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, borderWidth: 1,
@@ -277,21 +221,6 @@ const s = StyleSheet.create({
     backgroundColor: "#ECEAE8", borderWidth: 1, borderColor: "#DFDBD7",
   },
   periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: "#3a4452", fontVariant: ["tabular-nums"] },
-  kpiPage: { flexDirection: "row", flexWrap: "wrap", gap: 11, paddingHorizontal: 16 },
-  kpi: {
-    width: (LARGEUR - 32 - 11) / 2, backgroundColor: "#fff", borderRadius: 18,
-    paddingHorizontal: 15, paddingVertical: 13, overflow: "hidden",
-    shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
-    elevation: 3,
-  },
-  kpiFilet: { position: "absolute", left: 15, right: 15, top: 0, height: 2.5, borderRadius: 2, backgroundColor: "rgba(0,79,145,0.14)" },
-  kpiLabel: { fontSize: 9, fontFamily: POLICE.gras, color: "#7d95ad", letterSpacing: 0.9, lineHeight: 12, marginTop: 4, minHeight: 24 },
-  kpiValeur: { fontSize: 20, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -0.4, marginTop: 7, fontVariant: ["tabular-nums"] },
-  kpiAnnee: { alignSelf: "flex-start", backgroundColor: "rgba(0,79,145,0.07)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 8 },
-  kpiAnneeTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
-  points: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 12 },
-  pointNav: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(0,79,145,0.18)" },
-  pointNavActif: { width: 18, backgroundColor: T.bleu },
   graphe: {
     backgroundColor: "#fff", borderRadius: 18, borderWidth: 1, borderColor: T.bordure,
     paddingHorizontal: 15, paddingTop: 13, paddingBottom: 10,

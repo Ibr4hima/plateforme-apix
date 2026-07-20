@@ -12,7 +12,7 @@ import { POLICE, T } from "@/theme";
 export const MAX_SEL = 4;
 
 export type FiltresStatistiques = {
-  vue: "pays" | "comparative";
+  vue: string;
   selection: number[];
   modeAnnees: "plage" | "specifiques";
   anneeMin: number;
@@ -31,17 +31,25 @@ function SecTitle({ children, droite }: { children: string; droite?: React.React
   );
 }
 
-export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs, onAppliquer, onClose }: {
+const VUES_DEFAUT = [
+  { cle: "pays", label: "Pays" },
+  { cle: "comparative", label: "Analyse comparative" },
+] as const;
+
+export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs, vues = VUES_DEFAUT, multiPour, onAppliquer, onClose }: {
   pays: any[]; senId: number | null; anneesDispo: number[];
   valeurs: FiltresStatistiques;
+  vues?: readonly { cle: string; label: string }[];
+  multiPour?: (vue: string) => boolean;
   onAppliquer: (f: FiltresStatistiques) => void;
   onClose: () => void;
 }) {
+  const estMulti = multiPour ?? ((v: string) => v === "comparative");
   const [f, setF] = useState<FiltresStatistiques>({ ...valeurs, selection: [...valeurs.selection], anneesSpec: [...valeurs.anneesSpec] });
   const [qPays, setQPays] = useState("");
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
 
-  const multi = f.vue === "comparative";
+  const multi = estMulti(f.vue);
   const bornes: [number, number] = anneesDispo.length ? [anneesDispo[0], anneesDispo[anneesDispo.length - 1]] : [f.anneeMin, f.anneeMax];
 
   const couleurDe = (id: number) => COMP_PALETTE[Math.max(0, f.selection.indexOf(id)) % COMP_PALETTE.length];
@@ -55,15 +63,15 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
     return { ...prev, selection: [...prev.selection, id] };
   });
 
-  const changerVue = (vue: "pays" | "comparative") => setF(prev => ({
+  const changerVue = (vue: string) => setF(prev => ({
     ...prev, vue,
-    // Retour en vue Pays : on garde le premier pays sélectionné
-    selection: vue === "pays" ? prev.selection.slice(0, 1) : prev.selection,
+    // Retour en vue mono-pays : on garde le premier pays sélectionné
+    selection: estMulti(vue) ? prev.selection : prev.selection.slice(0, 1),
   }));
 
 
   const reinitialiser = () => setF({
-    vue: "pays", selection: senId !== null ? [senId] : [],
+    vue: vues[0].cle, selection: senId !== null ? [senId] : [],
     modeAnnees: "plage", anneeMin: bornes[0], anneeMax: bornes[1], anneesSpec: [],
   });
 
@@ -132,9 +140,9 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
           <View>
             <SecTitle>Vue</SecTitle>
             <View style={s.segments}>
-              {([["pays", "Pays"], ["comparative", "Analyse comparative"]] as const).map(([cle, label]) => (
-                <Pressable key={cle} onPress={() => changerVue(cle)} style={[s.segment, f.vue === cle && s.segmentActif]}>
-                  <Text style={[s.segmentTexte, f.vue === cle && s.segmentTexteActif]}>{label}</Text>
+              {vues.map(o => (
+                <Pressable key={o.cle} onPress={() => changerVue(o.cle)} style={[s.segment, f.vue === o.cle && s.segmentActif]}>
+                  <Text style={[s.segmentTexte, f.vue === o.cle && s.segmentTexteActif]}>{o.label}</Text>
                 </Pressable>
               ))}
             </View>
