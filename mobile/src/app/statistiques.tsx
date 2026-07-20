@@ -141,9 +141,11 @@ export default function Statistiques() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indicateurs, donnees, anneesActives, f.selection]);
 
-  // Graphes : tous les indicateurs traçables (hors superficie) avec des données
+  // Graphes : tous les indicateurs traçables avec des données
+  // (hors superficie et croissance du PIB, non pertinents en courbe)
   const graphesIndics = useMemo(() =>
     (indicateurs || []).filter((ind: any) => ind.code !== "superficie" &&
+      !(ind.code || "").includes("croissance") && !(ind.libelle || "").toLowerCase().includes("croissance") &&
       f.selection.some(id => anneesActives.some(a => valeur(id, ind.code, a) !== null))),
   // eslint-disable-next-line react-hooks/exhaustive-deps
   [indicateurs, donnees, anneesActives, f.selection]);
@@ -187,16 +189,16 @@ export default function Statistiques() {
           </View>
         ) : (
           <>
-            {/* Pays sélectionnés + période */}
-            <View style={s.pastilles}>
+            {/* Période puis pays — une seule ligne, défilement horizontal */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.pastilles}>
+              <View style={s.periodePastille}><Text style={s.periodePastilleTexte}>{perLabel}</Text></View>
               {f.selection.map(id => (
                 <View key={id} style={[s.paysPastille, { backgroundColor: `${couleurPays(id)}0D`, borderColor: `${couleurPays(id)}2E` }]}>
                   <View style={[s.paysPoint, { backgroundColor: couleurPays(id) }]} />
                   <Text style={[s.paysPastilleTexte, { color: couleurPays(id) }]} numberOfLines={1}>{paysNom(id)}</Text>
                 </View>
               ))}
-              <View style={s.periodePastille}><Text style={s.periodePastilleTexte}>{perLabel}</Text></View>
-            </View>
+            </ScrollView>
 
             {/* Carrousel de KPIs — vue Pays (tous les indicateurs) */}
             {f.vue === "pays" && kpis.length > 0 && (
@@ -217,9 +219,10 @@ export default function Statistiques() {
                 return (
                   <View key={ind.code} style={s.graphe}>
                     <View style={s.grapheEntete}>
-                      <View style={{ flex: 1, minWidth: 0 }}>
+                      {/* Titre + unité·période sur la même ligne de base */}
+                      <View style={s.grapheTitreLigne}>
                         <Text style={s.grapheTitre} numberOfLines={1}>{ind.libelle}</Text>
-                        <Text style={s.grapheSous}>{ind.unite} · {anneesActives[0] ?? anneeMin}–{refAnnee}</Text>
+                        <Text style={s.grapheSous} numberOfLines={1}>{ind.unite} · {anneesActives[0] ?? anneeMin}–{refAnnee}</Text>
                       </View>
                       {dernier && (
                         <View style={{ alignItems: "flex-end", gap: 4 }}>
@@ -235,16 +238,6 @@ export default function Statistiques() {
                       )}
                     </View>
                     <GrapheLignes series={series} hauteur={168} fmt={(v: number | null) => fmtUnite(v, ind.unite)} />
-                    {f.vue === "comparative" && (
-                      <View style={s.legende}>
-                        {series.map(sr => (
-                          <View key={sr.nom} style={s.legendeItem}>
-                            <View style={[s.paysPoint, { backgroundColor: sr.couleur }]} />
-                            <Text style={s.legendeTexte} numberOfLines={1}>{sr.nom}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
                   </View>
                 );
               })}
@@ -272,7 +265,7 @@ const s = StyleSheet.create({
   bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: "rgba(0,79,145,0.08)", alignItems: "center", justifyContent: "center", marginBottom: 6 },
   bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
   bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
-  pastilles: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 7, marginTop: 16, paddingHorizontal: 16 },
+  pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 16, paddingHorizontal: 16 },
   paysPastille: {
     flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, borderWidth: 1,
     paddingHorizontal: 12, paddingVertical: 5, maxWidth: 190,
@@ -306,12 +299,10 @@ const s = StyleSheet.create({
     elevation: 2,
   },
   grapheEntete: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 10 },
-  grapheTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2 },
-  grapheSous: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  grapheTitreLigne: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "baseline", gap: 7, flexWrap: "wrap" },
+  grapheTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, flexShrink: 1 },
+  grapheSous: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris },
   grapheValeur: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, fontVariant: ["tabular-nums"] },
   deltaChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   deltaTexte: { fontSize: 10, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  legende: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 8, paddingTop: 9, borderTopWidth: 1, borderTopColor: T.filet },
-  legendeItem: { flexDirection: "row", alignItems: "center", gap: 5, maxWidth: "48%" },
-  legendeTexte: { fontSize: 11, fontFamily: POLICE.demi, color: T.texte, flexShrink: 1 },
 });
