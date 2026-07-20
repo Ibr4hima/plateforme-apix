@@ -6,15 +6,17 @@ import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Symbole from "@/components/Symbole";
 import { POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string };
 
-export default function HeroModule({ titre, sousTitre, recherche, segments, children }: {
+export default function HeroModule({ titre, sousTitre, recherche, segments, bouton, children }: {
   titre: string;
   sousTitre?: string;
   recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string };
   segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
+  bouton?: { icone: string; onPress: () => void; badge?: number }; // action en verre à droite du titre
   children?: React.ReactNode; // contenu libre inséré sous la recherche
 }) {
   const insets = useSafeAreaInsets();
@@ -23,12 +25,23 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, chil
       <View style={s.haloHaut} />
       <View style={s.haloBas} />
 
-      <MaskedView maskElement={<Text style={[s.titre, { color: "#000" }]}>{titre}</Text>}>
-        <LinearGradient colors={["#FFFFFF", "#FFFFFF", "#FFDFC2"]} locations={[0, 0.55, 1]}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-          <Text style={[s.titre, { opacity: 0 }]}>{titre}</Text>
-        </LinearGradient>
-      </MaskedView>
+      <View style={s.ligneTitre}>
+        <MaskedView style={{ flexShrink: 1 }} maskElement={<Text style={[s.titre, { color: "#000" }]}>{titre}</Text>}>
+          <LinearGradient colors={["#FFFFFF", "#FFFFFF", "#FFDFC2"]} locations={[0, 0.55, 1]}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <Text style={[s.titre, { opacity: 0 }]}>{titre}</Text>
+          </LinearGradient>
+        </MaskedView>
+        {bouton && (
+          <Pressable onPress={bouton.onPress} hitSlop={6}
+            style={({ pressed }) => [s.action, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
+            <Symbole nom={bouton.icone} taille={21} couleur="#fff" />
+            {bouton.badge ? (
+              <View style={s.actionBadge}><Text style={s.actionBadgeTexte}>{bouton.badge}</Text></View>
+            ) : null}
+          </Pressable>
+        )}
+      </View>
       {sousTitre ? <Text style={s.sousTitre}>{sousTitre}</Text> : null}
 
       {recherche && (
@@ -68,7 +81,17 @@ const s = StyleSheet.create({
   },
   haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
   haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
+  ligneTitre: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   titre: { color: "#fff", fontSize: 29, fontFamily: POLICE.gras, lineHeight: 35, letterSpacing: -0.6 },
+  action: {
+    width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: "rgba(255,255,255,0.20)",
+  },
+  actionBadge: {
+    position: "absolute", top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 9,
+    backgroundColor: T.orange, alignItems: "center", justifyContent: "center", paddingHorizontal: 4,
+  },
+  actionBadgeTexte: { fontSize: 10, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
   sousTitre: { color: "rgba(255,255,255,0.70)", fontSize: 12.5, fontFamily: POLICE.normal, marginTop: 6 },
   barre: {
     flexDirection: "row", alignItems: "center", gap: 10, marginTop: 18,
