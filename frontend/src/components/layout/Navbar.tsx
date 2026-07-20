@@ -51,6 +51,18 @@ function CodeModal({ onClose }: { onClose: () => void }) {
   const [pendingArtId, setPendingArtId]= useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Accessibilité : fermeture à la touche Échap + verrouillage du scroll du body
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
   // Après un clic sur un résultat de recherche : défiler jusqu'à l'article et le surligner.
   useEffect(() => {
     if (!pendingArtId || q.length >= 2) return;
@@ -109,7 +121,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position:"fixed", inset:0, background:"rgba(20,22,28,0.5)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
 
-      <div style={{ background:"#fff", borderRadius:18, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 40px 100px rgba(0,0,0,0.3)" }}>
+      <div role="dialog" aria-modal="true" aria-label={pdfInfo?.titre || (onglet === "code" ? "Code des investissements" : "Modalités d'application")} style={{ background:"#fff", borderRadius:18, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 40px 100px rgba(0,0,0,0.3)" }}>
 
         {/* ── Header ── */}
         <div style={{ padding:"20px 28px", borderBottom:"1px solid #EDEAE6", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>
@@ -125,7 +137,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
 
           <div style={{ position:"relative", width:280, flexShrink:0 }}>
             <Search size={13} style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }} />
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher dans le code…"
+            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher dans le code…" aria-label="Rechercher dans le code"
               style={{ width:"100%", background:"#F5F3F0", border:"1px solid transparent", borderRadius:10, padding:"9px 12px 9px 34px", fontSize:12.5, color:"#1a1a2e", outline:"none", boxSizing:"border-box" as const, fontFamily:"var(--font-google-sans)", transition:"border-color 0.15s" }}
               onFocus={e => { e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="#fff"; }}
               onBlur={e => { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.background="#F5F3F0"; }} />
@@ -141,7 +153,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
             </a>
           )}
 
-          <button onClick={onClose}
+          <button onClick={onClose} aria-label="Fermer"
             style={{ width:38, height:38, background:"#F5F3F0", border:"none", borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.background="#EDEAE6"; }}
             onMouseLeave={e => { e.currentTarget.style.background="#F5F3F0"; }}>
@@ -540,7 +552,7 @@ export default function Navbar() {
           </div>
 
           {/* ── Burger mobile ── */}
-          <button onClick={() => setMenuOpen(!menuOpen)} className="apix-nav-burger"
+          <button onClick={() => setMenuOpen(!menuOpen)} className="apix-nav-burger" aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: textColor, padding: 8 }}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>

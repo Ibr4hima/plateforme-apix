@@ -15,6 +15,7 @@ import { zoneTypeMeta } from "@/components/shared/zoneTypes";
 import { Skeleton } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { demarrerRedimension } from "@/lib/redimension";
+import { showD3Tooltip, hideD3Tooltip } from "@/components/charts/outilsTooltip";
 
 // Layout effect côté client, effet classique côté serveur (évite le warning SSR)
 const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -1227,20 +1228,6 @@ function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: st
   img.src = url;
 }
 
-// ─── Tooltip D3 : coordonnées viewport (le tooltip est en position:fixed) et
-// repli automatique aux bords pour rester toujours visible à l'écran.
-function showD3Tooltip(tooltip: any, e: MouseEvent, html?: string) {
-  if (html !== undefined) tooltip.html(html);
-  tooltip.style("opacity", 1);
-  const node = tooltip.node() as HTMLElement | null;
-  const tw = node?.offsetWidth || 120, th = node?.offsetHeight || 44;
-  let x = e.clientX + 14, y = e.clientY - th - 14;
-  if (x + tw > window.innerWidth - 8) x = e.clientX - tw - 14;
-  if (y < 8) y = e.clientY + 18;
-  if (y + th > window.innerHeight - 8) y = window.innerHeight - th - 8;
-  tooltip.style("left", x + "px").style("top", y + "px");
-}
-function hideD3Tooltip(tooltip: any) { tooltip.style("opacity", 0); }
 
 // ─── Modal visualisation ──────────────────────────────────────────────────────
 function VizModal({ open, onClose, titre, vizId, children }: { open:boolean; onClose:()=>void; titre:string; vizId:string; children:React.ReactNode }) {
@@ -1256,7 +1243,7 @@ function VizModal({ open, onClose, titre, vizId, children }: { open:boolean; onC
         {/* En-tête fixe */}
         <div style={{padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
           <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",margin:0,lineHeight:1.35}}>{titre}</h2>
-          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",background:"#F5F4F3",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+          <button onClick={onClose} aria-label="Fermer" style={{width:32,height:32,borderRadius:"50%",background:"#F5F4F3",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
             onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
             <X size={15} color="#4a5568"/>
           </button>
@@ -1313,7 +1300,7 @@ function VizCard({ card, viz, onRemove }: {
             <span style={{width:26,height:26,borderRadius:8,background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
               <Maximize2 size={11} style={{color:"#9aa5b4"}}/>
             </span>
-            <button onClick={e=>{e.stopPropagation();onRemove();}} style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
+            <button onClick={e=>{e.stopPropagation();onRemove();}} aria-label="Retirer la visualisation" style={{background:"transparent",border:"none",cursor:"pointer",borderRadius:6,padding:4,color:"#C5BFBB"}}><X size={11}/></button>
           </div>
         </div>
         <div style={{pointerEvents:"none"}}>
@@ -1801,7 +1788,7 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
               <span style={{ width:26, height:26, borderRadius:8, background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
                 <Maximize2 size={11} style={{ color:"#9aa5b4" }}/>
               </span>
-              <button onClick={e=>{e.stopPropagation();onRemove();}} style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB" }}><X size={13}/></button>
+              <button onClick={e=>{e.stopPropagation();onRemove();}} aria-label="Retirer la visualisation" style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:6, padding:4, color:"#C5BFBB" }}><X size={13}/></button>
             </div>
           </div>
           <div style={{ pointerEvents:"none" as const }}>{body(cardH)}</div>
@@ -1887,7 +1874,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
       <div style={{ padding:sidebarOpen?"14px 16px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
         {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+          <button onClick={()=>setSidebarOpen(!sidebarOpen)} aria-label={sidebarOpen?"Réduire les filtres":"Afficher les filtres"} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
             <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
             {sidebarOpen&&nbActifs>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbActifs}</span>}
           </button>

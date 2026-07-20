@@ -150,6 +150,19 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
   open: boolean; onClose: () => void; title: React.ReactNode; subtitle?: React.ReactNode;
   children: React.ReactNode; footer?: React.ReactNode; maxWidth?: number;
 }) {
+  // Accessibilité : fermeture à la touche Échap + verrouillage du scroll du body
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open, onClose]);
+
   if (!open) return null;
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
@@ -160,7 +173,7 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
         @keyframes fuiIn{from{opacity:0; transform:translateY(10px) scale(0.985);}to{opacity:1; transform:none;}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
       `}</style>
-      <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "fuiIn 0.22s ease" }}>
+      <div role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "fuiIn 0.22s ease" }}>
         {/* Liseré d'accent */}
         <div style={{ height: 4, background: FORM_COLORS.primary, flexShrink: 0 }} />
 
@@ -170,7 +183,7 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
             <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", lineHeight: 1.3 }}>{title}</h2>
             {subtitle && <p style={{ fontSize: 12, color: "#9aa5b4", marginTop: 2 }}>{subtitle}</p>}
           </div>
-          <button onClick={onClose}
+          <button onClick={onClose} aria-label="Fermer"
             style={{ background: "#F5F4F3", border: "none", cursor: "pointer", borderRadius: 99, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
             onMouseEnter={e => (e.currentTarget.style.background = "#ECEAE8")}
             onMouseLeave={e => (e.currentTarget.style.background = "#F5F4F3")}>

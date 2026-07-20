@@ -9,9 +9,14 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Maximize2, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
+import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
+import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
+import { GrapheBarresEmpilees } from "@/components/charts/GrapheBarresEmpilees";
+import { GrapheDonut } from "@/components/charts/GrapheDonut";
+import { GrapheConcentration } from "@/components/charts/GrapheConcentration";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -126,7 +131,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
               <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0 }}>Tableau de données</h2>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 10px", borderRadius: 999 }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: "#004f91" }} />{nomPays} · {expDir ? "Exportations" : "Importations"}</span>
             </div>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
               onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
               <X size={15} color="#4a5568" />
             </button>
@@ -365,7 +370,7 @@ function CommercePanel() {
         <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
           {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <button onClick={() => setSidebarOpen(o => !o)} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
+            <button onClick={() => setSidebarOpen(o => !o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
               <SlidersHorizontal size={14} style={{ color: "#004f91" }} />
               {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
             </button>
@@ -394,7 +399,7 @@ function CommercePanel() {
             <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
             <input value={searchPays} onChange={e => setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
               style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-            {searchPays && <button onClick={() => setSearchPays("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+            {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
           </div>
           <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
           {/* Pays */}
@@ -643,101 +648,6 @@ function CommercePanel() {
 }
 
 // ── Graphe D3 (repris de la page IDE) ─────────────────────────────────────────
-function showD3Tooltip(tooltip: any, e: MouseEvent, html?: string) {
-  if (html !== undefined) tooltip.html(html);
-  tooltip.style("opacity", 1);
-  const node = tooltip.node() as HTMLElement | null;
-  const tw = node?.offsetWidth || 120, th = node?.offsetHeight || 44;
-  let x = e.clientX + 14, y = e.clientY - th - 14;
-  if (x + tw > window.innerWidth - 8) x = e.clientX - tw - 14;
-  if (y < 8) y = e.clientY + 18;
-  if (y + th > window.innerHeight - 8) y = window.innerHeight - th - 8;
-  tooltip.style("left", x + "px").style("top", y + "px");
-}
-function hideD3Tooltip(tooltip: any) { tooltip.style("opacity", 0); }
-
-function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: string; annees?: string; legende?: { nom: string; couleur: string }[] }) {
-  const SCALE = 3;
-  const clone = svgEl.cloneNode(true) as SVGSVGElement;
-  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  const W = svgEl.viewBox.baseVal.width || 800;
-  const H = svgEl.viewBox.baseVal.height || 400;
-  clone.removeAttribute("style");
-  clone.setAttribute("width", String(W * SCALE));
-  clone.setAttribute("height", String(H * SCALE));
-  clone.setAttribute("font-family", "'Google Sans','Product Sans',Arial,sans-serif");
-  const blob = new Blob([clone.outerHTML], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
-  const img = new Image();
-  img.onload = () => {
-    const PAD = 26;
-    const FONT = "'Google Sans','Product Sans',Arial,sans-serif";
-    const titre = opts?.titre || "";
-    const annees = opts?.annees || "";
-    const legende = opts?.legende || [];
-    const mctx = document.createElement("canvas").getContext("2d")!;
-    let headerH = 0;
-    const legLines: { nom: string; couleur: string; w: number }[][] = [];
-    if (titre || legende.length) {
-      headerH = PAD + 26;
-      if (legende.length) {
-        mctx.font = `700 11px ${FONT}`;
-        const maxW = W - PAD * 2;
-        let line: { nom: string; couleur: string; w: number }[] = []; let x = 0;
-        legende.forEach(l => {
-          const w = Math.ceil(mctx.measureText(l.nom).width) + 22;
-          if (x + w > maxW && line.length) { legLines.push(line); line = []; x = 0; }
-          line.push({ ...l, w }); x += w + 8;
-        });
-        if (line.length) legLines.push(line);
-        headerH += 6 + legLines.length * 26;
-      }
-      headerH += 10;
-    }
-    const canvas = document.createElement("canvas");
-    canvas.width = W * SCALE; canvas.height = (H + headerH) * SCALE;
-    const ctx = canvas.getContext("2d")!;
-    ctx.scale(SCALE, SCALE);
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H + headerH);
-    if (headerH) {
-      ctx.textBaseline = "middle";
-      const ty = PAD + 12;
-      ctx.font = `700 11px ${FONT}`;
-      const badgeW = annees ? Math.ceil(ctx.measureText(annees).width) + 20 : 0;
-      ctx.font = `700 16px ${FONT}`; ctx.fillStyle = "#1a1a2e";
-      let t = titre;
-      const maxTitre = W - PAD * 2 - (badgeW ? badgeW + 10 : 0);
-      while (t && ctx.measureText(t).width > maxTitre) t = t.slice(0, -2);
-      if (t !== titre) t += "…";
-      ctx.fillText(t, PAD, ty);
-      if (annees) {
-        const bx = PAD + ctx.measureText(t).width + 10;
-        ctx.fillStyle = "#ECEAE8";
-        ctx.beginPath(); ctx.roundRect(bx, ty - 10, badgeW, 20, 999); ctx.fill();
-        ctx.font = `700 11px ${FONT}`; ctx.fillStyle = "#4a5568";
-        ctx.fillText(annees, bx + 10, ty + 0.5);
-      }
-      let ly = PAD + 26 + 6 + 13;
-      ctx.font = `700 11px ${FONT}`;
-      legLines.forEach(line => {
-        let lx = PAD;
-        line.forEach(l => {
-          ctx.fillStyle = l.couleur + "1F";
-          ctx.beginPath(); ctx.roundRect(lx, ly - 10, l.w, 20, 999); ctx.fill();
-          ctx.fillStyle = l.couleur;
-          ctx.fillText(l.nom, lx + 11, ly + 0.5);
-          lx += l.w + 8;
-        });
-        ly += 26;
-      });
-    }
-    ctx.drawImage(img, 0, headerH, W, H);
-    const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${filename}.png`; a.click();
-    URL.revokeObjectURL(url);
-  };
-  img.src = url;
-}
 
 function GrapheMultiPays(props: {
   series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
@@ -747,365 +657,7 @@ function GrapheMultiPays(props: {
   return <GrapheSignature {...props} fmt={props.fmt || fmtValGen} />;
 }
 
-// ── Barres horizontales (top N) ───────────────────────────────────────────────
-function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0.5 }: {
-  data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; couleur?: string; rowH?: number; exposant?: number;
-}) {
-  const ref = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const fmtV = fmt || fmtValGen;
-  const draw = useCallback(() => {
-    if (!ref.current || !wrapRef.current) return;
-    const el = ref.current;
-    d3.select(el).selectAll("*").remove();
-    if (!data.length) return;
-    const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
-    const longest = Math.max(...data.map(d => d.label.length));
-    const M = { top: 6, right: 78, bottom: 6, left: Math.min(230, Math.max(90, Math.round(longest * 6.2) + 14)) };
-    const H = data.length * rowH + M.top + M.bottom;
-    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    const maxVal = d3.max(data, d => d.valeur) || 1;
-    // Échelle en puissance (racine carrée par défaut) : rééquilibre les barres
-    // quand les valeurs sont très dispersées, sans changer les valeurs affichées.
-    const x = d3.scalePow().exponent(exposant).domain([0, maxVal]).range([M.left, W - M.right]);
-    const y = d3.scaleBand().domain(data.map(d => d.label)).range([M.top, H - M.bottom]).padding(0.28);
-    const tooltip = d3.select("#d3-tooltip") as any;
 
-    svg.selectAll("rect.bar").data(data).enter().append("rect")
-      .attr("x", M.left).attr("y", d => y(d.label)!).attr("height", y.bandwidth())
-      .attr("width", d => Math.max(2, x(d.valeur) - M.left)).attr("fill", couleur)
-      .style("cursor", "pointer")
-      .on("mouseover", (e, d) => { d3.select(e.currentTarget as any).attr("opacity", 0.8); showD3Tooltip(tooltip, e, `<strong>${d.label}</strong><br/>${fmtV(d.valeur)}`); })
-      .on("mousemove", (e) => showD3Tooltip(tooltip, e))
-      .on("mouseout", (e) => { d3.select(e.currentTarget as any).attr("opacity", 1); hideD3Tooltip(tooltip); });
-
-    svg.selectAll("text.lbl").data(data).enter().append("text")
-      .attr("x", M.left - 8).attr("y", d => y(d.label)! + y.bandwidth() / 2).attr("dy", "0.35em")
-      .attr("text-anchor", "end").style("font-size", "11px").style("fill", "#4a5568").text(d => d.label);
-
-    svg.selectAll("text.val").data(data).enter().append("text")
-      .attr("x", d => x(d.valeur) + 6).attr("y", d => y(d.label)! + y.bandwidth() / 2).attr("dy", "0.35em")
-      .style("font-size", "10.5px").style("fill", "#9aa5b4").style("font-weight", "700").text(d => fmtV(d.valeur));
-  }, [data, fmtV, couleur, rowH]);
-  useEffect(() => {
-    if (!wrapRef.current) return;
-    const ro = new ResizeObserver(() => draw());
-    ro.observe(wrapRef.current);
-    return () => ro.disconnect();
-  }, [draw]);
-  useEffect(() => { draw(); }, [draw]);
-  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
-}
-
-
-// ── Barres horizontales empilées (par partenaire × ressource) ─────────────────
-function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposant = 0.5, showLegend = true }: {
-  partenaires: { nom: string; total: number; valeurs: number[] }[]; ressources: string[];
-  fmt?: (v: number | null) => string; rowH?: number; exposant?: number; showLegend?: boolean;
-}) {
-  const ref = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const fmtV = fmt || fmtValGen;
-  const draw = useCallback(() => {
-    if (!ref.current || !wrapRef.current) return;
-    const el = ref.current;
-    d3.select(el).selectAll("*").remove();
-    if (!partenaires.length || !ressources.length) return;
-    const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
-    const mctx = document.createElement("canvas").getContext("2d")!;
-    // Rampe bleue comme l'anneau : ressource la plus lourde (index 0) = plus foncé.
-    const nRes = ressources.length;
-    const col = (i: number) => d3.interpolateRgb("#003468", "#EDF4FB")(nRes > 1 ? i / (nRes - 1) : 0) as string;
-
-    // Légende des ressources (chips, avec retour à la ligne) — masquée sur la carte
-    const legRowH = 20;
-    let legendH = 0;
-    let lines: { label: string; i: number; w: number }[][] = [];
-    if (showLegend) {
-      mctx.font = "600 11px 'Google Sans',sans-serif";
-      const chips = ressources.map((r, i) => ({ label: r, i, w: Math.ceil(mctx.measureText(r).width) + 24 }));
-      let line: typeof chips = []; let lw = 0;
-      chips.forEach(c => { if (lw + c.w > W && line.length) { lines.push(line); line = []; lw = 0; } line.push(c); lw += c.w + 10; });
-      if (line.length) lines.push(line);
-      legendH = lines.length * legRowH + 8;
-    }
-
-    const longest = Math.max(...partenaires.map(p => p.nom.length));
-    const M = { top: legendH + 4, right: 78, bottom: 8, left: Math.min(230, Math.max(90, Math.round(longest * 6.2) + 14)) };
-    const N = partenaires.length;
-    const H = M.top + N * rowH + M.bottom;
-    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    const tooltip = d3.select("#d3-tooltip") as any;
-
-    // Légende
-    let ly = 12;
-    lines.forEach(ln => {
-      let lx = 0;
-      ln.forEach(c => {
-        svg.append("rect").attr("x", lx).attr("y", ly - 9).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", col(c.i));
-        svg.append("text").attr("x", lx + 17).attr("y", ly).attr("dy", "0.32em").style("font-size", "11px").style("fill", "#4a5568").text(c.label);
-        lx += c.w + 10;
-      });
-      ly += legRowH;
-    });
-
-    const maxTotal = d3.max(partenaires, p => p.total) || 1;
-    const x = d3.scalePow().exponent(exposant).domain([0, maxTotal]).range([M.left, W - M.right]);
-    const y = d3.scaleBand().domain(partenaires.map(p => p.nom)).range([M.top, H - M.bottom]).padding(0.3);
-
-    partenaires.forEach(p => {
-      const barW = Math.max(0, x(p.total) - M.left);
-      // Chaque ressource présente reçoit une largeur plancher (visible même minime),
-      // le reste étant réparti en racine ; valeurs/% du tooltip restent réels.
-      const present = ressources.map((res, ri) => ({ res, ri, v: p.valeurs[ri] || 0 })).filter(o => o.v > 0);
-      const k = present.length;
-      const floorPx = 4;
-      const hasFloor = barW >= k * floorPx;
-      const reste = hasFloor ? barW - k * floorPx : barW;
-      const racSum = present.reduce((s, o) => s + Math.pow(o.v, exposant), 0) || 1;
-      let xc = M.left;
-      present.forEach(({ res, ri, v }) => {
-        const segW = (hasFloor ? floorPx : 0) + (Math.pow(v, exposant) / racSum) * reste;
-        svg.append("rect").attr("x", xc).attr("y", y(p.nom)!).attr("width", Math.max(0.5, segW)).attr("height", y.bandwidth())
-          .attr("fill", col(ri)).attr("stroke", "#fff").attr("stroke-width", 0.6).style("cursor", "pointer")
-          .on("mouseover", function (e) { d3.select(this).attr("opacity", 0.82); showD3Tooltip(tooltip, e, `<strong>${p.nom} — ${res}</strong><br/>${fmtV(v)} · ${(v / p.total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`); })
-          .on("mousemove", (e) => showD3Tooltip(tooltip, e))
-          .on("mouseout", function () { d3.select(this).attr("opacity", 1); hideD3Tooltip(tooltip); });
-        xc += segW;
-      });
-      svg.append("text").attr("x", M.left - 8).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11px").style("fill", "#4a5568").text(p.nom);
-      svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "#9aa5b4").text(fmtV(p.total));
-    });
-  }, [partenaires, ressources, fmtV, rowH, exposant]);
-  useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
-  useEffect(() => { draw(); }, [draw]);
-  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;
-}
-
-// ── Anneau de composition (style tableau de bord, légende latérale) ────────────
-// Rampe bleue #003468 (part la plus élevée) → #EDF4FB (la plus faible).
-function GrapheDonut({ data, fmt, height }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; height?: number }) {
-  const ref = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const fmtV = fmt || fmtValGen;
-  const draw = useCallback(() => {
-    if (!ref.current || !wrapRef.current) return;
-    const el = ref.current;
-    d3.select(el).selectAll("*").remove();
-    const positifs = data.filter(d => d.valeur > 0);
-    const total = d3.sum(positifs, d => d.valeur);
-    // On masque les parts qui arrondissent à 0,0 % (invisibles sur l'anneau).
-    const items = total > 0 ? positifs.filter(d => d.valeur / total * 100 >= 0.05) : [];
-    if (!items.length) return;
-    const n = items.length;
-    const couleur = (i: number) => d3.interpolateRgb("#003468", "#EDF4FB")(n > 1 ? i / (n - 1) : 0) as string;
-
-    const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
-    const H = height ?? Math.max(230, n * 22 + 44);
-    // Largeur de contenu plafonnée puis centrée : évite que la légende s'étire
-    // sur toute la largeur (notamment en plein écran).
-    const CW = Math.min(W, 760);
-    const ox = (W - CW) / 2;
-    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    const R = Math.min(H - 24, CW * 0.42) / 2;
-    const cx = ox + R + 14, cy = H / 2;
-    const bigFont = R >= 120 ? 22 : R >= 95 ? 18 : 15;
-    // Angles pondérés en racine carrée pour rendre visibles les petites parts ;
-    // le total au centre et les % de la légende restent les vraies proportions.
-    const pie = d3.pie<any>().value(d => Math.sqrt(d.valeur)).sort(null);
-    const arc = d3.arc<any>().innerRadius(R * 0.58).outerRadius(R);
-    const arcH = d3.arc<any>().innerRadius(R * 0.58).outerRadius(R + 5);
-    const tooltip = d3.select("#d3-tooltip") as any;
-    const g = svg.append("g").attr("transform", `translate(${cx},${cy})`);
-
-    g.selectAll("path").data(pie(items)).enter().append("path")
-      .attr("d", arc as any).attr("fill", (_d, i) => couleur(i)).attr("opacity", 0.9)
-      .style("cursor", "pointer")
-      .on("mouseover", function (e, d: any) { d3.select(this).attr("d", arcH(d) as string).attr("opacity", 1); showD3Tooltip(tooltip, e, `<strong>${d.data.label}</strong><br/>${fmtV(d.data.valeur)} · ${(d.data.valeur / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`); })
-      .on("mousemove", (e) => showD3Tooltip(tooltip, e))
-      .on("mouseout", function (_e, d: any) { d3.select(this).attr("d", arc(d) as string).attr("opacity", 0.9); hideD3Tooltip(tooltip); });
-
-    // Total au centre
-    g.append("text").attr("text-anchor", "middle").attr("dy", "-.05em").style("font-size", `${bigFont}px`).style("font-weight", "800").style("fill", "#1a1a2e").text(fmtV(total));
-    g.append("text").attr("text-anchor", "middle").attr("dy", "1.5em").style("font-size", `${Math.max(9.5, bigFont * 0.55)}px`).style("fill", "#9aa5b4").text("total");
-
-    // Légende (part la plus forte en haut, couleur assortie)
-    const lgFont = R >= 120 ? 13 : 11;
-    const rowH = R >= 120 ? 24 : 20;
-    const lx = cx + R + 24;
-    const rightX = ox + CW - 6;
-    let ly = cy - (n * rowH) / 2 + rowH / 2;
-    const legend = svg.append("g");
-    const maxc = Math.max(8, Math.floor((rightX - lx - 60) / (lgFont * 0.58)));
-    items.forEach((d, i) => {
-      const pct = (d.valeur / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
-      let lbl = d.label; if (lbl.length > maxc) lbl = lbl.slice(0, maxc - 1) + "…";
-      const row = legend.append("g").attr("transform", `translate(${lx},${ly})`);
-      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", couleur(i)).attr("stroke", "#E8E5E3").attr("stroke-width", 0.5);
-      row.append("text").attr("x", 18).attr("y", 0).attr("dy", "0.04em").style("font-size", `${lgFont}px`).style("fill", "#4a5568").text(lbl);
-      row.append("text").attr("x", rightX - lx).attr("y", 0).attr("dy", "0.04em").attr("text-anchor", "end").style("font-size", `${lgFont}px`).style("font-weight", "700").style("fill", "#1a1a2e").text(`${pct}%`);
-      ly += rowH;
-    });
-  }, [data, fmtV, height]);
-  useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
-  useEffect(() => { draw(); }, [draw]);
-  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
-}
-
-// ── Courbe de concentration (Pareto) : lollipops (part) + courbe cumulée ───────
-function GrapheConcentration({ points, height = 200 }: { points: { rang: number; nom: string; part: number; part_cumulee: number }[]; height?: number }) {
-  const ref = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const draw = useCallback(() => {
-    if (!ref.current) return;
-    const el = ref.current;
-    d3.select(el).selectAll("*").remove();
-    if (!points.length) return;
-    const W = el.parentElement?.clientWidth || 600;
-    const H = height;
-    const M = { top: 12, right: 18, bottom: 28, left: 44 };
-    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-    const pts = [{ rang: 0, nom: "", part: 0, part_cumulee: 0 }, ...points];
-    const maxRang = points[points.length - 1].rang;
-    const x = d3.scaleLinear().domain([0, maxRang]).range([M.left, W - M.right]);
-    const y = d3.scaleLinear().domain([0, 100]).range([H - M.bottom, M.top]);
-    const tooltip = d3.select("#d3-tooltip") as any;
-    svg.append("g").selectAll("line").data(y.ticks(4)).enter().append("line")
-      .attr("x1", M.left).attr("x2", W - M.right).attr("y1", d => y(d)).attr("y2", d => y(d)).attr("stroke", "#EBEBEB").attr("stroke-width", 1);
-    const gid = "concGrad";
-    const grad = svg.append("defs").append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
-    grad.append("stop").attr("offset", "0%").attr("stop-color", "#004f91").attr("stop-opacity", 0.12);
-    grad.append("stop").attr("offset", "100%").attr("stop-color", "#004f91").attr("stop-opacity", 0);
-    svg.append("path").datum(pts).attr("fill", `url(#${gid})`)
-      .attr("d", d3.area<any>().x(d => x(d.rang)).y0(y(0)).y1(d => y(d.part_cumulee)).curve(d3.curveMonotoneX));
-
-    // Lollipops : part individuelle de chaque débouché (tige fine + pastille)
-    const dotR = points.length > 30 ? 2.2 : points.length > 18 ? 2.8 : 3.4;
-    const lol = svg.append("g");
-    lol.selectAll("line").data(points).enter().append("line")
-      .attr("x1", d => x(d.rang)).attr("x2", d => x(d.rang)).attr("y1", y(0)).attr("y2", d => y(d.part))
-      .attr("stroke", "#5596D4").attr("stroke-width", 1.6).attr("stroke-linecap", "round");
-    lol.selectAll("circle").data(points).enter().append("circle")
-      .attr("cx", d => x(d.rang)).attr("cy", d => y(d.part)).attr("r", dotR)
-      .attr("fill", "#2872B8").style("pointer-events", "none");
-
-    // Courbe cumulée par-dessus
-    svg.append("path").datum(pts).attr("fill", "none").attr("stroke", "#004f91").attr("stroke-width", 2.2)
-      .attr("d", d3.line<any>().x(d => x(d.rang)).y(d => y(d.part_cumulee)).curve(d3.curveMonotoneX));
-
-    // Cibles de survol (colonne complète)
-    const bw = Math.max(6, (x(1) - x(0)) * 0.9);
-    svg.selectAll("rect.hit").data(points).enter().append("rect")
-      .attr("x", d => x(d.rang) - bw / 2).attr("y", M.top).attr("width", bw).attr("height", H - M.bottom - M.top)
-      .attr("fill", "transparent").style("cursor", "pointer")
-      .on("mouseover", (e, d) => showD3Tooltip(tooltip, e, `<strong>Top ${d.rang} — ${d.nom}</strong><br/>Part : ${d.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % · Cumulé : ${d.part_cumulee.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`))
-      .on("mousemove", (e) => showD3Tooltip(tooltip, e))
-      .on("mouseout", () => hideD3Tooltip(tooltip));
-    svg.append("g").attr("transform", `translate(${M.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d => `${d}%`))
-      .call(g => g.select(".domain").remove()).call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
-    const xticks = x.ticks(Math.min(maxRang, 6)).filter(t => Number.isInteger(t) && t >= 1);
-    svg.append("g").attr("transform", `translate(0,${H - M.bottom})`).call(d3.axisBottom(x).tickValues(xticks).tickFormat(d3.format("d")).tickSizeOuter(0))
-      .call(g => g.select(".domain").attr("stroke", "#E8E5E3")).call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
-  }, [points, height]);
-  useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
-  useEffect(() => { draw(); }, [draw]);
-  return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;
-}
-
-function GrapheModal({ open, onClose, titre, sous_titre, children, series, grapheId }: any) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement | null;
-  const anneesRange = (() => {
-    const as: number[] = (series || []).flatMap((s: any) => s.data.filter((d: any) => d.valeur !== null).map((d: any) => d.annee));
-    if (!as.length) return "";
-    const mn = Math.min(...as), mx = Math.max(...as);
-    return mn === mx ? String(mn) : `${mn} – ${mx}`;
-  })();
-  const legendeExport = (series || [])
-    .filter((s: any) => s.data.some((d: any) => d.valeur !== null))
-    .map((s: any) => ({ nom: s.nom, couleur: s.couleur }));
-  if (!open) return null;
-  return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 1100, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.22s ease" }}>
-        <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
-        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0, lineHeight: 1.35, minWidth: 0 }}>{titre}</h2>
-                {anneesRange && (
-                  <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#4a5568", background: "#ECEAE8", padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{anneesRange}</span>
-                )}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                {series?.length > 0 && series.filter((s: any) => s.data.some((d: any) => d.valeur !== null)).map((s: any) => (
-                  <span key={s.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: s.couleur, background: `${s.couleur}12`, border: `1px solid ${s.couleur}30` }}>{s.nom}</span>
-                ))}
-                {sous_titre && <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 500 }}>{sous_titre}</span>}
-              </div>
-            </div>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
-              <X size={15} color="#4a5568" />
-            </button>
-          </div>
-        </div>
-        <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1 }}>
-          <div ref={modalRef}>{children}</div>
-        </div>
-        <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "flex-end", gap: 10, flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
-          <button onClick={() => { const svg = getSvg(); if (svg) downloadPNG(svg, grapheId || titre || "graphe", { titre, annees: anneesRange, legende: legendeExport }); }}
-            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)" }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Télécharger
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GrapheCard({ titre, sous_titre, children, fullChildren, series, grapheId, hideLegend, hideSousTitre }: any) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <div onClick={() => setOpen(true)}
-        style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "16px 18px", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", minWidth: 0 }}
-        onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
-        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
-              <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, display: "inline-block" }}>{titre}</h3>
-            </div>
-            {!hideLegend && series?.length > 0 && (
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 5 }}>
-                {series.filter((s: any) => s.data.some((d: any) => d.valeur !== null)).map((s: any) => (
-                  <span key={s.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, color: s.couleur, background: `${s.couleur}12` }}>{s.nom}</span>
-                ))}
-              </div>
-            )}
-            {!hideSousTitre && sous_titre && <p style={{ fontSize: 10.5, color: "#9aa5b4", marginTop: 4 }}>{sous_titre}</p>}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-            <span style={{ width: 26, height: 26, borderRadius: 8, background: "#F5F4F3", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-              <Maximize2 size={11} style={{ color: "#9aa5b4" }} />
-            </span>
-          </div>
-        </div>
-        <div style={{ pointerEvents: "none" }}>{children}</div>
-      </div>
-      <GrapheModal open={open} onClose={() => setOpen(false)} titre={titre} sous_titre={sous_titre} series={series} grapheId={grapheId}>
-        {fullChildren || children}
-      </GrapheModal>
-    </>
-  );
-}
 
 // ── Définitions & interprétations des indicateurs ─────────────────────────────
 const DEF_INDICATEUR: Record<string, string> = {
@@ -1166,7 +718,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
                 <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "#4a5568", background: "#F5F4F3" }}>{annee}</span>
               </div>
             </div>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
               <X size={15} color="#4a5568" />
             </button>
@@ -1250,7 +802,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
                 ))}
               </div>
             </div>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
               <X size={15} color="#4a5568" />
             </button>
@@ -1503,7 +1055,7 @@ export default function StatistiquesPage() {
           <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
             {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <button onClick={() => setSidebarOpen(o => !o)} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
+              <button onClick={() => setSidebarOpen(o => !o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
                 <SlidersHorizontal size={14} style={{ color: "#004f91" }} />
                 {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
               </button>
@@ -1532,7 +1084,7 @@ export default function StatistiquesPage() {
               <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
               <input value={searchPays} onChange={e => setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
                 style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-              {searchPays && <button onClick={() => setSearchPays("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+              {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
             </div>
             <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
             {/* Pays */}

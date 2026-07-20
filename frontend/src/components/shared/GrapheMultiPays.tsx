@@ -376,9 +376,16 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
 
   useEffect(() => { draw(); }, [draw]);
 
+  // Libellé accessible du graphe : noms de séries + bornes d'années disponibles
+  const nomsSeries = series.map(s => s.nom).filter(Boolean);
+  const anneesValides = series.flatMap(s => s.data.filter(d => d.valeur !== null).map(d => d.annee));
+  const libelleGraphe = nomsSeries.length
+    ? `${type === "bar" ? "Barres" : "Courbes"} : ${nomsSeries.join(", ")}${anneesValides.length ? ` — ${Math.min(...anneesValides)} à ${Math.max(...anneesValides)}` : ""}`
+    : "Graphique";
+
   return (
     <div ref={wrapRef} style={{ position: "relative" as const }}>
-      <svg ref={ref} style={{ width: "100%", height, display: "block" }} />
+      <svg ref={ref} role="img" aria-label={libelleGraphe} style={{ width: "100%", height, display: "block" }} />
     </div>
   );
 }

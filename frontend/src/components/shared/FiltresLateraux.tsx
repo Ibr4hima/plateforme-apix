@@ -7,7 +7,7 @@
 //  - LocalisationFilter : cascade Région → Département → Arrondissement
 
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 type Item = string | { value: string; label: string };
 
@@ -15,11 +15,11 @@ function normaliser(items: Item[], format?: (v: string) => string): { value: str
   return items.map(i => typeof i === "string" ? { value: i, label: format ? format(i) : i } : i);
 }
 
-function EnteteRepliable({ label, badges, open, onToggle }: {
-  label: string; badges: React.ReactNode; open: boolean; onToggle: () => void;
+function EnteteRepliable({ label, badges, open, onToggle, controlsId }: {
+  label: string; badges: React.ReactNode; open: boolean; onToggle: () => void; controlsId?: string;
 }) {
   return (
-    <button onClick={onToggle}
+    <button onClick={onToggle} aria-expanded={open} aria-controls={controlsId}
       style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
       <div style={{display:"flex",alignItems:"center",gap:6}}>
         <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
@@ -36,7 +36,7 @@ function LigneOption({ sel, couleur, texte, onClick }: {
   sel: boolean; couleur: string; texte: string; onClick: () => void;
 }) {
   return (
-    <button onClick={onClick}
+    <button onClick={onClick} aria-pressed={sel}
       style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
       onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
       onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
@@ -55,20 +55,21 @@ export function SideFilter({ label, items, selected, onToggle, color, searchable
 }) {
   const [open, setOpen]     = useState(true);
   const [search, setSearch] = useState("");
+  const idContenu = useId();
   const normalises = normaliser(items, format);
   const filtered = searchable ? normalises.filter(i => i.label.toLowerCase().includes(search.toLowerCase())) : normalises;
   return (
     <div style={{marginBottom}}>
-      <EnteteRepliable label={label} open={open} onToggle={()=>setOpen(o=>!o)}
+      <EnteteRepliable label={label} open={open} onToggle={()=>setOpen(o=>!o)} controlsId={idContenu}
         badges={badgeCompte(selected.length, color)}/>
       {open&&(
         <>
           {searchable&&<div style={{position:"relative" as const,marginBottom:6}}>
             <Search size={11} style={{position:"absolute" as const,left:8,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" aria-label={`Rechercher dans ${label}`}
               style={{width:"100%",paddingLeft:24,paddingRight:8,paddingTop:6,paddingBottom:6,borderRadius:7,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:11,outline:"none",boxSizing:"border-box" as const}}/>
           </div>}
-          <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:listMaxHeight,overflowY:listMaxHeight?"auto" as const:undefined}}>
+          <div id={idContenu} style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:listMaxHeight,overflowY:listMaxHeight?"auto" as const:undefined}}>
             {filtered.map(item=>(
               <LigneOption key={item.value} sel={selected.includes(item.value)} couleur={color}
                 texte={item.label} onClick={()=>onToggle(item.value)}/>
@@ -104,11 +105,12 @@ function CascadeFilter({ titre, niveaux, marginBottom }: {
   marginBottom: number;
 }) {
   const [open, setOpen] = useState(true);
+  const idContenu = useId();
   return (
     <div style={{marginBottom}}>
-      <EnteteRepliable label={titre} open={open} onToggle={()=>setOpen(o=>!o)}
+      <EnteteRepliable label={titre} open={open} onToggle={()=>setOpen(o=>!o)} controlsId={idContenu}
         badges={<>{niveaux.map((n,i)=><span key={i} style={{display:"contents"}}>{badgeCompte(n.sel.length, NIVEAUX[i].couleur, NIVEAUX[i].fond)}</span>)}</>}/>
-      {open&&<div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+      {open&&<div id={idContenu} style={{display:"flex",flexDirection:"column" as const,gap:6}}>
         {niveaux.map((n, i) => {
           if (i > 0 && (niveaux[i-1].sel.length === 0 || n.items.length === 0)) return null;
           const { couleur } = NIVEAUX[i];

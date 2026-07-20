@@ -5,7 +5,7 @@ import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { X, Maximize2, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
+import { X, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -13,6 +13,9 @@ import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
 import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
+import { GrapheCard } from "@/components/charts/GrapheCardIde";
+import { HBarChart } from "@/components/charts/HBarChart";
+import { DivergingBars } from "@/components/charts/DivergingBars";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -148,128 +151,6 @@ function useBornesCnuced(sousType: string = "fluxstock"): [number, number] {
   ];
 }
 
-// ── Download graphe ───────────────────────────────────────────────────────────
-function downloadSVG(svgEl: SVGSVGElement, filename: string) {
-  const clone = svgEl.cloneNode(true) as SVGSVGElement;
-  clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
-  // Fond blanc pour PNG
-  const bg = document.createElementNS("http://www.w3.org/2000/svg","rect");
-  bg.setAttribute("width","100%"); bg.setAttribute("height","100%"); bg.setAttribute("fill","white");
-  clone.insertBefore(bg, clone.firstChild);
-  const blob = new Blob([clone.outerHTML], {type:"image/svg+xml"});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a"); a.href=url; a.download=`${filename}.svg`; a.click();
-  URL.revokeObjectURL(url);
-}
-
-function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: string; annees?: string; legende?: { nom: string; couleur: string }[] }) {
-  const SCALE = 3; // suréchantillonnage : rendu net, identique au modal
-  const clone = svgEl.cloneNode(true) as SVGSVGElement;
-  clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
-  const W = svgEl.viewBox.baseVal.width || 800;
-  const H = svgEl.viewBox.baseVal.height || 400;
-  // Dimensions explicites en pixels : sans elles le navigateur rastérise le SVG
-  // à une taille par défaut puis l'agrandit, d'où une image floue.
-  clone.removeAttribute("style");
-  clone.setAttribute("width",  String(W * SCALE));
-  clone.setAttribute("height", String(H * SCALE));
-  clone.setAttribute("font-family", "'Google Sans','Product Sans',Arial,sans-serif");
-  const blob = new Blob([clone.outerHTML], {type:"image/svg+xml"});
-  const url  = URL.createObjectURL(blob);
-  const img  = new Image();
-  img.onload = () => {
-    const PAD    = 26;
-    const FONT   = "'Google Sans','Product Sans',Arial,sans-serif";
-    const titre  = opts?.titre  || "";
-    const annees = opts?.annees || "";
-    const legende = opts?.legende || [];
-
-    // ── Mesure du bandeau (titre + badge d'années + légende, avec retours à la ligne)
-    const mctx = document.createElement("canvas").getContext("2d")!;
-    let headerH = 0;
-    const legLines: { nom: string; couleur: string; w: number }[][] = [];
-    if (titre || legende.length) {
-      headerH = PAD + 26;
-      if (legende.length) {
-        mctx.font = `700 11px ${FONT}`;
-        const maxW = W - PAD * 2;
-        let line: { nom: string; couleur: string; w: number }[] = []; let x = 0;
-        legende.forEach(l => {
-          const w = Math.ceil(mctx.measureText(l.nom).width) + 22;
-          if (x + w > maxW && line.length) { legLines.push(line); line = []; x = 0; }
-          line.push({ ...l, w }); x += w + 8;
-        });
-        if (line.length) legLines.push(line);
-        headerH += 6 + legLines.length * 26;
-      }
-      headerH += 10;
-    }
-
-    const canvas = document.createElement("canvas");
-    canvas.width = W * SCALE; canvas.height = (H + headerH) * SCALE;
-    const ctx = canvas.getContext("2d")!;
-    ctx.scale(SCALE, SCALE);
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H + headerH);
-
-    if (headerH) {
-      ctx.textBaseline = "middle";
-      const ty = PAD + 12;
-      // Badge d'années (réserve sa place à droite du titre)
-      ctx.font = `700 11px ${FONT}`;
-      const badgeW = annees ? Math.ceil(ctx.measureText(annees).width) + 20 : 0;
-      // Titre, tronqué si besoin
-      ctx.font = `700 16px ${FONT}`; ctx.fillStyle = "#1a1a2e";
-      let t = titre;
-      const maxTitre = W - PAD * 2 - (badgeW ? badgeW + 10 : 0);
-      while (t && ctx.measureText(t).width > maxTitre) t = t.slice(0, -2);
-      if (t !== titre) t += "…";
-      ctx.fillText(t, PAD, ty);
-      if (annees) {
-        const bx = PAD + ctx.measureText(t).width + 10;
-        ctx.fillStyle = "#ECEAE8";
-        ctx.beginPath(); ctx.roundRect(bx, ty - 10, badgeW, 20, 999); ctx.fill();
-        ctx.font = `700 11px ${FONT}`; ctx.fillStyle = "#4a5568";
-        ctx.fillText(annees, bx + 10, ty + 0.5);
-      }
-      // Légende en pilules teintées, comme dans le modal
-      let ly = PAD + 26 + 6 + 13;
-      ctx.font = `700 11px ${FONT}`;
-      legLines.forEach(line => {
-        let lx = PAD;
-        line.forEach(l => {
-          ctx.fillStyle = l.couleur + "1F";
-          ctx.beginPath(); ctx.roundRect(lx, ly - 10, l.w, 20, 999); ctx.fill();
-          ctx.fillStyle = l.couleur;
-          ctx.fillText(l.nom, lx + 11, ly + 0.5);
-          lx += l.w + 8;
-        });
-        ly += 26;
-      });
-    }
-
-    ctx.drawImage(img, 0, headerH, W, H);
-    const a = document.createElement("a"); a.href=canvas.toDataURL("image/png"); a.download=`${filename}.png`; a.click();
-    URL.revokeObjectURL(url);
-  };
-  img.src = url;
-}
-
-// ── Tooltip D3 : coordonnées viewport (le tooltip est en position:fixed) et
-// repli automatique aux bords pour rester toujours visible à l'écran.
-function showD3Tooltip(tooltip: any, e: MouseEvent, html?: string) {
-  if (html !== undefined) tooltip.html(html);
-  tooltip.style("opacity", 1);
-  const node = tooltip.node() as HTMLElement | null;
-  const tw = node?.offsetWidth || 120, th = node?.offsetHeight || 44;
-  let x = e.clientX + 14, y = e.clientY - th - 14;
-  if (x + tw > window.innerWidth - 8) x = e.clientX - tw - 14;
-  if (y < 8) y = e.clientY + 18;
-  if (y + th > window.innerHeight - 8) y = window.innerHeight - th - 8;
-  tooltip.style("left", x + "px").style("top", y + "px");
-}
-function hideD3Tooltip(tooltip: any) { tooltip.style("opacity", 0); }
-
 // ── Graphe D3 multi-pays ──────────────────────────────────────────────────────
 function GrapheMultiPays(props: {
   series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
@@ -279,133 +160,6 @@ function GrapheMultiPays(props: {
   return <GrapheSignature {...props} fmt={props.fmt || fmtVal} />;
 }
 
-// ── Modal graphe plein écran ──────────────────────────────────────────────────
-function GrapheModal({ open, onClose, titre, sous_titre, children, analyse, series, grapheId }: any) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const getSvg = () => modalRef.current?.querySelector("svg") as SVGSVGElement|null;
-
-  // Intervalle d'années couvert par les séries (badge du titre + export PNG)
-  const anneesRange = (() => {
-    const as: number[] = (series||[]).flatMap((s:any)=>s.data.filter((d:any)=>d.valeur!==null).map((d:any)=>d.annee));
-    if (!as.length) return "";
-    const mn = Math.min(...as), mx = Math.max(...as);
-    return mn === mx ? String(mn) : `${mn} – ${mx}`;
-  })();
-  const legendeExport = (series||[])
-    .filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))
-    .map((s:any)=>({ nom: s.nom, couleur: s.couleur }));
-
-  if (!open) return null;
-  return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:32 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
-        <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
-
-        {/* En-tête fixe */}
-        <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", margin:0, lineHeight:1.35, minWidth:0 }}>{titre}</h2>
-                {anneesRange && (
-                  <span style={{ flexShrink:0, fontSize:11, fontWeight:700, color:"#4a5568", background:"#ECEAE8", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
-                    {anneesRange}
-                  </span>
-                )}
-              </div>
-              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
-                {series?.length > 0 && series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
-                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:s.couleur, background:`${s.couleur}12`, border:`1px solid ${s.couleur}30` }}>
-                    {s.nom}
-                  </span>
-                ))}
-                {sous_titre && <span style={{ fontSize:11.5, color:"#9aa5b4", fontWeight:500 }}>{sous_titre}</span>}
-              </div>
-            </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
-              <X size={15} color="#4a5568" />
-            </button>
-          </div>
-        </div>
-
-        {/* Corps */}
-        <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1 }}>
-          <div ref={modalRef}>
-            {children}
-          </div>
-          {analyse && (
-            <div style={{ marginTop:22 }}>
-              <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{analyse.titre}</p>
-              <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 18px" }}>
-                <p style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}>{analyse.commentaire}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Pied fixe */}
-        <div style={{ padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", display:"flex", justifyContent:"flex-end", gap:10, flexShrink:0 }}>
-          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
-            Fermer
-          </button>
-          <button onClick={()=>{ const svg=getSvg(); if(svg) downloadPNG(svg, grapheId||titre||"graphe", { titre, annees:anneesRange, legende:legendeExport }); }}
-            style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgba(0,79,145,0.25)", fontFamily:"var(--font-google-sans)" }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Télécharger
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Card graphe miniature ─────────────────────────────────────────────────────
-function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre }: any) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <div onClick={()=>setOpen(true)}
-        style={{ background:"#fff", borderRadius:14, border:"1px solid #ECEAE7", padding:"16px 18px", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", minWidth:0 }}
-        onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
-          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; const d=span.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ span.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; span.style.transform=`translateX(-${d}px)`; } }); }}
-        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7";
-          e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const span=box.firstElementChild as HTMLElement|null; if(!span) return; span.style.transition="transform 0.4s ease"; span.style.transform="translateX(0)"; }); }}>
-
-        {/* Header : titre + légende + expand */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10, gap:8 }}>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const }}>
-              <h3 style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0, display:"inline-block" }}>{titre}</h3>
-            </div>
-            {!hideLegend && series?.length > 0 && (
-              <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:5 }}>
-                {series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
-                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:999, color:s.couleur, background:`${s.couleur}12` }}>
-                    {s.nom}
-                  </span>
-                ))}
-              </div>
-            )}
-            {!hideSousTitre && sous_titre && <p style={{ fontSize:10.5, color:"#9aa5b4", marginTop:4 }}>{sous_titre}</p>}
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
-            {analyse && <span style={{ fontSize:9, fontWeight:800, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"2px 8px", borderRadius:999, letterSpacing:"0.08em" }}>ANALYSE</span>}
-            <span style={{ width:26, height:26, borderRadius:8, background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
-              <Maximize2 size={11} style={{ color:"#9aa5b4" }} />
-            </span>
-          </div>
-        </div>
-        <div style={{ pointerEvents:"none" }}>{children}</div>
-      </div>
-
-      <GrapheModal open={open} onClose={()=>setOpen(false)} titre={titre} sous_titre={sous_titre} analyse={analyse} series={series} grapheId={grapheId}>
-        {fullChildren || children}
-      </GrapheModal>
-    </>
-  );
-}
 
 // ── Export Excel (XLSX) ───────────────────────────────────────────────────────
 async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string, sousType: string = "fluxstock") {
@@ -495,7 +249,7 @@ function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fl
                 })}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -672,7 +426,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pa
                 )}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -907,7 +661,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
             {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
                 <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
                 {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
               </button>
@@ -925,7 +679,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
                 <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
                   style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-                {searchPays&&<button onClick={()=>setSearchPays("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+                {searchPays&&<button onClick={()=>setSearchPays("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
               </div>
               <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
               {/* Pays */}
@@ -1365,7 +1119,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
           {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+            <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
               <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
             </button>
             {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgba(220,38,38,0.08)", border:"1px solid rgba(220,38,38,0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
@@ -1706,7 +1460,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
           <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
             {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+              <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
                 <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
                 {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
               </button>
@@ -1724,7 +1478,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
                 <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
                 <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
                   style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-                {searchPays&&<button onClick={()=>setSearchPays("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+                {searchPays&&<button onClick={()=>setSearchPays("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
               </div>
               <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
               {/* Pays */}
@@ -1903,278 +1657,6 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
 }
 
 // ── Onglet Monde ──────────────────────────────────────────────────────────────
-// ── Horizontal bar chart top 10 ──────────────────────────────────────────────
-function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
-  const svgRef  = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [annee, setAnnee] = useState<number|null>(null);
-  const [ind,   setInd]   = useState("flux");
-  const [dir,   setDir]   = useState("entrant");
-
-  const draw = useCallback(() => {
-    if (!svgRef.current || !wrapRef.current) return;
-    const el = svgRef.current;
-    d3.select(el).selectAll("*").remove();
-    if (!donnees.length) return;
-
-    const curInd = mini ? "flux"    : ind;
-    const curDir = mini ? "entrant" : dir;
-
-    const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
-    const curAnnee = mini ? annees[0] : (annee ?? annees[0]);
-
-    const data = donnees
-      .filter((d:any)=>d.annee===curAnnee && d.indicateur===curInd && d.direction===curDir && d.valeur!==null)
-      .sort((a:any,b:any)=>b.valeur-a.valeur)
-      .slice(0, 10);
-
-    if (!data.length) return;
-
-    const W    = wrapRef.current.clientWidth || 600;
-    const rowH = mini ? 18 : 46;
-    const longestName = mini ? 3 : Math.max(...data.map((d:any)=>(d.pays as string).length));
-    const M    = mini
-      ? { top:4, right:12, bottom:4, left:34 }
-      : { top:10, right:90, bottom:10, left: Math.max(80, longestName * 7 + 12) };
-    const H    = data.length * rowH + M.top + M.bottom;
-
-    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
-
-    const maxVal = d3.max(data,(d:any)=>d.valeur) as number;
-    const x = d3.scalePow().exponent(0.5).domain([0, maxVal]).range([M.left, W-M.right]);
-    const y = d3.scaleBand().domain(data.map((d:any)=>d.pays)).range([M.top, H-M.bottom]).padding(0.18);
-
-    const fmtLabel = (v:number) => fmtMillionsUSD(v);
-    const minLabelInside = mini ? 40 : 80;
-    const label = (d:any) => mini
-      ? ((d.code_iso3 as string|null) ?? (d.pays as string).slice(0,3).toUpperCase())
-      : (d.pays as string);
-
-    svg.selectAll<SVGRectElement,any>("rect.bar")
-      .data(data).enter().append("rect")
-      .attr("x",     M.left)
-      .attr("y",     (d:any)=>y(d.pays)!)
-      .attr("width", (d:any)=>Math.max(2, x(d.valeur)-M.left))
-      .attr("height",y.bandwidth())
-      .attr("fill",  COMP_PALETTE[0]);
-
-    svg.selectAll<SVGTextElement,any>("text.val")
-      .data(data).enter().append("text")
-      .attr("x",  (d:any)=>{
-        const barW = x(d.valeur)-M.left;
-        return barW >= minLabelInside ? x(d.valeur)-5 : x(d.valeur)+5;
-      })
-      .attr("y",  (d:any)=>y(d.pays)! + y.bandwidth()/2)
-      .attr("dy", "0.35em")
-      .attr("text-anchor",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"end":"start")
-      .attr("font-size", mini ? 7 : 11)
-      .attr("font-weight","600")
-      .attr("fill",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"white":COMP_PALETTE[0])
-      .text((d:any)=>fmtLabel(d.valeur));
-
-    // Étiquette ISO3 à gauche de la barre
-    svg.selectAll<SVGTextElement,any>("text.iso")
-      .data(data).enter().append("text")
-      .attr("x",  M.left-4)
-      .attr("y",  (d:any)=>y(d.pays)! + y.bandwidth()/2)
-      .attr("dy", "0.35em")
-      .attr("text-anchor","end")
-      .attr("font-size", mini ? 7 : 11)
-      .attr("font-weight","600")
-      .attr("fill","#374151")
-      .text(label);
-
-  }, [donnees, annee, ind, dir, mini]);
-
-  useEffect(()=>{ draw(); },[draw]);
-  useEffect(()=>{
-    if (!wrapRef.current) return;
-    const obs = new ResizeObserver(()=>draw());
-    obs.observe(wrapRef.current);
-    return ()=>obs.disconnect();
-  },[draw]);
-
-  const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
-
-  const Pill = ({ label, active, onClick }: { label:string; active:boolean; onClick:()=>void }) => (
-    <button onClick={onClick} style={{ padding:"4px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize:11, fontWeight:600, background:active?"#004f91":"#F2F0EF", color:active?"#fff":"#9aa5b4", transition:"all 0.15s" }}>{label}</button>
-  );
-
-  return (
-    <div>
-      {!mini && (
-        <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" as const, alignItems:"center" }}>
-          <select value={annee??annees[0]} onChange={e=>setAnnee(Number(e.target.value))}
-            style={{ fontSize:11, padding:"3px 8px", borderRadius:6, border:"1px solid #E8E5E3", background:"#F8F7F6", color:"#1a1a2e", cursor:"pointer", outline:"none" }}>
-            {annees.map(a=><option key={a} value={a}>{a}</option>)}
-          </select>
-          <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
-          <Pill label="Flux"    active={ind==="flux"}    onClick={()=>setInd("flux")}/>
-          <Pill label="Stock"   active={ind==="stock"}   onClick={()=>setInd("stock")}/>
-          <div style={{ width:1, background:"#E8E5E3", margin:"0 2px" }}/>
-          <Pill label="Entrant" active={dir==="entrant"} onClick={()=>setDir("entrant")}/>
-          <Pill label="Sortant" active={dir==="sortant"} onClick={()=>setDir("sortant")}/>
-        </div>
-      )}
-      <div ref={wrapRef} style={{ width:"100%", overflow:"hidden" }}>
-        <svg ref={svgRef} style={{ width:"100%", height:"auto", display:"block" }}/>
-      </div>
-      {donnees.length===0&&!mini&&<div style={{ marginTop:16 }}><SkeletonRows n={10} h={36}/></div>}
-    </div>
-  );
-}
-
-// ── Diverging bars — Net (entrant − sortant) ──────────────────────────────────
-function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
-  const svgRef  = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [annee, setAnnee] = useState<number|null>(null);
-  const [ind,   setInd]   = useState("flux");
-
-  const draw = useCallback(() => {
-    if (!svgRef.current || !wrapRef.current) return;
-    const el = svgRef.current;
-    d3.select(el).selectAll("*").remove();
-    if (!donnees.length) return;
-
-    const curInd = mini ? "flux" : ind;
-    const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
-    const curAnnee = mini ? annees[0] : (annee ?? annees[0]);
-
-    type Row = { pays: string; iso3: string|null; net: number };
-    const paysList = [...new Set(donnees.map((d:any)=>d.pays as string))];
-    const data: Row[] = paysList.map(pays => {
-      const ent = donnees.find((d:any)=>d.pays===pays&&d.annee===curAnnee&&d.indicateur===curInd&&d.direction==="entrant");
-      const sor = donnees.find((d:any)=>d.pays===pays&&d.annee===curAnnee&&d.indicateur===curInd&&d.direction==="sortant");
-      return { pays, iso3: ent?.code_iso3??sor?.code_iso3??null, net:(ent?.valeur??0)-(sor?.valeur??0) };
-    })
-    .filter(d=>d.net!==0)
-    .sort((a,b)=>Math.abs(b.net)-Math.abs(a.net)).slice(0, 10)
-    .sort((a,b)=>b.net-a.net);   // positifs en haut, négatifs en bas
-
-    if (!data.length) return;
-
-    const COLOR_POS = "#188038";
-    const COLOR_NEG = "#A50E0E";
-    const rowH = mini ? 16 : 28;
-    const W    = wrapRef.current.clientWidth || 500;
-    const MT   = mini ? 4  : 26;
-    const MB   = mini ? 4  : 8;
-    const MH   = mini ? 18 : 58;
-    const H    = MT + data.length * rowH + MB;
-
-    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
-
-    // 0 fixé au centre, deux échelles indépendantes gauche (négatif) et droite (positif)
-    const cx  = MH + (W - 2*MH) / 2;
-    const maxPos = Math.max(1, d3.max(data.filter(d=>d.net>0), d=>d.net) ?? 1);
-    const maxNeg = Math.max(1, d3.max(data.filter(d=>d.net<0), d=>-d.net) ?? 1);
-    const xPos = d3.scalePow().exponent(0.5).domain([0, maxPos*1.08]).range([cx, W-MH]);
-    const xNeg = d3.scalePow().exponent(0.5).domain([0, maxNeg*1.08]).range([cx, MH]);
-
-    // px position d'une valeur nette
-    const xOf = (v: number) => v >= 0 ? xPos(v) : xNeg(-v);
-
-    const y = d3.scaleBand().domain(data.map(d=>d.pays)).range([MT, MT+data.length*rowH]).padding(0.2);
-
-    const fmt = (v:number) => {
-      const abs = Math.abs(v), sign = v>0?"+":"-";
-      return abs>=1000 ? `${sign}${(abs/1000).toLocaleString("fr-FR",{maximumFractionDigits:1})}k` : `${sign}${Math.round(abs)}`;
-    };
-
-    // Axes indépendants en haut (full uniquement)
-    if (!mini) {
-      // Axe droite (positif)
-      svg.append("g").attr("transform",`translate(0,${MT})`)
-        .call(d3.axisTop(xPos).ticks(4).tickFormat(v=>v===0?"":fmt(+v)))
-        .call(g=>{g.select(".domain").remove();
-          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("y2",data.length*rowH);
-          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
-      // Axe gauche (négatif) — inverser le signe pour l'affichage
-      svg.append("g").attr("transform",`translate(0,${MT})`)
-        .call(d3.axisTop(xNeg).ticks(3).tickFormat(v=>v===0?"":fmt(-(+v))))
-        .call(g=>{g.select(".domain").remove();
-          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("y2",data.length*rowH);
-          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
-    }
-
-    // Barres
-    svg.selectAll<SVGRectElement,Row>("rect")
-      .data(data).enter().append("rect")
-      .attr("x",     d=>d.net>=0 ? cx : xOf(d.net))
-      .attr("y",     d=>y(d.pays)!)
-      .attr("width", d=>Math.max(1, Math.abs(xOf(d.net)-cx)))
-      .attr("height",y.bandwidth())
-      .attr("fill",  d=>d.net>=0 ? COLOR_POS : COLOR_NEG);
-
-    // Règle X=0
-    svg.append("line")
-      .attr("x1",cx).attr("x2",cx).attr("y1",MT).attr("y2",MT+data.length*rowH)
-      .attr("stroke","#374151").attr("stroke-width",mini?0.8:1.2);
-
-    // Noms pays au centre — positifs à gauche du centre, négatifs à droite
-    data.forEach(d=>{
-      const isPos = d.net >= 0;
-      const name  = mini
-        ? (d.iso3 ?? d.pays.slice(0,3).toUpperCase())
-        : d.pays;
-      svg.append("text")
-        .attr("x",  isPos ? cx-5 : cx+5)
-        .attr("y",  (y(d.pays)??0)+y.bandwidth()/2)
-        .attr("dy","0.35em")
-        .attr("text-anchor", isPos ? "end" : "start")
-        .attr("font-size", mini ? 6 : 9.5)
-        .attr("font-weight","600")
-        .attr("fill","#374151")
-        .text(name);
-    });
-
-    // Valeurs aux extrémités des barres (full uniquement)
-    if (!mini) {
-      svg.selectAll<SVGTextElement,Row>("text.val")
-        .data(data).enter().append("text")
-        .attr("x",  d=>d.net>=0 ? xOf(d.net)+5 : xOf(d.net)-5)
-        .attr("y",  d=>(y(d.pays)??0)+y.bandwidth()/2)
-        .attr("dy","0.35em")
-        .attr("text-anchor",d=>d.net>=0?"start":"end")
-        .attr("font-size",8).attr("font-weight","600")
-        .attr("fill",d=>d.net>=0?COLOR_POS:COLOR_NEG)
-        .text(d=>fmt(d.net));
-    }
-  }, [donnees, annee, ind, mini]);
-
-  useEffect(()=>{draw();},[draw]);
-  useEffect(()=>{
-    if (!wrapRef.current) return;
-    const obs = new ResizeObserver(()=>draw());
-    obs.observe(wrapRef.current);
-    return ()=>obs.disconnect();
-  },[draw]);
-
-  const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
-  const Pill = ({label,active,onClick}:{label:string;active:boolean;onClick:()=>void}) => (
-    <button onClick={onClick} style={{padding:"4px 10px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:active?"#004f91":"#F2F0EF",color:active?"#fff":"#9aa5b4",transition:"all 0.15s"}}>{label}</button>
-  );
-
-  return (
-    <div>
-      {!mini&&(
-        <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap" as const,alignItems:"center"}}>
-          <select value={annee??annees[0]} onChange={e=>setAnnee(Number(e.target.value))}
-            style={{fontSize:11,padding:"3px 8px",borderRadius:6,border:"1px solid #E8E5E3",background:"#F8F7F6",color:"#1a1a2e",cursor:"pointer",outline:"none"}}>
-            {annees.map(a=><option key={a} value={a}>{a}</option>)}
-          </select>
-          <div style={{width:1,background:"#E8E5E3",margin:"0 2px"}}/>
-          <Pill label="Flux net"  active={ind==="flux"}  onClick={()=>setInd("flux")}/>
-          <Pill label="Stock net" active={ind==="stock"} onClick={()=>setInd("stock")}/>
-        </div>
-      )}
-      <div ref={wrapRef} style={{width:"100%",overflow:"hidden"}}>
-        <svg ref={svgRef} style={{width:"100%",height:"auto",display:"block"}}/>
-      </div>
-    </div>
-  );
-}
 
 function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
@@ -2299,7 +1781,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
           {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+            <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
               <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
               {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
             </button>
@@ -2319,7 +1801,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
             <input value={searchGrp} onChange={e=>setSearchGrp(e.target.value)} placeholder="Rechercher un groupement…"
               style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-            {searchGrp&&<button onClick={()=>setSearchGrp("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+            {searchGrp&&<button onClick={()=>setSearchGrp("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
           </div>
           <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
 
@@ -2436,7 +1918,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                       <div key={cont.code} style={{ marginBottom:2 }}>
                         {/* Ligne continent */}
                         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                          <button onClick={()=>setContExpanded(p=>({...p,[cont.code]:!expanded}))}
+                          <button onClick={()=>setContExpanded(p=>({...p,[cont.code]:!expanded}))} aria-label={expanded ? "Replier" : "Déplier"}
                             style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 2px", flexShrink:0, color:"#9aa5b4", display:"flex", alignItems:"center" }}>
                             {expanded ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
                           </button>
@@ -2626,7 +2108,7 @@ function BdefRow({ label, niveau, selected, onSelect, expandable, expanded, onTo
   return (
     <div style={{ display:"flex", alignItems:"center", gap:2 }}>
       {expandable ? (
-        <button onClick={onToggle} style={{ background:"none", border:"none", cursor:"pointer", padding:2, display:"flex", flexShrink:0 }}>
+        <button onClick={onToggle} aria-label={expanded ? "Replier" : "Déplier"} style={{ background:"none", border:"none", cursor:"pointer", padding:2, display:"flex", flexShrink:0 }}>
           <ChevronDown size={12} style={{ color:"#9aa5b4", transform:expanded?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
         </button>
       ) : <span style={{ width:16, flexShrink:0 }}/>}
@@ -2727,7 +2209,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                 })}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -2862,7 +2344,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
                 )}
               </div>
             </div>
-            <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"#F5F4F3", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="#ECEAE8";}} onMouseLeave={e=>{e.currentTarget.style.background="#F5F4F3";}}>
               <X size={15} color="#4a5568" />
             </button>
@@ -3088,7 +2570,7 @@ function OngletNational() {
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
           {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <button onClick={()=>setSidebarOpen(o=>!o)} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
+            <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
               <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
             </button>
             {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgba(220,38,38,0.08)", border:"1px solid rgba(220,38,38,0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
@@ -3226,7 +2708,7 @@ function OngletNational() {
             <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
               style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-            {search&&<button onClick={()=>setSearch("")} style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+            {search&&<button onClick={()=>setSearch("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
           </div>
 
           {/* Activités */}

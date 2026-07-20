@@ -426,7 +426,7 @@ export default function OpportunitesPage() {
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
                 {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <button onClick={()=>setSidebarOpen(o=>!o)}
+                  <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen?"Réduire les filtres":"Afficher les filtres"}
                     style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
                     <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
                     {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
@@ -447,7 +447,7 @@ export default function OpportunitesPage() {
                       <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
                       <input value={projQ} onChange={e=>setProjQ(e.target.value)} placeholder="Rechercher…"
                         style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                      {projQ&&<button onClick={()=>setProjQ("")} style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
+                      {projQ&&<button onClick={()=>setProjQ("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
                     </div>
                     <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
                     <SideFilter label="Pôle territoire" color="#004f91"
