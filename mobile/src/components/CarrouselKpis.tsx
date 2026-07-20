@@ -2,12 +2,17 @@
 // rotation automatique douce et points de navigation (motif de l'accueil).
 // Partagé entre Indicateurs économiques et Flux bilatéraux.
 import { memo, useEffect, useRef, useState } from "react";
+import { Pressable } from "react-native";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Apparition, ChiffreAnime } from "@/components/ui";
-import { tick } from "@/lib/haptique";
+import { abonnerEpingles, basculerEpingle, chargerEpingles, rafraichirEpingles } from "@/lib/epingles";
+import { succes, tick } from "@/lib/haptique";
+import Symbole from "@/components/Symbole";
 import { POLICE, T } from "@/theme";
 
 export type KpiCarrousel = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
+// Source d'épinglage : identifiant stable + libellé + destination accueil
+export type SourceKpis = { id: string; label: string; href: string };
 
 const LARGEUR = Dimensions.get("window").width;
 const ROTATION_MS = 6000;
@@ -18,13 +23,35 @@ function decouper<T>(liste: T[], taille: number): T[][] {
   return pages;
 }
 
-function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
+function CarrouselKpis({ kpis, source }: { kpis: KpiCarrousel[]; source?: SourceKpis }) {
   const pages = decouper(kpis, 4);
   const [page, setPage] = useState(0);
   const defileur = useRef<ScrollView>(null);
   const pageRef = useRef(0);
   const parGeste = useRef(false); // tick haptique sur geste seulement, pas sur la rotation auto
   pageRef.current = page;
+
+  // ── Épinglage sur l'accueil (appui long) ──
+  const [epingles, setEpingles] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!source) return;
+    let vivant = true;
+    const charger = () => chargerEpingles().then(l => { if (vivant) setEpingles(new Set(l.map(e => e.id))); });
+    charger();
+    const desabonner = abonnerEpingles(charger);
+    return () => { vivant = false; desabonner(); };
+  }, [source?.id]);
+  // Les valeurs recalculées rafraîchissent les épinglés correspondants
+  useEffect(() => {
+    if (source && kpis.length) rafraichirEpingles(source.id, kpis);
+  }, [source?.id, kpis]);
+  const epingler = (kpi: KpiCarrousel) => {
+    if (!source) return;
+    basculerEpingle({
+      id: `${source.id}:${kpi.cle}`, cle: kpi.cle, label: kpi.label,
+      valeur: kpi.valeur, note: kpi.note, sourceLabel: source.label, href: source.href,
+    }).then(({ ajoute }) => (ajoute ? succes() : tick()));
+  };
 
   useEffect(() => {
     if (pages.length < 2) return;
@@ -49,16 +76,24 @@ function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
         }}>
         {pages.map((groupe, i) => (
           <View key={i} style={[s.page, { width: LARGEUR }]}>
-            {groupe.map((kpi, k) => (
-              <Apparition key={kpi.cle} index={k} style={s.carte}>
-                <View style={s.filet} />
-                <Text style={s.label} numberOfLines={2}>{kpi.label.toUpperCase()}</Text>
-                <ChiffreAnime texte={kpi.valeur} style={[s.valeur, kpi.negatif && { color: "#dc2626" }]} />
-                {kpi.note ? (
-                  <View style={s.note}><Text style={s.noteTexte} numberOfLines={1}>{kpi.note}</Text></View>
-                ) : null}
-              </Apparition>
-            ))}
+            {groupe.map((kpi, k) => {
+              const estEpingle = source ? epingles.has(`${source.id}:${kpi.cle}`) : false;
+              return (
+                <Apparition key={kpi.cle} index={k} style={s.carte}>
+                  <Pressable onLongPress={source ? () => epingler(kpi) : undefined} delayLongPress={340}>
+                    <View style={s.filet} />
+                    {estEpingle && (
+                      <View style={s.epingle}><Symbole nom="keep" taille={12} couleur={T.bleu} /></View>
+                    )}
+                    <Text style={s.label} numberOfLines={2}>{kpi.label.toUpperCase()}</Text>
+                    <ChiffreAnime texte={kpi.valeur} style={[s.valeur, kpi.negatif && { color: "#dc2626" }]} />
+                    {kpi.note ? (
+                      <View style={s.note}><Text style={s.noteTexte} numberOfLines={1}>{kpi.note}</Text></View>
+                    ) : null}
+                  </Pressable>
+                </Apparition>
+              );
+            })}
           </View>
         ))}
       </ScrollView>
@@ -84,6 +119,7 @@ const s = StyleSheet.create({
   valeur: { fontSize: 20, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -0.4, marginTop: 7, fontVariant: ["tabular-nums"] },
   note: { alignSelf: "flex-start", maxWidth: "100%", backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 8 },
   noteTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  epingle: { position: "absolute", top: 6, right: 0 },
   points: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 12 },
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.blocBord },
   pointActif: { width: 18, backgroundColor: T.bleu },

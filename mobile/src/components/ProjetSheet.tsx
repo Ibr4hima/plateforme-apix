@@ -6,10 +6,10 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import { Feuille } from "@/components/ui";
 import Symbole from "@/components/Symbole";
-import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
+import TexteRiche from "@/components/TexteRiche";
 import { POLICE, T } from "@/theme";
 
 const DEVISE_SYM: Record<string, string> = { XOF: "FCFA", USD: "$", EUR: "€", GBP: "£", CNY: "¥" };
@@ -98,7 +98,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
           {p.description ? (
             <View>
               <SecTitle>Description</SecTitle>
-              <View style={s.description}><Text style={s.descriptionTexte}>{htmlEnTexte(p.description)}</Text></View>
+              <View style={s.description}><TexteRiche html={p.description} couleur={T.texte as any} fontSize={13} lineHeight={21} /></View>
             </View>
           ) : null}
 

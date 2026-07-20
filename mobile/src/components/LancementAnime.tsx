@@ -1,9 +1,9 @@
 // Lancement animé — prolonge le splash natif : sur le bleu institutionnel,
-// le logo se dessine de gauche à droite derrière un liseré lumineux, la
-// devise apparaît, puis le voile s'efface pour révéler l'app.
+// le logo se dessine de gauche à droite derrière un liseré lumineux,
+// puis le voile s'efface pour révéler l'app.
 import { useEffect, useRef, useState } from "react";
-import { Animated, Dimensions, Easing, Image, StyleSheet, Text, View } from "react-native";
-import { POLICE } from "@/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { Animated, Dimensions, Easing, Image, StyleSheet, View } from "react-native";
 
 const { width: ECRAN } = Dimensions.get("window");
 const LOGO_L = Math.min(ECRAN * 0.62, 300);
@@ -11,15 +11,13 @@ const LOGO_H = LOGO_L * (337 / 595); // ratio du fichier logo
 
 export default function LancementAnime({ onFini }: { onFini: () => void }) {
   const dessin = useRef(new Animated.Value(0)).current;  // révélation du logo
-  const devise = useRef(new Animated.Value(0)).current;  // devise en fondu
   const voile = useRef(new Animated.Value(1)).current;   // sortie de l'écran
   const [parti, setParti] = useState(false);
 
   useEffect(() => {
     Animated.sequence([
       Animated.timing(dessin, { toValue: 1, duration: 850, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
-      Animated.timing(devise, { toValue: 1, duration: 320, useNativeDriver: false }),
-      Animated.delay(340),
+      Animated.delay(430),
       Animated.timing(voile, { toValue: 0, duration: 380, easing: Easing.in(Easing.cubic), useNativeDriver: false }),
     ]).start(() => { setParti(true); onFini(); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -32,8 +30,11 @@ export default function LancementAnime({ onFini }: { onFini: () => void }) {
       opacity: voile,
       transform: [{ scale: voile.interpolate({ inputRange: [0, 1], outputRange: [1.06, 1] }) }],
     }]}>
+      <LinearGradient colors={["#003259", "#004f91", "#0a5ca3"]}
+        start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={StyleSheet.absoluteFill} />
       <View style={s.haloHaut} />
       <View style={s.haloBas} />
+      <View style={s.haloCentre} />
 
       <View style={{ width: LOGO_L, height: LOGO_H }}>
         {/* Le logo se dessine : fenêtre qui s'ouvre de gauche à droite */}
@@ -51,12 +52,6 @@ export default function LancementAnime({ onFini }: { onFini: () => void }) {
         }]} />
       </View>
 
-      <Animated.Text style={[s.devise, {
-        opacity: devise,
-        transform: [{ translateY: devise.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }],
-      }]}>
-        INTELLIGENCE · INVESTISSEMENT · SÉNÉGAL
-      </Animated.Text>
     </Animated.View>
   );
 }
@@ -68,13 +63,10 @@ const s = StyleSheet.create({
   },
   haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
   haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
+  haloCentre: { position: "absolute", alignSelf: "center", width: 460, height: 460, borderRadius: 230, backgroundColor: "rgba(255,255,255,0.035)" },
   lisere: {
     position: "absolute", top: -6, bottom: -6, left: -1, width: 2.5, borderRadius: 2,
     backgroundColor: "rgba(255,255,255,0.9)",
     shadowColor: "#fff", shadowOpacity: 0.9, shadowRadius: 8, shadowOffset: { width: 0, height: 0 },
-  },
-  devise: {
-    marginTop: 26, color: "rgba(255,255,255,0.68)", fontSize: 10,
-    fontFamily: POLICE.gras, letterSpacing: 2.4,
   },
 });

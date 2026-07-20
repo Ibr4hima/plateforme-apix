@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TexteDefilant from "@/components/TexteDefilant";
-import { htmlEnTexte } from "@/components/ZoneSheet";
+import TexteRiche from "@/components/TexteRiche";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
 import { romainDe } from "./index";
@@ -122,7 +122,7 @@ export default function Lecteur() {
       </View>
       {a.titre ? <Text style={[s.artTitre, { color: P.titre, fontSize: artTitreTaille, lineHeight: Math.round(artTitreTaille * 1.35) }]}>{a.titre}</Text> : null}
       {/* Le contenu est stocké en HTML riche (listes…) : converti en texte à puces */}
-      <Text style={[s.artContenu, { color: P.corps, fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(a.contenu || "")}</Text>
+      <TexteRiche html={a.contenu || ""} couleur={P.corps} fontSize={corps} lineHeight={interligne} />
     </View>
   );
 
@@ -149,7 +149,7 @@ export default function Lecteur() {
               <View style={s.ornement} />
             </View>
             {chap.contenu ? (
-              <Text style={[s.chapContenu, { color: P.intro, fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(chap.contenu)}</Text>
+              <TexteRiche html={chap.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} />
             ) : null}
 
             {/* Articles directs */}
@@ -166,7 +166,7 @@ export default function Lecteur() {
                   <Text style={[s.sectionTitre, { color: P.titre }]}>{sec.titre}</Text>
                 </View>
                 {sec.contenu ? (
-                  <Text style={[s.chapContenu, { color: P.intro, fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(sec.contenu)}</Text>
+                  <TexteRiche html={sec.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} />
                 ) : null}
                 {(sec.articles || []).map((a: any) => <Article key={a.id} a={a} />)}
               </View>

@@ -7,9 +7,9 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import { Feuille } from "@/components/ui";
 import Symbole from "@/components/Symbole";
-import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API, getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
+import TexteRiche from "@/components/TexteRiche";
 import { POLICE, T } from "@/theme";
 
 // Couleurs des niveaux territoriaux (palette du site)
@@ -90,7 +90,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
           {p.description ? (
             <View>
               <SecTitle>Description</SecTitle>
-              <View style={s.description}><Text style={s.descriptionTexte}>{htmlEnTexte(p.description)}</Text></View>
+              <View style={s.description}><TexteRiche html={p.description} couleur={T.texte as any} fontSize={13} lineHeight={21} /></View>
             </View>
           ) : null}
 

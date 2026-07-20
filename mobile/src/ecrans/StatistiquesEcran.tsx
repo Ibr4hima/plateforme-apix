@@ -150,7 +150,7 @@ export default function StatistiquesEcran() {
             {/* Carrousel de KPIs — vue Pays (tous les indicateurs) */}
             {f.vue === "pays" && kpis.length > 0 && (
               <View style={{ marginTop: 14 }}>
-                <CarrouselKpis kpis={kpis} />
+                <CarrouselKpis kpis={kpis} source={{ id: "indicateurs", label: "Échanges commerciaux", href: "/flux" }} />
               </View>
             )}
 

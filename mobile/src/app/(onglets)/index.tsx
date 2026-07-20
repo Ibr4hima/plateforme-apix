@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Apercu from "@/components/Apercu";
+import KpisEpingles from "@/components/KpisEpingles";
 import ModulesGrille from "@/components/ModulesGrille";
 import { fetchTous } from "@/lib/api";
 import { POLICE, T } from "@/theme";
@@ -99,6 +100,9 @@ export default function Accueil() {
           </View>
         );
       })()}
+
+      {/* ── KPIs épinglés par l'utilisateur ── */}
+      <KpisEpingles />
 
       {/* ── Aperçu — KPIs officiels du Sénégal ── */}
       <Apercu />

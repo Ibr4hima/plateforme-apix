@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
 import { Feuille } from "@/components/ui";
-import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API, getJson } from "@/lib/api";
+import TexteRiche from "@/components/TexteRiche";
 import { POLICE, T } from "@/theme";
 
 function SecTitle({ children }: { children: string }) {
@@ -53,7 +53,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
           {d.avantages ? (
             <View>
               <SecTitle>Description</SecTitle>
-              <View style={s.description}><Text style={s.descriptionTexte}>{htmlEnTexte(d.avantages)}</Text></View>
+              <View style={s.description}><TexteRiche html={d.avantages} couleur={T.texte as any} fontSize={13} lineHeight={21} /></View>
             </View>
           ) : null}
 

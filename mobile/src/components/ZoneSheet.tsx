@@ -13,6 +13,7 @@ import Symbole from "@/components/Symbole";
 import { API, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
+import TexteRiche from "@/components/TexteRiche";
 import { POLICE, T } from "@/theme";
 
 // La description est stockée en HTML riche (site) : on la ramène à du texte
@@ -98,7 +99,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
             <View>
               <SecTitle>Description</SecTitle>
               <View style={s.description}>
-                <Text style={s.descriptionTexte}>{htmlEnTexte(zone.description)}</Text>
+                <TexteRiche html={zone.description} couleur={T.texte as any} fontSize={13} lineHeight={21} />
               </View>
             </View>
           ) : null}

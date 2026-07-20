@@ -230,7 +230,7 @@ export default function NationalPanel({ filtresOuverts, onFermerFiltres, onNbFil
           {/* TOUS les indicateurs BDEF en carrousel (analyse sectorielle) */}
           {!comparative && kpis.length > 0 && (
             <View style={{ marginTop: 14 }}>
-              <CarrouselKpis kpis={kpis} />
+              <CarrouselKpis kpis={kpis} source={{ id: "bdef", label: "Inv. nationaux", href: "/investissements" }} />
             </View>
           )}
 
