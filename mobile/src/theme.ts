@@ -12,9 +12,13 @@ export const POLICE = {
   gras:     "GoogleSans_700Bold",
 } as const;
 
-// Couleur dynamique clair/sombre (repli clair hors iOS)
+// Couleur dynamique clair/sombre (repli clair hors iOS).
+// ⏸ MODE SOMBRE EN PAUSE : l'app reste en clair quel que soit le système.
+// Pour le réactiver : décommenter la ligne dynamique et remettre
+// "userInterfaceStyle": "automatic" dans app.json.
+const SOMBRE_ACTIF = false;
 const dyn = (clair: string, sombre: string): any =>
-  Platform.OS === "ios" ? DynamicColorIOS({ light: clair, dark: sombre }) : clair;
+  SOMBRE_ACTIF && Platform.OS === "ios" ? DynamicColorIOS({ light: clair, dark: sombre }) : clair;
 
 export const T = {
   // Accents (textes, icônes, points) — éclaircis la nuit pour le contraste
