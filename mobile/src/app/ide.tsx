@@ -13,6 +13,7 @@ import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule from "@/components/HeroModule";
 import IdeFiltres, { FiltresIde } from "@/components/IdeFiltres";
+import NationalPanel from "@/components/NationalPanel";
 import Symbole from "@/components/Symbole";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
@@ -102,6 +103,7 @@ export default function Ide() {
   const [onglet, setOnglet] = useState("ide");
   const [sousType, setSousType] = useState<string>("fluxstock");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [nbFiltresNat, setNbFiltresNat] = useState(0);
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
@@ -416,14 +418,13 @@ export default function Ide() {
       <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
         <HeroModule titre="Investissements privés"
           segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
-          bouton={onglet === "ide" ? { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined } : undefined} />
+          bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />
 
         {onglet === "nationaux" ? (
-          <View style={s.centre}>
-            <View style={s.bientotPastille}><Symbole nom="finance_mode" taille={26} couleur={T.bleu} /></View>
-            <Text style={s.bientotTitre}>Investissements nationaux</Text>
-            <Text style={s.bientotTexte}>Cette section arrive à la prochaine étape.{"\n"}Les IDE restent disponibles.</Text>
-          </View>
+          <NationalPanel
+            filtresOuverts={filtresOuverts && onglet === "nationaux"}
+            onFermerFiltres={() => setFiltresOuverts(false)}
+            onNbFiltres={setNbFiltresNat} />
         ) : (
           <>
             {/* Catégories (la vue Secteurs n'a pas de Flux & Stocks) */}
