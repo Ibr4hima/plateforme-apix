@@ -5,7 +5,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AccordSheet from "@/components/AccordSheet";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EvenementSheet from "@/components/EvenementSheet";
@@ -43,15 +42,13 @@ export default function Recherche() {
 
   let dernierGroupe = "";
 
-  const insets = useSafeAreaInsets();
   return (
-    <View style={[s.page, { paddingTop: insets.top + 18 }]}>
-      <Text style={s.titre}>Recherche</Text>
+    <View style={s.page}>
       <View style={s.barre}>
         <Ionicons name="search" size={17} color={T.gris} />
         <TextInput
           value={q} onChangeText={setQ} placeholder="Rechercher…" placeholderTextColor={T.gris}
-          autoCorrect={false} style={s.champ} clearButtonMode="while-editing" />
+          autoFocus autoCorrect={false} style={s.champ} clearButtonMode="while-editing" />
       </View>
 
       {isLoading && q.trim().length > 0 && (
@@ -94,7 +91,6 @@ export default function Recherche() {
 
 const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: T.fond },
-  titre: { fontSize: 29, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.6, paddingHorizontal: 20 },
   barre: {
     flexDirection: "row", alignItems: "center", gap: 10,
     backgroundColor: T.carte, margin: 16, marginBottom: 8, paddingHorizontal: 17, height: 48,

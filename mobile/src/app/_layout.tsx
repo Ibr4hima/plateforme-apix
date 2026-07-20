@@ -42,6 +42,7 @@ export default function RacineLayout() {
           contentStyle: { backgroundColor: T.fond },
         }}>
         <Stack.Screen name="(onglets)" options={{ headerShown: false }} />
+        <Stack.Screen name="recherche" options={{ title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: T.carte }, headerTintColor: T.encre, headerTitleStyle: { fontFamily: POLICE.gras, color: T.encre } }} />
         <Stack.Screen name="accords" options={{ headerShown: false }} />
         <Stack.Screen name="evenements" options={{ headerShown: false }} />
         <Stack.Screen name="entreprises" options={{ headerShown: false }} />

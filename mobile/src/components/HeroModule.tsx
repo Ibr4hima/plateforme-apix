@@ -85,6 +85,7 @@ const sb = StyleSheet.create({
   barre: {
     position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
     backgroundColor: T.heroFond,
+    borderBottomLeftRadius: 28, borderBottomRightRadius: 28,
     shadowColor: "#001e3c", shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
     elevation: 8,
   },
