@@ -28,6 +28,10 @@ function Extrait({ html }: { html: string }) {
 const nbArticlesDe = (c: any) =>
   (c.articles?.length || 0) + (c.sections || []).reduce((n: number, sec: any) => n + (sec.articles?.length || 0), 0);
 
+// Numérotation romaine homogène : le chapitre 1 s'affiche « I » (la base
+// stocke « premier » pour lui)
+export const romainDe = (c: any) => (c.numero === 1 ? "I" : String(c.num_display));
+
 export default function CodeSommaire() {
   const router = useRouter();
   const [base, setBase] = useState<BaseCode>("code-investissement");
@@ -95,7 +99,7 @@ export default function CodeSommaire() {
                       <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
                         style={({ pressed }) => [s.ligne, pressed && { backgroundColor: "rgba(0,79,145,0.05)" }]}>
                         <View style={s.numeroColonne}>
-                          <Text style={s.numeroRomain}>{c.num_display}</Text>
+                          <Text style={s.numeroRomain}>{romainDe(c)}</Text>
                           <Text style={s.numeroLegende}>CHAP.</Text>
                         </View>
                         <View style={{ flex: 1, minWidth: 0 }}>

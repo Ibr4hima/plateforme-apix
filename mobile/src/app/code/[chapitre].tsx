@@ -8,16 +8,34 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import TexteDefilant from "@/components/TexteDefilant";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
+import { romainDe } from "./index";
 
 // Échelle typographique réglable (5 crans, Apple Books-like)
 const CORPS = [15, 16.5, 18, 19.5, 21];
 const CLE_TAILLE = "code.taille";
+const CLE_SOMBRE = "code.sombre";
+
+// Palettes de lecture jour / nuit
+const PALETTES = {
+  jour: {
+    fond: "#fff", titre: T.encre, corps: "#33383F", intro: T.texte,
+    bleu: T.bleu, filet: T.filet, surligne: "#FFF6EB",
+    neutreFond: "rgba(60,64,67,0.06)", neutreTexte: "#5F6368", neutreSep: "rgba(60,64,67,0.18)",
+  },
+  nuit: {
+    fond: "#141416", titre: "#ECEAE4", corps: "#CFCCC6", intro: "#B8B5AF",
+    bleu: "#8AB8E8", filet: "rgba(255,255,255,0.10)", surligne: "rgba(224,138,76,0.14)",
+    neutreFond: "rgba(255,255,255,0.08)", neutreTexte: "#B8BCC2", neutreSep: "rgba(255,255,255,0.16)",
+  },
+} as const;
 
 export default function Lecteur() {
   const { chapitre, base = "code-investissement", art } = useLocalSearchParams<{ chapitre: string; base?: string; art?: string }>();
@@ -39,6 +57,16 @@ export default function Lecteur() {
     AsyncStorage.setItem(CLE_TAILLE, String(n)).catch(() => {});
     return n;
   });
+  // Mode sombre de lecture : mémorisé lui aussi
+  const [sombre, setSombre] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem(CLE_SOMBRE).then(v => { if (v === "1") setSombre(true); }).catch(() => {});
+  }, []);
+  const basculerSombre = () => setSombre(v => {
+    AsyncStorage.setItem(CLE_SOMBRE, v ? "0" : "1").catch(() => {});
+    return !v;
+  });
+  const P = sombre ? PALETTES.nuit : PALETTES.jour;
   // Progression de lecture : valeur animée alimentée par le défilement
   const defilementY = useRef(new Animated.Value(0)).current;
   const [hauteurMax, setHauteurMax] = useState(1);
@@ -86,19 +114,22 @@ export default function Lecteur() {
 
   const Article = ({ a }: { a: any }) => (
     <View onLayout={e => enregistrerPosition(a.id, e.nativeEvent.layout.y)}
-      style={[s.article, a.id === surligneId && s.articleSurligne]}>
+      style={[s.article, a.id === surligneId && { backgroundColor: P.surligne }]}>
       <View style={s.artEntete}>
-        <Text style={s.artNumero}>Article {a.num_display}</Text>
-        <View style={s.artFilet} />
+        <Text style={[s.artNumero, { color: P.bleu }]}>Article {a.num_display}</Text>
+        <View style={[s.artFilet, { backgroundColor: P.filet }]} />
       </View>
-      {a.titre ? <Text style={[s.artTitre, { fontSize: artTitreTaille, lineHeight: Math.round(artTitreTaille * 1.35) }]}>{a.titre}</Text> : null}
+      {a.titre ? <Text style={[s.artTitre, { color: P.titre, fontSize: artTitreTaille, lineHeight: Math.round(artTitreTaille * 1.35) }]}>{a.titre}</Text> : null}
       {/* Le contenu est stocké en HTML riche (listes…) : converti en texte à puces */}
-      <Text style={[s.artContenu, { fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(a.contenu || "")}</Text>
+      <Text style={[s.artContenu, { color: P.corps, fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(a.contenu || "")}</Text>
     </View>
   );
 
+  const deuxPilules = !!(precedent && suivant);
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, backgroundColor: P.fond }}>
+      <StatusBar style={sombre ? "light" : "dark"} />
       <Animated.ScrollView
         ref={defileur as any}
         style={{ flex: 1 }}
@@ -113,11 +144,11 @@ export default function Lecteur() {
             {/* Ouverture de chapitre */}
             <View style={s.ouverture}>
               <Text style={s.ouvertureSur}>CHAPITRE {numeroChap}</Text>
-              <Text style={s.ouvertureTitre}>{chap.titre}</Text>
+              <Text style={[s.ouvertureTitre, { color: P.titre }]}>{chap.titre}</Text>
               <View style={s.ornement} />
             </View>
             {chap.contenu ? (
-              <Text style={[s.chapContenu, { fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(chap.contenu)}</Text>
+              <Text style={[s.chapContenu, { color: P.intro, fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(chap.contenu)}</Text>
             ) : null}
 
             {/* Articles directs */}
@@ -131,10 +162,10 @@ export default function Lecteur() {
                 <View style={s.section}>
                   <View style={s.sectionFilet} />
                   <Text style={s.sectionNumero}>SECTION {String(sec.num_display).toUpperCase()}</Text>
-                  <Text style={s.sectionTitre}>{sec.titre}</Text>
+                  <Text style={[s.sectionTitre, { color: P.titre }]}>{sec.titre}</Text>
                 </View>
                 {sec.contenu ? (
-                  <Text style={[s.chapContenu, { fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(sec.contenu)}</Text>
+                  <Text style={[s.chapContenu, { color: P.intro, fontSize: corps, lineHeight: interligne }]}>{htmlEnTexte(sec.contenu)}</Text>
                 ) : null}
                 {(sec.articles || []).map((a: any) => <Article key={a.id} a={a} />)}
               </View>
@@ -147,21 +178,22 @@ export default function Lecteur() {
               <View style={s.finPoint} />
             </View>
 
-            {/* Navigation entre chapitres : pilules */}
+            {/* Navigation entre chapitres : pilules (flèches seulement quand
+                une seule pilule ; titre long : défilement lent) */}
             {(precedent || suivant) && (
               <View style={s.navigation}>
                 {precedent ? (
                   <Pressable onPress={() => allerA(precedent.id)}
                     style={({ pressed }) => [s.navPilule, pressed && { backgroundColor: "rgba(202,99,31,0.12)" }]}>
-                    <Ionicons name="chevron-back" size={13} color={T.orange} />
-                    <Text style={s.navTexte} numberOfLines={1}>{precedent.num_display}. {precedent.titre}</Text>
+                    {!deuxPilules && <Ionicons name="chevron-back" size={13} color={T.orange} />}
+                    <TexteDefilant texte={`${romainDe(precedent)}. ${precedent.titre}`} style={s.navTexte} />
                   </Pressable>
                 ) : null}
                 {suivant ? (
                   <Pressable onPress={() => allerA(suivant.id)}
                     style={({ pressed }) => [s.navPilule, pressed && { backgroundColor: "rgba(202,99,31,0.12)" }]}>
-                    <Text style={s.navTexte} numberOfLines={1}>{suivant.num_display}. {suivant.titre}</Text>
-                    <Ionicons name="chevron-forward" size={13} color={T.orange} />
+                    <TexteDefilant texte={`${romainDe(suivant)}. ${suivant.titre}`} style={s.navTexte} />
+                    {!deuxPilules && <Ionicons name="chevron-forward" size={13} color={T.orange} />}
                   </Pressable>
                 ) : null}
               </View>
@@ -170,27 +202,31 @@ export default function Lecteur() {
         )}
       </Animated.ScrollView>
 
-      {/* Barre haute : chapitre courant, réglage du texte, progression */}
-      <View style={[s.barre, { paddingTop: insets.top + 6 }]}>
+      {/* Barre haute : chapitre courant, mode nuit, réglage du texte, progression */}
+      <View style={[s.barre, { paddingTop: insets.top + 6, backgroundColor: P.fond }]}>
         <View style={s.barreContenu}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.barreEtiquette} numberOfLines={1}>{etiquette}</Text>
-            {chap ? <Text style={s.barreChapitre} numberOfLines={1}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</Text> : null}
+            {chap ? <Text style={[s.barreChapitre, { color: P.titre }]} numberOfLines={1}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</Text> : null}
           </View>
-          <View style={s.tailleGroupe}>
+          <Pressable onPress={basculerSombre} hitSlop={6}
+            style={({ pressed }) => [s.sombreBouton, { backgroundColor: P.neutreFond }, pressed && { opacity: 0.7 }]}>
+            <Ionicons name={sombre ? "sunny-outline" : "moon-outline"} size={15} color={P.neutreTexte} />
+          </Pressable>
+          <View style={[s.tailleGroupe, { backgroundColor: P.neutreFond }]}>
             <Pressable onPress={() => changerCran(-1)} disabled={cran === 0} hitSlop={6}
-              style={({ pressed }) => [s.tailleBouton, pressed && { backgroundColor: "rgba(0,79,145,0.10)" }, cran === 0 && { opacity: 0.35 }]}>
-              <Text style={[s.tailleTexte, { fontSize: 12 }]}>A</Text>
+              style={({ pressed }) => [s.tailleBouton, pressed && { opacity: 0.6 }, cran === 0 && { opacity: 0.35 }]}>
+              <Text style={[s.tailleTexte, { color: P.neutreTexte, fontSize: 12 }]}>A</Text>
             </Pressable>
-            <View style={s.tailleSep} />
+            <View style={[s.tailleSep, { backgroundColor: P.neutreSep }]} />
             <Pressable onPress={() => changerCran(1)} disabled={cran === CORPS.length - 1} hitSlop={6}
-              style={({ pressed }) => [s.tailleBouton, pressed && { backgroundColor: "rgba(0,79,145,0.10)" }, cran === CORPS.length - 1 && { opacity: 0.35 }]}>
-              <Text style={[s.tailleTexte, { fontSize: 17 }]}>A</Text>
+              style={({ pressed }) => [s.tailleBouton, pressed && { opacity: 0.6 }, cran === CORPS.length - 1 && { opacity: 0.35 }]}>
+              <Text style={[s.tailleTexte, { color: P.neutreTexte, fontSize: 17 }]}>A</Text>
             </Pressable>
           </View>
         </View>
         {/* Progression de lecture — suit le défilement image par image */}
-        <View style={s.progFond}>
+        <View style={[s.progFond, { backgroundColor: P.filet }]}>
           <Animated.View style={[s.progBarre, {
             width: defilementY.interpolate({
               inputRange: [0, hauteurMax],
@@ -207,21 +243,19 @@ export default function Lecteur() {
 const MARGE = 26;
 
 const s = StyleSheet.create({
-  barre: {
-    position: "absolute", top: 0, left: 0, right: 0,
-    backgroundColor: "#fff",
-  },
-  barreContenu: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: MARGE, paddingBottom: 8 },
+  barre: { position: "absolute", top: 0, left: 0, right: 0 },
+  barreContenu: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: MARGE, paddingBottom: 8 },
   barreEtiquette: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 1.6 },
-  barreChapitre: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, marginTop: 1.5, letterSpacing: -0.2 },
+  barreChapitre: { fontSize: 13, fontFamily: POLICE.demi, marginTop: 1.5, letterSpacing: -0.2 },
+  sombreBouton: { width: 34, height: 34, borderRadius: 999, alignItems: "center", justifyContent: "center" },
   tailleGroupe: {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: "rgba(60,64,67,0.06)", borderRadius: 999, paddingHorizontal: 4, paddingVertical: 3,
+    borderRadius: 999, paddingHorizontal: 4, paddingVertical: 3,
   },
   tailleBouton: { width: 34, height: 28, borderRadius: 999, alignItems: "center", justifyContent: "center" },
-  tailleTexte: { fontFamily: POLICE.demi, color: "#5F6368" },
-  tailleSep: { width: 1, height: 14, backgroundColor: "rgba(60,64,67,0.18)" },
-  progFond: { height: 2.5, backgroundColor: T.filet },
+  tailleTexte: { fontFamily: POLICE.demi },
+  tailleSep: { width: 1, height: 14 },
+  progFond: { height: 2.5 },
   progBarre: { height: "100%", backgroundColor: T.orange },
   ouverture: { alignItems: "center", paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 4 },
   ouvertureSur: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 2.4 },
