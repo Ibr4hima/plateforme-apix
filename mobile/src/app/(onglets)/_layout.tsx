@@ -1,16 +1,16 @@
 // Barre d'onglets native — Accueil · Investissements privés · Flux
 // commerciaux. L'onglet actif est posé sur un beau cadre bleu voilé
 // arrondi (icône + libellé), les autres restent en gris discret.
-import { Tabs } from "expo-router";
+import { Tabs, usePathname } from "expo-router";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 const ONGLETS = [
-  { nom: "index",           titre: "Accueil",                icone: "home" },
-  { nom: "investissements", titre: "Investissements privés", icone: "finance_mode" },
-  { nom: "flux",            titre: "Flux commerciaux",       icone: "currency_exchange" },
+  { nom: "index",           chemin: "/",                titre: "Accueil",                icone: "home" },
+  { nom: "investissements", chemin: "/investissements", titre: "Investissements privés", icone: "finance_mode" },
+  { nom: "flux",            chemin: "/flux",            titre: "Flux commerciaux",       icone: "currency_exchange" },
 ] as const;
 
 // Bouton d'onglet maison : cadre arrondi autour de l'icône ET du libellé
@@ -28,6 +28,9 @@ function BoutonOnglet({ actif, icone, titre, onPress }: {
 }
 
 export default function OngletsLayout() {
+  // L'onglet actif se lit dans la route elle-même — fiable quelle que soit
+  // la façon dont la barre transmet (ou non) l'état de sélection au bouton
+  const chemin = usePathname();
   return (
     <Tabs
       screenOptions={{
@@ -46,7 +49,7 @@ export default function OngletsLayout() {
             title: o.titre,
             tabBarButton: props => (
               <BoutonOnglet
-                actif={!!props.accessibilityState?.selected}
+                actif={o.chemin === "/" ? chemin === "/" : chemin.startsWith(o.chemin)}
                 icone={o.icone} titre={o.titre}
                 onPress={props.onPress} />
             ),
