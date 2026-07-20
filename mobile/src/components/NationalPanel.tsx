@@ -21,9 +21,9 @@ const BDEF_GRAPHES_DEFAUT = [
   "act_ca", "eff_vetuste", "inv_actif_immo", "inv_tx_autofin",
   "liq_fdr", "sf_pression_fisc", "sf_autonomie", "rent_ebe",
 ];
-const BDEF_MACRO_COULEURS = ["#004f91", "#e35336", "#188038", "#6A1B9A"];
+const BDEF_MACRO_COULEURS = ["#004f91", "#ca631f", "#188038", "#6A1B9A"];
 const NIVEAU_COULEUR: Record<string, string> = {
-  global: "#004f91", macro_secteur: "#004f91", groupe: "#e35336", secteur: "#188038",
+  global: "#004f91", macro_secteur: "#004f91", groupe: "#ca631f", secteur: "#188038",
 };
 
 type BdefIndic = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };

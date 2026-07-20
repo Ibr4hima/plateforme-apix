@@ -185,14 +185,14 @@ export default function Lecteur() {
               <View style={s.navigation}>
                 {precedent ? (
                   <Pressable onPress={() => allerA(precedent.id)}
-                    style={({ pressed }) => [s.navPilule, pressed && { backgroundColor: "rgba(227,83,54,0.12)" }]}>
+                    style={({ pressed }) => [s.navPilule, pressed && { backgroundColor: "rgba(202,99,31,0.12)" }]}>
                     {!deuxPilules && <Ionicons name="chevron-back" size={13} color={T.orange} />}
                     <TexteDefilant texte={`${romainDe(precedent)}. ${precedent.titre}`} style={s.navTexte} />
                   </Pressable>
                 ) : null}
                 {suivant ? (
                   <Pressable onPress={() => allerA(suivant.id)}
-                    style={({ pressed }) => [s.navPilule, pressed && { backgroundColor: "rgba(227,83,54,0.12)" }]}>
+                    style={({ pressed }) => [s.navPilule, pressed && { backgroundColor: "rgba(202,99,31,0.12)" }]}>
                     <TexteDefilant texte={`${romainDe(suivant)}. ${suivant.titre}`} style={s.navTexte} />
                     {!deuxPilules && <Ionicons name="chevron-forward" size={13} color={T.orange} />}
                   </Pressable>
@@ -281,11 +281,11 @@ const s = StyleSheet.create({
     lineHeight: 22, letterSpacing: -0.2, marginTop: 7,
   },
   fin: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 40 },
-  finPoint: { width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: "rgba(227,83,54,0.55)" },
+  finPoint: { width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: "rgba(202,99,31,0.55)" },
   navigation: { flexDirection: "row", gap: 10, marginTop: 26, marginHorizontal: MARGE },
   navPilule: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
-    borderWidth: 1, borderColor: "rgba(227,83,54,0.42)", backgroundColor: "rgba(227,83,54,0.05)",
+    borderWidth: 1, borderColor: "rgba(202,99,31,0.42)", backgroundColor: "rgba(202,99,31,0.05)",
     borderRadius: 999, paddingVertical: 13, paddingHorizontal: 14, minWidth: 0,
   },
   navTexte: { fontSize: 13, fontFamily: POLICE.demi, color: T.orange, letterSpacing: -0.2, flexShrink: 1 },

@@ -78,7 +78,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
       sousEntete={
         <View style={s.pilules}>
           {p.pole_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.pole_nom}</Text></View> : null}
-          {p.region_nom ? <View style={[s.pilule, { backgroundColor: "rgba(227,83,54,0.08)" }]}><Text style={[s.piluleTexte, { color: T.orange }]}>Région de {p.region_nom}</Text></View> : null}
+          {p.region_nom ? <View style={[s.pilule, { backgroundColor: "rgba(202,99,31,0.08)" }]}><Text style={[s.piluleTexte, { color: T.orange }]}>Région de {p.region_nom}</Text></View> : null}
           {p.departement_nom ? <View style={[s.pilule, { backgroundColor: "rgba(24,128,56,0.08)" }]}><Text style={[s.piluleTexte, { color: T.vert }]}>Département de {p.departement_nom}</Text></View> : null}
           {p.arrondissement_nom ? <View style={[s.pilule, { backgroundColor: "rgba(106,27,154,0.07)" }]}><Text style={[s.piluleTexte, { color: "#6A1B9A" }]}>Arrondissement de {p.arrondissement_nom}</Text></View> : null}
         </View>

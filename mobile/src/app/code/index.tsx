@@ -140,5 +140,5 @@ const s = StyleSheet.create({
   resNumero: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
   resTitre: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, marginTop: 5 },
   resExtrait: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19, marginTop: 6 },
-  resSurligne: { backgroundColor: "rgba(227,83,54,0.18)", color: "#8a2f1b", fontFamily: POLICE.demi },
+  resSurligne: { backgroundColor: "rgba(202,99,31,0.18)", color: "#8a4514", fontFamily: POLICE.demi },
 });

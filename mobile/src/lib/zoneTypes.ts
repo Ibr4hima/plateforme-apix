@@ -5,7 +5,7 @@ export type ZoneTypeMeta = { label: string; color: string };
 
 export const ZONE_TYPE_META: Record<string, ZoneTypeMeta> = {
   ZES: { label: "Zones Économiques Spéciales",           color: "#004f91" },
-  ZAI: { label: "Zones Aménagées pour l'Investissement", color: "#e35336" },
+  ZAI: { label: "Zones Aménagées pour l'Investissement", color: "#ca631f" },
   ZFI: { label: "Zones Franches Industrielles",          color: "#188038" },
 };
 

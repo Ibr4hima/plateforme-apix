@@ -59,7 +59,7 @@ export default function Accueil() {
 
         <Text style={s.titre}>Intelligence</Text>
         <MaskedView maskElement={<Text style={[s.titre, s.titreMasque]}>Investissement</Text>}>
-          <LinearGradient colors={["#F5907A", "#E35336", "#C53C21"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+          <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
             <Text style={[s.titre, s.titreMasque, { opacity: 0 }]}>Investissement</Text>
           </LinearGradient>
         </MaskedView>
@@ -86,7 +86,7 @@ export default function Accueil() {
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={s.eventEnteteLigne}>
                   <Text style={s.eventLabel}>PROCHAIN ÉVÉNEMENT</Text>
-                  <LinearGradient colors={["#F58A73", "#C53C21"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.eventEcheance}>
+                  <LinearGradient colors={["#F5B26B", "#d96f28"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.eventEcheance}>
                     <Text style={s.eventEcheanceTexte}>{dansCombien(prochain.data.date_debut)}</Text>
                   </LinearGradient>
                 </View>

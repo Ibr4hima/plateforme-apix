@@ -142,7 +142,7 @@ const s = StyleSheet.create({
   focalEntete: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
   focalNom: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre },
   focalPoste: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
-  focalPrincipal: { backgroundColor: "rgba(227,83,54,0.08)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  focalPrincipal: { backgroundColor: "rgba(202,99,31,0.08)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   focalPrincipalTexte: { fontSize: 10, fontFamily: POLICE.gras, color: T.orange },
   focalChips: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 8 },
   focalChip: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },

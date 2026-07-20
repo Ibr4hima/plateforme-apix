@@ -28,7 +28,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
       sousEntete={
         <View style={s.pilules}>
           {d.secteur_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{d.secteur_nom}</Text></View> : null}
-          {d.branche_nom ? <View style={[s.pilule, { backgroundColor: "rgba(227,83,54,0.08)", flexShrink: 1 }]}><Text style={[s.piluleTexte, { color: T.orange }]} numberOfLines={1}>{d.branche_nom}</Text></View> : null}
+          {d.branche_nom ? <View style={[s.pilule, { backgroundColor: "rgba(202,99,31,0.08)", flexShrink: 1 }]}><Text style={[s.piluleTexte, { color: T.orange }]} numberOfLines={1}>{d.branche_nom}</Text></View> : null}
         </View>
       }>
           {/* Avantages sélectionnés */}
