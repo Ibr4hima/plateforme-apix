@@ -47,6 +47,79 @@ function lisser(pts: { x: number; y: number }[]): string {
   return d;
 }
 
+
+// Aires, courbes et points terminaux — avec transition morphing : quand les
+// filtres changent sans changer la structure (mêmes séries, même nombre de
+// points), la courbe GLISSE vers ses nouvelles valeurs (interpolation du
+// chemin) au lieu de se retracer. Structure différente → tracé dash-offset.
+const nbNombres = (d: string) => (d.match(/[\d.]+/g) || []).length;
+
+function CourbesAnimees({ series, dCourbes, dAires, fins, seule, gradBase, trace }: {
+  series: Serie[]; dCourbes: string[]; dAires: string[];
+  fins: ({ x: number; y: number } | null)[]; seule: boolean; gradBase: string;
+  trace: Animated.Value;
+}) {
+  const morph = useRef(new Animated.Value(1)).current;
+  type Photo = { structure: string; courbes: string[]; aires: string[]; fins: ({ x: number; y: number } | null)[] };
+  const precedent = useRef<Photo | null>(null);
+  const [transition, setTransition] = useState<Photo | null>(null);
+  const cle = dCourbes.join("\u00a7");
+
+  useEffect(() => {
+    const actuel: Photo = {
+      structure: series.map((sr, i) => `${sr.nom}:${nbNombres(dCourbes[i] || "")}`).join("|"),
+      courbes: dCourbes, aires: dAires, fins,
+    };
+    const prec = precedent.current;
+    precedent.current = actuel;
+    if (!prec || prec.structure !== actuel.structure) return; // premier rendu ou structure neuve : le tracé s'en charge
+    if (prec.courbes.join() === actuel.courbes.join()) return;
+    setTransition(prec);
+    morph.setValue(0);
+    Animated.timing(morph, { toValue: 1, duration: 480, useNativeDriver: false })
+      .start(({ finished }) => { if (finished) setTransition(null); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cle]);
+
+  const entre = (de: string, vers: string) =>
+    morph.interpolate({ inputRange: [0, 1], outputRange: [de, vers] });
+
+  return (
+    <>
+      {/* Aires en dégradé sous chaque série */}
+      {series.map((sr, i) => {
+        if (!dAires[i]) return null;
+        const enMorph = !!transition?.aires[i];
+        return <PathAnime key={`a${sr.nom}`} fill={`url(#${gradBase}-${i})`}
+          d={(enMorph ? entre(transition!.aires[i], dAires[i]) : dAires[i]) as any}
+          opacity={enMorph ? 1 : trace.interpolate({ inputRange: [0, 0.55, 1], outputRange: [0, 0.1, 1] }) as any} />;
+      })}
+
+      {/* Courbes lissées */}
+      {series.map((sr, i) => {
+        if (!dCourbes[i]) return null;
+        const enMorph = !!transition?.courbes[i];
+        return <PathAnime key={sr.nom} stroke={sr.couleur}
+          strokeWidth={seule ? 2.4 : 2} fill="none" strokeLinejoin="round" strokeLinecap="round"
+          d={(enMorph ? entre(transition!.courbes[i], dCourbes[i]) : dCourbes[i]) as any}
+          strokeDasharray={enMorph ? undefined : `${LONGUEUR_TRACE},${LONGUEUR_TRACE}`}
+          strokeDashoffset={enMorph ? 0 : trace.interpolate({ inputRange: [0, 1], outputRange: [LONGUEUR_TRACE, 0] }) as any} />;
+      })}
+
+      {/* Point terminal de chaque série */}
+      {series.map((sr, i) => {
+        const fin = fins[i];
+        if (!fin) return null;
+        const de = transition?.fins[i];
+        return <CircleAnime key={`f${sr.nom}`} r={3.6} fill={sr.couleur} stroke={T.carte as any} strokeWidth={1.6}
+          cx={(de ? morph.interpolate({ inputRange: [0, 1], outputRange: [de.x, fin.x] }) : fin.x) as any}
+          cy={(de ? morph.interpolate({ inputRange: [0, 1], outputRange: [de.y, fin.y] }) : fin.y) as any}
+          opacity={de ? 1 : trace.interpolate({ inputRange: [0, 0.85, 1], outputRange: [0, 0, 1] }) as any} />;
+      })}
+    </>
+  );
+}
+
 let gradSeq = 0;
 
 export default function GrapheLignes({ series, hauteur = 170, fmt }: {
@@ -119,6 +192,20 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
       .map(d => ({ x: x(d.annee), y: yi(d.valeur!), annee: d.annee, valeur: d.valeur! }));
   };
 
+  // Chemins de chaque série (courbe, aire fermée, point terminal)
+  const dessins = (() => {
+    const courbes: string[] = [], aires: string[] = [], fins: ({ x: number; y: number } | null)[] = [];
+    series.forEach((_, i) => {
+      const pts = pointsDe(i);
+      courbes.push(pts.length >= 2 ? lisser(pts) : "");
+      aires.push(pts.length >= 2
+        ? `${lisser(pts)}L${pts[pts.length - 1].x.toFixed(1)},${(hauteur - M.bas).toFixed(1)}L${pts[0].x.toFixed(1)},${(hauteur - M.bas).toFixed(1)}Z`
+        : "");
+      fins.push(pts.length ? { x: pts[pts.length - 1].x, y: pts[pts.length - 1].y } : null);
+    });
+    return { courbes, aires, fins };
+  })();
+
   const seule = series.length === 1;
   const anneesAxe = annees.length <= 2 ? annees : [a0, annees[Math.floor((annees.length - 1) / 2)], a1];
 
@@ -136,10 +223,18 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
     });
   };
   const lecturesCurseur = curseur === null ? [] : series
-    .map((s, i) => ({ nom: s.nom, couleur: s.couleur, i, valeur: s.data.find(d => d.annee === curseur)?.valeur ?? null }))
-    .filter(l => l.valeur !== null) as { nom: string; couleur: string; i: number; valeur: number }[];
+    .map((s, i) => {
+      const valeur = s.data.find(d => d.annee === curseur)?.valeur ?? null;
+      // Delta vs l'année précédente disponible de la même série
+      const avant = s.data.filter(d => d.valeur !== null && d.annee < curseur);
+      const prec = avant.length ? avant.reduce((m, d) => (d.annee > m.annee ? d : m)) : null;
+      const delta = valeur !== null && prec && prec.valeur !== 0
+        ? (valeur - prec.valeur!) / Math.abs(prec.valeur!) * 100 : null;
+      return { nom: s.nom, couleur: s.couleur, i, valeur, delta };
+    })
+    .filter(l => l.valeur !== null) as { nom: string; couleur: string; i: number; valeur: number; delta: number | null }[];
 
-  const bulleL = seule ? 122 : 190;
+  const bulleL = seule ? 158 : 216;
   const bulleX = curseur === null ? 0 : Math.min(Math.max(x(curseur) - bulleL / 2, 2), largeur - bulleL - 2);
 
   // Graduations affichées : partagées à gauche, ou série 1 à gauche + série 2
@@ -184,30 +279,8 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
             fill={series[1].couleur} opacity={0.75} textAnchor="end">{fmt(t)}</TexteSvg>
         ))}
 
-        {/* Aires en dégradé sous chaque série */}
-        {series.map((_, i) => {
-          const pts = pointsDe(i);
-          if (pts.length < 2) return null;
-          const d = `${lisser(pts)}L${pts[pts.length - 1].x.toFixed(1)},${(hauteur - M.bas).toFixed(1)}L${pts[0].x.toFixed(1)},${(hauteur - M.bas).toFixed(1)}Z`;
-          return <PathAnime key={`a${i}`} d={d} fill={`url(#${gradBase}-${i})`}
-            opacity={trace.interpolate({ inputRange: [0, 0.55, 1], outputRange: [0, 0.1, 1] }) as any} />;
-        })}
-
-        {/* Courbes lissées */}
-        {series.map((sr, i) => (
-          <PathAnime key={sr.nom} d={lisser(pointsDe(i))} stroke={sr.couleur}
-            strokeWidth={seule ? 2.4 : 2} fill="none" strokeLinejoin="round" strokeLinecap="round"
-            strokeDasharray={`${LONGUEUR_TRACE},${LONGUEUR_TRACE}`}
-            strokeDashoffset={trace.interpolate({ inputRange: [0, 1], outputRange: [LONGUEUR_TRACE, 0] }) as any} />
-        ))}
-
-        {/* Point terminal de chaque série */}
-        {series.map((sr, i) => {
-          const pts = pointsDe(i);
-          const fin = pts[pts.length - 1];
-          return fin ? <CircleAnime key={`f${sr.nom}`} cx={fin.x} cy={fin.y} r={3.6} fill={sr.couleur} stroke={T.carte as any} strokeWidth={1.6}
-            opacity={trace.interpolate({ inputRange: [0, 0.85, 1], outputRange: [0, 0, 1] }) as any} /> : null;
-        })}
+        <CourbesAnimees series={series} seule={seule} gradBase={gradBase} trace={trace}
+          dCourbes={dessins.courbes} dAires={dessins.aires} fins={dessins.fins} />
 
         {/* Curseur : ligne + points */}
         {curseur !== null && (
@@ -243,6 +316,11 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
               <TexteRN style={{ marginLeft: "auto", fontSize: 10.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.95)" }} numberOfLines={1}>
                 {fmt(l.valeur)}
               </TexteRN>
+              {l.delta !== null && (
+                <TexteRN style={{ fontSize: 9.5, fontFamily: POLICE.gras, color: l.delta >= 0 ? "#7FE0A7" : "#FCA5A5", fontVariant: ["tabular-nums"] }} numberOfLines={1}>
+                  {l.delta >= 0 ? "▲" : "▼"} {Math.abs(l.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                </TexteRN>
+              )}
             </View>
           ))}
         </View>
