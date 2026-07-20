@@ -2,7 +2,7 @@
 // versions app des graphes de flux bilatéraux du site. Longueurs en
 // racine carrée (même règle que le web) pour garder les petites valeurs
 // visibles ; dégradé bleu institutionnel pour les segments empilés.
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { POLICE, T } from "@/theme";
 
@@ -32,7 +32,7 @@ export function degradeBleu(i: number, n: number): string {
 }
 
 // ── Classement en barres horizontales ────────────────────────────────────────
-export function BarresH({ data, fmt, couleur = T.bleu }: {
+export const BarresH = memo(function BarresH({ data, fmt, couleur = T.bleu }: {
   data: { label: string; valeur: number }[]; fmt: (v: number) => string; couleur?: string;
 }) {
   if (!data.length) return <Text style={s.vide}>Aucune donnée</Text>;
@@ -53,12 +53,12 @@ export function BarresH({ data, fmt, couleur = T.bleu }: {
       ))}
     </View>
   );
-}
+});
 
 // ── Barres empilées : partenaires × ressources ───────────────────────────────
 // Sous chaque barre, la répartition détaillée du pays (carré de couleur,
 // ressource, part réelle en %), puis un filet fin avant le pays suivant.
-export function BarresEmpilees({ partenaires, ressources, fmt }: {
+export const BarresEmpilees = memo(function BarresEmpilees({ partenaires, ressources, fmt }: {
   partenaires: { nom: string; total: number; valeurs: number[] }[];
   ressources: string[];
   fmt: (v: number) => string;
@@ -102,7 +102,7 @@ export function BarresEmpilees({ partenaires, ressources, fmt }: {
       })}
     </View>
   );
-}
+});
 
 const s = StyleSheet.create({
   vide: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.grisClair, textAlign: "center", paddingVertical: 18 },

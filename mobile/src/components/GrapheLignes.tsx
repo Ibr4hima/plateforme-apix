@@ -5,7 +5,7 @@
 // (règle du site : ratio d'amplitudes > 4 → une échelle par série,
 // graduations gauche/droite aux couleurs des deux premières), point
 // terminal souligné et curseur tactile fluide avec bulle de lecture.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Text as TexteRN, View } from "react-native";
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop, Text as TexteSvg } from "react-native-svg";
 import { cran } from "@/lib/haptique";
@@ -122,7 +122,7 @@ function CourbesAnimees({ series, dCourbes, dAires, fins, seule, gradBase, trace
 
 let gradSeq = 0;
 
-export default function GrapheLignes({ series, hauteur = 170, fmt }: {
+function GrapheLignes({ series, hauteur = 170, fmt }: {
   series: Serie[]; hauteur?: number; fmt: (v: number | null) => string;
 }) {
   const [largeur, setLargeur] = useState(0);
@@ -328,3 +328,5 @@ export default function GrapheLignes({ series, hauteur = 170, fmt }: {
     </View>
   );
 }
+
+export default memo(GrapheLignes);

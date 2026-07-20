@@ -7,13 +7,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Animated, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { EtatErreur, EtatVide } from "@/components/ui";
 import FichePaysContenu from "@/components/FichePaysContenu";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import TexteDefilant from "@/components/TexteDefilant";
+import { Image as ImageCache } from "expo-image";
 import { getJson } from "@/lib/api";
+import { drapeauEmoji } from "@/lib/drapeaux";
 import { POLICE, T } from "@/theme";
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
@@ -72,14 +75,18 @@ export default function FichePaysIndex() {
       {/* Les deux emplacements de la comparaison */}
       <View style={s.slots}>
         <View style={s.slotSen}>
-          <Image source={{ uri: "https://flagcdn.com/w80/sn.png" }} style={s.drapeau} />
+          <Text style={s.drapeauEmoji}>{drapeauEmoji("SN")}</Text>
           <Text style={s.slotSenTexte}>Sénégal</Text>
           <View style={s.slotSenRef}><Text style={s.slotSenRefTexte}>Réf.</Text></View>
         </View>
         {selec ? (
           // Le tap retire le pays et ramène à la liste
           <Pressable onPress={() => { setSelec(null); setQ(""); }} style={({ pressed }) => [s.slotSen, pressed && { opacity: 0.75 }]}>
-            {selec.code_iso2 ? <Image source={{ uri: `https://flagcdn.com/w80/${selec.code_iso2.toLowerCase()}.png` }} style={s.drapeau} /> : null}
+            {drapeauEmoji(selec.code_iso2) ? (
+              <Text style={s.drapeauEmoji}>{drapeauEmoji(selec.code_iso2)}</Text>
+            ) : selec.code_iso2 ? (
+              <ImageCache source={{ uri: `https://flagcdn.com/w80/${selec.code_iso2.toLowerCase()}.png` }} style={s.drapeau} cachePolicy="disk" />
+            ) : null}
             <TexteDefilant texte={selec.nom} style={s.slotSenTexte} />
           </Pressable>
         ) : (
@@ -106,12 +113,12 @@ export default function FichePaysIndex() {
 
   return (
     <>
-    <Animated.FlatList
+    <ListeRapide
       onScroll={onScroll}
       scrollEventThrottle={16}
       style={{ backgroundColor: T.fond }}
       data={isLoading || isError ? [] : sections}
-      keyExtractor={c => c.continent}
+      keyExtractor={(c: any) => c.continent}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={s.liste}
       ListHeaderComponent={
@@ -122,7 +129,7 @@ export default function FichePaysIndex() {
           )}
         </>
       }
-      renderItem={({ item: c }) => {
+      renderItem={({ item: c }: any) => {
         const ouvert = recherche || ouverts.has(c.continent);
         return (
           <View style={s.rangee}>
@@ -138,12 +145,13 @@ export default function FichePaysIndex() {
             </Pressable>
             {ouvert && (
               <View style={s.surface}>
-                {c.zones.map((z, zi) => (
+                {c.zones.map((z: any, zi: number) => (
                   <View key={z.zone}>
                     <Text style={[s.zone, zi > 0 && { borderTopWidth: 1, borderTopColor: T.filet }]}>{z.zone.toUpperCase()}</Text>
-                    {z.pays.map(p => (
+                    {z.pays.map((p: any) => (
                       <Pressable key={p.id} onPress={() => choisir(p)}
                         style={({ pressed }) => [s.pays, pressed && { backgroundColor: T.blocFond }]}>
+                        {drapeauEmoji(p.code_iso2) ? <Text style={s.paysDrapeau}>{drapeauEmoji(p.code_iso2)}</Text> : null}
                         <Text style={s.paysNom} numberOfLines={1}>{p.nom}</Text>
                         <Text style={s.paysIso}>{p.code_iso3}</Text>
                         <Ionicons name="chevron-forward" size={13} color={T.grisClair} />
@@ -179,6 +187,8 @@ const s = StyleSheet.create({
     backgroundColor: "#fff", borderRadius: 999, paddingVertical: 9.5, paddingHorizontal: 14,
   },
   drapeau: { width: 21, height: 15, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.12)" },
+  drapeauEmoji: { fontSize: 16, lineHeight: 20 },
+  paysDrapeau: { fontSize: 15, lineHeight: 19, marginRight: 2 },
   slotSenTexte: { fontSize: 13, fontFamily: POLICE.gras, color: T.bleu },
   slotSenRef: { backgroundColor: T.blocBord, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
   slotSenRefTexte: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },

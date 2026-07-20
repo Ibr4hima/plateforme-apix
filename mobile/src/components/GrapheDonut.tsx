@@ -1,3 +1,4 @@
+import { memo } from "react";
 // Anneau « poids des ressources » — version app du donut du site :
 // angles pondérés en racine carrée pour garder les petites parts
 // visibles, total réel au centre, légende avec les vraies proportions.
@@ -13,7 +14,7 @@ function arc(cx: number, cy: number, r0: number, r1: number, a0: number, a1: num
   return `M${pt(r1, a0)}A${r1},${r1} 0 ${grand} 1 ${pt(r1, a1)}L${pt(r0, a1)}A${r0},${r0} 0 ${grand} 0 ${pt(r0, a0)}Z`;
 }
 
-export default function GrapheDonut({ data, fmt, centre }: {
+function GrapheDonut({ data, fmt, centre }: {
   data: { label: string; valeur: number }[]; fmt: (v: number) => string;
   centre?: string; // texte central (par défaut : total formaté)
 }) {
@@ -65,3 +66,5 @@ const s = StyleSheet.create({
   legendeTexte: { flex: 1, fontSize: 11.5, fontFamily: POLICE.normal, color: T.texte },
   legendePct: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
 });
+
+export default memo(GrapheDonut);

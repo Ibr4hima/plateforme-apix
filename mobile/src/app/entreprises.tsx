@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
@@ -119,7 +120,7 @@ export default function Entreprises() {
   return (
     <>
       {vue === "liste" ? (
-        <Animated.FlatList
+        <ListeRapide
           onScroll={onScroll}
           scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
@@ -133,12 +134,12 @@ export default function Entreprises() {
           ListEmptyComponent={vide}
         />
       ) : (
-        <Animated.FlatList
+        <ListeRapide
           onScroll={onScroll}
           scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : poles}
-          keyExtractor={p => p.nom}
+          keyExtractor={(p: any) => p.nom}
           renderItem={({ item: p }: any) => {
             const ouvert = poleOuvert === p.nom;
             return (

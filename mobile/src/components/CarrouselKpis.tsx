@@ -1,7 +1,7 @@
 // Carrousel de KPIs — pages de 4 cards (2×2) avec défilement manuel,
 // rotation automatique douce et points de navigation (motif de l'accueil).
 // Partagé entre Indicateurs économiques et Flux bilatéraux.
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Apparition, ChiffreAnime } from "@/components/ui";
 import { tick } from "@/lib/haptique";
@@ -18,7 +18,7 @@ function decouper<T>(liste: T[], taille: number): T[][] {
   return pages;
 }
 
-export default function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
+function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
   const pages = decouper(kpis, 4);
   const [page, setPage] = useState(0);
   const defileur = useRef<ScrollView>(null);
@@ -88,3 +88,5 @@ const s = StyleSheet.create({
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.blocBord },
   pointActif: { width: 18, backgroundColor: T.bleu },
 });
+
+export default memo(CarrouselKpis);

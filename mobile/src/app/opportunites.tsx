@@ -7,6 +7,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import { useNaema } from "@/components/ArbreNaema";
@@ -222,7 +223,7 @@ export default function Opportunites() {
   if (vue === "projets") {
     return (
       <>
-        <Animated.FlatList
+        <ListeRapide
           onScroll={onScroll}
           scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}

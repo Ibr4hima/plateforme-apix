@@ -5,6 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import AccordSheet, { ST_PASTEL, sousTitreStatut } from "@/components/AccordSheet";
@@ -131,7 +132,7 @@ export default function Accords() {
 
   return (
     <>
-      <Animated.FlatList
+      <ListeRapide
         onScroll={onScroll}
         scrollEventThrottle={16}
         style={{ backgroundColor: T.fond }}

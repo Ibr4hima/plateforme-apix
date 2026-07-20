@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
@@ -149,7 +150,7 @@ export default function Zones() {
   return (
     <>
       {vue === "zones" ? (
-        <Animated.FlatList
+        <ListeRapide
           onScroll={onScroll}
           scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
@@ -163,7 +164,7 @@ export default function Zones() {
           ListEmptyComponent={vide}
         />
       ) : (
-        <Animated.FlatList
+        <ListeRapide
           onScroll={onScroll}
           scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}

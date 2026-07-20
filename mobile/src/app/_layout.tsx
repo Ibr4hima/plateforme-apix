@@ -13,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import BandeauHorsLigne from "@/components/BandeauHorsLigne";
+import LancementAnime from "@/components/LancementAnime";
 import { marquerOrigine } from "@/lib/origineTap";
 import { POLICE, T } from "@/theme";
 
@@ -36,6 +37,7 @@ export default function RacineLayout() {
   const [persister] = useState(() => createAsyncStoragePersister({
     storage: AsyncStorage, key: "apix-cache-v1", throttleTime: 2000,
   }));
+  const [lancement, setLancement] = useState(true);
   const [polices] = useFonts({
     GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold,
     // La police d'icônes de la plateforme (Material Symbols, rendu par ligature)
@@ -73,6 +75,7 @@ export default function RacineLayout() {
         <Stack.Screen name="code/[chapitre]" options={{ headerShown: false }} />
       </Stack>
       <BandeauHorsLigne />
+      {lancement && <LancementAnime onFini={() => setLancement(false)} />}
       </View>
     </PersistQueryClientProvider>
   );

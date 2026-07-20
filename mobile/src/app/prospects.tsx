@@ -5,6 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
@@ -114,7 +115,7 @@ export default function Prospects() {
 
   return (
     <>
-      <Animated.FlatList
+      <ListeRapide
         onScroll={onScroll}
         scrollEventThrottle={16}
         style={{ backgroundColor: T.fond }}
