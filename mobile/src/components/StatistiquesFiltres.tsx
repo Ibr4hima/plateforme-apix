@@ -1,7 +1,7 @@
 // Filtres des indicateurs économiques — version app de la barre latérale
 // du site, en feuille : Vue (Pays / Analyse comparative), Pays (Sénégal
 // épinglé, continents en accordéons, 4 pays au plus en comparaison),
-// Période (plage ou années spécifiques), KPI épinglés (5 au plus).
+// Période (plage ou années spécifiques).
 // Brouillon local, appliqué d'un bloc par « Appliquer ».
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
@@ -10,7 +10,6 @@ import { COMP_PALETTE } from "@/lib/couleurs";
 import { POLICE, T } from "@/theme";
 
 export const MAX_SEL = 4;
-export const MAX_KPI = 5;
 
 export type FiltresStatistiques = {
   vue: "pays" | "comparative";
@@ -19,7 +18,6 @@ export type FiltresStatistiques = {
   anneeMin: number;
   anneeMax: number;
   anneesSpec: number[];
-  kpisEpingles: string[];
 };
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
@@ -33,13 +31,13 @@ function SecTitle({ children, droite }: { children: string; droite?: React.React
   );
 }
 
-export default function StatistiquesFiltres({ pays, senId, indicateurs, anneesDispo, kpisDefaut, valeurs, onAppliquer, onClose }: {
-  pays: any[]; senId: number | null; indicateurs: any[]; anneesDispo: number[]; kpisDefaut: string[];
+export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs, onAppliquer, onClose }: {
+  pays: any[]; senId: number | null; anneesDispo: number[];
   valeurs: FiltresStatistiques;
   onAppliquer: (f: FiltresStatistiques) => void;
   onClose: () => void;
 }) {
-  const [f, setF] = useState<FiltresStatistiques>({ ...valeurs, selection: [...valeurs.selection], anneesSpec: [...valeurs.anneesSpec], kpisEpingles: [...valeurs.kpisEpingles] });
+  const [f, setF] = useState<FiltresStatistiques>({ ...valeurs, selection: [...valeurs.selection], anneesSpec: [...valeurs.anneesSpec] });
   const [qPays, setQPays] = useState("");
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
 
@@ -63,17 +61,10 @@ export default function StatistiquesFiltres({ pays, senId, indicateurs, anneesDi
     selection: vue === "pays" ? prev.selection.slice(0, 1) : prev.selection,
   }));
 
-  const basculerKpi = (code: string) => setF(prev => ({
-    ...prev,
-    kpisEpingles: prev.kpisEpingles.includes(code)
-      ? prev.kpisEpingles.filter(c => c !== code)
-      : prev.kpisEpingles.length >= MAX_KPI ? prev.kpisEpingles : [...prev.kpisEpingles, code],
-  }));
 
   const reinitialiser = () => setF({
     vue: "pays", selection: senId !== null ? [senId] : [],
     modeAnnees: "plage", anneeMin: bornes[0], anneeMax: bornes[1], anneesSpec: [],
-    kpisEpingles: [...kpisDefaut],
   });
 
   const groupes = useMemo(() => {
@@ -234,24 +225,6 @@ export default function StatistiquesFiltres({ pays, senId, indicateurs, anneesDi
             )}
           </View>
 
-          {/* KPI épinglés */}
-          <View>
-            <SecTitle droite={<Text style={s.compteBadge}>{f.kpisEpingles.length}/{MAX_KPI}</Text>}>Key Performance Indicators</SecTitle>
-            <View>
-              {indicateurs.map((ind: any) => {
-                const epingle = f.kpisEpingles.includes(ind.code);
-                const desactive = !epingle && f.kpisEpingles.length >= MAX_KPI;
-                return (
-                  <Pressable key={ind.code} onPress={() => !desactive && basculerKpi(ind.code)}
-                    style={({ pressed }) => [s.paysLigne, pressed && { backgroundColor: "#F8F7F6" }, desactive && { opacity: 0.35 }]}>
-                    <View style={[s.point, { borderColor: epingle ? T.bleu : T.grisClair, backgroundColor: epingle ? T.bleu : "transparent" }]} />
-                    <Text style={[s.paysNom, epingle && { fontFamily: POLICE.gras }]} numberOfLines={1}>{ind.libelle}</Text>
-                    <Text style={s.uniteBadge}>{ind.unite}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
         </ScrollView>
 
         {/* Pied : réinitialiser + appliquer */}

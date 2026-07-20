@@ -1,15 +1,16 @@
 // Échanges commerciaux — étape 1 : onglet Indicateurs économiques,
-// version app de la page web. Filtres (vue, pays, période, KPI) dans une
-// feuille ouverte par le bouton filter_list du hero ; KPI cards de la
-// dernière année ; courbes annuelles par indicateur (indicateurs
-// épinglés + flux de commerce extérieur), multi-pays en comparaison.
-// L'onglet Flux bilatéraux arrive à l'étape suivante.
+// version app de la page web. Filtres (vue, pays, période) dans une
+// feuille ouverte par le bouton filter_list du hero ; TOUS les
+// indicateurs en carrousel de KPIs (pages de 4, comme l'accueil) ;
+// courbes annuelles premium par indicateur (lissées, aire dégradée,
+// curseur tactile), valeur du moment et variation annuelle en en-tête,
+// multi-pays en comparaison. Flux bilatéraux : étape suivante.
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule from "@/components/HeroModule";
-import StatistiquesFiltres, { FiltresStatistiques, MAX_KPI } from "@/components/StatistiquesFiltres";
+import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
 import Symbole from "@/components/Symbole";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
@@ -21,9 +22,59 @@ const ONGLETS = [
   { cle: "commerce",    label: "Flux bilatéraux" },
 ] as const;
 
-// Défauts du site : KPI épinglés et flux de commerce toujours tracés
-const KPI_DEFAUT = ["population", "superficie", "densite", "pib", "pib_hab"];
-const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
+const LARGEUR = Dimensions.get("window").width;
+const ROTATION_MS = 6000;
+
+function decouper<T>(liste: T[], taille: number): T[][] {
+  const pages: T[][] = [];
+  for (let i = 0; i < liste.length; i += taille) pages.push(liste.slice(i, i + taille));
+  return pages;
+}
+
+// Carrousel de KPIs : pages de 4, défilement manuel + rotation douce
+function CarrouselKpis({ kpis }: { kpis: { code: string; label: string; valeur: string; negatif: boolean; annee: number }[] }) {
+  const pages = decouper(kpis, 4);
+  const [page, setPage] = useState(0);
+  const defileur = useRef<ScrollView>(null);
+  const pageRef = useRef(0);
+  pageRef.current = page;
+
+  useEffect(() => {
+    if (pages.length < 2) return;
+    const minuteur = setInterval(() => {
+      const suivante = (pageRef.current + 1) % pages.length;
+      defileur.current?.scrollTo({ x: suivante * LARGEUR, animated: true });
+    }, ROTATION_MS);
+    return () => clearInterval(minuteur);
+  }, [pages.length]);
+
+  if (!pages.length) return null;
+  return (
+    <View>
+      <ScrollView
+        ref={defileur} horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / LARGEUR))}>
+        {pages.map((groupe, i) => (
+          <View key={i} style={[s.kpiPage, { width: LARGEUR }]}>
+            {groupe.map(kpi => (
+              <View key={kpi.code} style={s.kpi}>
+                <View style={s.kpiFilet} />
+                <Text style={s.kpiLabel} numberOfLines={2}>{kpi.label.toUpperCase()}</Text>
+                <Text style={[s.kpiValeur, kpi.negatif && { color: "#dc2626" }]} numberOfLines={1} adjustsFontSizeToFit>{kpi.valeur}</Text>
+                <View style={s.kpiAnnee}><Text style={s.kpiAnneeTexte}>{kpi.annee}</Text></View>
+              </View>
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+      {pages.length > 1 && (
+        <View style={s.points}>
+          {pages.map((_, i) => <View key={i} style={[s.pointNav, i === page && s.pointNavActif]} />)}
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function Statistiques() {
   const [onglet, setOnglet] = useState("indicateurs");
@@ -33,18 +84,11 @@ export default function Statistiques() {
   const { data: indicateurs } = useQuery({ queryKey: ["stat-indicateurs"], queryFn: () => getJson<any[]>("/statistiques/indicateurs"), staleTime: Infinity });
   const senId = useMemo(() => (pays || []).find((p: any) => p.code_iso3 === "SEN")?.id ?? null, [pays]);
 
-  const kpisDefaut = useMemo(() => {
-    const codes = (indicateurs || []).map((i: any) => i.code);
-    const def = KPI_DEFAUT.filter(c => codes.includes(c)).slice(0, MAX_KPI);
-    return def.length ? def : codes.slice(0, MAX_KPI);
-  }, [indicateurs]);
-
   // Filtres appliqués (la feuille travaille sur un brouillon)
   const [filtres, setFiltres] = useState<FiltresStatistiques | null>(null);
   const f: FiltresStatistiques = filtres ?? {
     vue: "pays", selection: senId !== null ? [senId] : [],
     modeAnnees: "plage", anneeMin: 0, anneeMax: 9999, anneesSpec: [],
-    kpisEpingles: kpisDefaut,
   };
 
   const { data: donnees, isLoading, isError, refetch } = useQuery({
@@ -72,27 +116,54 @@ export default function Statistiques() {
   const paysNom = (id: number) => (pays || []).find((p: any) => p.id === id)?.nom || "";
   const couleurPays = (id: number) => COMP_PALETTE[Math.max(0, f.selection.indexOf(id)) % COMP_PALETTE.length];
 
-  const indicateursAffiches = (indicateurs || []).filter((i: any) => f.kpisEpingles.includes(i.code));
+  // Dernière valeur connue d'un indicateur sur la période (et son année)
+  const derniereValeur = (paysId: number, code: string): { valeur: number; annee: number; precedente: number | null } | null => {
+    for (let i = anneesActives.length - 1; i >= 0; i--) {
+      const v = valeur(paysId, code, anneesActives[i]);
+      if (v !== null) {
+        const prec = i > 0 ? valeur(paysId, code, anneesActives[i - 1]) : null;
+        return { valeur: v, annee: anneesActives[i], precedente: prec };
+      }
+    }
+    return null;
+  };
 
-  // Graphes : KPI épinglés (hors superficie) + flux de commerce s'ils ont des données
-  const graphesIndics = useMemo(() => {
-    const aDesDonnees = (code: string) => f.selection.some(id => anneesActives.some(a => valeur(id, code, a) !== null));
-    const base = indicateursAffiches.filter((i: any) => i.code !== "superficie").map((i: any) => i.code);
-    const codes = [...base, ...TRADE_CODES.filter(c => !base.includes(c) && aDesDonnees(c))];
-    return codes.map(c => (indicateurs || []).find((i: any) => i.code === c)).filter(Boolean);
+  // TOUS les indicateurs avec une valeur → carrousel de KPIs (vue Pays)
+  const kpis = useMemo(() => {
+    if (!f.selection.length) return [];
+    return (indicateurs || []).map((ind: any) => {
+      const d = derniereValeur(f.selection[0], ind.code);
+      return d ? {
+        code: ind.code, label: ind.libelle, annee: d.annee,
+        valeur: fmtUnite(d.valeur, ind.unite), negatif: ind.unite === "%" && d.valeur < 0,
+      } : null;
+    }).filter(Boolean) as any[];
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [indicateursAffiches, indicateurs, donnees, anneesActives, f.selection]);
+  }, [indicateurs, donnees, anneesActives, f.selection]);
 
-  // Badge du bouton filtre : écarts par rapport aux défauts
+  // Graphes : tous les indicateurs traçables (hors superficie) avec des données
+  const graphesIndics = useMemo(() =>
+    (indicateurs || []).filter((ind: any) => ind.code !== "superficie" &&
+      f.selection.some(id => anneesActives.some(a => valeur(id, ind.code, a) !== null))),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [indicateurs, donnees, anneesActives, f.selection]);
+
   const nbFiltres =
     (f.vue !== "pays" ? 1 : 0) +
     (f.selection.length > 1 || (senId !== null && f.selection[0] !== senId) ? 1 : 0) +
-    (f.modeAnnees === "specifiques" ? (f.anneesSpec.length ? 1 : 0) : (filtres && (f.anneeMin > bornes[0] || f.anneeMax < bornes[1]) ? 1 : 0)) +
-    (f.kpisEpingles.join(",") !== kpisDefaut.join(",") ? 1 : 0);
+    (f.modeAnnees === "specifiques" ? (f.anneesSpec.length ? 1 : 0) : (filtres && (f.anneeMin > bornes[0] || f.anneeMax < bornes[1]) ? 1 : 0));
 
   const perLabel = f.modeAnnees === "specifiques" && f.anneesSpec.length
     ? (f.anneesSpec.length === 1 ? `${f.anneesSpec[0]}` : `${f.anneesSpec[0]} — ${f.anneesSpec[f.anneesSpec.length - 1]}`)
     : `${anneeMin} — ${anneeMax}`;
+
+  // Variation annuelle (dernière valeur vs précédente) pour l'en-tête d'un graphe
+  const deltaDe = (d: { valeur: number; precedente: number | null } | null): { texte: string; hausse: boolean } | null => {
+    if (!d || d.precedente === null || d.precedente === 0) return null;
+    const pct = (d.valeur - d.precedente) / Math.abs(d.precedente) * 100;
+    if (!isFinite(pct)) return null;
+    return { texte: `${pct >= 0 ? "+" : ""}${pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`, hausse: pct >= 0 };
+  };
 
   return (
     <>
@@ -115,7 +186,7 @@ export default function Statistiques() {
             <Pressable onPress={() => refetch()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
           </View>
         ) : (
-          <View style={{ paddingHorizontal: 16 }}>
+          <>
             {/* Pays sélectionnés + période */}
             <View style={s.pastilles}>
               {f.selection.map(id => (
@@ -127,31 +198,22 @@ export default function Statistiques() {
               <View style={s.periodePastille}><Text style={s.periodePastilleTexte}>{perLabel}</Text></View>
             </View>
 
-            {/* KPI cards — vue Pays uniquement (dernière année) */}
-            {f.vue === "pays" && (
-              <View style={s.kpis}>
-                {indicateursAffiches.map((ind: any) => {
-                  const v = f.selection.length ? valeur(f.selection[0], ind.code, refAnnee) : null;
-                  return (
-                    <View key={ind.code} style={s.kpi}>
-                      <Text style={s.kpiLabel} numberOfLines={2}>{ind.libelle.toUpperCase()}</Text>
-                      <Text style={[s.kpiValeur, ind.unite === "%" && v !== null && v < 0 && { color: "#dc2626" }]} numberOfLines={1} adjustsFontSizeToFit>
-                        {fmtUnite(v, ind.unite)}
-                      </Text>
-                      <Text style={s.kpiAnnee}>en {refAnnee}</Text>
-                    </View>
-                  );
-                })}
+            {/* Carrousel de KPIs — vue Pays (tous les indicateurs) */}
+            {f.vue === "pays" && kpis.length > 0 && (
+              <View style={{ marginTop: 14 }}>
+                <CarrouselKpis kpis={kpis} />
               </View>
             )}
 
             {/* Graphes */}
-            <View style={{ gap: 12, marginTop: f.vue === "pays" ? 14 : 6 }}>
+            <View style={{ gap: 12, marginTop: 16, paddingHorizontal: 16 }}>
               {graphesIndics.map((ind: any) => {
                 const series: Serie[] = f.selection.map(id => ({
                   nom: paysNom(id), couleur: couleurPays(id),
                   data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })),
                 }));
+                const dernier = f.vue === "pays" && f.selection.length ? derniereValeur(f.selection[0], ind.code) : null;
+                const delta = deltaDe(dernier);
                 return (
                   <View key={ind.code} style={s.graphe}>
                     <View style={s.grapheEntete}>
@@ -159,8 +221,20 @@ export default function Statistiques() {
                         <Text style={s.grapheTitre} numberOfLines={1}>{ind.libelle}</Text>
                         <Text style={s.grapheSous}>{ind.unite} · {anneesActives[0] ?? anneeMin}–{refAnnee}</Text>
                       </View>
+                      {dernier && (
+                        <View style={{ alignItems: "flex-end", gap: 4 }}>
+                          <Text style={s.grapheValeur} numberOfLines={1}>{fmtUnite(dernier.valeur, ind.unite)}</Text>
+                          {delta && (
+                            <View style={[s.deltaChip, { backgroundColor: delta.hausse ? "rgba(24,128,56,0.10)" : "rgba(220,38,38,0.09)" }]}>
+                              <Text style={[s.deltaTexte, { color: delta.hausse ? T.vert : "#dc2626" }]}>
+                                {delta.hausse ? "▲" : "▼"} {delta.texte}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      )}
                     </View>
-                    <GrapheLignes series={series} hauteur={150} fmt={(v: number | null) => fmtUnite(v, ind.unite)} />
+                    <GrapheLignes series={series} hauteur={168} fmt={(v: number | null) => fmtUnite(v, ind.unite)} />
                     {f.vue === "comparative" && (
                       <View style={s.legende}>
                         {series.map(sr => (
@@ -175,14 +249,14 @@ export default function Statistiques() {
                 );
               })}
             </View>
-          </View>
+          </>
         )}
       </ScrollView>
 
       {filtresOuverts && (
         <StatistiquesFiltres
-          pays={pays || []} senId={senId} indicateurs={indicateurs || []}
-          anneesDispo={anneesDispo} kpisDefaut={kpisDefaut}
+          pays={pays || []} senId={senId}
+          anneesDispo={anneesDispo}
           valeurs={{ ...f, anneeMin, anneeMax }}
           onAppliquer={setFiltres} onClose={() => setFiltresOuverts(false)} />
       )}
@@ -198,7 +272,7 @@ const s = StyleSheet.create({
   bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: "rgba(0,79,145,0.08)", alignItems: "center", justifyContent: "center", marginBottom: 6 },
   bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
   bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
-  pastilles: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 7, marginTop: 16 },
+  pastilles: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 7, marginTop: 16, paddingHorizontal: 16 },
   paysPastille: {
     flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, borderWidth: 1,
     paddingHorizontal: 12, paddingVertical: 5, maxWidth: 190,
@@ -210,21 +284,33 @@ const s = StyleSheet.create({
     backgroundColor: "#ECEAE8", borderWidth: 1, borderColor: "#DFDBD7",
   },
   periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: "#3a4452", fontVariant: ["tabular-nums"] },
-  kpis: { flexDirection: "row", flexWrap: "wrap", gap: 9, marginTop: 14 },
+  kpiPage: { flexDirection: "row", flexWrap: "wrap", gap: 11, paddingHorizontal: 16 },
   kpi: {
-    flexGrow: 1, flexBasis: "45%", backgroundColor: "#fff", borderRadius: 14,
-    borderWidth: 1, borderColor: T.bordure, paddingHorizontal: 14, paddingVertical: 12, gap: 6,
+    width: (LARGEUR - 32 - 11) / 2, backgroundColor: "#fff", borderRadius: 18,
+    paddingHorizontal: 15, paddingVertical: 13, overflow: "hidden",
+    shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
   },
-  kpiLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.9, lineHeight: 12 },
-  kpiValeur: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, fontVariant: ["tabular-nums"] },
-  kpiAnnee: { fontSize: 10, fontFamily: POLICE.normal, color: T.gris },
+  kpiFilet: { position: "absolute", left: 15, right: 15, top: 0, height: 2.5, borderRadius: 2, backgroundColor: "rgba(0,79,145,0.14)" },
+  kpiLabel: { fontSize: 9, fontFamily: POLICE.gras, color: "#7d95ad", letterSpacing: 0.9, lineHeight: 12, marginTop: 4, minHeight: 24 },
+  kpiValeur: { fontSize: 20, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -0.4, marginTop: 7, fontVariant: ["tabular-nums"] },
+  kpiAnnee: { alignSelf: "flex-start", backgroundColor: "rgba(0,79,145,0.07)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 8 },
+  kpiAnneeTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  points: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 12 },
+  pointNav: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(0,79,145,0.18)" },
+  pointNavActif: { width: 18, backgroundColor: T.bleu },
   graphe: {
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: "#fff", borderRadius: 18, borderWidth: 1, borderColor: T.bordure,
     paddingHorizontal: 15, paddingTop: 13, paddingBottom: 10,
+    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
-  grapheEntete: { flexDirection: "row", alignItems: "flex-start", marginBottom: 8 },
+  grapheEntete: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 10 },
   grapheTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2 },
   grapheSous: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  grapheValeur: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, fontVariant: ["tabular-nums"] },
+  deltaChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  deltaTexte: { fontSize: 10, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   legende: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 8, paddingTop: 9, borderTopWidth: 1, borderTopColor: T.filet },
   legendeItem: { flexDirection: "row", alignItems: "center", gap: 5, maxWidth: "48%" },
   legendeTexte: { fontSize: 11, fontFamily: POLICE.demi, color: T.texte, flexShrink: 1 },
