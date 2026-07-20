@@ -1,11 +1,10 @@
 "use client";
 
-// Graphe multi-séries signature — la version web du rendu Skia de l'app :
-// courbes avec glow et ombre portée (filtres SVG), aires en dégradé riche,
-// tracé progressif à l'apparition (trim dash), morphing quand les filtres
-// changent sans changer la structure (transition du chemin), curseur
-// aimanté année par année (ligne + points + tooltip avec delta vs année
-// précédente), annotation du pic historique en mono-série.
+// Graphe multi-séries signature — courbes avec glow et ombre portée
+// (filtres SVG), aires en dégradé riche, curseur aimanté année par année
+// (ligne + points + tooltip avec delta vs année précédente), annotation
+// du pic historique en mono-série. Rendu STATIQUE : aucune animation
+// d'entrée (elles rejouaient à chaque redimensionnement).
 // Les règles du site sont inchangées : double axe quand les amplitudes
 // divergent (ratio > 4), ticks aux couleurs des séries, barres groupées.
 import { useCallback, useEffect, useRef } from "react";
@@ -28,8 +27,6 @@ function montrerTooltip(tooltip: any, e: { clientX: number; clientY: number }, h
 }
 const cacherTooltip = (tooltip: any) => tooltip.style("opacity", 0);
 
-const nbNombres = (d: string) => (d.match(/[\d.]+/g) || []).length;
-
 export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, showDots = true, lineWidth }: {
   series: SerieGraphe[];
   height?: number;
@@ -46,10 +43,6 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
   const uid = useRef(`sig${Math.random().toString(36).slice(2, 8)}`).current;
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtCompact;
-  // Mémoire du dernier tracé : morphing si la structure n'a pas changé
-  const memoire = useRef<{ structure: string; lignes: Map<string, string>; aires: Map<string, string> }>({
-    structure: "", lignes: new Map(), aires: new Map(),
-  });
 
   const draw = useCallback(() => {
     if (!pret || !ref.current) return;
@@ -123,7 +116,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         const rects = svg.selectAll(`.b${s.nom.replace(/\W/g, "")}`)
           .data(valid).enter().append("rect")
           .attr("x", d => getX(d)).attr("width", getW())
-          .attr("y", ys(0)).attr("height", 0)
+          .attr("y", d => d.valeur >= 0 ? ys(d.valeur) : ys(0))
+          .attr("height", d => Math.abs(ys(d.valeur) - ys(0)))
           .attr("fill", s.couleur).style("cursor", "pointer")
           .on("mouseover", (e, d) => {
             d3.select(e.currentTarget as SVGRectElement).attr("opacity", 0.75);
@@ -131,10 +125,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           })
           .on("mousemove", (e) => montrerTooltip(tooltip, e))
           .on("mouseout", (e) => { d3.select(e.currentTarget as SVGRectElement).attr("opacity", 1); cacherTooltip(tooltip); });
-        // Les barres croissent depuis l'axe
-        rects.transition().duration(550).delay((_, i) => i * 22).ease(d3.easeCubicOut)
-          .attr("y", d => d.valeur >= 0 ? ys(d.valeur) : ys(0))
-          .attr("height", d => Math.abs(ys(d.valeur) - ys(0)));
+        void rects;
       });
 
       const maxTicks = Math.floor((W - M.left - M.right) / 28);
@@ -156,14 +147,6 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       const fGlow = defs.append("filter").attr("id", idGlow).attr("x", "-40%").attr("y", "-40%").attr("width", "180%").attr("height", "220%");
       fGlow.append("feGaussianBlur").attr("in", "SourceGraphic").attr("stdDeviation", 3);
 
-      // Morphing vs tracé : même structure de séries → les chemins glissent
-      const structure = series.map((s, i) => `${s.nom}:${s.data.filter(d => d.valeur !== null).length}`).join("|") + `@${W}x${H}${useDual ? "2" : "1"}`;
-      const memesForme = memoire.current.structure === structure;
-      const nouvellesLignes = new Map<string, string>();
-      const nouvellesAires = new Map<string, string>();
-
-      let aMorphe = false;
-
       series.forEach((s, si) => {
         const ys = yScales[si];
         const valid = s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[];
@@ -180,61 +163,33 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .x(d => xLin(d.annee)).y0(areaBase).y1(d => ys(d.valeur)).curve(d3.curveMonotoneX)(valid) || "";
         const dLigne = d3.line<{ annee: number; valeur: number }>()
           .x(d => xLin(d.annee)).y(d => ys(d.valeur)).curve(d3.curveMonotoneX)(valid) || "";
-        nouvellesLignes.set(s.nom, dLigne);
-        nouvellesAires.set(s.nom, dAire);
-
-        const dLignePrec = memoire.current.lignes.get(s.nom);
-        const dAirePrec = memoire.current.aires.get(s.nom);
-        const morph = memesForme && !!dLignePrec && dLignePrec !== dLigne && nbNombres(dLignePrec) === nbNombres(dLigne);
-
         // Aire en dégradé riche
-        const aire = svg.append("path").attr("fill", `url(#${gid})`)
-          .attr("d", morph && dAirePrec ? dAirePrec : dAire);
+        svg.append("path").attr("fill", `url(#${gid})`).attr("d", dAire);
         // Ombre portée de la ligne
-        const ombre = svg.append("path").attr("fill", "none")
+        svg.append("path").attr("fill", "none")
           .attr("stroke", s.couleur).attr("stroke-width", epaisseur + 0.5)
           .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
           .attr("transform", "translate(0,6)").attr("filter", `url(#${idOmbre})`).attr("opacity", 0.22)
-          .attr("d", morph && dLignePrec ? dLignePrec : dLigne);
+          .attr("d", dLigne);
         // Glow
-        const glow = svg.append("path").attr("fill", "none")
+        svg.append("path").attr("fill", "none")
           .attr("stroke", s.couleur).attr("stroke-width", epaisseur * 3.2)
           .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
           .attr("filter", `url(#${idGlow})`).attr("opacity", 0.14)
-          .attr("d", morph && dLignePrec ? dLignePrec : dLigne);
+          .attr("d", dLigne);
         // La ligne
-        const ligne = svg.append("path").attr("fill", "none")
+        svg.append("path").attr("fill", "none")
           .attr("stroke", s.couleur).attr("stroke-width", epaisseur)
           .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
-          .attr("d", morph && dLignePrec ? dLignePrec : dLigne);
-
-        if (morph) {
-          // Les chemins GLISSENT vers leurs nouvelles valeurs
-          aMorphe = true;
-          const t = d3.transition().duration(480).ease(d3.easeCubicOut);
-          aire.transition(t as any).attr("d", dAire);
-          ombre.transition(t as any).attr("d", dLigne);
-          glow.transition(t as any).attr("d", dLigne);
-          ligne.transition(t as any).attr("d", dLigne);
-        } else {
-          // Tracé progressif : la courbe se dessine, l'aire suit en fondu
-          const L = (ligne.node() as SVGPathElement).getTotalLength();
-          [ligne, glow, ombre].forEach(p => p
-            .attr("stroke-dasharray", `${L},${L}`).attr("stroke-dashoffset", L)
-            .transition().duration(750).ease(d3.easeCubicOut)
-            .attr("stroke-dashoffset", 0)
-            .on("end", function () { d3.select(this).attr("stroke-dasharray", null); }));
-          aire.attr("opacity", 0).transition().delay(280).duration(470).attr("opacity", 1);
-        }
+          .attr("d", dLigne);
 
         // Point terminal souligné d'un halo
         const fin = valid[valid.length - 1];
-        const gFin = svg.append("g").attr("opacity", 0);
+        const gFin = svg.append("g");
         gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 7)
           .attr("fill", s.couleur).attr("opacity", 0.3).attr("filter", `url(#${idGlow})`);
         gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 3.6)
           .attr("fill", s.couleur).attr("stroke", "#fff").attr("stroke-width", 1.6);
-        gFin.transition().delay(morph ? 200 : 620).duration(250).attr("opacity", 1);
 
         // Points décoratifs
         const nb = valid.length;
@@ -243,12 +198,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           svg.selectAll(`.p${gid}`).data(valid).enter().append("circle")
             .attr("cx", d => xLin(d.annee)).attr("cy", d => ys(d.valeur)).attr("r", rBase)
             .attr("fill", "#fff").attr("stroke", s.couleur).attr("stroke-width", 1.5)
-            .style("pointer-events", "none")
-            .attr("opacity", 0).transition().delay(morph ? 160 : 520).duration(300).attr("opacity", 1);
+            .style("pointer-events", "none");
         }
       });
-
-      memoire.current = { structure, lignes: nouvellesLignes, aires: nouvellesAires };
 
       // ── Annotation signature : pic historique (mono-série) ──
       let gPic: any = null;
@@ -257,7 +209,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         if (valid.length >= 3) {
           const pic = valid.reduce((m, p) => (p.valeur > m.valeur ? p : m));
           const px = xLin(pic.annee), py = yScales[0](pic.valeur);
-          gPic = svg.append("g").attr("opacity", 0);
+          gPic = svg.append("g");
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 7.5)
             .attr("fill", series[0].couleur).attr("opacity", 0.2).attr("filter", `url(#${idGlow})`);
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 4.5)
@@ -273,7 +225,6 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           chip.append("text").attr("x", cx + lw / 2).attr("y", cy + 12.5).attr("text-anchor", "middle")
             .style("font-size", "8.5px").style("font-weight", "700").style("letter-spacing", "0.8px")
             .attr("fill", series[0].couleur).text(libelle);
-          gPic.transition().delay(aMorphe ? 240 : 700).duration(260).attr("opacity", 1);
         }
       }
 
