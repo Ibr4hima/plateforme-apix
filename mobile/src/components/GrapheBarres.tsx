@@ -37,6 +37,8 @@ export function BarresH({ data, fmt, couleur = T.bleu }: {
 }
 
 // ── Barres empilées : partenaires × ressources ───────────────────────────────
+// Sous chaque barre, la répartition détaillée du pays (carré de couleur,
+// ressource, part réelle en %), puis un filet fin avant le pays suivant.
 export function BarresEmpilees({ partenaires, ressources, fmt }: {
   partenaires: { nom: string; total: number; valeurs: number[] }[];
   ressources: string[];
@@ -44,39 +46,40 @@ export function BarresEmpilees({ partenaires, ressources, fmt }: {
 }) {
   if (!partenaires.length) return <Text style={s.vide}>Aucune donnée</Text>;
   const max = Math.max(...partenaires.map(p => p.total));
-  // Légende : ressources réellement présentes dans les barres affichées
-  const utilisees = ressources
-    .map((nom, i) => ({ nom, i, present: partenaires.some(p => (p.valeurs[i] || 0) > 0) }))
-    .filter(r => r.present);
   return (
-    <View style={{ gap: 12 }}>
-      {partenaires.map(p => (
-        <View key={p.nom}>
-          <View style={s.ligne}>
-            <Text style={s.label} numberOfLines={1}>{p.nom}</Text>
-            <Text style={s.valeur}>{fmt(p.total)}</Text>
-          </View>
-          <View style={[s.piste, { flexDirection: "row", overflow: "hidden" }]}>
-            <View style={{ flexDirection: "row", width: `${Math.max(3, Math.sqrt(p.total / max) * 100)}%` }}>
-              {ressources.map((_, i) => {
-                const v = p.valeurs[i] || 0;
-                if (v <= 0 || p.total <= 0) return null;
-                return <View key={i} style={{ flex: v / p.total, backgroundColor: degradeBleu(i, ressources.length) }} />;
-              })}
+    <View>
+      {partenaires.map((p, pi) => {
+        // Ressources du pays, de la plus forte à la plus faible
+        const parts = ressources
+          .map((nom, i) => ({ nom, i, valeur: p.valeurs[i] || 0 }))
+          .filter(r => r.valeur > 0)
+          .sort((a, b) => b.valeur - a.valeur);
+        return (
+          <View key={p.nom}>
+            {pi > 0 && <View style={s.separation} />}
+            <View style={s.ligne}>
+              <Text style={s.label} numberOfLines={1}>{p.nom}</Text>
+              <Text style={s.valeur}>{fmt(p.total)}</Text>
+            </View>
+            <View style={[s.piste, { flexDirection: "row", overflow: "hidden" }]}>
+              <View style={{ flexDirection: "row", width: `${Math.max(3, Math.sqrt(p.total / max) * 100)}%` }}>
+                {parts.map(r => (
+                  <View key={r.i} style={{ flex: r.valeur / p.total, backgroundColor: degradeBleu(r.i, ressources.length) }} />
+                ))}
+              </View>
+            </View>
+            <View style={s.repartition}>
+              {parts.map(r => (
+                <View key={r.nom} style={s.repartitionLigne}>
+                  <View style={[s.legendeCarre, { backgroundColor: degradeBleu(r.i, ressources.length) }]} />
+                  <Text style={s.repartitionNom} numberOfLines={1}>{r.nom}</Text>
+                  <Text style={s.repartitionPct}>{(r.valeur / p.total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</Text>
+                </View>
+              ))}
             </View>
           </View>
-        </View>
-      ))}
-      {utilisees.length > 0 && (
-        <View style={s.legende}>
-          {utilisees.slice(0, 8).map(r => (
-            <View key={r.nom} style={s.legendeItem}>
-              <View style={[s.legendeCarre, { backgroundColor: degradeBleu(r.i, ressources.length) }]} />
-              <Text style={s.legendeTexte} numberOfLines={1}>{r.nom}</Text>
-            </View>
-          ))}
-        </View>
-      )}
+        );
+      })}
     </View>
   );
 }
@@ -88,8 +91,10 @@ const s = StyleSheet.create({
   valeur: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
   piste: { height: 8, backgroundColor: "#F1EFED", borderRadius: 99, overflow: "hidden" },
   barre: { height: "100%", borderRadius: 99 },
-  legende: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 2, paddingTop: 10, borderTopWidth: 1, borderTopColor: T.filet },
-  legendeItem: { flexDirection: "row", alignItems: "center", gap: 5, maxWidth: "47%" },
   legendeCarre: { width: 9, height: 9, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.15)" },
-  legendeTexte: { fontSize: 10, fontFamily: POLICE.normal, color: T.texte, flexShrink: 1 },
+  separation: { height: 1, backgroundColor: T.filet, marginVertical: 13 },
+  repartition: { gap: 5, marginTop: 9 },
+  repartitionLigne: { flexDirection: "row", alignItems: "center", gap: 7 },
+  repartitionNom: { flex: 1, fontSize: 11, fontFamily: POLICE.normal, color: T.texte },
+  repartitionPct: { fontSize: 11, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
 });

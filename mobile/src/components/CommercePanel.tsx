@@ -103,7 +103,6 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onNbFil
     { cle: "record", label: "Année record", valeur: kpis?.annee_record ? String(kpis.annee_record.annee) : "—", note: kpis?.annee_record ? fmtUSD(kpis.annee_record.valeur) : null },
     { cle: "partenaire", label: expDir ? `1er client · ${ref ?? "—"}` : `1er fournisseur · ${ref ?? "—"}`, valeur: kpis?.top_partenaire?.nom || "—", note: kpis?.top_partenaire ? fmtUSD(kpis.top_partenaire.valeur) : null },
     { cle: "ressource", label: `1re ressource · ${ref ?? "—"}`, valeur: kpis?.top_ressource?.ressource || "—", note: kpis?.top_ressource ? fmtUSD(kpis.top_ressource.valeur) : null },
-    { cle: "part", label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", valeur: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", note: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : null },
   ];
 
   // ── Séries des courbes ──
@@ -170,8 +169,10 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onNbFil
           </Carte>
         )}
         {donut.length > 0 && (
-          <Carte titre={expDir ? "Poids des ressources exportées" : "Poids des ressources importées"} sous={`Cumul ${perLabel}`}>
-            <GrapheDonut data={donut} fmt={v => fmtUSD(v)} />
+          <Carte titre={expDir ? "Poids des ressources exportées" : "Poids des ressources importées"} sous={`USD · cumul ${perLabel}`}>
+            {/* Au centre : le nombre seul, l'unité est portée par le sous-titre */}
+            <GrapheDonut data={donut} fmt={v => fmtUSD(v)}
+              centre={fmtUSD(donut.reduce((somme, d) => somme + d.valeur, 0)).replace(/\s*\$\s*$/, "")} />
           </Carte>
         )}
         {repart?.partenaires?.length > 0 && (

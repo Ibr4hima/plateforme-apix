@@ -13,8 +13,9 @@ function arc(cx: number, cy: number, r0: number, r1: number, a0: number, a1: num
   return `M${pt(r1, a0)}A${r1},${r1} 0 ${grand} 1 ${pt(r1, a1)}L${pt(r0, a1)}A${r0},${r0} 0 ${grand} 0 ${pt(r0, a0)}Z`;
 }
 
-export default function GrapheDonut({ data, fmt }: {
+export default function GrapheDonut({ data, fmt, centre }: {
   data: { label: string; valeur: number }[]; fmt: (v: number) => string;
+  centre?: string; // texte central (par défaut : total formaté)
 }) {
   const positifs = data.filter(d => d.valeur > 0);
   const total = positifs.reduce((somme, d) => somme + d.valeur, 0);
@@ -40,8 +41,8 @@ export default function GrapheDonut({ data, fmt }: {
               fill={degradeBleu(sec.i, secteurs.length)} opacity={0.92} />
           ))}
         </G>
-        <TexteSvg x={cx} y={cy - 2} fontSize={17} fontWeight="800" fill={T.encre} textAnchor="middle">{fmt(total)}</TexteSvg>
-        <TexteSvg x={cx} y={cy + 14} fontSize={9.5} fill={T.gris} textAnchor="middle">total</TexteSvg>
+        <TexteSvg x={cx} y={cy - 2} fontSize={17} fontFamily={POLICE.gras} fill={T.encre} textAnchor="middle">{centre ?? fmt(total)}</TexteSvg>
+        <TexteSvg x={cx} y={cy + 14} fontSize={9.5} fontFamily={POLICE.normal} fill={T.gris} textAnchor="middle">total</TexteSvg>
       </Svg>
       <View style={s.legende}>
         {secteurs.map(sec => (

@@ -55,7 +55,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
   const couleurDe = (id: number) => COMP_PALETTE[Math.max(0, f.selection.indexOf(id)) % COMP_PALETTE.length];
 
   const clicPays = (id: number) => setF(prev => {
-    if (prev.vue === "pays") return { ...prev, selection: [id] };
+    if (!estMulti(prev.vue)) return { ...prev, selection: [id] };
     if (prev.selection.includes(id)) {
       return prev.selection.length > 1 ? { ...prev, selection: prev.selection.filter(x => x !== id) } : prev;
     }
