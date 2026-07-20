@@ -6,7 +6,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Feuille } from "@/components/ui";
+import { Feuille, Tapable } from "@/components/ui";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
@@ -136,13 +136,12 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
     <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
       pied={
         <View style={s.pied}>
-          <Pressable onPress={() => { tick(); reinitialiser(); }} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
+          <Tapable onPress={() => { tick(); reinitialiser(); }} style={s.boutonSecondaire}>
             <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
-          </Pressable>
-          <Pressable onPress={() => { succes(); onAppliquer(f); onClose(); }}
-            style={({ pressed }) => [s.boutonPrincipal, pressed && { opacity: 0.85 }]}>
+          </Tapable>
+          <Tapable onPress={() => { succes(); onAppliquer(f); onClose(); }} style={s.boutonPrincipal}>
             <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
-          </Pressable>
+          </Tapable>
         </View>
       }>
           {/* Vue */}

@@ -12,6 +12,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BandeauHorsLigne from "@/components/BandeauHorsLigne";
 import LancementAnime from "@/components/LancementAnime";
 import { marquerOrigine } from "@/lib/origineTap";
@@ -52,6 +53,7 @@ export default function RacineLayout() {
       <StatusBar style="light" />
       {/* Capture passive de l'origine de chaque toucher (transitions
           contextuelles des feuilles) — ne revendique jamais le geste */}
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}
         onStartShouldSetResponderCapture={e => { marquerOrigine(e.nativeEvent.pageY); return false; }}>
       <Stack
@@ -77,6 +79,7 @@ export default function RacineLayout() {
       <BandeauHorsLigne />
       {lancement && <LancementAnime onFini={() => setLancement(false)} />}
       </View>
+      </GestureHandlerRootView>
     </PersistQueryClientProvider>
   );
 }

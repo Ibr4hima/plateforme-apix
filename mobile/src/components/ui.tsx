@@ -7,35 +7,40 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator, Animated, Dimensions, Modal, PanResponder, Pressable, ScrollView,
+  ActivityIndicator, Animated, Dimensions, Modal, Pressable, ScrollView,
   StyleProp, StyleSheet, Text, View, ViewStyle,
 } from "react-native";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import Reanime, {
+  runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming,
+} from "react-native-reanimated";
 import Symbole from "@/components/Symbole";
 import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
+import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
 import { origineRecente } from "@/lib/origineTap";
 import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
-const PressableAnime = Animated.createAnimatedComponent(Pressable);
+const PressableReanime = Reanime.createAnimatedComponent(Pressable);
 
 // ── Tapable : le retour tactile physique de toute l'app ──────────────────────
-// Ressort à l'appui (0.97) et rebond au relâcher — remplace les scale 0.99
-// secs des Pressable. Toute surface cliquable doit passer par lui.
+// Ressort vif à l'appui (0.97), ressort standard au relâcher — la même
+// physique (lib/motion) partout. Toute surface cliquable passe par lui.
 export function Tapable({ onPress, onLongPress, disabled, style, echelle = 0.97, hitSlop, children }: {
   onPress?: () => void; onLongPress?: () => void; disabled?: boolean;
   style?: StyleProp<ViewStyle>; echelle?: number; hitSlop?: number;
   children: React.ReactNode;
 }) {
-  const zoom = useRef(new Animated.Value(1)).current;
-  const presser = () => Animated.spring(zoom, { toValue: echelle, speed: 60, bounciness: 0, useNativeDriver: true }).start();
-  const relacher = () => Animated.spring(zoom, { toValue: 1, speed: 24, bounciness: 7, useNativeDriver: true }).start();
+  const zoom = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: zoom.value }] }));
   return (
-    <PressableAnime
+    <PressableReanime
       onPress={onPress} onLongPress={onLongPress} disabled={disabled} hitSlop={hitSlop}
-      onPressIn={presser} onPressOut={relacher}
-      style={[{ transform: [{ scale: zoom }] }, disabled && { opacity: 0.45 }, style]}>
+      onPressIn={() => { zoom.value = withSpring(echelle, RESSORT.vif); }}
+      onPressOut={() => { zoom.value = withSpring(1, RESSORT.standard); }}
+      style={[animStyle, disabled && { opacity: 0.45 }, style]}>
       {children}
-    </PressableAnime>
+    </PressableReanime>
   );
 }
 
@@ -139,46 +144,56 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
     if (y === null) return H * 0.35;
     return Math.max(-H * 0.25, Math.min(y - H * 0.62, H * 0.35));
   });
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.spring(anim, { toValue: 1, speed: 14, bounciness: 4, useNativeDriver: true }).start();
-  }, [anim]);
+
+  // Deux grandeurs pilotent tout : l'ouverture (0→1, ressort doux) et le
+  // tirage du doigt. Fond, échelle et position en dérivent en continu —
+  // pendant le geste, c'est l'écran entier qui suit la main.
+  const progres = useSharedValue(0);
+  const tirage = useSharedValue(0);
+  useEffect(() => { progres.value = withSpring(1, RESSORT.doux); }, [progres]);
+
   const fermer = () => {
-    Animated.timing(anim, { toValue: 0, duration: 160, useNativeDriver: true }).start(() => onClose());
+    progres.value = withTiming(0, { duration: DUREE.courte, easing: ENTREE },
+      fini => { if (fini) runOnJS(onClose)(); });
+  };
+  const fermerAuGeste = (velocite: number) => {
+    tirage.value = withSpring(H * 0.9, { ...RESSORT.doux, velocity: velocite },
+      fini => { if (fini) runOnJS(onClose)(); });
   };
 
-  // Poignée physique : la feuille suit le doigt vers le bas ; au-delà du
-  // seuil (ou d'un geste vif) elle se ferme, sinon elle revient au ressort.
-  const tirage = useRef(new Animated.Value(0)).current;
-  const fermerRef = useRef(fermer);
-  fermerRef.current = fermer;
-  const pan = useRef(PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => g.dy > 4 && Math.abs(g.dy) > Math.abs(g.dx) * 1.4,
-    onPanResponderMove: (_, g) => tirage.setValue(Math.max(0, g.dy)),
-    onPanResponderRelease: (_, g) => {
-      if (g.dy > 130 || g.vy > 0.9) fermerRef.current();
-      else Animated.spring(tirage, { toValue: 0, speed: 22, bounciness: 7, useNativeDriver: true }).start();
-    },
-    onPanResponderTerminate: () => {
-      Animated.spring(tirage, { toValue: 0, speed: 22, bounciness: 7, useNativeDriver: true }).start();
-    },
-  })).current;
+  const geste = Gesture.Pan()
+    .activeOffsetY(4)
+    .onChange(e => {
+      // Vers le bas : suit le doigt ; vers le haut : résistance élastique
+      tirage.value = e.translationY > 0 ? e.translationY : e.translationY / 8;
+    })
+    .onEnd(e => {
+      if (tirage.value > 130 || e.velocityY > 900) runOnJS(fermerAuGeste)(e.velocityY);
+      else tirage.value = withSpring(0, RESSORT.standard);
+    });
 
-  const fondOpacite = anim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
-  const glisse = Animated.add(
-    anim.interpolate({ inputRange: [0, 1], outputRange: [depart, 0] }),
-    tirage,
-  );
-  const zoom = anim.interpolate({ inputRange: [0, 1], outputRange: [0.86, 1] });
-  const opacite = anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1, 1] });
+  const styleFond = useAnimatedStyle(() => ({
+    // Le voile s'éclaircit à mesure que la feuille est tirée vers le bas
+    opacity: progres.value * Math.max(0, 1 - tirage.value / (H * 0.7)),
+  }));
+  const styleFeuille = useAnimatedStyle(() => ({
+    opacity: Math.min(1, progres.value * 2.5),
+    transform: [
+      { translateY: (1 - progres.value) * depart + Math.max(tirage.value, -30) },
+      { scale: 0.86 + 0.14 * progres.value - Math.min(Math.max(tirage.value, 0) / (H * 14), 0.01) },
+    ],
+  }));
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={fermer}>
-      <PressableAnime style={[sf.fond, { opacity: fondOpacite }]} onPress={fermer} />
-      <Animated.View style={[sf.feuille, { maxHeight: hauteur, opacity: opacite, transform: [{ translateY: glisse }, { scale: zoom }] }]}>
-        <View {...pan.panHandlers} style={sf.zonePoignee}>
-          <View style={sf.poignee} />
-        </View>
+      <GestureHandlerRootView style={{ flex: 1, justifyContent: "flex-end" }}>
+      <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
+      <Reanime.View style={[sf.feuille, { maxHeight: hauteur }, styleFeuille]}>
+        <GestureDetector gesture={geste}>
+          <View style={sf.zonePoignee}>
+            <View style={sf.poignee} />
+          </View>
+        </GestureDetector>
         <View style={sf.entete}>
           {typeof titre === "string"
             ? <Text style={sf.titre}>{titre}</Text>
@@ -195,30 +210,22 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
           </ScrollView>
         )}
         {pied}
-      </Animated.View>
+      </Reanime.View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
 
 // ── Apparition : entrée en cascade (fondu + 12 px de translation) ────────────
 // À poser autour des cards de liste et des KPIs : `index` décale chaque
-// entrée de 40 ms pour l'effet de cascade.
+// entrée de 40 ms pour l'effet de cascade. Ressort standard (lib/motion).
 export function Apparition({ index = 0, style, children }: {
   index?: number; style?: StyleProp<ViewStyle>; children: React.ReactNode;
 }) {
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.timing(anim, {
-      toValue: 1, duration: 300, delay: Math.min(index, 14) * 40, useNativeDriver: true,
-    }).start();
-  }, [anim, index]);
   return (
-    <Animated.View style={[style, {
-      opacity: anim,
-      transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
-    }]}>
+    <Reanime.View entering={apparition(index)} style={style}>
       {children}
-    </Animated.View>
+    </Reanime.View>
   );
 }
 

@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { EtatErreur, EtatVide, Feuille } from "@/components/ui";
+import { EtatErreur, EtatVide, Feuille, Tapable } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import { getJson } from "@/lib/api";
@@ -379,13 +379,12 @@ function NationalFiltres({ refs, anneesDispo, valeurs, onAppliquer, onClose }: {
     <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
       pied={
         <View style={s.pied}>
-          <Pressable onPress={() => { tick(); reinitialiser(); }} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
+          <Tapable onPress={() => { tick(); reinitialiser(); }} style={s.boutonSecondaire}>
             <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
-          </Pressable>
-          <Pressable onPress={() => { succes(); onAppliquer(f); onClose(); }}
-            style={({ pressed }) => [s.boutonPrincipal, pressed && { opacity: 0.85 }]}>
+          </Tapable>
+          <Tapable onPress={() => { succes(); onAppliquer(f); onClose(); }} style={s.boutonPrincipal}>
             <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
-          </Pressable>
+          </Tapable>
         </View>
       }>
           {/* Type d'analyse */}
