@@ -142,6 +142,7 @@ export default function Ide() {
     paysSelection: senId !== null ? [senId] : [],
     grpSelection: grpDefaut,
     secteurSelection: [0],
+    compNiveau: "secteur",
     modeAnnees: "plage", anneeMin: 0, anneeMax: 9999, anneesSpec: [],
   }, [filtres, senId, grpDefaut]);
   const secteursVue = f.vue === "secteurs";

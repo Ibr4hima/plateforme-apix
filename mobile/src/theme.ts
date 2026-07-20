@@ -76,5 +76,5 @@ export const MODULES = [
 // Section « Plus » — les entrées transverses de la plateforme
 export const PLUS = [
   { cle: "fiche-pays", titre: "Fiche Pays",               sous: "Relations bilatérales",           icone: "public", href: "/fiche-pays" },
-  { cle: "code",       titre: "Code des investissements", sous: "Code et modalités d'application", icone: "gavel",  href: "/code" },
+  { cle: "code",       titre: "Lois & Règlementations",    sous: "Code et modalités d'application", icone: "gavel",  href: "/code" },
 ] as const;

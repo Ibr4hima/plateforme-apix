@@ -20,6 +20,7 @@ export type FiltresIde = {
   paysSelection: number[];
   grpSelection: string[];
   secteurSelection: number[]; // 0 = Global des secteurs
+  compNiveau?: "secteur" | "branche"; // niveau comparé en analyse comparative sectorielle
   modeAnnees: "plage" | "specifiques";
   anneeMin: number;
   anneeMax: number;
@@ -80,12 +81,18 @@ export default function IdeFiltres({ pays, senId, groupements, refSecteurs, anne
   const changerAnalyse = (typeAnalyse: FiltresIde["typeAnalyse"]) => setF(prev => ({
     ...prev, typeAnalyse,
     paysSelection: typeAnalyse === "comparative" ? prev.paysSelection : prev.paysSelection.slice(0, 1),
-    // Comparative sectorielle : les 3 grands secteurs par défaut (règle du site)
+    // Comparative sectorielle : niveau Secteurs, les 3 grands secteurs par défaut (règle du site)
+    compNiveau: prev.vue === "secteurs" && typeAnalyse === "comparative" ? "secteur" : prev.compNiveau,
     secteurSelection: prev.vue === "secteurs"
       ? (typeAnalyse === "comparative"
           ? (prev.secteurSelection.includes(0) ? [1, 2, 3] : prev.secteurSelection)
           : prev.secteurSelection.slice(0, 1))
       : prev.secteurSelection,
+  }));
+  // Niveau comparé (secteurs entre eux ou branches entre elles)
+  const changerNiveau = (compNiveau: "secteur" | "branche") => setF(prev => ({
+    ...prev, compNiveau,
+    secteurSelection: compNiveau === "secteur" ? [1, 2, 3] : [],
   }));
 
   // ── Sélections ──
@@ -117,6 +124,7 @@ export default function IdeFiltres({ pays, senId, groupements, refSecteurs, anne
     paysSelection: senId !== null ? [senId] : [],
     grpSelection: [],
     secteurSelection: [0],
+    compNiveau: "secteur",
     modeAnnees: "plage", anneeMin: bornes[0], anneeMax: bornes[1], anneesSpec: [],
   }));
 
@@ -224,37 +232,78 @@ export default function IdeFiltres({ pays, senId, groupements, refSecteurs, anne
             /* Secteurs / branches CNUCED */
             <View>
               <SecTitle droite={<Text style={s.compteBadge}>{multiSecteurs ? `${f.secteurSelection.length}/${MAX_SEL_IDE}` : "1"}</Text>}>Secteurs</SecTitle>
-              <RangeSelection actif={f.secteurSelection.includes(0)} couleur={couleurSecteurDe(0)}
-                nom="Global des secteurs" badge="Agrégat" onPress={() => clicSecteur(0)} />
-              <View style={s.filet} />
-              <View style={{ maxHeight: 300 }}>
-                <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                  {refSecteurs.map((sec: any) => {
-                    const ouvert = secteursOuverts.has(sec.id);
-                    const desactive = multiSecteurs && !f.secteurSelection.includes(sec.id) && f.secteurSelection.length >= MAX_SEL_IDE;
-                    return (
-                      <View key={sec.id}>
-                        <View style={s.secteurLigne}>
-                          <View style={{ flex: 1, minWidth: 0 }}>
-                            <RangeSelection actif={f.secteurSelection.includes(sec.id)} desactive={desactive}
-                              couleur={couleurSecteurDe(sec.id)} nom={sec.nom_fr} onPress={() => clicSecteur(sec.id)} />
+              {multiSecteurs ? (
+                <>
+                  {/* Niveau comparé : secteurs entre eux ou branches entre elles */}
+                  <View style={[s.segments, { marginBottom: 10 }]}>
+                    {([["secteur", "Secteurs"], ["branche", "Branches"]] as const).map(([cle, label]) => (
+                      <Pressable key={cle} onPress={() => changerNiveau(cle)} style={[s.segment, (f.compNiveau ?? "secteur") === cle && s.segmentActif]}>
+                        <Text style={[s.segmentTexte, (f.compNiveau ?? "secteur") === cle && s.segmentTexteActif]}>{label}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <View style={{ maxHeight: 300 }}>
+                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                      {(f.compNiveau ?? "secteur") === "secteur" ? (
+                        refSecteurs.map((sec: any) => (
+                          <RangeSelection key={sec.id} actif={f.secteurSelection.includes(sec.id)}
+                            desactive={!f.secteurSelection.includes(sec.id) && f.secteurSelection.length >= MAX_SEL_IDE}
+                            couleur={couleurSecteurDe(sec.id)} nom={sec.nom_fr} onPress={() => clicSecteur(sec.id)} />
+                        ))
+                      ) : (
+                        refSecteurs.map((sec: any) => {
+                          const ouvert = secteursOuverts.has(sec.id);
+                          return (
+                            <View key={sec.id}>
+                              <Pressable onPress={() => basculer(secteursOuverts, sec.id, setSecteursOuverts)} style={s.continent}>
+                                <Text style={s.continentTexte}>{sec.nom_fr.toUpperCase()}</Text>
+                                <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={12} color={T.bleu} />
+                              </Pressable>
+                              {ouvert && (sec.branches || []).map((bra: any) => (
+                                <RangeSelection key={bra.id} actif={f.secteurSelection.includes(bra.id)}
+                                  desactive={!f.secteurSelection.includes(bra.id) && f.secteurSelection.length >= MAX_SEL_IDE}
+                                  couleur={couleurSecteurDe(bra.id)} nom={bra.nom_fr} indent onPress={() => clicSecteur(bra.id)} />
+                              ))}
+                            </View>
+                          );
+                        })
+                      )}
+                    </ScrollView>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <RangeSelection actif={f.secteurSelection.includes(0)} couleur={couleurSecteurDe(0)}
+                    nom="Global des secteurs" badge="Agrégat" onPress={() => clicSecteur(0)} />
+                  <View style={s.filet} />
+                  <View style={{ maxHeight: 300 }}>
+                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                      {refSecteurs.map((sec: any) => {
+                        const ouvert = secteursOuverts.has(sec.id);
+                        return (
+                          <View key={sec.id}>
+                            <View style={s.secteurLigne}>
+                              <View style={{ flex: 1, minWidth: 0 }}>
+                                <RangeSelection actif={f.secteurSelection.includes(sec.id)}
+                                  couleur={couleurSecteurDe(sec.id)} nom={sec.nom_fr} onPress={() => clicSecteur(sec.id)} />
+                              </View>
+                              {(sec.branches || []).length > 0 && (
+                                <Pressable hitSlop={8} onPress={() => basculer(secteursOuverts, sec.id, setSecteursOuverts)} style={s.chevron}>
+                                  <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={13} color={T.gris} />
+                                </Pressable>
+                              )}
+                            </View>
+                            {ouvert && (sec.branches || []).map((bra: any) => (
+                              <RangeSelection key={bra.id} actif={f.secteurSelection.includes(bra.id)}
+                                couleur={couleurSecteurDe(bra.id)} nom={bra.nom_fr} indent onPress={() => clicSecteur(bra.id)} />
+                            ))}
                           </View>
-                          {(sec.branches || []).length > 0 && (
-                            <Pressable hitSlop={8} onPress={() => basculer(secteursOuverts, sec.id, setSecteursOuverts)} style={s.chevron}>
-                              <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={13} color={T.gris} />
-                            </Pressable>
-                          )}
-                        </View>
-                        {ouvert && (sec.branches || []).map((bra: any) => (
-                          <RangeSelection key={bra.id} actif={f.secteurSelection.includes(bra.id)}
-                            desactive={multiSecteurs && !f.secteurSelection.includes(bra.id) && f.secteurSelection.length >= MAX_SEL_IDE}
-                            couleur={couleurSecteurDe(bra.id)} nom={bra.nom_fr} indent onPress={() => clicSecteur(bra.id)} />
-                        ))}
-                      </View>
-                    );
-                  })}
-                </ScrollView>
-              </View>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                </>
+              )}
             </View>
           ) : monde ? (
             /* Groupements mondiaux */
