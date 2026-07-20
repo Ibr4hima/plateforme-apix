@@ -1,8 +1,8 @@
 // Fiche événement — feuille de détail fidèle au modal de la plateforme :
 // statut, édition, rôle APIX pastel, date, lieu, organisateur, récurrence,
 // description, participants (pays invités / entreprises invitées).
-import { Ionicons } from "@expo/vector-icons";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Feuille } from "@/components/ui";
 import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
@@ -63,27 +63,19 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
   const entreprisesInvitees = enListe(e.entreprises_invitees);
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={s.fond} onPress={onClose} />
-      <View style={s.feuille}>
-        <View style={s.poignee} />
-        <View style={s.entete}>
-          <View style={s.pilules}>
-            {st && <View style={[s.pilule, { backgroundColor: st.bg }]}><Text style={[s.piluleTexte, { color: st.c }]}>{st.label}</Text></View>}
-            {e.edition != null && <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{ordinal(e.edition)}</Text></View>}
-            {roleP && (
-              <View style={[s.pilule, { backgroundColor: `${roleP}40`, borderWidth: 1, borderColor: `${roleP}90` }]}>
-                <Text style={[s.piluleTexte, { color: foncerPastel(roleP) }]}>{e.role_apix}</Text>
-              </View>
-            )}
-          </View>
-          <Pressable onPress={onClose} hitSlop={10} style={s.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
-          </Pressable>
+    <Feuille onClose={onClose} hauteur="78%" ecart={10}
+      titre={
+        <View style={s.pilules}>
+          {st && <View style={[s.pilule, { backgroundColor: st.bg }]}><Text style={[s.piluleTexte, { color: st.c }]}>{st.label}</Text></View>}
+          {e.edition != null && <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{ordinal(e.edition)}</Text></View>}
+          {roleP && (
+            <View style={[s.pilule, { backgroundColor: `${roleP}40`, borderWidth: 1, borderColor: `${roleP}90` }]}>
+              <Text style={[s.piluleTexte, { color: foncerPastel(roleP) }]}>{e.role_apix}</Text>
+            </View>
+          )}
         </View>
-        <Text style={s.titre}>{e.nom_event}</Text>
-
-        <ScrollView style={{ marginTop: 14 }} contentContainerStyle={{ gap: 10, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
+      }
+      sousEntete={<Text style={s.titre}>{e.nom_event}</Text>}>
           <Bloc label="Date" valeur={dateEvenement(e)} />
           <Bloc label="Lieu" valeur={[e.ville, e.pays_hote_nom].filter(Boolean).join(", ") || null} />
           <Bloc label="Organisateur" valeur={e.organisateur} />
@@ -145,24 +137,14 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
               </View>
             </View>
           )}
-        </ScrollView>
-      </View>
-    </Modal>
+    </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
-  feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 22, paddingTop: 10, maxHeight: "78%",
-  },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
-  entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 10 },
   pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, flex: 1 },
   pilule: { borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4 },
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
-  fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 10, lineHeight: 25, letterSpacing: -0.3 },
   bloc: { backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord, borderRadius: 14, padding: 13 },
   blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2, marginBottom: 6 },

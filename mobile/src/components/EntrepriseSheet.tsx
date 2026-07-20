@@ -3,9 +3,9 @@
 // Informations en grille, Contact (téléphones formatés, emails),
 // Activités de l'entreprise (arbre NAEMA secteur → branche → activité),
 // Points focaux avec chips téléphone/mail.
-import { Ionicons } from "@expo/vector-icons";
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
+import { Feuille } from "@/components/ui";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
@@ -38,24 +38,14 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
   const focaux: any[] = Array.isArray(e.points_focaux) ? e.points_focaux : [];
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={s.fond} onPress={onClose} />
-      <View style={s.feuille}>
-        <View style={s.poignee} />
-        {/* En-tête : nom + pilules (comme le site) */}
-        <View style={s.entete}>
-          <Text style={s.titre}>{e.nom}</Text>
-          <Pressable onPress={onClose} hitSlop={10} style={s.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
-          </Pressable>
-        </View>
+    <Feuille onClose={onClose} titre={e.nom}
+      sousEntete={
         <View style={s.pilules}>
           {e.forme_juridique ? <View style={[s.pilule, { backgroundColor: T.filet }]}><Text style={[s.piluleTexte, { color: T.texte }]}>{e.forme_juridique}</Text></View> : null}
           {e.pole_territoire_nom ? <View style={[s.pilule, { backgroundColor: "rgba(106,27,154,0.07)" }]}><Text style={[s.piluleTexte, { color: "#6A1B9A" }]}>{e.pole_territoire_nom}</Text></View> : null}
           {e.region_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>Région de {e.region_nom}</Text></View> : null}
         </View>
-
-        <ScrollView style={{ marginTop: 16 }} contentContainerStyle={{ gap: 20, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
+      }>
           {/* Informations */}
           <View>
             <SecTitle>Informations</SecTitle>
@@ -132,22 +122,11 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
               </View>
             </View>
           ) : null}
-        </ScrollView>
-      </View>
-    </Modal>
+    </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
-  feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 22, paddingTop: 10, maxHeight: "82%",
-  },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
-  entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  titre: { flex: 1, fontSize: 19, fontFamily: POLICE.gras, color: T.encre, lineHeight: 25, letterSpacing: -0.3 },
-  fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 9 },
   pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5 },
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },

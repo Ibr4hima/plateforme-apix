@@ -54,6 +54,44 @@ export const T = {
   rayonCarte:  18,
 } as const;
 
+// ── Échelle typographique unique ─────────────────────────────────────────────
+// Cinq crans, interlignes fixés. Toute taille de texte de l'app doit venir
+// d'ici (plus de 13.5 / 11.5 dispersés au cas par cas).
+export const TYPO = {
+  display: { fontSize: 29,   lineHeight: 35, fontFamily: POLICE.gras,   letterSpacing: -0.6 },
+  titre:   { fontSize: 19,   lineHeight: 25, fontFamily: POLICE.gras,   letterSpacing: -0.3 },
+  sousTitre: { fontSize: 15, lineHeight: 20, fontFamily: POLICE.demi,   letterSpacing: -0.2 },
+  corps:   { fontSize: 15,   lineHeight: 21, fontFamily: POLICE.normal },
+  corpsDemi: { fontSize: 13, lineHeight: 18, fontFamily: POLICE.demi },
+  legende: { fontSize: 12.5, lineHeight: 18, fontFamily: POLICE.normal },
+  micro:   { fontSize: 10.5, lineHeight: 14, fontFamily: POLICE.gras,   letterSpacing: 1.4 }, // étiquettes uppercase
+} as const;
+
+// ── Échelle d'espacement ─────────────────────────────────────────────────────
+export const ESPACE = { xxs: 4, xs: 8, s: 12, m: 16, l: 24, xl: 32 } as const;
+
+// ── Rayons normalisés ────────────────────────────────────────────────────────
+export const RAYON = { petit: 10, moyen: 16, grand: 22, pilule: 999 } as const;
+
+// ── Ombres : trois niveaux d'élévation ───────────────────────────────────────
+export const OMBRE = {
+  // Posé : cards de liste
+  n1: {
+    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }, elevation: 2,
+  },
+  // Flottant : KPIs, surfaces groupées
+  n2: {
+    shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 }, elevation: 3,
+  },
+  // Détaché : sheets, éléments au-dessus du contenu
+  n3: {
+    shadowColor: "#001e3c", shadowOpacity: 0.14, shadowRadius: 28,
+    shadowOffset: { width: 0, height: 12 }, elevation: 8,
+  },
+} as const;
+
 export const BADGE = {
   en_vigueur: { label: "En vigueur",            c: "#188038", bg: "rgba(24,128,56,0.08)" },
   signe:      { label: "Signé non en vigueur",  c: "#004f91", bg: "rgba(0,79,145,0.07)" },

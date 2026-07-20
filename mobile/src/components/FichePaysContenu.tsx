@@ -6,7 +6,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { EtatCharge, EtatErreur } from "@/components/ui";
 import AccordSheet from "@/components/AccordSheet";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import Symbole from "@/components/Symbole";
@@ -42,12 +43,9 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
     queryFn: () => getJson<any>(`/statistiques/entreprises-siege?pays_id=${autreId}`).catch(() => null),
   });
 
-  if (isLoading) return <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>;
+  if (isLoading) return <EtatCharge />;
   if (isError) return (
-    <View style={s.centre}>
-      <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-      <Pressable onPress={() => refetch()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
-    </View>
+    <EtatErreur onRetry={() => refetch()} />
   );
 
   const cols = data?.pays || [];
@@ -294,10 +292,6 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
 }
 
 const s = StyleSheet.create({
-  centre: { alignItems: "center", justifyContent: "center", padding: 48, gap: 8 },
-  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   reperes: { flexDirection: "row", gap: 8, marginTop: 16 },
   repere: {
     flex: 1, alignItems: "center", gap: 5,

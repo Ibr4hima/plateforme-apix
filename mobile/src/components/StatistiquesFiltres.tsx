@@ -5,7 +5,8 @@
 // Brouillon local, appliqué d'un bloc par « Appliquer ».
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Feuille } from "@/components/ui";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { POLICE, T } from "@/theme";
 
@@ -131,18 +132,18 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
   const sen = senId !== null ? { sel: f.selection.includes(senId) } : null;
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={s.fond} onPress={onClose} />
-      <View style={s.feuille}>
-        <View style={s.poignee} />
-        <View style={s.entete}>
-          <Text style={s.titre}>Filtres</Text>
-          <Pressable onPress={onClose} hitSlop={10} style={s.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
+    <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
+      pied={
+        <View style={s.pied}>
+          <Pressable onPress={reinitialiser} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
+            <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
+          </Pressable>
+          <Pressable onPress={() => { onAppliquer(f); onClose(); }}
+            style={({ pressed }) => [s.boutonPrincipal, pressed && { opacity: 0.85 }]}>
+            <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
           </Pressable>
         </View>
-
-        <ScrollView style={{ marginTop: 12 }} contentContainerStyle={{ gap: 22, paddingBottom: 16 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      }>
           {/* Vue */}
           <View>
             <SecTitle>Vue</SecTitle>
@@ -253,34 +254,11 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
               </View>
             )}
           </View>
-
-        </ScrollView>
-
-        {/* Pied : réinitialiser + appliquer */}
-        <View style={s.pied}>
-          <Pressable onPress={reinitialiser} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
-            <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
-          </Pressable>
-          <Pressable onPress={() => { onAppliquer(f); onClose(); }}
-            style={({ pressed }) => [s.boutonPrincipal, pressed && { opacity: 0.85 }]}>
-            <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
-          </Pressable>
-        </View>
-      </View>
-    </Modal>
+    </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
-  feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 22, paddingTop: 10, maxHeight: "88%",
-  },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
-  entete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-  titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3 },
-  fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   secLigne: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6 },
   compteBadge: {

@@ -6,8 +6,9 @@
 // cycles archivés repliables.
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
+import { Feuille } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
@@ -230,37 +231,30 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
   const lien = (url: string) => Linking.openURL(url.startsWith("http") ? url : `https://${url}`);
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={s.fond} onPress={onClose} />
-      <View style={s.feuille}>
-        <View style={s.poignee} />
-        <View style={s.entete}>
-          <Text style={s.titre}>{p.nom}</Text>
-          <Pressable onPress={onClose} hitSlop={10} style={s.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
-          </Pressable>
-        </View>
-        <View style={s.pilules}>
-          {onglet !== "cibles" && badge && pastel ? (
-            <View style={[s.pilule, { backgroundColor: `${pastel}40`, borderWidth: 1, borderColor: `${pastel}90` }]}>
-              <Text style={[s.piluleTexte, { color: "#3d4450" }]}>{badge.label}</Text>
-            </View>
-          ) : null}
-          {p.siege_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.siege_nom}</Text></View> : null}
-        </View>
-
-        {/* Bascule Échanges ⇄ Infos (hors ciblés) */}
-        {onglet !== "cibles" && (
-          <View style={s.bascule}>
-            {([["echanges", "Échanges"], ["infos", "Infos investisseur"]] as const).map(([cle, label]) => (
-              <Pressable key={cle} onPress={() => setVue(cle)} style={[s.basculeBouton, vue === cle && s.basculeActif]}>
-                <Text style={[s.basculeTexte, vue === cle && s.basculeTexteActif]}>{label}</Text>
-              </Pressable>
-            ))}
+    <Feuille onClose={onClose} titre={p.nom} hauteur="84%"
+      sousEntete={
+        <>
+          <View style={s.pilules}>
+            {onglet !== "cibles" && badge && pastel ? (
+              <View style={[s.pilule, { backgroundColor: `${pastel}40`, borderWidth: 1, borderColor: `${pastel}90` }]}>
+                <Text style={[s.piluleTexte, { color: "#3d4450" }]}>{badge.label}</Text>
+              </View>
+            ) : null}
+            {p.siege_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.siege_nom}</Text></View> : null}
           </View>
-        )}
 
-        <ScrollView style={{ marginTop: 14 }} contentContainerStyle={{ gap: 20, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
+          {/* Bascule Échanges ⇄ Infos (hors ciblés) */}
+          {onglet !== "cibles" && (
+            <View style={s.bascule}>
+              {([["echanges", "Échanges"], ["infos", "Infos investisseur"]] as const).map(([cle, label]) => (
+                <Pressable key={cle} onPress={() => setVue(cle)} style={[s.basculeBouton, vue === cle && s.basculeActif]}>
+                  <Text style={[s.basculeTexte, vue === cle && s.basculeTexteActif]}>{label}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </>
+      }>
           {/* ── Infos investisseur ── */}
           {vue === "infos" && (
             <>
@@ -347,22 +341,11 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               ) : null}
             </>
           )}
-        </ScrollView>
-      </View>
-    </Modal>
+    </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
-  feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 22, paddingTop: 10, maxHeight: "84%",
-  },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
-  entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  titre: { flex: 1, fontSize: 19, fontFamily: POLICE.gras, color: T.encre, lineHeight: 25, letterSpacing: -0.3 },
-  fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 9 },
   pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5 },
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },

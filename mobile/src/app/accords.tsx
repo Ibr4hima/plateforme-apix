@@ -4,7 +4,8 @@
 // rangée de dates), tri par échéance d'expiration.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import AccordSheet, { ST_PASTEL, sousTitreStatut } from "@/components/AccordSheet";
 import HeroModule from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
@@ -138,14 +139,11 @@ export default function Accords() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={hero}
         ListEmptyComponent={
-          isLoading ? <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
+          isLoading ? <EtatCharge />
           : isError ? (
-            <View style={s.centre}>
-              <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-              <Pressable onPress={() => refetch()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
-            </View>
+            <EtatErreur onRetry={() => refetch()} />
           ) : (
-            <View style={s.centre}><Text style={s.erreurSous}>Aucun accord ne correspond à ces filtres.</Text></View>
+            <EtatVide texte="Aucun accord ne correspond à ces filtres." />
           )
         }
       />
@@ -156,10 +154,6 @@ export default function Accords() {
 
 const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
-  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { gap: 11, paddingBottom: 40 },
   rangee: { paddingHorizontal: 16 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },

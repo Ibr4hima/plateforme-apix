@@ -6,7 +6,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import HeroModule from "@/components/HeroModule";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
@@ -133,14 +134,11 @@ export default function Zones() {
     </>
   );
 
-  const vide = isLoading ? <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
+  const vide = isLoading ? <EtatCharge />
     : isError ? (
-      <View style={s.centre}>
-        <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-        <Pressable onPress={() => refetch()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
-      </View>
+      <EtatErreur onRetry={() => refetch()} />
     ) : (
-      <View style={s.centre}><Text style={s.erreurSous}>{vue === "zones" ? "Aucune zone ne correspond." : "Aucun pôle ne correspond."}</Text></View>
+      <EtatVide texte={vue === "zones" ? "Aucune zone ne correspond." : "Aucun pôle ne correspond."} />
     );
 
   return (
@@ -198,11 +196,6 @@ export default function Zones() {
 }
 
 const s = StyleSheet.create({
-  centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
-  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },

@@ -2,9 +2,9 @@
 // pilules territoriales (pôle, région, département, arrondissement),
 // Informations (investissement, date de début), Description, Thématiques
 // du projet (arbre NAEMA), Porteurs, Points focaux, Documents.
-import { Ionicons } from "@expo/vector-icons";
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
+import { Feuille } from "@/components/ui";
 import Symbole from "@/components/Symbole";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
@@ -74,24 +74,15 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
   const actIds: number[] = p.activite_ids || [];
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={s.fond} onPress={onClose} />
-      <View style={s.feuille}>
-        <View style={s.poignee} />
-        <View style={s.entete}>
-          <Text style={s.titre}>{p.titre_projet}</Text>
-          <Pressable onPress={onClose} hitSlop={10} style={s.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
-          </Pressable>
-        </View>
+    <Feuille onClose={onClose} titre={p.titre_projet}
+      sousEntete={
         <View style={s.pilules}>
           {p.pole_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.pole_nom}</Text></View> : null}
           {p.region_nom ? <View style={[s.pilule, { backgroundColor: "rgba(202,99,31,0.08)" }]}><Text style={[s.piluleTexte, { color: T.orange }]}>Région de {p.region_nom}</Text></View> : null}
           {p.departement_nom ? <View style={[s.pilule, { backgroundColor: "rgba(24,128,56,0.08)" }]}><Text style={[s.piluleTexte, { color: T.vert }]}>Département de {p.departement_nom}</Text></View> : null}
           {p.arrondissement_nom ? <View style={[s.pilule, { backgroundColor: "rgba(106,27,154,0.07)" }]}><Text style={[s.piluleTexte, { color: "#6A1B9A" }]}>Arrondissement de {p.arrondissement_nom}</Text></View> : null}
         </View>
-
-        <ScrollView style={{ marginTop: 16 }} contentContainerStyle={{ gap: 20, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
+      }>
           {/* Investissement / Date */}
           {(invest || p.date_debut) ? (
             <View>
@@ -160,22 +151,11 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
               </View>
             </View>
           ) : null}
-        </ScrollView>
-      </View>
-    </Modal>
+    </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
-  feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 22, paddingTop: 10, maxHeight: "82%",
-  },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
-  entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  titre: { flex: 1, fontSize: 19, fontFamily: POLICE.gras, color: T.encre, lineHeight: 25, letterSpacing: -0.3 },
-  fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 9 },
   pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5 },
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },

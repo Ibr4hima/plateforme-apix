@@ -6,7 +6,8 @@
 // (3 cards compteur puis activités groupées par branche).
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import { useNaema } from "@/components/ArbreNaema";
 import AvantageSheet from "@/components/AvantageSheet";
 import HeroModule from "@/components/HeroModule";
@@ -207,14 +208,11 @@ export default function Opportunites() {
     </>
   );
 
-  const vide = chargement ? <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
+  const vide = chargement ? <EtatCharge />
     : enErreur ? (
-      <View style={s.centre}>
-        <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-        <Pressable onPress={() => recharger()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
-      </View>
+      <EtatErreur onRetry={() => recharger()} />
     ) : (
-      <View style={s.centre}><Text style={s.erreurSous}>Aucun résultat ne correspond.</Text></View>
+      <EtatVide texte="Aucun résultat ne correspond." />
     );
 
   // ── Vue Projets : liste de cards ──
@@ -292,7 +290,7 @@ export default function Opportunites() {
                 </View>
               ))}
               {niveauSel && groupes.length === 0 && (
-                <View style={s.centre}><Text style={s.erreurSous}>Aucune fiche ne correspond.</Text></View>
+                <EtatVide texte="Aucune fiche ne correspond." />
               )}
             </View>
           )}
@@ -347,7 +345,7 @@ export default function Opportunites() {
               </View>
             ))}
             {secteurSel && branchesGroupes.length === 0 && (
-              <View style={s.centre}><Text style={s.erreurSous}>Aucun avantage ne correspond.</Text></View>
+              <EtatVide texte="Aucun avantage ne correspond." />
             )}
           </View>
         )}
@@ -358,11 +356,6 @@ export default function Opportunites() {
 }
 
 const s = StyleSheet.create({
-  centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
-  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },

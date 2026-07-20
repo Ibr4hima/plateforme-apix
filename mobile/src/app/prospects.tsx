@@ -4,7 +4,8 @@
 // rangée Pays | info contextuelle), fiche ProspectSheet.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import HeroModule from "@/components/HeroModule";
 import ProspectSheet, { OngletProspect, PROSPECT_PASTELS, badgeProspect, ilYa } from "@/components/ProspectSheet";
 import { fetchTous } from "@/lib/api";
@@ -128,14 +129,11 @@ export default function Prospects() {
           </>
         }
         ListEmptyComponent={
-          courante.isLoading ? <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
+          courante.isLoading ? <EtatCharge />
           : courante.isError ? (
-            <View style={s.centre}>
-              <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-              <Pressable onPress={() => courante.refetch()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
-            </View>
+            <EtatErreur onRetry={() => courante.refetch()} />
           ) : (
-            <View style={s.centre}><Text style={s.erreurSous}>Aucun prospect ne correspond.</Text></View>
+            <EtatVide texte="Aucun prospect ne correspond." />
           )
         }
       />
@@ -145,11 +143,6 @@ export default function Prospects() {
 }
 
 const s = StyleSheet.create({
-  centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
-  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },

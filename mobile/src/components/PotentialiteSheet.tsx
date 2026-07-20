@@ -2,10 +2,10 @@
 // plateforme : pilule de zone colorée par niveau, Activités porteuses
 // (arbre NAEMA), Atouts et potentialités par catégorie (chips colorées),
 // Description, Documents.
-import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
+import { Feuille } from "@/components/ui";
 import Symbole from "@/components/Symbole";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API, getJson } from "@/lib/api";
@@ -46,25 +46,14 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
   }
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={s.fond} onPress={onClose} />
-      <View style={s.feuille}>
-        <View style={s.poignee} />
-        <View style={s.entete}>
-          <Text style={s.titre}>{p.titre}</Text>
-          <Pressable onPress={onClose} hitSlop={10} style={s.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
-          </Pressable>
-        </View>
-        {zoneNom ? (
-          <View style={s.pilules}>
-            <View style={[s.pilule, { backgroundColor: `${nivCouleur}12` }]}>
-              <Text style={[s.piluleTexte, { color: nivCouleur }]}>{zoneNom}</Text>
-            </View>
+    <Feuille onClose={onClose} titre={p.titre}
+      sousEntete={zoneNom ? (
+        <View style={s.pilules}>
+          <View style={[s.pilule, { backgroundColor: `${nivCouleur}12` }]}>
+            <Text style={[s.piluleTexte, { color: nivCouleur }]}>{zoneNom}</Text>
           </View>
-        ) : null}
-
-        <ScrollView style={{ marginTop: 16 }} contentContainerStyle={{ gap: 20, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
+        </View>
+      ) : null}>
           {/* Activités porteuses */}
           {(secIds.length > 0 || braIds.length > 0) ? (
             <View>
@@ -120,22 +109,11 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
               </View>
             </View>
           ) : null}
-        </ScrollView>
-      </View>
-    </Modal>
+    </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
-  feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 22, paddingTop: 10, maxHeight: "82%",
-  },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
-  entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  titre: { flex: 1, fontSize: 19, fontFamily: POLICE.gras, color: T.encre, lineHeight: 25, letterSpacing: -0.3 },
-  fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 9 },
   pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5 },
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },

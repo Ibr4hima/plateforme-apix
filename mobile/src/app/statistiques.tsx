@@ -7,7 +7,8 @@
 // multi-pays en comparaison. Flux bilatéraux : étape suivante.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { EtatCharge, EtatErreur } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import CommercePanel from "@/components/CommercePanel";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
@@ -128,12 +129,9 @@ export default function Statistiques() {
             onFermerFiltres={() => setFiltresOuverts(false)}
             onNbFiltres={setNbFiltresCom} />
         ) : isLoading || !indicateurs || !pays ? (
-          <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
+          <EtatCharge />
         ) : isError ? (
-          <View style={s.centre}>
-            <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-            <Pressable onPress={() => refetch()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
-          </View>
+          <EtatErreur onRetry={() => refetch()} />
         ) : (
           <>
             {/* Période puis pays — une seule ligne, défilement horizontal */}
@@ -205,10 +203,6 @@ export default function Statistiques() {
 }
 
 const s = StyleSheet.create({
-  centre: { alignItems: "center", justifyContent: "center", padding: 44, gap: 8 },
-  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 16, paddingHorizontal: 16 },
   paysPastille: {
     flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, borderWidth: 1,

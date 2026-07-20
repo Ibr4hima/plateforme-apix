@@ -6,8 +6,9 @@
 // globale compare les macro-secteurs sur chaque graphe, comme le site.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { EtatCharge, EtatErreur, EtatVide, Feuille } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import { getJson } from "@/lib/api";
@@ -206,17 +207,11 @@ export default function NationalPanel({ filtresOuverts, onFermerFiltres, onNbFil
   return (
     <>
       {chargement ? (
-        <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
+        <EtatCharge />
       ) : !comparative && isError ? (
-        <View style={s.centre}>
-          <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-          <Pressable onPress={() => refetch()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
-        </View>
+        <EtatErreur onRetry={() => refetch()} />
       ) : (comparative ? !compResultats?.some(r => r.inds.length) : indicateurs.length === 0) ? (
-        <View style={s.centre}>
-          <Text style={s.erreur}>Aucune donnée pour cette sélection</Text>
-          <Text style={s.erreurSous}>Les données BDEF seront disponibles après import dans l'administration.</Text>
-        </View>
+        <EtatVide texte="Aucune donnée pour cette sélection" sousTexte="Les données BDEF seront disponibles après import dans l'administration." />
       ) : (
         <>
           {/* Période puis sélection(s) */}
@@ -379,18 +374,18 @@ function NationalFiltres({ refs, anneesDispo, valeurs, onAppliquer, onClose }: {
   };
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={s.fond} onPress={onClose} />
-      <View style={s.feuille}>
-        <View style={s.poignee} />
-        <View style={s.fEntete}>
-          <Text style={s.fTitre}>Filtres</Text>
-          <Pressable onPress={onClose} hitSlop={10} style={s.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
+    <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
+      pied={
+        <View style={s.pied}>
+          <Pressable onPress={reinitialiser} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
+            <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
+          </Pressable>
+          <Pressable onPress={() => { onAppliquer(f); onClose(); }}
+            style={({ pressed }) => [s.boutonPrincipal, pressed && { opacity: 0.85 }]}>
+            <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
           </Pressable>
         </View>
-
-        <ScrollView style={{ marginTop: 12 }} contentContainerStyle={{ gap: 22, paddingBottom: 16 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      }>
           {/* Type d'analyse */}
           <View>
             <Text style={s.fSecTitle}>TYPE D'ANALYSE</Text>
@@ -527,28 +522,11 @@ function NationalFiltres({ refs, anneesDispo, valeurs, onAppliquer, onClose }: {
               </View>
             )}
           </View>
-        </ScrollView>
-
-        <View style={s.pied}>
-          <Pressable onPress={reinitialiser} style={({ pressed }) => [s.boutonSecondaire, pressed && { backgroundColor: T.filet }]}>
-            <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
-          </Pressable>
-          <Pressable onPress={() => { onAppliquer(f); onClose(); }}
-            style={({ pressed }) => [s.boutonPrincipal, pressed && { opacity: 0.85 }]}>
-            <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
-          </Pressable>
-        </View>
-      </View>
-    </Modal>
+    </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  centre: { alignItems: "center", justifyContent: "center", padding: 44, gap: 8 },
-  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  erreurSous: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
-  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
   pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 14, paddingHorizontal: 16 },
   periodePastille: {
     borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5,
@@ -576,15 +554,6 @@ const s = StyleSheet.create({
   deltaTexte: { fontSize: 10, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   source: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 18 },
   // Feuille de filtres
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
-  feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 22, paddingTop: 10, maxHeight: "88%",
-  },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
-  fEntete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-  fTitre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3 },
-  fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   fSecLigne: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
   fSecTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginBottom: 10 },
   fCompte: {

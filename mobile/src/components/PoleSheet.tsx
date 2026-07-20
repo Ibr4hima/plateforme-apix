@@ -2,12 +2,12 @@
 // du site : surtitre à carré de couleur, régions en pilules, compteur
 // d'entreprises installées, zones d'investissement du pôle (chaque ligne
 // ouvre la fiche zone), répartition sectorielle, documents.
-import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
 import ZoneSheet from "@/components/ZoneSheet";
+import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
@@ -49,32 +49,24 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
   const totalSect = compte.primaire + compte.secondaire + compte.tertiaire;
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={s.fond} onPress={onClose} />
-      <View style={s.feuille}>
-        <View style={s.poignee} />
-        {/* En-tête : surtitre à carré de couleur + nom + régions */}
-        <View style={s.entete}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <View style={s.surtitreLigne}>
-              <View style={[s.carre, { backgroundColor: couleur }]} />
-              <Text style={s.surtitre}>PÔLE TERRITORIAL</Text>
-            </View>
-            <Text style={s.titre}>{pole.pole_territoire}</Text>
+    <Feuille onClose={onClose}
+      titre={
+        <>
+          <View style={s.surtitreLigne}>
+            <View style={[s.carre, { backgroundColor: couleur }]} />
+            <Text style={s.surtitre}>PÔLE TERRITORIAL</Text>
           </View>
-          <Pressable onPress={onClose} hitSlop={10} style={s.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
-          </Pressable>
+          <Text style={s.titre}>{pole.pole_territoire}</Text>
+        </>
+      }
+      sousEntete={regions.length > 0 ? (
+        <View style={s.pilules}>
+          {regions.map(r => (
+            <View key={r} style={s.pilule}><Text style={s.piluleTexte}>{r}</Text></View>
+          ))}
         </View>
-        {regions.length > 0 && (
-          <View style={s.pilules}>
-            {regions.map(r => (
-              <View key={r} style={s.pilule}><Text style={s.piluleTexte}>{r}</Text></View>
-            ))}
-          </View>
-        )}
-
-        <ScrollView style={{ marginTop: 16 }} contentContainerStyle={{ gap: 20, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
+      ) : null}
+      pied={zoneOuverte ? <ZoneSheet zone={zoneOuverte} onClose={() => setZoneOuverte(null)} /> : null}>
           {/* Entreprises installées */}
           <View style={s.kpi}>
             <Text style={s.kpiLabel}>ENTREPRISE{nbInst !== 1 ? "S" : ""} INSTALLÉE{nbInst !== 1 ? "S" : ""}</Text>
@@ -140,28 +132,15 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
               </View>
             </View>
           )}
-        </ScrollView>
-
-        {/* Fiche zone par-dessus la fiche pôle */}
-        {zoneOuverte && <ZoneSheet zone={zoneOuverte} onClose={() => setZoneOuverte(null)} />}
-      </View>
-    </Modal>
+    </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
-  feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 22, paddingTop: 10, maxHeight: "82%",
-  },
-  poignee: { alignSelf: "center", width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginBottom: 12 },
-  entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
   surtitreLigne: { flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 5 },
   carre: { width: 12, height: 12, borderRadius: 3, borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" },
   surtitre: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4 },
   titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, lineHeight: 25, letterSpacing: -0.3 },
-  fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 9 },
   pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, backgroundColor: T.bleuVoile },
   piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu },

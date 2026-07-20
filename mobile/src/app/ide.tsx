@@ -8,7 +8,8 @@
 // L'onglet Investissements nationaux arrive à l'étape suivante.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule from "@/components/HeroModule";
@@ -443,17 +444,11 @@ export default function Ide() {
             </ScrollView>
 
             {chargement ? (
-              <View style={s.centre}><ActivityIndicator color={T.bleu} size="large" /></View>
+              <EtatCharge />
             ) : enErreur ? (
-              <View style={s.centre}>
-                <Text style={s.erreur}>Impossible de joindre la plateforme.</Text>
-                <Pressable onPress={() => recharger()} style={s.bouton}><Text style={s.boutonTexte}>Réessayer</Text></Pressable>
-              </View>
+              <EtatErreur onRetry={() => recharger()} />
             ) : monde && !f.grpSelection.length ? (
-              <View style={s.centre}>
-                <Text style={s.erreur}>Sélectionnez un groupement</Text>
-                <Text style={s.bientotTexte}>Choisissez jusqu'à 4 groupements dans le filtre.</Text>
-              </View>
+              <EtatVide texte="Sélectionnez un groupement" sousTexte="Choisissez jusqu'à 4 groupements dans le filtre." />
             ) : (
               <>
                 {/* Période puis sélection — une seule ligne à défilement */}
@@ -522,13 +517,6 @@ export default function Ide() {
 }
 
 const s = StyleSheet.create({
-  centre: { alignItems: "center", justifyContent: "center", padding: 44, gap: 8 },
-  erreur: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, textAlign: "center" },
-  bouton: { marginTop: 12, backgroundColor: T.bleuAction, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  boutonTexte: { color: "#fff", fontFamily: POLICE.gras, fontSize: 13 },
-  bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: T.bleuVoile, alignItems: "center", justifyContent: "center", marginBottom: 6 },
-  bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
-  bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
   chipsRangee: { flexGrow: 1, justifyContent: "center", gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
   chipFiltreActif: { backgroundColor: T.blocFond, borderColor: T.blocBord },
