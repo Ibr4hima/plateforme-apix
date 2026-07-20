@@ -4,7 +4,7 @@
 // (secteur → branche → activité) et cascade Localisation (région →
 // département → arrondissement), pied Réinitialiser / Terminé.
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Feuille, Tapable } from "@/components/ui";
 import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
@@ -36,6 +36,18 @@ export function Coche({ label, sel, onPress, retrait = 0 }: {
   );
 }
 
+// Cadre doux : contient une liste défilante, rien ne déborde sur la suite
+function CadreListe({ hauteurMax, children }: { hauteurMax: number; children: React.ReactNode }) {
+  return (
+    <View style={s.cadre}>
+      <ScrollView style={{ maxHeight: hauteurMax }} nestedScrollEnabled showsVerticalScrollIndicator
+        keyboardShouldPersistTaps="handled">
+        {children}
+      </ScrollView>
+    </View>
+  );
+}
+
 // Section multi-sélection simple (avec recherche au-delà de 12 options)
 export function SectionCoches({ titre, options, sel, onBascule }: {
   titre: string; options: string[]; sel: string[]; onBascule: (v: string) => void;
@@ -50,12 +62,12 @@ export function SectionCoches({ titre, options, sel, onBascule }: {
         <TextInput value={q} onChangeText={setQ} placeholder="Rechercher…" placeholderTextColor={T.gris}
           autoCorrect={false} style={s.champ} />
       )}
-      <View style={{ maxHeight: 236 }}>
-        {visibles.slice(0, 40).map(o => (
+      <CadreListe hauteurMax={248}>
+        {visibles.map(o => (
           <Coche key={o} label={o} sel={sel.includes(o)} onPress={() => onBascule(o)} />
         ))}
-        {visibles.length > 40 && <Text style={s.tronque}>Affinez la recherche ({visibles.length - 40} de plus)…</Text>}
-      </View>
+        {!visibles.length && <Text style={s.tronque}>Aucune option ne correspond.</Text>}
+      </CadreListe>
     </View>
   );
 }
@@ -73,6 +85,7 @@ export function CascadeThema({ secteurs, secteursSel, branchesSel, activitesSel,
   return (
     <View>
       <TitreSection titre="Thématiques" nb={secteursSel.length + branchesSel.length + activitesSel.length} />
+      <CadreListe hauteurMax={300}>
       {secteurs.map(sec => (
         <View key={sec.nom}>
           <View style={s.rangeePliable}>
@@ -105,6 +118,7 @@ export function CascadeThema({ secteurs, secteursSel, branchesSel, activitesSel,
           ))}
         </View>
       ))}
+      </CadreListe>
     </View>
   );
 }
@@ -143,6 +157,7 @@ export function CascadeGeo({ regions, regionsSel, deptsSel, arrsSel, onRegion, o
   return (
     <View>
       <TitreSection titre="Localisation" nb={regionsSel.length + deptsSel.length + arrsSel.length} />
+      <CadreListe hauteurMax={300}>
       {regions.map(reg => (
         <View key={reg.nom}>
           <View style={s.rangeePliable}>
@@ -174,6 +189,7 @@ export function CascadeGeo({ regions, regionsSel, deptsSel, arrsSel, onRegion, o
           ))}
         </View>
       ))}
+      </CadreListe>
     </View>
   );
 }
@@ -227,7 +243,11 @@ const s = StyleSheet.create({
     fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, backgroundColor: T.blocBord,
     borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, overflow: "hidden", fontVariant: ["tabular-nums"],
   },
-  coche: { flexDirection: "row", alignItems: "center", gap: 9, paddingVertical: 7.5, paddingRight: 8, borderRadius: 8 },
+  cadre: {
+    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce,
+    borderRadius: 12, paddingHorizontal: 6, paddingVertical: 4, overflow: "hidden",
+  },
+  coche: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9, paddingRight: 8, borderRadius: 8 },
   point: { width: 11, height: 11, borderRadius: 6, borderWidth: 2, borderColor: T.grisClair },
   cocheTexte: { flex: 1, fontSize: 13, fontFamily: POLICE.normal, color: T.texte },
   rangeePliable: { flexDirection: "row", alignItems: "center" },
