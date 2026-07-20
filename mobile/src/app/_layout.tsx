@@ -7,6 +7,8 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import { View } from "react-native";
+import { marquerOrigine } from "@/lib/origineTap";
 import { POLICE, T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -27,6 +29,10 @@ export default function RacineLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <StatusBar style="light" />
+      {/* Capture passive de l'origine de chaque toucher (transitions
+          contextuelles des feuilles) — ne revendique jamais le geste */}
+      <View style={{ flex: 1 }}
+        onStartShouldSetResponderCapture={e => { marquerOrigine(e.nativeEvent.pageY); return false; }}>
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: T.heroFond },
@@ -46,6 +52,7 @@ export default function RacineLayout() {
         <Stack.Screen name="code/index" options={{ headerShown: false }} />
         <Stack.Screen name="code/[chapitre]" options={{ headerShown: false }} />
       </Stack>
+      </View>
     </QueryClientProvider>
   );
 }

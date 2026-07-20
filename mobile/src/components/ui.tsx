@@ -5,13 +5,14 @@
 // Feuille (échafaudage des bottom sheets) et les états de chargement /
 // erreur / vide. Jetons : T, TYPO, ESPACE, RAYON, OMBRE (theme.ts).
 import { Ionicons } from "@expo/vector-icons";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator, Animated, Modal, Pressable, ScrollView,
+  ActivityIndicator, Animated, Dimensions, Modal, Pressable, ScrollView,
   StyleProp, StyleSheet, Text, View, ViewStyle,
 } from "react-native";
 import Symbole from "@/components/Symbole";
 import { foncerPastel } from "@/lib/couleurs";
+import { origineRecente } from "@/lib/origineTap";
 import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 const PressableAnime = Animated.createAnimatedComponent(Pressable);
@@ -123,21 +124,43 @@ export function RangeeStats({ items }: {
 // ── Feuille : l'échafaudage des bottom sheets ────────────────────────────────
 // Fond assombri, poignée, en-tête (titre + fermer), sous-en-tête libre
 // (pilules…), corps défilant. `pied` fixe optionnel (boutons de filtres).
+// Transition contextuelle : la feuille « pousse » depuis la card touchée
+// (origine capturée à la racine) au lieu de glisser génériquement.
 export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 20, pied, sansDefilement, children }: {
   titre: React.ReactNode; sousEntete?: React.ReactNode; onClose: () => void;
   hauteur?: `${number}%`; ecart?: number; pied?: React.ReactNode; sansDefilement?: boolean;
   children: React.ReactNode;
 }) {
+  const H = Dimensions.get("window").height;
+  // Point de départ : la card touchée si le tap vient d'avoir lieu, le bas sinon
+  const [depart] = useState(() => {
+    const y = origineRecente();
+    if (y === null) return H * 0.35;
+    return Math.max(-H * 0.25, Math.min(y - H * 0.62, H * 0.35));
+  });
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(anim, { toValue: 1, speed: 14, bounciness: 4, useNativeDriver: true }).start();
+  }, [anim]);
+  const fermer = () => {
+    Animated.timing(anim, { toValue: 0, duration: 160, useNativeDriver: true }).start(() => onClose());
+  };
+
+  const fondOpacite = anim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+  const glisse = anim.interpolate({ inputRange: [0, 1], outputRange: [depart, 0] });
+  const zoom = anim.interpolate({ inputRange: [0, 1], outputRange: [0.86, 1] });
+  const opacite = anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1, 1] });
+
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={sf.fond} onPress={onClose} />
-      <View style={[sf.feuille, { maxHeight: hauteur }]}>
+    <Modal visible transparent animationType="none" onRequestClose={fermer}>
+      <PressableAnime style={[sf.fond, { opacity: fondOpacite }]} onPress={fermer} />
+      <Animated.View style={[sf.feuille, { maxHeight: hauteur, opacity: opacite, transform: [{ translateY: glisse }, { scale: zoom }] }]}>
         <View style={sf.poignee} />
         <View style={sf.entete}>
           {typeof titre === "string"
             ? <Text style={sf.titre}>{titre}</Text>
             : <View style={{ flex: 1, minWidth: 0 }}>{titre}</View>}
-          <Tapable onPress={onClose} hitSlop={10} style={sf.fermer}>
+          <Tapable onPress={fermer} hitSlop={10} style={sf.fermer}>
             <Ionicons name="close" size={17} color={T.texte} />
           </Tapable>
         </View>
@@ -149,7 +172,7 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
           </ScrollView>
         )}
         {pied}
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
