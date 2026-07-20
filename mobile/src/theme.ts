@@ -101,8 +101,8 @@ export const BADGE = {
 // Les 8 modules de la plateforme — mêmes intitulés et mêmes icônes
 // Material Symbols que le menu Modules du site.
 export const MODULES = [
-  { cle: "ide",          titre: "Investissements privés",        sous: "Flux & stocks d'IDE",            icone: "finance_mode",      href: "/ide" },
-  { cle: "statistiques", titre: "Échanges commerciaux",          sous: "Flux bilatéraux",                icone: "currency_exchange", href: "/statistiques" },
+  { cle: "ide",          titre: "Investissements privés",        sous: "Flux & stocks d'IDE",            icone: "finance_mode",      href: "/donnees?module=ide" },
+  { cle: "statistiques", titre: "Échanges commerciaux",          sous: "Flux bilatéraux",                icone: "currency_exchange", href: "/donnees?module=echanges" },
   { cle: "prospects",    titre: "Prospects",                     sous: "Investisseurs suivis",           icone: "frame_inspect",     href: "/prospects" },
   { cle: "entreprises",  titre: "Entreprises installées",        sous: "Registre des entreprises",       icone: "enterprise",        href: "/entreprises" },
   { cle: "zones",        titre: "Zones d'investissement",        sous: "ZES, ZAI & pôles",               icone: "real_estate_agent", href: "/zones" },

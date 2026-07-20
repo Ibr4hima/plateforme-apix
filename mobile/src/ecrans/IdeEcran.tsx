@@ -13,6 +13,7 @@ import { EtatCharge, EtatErreur, EtatVide } from "@/components/ui";
 import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule from "@/components/HeroModule";
+import type { BasculeModule } from "@/ecrans/basculeModule";
 import IdeFiltres, { FiltresIde } from "@/components/IdeFiltres";
 import NationalPanel from "@/components/NationalPanel";
 import Symbole from "@/components/Symbole";
@@ -100,7 +101,7 @@ function indicatifDe(k: KpiResult): string | null {
   return null;
 }
 
-export default function Ide() {
+export default function IdeEcran({ bascule }: { bascule?: BasculeModule }) {
   const [onglet, setOnglet] = useState("ide");
   const [sousType, setSousType] = useState<string>("fluxstock");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
@@ -417,7 +418,7 @@ export default function Ide() {
   return (
     <>
       <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
-        <HeroModule titre="Investissements privés"
+        <HeroModule titre="Investissements privés" bascule={bascule}
           segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
           bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />
 

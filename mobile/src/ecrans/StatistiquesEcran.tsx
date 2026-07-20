@@ -13,6 +13,7 @@ import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
 import CommercePanel from "@/components/CommercePanel";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule from "@/components/HeroModule";
+import type { BasculeModule } from "@/ecrans/basculeModule";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
@@ -24,7 +25,7 @@ const ONGLETS = [
   { cle: "commerce",    label: "Flux bilatéraux" },
 ] as const;
 
-export default function Statistiques() {
+export default function StatistiquesEcran({ bascule }: { bascule?: BasculeModule }) {
   const [onglet, setOnglet] = useState("indicateurs");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [nbFiltresCom, setNbFiltresCom] = useState(0);
@@ -119,7 +120,7 @@ export default function Statistiques() {
   return (
     <>
       <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
-        <HeroModule titre="Échanges commerciaux"
+        <HeroModule titre="Échanges commerciaux" bascule={bascule}
           segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
           bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "indicateurs" ? nbFiltres : nbFiltresCom) || undefined }} />
 

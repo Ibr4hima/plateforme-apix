@@ -9,19 +9,34 @@ import { POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string };
 
-export default function HeroModule({ titre, sousTitre, recherche, segments, bouton, children }: {
+export default function HeroModule({ titre, sousTitre, recherche, segments, bascule, bouton, children }: {
   titre: string;
   sousTitre?: string;
   recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string };
   segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
+  bascule?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void }; // sélecteur de module au-dessus du titre (onglet Données)
   bouton?: { icone: string; onPress: () => void; badge?: number }; // action en verre à droite du titre
   children?: React.ReactNode; // contenu libre inséré sous la recherche
 }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[s.hero, { paddingTop: insets.top + 22 }]}>
+    <View style={[s.hero, { paddingTop: insets.top + (bascule ? 14 : 22) }]}>
       <View style={s.haloHaut} />
       <View style={s.haloBas} />
+
+      {bascule && (
+        <View style={s.bascule}>
+          {bascule.options.map(o => {
+            const actif = bascule.valeur === o.cle;
+            return (
+              <Pressable key={o.cle} onPress={() => bascule.onChange(o.cle)}
+                style={[s.basculePilule, actif && s.basculePiluleActive]}>
+                <Text style={[s.basculeTexte, actif && s.basculeTexteActif]}>{o.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
 
       <View style={s.ligneTitre}>
         <Text style={[s.titre, { flexShrink: 1 }]}>{titre}</Text>
@@ -74,6 +89,14 @@ const s = StyleSheet.create({
   },
   haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
   haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
+  bascule: { flexDirection: "row", gap: 7, marginBottom: 14 },
+  basculePilule: {
+    borderRadius: 999, paddingHorizontal: 13, paddingVertical: 6,
+    backgroundColor: "rgba(255,255,255,0.10)", borderWidth: 1, borderColor: "rgba(255,255,255,0.16)",
+  },
+  basculePiluleActive: { backgroundColor: "#fff", borderColor: "#fff" },
+  basculeTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.80)" },
+  basculeTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
   ligneTitre: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   titre: { color: "#fff", fontSize: 29, fontFamily: POLICE.gras, lineHeight: 35, letterSpacing: -0.6 },
   action: {

@@ -35,17 +35,14 @@ export default function RacineLayout() {
           headerBackTitleStyle: { fontFamily: POLICE.moyen },
           contentStyle: { backgroundColor: T.fond },
         }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(onglets)" options={{ headerShown: false }} />
         <Stack.Screen name="accords" options={{ headerShown: false }} />
         <Stack.Screen name="evenements" options={{ headerShown: false }} />
         <Stack.Screen name="entreprises" options={{ headerShown: false }} />
         <Stack.Screen name="zones" options={{ headerShown: false }} />
         <Stack.Screen name="opportunites" options={{ headerShown: false }} />
         <Stack.Screen name="prospects" options={{ headerShown: false }} />
-        <Stack.Screen name="statistiques" options={{ headerShown: false }} />
-        <Stack.Screen name="ide" options={{ headerShown: false }} />
         <Stack.Screen name="fiche-pays/index" options={{ headerShown: false }} />
-        <Stack.Screen name="recherche" options={{ title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: T.carte }, headerTintColor: T.encre }} />
         <Stack.Screen name="code/index" options={{ headerShown: false }} />
         <Stack.Screen name="code/[chapitre]" options={{ headerShown: false }} />
       </Stack>
