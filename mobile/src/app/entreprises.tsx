@@ -10,7 +10,9 @@ import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-nat
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
+import { useNaemaArbre } from "@/components/ArbreNaema";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
+import { CascadeGeo, CascadeThema, Coche, FeuilleFiltres, PlageAnnees, SectionCoches, TitreSection, basculer, construireArbreGeo } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
@@ -67,6 +69,36 @@ export default function Entreprises() {
     queryKey: ["entreprises"], queryFn: () => fetchTous("/entreprises"),
   });
 
+  // Feuille de filtres — mêmes filtres que la barre latérale du site
+  const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [formesSel, setFormesSel] = useState<string[]>([]);
+  const [secteursSel, setSecteursSel] = useState<string[]>([]);
+  const [branchesSel, setBranchesSel] = useState<string[]>([]);
+  const [activitesSel, setActivitesSel] = useState<string[]>([]);
+  const [regionsSel, setRegionsSel] = useState<string[]>([]);
+  const [deptsSel, setDeptsSel] = useState<string[]>([]);
+  const [arrsSel, setArrsSel] = useState<string[]>([]);
+  const [polesSel, setPolesSel] = useState<string[]>([]);
+  // Période de création : 0 = borne non resserrée
+  const [anneeDebut, setAnneeDebut] = useState(0);
+  const [anneeFin, setAnneeFin] = useState(0);
+  const { secteurs, branches, activites, arbre } = useNaemaArbre();
+
+  // Options construites depuis les données
+  const triFr = (a: string, b: string) => a.localeCompare(b, "fr");
+  const formesOptions = useMemo(() =>
+    ([...new Set((data || []).map((e: any) => e.forme_juridique).filter(Boolean))] as string[]).sort(triFr), [data]);
+  const polesOptions = useMemo(() =>
+    ([...new Set((data || []).map((e: any) => e.pole_territoire_nom).filter(Boolean))] as string[]).sort(triFr), [data]);
+  const regionsArbre = useMemo(() => construireArbreGeo(data || []), [data]);
+  const bornesAnnees = useMemo<[number, number]>(() => {
+    const annees = (data || []).map((e: any) => parseInt((e.date_creation || "").split("-")[0], 10)).filter((y: number) => !isNaN(y));
+    return annees.length ? [Math.min(...annees), Math.max(...annees)] : [0, 0];
+  }, [data]);
+  const debutEff = anneeDebut || bornesAnnees[0];
+  const finEff = anneeFin || bornesAnnees[1];
+  const plageActive = bornesAnnees[0] < bornesAnnees[1] && (debutEff > bornesAnnees[0] || finEff < bornesAnnees[1]);
+
   const filtres = useMemo(() => {
     let liste = data || [];
     if (q.trim()) {
@@ -76,8 +108,46 @@ export default function Entreprises() {
         (e.region_nom || "").toLowerCase().includes(t) ||
         (e.pole_territoire_nom || "").toLowerCase().includes(t));
     }
+    // Prédicats de la barre latérale du site
+    if (formesSel.length) liste = liste.filter((e: any) => formesSel.includes(e.forme_juridique || ""));
+    if (secteursSel.length) {
+      const ids = secteursSel.map(n => secteurs.find((x: any) => x.nom === n)?.id).filter(Boolean);
+      liste = liste.filter((e: any) => ids.some((id: any) => (e.secteur_ids || []).includes(id)));
+    }
+    if (branchesSel.length) {
+      const ids = branchesSel.map(n => branches.find((x: any) => x.nom === n)?.id).filter(Boolean);
+      liste = liste.filter((e: any) => ids.some((id: any) => (e.branche_ids || []).includes(id)));
+    }
+    if (activitesSel.length) {
+      const ids = activitesSel.map(n => activites.find((x: any) => x.nom === n)?.id).filter(Boolean);
+      liste = liste.filter((e: any) => ids.some((id: any) => (e.activite_ids || []).includes(id)));
+    }
+    if (regionsSel.length) liste = liste.filter((e: any) => regionsSel.includes(e.region_nom || ""));
+    if (deptsSel.length) liste = liste.filter((e: any) => deptsSel.includes(e.departement_nom || ""));
+    if (arrsSel.length) liste = liste.filter((e: any) => arrsSel.includes(e.arrondissement_nom || ""));
+    if (polesSel.length) liste = liste.filter((e: any) => polesSel.includes(e.pole_territoire_nom || ""));
+    if (plageActive) liste = liste.filter((e: any) => {
+      if (!e.date_creation) return true;
+      const y = parseInt(e.date_creation.split("-")[0], 10);
+      return isNaN(y) || (y >= debutEff && y <= finEff);
+    });
     return [...liste].sort((a: any, b: any) => (a.nom || "").localeCompare(b.nom || "", "fr"));
-  }, [data, q]);
+  }, [data, q, formesSel, secteursSel, branchesSel, activitesSel, regionsSel, deptsSel, arrsSel, polesSel, plageActive, debutEff, finEff, secteurs, branches, activites]);
+
+  const nbFiltres = formesSel.length + secteursSel.length + branchesSel.length + activitesSel.length +
+    regionsSel.length + deptsSel.length + arrsSel.length + polesSel.length + (plageActive ? 1 : 0);
+  const reinitFiltres = () => {
+    setFormesSel([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]);
+    setRegionsSel([]); setDeptsSel([]); setArrsSel([]); setPolesSel([]);
+    setAnneeDebut(0); setAnneeFin(0);
+  };
+  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
+
+  // Toggles en cascade du site : secteur remet branches + activités, région remet depts + arrs…
+  const surSecteur = (v: string) => { setSecteursSel(p => basculer(p, v)); setBranchesSel([]); setActivitesSel([]); };
+  const surBranche = (v: string) => { setBranchesSel(p => basculer(p, v)); setActivitesSel([]); };
+  const surRegion = (v: string) => { setRegionsSel(p => basculer(p, v)); setDeptsSel([]); setArrsSel([]); };
+  const surDept = (v: string) => { setDeptsSel(p => basculer(p, v)); setArrsSel([]); };
 
   // Vue territoriale : groupes par région (pastel stable par région)
   const PASTELS = Object.values(POLE_COULEURS);
@@ -99,7 +169,8 @@ export default function Entreprises() {
     <>
       <HeroModule titre="Entreprises installées"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: VUES, valeur: vue, onChange: v => { setVue(v); setPoleOuvert(null); } }} />
+        segments={{ options: VUES, valeur: vue, onChange: v => { setVue(v); setPoleOuvert(null); } }}
+        bouton={boutonFiltres} />
       {!isLoading && !isError && (
         <Text style={s.compte}>
           {vue === "liste"
@@ -181,8 +252,37 @@ export default function Entreprises() {
           ListEmptyComponent={vide}
         />
       )}
-      <BarreHero titre="Entreprises installées" defilY={defilY} />
+      <BarreHero titre="Entreprises installées" defilY={defilY} bouton={boutonFiltres} />
       {selec && <EntrepriseSheet entreprise={selec} onClose={() => setSelec(null)} />}
+      {filtresOuverts && (
+        <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
+          {/* Forme juridique : libellé sans le suffixe entre parenthèses, matching sur la valeur brute */}
+          <View>
+            <TitreSection titre="Forme juridique" nb={formesSel.length} />
+            {formesOptions.map(f => (
+              <Coche key={f} label={formeCourte(f)} sel={formesSel.includes(f)}
+                onPress={() => setFormesSel(p => basculer(p, f))} />
+            ))}
+          </View>
+          {bornesAnnees[0] < bornesAnnees[1] && (
+            <PlageAnnees key={`${debutEff}-${finEff}`} titre="Période de création"
+              min={bornesAnnees[0]} max={bornesAnnees[1]} debut={debutEff} fin={finEff}
+              onChange={(d, f) => { setAnneeDebut(d); setAnneeFin(f); }} />
+          )}
+          <CascadeThema secteurs={arbre}
+            secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
+            onSecteur={surSecteur} onBranche={surBranche}
+            onActivite={v => setActivitesSel(p => basculer(p, v))} />
+          <CascadeGeo regions={regionsArbre}
+            regionsSel={regionsSel} deptsSel={deptsSel} arrsSel={arrsSel}
+            onRegion={surRegion} onDept={surDept}
+            onArr={v => setArrsSel(p => basculer(p, v))} />
+          {polesOptions.length > 0 && (
+            <SectionCoches titre="Pôle territoire" options={polesOptions} sel={polesSel}
+              onBascule={v => setPolesSel(p => basculer(p, v))} />
+          )}
+        </FeuilleFiltres>
+      )}
     </>
   );
 }

@@ -8,7 +8,9 @@ import { useMemo, useState } from "react";
 import { Animated, Pressable, SectionList, StyleSheet, Text, View } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
+import { useNaemaArbre } from "@/components/ArbreNaema";
 import EvenementSheet, { ROLE_PASTEL, dateEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
+import { CascadeThema, FeuilleFiltres, SectionCoches, basculer } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import { fetchTous } from "@/lib/api";
 import { foncerPastel } from "@/lib/couleurs";
@@ -100,9 +102,23 @@ export default function Evenements() {
   const [selec, setSelec] = useState<any>(null);
   const { defilY, onScroll } = useHeroDefilant();
 
+  // Feuille de filtres — mêmes filtres que la barre latérale du site
+  const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [paysSel, setPaysSel] = useState<string[]>([]);
+  const [secteursSel, setSecteursSel] = useState<string[]>([]);
+  const [branchesSel, setBranchesSel] = useState<string[]>([]);
+  const [activitesSel, setActivitesSel] = useState<string[]>([]);
+  const { arbre } = useNaemaArbre();
+
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["evenements"], queryFn: () => fetchTous("/evenements"),
   });
+
+  // Pays hôtes présents dans les données (tri français)
+  const paysOptions = useMemo(() =>
+    ([...new Set((data || []).map((e: any) => e.pays_hote_nom).filter(Boolean))] as string[])
+      .sort((a, b) => a.localeCompare(b, "fr")),
+  [data]);
 
   // Prochain événement (même règle que l'accueil / le site)
   const prochainId = useMemo(() => {
@@ -123,6 +139,11 @@ export default function Evenements() {
         (e.ville || "").toLowerCase().includes(t) ||
         (e.pays_hote_nom || "").toLowerCase().includes(t));
     }
+    // Prédicats de la barre latérale du site (matching par noms)
+    if (paysSel.length) liste = liste.filter((e: any) => paysSel.includes(e.pays_hote_nom || ""));
+    if (secteursSel.length) liste = liste.filter((e: any) => secteursSel.some(s => (e.secteur_noms || []).includes(s)));
+    if (branchesSel.length) liste = liste.filter((e: any) => branchesSel.some(b => (e.branche_noms || []).includes(b)));
+    if (activitesSel.length) liste = liste.filter((e: any) => activitesSel.some(a => (e.activite_noms || []).includes(a)));
     // Tri chronologique décroissant (frise du site) ; les sans-date à la fin
     return [...liste].sort((a: any, b: any) => {
       const da = dateDe(a), db = dateDe(b);
@@ -131,7 +152,11 @@ export default function Evenements() {
       if (!db) return -1;
       return db.getTime() - da.getTime();
     });
-  }, [data, q, statut]);
+  }, [data, q, statut, paysSel, secteursSel, branchesSel, activitesSel]);
+
+  const nbFiltres = paysSel.length + secteursSel.length + branchesSel.length + activitesSel.length;
+  const reinitFiltres = () => { setPaysSel([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
+  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
 
   // Frise : groupes par année (ordre décroissant, comme le site)
   const sections = useMemo(() => {
@@ -149,7 +174,8 @@ export default function Evenements() {
     <>
       <HeroModule titre="Événements"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: STATUTS, valeur: statut, onChange: setStatut }} />
+        segments={{ options: STATUTS, valeur: statut, onChange: setStatut }}
+        bouton={boutonFiltres} />
       {!isLoading && !isError && (
         <Text style={s.compte}>{filtres.length} événement{filtres.length > 1 ? "s" : ""}</Text>
       )}
@@ -205,8 +231,19 @@ export default function Evenements() {
         ListHeaderComponent={hero}
         ListEmptyComponent={vide}
       />
-      <BarreHero titre="Événements" defilY={defilY} />
+      <BarreHero titre="Événements" defilY={defilY} bouton={boutonFiltres} />
       {selec && <EvenementSheet ev={selec} onClose={() => setSelec(null)} />}
+      {filtresOuverts && (
+        <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
+          <SectionCoches titre="Pays hôte" options={paysOptions} sel={paysSel}
+            onBascule={v => setPaysSel(p => basculer(p, v))} />
+          <CascadeThema secteurs={arbre}
+            secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
+            onSecteur={v => setSecteursSel(p => basculer(p, v))}
+            onBranche={v => setBranchesSel(p => basculer(p, v))}
+            onActivite={v => setActivitesSel(p => basculer(p, v))} />
+        </FeuilleFiltres>
+      )}
     </>
   );
 }

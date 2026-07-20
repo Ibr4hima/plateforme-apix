@@ -2,7 +2,9 @@
 // (points bleu / orange / vert, indentation à filet). Partagé entre la
 // fiche entreprise et la fiche zone (« Activités autorisées »).
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import type { SecteurArbre } from "@/components/FiltresListe";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
 
@@ -13,6 +15,20 @@ export function useNaema() {
   const branches  = useQuery({ queryKey: ["ref", "branches"],  queryFn: () => getJson<any[]>("/entreprises/ref/branches"),  ...OPTS }).data || [];
   const activites = useQuery({ queryKey: ["ref", "activites"], queryFn: () => getJson<any[]>("/entreprises/ref/activites"), ...OPTS }).data || [];
   return { secteurs, branches, activites };
+}
+
+// Arbre par noms pour la CascadeThema des feuilles de filtres, avec les
+// listes plates pour convertir les noms sélectionnés en ids (comme le site).
+export function useNaemaArbre() {
+  const { secteurs, branches, activites } = useNaema();
+  const arbre = useMemo<SecteurArbre[]>(() => secteurs.map((sec: any) => ({
+    nom: sec.nom,
+    branches: branches.filter((b: any) => b.secteur_id === sec.id).map((b: any) => ({
+      nom: b.nom,
+      activites: activites.filter((a: any) => a.branche_id === b.id).map((a: any) => ({ nom: a.nom })),
+    })),
+  })), [secteurs, branches, activites]);
+  return { secteurs, branches, activites, arbre };
 }
 
 export default function ArbreNaema({ secIds, braIds, actIds }: { secIds: number[]; braIds: number[]; actIds: number[] }) {

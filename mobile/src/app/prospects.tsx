@@ -8,6 +8,7 @@ import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-nat
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
+import { FeuilleFiltres, SectionCoches, basculer } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import ProspectSheet, { OngletProspect, PROSPECT_PASTELS, badgeProspect, ilYa } from "@/components/ProspectSheet";
 import { fetchTous } from "@/lib/api";
@@ -97,6 +98,24 @@ export default function Prospects() {
   const contact = useQuery({ queryKey: ["prospects", "contact"], queryFn: () => fetchTous("/prospects?conclu=false&contactes=true") });
   const termines = useQuery({ queryKey: ["prospects", "termines"], queryFn: () => fetchTous("/prospects?conclu=true") });
 
+  // Feuille de filtres — mêmes filtres que la barre latérale du site
+  const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [paysSel, setPaysSel] = useState<string[]>([]);
+  const [secteursSel, setSecteursSel] = useState<string[]>([]);
+
+  // Options construites sur l'ensemble des trois listes (comme le site)
+  const tousProspects = useMemo(() =>
+    [...(cibles.data || []), ...(contact.data || []), ...(termines.data || [])],
+  [cibles.data, contact.data, termines.data]);
+  const paysOptions = useMemo(() =>
+    ([...new Set(tousProspects.map((p: any) => p.siege_nom).filter(Boolean))] as string[])
+      .sort((a, b) => a.localeCompare(b, "fr")),
+  [tousProspects]);
+  const secteurOptions = useMemo(() =>
+    ([...new Set(tousProspects.flatMap((p: any) => p.secteur_noms || []).filter(Boolean))] as string[])
+      .sort((a, b) => a.localeCompare(b, "fr")),
+  [tousProspects]);
+
   const courante = vue === "cibles" ? cibles : vue === "historique" ? contact : termines;
   const filtres = useMemo(() => {
     let liste = courante.data || [];
@@ -104,8 +123,15 @@ export default function Prospects() {
       const t = q.trim().toLowerCase();
       liste = liste.filter((p: any) => (p.nom || "").toLowerCase().includes(t));
     }
+    // Prédicats de la barre latérale du site
+    if (paysSel.length) liste = liste.filter((p: any) => paysSel.includes(p.siege_nom || ""));
+    if (secteursSel.length) liste = liste.filter((p: any) => secteursSel.some(s => (p.secteur_noms || []).includes(s)));
     return liste;
-  }, [courante.data, q]);
+  }, [courante.data, q, paysSel, secteursSel]);
+
+  const nbFiltres = paysSel.length + secteursSel.length;
+  const reinitFiltres = () => { setPaysSel([]); setSecteursSel([]); };
+  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
 
   const compteLabel = vue === "cibles"
     ? `${filtres.length} investisseur${filtres.length > 1 ? "s" : ""} ciblé${filtres.length > 1 ? "s" : ""}`
@@ -129,7 +155,8 @@ export default function Prospects() {
           <>
             <HeroModule titre="Prospects"
               recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-              segments={{ options: VUES, valeur: vue, onChange: v => setVue(v as OngletProspect) }} />
+              segments={{ options: VUES, valeur: vue, onChange: v => setVue(v as OngletProspect) }}
+              bouton={boutonFiltres} />
             {!courante.isLoading && !courante.isError && <Text style={s.compte}>{compteLabel.toUpperCase()}</Text>}
           </>
         }
@@ -142,8 +169,16 @@ export default function Prospects() {
           )
         }
       />
-      <BarreHero titre="Prospects" defilY={defilY} />
+      <BarreHero titre="Prospects" defilY={defilY} bouton={boutonFiltres} />
       {selec && <ProspectSheet prospect={selec} onglet={vue} onClose={() => setSelec(null)} />}
+      {filtresOuverts && (
+        <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
+          <SectionCoches titre="Pays" options={paysOptions} sel={paysSel}
+            onBascule={v => setPaysSel(p => basculer(p, v))} />
+          <SectionCoches titre="Secteurs" options={secteurOptions} sel={secteursSel}
+            onBascule={v => setSecteursSel(p => basculer(p, v))} />
+        </FeuilleFiltres>
+      )}
     </>
   );
 }

@@ -9,9 +9,11 @@ import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
 import AccordSheet, { ST_PASTEL, sousTitreStatut } from "@/components/AccordSheet";
+import { useNaemaArbre } from "@/components/ArbreNaema";
+import { CascadeThema, Coche, FeuilleFiltres, SectionCoches, TitreSection, basculer } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
-import { fetchTous } from "@/lib/api";
+import { fetchTous, getJson } from "@/lib/api";
 import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
@@ -75,16 +77,55 @@ export default function Accords() {
   const [selec, setSelec] = useState<any>(null);
   const { defilY, onScroll } = useHeroDefilant();
 
+  // Feuille de filtres — mêmes filtres que la barre latérale du site
+  const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [apixSel, setApixSel] = useState(false);
+  const [paysSel, setPaysSel] = useState<string[]>([]);
+  const [secteursSel, setSecteursSel] = useState<string[]>([]);
+  const [branchesSel, setBranchesSel] = useState<string[]>([]);
+  const [activitesSel, setActivitesSel] = useState<string[]>([]);
+  const { secteurs, branches, activites, arbre } = useNaemaArbre();
+
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["accords"], queryFn: () => fetchTous("/accords"),
   });
-  // L'endpoint renvoie { pays: [...], organisations: [...] } (comme sur le site)
+  // Référentiel pays (même source et même cache que la fiche accord)
+  const pays = useQuery({ queryKey: ["ref-pays-stat"], queryFn: () => getJson<any[]>("/statistiques/pays"), staleTime: Infinity, gcTime: 24 * 3600 * 1000 });
+
+  // Pays signataires présents dans au moins un accord (tri français)
+  const paysOptions = useMemo(() => {
+    const utilises = new Set<number>();
+    (data || []).forEach((a: any) => (a.parties_pays_ids || []).forEach((id: number) => utilises.add(id)));
+    return (pays.data || []).filter((p: any) => utilises.has(p.id))
+      .map((p: any) => p.nom as string).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [data, pays.data]);
+
   const filtres = useMemo(() => {
     let liste = (data || []).filter((a: any) => (a.type_accord || "tbi") === "tbi");
     if (statut !== "tous") liste = liste.filter((a: any) => computeStatutAccord(a) === statut);
     if (q.trim()) {
       const t = q.trim().toLowerCase();
       liste = liste.filter((a: any) => (a.titre || "").toLowerCase().includes(t) || (a.reference || "").toLowerCase().includes(t));
+    }
+    // Parties signataires — OR logique entre pays sélectionnés et APIX (règle du site)
+    if (paysSel.length || apixSel) {
+      const paysIds = paysSel.map(n => (pays.data || []).find((p: any) => p.nom === n)?.id).filter(Boolean);
+      liste = liste.filter((a: any) =>
+        paysIds.some((id: any) => (a.parties_pays_ids || []).includes(id)) ||
+        (apixSel && String(a.parties_signataires || "").toLowerCase().includes("apix")));
+    }
+    // Thématiques par ids (conversion noms → ids comme le site)
+    if (secteursSel.length) {
+      const ids = secteursSel.map(n => secteurs.find((x: any) => x.nom === n)?.id).filter(Boolean);
+      liste = liste.filter((a: any) => ids.some((id: any) => (a.secteur_ids || []).includes(id)));
+    }
+    if (branchesSel.length) {
+      const ids = branchesSel.map(n => branches.find((x: any) => x.nom === n)?.id).filter(Boolean);
+      liste = liste.filter((a: any) => ids.some((id: any) => (a.branche_ids || []).includes(id)));
+    }
+    if (activitesSel.length) {
+      const ids = activitesSel.map(n => activites.find((x: any) => x.nom === n)?.id).filter(Boolean);
+      liste = liste.filter((a: any) => ids.some((id: any) => (a.activite_ids || []).includes(id)));
     }
     // Tri du site : échéance d'expiration croissante, sans expiration à la fin
     return [...liste].sort((a: any, b: any) => {
@@ -93,13 +134,37 @@ export default function Accords() {
       if (!b.date_expiration) return -1;
       return a.date_expiration.localeCompare(b.date_expiration);
     });
-  }, [data, q, statut]);
+  }, [data, q, statut, paysSel, apixSel, secteursSel, branchesSel, activitesSel, pays.data, secteurs, branches, activites]);
+
+  const nbFiltres = paysSel.length + (apixSel ? 1 : 0) + secteursSel.length + branchesSel.length + activitesSel.length;
+  const reinitFiltres = () => { setApixSel(false); setPaysSel([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
+  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
+
+  // Toggles thématiques du site : secteur remet branches + activités, branche remet activités
+  const surSecteur = (v: string) => { setSecteursSel(p => basculer(p, v)); setBranchesSel([]); setActivitesSel([]); };
+  const surBranche = (v: string) => { setBranchesSel(p => basculer(p, v)); setActivitesSel([]); };
+
+  const feuille = filtresOuverts && (
+    <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
+      <View>
+        <TitreSection titre="Parties signataires" nb={paysSel.length + (apixSel ? 1 : 0)} />
+        <Coche label="APIX S.A" sel={apixSel} onPress={() => setApixSel(a => !a)} />
+      </View>
+      <SectionCoches titre="Pays" options={paysOptions} sel={paysSel}
+        onBascule={v => setPaysSel(p => basculer(p, v))} />
+      <CascadeThema secteurs={arbre}
+        secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
+        onSecteur={surSecteur} onBranche={surBranche}
+        onActivite={v => setActivitesSel(p => basculer(p, v))} />
+    </FeuilleFiltres>
+  );
 
   const hero = (
     <>
       <HeroModule titre="Accords & Traités"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: STATUTS, valeur: statut, onChange: setStatut }} />
+        segments={{ options: STATUTS, valeur: statut, onChange: setStatut }}
+        bouton={boutonFiltres} />
       {/* Types de traités — extensible */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
         {TYPES.map(o => {
@@ -126,6 +191,7 @@ export default function Accords() {
           <Text style={s.bientotTitre}>Traités Internationaux</Text>
           <Text style={s.bientotTexte}>Cette section arrive prochainement.{"\n"}Les traités bilatéraux d'investissement restent disponibles.</Text>
         </View>
+        {feuille}
       </View>
     );
   }
@@ -153,8 +219,9 @@ export default function Accords() {
           )
         }
       />
-      <BarreHero titre="Accords & Traités" defilY={defilY} />
+      <BarreHero titre="Accords & Traités" defilY={defilY} bouton={boutonFiltres} />
       {selec && <AccordSheet accord={selec} onClose={() => setSelec(null)} />}
+      {feuille}
     </>
   );
 }
