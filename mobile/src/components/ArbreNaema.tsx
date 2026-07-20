@@ -67,6 +67,6 @@ const s = StyleSheet.create({
   point: { borderRadius: 99, flexShrink: 0 },
   indent: { paddingLeft: 17, borderLeftWidth: 1.5, borderLeftColor: T.bleuVoile, marginLeft: 3.5, gap: 8 },
   secteur: { flex: 1, fontSize: 13, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 18 },
-  branche: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: "#b5722f", lineHeight: 18 },
+  branche: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: "#c14a2e", lineHeight: 18 },
   activite: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: "#4d8a63", lineHeight: 17 },
 });

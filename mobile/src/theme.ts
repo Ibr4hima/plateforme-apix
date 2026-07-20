@@ -23,7 +23,7 @@ const dyn = (clair: string, sombre: string): any =>
 export const T = {
   // Accents (textes, icônes, points) — éclaircis la nuit pour le contraste
   bleu:        dyn("#004f91", "#85B9EC"),
-  orange:      dyn("#ca631f", "#E8935A"),
+  orange:      dyn("#e35336", "#EE8672"),
   vert:        dyn("#188038", "#57B87D"),
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
@@ -95,7 +95,7 @@ export const OMBRE = {
 export const BADGE = {
   en_vigueur: { label: "En vigueur",            c: "#188038", bg: "rgba(24,128,56,0.08)" },
   signe:      { label: "Signé non en vigueur",  c: "#004f91", bg: "rgba(0,79,145,0.07)" },
-  expire:     { label: "Expiré",                c: "#b45309", bg: "rgba(202,99,31,0.10)" },
+  expire:     { label: "Expiré",                c: "#b23a20", bg: "rgba(227,83,54,0.10)" },
 } as const;
 
 // Les 8 modules de la plateforme — mêmes intitulés et mêmes icônes

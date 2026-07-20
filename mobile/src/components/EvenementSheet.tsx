@@ -155,7 +155,7 @@ const s = StyleSheet.create({
   themePoint: { borderRadius: 99, flexShrink: 0 },
   themeBranche: { paddingLeft: 17, borderLeftWidth: 1.5, borderLeftColor: T.bleuVoile, marginLeft: 3.5 },
   themeSecteur: { flex: 1, fontSize: 13, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 18 },
-  themeBrancheTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: "#b5722f", lineHeight: 18 },
+  themeBrancheTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: "#c14a2e", lineHeight: 18 },
   themeActivite: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: "#4d8a63", lineHeight: 17 },
   chip: { backgroundColor: T.filet, borderWidth: 1, borderColor: "#E8E5E2", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },

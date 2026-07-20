@@ -14,7 +14,7 @@ import { POLICE, T } from "@/theme";
 
 // Couleurs des niveaux territoriaux (palette du site)
 export const NIVEAU_COULEURS: Record<string, string> = {
-  pole: "#004f91", region: "#ca631f", departement: "#188038", arrondissement: "#6A1B9A",
+  pole: "#004f91", region: "#e35336", departement: "#188038", arrondissement: "#6A1B9A",
 };
 
 function SecTitle({ children }: { children: string }) {
