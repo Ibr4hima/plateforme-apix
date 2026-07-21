@@ -104,6 +104,12 @@ class Bulletin:
         self.tables: dict[int, dict[str, list[float | None]]] = {}
         self.anomalies: list[str] = []        # lignes illisibles des tableaux BRUTS (fatales)
         self.temoins_perdus: list[str] = []   # lignes illisibles des tableaux TÉMOINS (avertissements)
+        # Le bulletin de JANVIER n'imprime aucune colonne de cumul (le cumul
+        # de janvier serait janvier lui-même) : à leur place, deux colonnes de
+        # variations (vs mois précédent, vs même mois année précédente) qui
+        # servent alors de témoins. Détection sur tout le document.
+        self.avec_cumuls = any("Cumul" in l for l in self.lignes)
+        self.variations: dict[int, dict[str, tuple[float | None, float | None]]] = {}
 
     # ── Découpage du texte en tableaux ──
     def _bornes(self) -> dict[int, tuple[int, int]]:
@@ -160,13 +166,18 @@ class Bulletin:
             # (souvent imprimée avec des cellules fusionnées) : témoin aussi.
             derive = libelle.strip().upper() == "TOTAL"
             sortie = self.anomalies if (num in BRUTS and not derive) else self.temoins_perdus
-            # Invariant du bulletin : 5 mois + 2 cumuls (+ variations facultatives)
-            if len(valeurs) < 7:
+            # Invariant du bulletin : 5 mois + 2 cumuls (+ variations
+            # facultatives). Sans colonnes de cumuls (bulletin de janvier) :
+            # 5 mois seuls — une ligne sans flux n'imprime aucune variation.
+            requis = 7 if self.avec_cumuls else 5
+            if len(valeurs) < requis:
                 sortie.append(f"T{num} : ligne inattendue ({len(valeurs)} champs) : {t[:80]}")
                 continue
             try:
                 mensuels = [nombre(v) for v in valeurs[:5]]
-                cum = (nombre(valeurs[5]), nombre(valeurs[6]))
+                # Sans cumuls, les colonnes 6-7 sont des VARIATIONS : ne
+                # surtout pas les lire comme des cumuls.
+                cum = (nombre(valeurs[5]), nombre(valeurs[6])) if self.avec_cumuls else (None, None)
             except ValueError as e:
                 sortie.append(f"T{num} : {e} dans : {t[:80]}")
                 continue
@@ -174,6 +185,13 @@ class Bulletin:
                 self.anomalies.append(f"T{num} : libellé en double : {libelle}")
             rangees[libelle] = mensuels
             cumuls[num][libelle] = cum
+            if not self.avec_cumuls and len(valeurs) >= 7:
+                # Témoins de remplacement : variation vs mois précédent [5]
+                # et glissement vs même mois de l'année précédente [6]
+                try:
+                    self.variations.setdefault(num, {})[libelle] = (nombre(valeurs[5]), nombre(valeurs[6]))
+                except ValueError:
+                    pass   # témoin absent, la ligne reste valide
         if not rangees:
             raise ValueError(f"T{num} : aucune rangée extraite")
         return rangees
@@ -255,6 +273,39 @@ class Bulletin:
             somme = comp + somme_annee(num, lib)
             return abs(cum - somme) <= max(0.5 * nb_mois_cumul - 0.5, 0.005 * abs(cum))
 
+        avec_cumuls = getattr(self, "avec_cumuls", True)
+        variations = getattr(self, "variations", {})
+
+        def bornes_variation(v_recent: float | None, v_ancien: float | None):
+            """Intervalle permis pour une variation imprimée, connaissant les
+            deux mois arrondis à ±0,5 unité d'impression."""
+            if v_recent is None or v_ancien is None or v_ancien <= 0.5:
+                return None
+            basse = ((v_recent - 0.5) / (v_ancien + 0.5) - 1.0) * 100.0
+            haute = ((v_recent + 0.5) / max(v_ancien - 0.5, 1e-9) - 1.0) * 100.0
+            return basse, haute
+
+        def variations_coherentes(num: int, lib: str) -> bool:
+            """Les variations imprimées confirment-elles les mois extraits ?"""
+            t = variations.get(num, {}).get(lib)
+            vals = self.tables[num].get(lib)
+            if not t or not vals:
+                return False
+            un_temoin = False
+            for v_print, i_ancien in ((t[0], 3), (t[1], 0)):
+                b = bornes_variation(vals[4], vals[i_ancien])
+                if v_print is None or b is None:
+                    continue
+                if not (b[0] - 0.06 <= v_print <= b[1] + 0.06):
+                    return False
+                un_temoin = True
+            return un_temoin
+
+        def confirmee(num: int, lib: str) -> bool:
+            """Rubrique corroborée par son témoin de socle : cumul imprimé, ou
+            variations imprimées quand le bulletin n'a pas de cumuls (janvier)."""
+            return cumul_coherent(num, lib) if avec_cumuls else variations_coherentes(num, lib)
+
         # 1. Cumuls du bulletin ≈ mois du fichier + complément (le socle).
         # Tolérance : chaque mois imprimé est arrondi (±0,5), le cumul aussi.
         for num in BRUTS:
@@ -293,6 +344,32 @@ class Bulletin:
                 f"(bulletin postérieur à avril) — l'import sur la plateforme les fournit depuis la base et "
                 f"effectue la vérification complète")
 
+        # 1v. Sans colonnes de cumuls (bulletin de janvier) : les variations
+        # imprimées sont le socle — variation ≈ (dernier mois − mois précédent)
+        # et glissement ≈ (dernier mois − même mois année précédente), aux
+        # arrondis d'impression près. T1/T2 exclus (variations sur des lignes
+        # séparées ; l'ensemble est verrouillé par les sommes exhaustives).
+        if not avec_cumuls:
+            for num in BRUTS:
+                if num in (1, 2):
+                    continue
+                for lib, vals in self.tables[num].items():
+                    if lib.upper() == "TOTAL":
+                        continue
+                    t = variations.get(num, {}).get(lib)
+                    if not t:
+                        continue
+                    for v_print, i_ancien, nom in ((t[0], 3, "variation"), (t[1], 0, "glissement")):
+                        b = bornes_variation(vals[4], vals[i_ancien])
+                        if v_print is None or b is None:
+                            continue
+                        if b[0] - 0.06 <= v_print <= b[1] + 0.06:
+                            ok += 1
+                        else:
+                            erreurs.append(
+                                f"{nom.capitalize()} T{num} {lib!r} : bulletin {v_print} hors "
+                                f"[{b[0]:.2f} ; {b[1]:.2f}]")
+
         # 2. Valeurs unitaires : la VU imprimée doit tomber dans l'intervalle
         #    permis par les arrondis d'impression (valeur ±0,5 M ; poids ±0,5 k)
         for t_vu, (t_val, t_poids) in TEMOINS_VU.items():
@@ -317,10 +394,10 @@ class Bulletin:
                     borne_haute = (vals[m] + 0.5) / max(poids[m] - 0.5, 1e-9) * 1000.0
                     if borne_basse - 0.5 <= vus[m] <= borne_haute + 0.5:
                         ok += 1
-                    elif lib not in self.tables[t_val] or (cumul_coherent(t_val, lib) and cumul_coherent(t_poids, lib)):
+                    elif lib not in self.tables[t_val] or (confirmee(t_val, lib) and confirmee(t_poids, lib)):
                         avertissements.append(
                             f"VU T{t_vu} {lib!r} {self.mois[m]} : bulletin {vus[m]:,.0f} hors [{borne_basse:,.0f} ; {borne_haute:,.0f}] — "
-                            f"valeur/poids confirmés par leurs cumuls : coquille du bulletin")
+                            f"valeur/poids confirmés par leur témoin de socle : coquille du bulletin")
                     else:
                         erreurs.append(f"VU T{t_vu} {lib!r} {self.mois[m]} : {vus[m]:,.0f} hors [{borne_basse:,.0f} ; {borne_haute:,.0f}]")
 
@@ -341,9 +418,9 @@ class Bulletin:
                     haute = (vals[m] + 0.5) * 1e6 / ligne_totale[m] * 100.0
                     if basse - 0.015 <= parts[m] <= haute + 0.015:
                         ok += 1
-                    elif lib not in self.tables[t_val] or cumul_coherent(t_val, lib):
+                    elif lib not in self.tables[t_val] or confirmee(t_val, lib):
                         avertissements.append(
-                            f"Part T{t_part} {lib!r} {self.mois[m]} : {parts[m]} hors [{basse:.2f} ; {haute:.2f}] — valeur confirmée par cumul")
+                            f"Part T{t_part} {lib!r} {self.mois[m]} : {parts[m]} hors [{basse:.2f} ; {haute:.2f}] — valeur confirmée par son témoin de socle")
                     else:
                         erreurs.append(f"Part T{t_part} {lib!r} {self.mois[m]} : {parts[m]} hors [{basse:.2f} ; {haute:.2f}]")
 
