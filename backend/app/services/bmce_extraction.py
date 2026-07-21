@@ -23,7 +23,10 @@ contre-vérifiée avec les tableaux dérivés NON importés :
   · valeurs unitaires (T5, T9, T13, T17, T21, T25) ≈ valeur / poids ;
   · parts en % (T6, T10, T14, T18, T22, T26, T28, T30) ≈ valeur / total ;
   · sommes des groupes d'utilisation et des chapitres ≈ ensemble (T1/T2) ;
-  · cumuls 4 mois du bulletin ≈ somme des 4 mois extraits (année du bulletin).
+  · cumul de l'année ≈ mois du fichier (année du bulletin) + mois antérieurs
+    de l'année fournis en complément par la plateforme (base des bulletins
+    déjà importés) — un bulletin de mai cumule janv–mai alors que le fichier
+    ne porte que févr–mai : janvier vient de la base.
 Toute divergence au-delà des tolérances d'arrondi fait échouer l'extraction.
 
 Usage : python3 extraire_bmce.py BULLETIN.pdf [SORTIE.xlsx]
@@ -65,6 +68,14 @@ TEMOINS_PART = {6: 3, 10: 7, 14: 11, 18: 15, 22: 19, 26: 23, 28: 27, 30: 29}
 
 MOIS_RE = re.compile(r"^(janv|févr|mars|avr|mai|juin|juil|août|sept|oct|nov|déc)\.?-\d{2}$")
 NOMBRE_RE = re.compile(r"^-?\d[\d ]*(?:,\d+)?$")
+MOIS_NUM = {"janv": 1, "févr": 2, "mars": 3, "avr": 4, "mai": 5, "juin": 6,
+            "juil": 7, "août": 8, "sept": 9, "oct": 10, "nov": 11, "déc": 12}
+
+
+def numero_mois(mois: str) -> tuple[int, int]:
+    """« févr-25 » → (2, 25)."""
+    nom, an = mois.split("-")
+    return MOIS_NUM[nom], int(an)
 
 
 def nombre(champ: str) -> float | None:
@@ -178,11 +189,27 @@ class Bulletin:
     # Trois niveaux : erreur d'extraction (fatale), incohérence interne du
     # bulletin (avertissement : nos chiffres sont confirmés par les cumuls),
     # arrondi d'impression (accepté par calcul d'intervalles).
-    def verifier(self) -> list[str]:
+    #
+    # `complements` : le cumul imprimé couvre janvier → mois du bulletin, or le
+    # fichier ne porte que 4 mois. Dès le bulletin de mai, des mois de l'année
+    # (janvier…) manquent au fichier : l'appelant (l'import de la plateforme)
+    # fournit leur somme par tableau et libellé, en unités du tableau, lue dans
+    # la base des bulletins antérieurs. Pour T1/T2, clés « Valeur » et « Poids ».
+    def verifier(self, complements: dict[int, dict[str, float]] | None = None) -> list[str]:
         rapport: list[str] = []
         erreurs: list[str] = []
         avertissements: list[str] = []
         ok = 0
+
+        # Périmètre du cumul « année en cours » : seuls les mois du fichier
+        # appartenant à l'année du bulletin y participent (un bulletin de mars
+        # porte déc-N−1 qui n'entre PAS dans le cumul N) ; les mois de janvier
+        # au premier mois du fichier en sont absents et viennent du complément.
+        an_bulletin = numero_mois(self.mois[-1])[1]
+        idx_annee = [i for i in range(1, 5) if numero_mois(self.mois[i])[1] == an_bulletin]
+        nb_mois_cumul = numero_mois(self.mois[-1])[0]      # janvier → mois du bulletin
+        manquants = numero_mois(self.mois[idx_annee[0]])[0] - 1
+        non_verifiables = 0
 
         def trouver(table: dict, lib: str):
             """Cherche un libellé dans une table : exact, puis rapprochement flou
@@ -192,16 +219,35 @@ class Bulletin:
             proches = get_close_matches(lib, list(table), n=1, cutoff=0.88)
             return table[proches[0]] if proches else None
 
-        def cumul_coherent(num: int, lib: str) -> bool:
-            """La somme des 4 mois extraits retrouve-t-elle le cumul imprimé ?"""
-            cum = self.cumuls[num].get(lib, (None, None))[1]
-            if cum is None:
-                return False
-            somme = sum(v for v in self.tables[num][lib][1:5] if v is not None)
-            return abs(cum - somme) <= max(1.5, 0.005 * abs(cum))
+        def complement(num: int, lib: str) -> float | None:
+            """Somme des mois de l'année absents du fichier (None : indisponible)."""
+            if manquants == 0:
+                return 0.0
+            if complements is None:
+                return None
+            table_c = complements.get(num) or {}
+            if num in (1, 2):   # T1/T2 : deux lignes par rubrique ENSEMBLE
+                return table_c.get("Valeur" if lib.startswith("Valeur") else "Poids", 0.0)
+            if lib in table_c:
+                return table_c[lib]
+            proches = get_close_matches(lib, list(table_c), n=1, cutoff=0.88)
+            # Absent de la base : rubrique nouvelle, aucun flux antérieur
+            return table_c[proches[0]] if proches else 0.0
 
-        # 1. Cumuls du bulletin ≈ somme des 4 mois extraits (le socle).
-        # Tolérance : chaque mois imprimé est arrondi (±0,5), le cumul aussi → ±2,5.
+        def somme_annee(num: int, lib: str) -> float:
+            return sum(v for i in idx_annee if (v := self.tables[num][lib][i]) is not None)
+
+        def cumul_coherent(num: int, lib: str) -> bool:
+            """Mois du fichier + complément retrouvent-ils le cumul imprimé ?"""
+            cum = self.cumuls[num].get(lib, (None, None))[1]
+            comp = complement(num, lib)
+            if cum is None or comp is None:
+                return False
+            somme = comp + somme_annee(num, lib)
+            return abs(cum - somme) <= max(0.5 * nb_mois_cumul - 0.5, 0.005 * abs(cum))
+
+        # 1. Cumuls du bulletin ≈ mois du fichier + complément (le socle).
+        # Tolérance : chaque mois imprimé est arrondi (±0,5), le cumul aussi.
         for num in BRUTS:
             for lib, vals in self.tables[num].items():
                 if lib.upper() == "TOTAL":
@@ -209,11 +255,27 @@ class Bulletin:
                 cum = self.cumuls[num].get(lib, (None, None))[1]
                 if cum is None:
                     continue
-                somme = sum(v for v in vals[1:5] if v is not None)
-                if abs(cum - somme) <= max(2.5, 0.005 * abs(cum)):
+                comp = complement(num, lib)
+                if comp is None:
+                    non_verifiables += 1
+                    continue
+                somme = comp + somme_annee(num, lib)
+                if abs(cum - somme) <= max(0.5 * (nb_mois_cumul + 1), 0.005 * abs(cum)):
                     ok += 1
+                elif manquants and abs(cum - somme) <= 0.02 * abs(cum):
+                    # Les mois du complément viennent de bulletins antérieurs :
+                    # un petit écart signale une révision ANSD au-delà de la
+                    # fenêtre de 3 mois (non détaillée dans ce bulletin-ci).
+                    avertissements.append(
+                        f"Cumul T{num} {lib!r} : bulletin {cum:,.0f} ≠ fichier + base {somme:,.0f} — "
+                        f"écart faible imputable à une révision ANSD d'un mois antérieur au fichier")
                 else:
-                    erreurs.append(f"Cumul T{num} {lib!r} : bulletin {cum:,.0f} ≠ somme 4 mois {somme:,.0f}")
+                    erreurs.append(f"Cumul T{num} {lib!r} : bulletin {cum:,.0f} ≠ fichier + base {somme:,.0f}")
+        if non_verifiables:
+            avertissements.append(
+                f"{non_verifiables} cumuls non vérifiés : {manquants} mois de l'année manquent au fichier "
+                f"(bulletin postérieur à avril) — l'import sur la plateforme les fournit depuis la base et "
+                f"effectue la vérification complète")
 
         # 2. Valeurs unitaires : la VU imprimée doit tomber dans l'intervalle
         #    permis par les arrondis d'impression (valeur ±0,5 M ; poids ±0,5 k)

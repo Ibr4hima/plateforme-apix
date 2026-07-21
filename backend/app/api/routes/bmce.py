@@ -58,16 +58,51 @@ async def importer_bmce(
             "Docker : reconstruire l'image backend, le paquet y est désormais inclus).")
     try:
         bulletin.extraire()
-        rapport = bulletin.verifier()   # lève si l'extraction n'est pas fiable
-    except SystemExit as e:
-        raise HTTPException(422, f"Extraction refusée : {e}")
+        mois = [_date_de(m) for m in bulletin.mois[1:]]   # les 4 mois du fichier
     except Exception as e:
         raise HTTPException(422, f"Bulletin illisible : {e}")
     finally:
         chemin.unlink(missing_ok=True)
-
-    mois = [_date_de(m) for m in bulletin.mois[1:]]   # les 4 mois retenus
     periode_bulletin = mois[-1]
+
+    # Compléments de cumul : le cumul imprimé couvre janvier → mois du bulletin,
+    # or le fichier ne porte que 4 mois. Les mois de l'année du bulletin
+    # antérieurs au fichier (ex. janvier pour un bulletin de mai) sont lus en
+    # base — d'où l'exigence d'importer les bulletins dans l'ordre.
+    en_annee = [m for m in mois if m.year == periode_bulletin.year]
+    mois_manquants = [date(periode_bulletin.year, n, 1) for n in range(1, en_annee[0].month)]
+    complements = None
+    if mois_manquants:
+        res = await db.execute(text("SELECT DISTINCT periode FROM bmce_flux WHERE periode = ANY(:p)"),
+                               {"p": mois_manquants})
+        absents = sorted(set(mois_manquants) - {r[0] for r in res})
+        if absents:
+            raise HTTPException(422,
+                "Cumuls invérifiables : " + ", ".join(m.strftime("%m/%Y") for m in absents)
+                + " absent(s) de la base alors que le cumul du bulletin les couvre. "
+                "Importer d'abord les bulletins antérieurs, dans l'ordre chronologique.")
+        res = await db.execute(text(
+            "SELECT r.categorie, r.sens, r.libelle, SUM(f.valeur_fcfa) AS v, SUM(f.poids_kg) AS k "
+            "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+            "WHERE f.periode = ANY(:p) GROUP BY r.categorie, r.sens, r.libelle"), {"p": mois_manquants})
+        par_dim: dict[tuple[str, str], dict[str, tuple[float, float]]] = {}
+        for cat, sns, lib, v, k in res:
+            par_dim.setdefault((cat, sns), {})[lib] = (float(v or 0), float(k or 0))
+        complements = {}
+        for num, (categorie, sens) in TABLES.items():
+            dim = par_dim.get((categorie, sens), {})
+            if categorie == "ensemble":     # T1/T2 en FCFA / kg bruts
+                v, k = dim.get("ENSEMBLE", (0.0, 0.0))
+                complements[num] = {"Valeur": v, "Poids": k}
+            else:                           # tableaux en millions FCFA / milliers de kg
+                en_val = num in EN_VALEUR
+                facteur = 1e6 if en_val else 1e3
+                complements[num] = {lib: (v if en_val else k) / facteur for lib, (v, k) in dim.items()}
+
+    try:
+        rapport = bulletin.verifier(complements)   # lève si l'extraction n'est pas fiable
+    except SystemExit as e:
+        raise HTTPException(422, f"Extraction refusée : {e}")
 
     # Lot d'import. La période est unique : un bulletin ré-importé réutilise
     # SA ligne de journal (upsert sur periode) au lieu d'en créer une nouvelle.
