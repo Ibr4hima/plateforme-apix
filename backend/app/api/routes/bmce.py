@@ -401,9 +401,14 @@ async def rapport_bmce(annee: int, db: AsyncSession = Depends(get_db)):
     for sens, periode, v in res.all():
         m = par_mois.setdefault(str(periode), {"periode": str(periode)})
         m[sens] = float(v) if v is not None else None
+    res = await db.execute(text(
+        "SELECT DISTINCT EXTRACT(YEAR FROM f.periode)::int AS a "
+        "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+        "WHERE r.categorie = 'ensemble' ORDER BY a DESC"))
+    annees = [r[0] for r in res.all()]
     serie = [par_mois[k] for k in sorted(par_mois) if k >= str(d1)]
     if not serie:
-        return {"disponible": False}
+        return {"disponible": False, "annees": annees}
     mois_nums = [int(p["periode"][5:7]) for p in serie]
     serie_prec = [par_mois[k] for k in sorted(par_mois)
                   if k < str(d1) and int(k[5:7]) in mois_nums]
@@ -444,8 +449,11 @@ async def rapport_bmce(annee: int, db: AsyncSession = Depends(get_db)):
 
     res = await db.execute(text("SELECT mois_couverts FROM bmce_bulletins ORDER BY periode DESC LIMIT 1"))
     couverts = res.scalar_one_or_none() or []
+    res = await db.execute(text("SELECT MAX(importe_le) FROM bmce_bulletins"))
+    maj = res.scalar_one_or_none()
     return {
-        "disponible": True, "annee": annee,
+        "disponible": True, "annee": annee, "annees": annees,
+        "maj": maj.isoformat() if maj else None,
         "mois": [p["periode"] for p in serie],
         "mois_provisoires": [str(c) for c in couverts],
         "serie": serie,

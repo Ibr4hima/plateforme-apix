@@ -2,20 +2,23 @@
 
 // Rapport d'analyse du commerce extérieur — briefing exécutif une page,
 // alimenté en direct par les bulletins ANSD importés (API /bmce/rapport).
-// Conçu pour les communications officielles (Présidence, Directions) :
-// imprimable en A4 via le bouton « Imprimer / PDF ».
+// Conçu pour les communications officielles (Présidence, Directions).
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
+import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
+import { drapeauEmoji } from "@/lib/drapeaux";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 type Top = { libelle: string; code_iso2: string | null; valeur: number; part_pct: number | null };
 type Rapport = {
-  disponible: boolean; annee?: number; mois?: string[]; mois_provisoires?: string[];
+  disponible: boolean; annee?: number; annees?: number[]; maj?: string | null;
+  mois?: string[]; mois_provisoires?: string[];
   serie?: { periode: string; export?: number | null; import?: number | null }[];
   cumul?: { export: number; import: number };
   precedent?: { export: number; import: number } | null;
@@ -29,10 +32,6 @@ const nf = (v: number, d = 1) => v.toLocaleString("fr-FR", { maximumFractionDigi
 function fmtMd(v: number | null | undefined, d = 1): string {
   if (v === null || v === undefined) return "—";
   return `${nf(v / 1e9, d)} Md`;
-}
-function moisCourt(iso: string): string {
-  const [y, m] = iso.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString("fr-FR", { month: "short" });
 }
 function moisLongPlage(mois: string[]): string {
   if (!mois.length) return "";
@@ -56,18 +55,25 @@ function Delta({ v, surFonce = false }: { v: number | null; surFonce?: boolean }
     </span>
   );
 }
+// Drapeaux : emoji de la liste validée (mêmes règles que l'app mobile) ;
+// pays hors liste → image flagcdn ; sans ISO2 → espace réservé.
 function Drapeau({ iso, nom }: { iso: string | null; nom: string }) {
   if (!iso) return <span style={{ width: 21, display: "inline-block" }} />;
+  const emoji = drapeauEmoji(iso);
+  if (emoji) return <span title={nom} style={{ fontSize: 17, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={`https://flagcdn.com/w40/${iso.toLowerCase()}.png`} alt="" title={nom}
     style={{ width: 21, height: 15, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
 }
+
+const MOIS_FR = ["", "Janv.", "Févr.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."];
 
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
 
 function ContenuRapport() {
   const params = useSearchParams();
   const anneeParam = Number(params.get("annee")) || new Date().getFullYear();
+  const [annee, setAnnee] = useState(anneeParam);
   const [r, setR] = useState<Rapport | null>(null);
   const [loading, setLoading] = useState(true);
   const [erreur, setErreur] = useState(false);
@@ -75,10 +81,11 @@ function ContenuRapport() {
 
   useEffect(() => {
     setLoading(true); setErreur(false);
-    fetch(`${API}/bmce/rapport?annee=${anneeParam}`)
+    fetch(`${API}/bmce/rapport?annee=${annee}`)
       .then(x => { if (!x.ok) throw new Error(); return x.json(); })
       .then(setR).catch(() => setErreur(true)).finally(() => setLoading(false));
-  }, [anneeParam, tick]);
+    window.history.replaceState(null, "", `/statistiques/rapport-commerce?annee=${annee}`);
+  }, [annee, tick]);
 
   // Messages « À retenir » générés depuis les données (déterministes)
   const aRetenir = useMemo(() => {
@@ -109,20 +116,31 @@ function ContenuRapport() {
   if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
   if (!r || !r.disponible) return (
     <div style={{ maxWidth: 720, margin: "60px auto", textAlign: "center", color: "#6b7684", fontFamily: "var(--font-google-sans)" }}>
-      Aucune donnée du commerce extérieur pour {anneeParam}. Importez d&apos;abord les bulletins ANSD.
+      Aucune donnée du commerce extérieur pour {annee}. Importez d&apos;abord les bulletins ANSD.
+      {(r?.annees?.length ?? 0) > 0 && (
+        <div style={{ marginTop: 14, display: "flex", gap: 8, justifyContent: "center" }}>
+          {r!.annees!.map(a => (
+            <button key={a} onClick={() => setAnnee(a)}
+              style={{ padding: "6px 16px", borderRadius: 999, border: "1px solid var(--ds-bordure)", background: "#fff", cursor: "pointer", fontWeight: 700, fontFamily: "var(--font-google-sans)" }}>{a}</button>
+          ))}
+        </div>
+      )}
     </div>
   );
 
   const exp = r.cumul!.export, imp = r.cumul!.import;
-  const commerceTotal = exp + imp, solde = exp - imp;
+  const solde = exp - imp;
+  const taux = imp !== 0 ? (exp / imp) * 100 : null;
   const prec = r.precedent;
-  const kpis = [
-    { l: "Exportations", tag: "FAB", v: exp, d: varPct(exp, prec?.export) },
-    { l: "Importations", tag: "CAF", v: imp, d: varPct(imp, prec?.import) },
-    { l: "Commerce total", tag: "Biens", v: commerceTotal, d: prec ? varPct(commerceTotal, prec.export + prec.import) : null },
-    { l: "Solde commercial", tag: "FAB − CAF", v: solde, d: null, rouge: solde < 0 },
+  const kpis: { l: string; tag: string | null; txt: string; d: number | null; rouge?: boolean }[] = [
+    { l: "Exportations", tag: "FAB", txt: `${fmtMd(exp)} FCFA`, d: varPct(exp, prec?.export) },
+    { l: "Importations", tag: "CAF", txt: `${fmtMd(imp)} FCFA`, d: varPct(imp, prec?.import) },
+    { l: "Balance commerciale", tag: "FAB − CAF", txt: `${fmtMd(solde)} FCFA`, d: null, rouge: solde < 0 },
+    { l: "Taux de couverture", tag: null, txt: taux != null ? `${nf(taux)} %` : "—", d: null },
   ];
-  const maxSerie = Math.max(1, ...(r.serie || []).flatMap(p => [p.export ?? 0, p.import ?? 0]));
+  // Séries mensuelles pour les deux graphes signature (x = numéro du mois)
+  const serieDe = (s: "export" | "import") =>
+    (r.serie || []).map(p => ({ annee: Number(p.periode.slice(5, 7)), valeur: p[s] ?? null }));
   const plage = moisLongPlage(r.mois || []);
   const totCont = (c: { export: number; import: number }) => c.export + c.import;
 
@@ -201,9 +219,26 @@ function ContenuRapport() {
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "0 0 10px" }}>
-                APIX · Rapport d&apos;analyse
-              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", margin: "0 0 10px" }}>
+                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: 0 }}>
+                  Rapport d&apos;analyse
+                </p>
+                {(r.annees?.length ?? 0) > 1 && (
+                  <div role="tablist" aria-label="Année" style={{ display: "inline-flex", gap: 3, padding: 3, background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999 }}>
+                    {r.annees!.map(a => {
+                      const actif = a === r.annee;
+                      return (
+                        <button key={a} role="tab" aria-selected={actif} onClick={() => setAnnee(a)}
+                          style={{ padding: "4px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 800,
+                            background: actif ? "#fff" : "transparent", color: actif ? BLEU : "rgba(255,255,255,0.75)",
+                            transition: "background 0.16s, color 0.16s", fontFamily: "var(--font-google-sans)" }}>
+                          {a}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
               <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>
                 Le Sénégal dans le commerce mondial
               </h1>
@@ -211,16 +246,10 @@ function ContenuRapport() {
                 Échanges de biens · Exportations FAB · Importations CAF — <b style={{ color: "#fff" }}>{plage} {r.annee}</b>
               </p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} className="no-print">
-              <button onClick={() => window.print()}
-                style={{ padding: "9px 18px", borderRadius: 999, border: "1px solid rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.10)", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
-                Imprimer / PDF
-              </button>
-              <Link href="/statistiques?mode=exterieur"
-                style={{ padding: "9px 18px", borderRadius: 999, background: "#fff", color: BLEU, fontSize: 12.5, fontWeight: 800, textDecoration: "none" }}>
-                ← Tableau interactif
-              </Link>
-            </div>
+            <Link href="/statistiques?mode=exterieur" className="no-print"
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 18px 9px 12px", borderRadius: 999, background: "#fff", color: BLEU, fontSize: 12.5, fontWeight: 800, textDecoration: "none" }}>
+              <ChevronLeft size={16} /> Commerce extérieur
+            </Link>
           </div>
         </div>
       </div>
@@ -232,10 +261,10 @@ function ContenuRapport() {
             <div key={k.l} className="ds-carte" style={{ padding: "18px 20px", boxShadow: "0 10px 30px rgba(0,30,70,0.13)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
                 <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0 }}>{k.l}</p>
-                <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap" }}>{k.tag}</span>
+                {k.tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap" }}>{k.tag}</span>}
               </div>
               <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: k.rouge ? "#dc2626" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>
-                {fmtMd(k.v)} <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#8a93a3" }}>FCFA</span>
+                {k.txt}
               </p>
               <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6 }}>
                 <Delta v={k.d} />
@@ -260,35 +289,21 @@ function ContenuRapport() {
           </div>
         )}
 
-        {/* ── Évolution mensuelle ── */}
-        <div className="ds-carte" style={{ marginTop: 18, padding: "22px 24px", breakInside: "avoid" }}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-            <p style={TITRE_SEC}>Évolution mensuelle {r.annee}</p>
-            <div style={{ display: "flex", gap: 16 }}>
-              {[{ l: "Exportations (FAB)", c: BLEU }, { l: "Importations (CAF)", c: ORANGE }].map(x => (
-                <span key={x.l} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "#4a5568" }}>
-                  <span style={{ width: 9, height: 9, borderRadius: 3, background: x.c }} />{x.l}
-                </span>
-              ))}
+        {/* ── Évolution mensuelle : deux graphes signature (courbes D3, glow,
+            curseur aimanté, pic historique) — export et import séparés ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 16, marginTop: 18 }}>
+          {([
+            { titre: "Exportations (FAB)", sens: "export" as const, couleur: BLEU },
+            { titre: "Importations (CAF)", sens: "import" as const, couleur: ORANGE },
+          ]).map(g => (
+            <div key={g.sens} className="ds-carte" style={{ padding: "22px 24px 14px", breakInside: "avoid" }}>
+              <p style={TITRE_SEC}>{g.titre} <span style={{ color: "#9aa5b4", letterSpacing: "0.06em" }}>· mensuel {r.annee}</span></p>
+              <GrapheMultiPays height={230}
+                series={[{ nom: g.titre, couleur: g.couleur, data: serieDe(g.sens) }]}
+                fmt={v => v === null ? "—" : `${fmtMd(v)} FCFA`}
+                fmtX={m => MOIS_FR[m] || String(m)} />
             </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 14, marginTop: 8 }}>
-            {(r.serie || []).map(p => (
-              <div key={p.periode} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 5, height: 150, width: "100%" }}>
-                  {[{ v: p.export ?? null, c: BLEU, l: "Exportations" }, { v: p.import ?? null, c: ORANGE, l: "Importations" }].map(b => (
-                    <div key={b.l} title={`${moisCourt(p.periode)} — ${b.l} : ${b.v === null ? "—" : fmtMd(b.v) + " FCFA"}`}
-                      style={{ width: 26, maxWidth: "44%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: "#9aa5b4", marginBottom: 3, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{b.v === null ? "" : nf(b.v / 1e9, 0)}</span>
-                      <div style={{ width: "100%", height: Math.max(2, Math.round((b.v ?? 0) / maxSerie * 128)), background: b.c, borderRadius: "3.5px 3.5px 0 0" }} />
-                    </div>
-                  ))}
-                </div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#5c6675", textTransform: "capitalize" }}>{moisCourt(p.periode)}</span>
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize: 10, color: "#9aa5b4", margin: "10px 0 0", textAlign: "right" }}>Milliards de FCFA</p>
+          ))}
         </div>
 
         {/* ── Produits ── */}
@@ -335,12 +350,10 @@ function ContenuRapport() {
         {/* ── Pied méthodologique ── */}
         <div style={{ marginTop: 22, padding: "14px 4px 0", borderTop: "1px solid #E2E6EC", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <p style={{ fontSize: 10.5, color: "#8a93a3", margin: 0, lineHeight: 1.6, maxWidth: 720 }}>
-            <b style={{ color: "#5c6675" }}>Source :</b> ANSD — Bulletin Mensuel des Statistiques du Commerce Extérieur (BMSCE), données provisoires{r.mois_provisoires?.length ? ` (mois révisables : ${moisLongPlage(r.mois_provisoires)} )` : ""}.{" "}
-            <b style={{ color: "#5c6675" }}>Note :</b> commerce général de biens, hors services ; exportations en valeur FAB, importations en valeur CAF.
-            Répartitions par pays et continent sur les pays identifiés du bulletin.
+            <b style={{ color: "#5c6675" }}>Source :</b> ANSD — Bulletin Mensuel des Statistiques du Commerce Extérieur (BMSCE).
           </p>
           <p style={{ fontSize: 10.5, color: "#8a93a3", margin: 0, whiteSpace: "nowrap" }}>
-            Généré par la plateforme APIX · {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+            Mise à jour le {new Date(r.maj || Date.now()).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
           </p>
         </div>
       </div>

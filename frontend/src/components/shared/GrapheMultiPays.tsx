@@ -27,12 +27,15 @@ function montrerTooltip(tooltip: any, e: { clientX: number; clientY: number }, h
 }
 const cacherTooltip = (tooltip: any) => tooltip.style("opacity", 0);
 
-export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, showDots = true, lineWidth }: {
+export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, fmtX, showDots = true, lineWidth }: {
   series: SerieGraphe[];
   height?: number;
   type?: "line" | "bar";
   titre?: string;
   fmt?: (v: number | null) => string;
+  /** Libellé de l'axe X et des infobulles (défaut : l'année telle quelle) —
+      permet un axe mensuel en passant x = numéro de mois. */
+  fmtX?: (x: number) => string;
   showDots?: boolean;
   lineWidth?: number;
 }) {
@@ -52,6 +55,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
     const W = el.parentElement?.clientWidth || el.clientWidth || 700;
     const H = height;
 
+    const fmtXv = fmtX || ((x: number) => String(x));
     const allData = series.flatMap(s => s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[]);
     if (!allData.length) return;
 
@@ -121,7 +125,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .attr("fill", s.couleur).style("cursor", "pointer")
           .on("mouseover", (e, d) => {
             d3.select(e.currentTarget as SVGRectElement).attr("opacity", 0.75);
-            montrerTooltip(tooltip, e, `<strong>${d.annee}${nbSeries > 1 ? " — " + s.nom : ""}</strong><br/>${fmtV(d.valeur)}`);
+            montrerTooltip(tooltip, e, `<strong>${fmtXv(d.annee)}${nbSeries > 1 ? " — " + s.nom : ""}</strong><br/>${fmtV(d.valeur)}`);
           })
           .on("mousemove", (e) => montrerTooltip(tooltip, e))
           .on("mouseout", (e) => { d3.select(e.currentTarget as SVGRectElement).attr("opacity", 1); cacherTooltip(tooltip); });
@@ -132,7 +136,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       const step = Math.ceil(allAnnees.length / maxTicks);
       const tickVals = allAnnees.filter((_, i) => i % step === 0).map(String);
       svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
-        .call(d3.axisBottom(xBand).tickValues(tickVals).tickSizeOuter(0))
+        .call(d3.axisBottom(xBand).tickValues(tickVals).tickFormat((t: any) => fmtXv(Number(t))).tickSizeOuter(0))
         .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
         .call(g => g.selectAll("line").remove())
         .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
@@ -214,7 +218,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
             .attr("fill", series[0].couleur).attr("opacity", 0.2).attr("filter", `url(#${idGlow})`);
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 4.5)
             .attr("fill", "none").attr("stroke", series[0].couleur).attr("stroke-width", 1.7);
-          const libelle = `PIC · ${pic.annee}`;
+          const libelle = `PIC · ${fmtXv(pic.annee)}`;
           const lw = libelle.length * 6.4 + 16;
           const cx = Math.min(Math.max(px - lw / 2, M.left), W - M.right - lw);
           const cy = Math.max(2, py - 30);
@@ -271,7 +275,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
             `${series.length > 1 ? s.nom + " · " : ""}<strong>${fmtV(v)}</strong>${deltaHtml}`);
         });
         derniereAnnee = annee;
-        montrerTooltip(tooltip, e, `<strong>${annee}</strong><br/>${lignesTooltip.join("<br/>")}`);
+        montrerTooltip(tooltip, e, `<strong>${fmtXv(annee)}</strong><br/>${lignesTooltip.join("<br/>")}`);
       };
       svg.append("rect")
         .attr("x", M.left).attr("y", M.top)
@@ -295,7 +299,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         if (tickAnnees[tickAnnees.length - 1] !== last) tickAnnees.push(last);
       }
       svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
-        .call(d3.axisBottom(xLin).tickValues(tickAnnees).tickFormat(d3.format("d")).tickSizeOuter(0))
+        .call(d3.axisBottom(xLin).tickValues(tickAnnees).tickFormat(fmtX ? ((d: any) => fmtXv(Number(d))) : d3.format("d")).tickSizeOuter(0))
         .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
         .call(g => g.selectAll("line").remove())
         .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
