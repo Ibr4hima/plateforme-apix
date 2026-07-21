@@ -195,9 +195,13 @@ function CommerceExterieurPanel() {
   const an = annee ?? anneesDispo[0] ?? 0;
   const serieAn = useMemo(() => serie.filter(p => Number(p.periode.slice(0, 4)) === an), [serie, an]);
   const enCumul = moisSel === "cumul";
+  // Mois de référence des ▲/▼ : le mois sélectionné, ou en mode année le
+  // dernier mois disponible de l'année (les variations restent mensuelles)
+  const moisRef = enCumul ? (serieAn[serieAn.length - 1]?.periode ?? "") : moisSel;
 
   // Rubriques pour la période choisie (mois : point tel quel ; cumul : sommes
-  // ANSD — Σ valeurs, part = Σ / Σ ensemble ; pas de variation sur un cumul)
+  // ANSD — Σ valeurs, part = Σ / Σ ensemble ; ▲/▼ = variation mensuelle du
+  // mois de référence, comme dans le bulletin)
   const derniers = useMemo(() => {
     if (!rubriques) return [];
     let lignes: { libelle: string; valeur: number; part: number | null; variation: number | null }[];
@@ -213,11 +217,13 @@ function CommerceExterieurPanel() {
         const pts = r.data.filter(d => Number(d.periode.slice(0, 4)) === an && d.valeur_fcfa !== null);
         if (!pts.length) return [];
         const v = pts.reduce((s, d) => s + (d.valeur_fcfa || 0), 0);
-        return [{ libelle: r.libelle, valeur: v, part: ensTot > 0 ? (v / ensTot) * 100 : null, variation: null }];
+        const ptRef = r.data.find(d => d.periode === moisRef);
+        return [{ libelle: r.libelle, valeur: v, part: ensTot > 0 ? (v / ensTot) * 100 : null,
+                  variation: ptRef?.variation_pct ?? null }];
       });
     }
     return lignes.sort((a, b) => b.valeur - a.valeur);
-  }, [rubriques, enCumul, moisSel, serieAn, sens, an]);
+  }, [rubriques, enCumul, moisSel, serieAn, sens, an, moisRef]);
   const couleurSens = sens === "export" ? BMCE_BLEU : BMCE_ORANGE;
 
   const TITRE_SEC: any = { fontSize: 10.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 };
@@ -235,20 +241,25 @@ function CommerceExterieurPanel() {
 
   // Agrégats de la période choisie, calculés depuis la série de l'ensemble.
   // Règles ANSD : variation depuis un précédent nul/zéro = indéfinie (null) ;
-  // pas de variation sur un cumul ; taux de couverture = export / import.
+  // les ▲/▼ sont toujours des variations mensuelles (celle du mois affiché,
+  // ou du dernier mois de l'année en mode cumul) ; taux = export / import.
   const sommeSerie = (pts: BmcePointEnsemble[], s: "export" | "import") => {
     const vals = pts.map(p => (s === "export" ? p.export : p.import)?.valeur).filter((v): v is number => v != null);
     return vals.length ? vals.reduce((a, b) => a + b, 0) : null;
   };
-  const idxSel = serie.findIndex(p => p.periode === moisSel);
-  const pSel = idxSel >= 0 ? serie[idxSel] : null;
-  const pPrec = idxSel > 0 ? serie[idxSel - 1] : null;
+  const idxRef = serie.findIndex(p => p.periode === moisRef);
+  const pRef = idxRef >= 0 ? serie[idxRef] : null;
+  const pPrec = idxRef > 0 ? serie[idxRef - 1] : null;
   const varDe = (v: number | null | undefined, prec: number | null | undefined) =>
     v == null || prec == null || prec === 0 ? null : ((v - prec) / prec) * 100;
-  const expSel = enCumul ? sommeSerie(serieAn, "export") : pSel?.export?.valeur ?? null;
-  const impSel = enCumul ? sommeSerie(serieAn, "import") : pSel?.import?.valeur ?? null;
-  const varExp = enCumul ? null : varDe(pSel?.export?.valeur, pPrec?.export?.valeur);
-  const varImp = enCumul ? null : varDe(pSel?.import?.valeur, pPrec?.import?.valeur);
+  const expSel = enCumul ? sommeSerie(serieAn, "export") : pRef?.export?.valeur ?? null;
+  const impSel = enCumul ? sommeSerie(serieAn, "import") : pRef?.import?.valeur ?? null;
+  // ▲/▼ : toujours la variation mensuelle du mois de référence
+  const varExp = varDe(pRef?.export?.valeur, pPrec?.export?.valeur);
+  const varImp = varDe(pRef?.import?.valeur, pPrec?.import?.valeur);
+  const libComparaison = pPrec
+    ? `${bmceMoisCourt(moisRef, false)} vs ${bmceMoisCourt(pPrec.periode, false)}`
+    : "vs mois précédent";
   const balance = expSel != null && impSel != null ? expSel - impSel : null;
   const taux = expSel != null && impSel != null && impSel !== 0 ? (expSel / impSel) * 100 : null;
   // Cumul ANSD de janvier au mois sélectionné (bandeau sous les KPIs en mode mois)
@@ -264,42 +275,52 @@ function CommerceExterieurPanel() {
     { label: "Taux de couverture", tag: null, valeur: taux != null ? `${taux.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", variation: null, rouge: false },
   ];
 
-  // Badges de sélection : fonds clairs, trois tiers de mise en avant.
-  // NEUTRE (non retenu), DOUX (année active servant de contexte quand un mois
-  // est ouvert), ACTIF (la sélection en cours).
-  const badgeBase: any = { padding: "5px 15px", borderRadius: 999, cursor: "pointer",
-    fontFamily: "var(--font-google-sans)", fontWeight: 700, whiteSpace: "nowrap",
-    transition: "background 0.16s, color 0.16s, border-color 0.16s, box-shadow 0.16s" };
-  const NEUTRE: any = { background: "#EEF1F6", color: "#5c6675", border: "1px solid transparent" };
-  const DOUX: any = { background: "rgba(0,79,145,0.07)", color: "#2f5f8f", border: "1px solid rgba(0,79,145,0.15)" };
-  const ACTIF: any = { background: "rgba(0,79,145,0.12)", color: "#004f91", border: "1px solid rgba(0,79,145,0.32)", boxShadow: "0 1px 3px rgba(0,79,145,0.10)" };
-  const styleAnnee = (a: number) => a === an ? (enCumul ? ACTIF : DOUX) : NEUTRE;
-
   return (
     <div className="charge-in" style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
       {/* En-tête : titre + années des bulletins importés (récentes d'abord).
-          Cliquer une année = voir son cumul ; cliquer un mois = voir le mois. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
+          Cliquer une année = voir son cumul ; cliquer un mois = voir le mois.
+          Années : pilule blanche bordée, voile bleu dégradé quand active.
+          Mois : rail segmenté clair, segment actif blanc surélevé. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 14 }}>
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
-        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }} role="tablist" aria-label="Année">
-          {anneesDispo.map(a => (
-            <button key={a} role="tab" aria-selected={a === an}
-              onClick={() => { setAnnee(a); setMoisSel("cumul"); }}
-              style={{ ...badgeBase, ...styleAnnee(a), fontSize: 13.5, fontWeight: 800, letterSpacing: "0.01em" }}>
-              {a}
-            </button>
-          ))}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="tablist" aria-label="Année">
+          {anneesDispo.map(a => {
+            const on = a === an;
+            return (
+              <button key={a} role="tab" aria-selected={on}
+                onClick={() => { setAnnee(a); setMoisSel("cumul"); }}
+                style={{ padding: "6px 18px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap",
+                  fontFamily: "var(--font-google-sans)", fontSize: 13.5, fontWeight: 800, letterSpacing: "0.01em",
+                  background: on ? "linear-gradient(160deg, rgba(0,58,110,0.10) 0%, rgba(0,79,145,0.14) 60%, rgba(26,106,176,0.18) 100%)" : "#fff",
+                  color: on ? "#003a6e" : "#7a8494",
+                  border: on ? "1px solid rgba(0,79,145,0.35)" : "1px solid var(--ds-bordure)",
+                  boxShadow: on ? "inset 0 1px 2px rgba(0,79,145,0.08)" : "0 1px 2px rgba(15,40,80,0.05)",
+                  transition: "background 0.16s, color 0.16s, border-color 0.16s, box-shadow 0.16s" }}>
+                {a}
+              </button>
+            );
+          })}
         </div>
       </div>
       {/* Mois de l'année choisie (uniquement les bulletins importés) */}
-      <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 18 }}>
-        {serieAn.map(p => (
-          <button key={p.periode} aria-pressed={moisSel === p.periode} onClick={() => setMoisSel(p.periode)}
-            style={{ ...badgeBase, ...(moisSel === p.periode ? ACTIF : NEUTRE), fontSize: 12 }}>
-            {bmceMoisNom(p.periode)}
-          </button>
-        ))}
-      </div>
+      {serieAn.length > 0 && (
+        <div style={{ display: "inline-flex", gap: 2, padding: 3, background: "#ECEFF4", borderRadius: 999,
+          marginBottom: 20, flexWrap: "wrap", border: "1px solid rgba(15,40,80,0.05)" }}>
+          {serieAn.map(p => {
+            const on = moisSel === p.periode;
+            return (
+              <button key={p.periode} aria-pressed={on} onClick={() => setMoisSel(on ? "cumul" : p.periode)}
+                style={{ padding: "6px 16px", borderRadius: 999, border: "none", cursor: "pointer", whiteSpace: "nowrap",
+                  fontFamily: "var(--font-google-sans)", fontSize: 12.5, fontWeight: on ? 800 : 600,
+                  background: on ? "#fff" : "transparent", color: on ? "#004f91" : "#5c6675",
+                  boxShadow: on ? "0 1px 5px rgba(15,40,80,0.16)" : "none",
+                  transition: "background 0.16s, color 0.16s, box-shadow 0.16s, font-weight 0.16s" }}>
+                {bmceMoisNom(p.periode)}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* KPIs de la période sélectionnée */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
@@ -312,7 +333,7 @@ function CommerceExterieurPanel() {
             <p className="ds-donnee" style={{ fontSize: "1.2rem", fontWeight: 800, color: k.rouge ? "#dc2626" : "#1a1a2e", lineHeight: 1.15, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.valeur}</p>
             <div style={{ marginTop: 6, minHeight: 14, display: "flex", alignItems: "center", gap: 6 }}>
               <BmceVariation v={k.variation} />
-              {k.variation !== null && k.variation !== undefined && <span style={{ fontSize: 10, color: "#9aa5b4" }}>vs mois précédent</span>}
+              {k.variation !== null && k.variation !== undefined && <span style={{ fontSize: 10, color: "#9aa5b4" }}>{libComparaison}</span>}
             </div>
           </div>
         ))}
