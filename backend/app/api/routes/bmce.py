@@ -154,10 +154,16 @@ async def importer_bmce(
         {"p": periode_bulletin, "f": fichier.filename, "m": mois, "r": "\n".join(rapport)})
     bulletin_id = res.scalar_one()
 
-    # Fusion valeur/poids par (tableau logique, libellé, mois) puis upsert
+    # Fusion valeur/poids par (tableau logique, libellé, mois) puis upsert.
+    # Un tableau en quarantaine (colonnes décalées d'un mois — erreur de
+    # production du bulletin) est écarté : ses vraies valeurs n'existent pas
+    # dans le PDF, et l'upsert ne touche pas au champ correspondant en base.
+    quarantaine = getattr(bulletin, "quarantaine", set())
     nb_valeurs = nb_revisions = 0
     lots: dict[tuple[str, str, str], dict[date, dict]] = {}
     for num in BRUTS:
+        if num in quarantaine:
+            continue
         categorie, sens = TABLES[num]
         porte = "valeur_fcfa" if num in EN_VALEUR else "poids_kg"
         facteur = 1.0 if num in (1, 2) else (1e6 if porte == "valeur_fcfa" else 1e3)
@@ -187,11 +193,16 @@ async def importer_bmce(
             {"c": categorie, "s": sens, "l": libelle, "o": ordre})
         rubrique_id = res.scalar_one()
         for m, champs in par_mois.items():
+            # Un champ ABSENT du lot (tableau en quarantaine, ou pays sans
+            # poids) est préservé en base ; un None présent (« – » du
+            # bulletin) écrase, c'est une absence de flux légitime.
+            set_v = "EXCLUDED.valeur_fcfa" if "valeur_fcfa" in champs else "bmce_flux.valeur_fcfa"
+            set_k = "EXCLUDED.poids_kg" if "poids_kg" in champs else "bmce_flux.poids_kg"
             res = await db.execute(text(
                 "INSERT INTO bmce_flux (rubrique_id, periode, valeur_fcfa, poids_kg, bulletin_id) "
                 "VALUES (:r, :p, :v, :k, :b) "
                 "ON CONFLICT (rubrique_id, periode) DO UPDATE SET "
-                "  valeur_fcfa = EXCLUDED.valeur_fcfa, poids_kg = EXCLUDED.poids_kg, "
+                f"  valeur_fcfa = {set_v}, poids_kg = {set_k}, "
                 "  bulletin_id = EXCLUDED.bulletin_id "
                 "RETURNING (xmax <> 0) AS revise"),
                 {"r": rubrique_id, "p": m, "v": champs.get("valeur_fcfa"), "k": champs.get("poids_kg"), "b": bulletin_id})

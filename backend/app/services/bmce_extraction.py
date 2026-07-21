@@ -306,9 +306,42 @@ class Bulletin:
             variations imprimées quand le bulletin n'a pas de cumuls (janvier)."""
             return cumul_coherent(num, lib) if avec_cumuls else variations_coherentes(num, lib)
 
+        # 0. Détection d'un tableau DÉCALÉ D'UN MOIS — erreur de production du
+        # bulletin (T23 de mai 2026 : colonnes étiquetées févr→mai contenant
+        # janv→avr, « cumul 2026 » arrêté à avril). Signature : la somme des
+        # rangées de chaque mois retombe sur l'ensemble du mois PRÉCÉDENT et
+        # jamais sur le sien. Le tableau est mis en quarantaine : écarté de
+        # l'import (ses vraies valeurs n'existent pas dans le PDF), témoins
+        # neutralisés, le reste du bulletin demeure importable.
+        self.quarantaine = set()
+        for t_dim, t_ens, en_val in ((3, 1, True), (7, 2, True), (19, 1, True), (23, 2, True),
+                                     (4, 1, False), (8, 2, False), (20, 1, False), (24, 2, False)):
+            prefixe = "Valeur" if en_val else "Poids"
+            ligne = next(v for k, v in self.tables[t_ens].items() if k.startswith(prefixe))
+            facteur = 1e6 if en_val else 1e3
+            rangees = {k: v for k, v in self.tables[t_dim].items() if k.upper() != "TOTAL"}
+            tol = 0.5 * facteur * len(rangees)
+            alignes = decales = verifiables = 0
+            for m in range(1, 5):
+                somme = sum(v[m] or 0 for v in rangees.values()) * facteur
+                if ligne[m]:
+                    verifiables += 1
+                    if abs(somme - ligne[m]) <= tol:
+                        alignes += 1
+                if m >= 2 and ligne[m - 1] and abs(somme - ligne[m - 1]) <= tol:
+                    decales += 1
+            if verifiables and alignes == 0 and decales >= 2:
+                self.quarantaine.add(t_dim)
+                avertissements.append(
+                    f"T{t_dim} : colonnes décalées d'un mois (chaque mois contient les données du précédent, "
+                    f"le cumul s'arrête au mois d'avant) — erreur de production du bulletin ANSD ; "
+                    f"tableau écarté de l'import, les valeurs déjà en base sont préservées")
+
         # 1. Cumuls du bulletin ≈ mois du fichier + complément (le socle).
         # Tolérance : chaque mois imprimé est arrondi (±0,5), le cumul aussi.
         for num in BRUTS:
+            if num in self.quarantaine:
+                continue   # tableau décalé : cumuls périmés, rien à vérifier
             for lib, vals in self.tables[num].items():
                 if lib.upper() == "TOTAL":
                     continue  # dérivée, contrôlée face à l'ensemble (contrôle 4)
@@ -351,7 +384,7 @@ class Bulletin:
         # séparées ; l'ensemble est verrouillé par les sommes exhaustives).
         if not avec_cumuls:
             for num in BRUTS:
-                if num in (1, 2):
+                if num in (1, 2) or num in self.quarantaine:
                     continue
                 for lib, vals in self.tables[num].items():
                     if lib.upper() == "TOTAL":
@@ -373,6 +406,10 @@ class Bulletin:
         # 2. Valeurs unitaires : la VU imprimée doit tomber dans l'intervalle
         #    permis par les arrondis d'impression (valeur ±0,5 M ; poids ±0,5 k)
         for t_vu, (t_val, t_poids) in TEMOINS_VU.items():
+            if t_val in self.quarantaine or t_poids in self.quarantaine:
+                avertissements.append(
+                    f"T{t_vu} : témoins VU non exploitables (T{t_val} ou T{t_poids} en quarantaine)")
+                continue
             for lib, vus in self.tables[t_vu].items():
                 if lib.upper() == "TOTAL":
                     continue
@@ -403,6 +440,9 @@ class Bulletin:
 
         # 3. Parts imprimées ≈ valeur / ensemble (arrondis : part ±0,01 ; valeur ±0,5 M)
         for t_part, t_val in TEMOINS_PART.items():
+            if t_val in self.quarantaine:
+                avertissements.append(f"T{t_part} : témoins de parts non exploitables (T{t_val} en quarantaine)")
+                continue
             export = t_val in (3, 11, 19, 27)
             ligne_totale = next(v for k, v in self.tables[1 if export else 2].items() if k.startswith("Valeur"))
             for lib, parts in self.tables[t_part].items():
@@ -427,6 +467,8 @@ class Bulletin:
         # 4. Sommes exhaustives (hors ligne TOTAL) ≈ ensemble, et TOTAL ≈ ensemble
         for t_dim, t_ens, en_val in ((3, 1, True), (7, 2, True), (19, 1, True), (23, 2, True),
                                      (4, 1, False), (8, 2, False), (20, 1, False), (24, 2, False)):
+            if t_dim in self.quarantaine:
+                continue   # déjà diagnostiqué au contrôle 0 (décalage d'un mois)
             prefixe = "Valeur" if en_val else "Poids"
             ligne = next(v for k, v in self.tables[t_ens].items() if k.startswith(prefixe))
             facteur = 1e6 if en_val else 1e3
