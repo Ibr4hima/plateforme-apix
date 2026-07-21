@@ -69,16 +69,17 @@ async def importer_bmce(
     mois = [_date_de(m) for m in bulletin.mois[1:]]   # les 4 mois retenus
     periode_bulletin = mois[-1]
 
-    # Lot d'import (un bulletin ré-importé remplace son journal). On note les
-    # anciens journaux de cette période AVANT d'insérer le nouveau ; leur
-    # suppression n'intervient qu'après le ré-aiguillage des flux (sinon la
-    # contrainte de clé étrangère bmce_flux → bmce_bulletins bloque le DELETE).
-    res = await db.execute(
-        text("SELECT id FROM bmce_bulletins WHERE periode = :p"), {"p": periode_bulletin})
-    anciens_ids = [r[0] for r in res.all()]
+    # Lot d'import. La période est unique : un bulletin ré-importé réutilise
+    # SA ligne de journal (upsert sur periode) au lieu d'en créer une nouvelle.
+    # L'identifiant reste donc stable, les flux déjà rattachés le restent, et
+    # aucune contrainte (unicité de periode ni clé étrangère) n'est violée.
     res = await db.execute(text(
         "INSERT INTO bmce_bulletins (periode, fichier_nom, mois_couverts, rapport) "
-        "VALUES (:p, :f, :m, :r) RETURNING id"),
+        "VALUES (:p, :f, :m, :r) "
+        "ON CONFLICT (periode) DO UPDATE SET "
+        "  fichier_nom = EXCLUDED.fichier_nom, mois_couverts = EXCLUDED.mois_couverts, "
+        "  rapport = EXCLUDED.rapport, importe_le = now() "
+        "RETURNING id"),
         {"p": periode_bulletin, "f": fichier.filename, "m": mois, "r": "\n".join(rapport)})
     bulletin_id = res.scalar_one()
 
@@ -126,17 +127,6 @@ async def importer_bmce(
             nb_valeurs += 1
             if res.scalar_one():
                 nb_revisions += 1
-
-    # Les anciens journaux de cette période peuvent être supprimés : tous les
-    # flux qu'ils avaient écrits viennent d'être ré-aiguillés vers le nouveau
-    # bulletin par l'upsert. Un flux d'une rubrique disparue du bulletin (rare)
-    # est ré-aiguillé explicitement pour ne pas orphaner la contrainte.
-    if anciens_ids:
-        await db.execute(
-            text("UPDATE bmce_flux SET bulletin_id = :neuf WHERE bulletin_id = ANY(:vieux)"),
-            {"neuf": bulletin_id, "vieux": anciens_ids})
-        await db.execute(
-            text("DELETE FROM bmce_bulletins WHERE id = ANY(:vieux)"), {"vieux": anciens_ids})
 
     await db.execute(text(
         "UPDATE bmce_bulletins SET nb_valeurs = :v, nb_revisions = :r WHERE id = :i"),
