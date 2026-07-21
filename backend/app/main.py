@@ -6,7 +6,7 @@ from app.api.routes import (
     evenements, accords, entreprises, prospects, zones_types,
     projets, code_investissement, modalites_application, suivi_projets, classifications,
     ide, ref_pays, opportunites, ref_potentialites, ref_avantages,
-    citi, dashboard, dashboard_tables, bdef, auth_users, statistiques
+    citi, dashboard, dashboard_tables, bdef, auth_users, statistiques, bmce,
 )
 from contextlib import asynccontextmanager
 import logging
@@ -106,6 +106,7 @@ app.include_router(accords.router,             prefix=settings.API_PREFIX)
 app.include_router(entreprises.router,         prefix=settings.API_PREFIX)
 app.include_router(prospects.router,           prefix=settings.API_PREFIX)
 app.include_router(zones_types.router,         prefix=settings.API_PREFIX)
+app.include_router(bmce.router,                prefix=settings.API_PREFIX)
 app.include_router(projets.router,             prefix=settings.API_PREFIX)
 app.include_router(code_investissement.router,   prefix=settings.API_PREFIX)
 app.include_router(modalites_application.router, prefix=settings.API_PREFIX)
