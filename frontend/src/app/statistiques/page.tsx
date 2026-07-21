@@ -125,7 +125,9 @@ const BMCE_ORANGE = "#ca631f";  // importations
 // Barres mensuelles groupées export/import en divs (motif GrapheBarresEmpilees :
 // hauteurs proportionnelles, tooltip natif title). GrapheMultiPays est annuel
 // (x = annee number), inadapté aux périodes mensuelles.
-function GrapheBarresGroupeesMensuel({ serie }: { serie: BmcePointEnsemble[] }) {
+function GrapheBarresGroupeesMensuel({ serie, actif = null, onMois }: {
+  serie: BmcePointEnsemble[]; actif?: string | null; onMois?: (periode: string) => void;
+}) {
   const H = 190;
   const max = Math.max(1, ...serie.flatMap(p => [p.export?.valeur ?? 0, p.import?.valeur ?? 0]));
   return (
@@ -138,23 +140,29 @@ function GrapheBarresGroupeesMensuel({ serie }: { serie: BmcePointEnsemble[] }) 
         ))}
       </div>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 18 }}>
-        {serie.map(p => (
-          <div key={p.periode} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, height: H, width: "100%" }}>
-              {[{ v: p.export?.valeur ?? null, c: BMCE_BLEU, l: "Exportations FAB" },
-                { v: p.import?.valeur ?? null, c: BMCE_ORANGE, l: "Importations CAF" }].map(b => (
-                <div key={b.l} title={`${bmceMoisLong(p.periode)} — ${b.l} : ${fmtFCFA(b.v)}`}
-                  style={{ width: 34, maxWidth: "42%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
-                  <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", marginBottom: 3, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                    {b.v === null ? "—" : fmtValGen(b.v)}
-                  </span>
-                  <div style={{ width: "100%", height: Math.max(2, Math.round(((b.v ?? 0) / max) * (H - 22))), background: b.c, borderRadius: "4px 4px 0 0" }} />
-                </div>
-              ))}
+        {serie.map(p => {
+          const estompe = actif !== null && p.periode !== actif;
+          return (
+            <div key={p.periode} onClick={onMois ? () => onMois(p.periode) : undefined}
+              role={onMois ? "button" : undefined} aria-pressed={onMois ? p.periode === actif : undefined}
+              style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 0,
+                cursor: onMois ? "pointer" : undefined, opacity: estompe ? 0.38 : 1, transition: "opacity 0.18s" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, height: H, width: "100%" }}>
+                {[{ v: p.export?.valeur ?? null, c: BMCE_BLEU, l: "Exportations FAB" },
+                  { v: p.import?.valeur ?? null, c: BMCE_ORANGE, l: "Importations CAF" }].map(b => (
+                  <div key={b.l} title={`${bmceMoisLong(p.periode)} — ${b.l} : ${fmtFCFA(b.v)}`}
+                    style={{ width: 34, maxWidth: "42%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
+                    <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", marginBottom: 3, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                      {b.v === null ? "—" : fmtValGen(b.v)}
+                    </span>
+                    <div style={{ width: "100%", height: Math.max(2, Math.round(((b.v ?? 0) / max) * (H - 22))), background: b.c, borderRadius: "4px 4px 0 0" }} />
+                  </div>
+                ))}
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 600, color: p.periode === actif ? "#004f91" : "#4a5568", whiteSpace: "nowrap" }}>{bmceMoisCourt(p.periode)}</span>
             </div>
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#4a5568", whiteSpace: "nowrap" }}>{bmceMoisCourt(p.periode)}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -186,12 +194,23 @@ function CommerceExterieurPanel() {
   const [erreurSeries, setErreurSeries] = useState(false);
   const [tickSeries, setTickSeries] = useState(0);
   const cacheSeries = useRef<Record<string, BmceRubrique[]>>({});
+  // Période analysée : une année (parmi celles des bulletins importés) puis,
+  // dans l'année, le cumul annuel ou un mois précis. Tout le panneau suit.
+  const [annee, setAnnee] = useState<number | null>(null);
+  const [moisSel, setMoisSel] = useState<string>("cumul");   // "cumul" | periode ISO
 
   useEffect(() => {
     setLoading(true); setErreur(false);
     fetch(`${API}/bmce/apercu`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setApercu).catch(() => setErreur(true)).finally(() => setLoading(false));
   }, [tick]);
+  // Sélection par défaut : le dernier mois importé (comportement historique)
+  useEffect(() => {
+    if (apercu?.disponible && apercu.dernier_mois) {
+      setAnnee(Number(apercu.dernier_mois.slice(0, 4)));
+      setMoisSel(apercu.dernier_mois);
+    }
+  }, [apercu]);
 
   const dispo = apercu?.disponible === true;
   useEffect(() => {
@@ -207,15 +226,37 @@ function CommerceExterieurPanel() {
       .finally(() => setChargSeries(false));
   }, [dispo, categorie, sens, tickSeries]);
 
-  const dernierMois = apercu?.dernier_mois || "";
-  // Rubriques au dernier mois, triées par valeur décroissante (classement + tableau)
+  // Série de l'ensemble triée, années disponibles et mois de l'année choisie
+  const serie = useMemo(() =>
+    (apercu?.serie || []).slice().sort((a, b) => (a.periode < b.periode ? -1 : 1)), [apercu]);
+  const anneesDispo = useMemo(() =>
+    [...new Set(serie.map(p => Number(p.periode.slice(0, 4))))].sort((a, b) => a - b), [serie]);
+  const an = annee ?? anneesDispo[anneesDispo.length - 1] ?? 0;
+  const serieAn = useMemo(() => serie.filter(p => Number(p.periode.slice(0, 4)) === an), [serie, an]);
+  const enCumul = moisSel === "cumul";
+
+  // Rubriques pour la période choisie (mois : point tel quel ; cumul : sommes
+  // ANSD — Σ valeurs, part = Σ / Σ ensemble ; pas de variation sur un cumul)
   const derniers = useMemo(() => {
     if (!rubriques) return [];
-    return rubriques
-      .map(r => ({ libelle: r.libelle, point: r.data.find(d => d.periode === dernierMois) ?? r.data[r.data.length - 1] }))
-      .filter((x): x is { libelle: string; point: BmcePoint } => !!x.point && x.point.valeur_fcfa !== null)
-      .sort((a, b) => (b.point.valeur_fcfa ?? 0) - (a.point.valeur_fcfa ?? 0));
-  }, [rubriques, dernierMois]);
+    let lignes: { libelle: string; valeur: number; part: number | null; variation: number | null }[];
+    if (!enCumul) {
+      lignes = rubriques.flatMap(r => {
+        const pt = r.data.find(d => d.periode === moisSel);
+        return pt && pt.valeur_fcfa !== null
+          ? [{ libelle: r.libelle, valeur: pt.valeur_fcfa, part: pt.part_pct, variation: pt.variation_pct }] : [];
+      });
+    } else {
+      const ensTot = serieAn.reduce((s, p) => s + ((sens === "export" ? p.export : p.import)?.valeur ?? 0), 0);
+      lignes = rubriques.flatMap(r => {
+        const pts = r.data.filter(d => Number(d.periode.slice(0, 4)) === an && d.valeur_fcfa !== null);
+        if (!pts.length) return [];
+        const v = pts.reduce((s, d) => s + (d.valeur_fcfa || 0), 0);
+        return [{ libelle: r.libelle, valeur: v, part: ensTot > 0 ? (v / ensTot) * 100 : null, variation: null }];
+      });
+    }
+    return lignes.sort((a, b) => b.valeur - a.valeur);
+  }, [rubriques, enCumul, moisSel, serieAn, sens, an]);
   const couleurSens = sens === "export" ? BMCE_BLEU : BMCE_ORANGE;
 
   const TITRE_SEC: any = { fontSize: 10.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 };
@@ -231,25 +272,75 @@ function CommerceExterieurPanel() {
   if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
   if (!apercu || !apercu.disponible) return <CommerceExterieurAttente />;
 
-  const cumul = apercu.cumul_annee;
+  // Agrégats de la période choisie, calculés depuis la série de l'ensemble.
+  // Règles ANSD : variation depuis un précédent nul/zéro = indéfinie (null) ;
+  // pas de variation sur un cumul ; taux de couverture = export / import.
+  const sommeSerie = (pts: BmcePointEnsemble[], s: "export" | "import") => {
+    const vals = pts.map(p => (s === "export" ? p.export : p.import)?.valeur).filter((v): v is number => v != null);
+    return vals.length ? vals.reduce((a, b) => a + b, 0) : null;
+  };
+  const idxSel = serie.findIndex(p => p.periode === moisSel);
+  const pSel = idxSel >= 0 ? serie[idxSel] : null;
+  const pPrec = idxSel > 0 ? serie[idxSel - 1] : null;
+  const varDe = (v: number | null | undefined, prec: number | null | undefined) =>
+    v == null || prec == null || prec === 0 ? null : ((v - prec) / prec) * 100;
+  const expSel = enCumul ? sommeSerie(serieAn, "export") : pSel?.export?.valeur ?? null;
+  const impSel = enCumul ? sommeSerie(serieAn, "import") : pSel?.import?.valeur ?? null;
+  const varExp = enCumul ? null : varDe(pSel?.export?.valeur, pPrec?.export?.valeur);
+  const varImp = enCumul ? null : varDe(pSel?.import?.valeur, pPrec?.import?.valeur);
+  const balance = expSel != null && impSel != null ? expSel - impSel : null;
+  const taux = expSel != null && impSel != null && impSel !== 0 ? (expSel / impSel) * 100 : null;
+  // Cumul ANSD de janvier au mois sélectionné (bandeau sous les KPIs en mode mois)
+  const serieCumul = enCumul ? serieAn : serieAn.filter(p => p.periode <= moisSel);
+  const libPeriode = enCumul
+    ? `cumul ${an}${serieAn.length ? ` (${bmceMoisCourt(serieAn[0].periode, false)} – ${bmceMoisCourt(serieAn[serieAn.length - 1].periode, false)})` : ""}`
+    : bmceMoisLong(moisSel);
   const kpis = [
-    { label: "Exportations", tag: "FAB", valeur: fmtFCFA(apercu.exportations_fab), variation: apercu.variation_export, rouge: false },
-    { label: "Importations", tag: "CAF", valeur: fmtFCFA(apercu.importations_caf), variation: apercu.variation_import, rouge: false },
+    { label: "Exportations", tag: "FAB", valeur: fmtFCFA(expSel), variation: varExp, rouge: false },
+    { label: "Importations", tag: "CAF", valeur: fmtFCFA(impSel), variation: varImp, rouge: false },
     // Seule exception rouge autorisée : une balance commerciale négative
-    { label: "Balance commerciale", tag: "FAB − CAF", valeur: fmtFCFA(apercu.balance), variation: null, rouge: (apercu.balance ?? 0) < 0 },
-    { label: "Taux de couverture", tag: null, valeur: apercu.taux_couverture != null ? `${apercu.taux_couverture.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", variation: null, rouge: false },
+    { label: "Balance commerciale", tag: "FAB − CAF", valeur: fmtFCFA(balance), variation: null, rouge: (balance ?? 0) < 0 },
+    { label: "Taux de couverture", tag: null, valeur: taux != null ? `${taux.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", variation: null, rouge: false },
   ];
+
+  const PILULE_ACTIVE: any = { background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", color: "#fff", border: "1px solid transparent" };
+  const PILULE: any = { background: "var(--ds-carte-douce)", color: "#4a5568", border: "1px solid var(--ds-bordure)" };
 
   return (
     <div className="charge-in" style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
-      {/* En-tête + bandeau méthodologique */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
+      {/* En-tête : titre + années des bulletins importés */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
-        {dernierMois && <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{bmceMoisLong(dernierMois)}</span>}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }} role="tablist" aria-label="Année">
+          {anneesDispo.map(a => (
+            <button key={a} role="tab" aria-selected={a === an}
+              onClick={() => { setAnnee(a); setMoisSel("cumul"); }}
+              style={{ ...(a === an ? PILULE_ACTIVE : PILULE), padding: "5px 16px", borderRadius: 999, fontSize: 13,
+                fontWeight: 800, letterSpacing: "0.02em", cursor: "pointer", fontFamily: "var(--font-google-sans)",
+                transition: "background 0.15s, color 0.15s" }}>
+              {a}
+            </button>
+          ))}
+        </div>
       </div>
-      <div style={{ marginBottom: 18 }} />
+      {/* Mois de l'année choisie (bulletins importés) + cumul annuel */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 18 }}>
+        <button aria-pressed={enCumul} onClick={() => setMoisSel("cumul")}
+          style={{ ...(enCumul ? PILULE_ACTIVE : PILULE), padding: "4px 13px", borderRadius: 999, fontSize: 11.5,
+            fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, color 0.15s" }}>
+          Année (cumul)
+        </button>
+        <span aria-hidden style={{ width: 1, alignSelf: "stretch", background: "var(--ds-bordure)", margin: "2px 4px" }} />
+        {serieAn.map(p => (
+          <button key={p.periode} aria-pressed={moisSel === p.periode} onClick={() => setMoisSel(p.periode)}
+            style={{ ...(moisSel === p.periode ? PILULE_ACTIVE : PILULE), padding: "4px 13px", borderRadius: 999, fontSize: 11.5,
+              fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, color 0.15s" }}>
+            {bmceMoisCourt(p.periode, false)}
+          </button>
+        ))}
+      </div>
 
-      {/* KPIs du dernier mois */}
+      {/* KPIs de la période sélectionnée */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         {kpis.map(k => (
           <div key={k.label} className="ds-carte" style={{ padding: "14px 16px", minWidth: 0 }}>
@@ -266,27 +357,35 @@ function CommerceExterieurPanel() {
         ))}
       </div>
 
-      {/* Cumuls de l'année en cours */}
-      {cumul && (
-        <div style={{ marginTop: 10, marginBottom: 20, padding: "9px 16px", background: "var(--ds-carte-douce)", border: "1px solid var(--ds-bordure)", borderRadius: "var(--rayon-md)", display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>Cumul {cumul.annee}</span>
-          <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Exportations FAB&nbsp;: <b style={{ color: "#1a1a2e" }}>{fmtFCFA(cumul.exportations_fab)}</b></span>
-          <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Importations CAF&nbsp;: <b style={{ color: "#1a1a2e" }}>{fmtFCFA(cumul.importations_caf)}</b></span>
-          <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Balance&nbsp;: <b style={{ color: cumul.balance < 0 ? "#dc2626" : "#1a1a2e" }}>{fmtFCFA(cumul.balance)}</b></span>
-        </div>
-      )}
+      {/* Cumul de janvier au mois sélectionné (mode mois uniquement :
+          en mode année, les KPIs SONT le cumul) */}
+      {!enCumul && serieCumul.length > 0 && (() => {
+        const cExp = sommeSerie(serieCumul, "export"), cImp = sommeSerie(serieCumul, "import");
+        const cBal = cExp != null && cImp != null ? cExp - cImp : null;
+        return (
+          <div style={{ marginTop: 10, marginBottom: 20, padding: "9px 16px", background: "var(--ds-carte-douce)", border: "1px solid var(--ds-bordure)", borderRadius: "var(--rayon-md)", display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Cumul {bmceMoisCourt(serieCumul[0].periode, false)} – {bmceMoisCourt(serieCumul[serieCumul.length - 1].periode, false)} {an}
+            </span>
+            <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Exportations FAB&nbsp;: <b style={{ color: "#1a1a2e" }}>{fmtFCFA(cExp)}</b></span>
+            <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Importations CAF&nbsp;: <b style={{ color: "#1a1a2e" }}>{fmtFCFA(cImp)}</b></span>
+            <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Balance&nbsp;: <b style={{ color: (cBal ?? 0) < 0 ? "#dc2626" : "#1a1a2e" }}>{fmtFCFA(cBal)}</b></span>
+          </div>
+        );
+      })()}
+      {enCumul && <div style={{ marginBottom: 20 }} />}
 
-      {/* Ensemble : barres mensuelles groupées export / import */}
-      {(apercu.serie || []).length > 0 && (
+      {/* Ensemble : barres mensuelles groupées export / import de l'année */}
+      {serieAn.length > 0 && (
         <div className="ds-carte" style={{ padding: "18px 20px", marginBottom: 20 }}>
-          <p style={TITRE_SEC}>Ensemble — évolution mensuelle</p>
-          <GrapheBarresGroupeesMensuel serie={apercu.serie || []} />
+          <p style={TITRE_SEC}>Ensemble {an} — évolution mensuelle</p>
+          <GrapheBarresGroupeesMensuel serie={serieAn} actif={enCumul ? null : moisSel} onMois={p => setMoisSel(p)} />
         </div>
       )}
 
       {/* Répartition par sens × catégorie */}
       <div className="ds-carte" style={{ padding: "18px 20px" }}>
-        <p style={TITRE_SEC}>Répartition — {bmceMoisLong(dernierMois)}</p>
+        <p style={TITRE_SEC}>Répartition — {libPeriode}</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={LBL_SEG}>Sens</span>
@@ -314,23 +413,22 @@ function CommerceExterieurPanel() {
           // les petites valeurs restent visibles face aux dominantes.
           <div style={{ display: "grid", gap: 2 }}>
             {derniers.map((r, i) => {
-              const v = r.point.valeur_fcfa ?? 0;
-              const maxV = derniers[0].point.valeur_fcfa || 1;
-              const largeur = Math.max(1.5, Math.sqrt(Math.max(0, v) / maxV) * 100);
+              const maxV = derniers[0].valeur || 1;
+              const largeur = Math.max(1.5, Math.sqrt(Math.max(0, r.valeur) / maxV) * 100);
               return (
                 <div key={r.libelle} style={{ padding: "9px 0", borderTop: i === 0 ? "none" : "1px solid #F4F2F1" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 14, marginBottom: 6 }}>
                     <span style={{ fontSize: 12.5, fontWeight: 600, color: "#3a4553", lineHeight: 1.3, flex: "1 1 auto", minWidth: 0 }}>{r.libelle}</span>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexShrink: 0 }}>
-                      <span className="ds-donnee" style={{ fontSize: 12.5, fontWeight: 800, color: "#1a1a2e", whiteSpace: "nowrap" }}>{fmtFCFA(v)}</span>
+                      <span className="ds-donnee" style={{ fontSize: 12.5, fontWeight: 800, color: "#1a1a2e", whiteSpace: "nowrap" }}>{fmtFCFA(r.valeur)}</span>
                       <span className="ds-donnee" style={{ fontSize: 11, color: "#9aa5b4", whiteSpace: "nowrap", width: 48, textAlign: "right" }}>
-                        {r.point.part_pct != null ? `${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : ""}
+                        {r.part != null ? `${r.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : ""}
                       </span>
-                      <span style={{ width: 80, textAlign: "right", flexShrink: 0 }}><BmceVariation v={r.point.variation_pct} /></span>
+                      <span style={{ width: 80, textAlign: "right", flexShrink: 0 }}><BmceVariation v={r.variation} /></span>
                     </div>
                   </div>
                   <div style={{ height: 11, background: "var(--ds-voile-bleu)", borderRadius: 6, overflow: "hidden" }}>
-                    <div title={`${r.libelle} : ${fmtFCFA(v)}${r.point.part_pct != null ? ` · ${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % du total` : ""}`}
+                    <div title={`${r.libelle} : ${fmtFCFA(r.valeur)}${r.part != null ? ` · ${r.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % du total` : ""}`}
                       style={{ width: `${largeur}%`, height: "100%", background: couleurSens, borderRadius: 6 }} />
                   </div>
                 </div>
