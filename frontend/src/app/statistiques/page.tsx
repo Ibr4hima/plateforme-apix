@@ -44,6 +44,31 @@ function sortContinents(conts: string[]) {
   });
 }
 
+// ── Panneau Commerce extérieur (Sénégal uniquement) ──────────────────────────
+// Les sous-modules arrivent par étapes : structure et onglet posés, les
+// données du commerce extérieur du Sénégal seront branchées ensuite.
+function CommerceExterieurPanel() {
+  return (
+    <div style={{ maxWidth: 1280, margin: "0 auto", padding: "60px 40px 100px" }}>
+      <div className="ds-carte" style={{ padding: "72px 32px", textAlign: "center" }}>
+        <div style={{ width: 56, height: 56, borderRadius: "var(--rayon-lg)", background: "var(--ds-voile-bleu)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }} aria-hidden>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ds-primaire)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 3v18h18" /><path d="M7 15l4-5 3 3 5-7" />
+          </svg>
+        </div>
+        <p style={{ font: "700 17px/1.4 var(--font-display)", color: "var(--text-primary)" }}>
+          Commerce extérieur du Sénégal
+        </p>
+        <p style={{ font: "var(--typo-corps)", color: "var(--text-muted)", marginTop: 8, maxWidth: 440, marginLeft: "auto", marginRight: "auto" }}>
+          Les indicateurs du commerce extérieur (exportations, importations, balance, partenaires et produits)
+          seront disponibles ici après l'import des données dans l'administration.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Panneau Flux bilatéraux (données commerciales) ────────────────────────────
 type OptionPaysCom = { id: number; nom: string; code_iso3: string | null; continent: string | null; region_geo: string | null };
 // ── Modal « Tableau de données » des flux bilatéraux ──────────────────────────
@@ -893,7 +918,7 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
-  const [mode, setMode] = useEtatUrl<"indicateurs" | "commerce">("mode", "indicateurs", ["indicateurs","commerce"]);
+  const [mode, setMode] = useEtatUrl<"indicateurs" | "commerce" | "exterieur">("mode", "indicateurs", ["indicateurs","commerce","exterieur"]);
   const [vue, setVue] = useEtatUrl<"pays" | "comparative">("vue", "pays", ["pays","comparative"]);
   const [pays, setPays] = useState<Pays[]>([]);
   const [indicateurs, setIndicateurs] = useState<Indicateur[]>([]);
@@ -1041,10 +1066,13 @@ export default function StatistiquesPage() {
         <BarreTitreSegment options={[
           { v: "indicateurs", l: "Indicateurs économiques" },
           { v: "commerce", l: "Flux bilatéraux" },
+          { v: "exterieur", l: "Commerce extérieur", badge: "SEN" },
         ]} value={mode} onChange={setMode} />
       </BarreTitre>
 
-      {mode === "commerce" ? (
+      {mode === "exterieur" ? (
+        <CommerceExterieurPanel />
+      ) : mode === "commerce" ? (
         <CommercePanel />
       ) : (
       <div style={{ display: "flex", alignItems: "flex-start" }}>
