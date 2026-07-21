@@ -268,14 +268,21 @@ class Bulletin:
                 somme = comp + somme_annee(num, lib)
                 if abs(cum - somme) <= max(0.5 * (nb_mois_cumul + 1), 0.005 * abs(cum)):
                     ok += 1
-                elif manquants and abs(cum - somme) <= 0.02 * abs(cum):
-                    # Les mois du complément viennent de bulletins antérieurs :
-                    # un petit écart signale une révision ANSD au-delà de la
-                    # fenêtre de 3 mois (non détaillée dans ce bulletin-ci).
+                elif manquants:
+                    # Les mois du complément viennent de la base : un écart
+                    # au-delà des arrondis signale une révision ou un
+                    # reclassement ANSD d'un mois antérieur au fichier
+                    # (révision semestrielle, nomenclature reventilée…), non
+                    # détaillé dans ce bulletin. Ce n'est PAS une erreur
+                    # d'extraction : les 4 mois du fichier restent verrouillés
+                    # par leurs témoins mensuels (VU, parts, sommes).
                     avertissements.append(
                         f"Cumul T{num} {lib!r} : bulletin {cum:,.0f} ≠ fichier + base {somme:,.0f} — "
-                        f"écart faible imputable à une révision ANSD d'un mois antérieur au fichier")
+                        f"révision ou reclassement ANSD d'un mois antérieur au fichier ; "
+                        f"la plateforme recalcule ses cumuls depuis les mois en base")
                 else:
+                    # Bulletin ≤ avril : le cumul ne dépend que du fichier,
+                    # un écart est une erreur d'extraction — fatal.
                     erreurs.append(f"Cumul T{num} {lib!r} : bulletin {cum:,.0f} ≠ fichier + base {somme:,.0f}")
         if non_verifiables:
             avertissements.append(
@@ -292,7 +299,13 @@ class Bulletin:
                 vals = trouver(self.tables[t_val], lib)
                 poids = trouver(self.tables[t_poids], lib)
                 if not vals or not poids:
-                    erreurs.append(f"T{t_vu} : libellé {lib!r} absent de T{t_val}/T{t_poids}")
+                    # Rubrique renommée dans un tableau mais pas dans l'autre
+                    # (ex. « PRODUITS PETROLIERS » vs « AUTRES PRODUITS
+                    # PETROLIERS », août 2025) : le témoin est perdu, la
+                    # rubrique brute reste contrôlée par cumuls/parts/sommes.
+                    avertissements.append(
+                        f"T{t_vu} : libellé témoin {lib!r} absent de T{t_val}/T{t_poids} — "
+                        f"renommage ANSD probable, témoin ignoré")
                     continue
                 for m in range(1, 5):
                     if vals[m] is None or poids[m] is None or poids[m] <= 0.5 or vus[m] is None:
