@@ -302,6 +302,16 @@ function CommerceExterieurPanel() {
             );
           })}
         </div>
+        {/* Briefing exécutif de l'année affichée (communications officielles) */}
+        <a href={`/statistiques/rapport-commerce?annee=${an}`}
+          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 18px", borderRadius: 999,
+            background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", color: "#fff", fontSize: 12.5, fontWeight: 800,
+            textDecoration: "none", boxShadow: "0 2px 10px rgba(0,79,145,0.28)", whiteSpace: "nowrap",
+            fontFamily: "var(--font-google-sans)" }}>
+          <span className="material-symbols-outlined" aria-hidden
+            style={{ fontSize: 17, lineHeight: 1, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}>dashboard</span>
+          Rapport d&apos;analyse
+        </a>
       </div>
       {/* Mois de l'année choisie (uniquement les bulletins importés) */}
       {serieAn.length > 0 && (

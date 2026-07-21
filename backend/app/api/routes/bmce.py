@@ -381,6 +381,84 @@ async def apercu_bmce(db: AsyncSession = Depends(get_db)):
     }
 
 
+@router.get("/rapport")
+async def rapport_bmce(annee: int, db: AsyncSession = Depends(get_db)):
+    """Briefing exécutif d'une année : KPIs cumulés avec glissement vs même
+    période de l'année précédente, série mensuelle de l'ensemble, tops
+    produits et pays (rattachés au référentiel), échanges par continent.
+    Tous les dérivés suivent les règles ANSD (Σ valeurs ; parts vs ensemble ;
+    variation depuis zéro/absence = indéfinie)."""
+    d1, d2 = date(annee, 1, 1), date(annee + 1, 1, 1)
+    p1 = date(annee - 1, 1, 1)
+
+    # Ensemble mensuel de l'année et de la précédente (glissement même plage)
+    res = await db.execute(text(
+        "SELECT r.sens, f.periode, f.valeur_fcfa "
+        "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+        "WHERE r.categorie = 'ensemble' AND f.periode >= :p1 AND f.periode < :d2 "
+        "ORDER BY f.periode"), {"p1": p1, "d2": d2})
+    par_mois: dict[str, dict] = {}
+    for sens, periode, v in res.all():
+        m = par_mois.setdefault(str(periode), {"periode": str(periode)})
+        m[sens] = float(v) if v is not None else None
+    serie = [par_mois[k] for k in sorted(par_mois) if k >= str(d1)]
+    if not serie:
+        return {"disponible": False}
+    mois_nums = [int(p["periode"][5:7]) for p in serie]
+    serie_prec = [par_mois[k] for k in sorted(par_mois)
+                  if k < str(d1) and int(k[5:7]) in mois_nums]
+    cum = {s: sum(p.get(s) or 0 for p in serie) for s in ("export", "import")}
+    prec = ({s: sum(p.get(s) or 0 for p in serie_prec) for s in ("export", "import")}
+            if len(serie_prec) == len(serie) else None)
+
+    async def tops(categorie: str, sens: str, limite: int) -> list[dict]:
+        if categorie == "pays":
+            sql = ("SELECT p.nom_fr AS libelle, p.code_iso2, SUM(f.valeur_fcfa) AS v "
+                   "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+                   "JOIN ref_pays p ON p.id = r.pays_id "
+                   "WHERE r.categorie = 'pays' AND r.sens = :s "
+                   "  AND f.periode >= :d1 AND f.periode < :d2 "
+                   "GROUP BY p.nom_fr, p.code_iso2 ORDER BY v DESC NULLS LAST LIMIT :n")
+        else:
+            sql = ("SELECT r.libelle, NULL AS code_iso2, SUM(f.valeur_fcfa) AS v "
+                   "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+                   "WHERE r.categorie = :c AND r.sens = :s "
+                   "  AND f.periode >= :d1 AND f.periode < :d2 "
+                   "GROUP BY r.libelle ORDER BY v DESC NULLS LAST LIMIT :n")
+        res = await db.execute(text(sql), {"c": categorie, "s": sens, "d1": d1, "d2": d2, "n": limite})
+        total = cum[sens]
+        return [{"libelle": lib, "code_iso2": iso, "valeur": float(v),
+                 "part_pct": round(float(v) / total * 100.0, 2) if total else None}
+                for lib, iso, v in res.all() if v]
+
+    res = await db.execute(text(
+        "SELECT p.continent, r.sens, SUM(f.valeur_fcfa) AS v "
+        "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+        "JOIN ref_pays p ON p.id = r.pays_id "
+        "WHERE r.categorie = 'pays' AND p.continent IS NOT NULL "
+        "  AND f.periode >= :d1 AND f.periode < :d2 "
+        "GROUP BY p.continent, r.sens"), {"d1": d1, "d2": d2})
+    continents: dict[str, dict] = {}
+    for cont, sens, v in res.all():
+        continents.setdefault(cont, {"continent": cont, "export": 0.0, "import": 0.0})[sens] = float(v or 0)
+
+    res = await db.execute(text("SELECT mois_couverts FROM bmce_bulletins ORDER BY periode DESC LIMIT 1"))
+    couverts = res.scalar_one_or_none() or []
+    return {
+        "disponible": True, "annee": annee,
+        "mois": [p["periode"] for p in serie],
+        "mois_provisoires": [str(c) for c in couverts],
+        "serie": serie,
+        "cumul": cum,
+        "precedent": prec,
+        "produits": {"export": await tops("produit_regroupe", "export", 7),
+                     "import": await tops("produit_regroupe", "import", 7)},
+        "pays": {"export": await tops("pays", "export", 10),
+                 "import": await tops("pays", "import", 10)},
+        "continents": sorted(continents.values(), key=lambda c: -(c["export"] + c["import"])),
+    }
+
+
 @router.get("/series")
 async def series_bmce(categorie: str, sens: str, db: AsyncSession = Depends(get_db)):
     """Séries mensuelles par rubrique avec dérivés ANSD : VU, variation
