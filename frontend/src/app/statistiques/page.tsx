@@ -279,23 +279,24 @@ function CommerceExterieurPanel() {
     <div className="charge-in" style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
       {/* En-tête : titre + années des bulletins importés (récentes d'abord).
           Cliquer une année = voir son cumul ; cliquer un mois = voir le mois.
-          Années : pilule blanche bordée, voile bleu dégradé quand active.
-          Mois : rail segmenté clair, segment actif blanc surélevé. */}
+          Style : segments blancs bordés, actif en bleu plein — même langage
+          que SousTypeNav de la page IDE (Flux & Stocks / Greenfield / M&A). */}
       <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 14 }}>
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="tablist" aria-label="Année">
+        <div role="tablist" aria-label="Année"
+          style={{ display: "inline-flex", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 999, padding: 3, gap: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
           {anneesDispo.map(a => {
-            const on = a === an;
+            const actif = a === an;
             return (
-              <button key={a} role="tab" aria-selected={on}
+              <button key={a} role="tab" aria-selected={actif}
                 onClick={() => { setAnnee(a); setMoisSel("cumul"); }}
-                style={{ padding: "6px 18px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap",
-                  fontFamily: "var(--font-google-sans)", fontSize: 13.5, fontWeight: 800, letterSpacing: "0.01em",
-                  background: on ? "linear-gradient(160deg, rgba(0,58,110,0.10) 0%, rgba(0,79,145,0.14) 60%, rgba(26,106,176,0.18) 100%)" : "#fff",
-                  color: on ? "#003a6e" : "#7a8494",
-                  border: on ? "1px solid rgba(0,79,145,0.35)" : "1px solid var(--ds-bordure)",
-                  boxShadow: on ? "inset 0 1px 2px rgba(0,79,145,0.08)" : "0 1px 2px rgba(15,40,80,0.05)",
-                  transition: "background 0.16s, color 0.16s, border-color 0.16s, box-shadow 0.16s" }}>
+                style={{ padding: "6px 18px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap",
+                  background: actif ? "#004f91" : "transparent",
+                  color: actif ? "#fff" : "#4a5568",
+                  boxShadow: actif ? "0 2px 8px rgba(0,79,145,0.30), inset 0 1px 0 rgba(255,255,255,0.12)" : "none",
+                  transition: "background 0.18s, box-shadow 0.18s, color 0.18s", fontFamily: "var(--font-google-sans)" }}
+                onMouseEnter={e => { if (!actif) e.currentTarget.style.background = "#F6F5F3"; }}
+                onMouseLeave={e => { if (!actif) e.currentTarget.style.background = "transparent"; }}>
                 {a}
               </button>
             );
@@ -304,17 +305,18 @@ function CommerceExterieurPanel() {
       </div>
       {/* Mois de l'année choisie (uniquement les bulletins importés) */}
       {serieAn.length > 0 && (
-        <div style={{ display: "inline-flex", gap: 2, padding: 3, background: "#ECEFF4", borderRadius: 999,
-          marginBottom: 20, flexWrap: "wrap", border: "1px solid rgba(15,40,80,0.05)" }}>
+        <div style={{ display: "inline-flex", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 999, padding: 3, gap: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", marginBottom: 20, flexWrap: "wrap" }}>
           {serieAn.map(p => {
-            const on = moisSel === p.periode;
+            const actif = moisSel === p.periode;
             return (
-              <button key={p.periode} aria-pressed={on} onClick={() => setMoisSel(on ? "cumul" : p.periode)}
-                style={{ padding: "6px 16px", borderRadius: 999, border: "none", cursor: "pointer", whiteSpace: "nowrap",
-                  fontFamily: "var(--font-google-sans)", fontSize: 12.5, fontWeight: on ? 800 : 600,
-                  background: on ? "#fff" : "transparent", color: on ? "#004f91" : "#5c6675",
-                  boxShadow: on ? "0 1px 5px rgba(15,40,80,0.16)" : "none",
-                  transition: "background 0.16s, color 0.16s, box-shadow 0.16s, font-weight 0.16s" }}>
+              <button key={p.periode} aria-pressed={actif} onClick={() => setMoisSel(actif ? "cumul" : p.periode)}
+                style={{ padding: "6px 18px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap",
+                  background: actif ? "#004f91" : "transparent",
+                  color: actif ? "#fff" : "#4a5568",
+                  boxShadow: actif ? "0 2px 8px rgba(0,79,145,0.30), inset 0 1px 0 rgba(255,255,255,0.12)" : "none",
+                  transition: "background 0.18s, box-shadow 0.18s, color 0.18s", fontFamily: "var(--font-google-sans)" }}
+                onMouseEnter={e => { if (!actif) e.currentTarget.style.background = "#F6F5F3"; }}
+                onMouseLeave={e => { if (!actif) e.currentTarget.style.background = "transparent"; }}>
                 {bmceMoisNom(p.periode)}
               </button>
             );
