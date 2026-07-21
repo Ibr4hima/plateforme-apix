@@ -28,6 +28,7 @@ const MODULES: NavItem[] = [
   { type: "link", label: "Tableaux de correspondance",     href: "/admin/classifications",    icon: "table_chart",            disabled: true },
   { type: "link", label: "Données IDE",                    href: "/admin/ide",                icon: "finance_mode", },
   { type: "link", label: "Données BDEF",                   href: "/admin/bdef",               icon: "database",               disabled: true },
+  { type: "link", label: "Commerce extérieur",             href: "/admin/commerce-exterieur", icon: "directions_boat", },
   { type: "link", label: "Code des investissements",       href: "/admin/code-investissement",icon: "gavel", },
 ];
 
