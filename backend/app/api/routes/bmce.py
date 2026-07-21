@@ -2,7 +2,9 @@
 # bulletin (extraction auto-vérifiée) et lecture des flux bruts.
 # Les dérivés (cumuls, variations, VU, parts, balance) sont calculés
 # à la volée selon les règles ANSD, jamais stockés.
+import re
 import tempfile
+import unicodedata
 from datetime import date
 from pathlib import Path
 
@@ -35,6 +37,40 @@ MOIS_FR = {"janv": 1, "févr": 2, "mars": 3, "avr": 4, "mai": 5, "juin": 6,
 def _date_de(mois: str) -> date:
     nom, annee = mois.split("-")
     return date(2000 + int(annee), MOIS_FR[nom], 1)
+
+
+def _normaliser_nom(nom: str) -> str:
+    """« Côte d'Ivoire » → « COTE D IVOIRE » : sans accents ni ponctuation,
+    pour rapprocher les libellés ANSD (majuscules, graphies variables) du
+    référentiel ref_pays."""
+    t = unicodedata.normalize("NFD", nom)
+    t = "".join(c for c in t if unicodedata.category(c) != "Mn")
+    return re.sub(r"[^A-Z0-9]+", " ", t.upper()).strip()
+
+
+async def _rapprocher_pays(db: AsyncSession) -> None:
+    """Rattache automatiquement les rubriques « pays » sans correspondance au
+    référentiel ref_pays (libellés normalisés). Les regroupements ANSD
+    (« LES PAYS DE L'AFRIQUE DE L'OUEST »…) ne matchent pas : ils restent
+    volontairement non rattachés et sont exclus de l'affichage public.
+    Les associations manuelles existantes ne sont jamais écrasées."""
+    res = await db.execute(text(
+        "SELECT id, libelle FROM bmce_rubriques WHERE categorie = 'pays' AND pays_id IS NULL"))
+    sans_pays = res.all()
+    if not sans_pays:
+        return
+    res = await db.execute(text(
+        "SELECT id, nom_fr, nom_cnuced FROM ref_pays WHERE actif IS NOT FALSE"))
+    index: dict[str, int] = {}
+    for pid, nom_fr, nom_cnuced in res:
+        for nom in (nom_fr, nom_cnuced):
+            if nom:
+                index.setdefault(_normaliser_nom(nom), pid)
+    for rid, lib in sans_pays:
+        pid = index.get(_normaliser_nom(lib))
+        if pid:
+            await db.execute(text(
+                "UPDATE bmce_rubriques SET pays_id = :p WHERE id = :i"), {"p": pid, "i": rid})
 
 
 @router.post("/importer")
@@ -166,6 +202,7 @@ async def importer_bmce(
     await db.execute(text(
         "UPDATE bmce_bulletins SET nb_valeurs = :v, nb_revisions = :r WHERE id = :i"),
         {"v": nb_valeurs, "r": nb_revisions, "i": bulletin_id})
+    await _rapprocher_pays(db)
     await db.commit()
     return {
         "bulletin": str(periode_bulletin), "mois_couverts": [str(m) for m in mois],
@@ -180,6 +217,51 @@ async def lister_bulletins(db: AsyncSession = Depends(get_db)):
         "SELECT periode, fichier_nom, importe_le, mois_couverts, nb_valeurs, nb_revisions, rapport "
         "FROM bmce_bulletins ORDER BY periode DESC"))
     return [dict(r._mapping) for r in res]
+
+
+@router.get("/pays")
+async def correspondances_pays(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    """Correspondances des libellés « pays » du bulletin avec ref_pays,
+    regroupées par libellé (un même libellé existe en export et en import).
+    Le rapprochement automatique tourne d'abord : les données importées avant
+    l'existence de cette fonctionnalité sont rattachées à la première visite."""
+    await _rapprocher_pays(db)
+    await db.commit()
+    res = await db.execute(text(
+        "SELECT r.libelle, MIN(r.ordre) AS ordre, MIN(r.pays_id) AS pays_id, "
+        "       MIN(p.nom_fr) AS nom_ref, COUNT(*) AS nb_rubriques "
+        "FROM bmce_rubriques r LEFT JOIN ref_pays p ON p.id = r.pays_id "
+        "WHERE r.categorie = 'pays' "
+        "GROUP BY r.libelle ORDER BY MIN(r.ordre), r.libelle"))
+    return [dict(r._mapping) for r in res]
+
+
+@router.put("/pays")
+async def associer_pays(
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    """Associe (ou dissocie : pays_id null) un libellé « pays » du bulletin à
+    un pays du référentiel — appliqué aux deux sens (export et import)."""
+    libelle = payload.get("libelle")
+    pays_id = payload.get("pays_id")
+    if not libelle:
+        raise HTTPException(422, "libelle requis")
+    if pays_id is not None:
+        res = await db.execute(text("SELECT 1 FROM ref_pays WHERE id = :p"), {"p": pays_id})
+        if res.scalar_one_or_none() is None:
+            raise HTTPException(404, "Pays introuvable dans le référentiel")
+    res = await db.execute(text(
+        "UPDATE bmce_rubriques SET pays_id = :p WHERE categorie = 'pays' AND libelle = :l"),
+        {"p": pays_id, "l": libelle})
+    await db.commit()
+    if res.rowcount == 0:
+        raise HTTPException(404, "Libellé introuvable")
+    return {"libelle": libelle, "pays_id": pays_id, "rubriques": res.rowcount}
 
 
 @router.get("/flux")
@@ -254,11 +336,24 @@ async def series_bmce(categorie: str, sens: str, db: AsyncSession = Depends(get_
         raise HTTPException(422, "catégorie inconnue")
     if sens not in ("export", "import"):
         raise HTTPException(422, "sens inconnu")
-    res = await db.execute(text(
-        "SELECT r.libelle, r.ordre, f.periode, f.valeur_fcfa, f.poids_kg "
-        "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
-        "WHERE r.categorie = :c AND r.sens = :s ORDER BY r.ordre, f.periode"),
-        {"c": categorie, "s": sens})
+    if categorie == "pays":
+        # Seuls les libellés rattachés au référentiel sont exposés, sous leur
+        # nom canonique : les regroupements ANSD (« LES PAYS DE… ») et les
+        # libellés non rattachés restent en base (vérifications de cumuls)
+        # mais hors affichage. Le nom canonique fusionne aussi les graphies
+        # divergentes d'un même pays entre bulletins.
+        res = await db.execute(text(
+            "SELECT p.nom_fr AS libelle, r.ordre, f.periode, f.valeur_fcfa, f.poids_kg "
+            "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+            "JOIN ref_pays p ON p.id = r.pays_id "
+            "WHERE r.categorie = 'pays' AND r.sens = :s ORDER BY r.ordre, f.periode"),
+            {"s": sens})
+    else:
+        res = await db.execute(text(
+            "SELECT r.libelle, r.ordre, f.periode, f.valeur_fcfa, f.poids_kg "
+            "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+            "WHERE r.categorie = :c AND r.sens = :s ORDER BY r.ordre, f.periode"),
+            {"c": categorie, "s": sens})
     lignes = [dict(r._mapping) for r in res]
     # Ensemble du même sens : dénominateur des parts
     res = await db.execute(text(
@@ -268,14 +363,27 @@ async def series_bmce(categorie: str, sens: str, db: AsyncSession = Depends(get_
     totaux = {str(r._mapping["periode"]): float(r._mapping["valeur_fcfa"])
               for r in res if r._mapping["valeur_fcfa"] is not None}
 
-    rubriques: dict = {}
+    # Fusion par (libellé, période) : deux graphies d'un même pays rattachées
+    # au même référentiel portent le même libellé canonique — leurs valeurs
+    # s'additionnent (mois disjoints en pratique) avant calcul des dérivés.
+    fusion: dict[tuple[str, str], dict] = {}
+    ordres: dict[str, int] = {}
     for l in lignes:
-        rub = rubriques.setdefault(l["libelle"], {"libelle": l["libelle"], "ordre": l["ordre"], "data": []})
-        v = float(l["valeur_fcfa"]) if l["valeur_fcfa"] is not None else None
-        k = float(l["poids_kg"]) if l["poids_kg"] is not None else None
-        total = totaux.get(str(l["periode"]))
+        lib = l["libelle"]
+        ordres[lib] = min(ordres.get(lib, 10**9), l["ordre"])
+        f0 = fusion.setdefault((lib, str(l["periode"])), {"valeur": None, "poids": None})
+        if l["valeur_fcfa"] is not None:
+            f0["valeur"] = (f0["valeur"] or 0.0) + float(l["valeur_fcfa"])
+        if l["poids_kg"] is not None:
+            f0["poids"] = (f0["poids"] or 0.0) + float(l["poids_kg"])
+
+    rubriques: dict = {}
+    for (lib, periode), f0 in fusion.items():
+        rub = rubriques.setdefault(lib, {"libelle": lib, "ordre": ordres[lib], "data": []})
+        v, k = f0["valeur"], f0["poids"]
+        total = totaux.get(periode)
         rub["data"].append({
-            "periode": str(l["periode"]), "valeur_fcfa": v, "poids_kg": k,
+            "periode": periode, "valeur_fcfa": v, "poids_kg": k,
             "vu_fcfa_kg": round(v / k, 1) if v is not None and k else None,
             "part_pct": round(v / total * 100.0, 2) if v is not None and total else None,
         })

@@ -16,6 +16,8 @@ type BulletinHist = {
   periode: string; fichier_nom: string; importe_le: string | null;
   mois_couverts: string[] | null; nb_valeurs: number; nb_revisions: number; rapport: string | null;
 };
+type CorrespondancePays = { libelle: string; ordre: number; pays_id: number | null; nom_ref: string | null; nb_rubriques: number };
+type RefPaysOpt = { id: number; nom_fr: string };
 
 // Formate une date ISO « 2025-04-01 » en « avril 2025 ».
 function fmtMois(iso: string): string {
@@ -34,13 +36,45 @@ export default function AdminCommerceExterieurPage() {
   const [ouvert, setOuvert]       = useState<string | null>(null);   // periode de la ligne dépliée
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Correspondance des libellés « pays » du bulletin avec le référentiel
+  const [corresp, setCorresp]         = useState<CorrespondancePays[]>([]);
+  const [refPays, setRefPays]         = useState<RefPaysOpt[]>([]);
+  const [filtreCorresp, setFiltreCorresp] = useState<"tous" | "sans">("sans");
+  const [enregistrant, setEnregistrant]   = useState<string | null>(null);   // libellé en cours
+
   async function loadBulletins() {
     try {
       const data = await fetch(`${API}/bmce/bulletins`).then(r => r.json());
       setBulletins(Array.isArray(data) ? data : []);
     } catch { setBulletins([]); }
   }
-  useEffect(() => { loadBulletins(); }, []);
+  async function loadCorrespondances() {
+    try {
+      const [c, p] = await Promise.all([
+        fetch(`${API}/bmce/pays`, { headers: await authHeaders() }).then(r => r.json()),
+        fetch(`${API}/ref-pays`).then(r => r.json()),
+      ]);
+      setCorresp(Array.isArray(c) ? c : []);
+      setRefPays(Array.isArray(p) ? p.map((x: any) => ({ id: x.id, nom_fr: x.nom_fr })) : []);
+    } catch { setCorresp([]); }
+  }
+  useEffect(() => { loadBulletins(); loadCorrespondances(); }, []);
+
+  async function associer(libelle: string, pays_id: number | null) {
+    setEnregistrant(libelle);
+    try {
+      const r = await fetch(`${API}/bmce/pays`, {
+        method: "PUT",
+        headers: { ...(await authHeaders()), "Content-Type": "application/json" },
+        body: JSON.stringify({ libelle, pays_id }),
+      });
+      if (r.ok) {
+        const nom = pays_id === null ? null : refPays.find(p => p.id === pays_id)?.nom_fr ?? null;
+        setCorresp(cs => cs.map(c => c.libelle === libelle ? { ...c, pays_id, nom_ref: nom } : c));
+      }
+    } catch { /* l'état affiché reste inchangé */ }
+    setEnregistrant(null);
+  }
 
   function pickFile(f: FileList | null) {
     if (f && f[0]) { setFile(f[0]); setRes(null); setErreur(null); }
@@ -55,7 +89,7 @@ export default function AdminCommerceExterieurPage() {
       const r = await fetch(`${API}/bmce/importer`, { method: "POST", headers: await authHeaders(), body: fd });
       const data = await r.json();
       if (!r.ok) setErreur(data.detail || "Erreur inconnue lors de l'import.");
-      else { setRes(data); await loadBulletins(); }
+      else { setRes(data); await loadBulletins(); await loadCorrespondances(); }
     } catch (e: any) {
       setErreur("Erreur réseau : " + e.message);
     }
@@ -187,6 +221,66 @@ export default function AdminCommerceExterieurPage() {
           </table>
         )}
       </div>
+
+      {/* ── Correspondance des pays ── */}
+      {corresp.length > 0 && (() => {
+        const sans = corresp.filter(c => c.pays_id === null);
+        const visibles = filtreCorresp === "sans" ? sans : corresp;
+        return (
+          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginTop: 20 }}>
+            <div style={SEC}>Correspondance des pays</div>
+            <p style={{ fontSize: 12.5, color: "#888", marginBottom: 14, lineHeight: 1.6 }}>
+              Les libellés « pays » du bulletin sont rapprochés automatiquement du référentiel à chaque import ;
+              seuls les libellés <strong>rattachés</strong> apparaissent sur la page publique, sous le nom du référentiel
+              (les regroupements ANSD — « LES PAYS DE L&apos;AFRIQUE DE L&apos;OUEST », etc. — restent volontairement non rattachés).
+              Toutes les rangées restent en base pour les vérifications de cumuls : le rattachement ne change aucun calcul.
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              {([["sans", `Non rattachés (${sans.length})`], ["tous", `Tous (${corresp.length})`]] as const).map(([v, l]) => (
+                <button key={v} onClick={() => setFiltreCorresp(v)}
+                  style={{ padding: "5px 14px", borderRadius: 999, border: "1px solid", cursor: "pointer", fontSize: 12, fontWeight: 700,
+                    background: filtreCorresp === v ? "#004f91" : "#fff",
+                    color: filtreCorresp === v ? "#fff" : "#4a5568",
+                    borderColor: filtreCorresp === v ? "#004f91" : "#E8E5E3" }}>
+                  {l}
+                </button>
+              ))}
+            </div>
+            {visibles.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 18, color: "#1a7a3c", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <ShieldCheck size={15} /> Tous les libellés pays sont rattachés.
+              </div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: "2px solid #E8E5E3" }}>
+                    {["Libellé du bulletin", "Pays du référentiel"].map(h => (
+                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibles.map(c => (
+                    <tr key={c.libelle} style={{ borderBottom: "1px solid #F0EEEC" }}>
+                      <td style={{ padding: "7px 12px", color: "#1a1a2e", fontWeight: 600 }}>{c.libelle}</td>
+                      <td style={{ padding: "7px 12px", width: 320 }}>
+                        <select value={c.pays_id ?? ""} disabled={enregistrant === c.libelle}
+                          onChange={e => associer(c.libelle, e.target.value === "" ? null : Number(e.target.value))}
+                          style={{ width: "100%", padding: "6px 10px", borderRadius: 8, fontSize: 12.5, fontFamily: "var(--font-google-sans)",
+                            border: `1px solid ${c.pays_id === null ? "#FAD7A0" : "#E8E5E3"}`,
+                            background: c.pays_id === null ? "#FFFdf5" : "#fff", color: c.pays_id === null ? "#B7661B" : "#1a1a2e", cursor: "pointer" }}>
+                          <option value="">— Non rattaché (exclu de l&apos;affichage) —</option>
+                          {refPays.map(p => <option key={p.id} value={p.id}>{p.nom_fr}</option>)}
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
