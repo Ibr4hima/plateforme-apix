@@ -9,7 +9,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ChevronDown, FileSpreadsheet, Loader2, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
@@ -107,17 +107,6 @@ function bmceMoisCourt(iso: string, avecAnnee = true): string {
   const nom = new Date(y, m - 1, 1).toLocaleDateString("fr-FR", { month: "short" });
   return avecAnnee ? `${nom} ${String(y).slice(2)}` : nom;
 }
-// Mois provisoires → « janv. – avr. 2025 » (plage), « avr. 2025 » (seul)
-function bmceLibelleProvisoires(mois: string[]): string {
-  if (!mois.length) return "";
-  const tri = [...mois].sort();
-  const prem = tri[0], der = tri[tri.length - 1];
-  const anP = prem.slice(0, 4), anD = der.slice(0, 4);
-  if (prem === der) return `${bmceMoisCourt(der, false)} ${anD}`;
-  if (anP === anD) return `${bmceMoisCourt(prem, false)} – ${bmceMoisCourt(der, false)} ${anD}`;
-  return `${bmceMoisCourt(prem, false)} ${anP} – ${bmceMoisCourt(der, false)} ${anD}`;
-}
-
 // Variation mensuelle ▲/▼ — règle ANSD : indéfinie (null) → on n'affiche rien
 function BmceVariation({ v, taille = 11 }: { v: number | null | undefined; taille?: number }) {
   if (v === null || v === undefined) return null;
@@ -196,7 +185,6 @@ function CommerceExterieurPanel() {
   const [chargSeries, setChargSeries] = useState(false);
   const [erreurSeries, setErreurSeries] = useState(false);
   const [tickSeries, setTickSeries] = useState(0);
-  const [voirTout, setVoirTout] = useState(false);
   const cacheSeries = useRef<Record<string, BmceRubrique[]>>({});
 
   useEffect(() => {
@@ -224,13 +212,11 @@ function CommerceExterieurPanel() {
   const derniers = useMemo(() => {
     if (!rubriques) return [];
     return rubriques
-      .map(r => ({ libelle: r.libelle, vuCumul: r.vu_cumul_fcfa_kg, point: r.data.find(d => d.periode === dernierMois) ?? r.data[r.data.length - 1] }))
-      .filter((x): x is { libelle: string; vuCumul: number | null; point: BmcePoint } => !!x.point && x.point.valeur_fcfa !== null)
+      .map(r => ({ libelle: r.libelle, point: r.data.find(d => d.periode === dernierMois) ?? r.data[r.data.length - 1] }))
+      .filter((x): x is { libelle: string; point: BmcePoint } => !!x.point && x.point.valeur_fcfa !== null)
       .sort((a, b) => (b.point.valeur_fcfa ?? 0) - (a.point.valeur_fcfa ?? 0));
   }, [rubriques, dernierMois]);
-  const top15 = derniers.slice(0, 15);
   const couleurSens = sens === "export" ? BMCE_BLEU : BMCE_ORANGE;
-  const avecVU = categorie !== "pays"; // pas de poids (donc pas de VU) pour les pays
 
   const TITRE_SEC: any = { fontSize: 10.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 };
   const LBL_SEG: any = { fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", minWidth: 76 };
@@ -245,7 +231,6 @@ function CommerceExterieurPanel() {
   if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
   if (!apercu || !apercu.disponible) return <CommerceExterieurAttente />;
 
-  const provisoires = bmceLibelleProvisoires(apercu.mois_provisoires || []);
   const cumul = apercu.cumul_annee;
   const kpis = [
     { label: "Exportations", tag: "FAB", valeur: fmtFCFA(apercu.exportations_fab), variation: apercu.variation_export, rouge: false },
@@ -262,14 +247,7 @@ function CommerceExterieurPanel() {
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
         {dernierMois && <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{bmceMoisLong(dernierMois)}</span>}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
-        <span style={{ fontSize: 11.5, color: "#9aa5b4" }}>Commerce général · Importations CAF · Exportations FAB · Source ANSD (BMSCE)</span>
-        {provisoires && (
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#a16207", background: "rgba(161,98,7,0.08)", border: "1px solid rgba(161,98,7,0.22)", padding: "2px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>
-            Données provisoires · {provisoires}
-          </span>
-        )}
-      </div>
+      <div style={{ marginBottom: 18 }} />
 
       {/* KPIs du dernier mois */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
@@ -313,87 +291,52 @@ function CommerceExterieurPanel() {
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={LBL_SEG}>Sens</span>
             {BMCE_SENS.map(o => (
-              <button key={o.v} className="ds-chip" aria-pressed={sens === o.v} onClick={() => { setSens(o.v); setVoirTout(false); }}>{o.l}</button>
+              <button key={o.v} className="ds-chip" aria-pressed={sens === o.v} onClick={() => setSens(o.v)}>{o.l}</button>
             ))}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={LBL_SEG}>Catégorie</span>
             {BMCE_CATS.map(o => (
-              <button key={o.v} className="ds-chip" aria-pressed={categorie === o.v} onClick={() => { setCategorie(o.v); setVoirTout(false); }}>{o.l}</button>
+              <button key={o.v} className="ds-chip" aria-pressed={categorie === o.v} onClick={() => setCategorie(o.v)}>{o.l}</button>
             ))}
           </div>
         </div>
 
         {chargSeries ? (
-          <SkeletonRows n={8} h={26} />
+          <SkeletonRows n={8} h={40} />
         ) : erreurSeries ? (
           <ErreurChargement compact onRetry={() => setTickSeries(t => t + 1)} />
-        ) : top15.length === 0 ? (
+        ) : derniers.length === 0 ? (
           <p style={{ fontSize: 12.5, color: "#9aa5b4", textAlign: "center", padding: "24px 0" }}>Aucune donnée pour cette sélection.</p>
         ) : (
-          <>
-            {/* Classement Top 15 par valeur du dernier mois */}
-            <div style={{ display: "grid", gap: 4 }}>
-              {top15.map(r => {
-                const v = r.point.valeur_fcfa ?? 0;
-                const maxV = top15[0].point.valeur_fcfa || 1;
-                return (
-                  <div key={r.libelle} style={{ display: "grid", gridTemplateColumns: "minmax(150px,240px) 1fr 110px 62px 88px", alignItems: "center", gap: 10, padding: "3px 0" }}>
-                    <span title={r.libelle} style={{ fontSize: 12, fontWeight: 600, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.libelle}</span>
-                    <div style={{ height: 13, background: "var(--ds-voile-bleu)", borderRadius: 6, overflow: "hidden" }}>
-                      <div title={`${r.libelle} : ${fmtFCFA(v)}${r.point.part_pct != null ? ` · ${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % du total` : ""}`}
-                        style={{ width: `${Math.max(1, (v / maxV) * 100)}%`, height: "100%", background: couleurSens, borderRadius: 6 }} />
+          // Classement complet : chaque rubrique = libellé (au-dessus, jamais
+          // tronqué) + jauge pleine largeur. Échelle en racine carrée pour que
+          // les petites valeurs restent visibles face aux dominantes.
+          <div style={{ display: "grid", gap: 2 }}>
+            {derniers.map((r, i) => {
+              const v = r.point.valeur_fcfa ?? 0;
+              const maxV = derniers[0].point.valeur_fcfa || 1;
+              const largeur = Math.max(1.5, Math.sqrt(Math.max(0, v) / maxV) * 100);
+              return (
+                <div key={r.libelle} style={{ padding: "9px 0", borderTop: i === 0 ? "none" : "1px solid #F4F2F1" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 14, marginBottom: 6 }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 600, color: "#3a4553", lineHeight: 1.3, flex: "1 1 auto", minWidth: 0 }}>{r.libelle}</span>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexShrink: 0 }}>
+                      <span className="ds-donnee" style={{ fontSize: 12.5, fontWeight: 800, color: "#1a1a2e", whiteSpace: "nowrap" }}>{fmtFCFA(v)}</span>
+                      <span className="ds-donnee" style={{ fontSize: 11, color: "#9aa5b4", whiteSpace: "nowrap", width: 48, textAlign: "right" }}>
+                        {r.point.part_pct != null ? `${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : ""}
+                      </span>
+                      <span style={{ width: 80, textAlign: "right", flexShrink: 0 }}><BmceVariation v={r.point.variation_pct} /></span>
                     </div>
-                    <span className="ds-donnee" style={{ fontSize: 11.5, fontWeight: 700, color: "#1a1a2e", textAlign: "right", whiteSpace: "nowrap" }}>{fmtFCFA(v)}</span>
-                    <span className="ds-donnee" style={{ fontSize: 11, color: "#9aa5b4", textAlign: "right", whiteSpace: "nowrap" }}>
-                      {r.point.part_pct != null ? `${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : ""}
-                    </span>
-                    <span style={{ textAlign: "right" }}><BmceVariation v={r.point.variation_pct} /></span>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Tableau complet repliable */}
-            <div style={{ marginTop: 14, borderTop: "1px solid #F2F0EF", paddingTop: 10 }}>
-              <button onClick={() => setVoirTout(o => !o)}
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#004f91", padding: 0, fontFamily: "var(--font-google-sans)" }}>
-                {voirTout ? <ChevronUp size={13} /> : <ChevronDown size={13} />} Tout voir ({derniers.length})
-              </button>
-              {voirTout && (
-                <div style={{ marginTop: 10, overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                    <thead>
-                      <tr style={{ borderBottom: "1px solid #ECEAE7" }}>
-                        <th style={{ padding: "7px 10px 7px 0", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em" }}>Libellé</th>
-                        <th style={{ padding: "7px 10px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{bmceMoisCourt(dernierMois)}</th>
-                        <th style={{ padding: "7px 10px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em" }}>Part</th>
-                        <th style={{ padding: "7px 10px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em" }}>Variation</th>
-                        {avecVU && <th style={{ padding: "7px 0 7px 10px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>VU cumul (FCFA/kg)</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {derniers.map(r => (
-                        <tr key={r.libelle} style={{ borderBottom: "1px solid #F6F4F3" }}>
-                          <td style={{ padding: "7px 10px 7px 0", color: "#4a5568", fontWeight: 500 }}>{r.libelle}</td>
-                          <td className="ds-donnee" style={{ padding: "7px 10px", textAlign: "right", fontWeight: 700, color: "#1a1a2e", whiteSpace: "nowrap" }}>{fmtFCFA(r.point.valeur_fcfa)}</td>
-                          <td className="ds-donnee" style={{ padding: "7px 10px", textAlign: "right", color: "#9aa5b4", whiteSpace: "nowrap" }}>
-                            {r.point.part_pct != null ? `${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
-                          </td>
-                          <td style={{ padding: "7px 10px", textAlign: "right" }}><BmceVariation v={r.point.variation_pct} /></td>
-                          {avecVU && (
-                            <td className="ds-donnee" style={{ padding: "7px 0 7px 10px", textAlign: "right", color: "#4a5568", whiteSpace: "nowrap" }}>
-                              {r.vuCumul != null ? r.vuCumul.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) : "—"}
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div style={{ height: 11, background: "var(--ds-voile-bleu)", borderRadius: 6, overflow: "hidden" }}>
+                    <div title={`${r.libelle} : ${fmtFCFA(v)}${r.point.part_pct != null ? ` · ${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % du total` : ""}`}
+                      style={{ width: `${largeur}%`, height: "100%", background: couleurSens, borderRadius: 6 }} />
+                  </div>
                 </div>
-              )}
-            </div>
-          </>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
