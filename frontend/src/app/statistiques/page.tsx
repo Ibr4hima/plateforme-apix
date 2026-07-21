@@ -107,6 +107,12 @@ function bmceMoisCourt(iso: string, avecAnnee = true): string {
   const nom = new Date(y, m - 1, 1).toLocaleDateString("fr-FR", { month: "short" });
   return avecAnnee ? `${nom} ${String(y).slice(2)}` : nom;
 }
+// « 2025-01-01 » → « Janvier » (mois en toutes lettres, initiale majuscule)
+function bmceMoisNom(iso: string): string {
+  const [y, m] = iso.split("-").map(Number);
+  const nom = new Date(y, m - 1, 1).toLocaleDateString("fr-FR", { month: "long" });
+  return nom.charAt(0).toUpperCase() + nom.slice(1);
+}
 // Variation mensuelle ▲/▼ — règle ANSD : indéfinie (null) → on n'affiche rien
 function BmceVariation({ v, taille = 11 }: { v: number | null | undefined; taille?: number }) {
   if (v === null || v === undefined) return null;
@@ -121,52 +127,6 @@ function BmceVariation({ v, taille = 11 }: { v: number | null | undefined; taill
 
 const BMCE_BLEU = "#004f91";    // exportations
 const BMCE_ORANGE = "#ca631f";  // importations
-
-// Barres mensuelles groupées export/import en divs (motif GrapheBarresEmpilees :
-// hauteurs proportionnelles, tooltip natif title). GrapheMultiPays est annuel
-// (x = annee number), inadapté aux périodes mensuelles.
-function GrapheBarresGroupeesMensuel({ serie, actif = null, onMois }: {
-  serie: BmcePointEnsemble[]; actif?: string | null; onMois?: (periode: string) => void;
-}) {
-  const H = 190;
-  const max = Math.max(1, ...serie.flatMap(p => [p.export?.valeur ?? 0, p.import?.valeur ?? 0]));
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
-        {[{ l: "Exportations (FAB)", c: BMCE_BLEU }, { l: "Importations (CAF)", c: BMCE_ORANGE }].map(x => (
-          <span key={x.l} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "#4a5568" }}>
-            <span style={{ width: 10, height: 10, borderRadius: 3, background: x.c, flexShrink: 0 }} />{x.l}
-          </span>
-        ))}
-      </div>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 18 }}>
-        {serie.map(p => {
-          const estompe = actif !== null && p.periode !== actif;
-          return (
-            <div key={p.periode} onClick={onMois ? () => onMois(p.periode) : undefined}
-              role={onMois ? "button" : undefined} aria-pressed={onMois ? p.periode === actif : undefined}
-              style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 0,
-                cursor: onMois ? "pointer" : undefined, opacity: estompe ? 0.38 : 1, transition: "opacity 0.18s" }}>
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, height: H, width: "100%" }}>
-                {[{ v: p.export?.valeur ?? null, c: BMCE_BLEU, l: "Exportations FAB" },
-                  { v: p.import?.valeur ?? null, c: BMCE_ORANGE, l: "Importations CAF" }].map(b => (
-                  <div key={b.l} title={`${bmceMoisLong(p.periode)} — ${b.l} : ${fmtFCFA(b.v)}`}
-                    style={{ width: 34, maxWidth: "42%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", marginBottom: 3, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                      {b.v === null ? "—" : fmtValGen(b.v)}
-                    </span>
-                    <div style={{ width: "100%", height: Math.max(2, Math.round(((b.v ?? 0) / max) * (H - 22))), background: b.c, borderRadius: "4px 4px 0 0" }} />
-                  </div>
-                ))}
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 600, color: p.periode === actif ? "#004f91" : "#4a5568", whiteSpace: "nowrap" }}>{bmceMoisCourt(p.periode)}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 const BMCE_SENS = [
   { v: "export", l: "Exportations" },
@@ -229,9 +189,10 @@ function CommerceExterieurPanel() {
   // Série de l'ensemble triée, années disponibles et mois de l'année choisie
   const serie = useMemo(() =>
     (apercu?.serie || []).slice().sort((a, b) => (a.periode < b.periode ? -1 : 1)), [apercu]);
+  // Années présentes en base, classées de la plus récente à la plus ancienne
   const anneesDispo = useMemo(() =>
-    [...new Set(serie.map(p => Number(p.periode.slice(0, 4))))].sort((a, b) => a - b), [serie]);
-  const an = annee ?? anneesDispo[anneesDispo.length - 1] ?? 0;
+    [...new Set(serie.map(p => Number(p.periode.slice(0, 4))))].sort((a, b) => b - a), [serie]);
+  const an = annee ?? anneesDispo[0] ?? 0;
   const serieAn = useMemo(() => serie.filter(p => Number(p.periode.slice(0, 4)) === an), [serie, an]);
   const enCumul = moisSel === "cumul";
 
@@ -303,39 +264,39 @@ function CommerceExterieurPanel() {
     { label: "Taux de couverture", tag: null, valeur: taux != null ? `${taux.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", variation: null, rouge: false },
   ];
 
-  const PILULE_ACTIVE: any = { background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", color: "#fff", border: "1px solid transparent" };
-  const PILULE: any = { background: "var(--ds-carte-douce)", color: "#4a5568", border: "1px solid var(--ds-bordure)" };
+  // Badges de sélection : fonds clairs, trois tiers de mise en avant.
+  // NEUTRE (non retenu), DOUX (année active servant de contexte quand un mois
+  // est ouvert), ACTIF (la sélection en cours).
+  const badgeBase: any = { padding: "5px 15px", borderRadius: 999, cursor: "pointer",
+    fontFamily: "var(--font-google-sans)", fontWeight: 700, whiteSpace: "nowrap",
+    transition: "background 0.16s, color 0.16s, border-color 0.16s, box-shadow 0.16s" };
+  const NEUTRE: any = { background: "#EEF1F6", color: "#5c6675", border: "1px solid transparent" };
+  const DOUX: any = { background: "rgba(0,79,145,0.07)", color: "#2f5f8f", border: "1px solid rgba(0,79,145,0.15)" };
+  const ACTIF: any = { background: "rgba(0,79,145,0.12)", color: "#004f91", border: "1px solid rgba(0,79,145,0.32)", boxShadow: "0 1px 3px rgba(0,79,145,0.10)" };
+  const styleAnnee = (a: number) => a === an ? (enCumul ? ACTIF : DOUX) : NEUTRE;
 
   return (
     <div className="charge-in" style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
-      {/* En-tête : titre + années des bulletins importés */}
+      {/* En-tête : titre + années des bulletins importés (récentes d'abord).
+          Cliquer une année = voir son cumul ; cliquer un mois = voir le mois. */}
       <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }} role="tablist" aria-label="Année">
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }} role="tablist" aria-label="Année">
           {anneesDispo.map(a => (
             <button key={a} role="tab" aria-selected={a === an}
               onClick={() => { setAnnee(a); setMoisSel("cumul"); }}
-              style={{ ...(a === an ? PILULE_ACTIVE : PILULE), padding: "5px 16px", borderRadius: 999, fontSize: 13,
-                fontWeight: 800, letterSpacing: "0.02em", cursor: "pointer", fontFamily: "var(--font-google-sans)",
-                transition: "background 0.15s, color 0.15s" }}>
+              style={{ ...badgeBase, ...styleAnnee(a), fontSize: 13.5, fontWeight: 800, letterSpacing: "0.01em" }}>
               {a}
             </button>
           ))}
         </div>
       </div>
-      {/* Mois de l'année choisie (bulletins importés) + cumul annuel */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 18 }}>
-        <button aria-pressed={enCumul} onClick={() => setMoisSel("cumul")}
-          style={{ ...(enCumul ? PILULE_ACTIVE : PILULE), padding: "4px 13px", borderRadius: 999, fontSize: 11.5,
-            fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, color 0.15s" }}>
-          Année (cumul)
-        </button>
-        <span aria-hidden style={{ width: 1, alignSelf: "stretch", background: "var(--ds-bordure)", margin: "2px 4px" }} />
+      {/* Mois de l'année choisie (uniquement les bulletins importés) */}
+      <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 18 }}>
         {serieAn.map(p => (
           <button key={p.periode} aria-pressed={moisSel === p.periode} onClick={() => setMoisSel(p.periode)}
-            style={{ ...(moisSel === p.periode ? PILULE_ACTIVE : PILULE), padding: "4px 13px", borderRadius: 999, fontSize: 11.5,
-              fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, color 0.15s" }}>
-            {bmceMoisCourt(p.periode, false)}
+            style={{ ...badgeBase, ...(moisSel === p.periode ? ACTIF : NEUTRE), fontSize: 12 }}>
+            {bmceMoisNom(p.periode)}
           </button>
         ))}
       </div>
@@ -374,14 +335,6 @@ function CommerceExterieurPanel() {
         );
       })()}
       {enCumul && <div style={{ marginBottom: 20 }} />}
-
-      {/* Ensemble : barres mensuelles groupées export / import de l'année */}
-      {serieAn.length > 0 && (
-        <div className="ds-carte" style={{ padding: "18px 20px", marginBottom: 20 }}>
-          <p style={TITRE_SEC}>Ensemble {an} — évolution mensuelle</p>
-          <GrapheBarresGroupeesMensuel serie={serieAn} actif={enCumul ? null : moisSel} onMois={p => setMoisSel(p)} />
-        </div>
-      )}
 
       {/* Répartition par sens × catégorie */}
       <div className="ds-carte" style={{ padding: "18px 20px" }}>
