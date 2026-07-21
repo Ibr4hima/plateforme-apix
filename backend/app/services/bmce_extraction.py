@@ -102,7 +102,8 @@ class Bulletin:
         self.lignes = brut.split("\n")
         self.mois: list[str] = []          # les 5 mois de l'en-tête, ex. ["avr-24", …, "avr-25"]
         self.tables: dict[int, dict[str, list[float | None]]] = {}
-        self.anomalies: list[str] = []
+        self.anomalies: list[str] = []        # lignes illisibles des tableaux BRUTS (fatales)
+        self.temoins_perdus: list[str] = []   # lignes illisibles des tableaux TÉMOINS (avertissements)
 
     # ── Découpage du texte en tableaux ──
     def _bornes(self) -> dict[int, tuple[int, int]]:
@@ -151,15 +152,20 @@ class Bulletin:
             libelle, valeurs = champs[0], champs[1:]
             if lignes_t1 and not (libelle.startswith("Valeur") or libelle.startswith("Poids")):
                 continue
+            # Ligne illisible : fatale dans un tableau BRUT (donnée importée),
+            # simple avertissement dans un tableau TÉMOIN (le témoin est perdu
+            # pour cette rubrique, qui reste contrôlée par cumuls/parts/sommes
+            # — ex. cellules vides sur la ligne VU « OR NON MONETAIRE », juin 25)
+            sortie = self.anomalies if num in BRUTS else self.temoins_perdus
             # Invariant du bulletin : 5 mois + 2 cumuls (+ variations facultatives)
             if len(valeurs) < 7:
-                self.anomalies.append(f"T{num} : ligne inattendue ({len(valeurs)} champs) : {t[:80]}")
+                sortie.append(f"T{num} : ligne inattendue ({len(valeurs)} champs) : {t[:80]}")
                 continue
             try:
                 mensuels = [nombre(v) for v in valeurs[:5]]
                 cum = (nombre(valeurs[5]), nombre(valeurs[6]))
             except ValueError as e:
-                self.anomalies.append(f"T{num} : {e} dans : {t[:80]}")
+                sortie.append(f"T{num} : {e} dans : {t[:80]}")
                 continue
             if libelle in rangees:
                 self.anomalies.append(f"T{num} : libellé en double : {libelle}")
@@ -352,6 +358,11 @@ class Bulletin:
                             f"la somme des rangées est correcte : coquille du bulletin")
                     else:
                         erreurs.append(f"TOTAL T{t_dim} {self.mois[m]} : {total[m] * facteur:,.0f} ≠ ensemble {ligne[m]:,.0f}")
+
+        # Témoins illisibles : la vérification correspondante est perdue pour la
+        # rubrique (signalé), mais ses données restent contrôlées par ailleurs
+        for a in getattr(self, "temoins_perdus", []):
+            avertissements.append(f"{a} — témoin illisible ignoré, la rubrique reste contrôlée par cumuls, parts et sommes")
 
         rapport.append(f"{ok} contrôles réussis, {len(erreurs)} erreurs, "
                        f"{len(avertissements)} incohérences internes du bulletin, {len(self.anomalies)} anomalies de lecture")
