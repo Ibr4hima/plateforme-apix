@@ -50,6 +50,13 @@ async def importer_bmce(
         chemin = Path(tmp.name)
     try:
         bulletin = Bulletin(chemin)
+    except FileNotFoundError:
+        chemin.unlink(missing_ok=True)
+        raise HTTPException(500,
+            "pdftotext est introuvable sur le serveur. Installer poppler-utils "
+            "(macOS : brew install poppler · Debian/Ubuntu : apt-get install poppler-utils · "
+            "Docker : reconstruire l'image backend, le paquet y est désormais inclus).")
+    try:
         bulletin.extraire()
         rapport = bulletin.verifier()   # lève si l'extraction n'est pas fiable
     except SystemExit as e:
