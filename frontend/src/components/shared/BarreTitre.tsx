@@ -12,7 +12,7 @@ export default function BarreTitre({ titre, children, droite }: {
   droite?: React.ReactNode;
 }) {
   return (
-    <section style={{ padding: "82px 40px 18px", background: "#004f91", position: "relative", overflow: "hidden" }}>
+    <section style={{ padding: "82px 40px 18px", background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", position: "relative", overflow: "hidden" }}>
       <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
