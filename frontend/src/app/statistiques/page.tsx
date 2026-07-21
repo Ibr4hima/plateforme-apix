@@ -45,9 +45,13 @@ function sortContinents(conts: string[]) {
 }
 
 // ── Panneau Commerce extérieur (Sénégal uniquement) ──────────────────────────
-// Les sous-modules arrivent par étapes : structure et onglet posés, les
-// données du commerce extérieur du Sénégal seront branchées ensuite.
-function CommerceExterieurPanel() {
+// Alimenté par le Bulletin mensuel du commerce extérieur de l'ANSD (API /bmce) :
+// KPIs du dernier mois, série mensuelle export/import et répartitions par
+// catégorie. Les dérivés (variations, parts, VU) viennent du backend (règles
+// ANSD) : une variation indéfinie (null) ne s'affiche jamais.
+
+// État d'attente : affiché tant qu'aucun bulletin n'a été importé.
+function CommerceExterieurAttente() {
   return (
     <div style={{ maxWidth: 1280, margin: "0 auto", padding: "60px 40px 100px" }}>
       <div className="ds-carte" style={{ padding: "72px 32px", textAlign: "center" }}>
@@ -64,6 +68,333 @@ function CommerceExterieurPanel() {
           Les indicateurs du commerce extérieur (exportations, importations, balance, partenaires et produits)
           seront disponibles ici après l'import des données dans l'administration.
         </p>
+      </div>
+    </div>
+  );
+}
+
+// Formes renvoyées par l'API BMCE (backend/app/api/routes/bmce.py)
+type BmceFluxMois = { valeur: number | null; poids: number | null };
+type BmcePointEnsemble = { periode: string; export?: BmceFluxMois; import?: BmceFluxMois };
+type BmceApercu = {
+  disponible: boolean; dernier_mois?: string;
+  exportations_fab?: number | null; importations_caf?: number | null;
+  balance?: number | null; taux_couverture?: number | null;
+  variation_export?: number | null; variation_import?: number | null;
+  cumul_annee?: { annee: string; exportations_fab: number; importations_caf: number; balance: number };
+  mois_provisoires?: string[]; serie?: BmcePointEnsemble[];
+};
+type BmcePoint = { periode: string; valeur_fcfa: number | null; poids_kg: number | null; vu_fcfa_kg: number | null; part_pct: number | null; variation_pct: number | null };
+type BmceRubrique = { libelle: string; ordre: number; vu_cumul_fcfa_kg: number | null; data: BmcePoint[] };
+
+// Montants en FCFA (pas de helper FCFA dans lib/format : helper local, mêmes
+// règles que fmtUSD — fr-FR, 1 décimale max, suffixes avec espaces)
+const nfFcfa = (v: number) => v.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+function fmtFCFA(v: number | null | undefined): string {
+  if (v === null || v === undefined) return "—";
+  const a = Math.abs(v);
+  if (a >= 1e9) return `${nfFcfa(v / 1e9)} Md FCFA`;
+  if (a >= 1e6) return `${nfFcfa(v / 1e6)} M FCFA`;
+  return `${Math.round(v).toLocaleString("fr-FR")} FCFA`;
+}
+// « 2025-04-01 » → « avril 2025 » (long) / « avr. 25 » (axe) / « avr. » (nu)
+function bmceMoisLong(iso: string): string {
+  const [y, m] = iso.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+}
+function bmceMoisCourt(iso: string, avecAnnee = true): string {
+  const [y, m] = iso.split("-").map(Number);
+  const nom = new Date(y, m - 1, 1).toLocaleDateString("fr-FR", { month: "short" });
+  return avecAnnee ? `${nom} ${String(y).slice(2)}` : nom;
+}
+// Mois provisoires → « janv. – avr. 2025 » (plage), « avr. 2025 » (seul)
+function bmceLibelleProvisoires(mois: string[]): string {
+  if (!mois.length) return "";
+  const tri = [...mois].sort();
+  const prem = tri[0], der = tri[tri.length - 1];
+  const anP = prem.slice(0, 4), anD = der.slice(0, 4);
+  if (prem === der) return `${bmceMoisCourt(der, false)} ${anD}`;
+  if (anP === anD) return `${bmceMoisCourt(prem, false)} – ${bmceMoisCourt(der, false)} ${anD}`;
+  return `${bmceMoisCourt(prem, false)} ${anP} – ${bmceMoisCourt(der, false)} ${anD}`;
+}
+
+// Variation mensuelle ▲/▼ — règle ANSD : indéfinie (null) → on n'affiche rien
+function BmceVariation({ v, taille = 11 }: { v: number | null | undefined; taille?: number }) {
+  if (v === null || v === undefined) return null;
+  const pos = v > 0, neg = v < 0;
+  const col = pos ? "#188038" : neg ? "#dc2626" : "#9aa5b4";
+  return (
+    <span style={{ fontSize: taille, fontWeight: 700, color: col, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+      {pos ? "▲" : neg ? "▼" : "="}&nbsp;{Math.abs(v).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+    </span>
+  );
+}
+
+const BMCE_BLEU = "#004f91";    // exportations
+const BMCE_ORANGE = "#ca631f";  // importations
+
+// Barres mensuelles groupées export/import en divs (motif GrapheBarresEmpilees :
+// hauteurs proportionnelles, tooltip natif title). GrapheMultiPays est annuel
+// (x = annee number), inadapté aux périodes mensuelles.
+function GrapheBarresGroupeesMensuel({ serie }: { serie: BmcePointEnsemble[] }) {
+  const H = 190;
+  const max = Math.max(1, ...serie.flatMap(p => [p.export?.valeur ?? 0, p.import?.valeur ?? 0]));
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
+        {[{ l: "Exportations (FAB)", c: BMCE_BLEU }, { l: "Importations (CAF)", c: BMCE_ORANGE }].map(x => (
+          <span key={x.l} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "#4a5568" }}>
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: x.c, flexShrink: 0 }} />{x.l}
+          </span>
+        ))}
+      </div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 18 }}>
+        {serie.map(p => (
+          <div key={p.periode} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, height: H, width: "100%" }}>
+              {[{ v: p.export?.valeur ?? null, c: BMCE_BLEU, l: "Exportations FAB" },
+                { v: p.import?.valeur ?? null, c: BMCE_ORANGE, l: "Importations CAF" }].map(b => (
+                <div key={b.l} title={`${bmceMoisLong(p.periode)} — ${b.l} : ${fmtFCFA(b.v)}`}
+                  style={{ width: 34, maxWidth: "42%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
+                  <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", marginBottom: 3, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                    {b.v === null ? "—" : fmtValGen(b.v)}
+                  </span>
+                  <div style={{ width: "100%", height: Math.max(2, Math.round(((b.v ?? 0) / max) * (H - 22))), background: b.c, borderRadius: "4px 4px 0 0" }} />
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#4a5568", whiteSpace: "nowrap" }}>{bmceMoisCourt(p.periode)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const BMCE_SENS = [
+  { v: "export", l: "Exportations" },
+  { v: "import", l: "Importations" },
+] as const;
+const BMCE_CATS = [
+  { v: "groupe_utilisation", l: "Groupes d'utilisation" },
+  { v: "produit_regroupe", l: "Produits regroupés" },
+  { v: "chapitre", l: "Chapitres" },
+  { v: "pays", l: "Pays" },
+] as const;
+type BmceSens = (typeof BMCE_SENS)[number]["v"];
+type BmceCat = (typeof BMCE_CATS)[number]["v"];
+
+function CommerceExterieurPanel() {
+  const [apercu, setApercu] = useState<BmceApercu | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
+  // Répartition : sélection sens × catégorie
+  const [sens, setSens] = useState<BmceSens>("export");
+  const [categorie, setCategorie] = useState<BmceCat>("groupe_utilisation");
+  const [rubriques, setRubriques] = useState<BmceRubrique[] | null>(null);
+  const [chargSeries, setChargSeries] = useState(false);
+  const [erreurSeries, setErreurSeries] = useState(false);
+  const [tickSeries, setTickSeries] = useState(0);
+  const [voirTout, setVoirTout] = useState(false);
+  const cacheSeries = useRef<Record<string, BmceRubrique[]>>({});
+
+  useEffect(() => {
+    setLoading(true); setErreur(false);
+    fetch(`${API}/bmce/apercu`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setApercu).catch(() => setErreur(true)).finally(() => setLoading(false));
+  }, [tick]);
+
+  const dispo = apercu?.disponible === true;
+  useEffect(() => {
+    if (!dispo) return;
+    const cle = `${categorie}:${sens}`;
+    const enCache = cacheSeries.current[cle];
+    if (enCache) { setRubriques(enCache); setErreurSeries(false); return; }
+    setChargSeries(true); setErreurSeries(false);
+    fetch(`${API}/bmce/series?categorie=${categorie}&sens=${sens}`)
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(d => { cacheSeries.current[cle] = d; setRubriques(d); })
+      .catch(() => { setRubriques(null); setErreurSeries(true); })
+      .finally(() => setChargSeries(false));
+  }, [dispo, categorie, sens, tickSeries]);
+
+  const dernierMois = apercu?.dernier_mois || "";
+  // Rubriques au dernier mois, triées par valeur décroissante (classement + tableau)
+  const derniers = useMemo(() => {
+    if (!rubriques) return [];
+    return rubriques
+      .map(r => ({ libelle: r.libelle, vuCumul: r.vu_cumul_fcfa_kg, point: r.data.find(d => d.periode === dernierMois) ?? r.data[r.data.length - 1] }))
+      .filter((x): x is { libelle: string; vuCumul: number | null; point: BmcePoint } => !!x.point && x.point.valeur_fcfa !== null)
+      .sort((a, b) => (b.point.valeur_fcfa ?? 0) - (a.point.valeur_fcfa ?? 0));
+  }, [rubriques, dernierMois]);
+  const top15 = derniers.slice(0, 15);
+  const couleurSens = sens === "export" ? BMCE_BLEU : BMCE_ORANGE;
+  const avecVU = categorie !== "pays"; // pas de poids (donc pas de VU) pour les pays
+
+  const TITRE_SEC: any = { fontSize: 10.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 };
+  const LBL_SEG: any = { fontSize: 10, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em", minWidth: 76 };
+
+  if (loading) return (
+    <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 80px", display: "grid", gap: 18 }}>
+      <SkeletonKPIs n={4} />
+      <SkeletonChartGrid n={1} cols={1} height={300} />
+      <SkeletonRows n={6} h={32} />
+    </div>
+  );
+  if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
+  if (!apercu || !apercu.disponible) return <CommerceExterieurAttente />;
+
+  const provisoires = bmceLibelleProvisoires(apercu.mois_provisoires || []);
+  const cumul = apercu.cumul_annee;
+  const kpis = [
+    { label: "Exportations", tag: "FAB", valeur: fmtFCFA(apercu.exportations_fab), variation: apercu.variation_export, rouge: false },
+    { label: "Importations", tag: "CAF", valeur: fmtFCFA(apercu.importations_caf), variation: apercu.variation_import, rouge: false },
+    // Seule exception rouge autorisée : une balance commerciale négative
+    { label: "Balance commerciale", tag: "FAB − CAF", valeur: fmtFCFA(apercu.balance), variation: null, rouge: (apercu.balance ?? 0) < 0 },
+    { label: "Taux de couverture", tag: null, valeur: apercu.taux_couverture != null ? `${apercu.taux_couverture.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", variation: null, rouge: false },
+  ];
+
+  return (
+    <div className="charge-in" style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
+      {/* En-tête + bandeau méthodologique */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
+        <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
+        {dernierMois && <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{bmceMoisLong(dernierMois)}</span>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
+        <span style={{ fontSize: 11.5, color: "#9aa5b4" }}>Commerce général · Importations CAF · Exportations FAB · Source ANSD (BMSCE)</span>
+        {provisoires && (
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#a16207", background: "rgba(161,98,7,0.08)", border: "1px solid rgba(161,98,7,0.22)", padding: "2px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>
+            Données provisoires · {provisoires}
+          </span>
+        )}
+      </div>
+
+      {/* KPIs du dernier mois */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+        {kpis.map(k => (
+          <div key={k.label} className="ds-carte" style={{ padding: "14px 16px", minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+              <p style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4, margin: 0 }}>{k.label}</p>
+              {k.tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#9aa5b4", background: "#F2F0EF", padding: "1px 6px", borderRadius: 4, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>{k.tag}</span>}
+            </div>
+            <p className="ds-donnee" style={{ fontSize: "1.2rem", fontWeight: 800, color: k.rouge ? "#dc2626" : "#1a1a2e", lineHeight: 1.15, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.valeur}</p>
+            <div style={{ marginTop: 6, minHeight: 14, display: "flex", alignItems: "center", gap: 6 }}>
+              <BmceVariation v={k.variation} />
+              {k.variation !== null && k.variation !== undefined && <span style={{ fontSize: 10, color: "#9aa5b4" }}>vs mois précédent</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Cumuls de l'année en cours */}
+      {cumul && (
+        <div style={{ marginTop: 10, marginBottom: 20, padding: "9px 16px", background: "var(--ds-carte-douce)", border: "1px solid var(--ds-bordure)", borderRadius: "var(--rayon-md)", display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>Cumul {cumul.annee}</span>
+          <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Exportations FAB&nbsp;: <b style={{ color: "#1a1a2e" }}>{fmtFCFA(cumul.exportations_fab)}</b></span>
+          <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Importations CAF&nbsp;: <b style={{ color: "#1a1a2e" }}>{fmtFCFA(cumul.importations_caf)}</b></span>
+          <span className="ds-donnee" style={{ fontSize: 11.5, color: "#4a5568" }}>Balance&nbsp;: <b style={{ color: cumul.balance < 0 ? "#dc2626" : "#1a1a2e" }}>{fmtFCFA(cumul.balance)}</b></span>
+        </div>
+      )}
+
+      {/* Ensemble : barres mensuelles groupées export / import */}
+      {(apercu.serie || []).length > 0 && (
+        <div className="ds-carte" style={{ padding: "18px 20px", marginBottom: 20 }}>
+          <p style={TITRE_SEC}>Ensemble — évolution mensuelle</p>
+          <GrapheBarresGroupeesMensuel serie={apercu.serie || []} />
+        </div>
+      )}
+
+      {/* Répartition par sens × catégorie */}
+      <div className="ds-carte" style={{ padding: "18px 20px" }}>
+        <p style={TITRE_SEC}>Répartition — {bmceMoisLong(dernierMois)}</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={LBL_SEG}>Sens</span>
+            {BMCE_SENS.map(o => (
+              <button key={o.v} className="ds-chip" aria-pressed={sens === o.v} onClick={() => { setSens(o.v); setVoirTout(false); }}>{o.l}</button>
+            ))}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={LBL_SEG}>Catégorie</span>
+            {BMCE_CATS.map(o => (
+              <button key={o.v} className="ds-chip" aria-pressed={categorie === o.v} onClick={() => { setCategorie(o.v); setVoirTout(false); }}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+
+        {chargSeries ? (
+          <SkeletonRows n={8} h={26} />
+        ) : erreurSeries ? (
+          <ErreurChargement compact onRetry={() => setTickSeries(t => t + 1)} />
+        ) : top15.length === 0 ? (
+          <p style={{ fontSize: 12.5, color: "#9aa5b4", textAlign: "center", padding: "24px 0" }}>Aucune donnée pour cette sélection.</p>
+        ) : (
+          <>
+            {/* Classement Top 15 par valeur du dernier mois */}
+            <div style={{ display: "grid", gap: 4 }}>
+              {top15.map(r => {
+                const v = r.point.valeur_fcfa ?? 0;
+                const maxV = top15[0].point.valeur_fcfa || 1;
+                return (
+                  <div key={r.libelle} style={{ display: "grid", gridTemplateColumns: "minmax(150px,240px) 1fr 110px 62px 88px", alignItems: "center", gap: 10, padding: "3px 0" }}>
+                    <span title={r.libelle} style={{ fontSize: 12, fontWeight: 600, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.libelle}</span>
+                    <div style={{ height: 13, background: "var(--ds-voile-bleu)", borderRadius: 6, overflow: "hidden" }}>
+                      <div title={`${r.libelle} : ${fmtFCFA(v)}${r.point.part_pct != null ? ` · ${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % du total` : ""}`}
+                        style={{ width: `${Math.max(1, (v / maxV) * 100)}%`, height: "100%", background: couleurSens, borderRadius: 6 }} />
+                    </div>
+                    <span className="ds-donnee" style={{ fontSize: 11.5, fontWeight: 700, color: "#1a1a2e", textAlign: "right", whiteSpace: "nowrap" }}>{fmtFCFA(v)}</span>
+                    <span className="ds-donnee" style={{ fontSize: 11, color: "#9aa5b4", textAlign: "right", whiteSpace: "nowrap" }}>
+                      {r.point.part_pct != null ? `${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : ""}
+                    </span>
+                    <span style={{ textAlign: "right" }}><BmceVariation v={r.point.variation_pct} /></span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Tableau complet repliable */}
+            <div style={{ marginTop: 14, borderTop: "1px solid #F2F0EF", paddingTop: 10 }}>
+              <button onClick={() => setVoirTout(o => !o)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#004f91", padding: 0, fontFamily: "var(--font-google-sans)" }}>
+                {voirTout ? <ChevronUp size={13} /> : <ChevronDown size={13} />} Tout voir ({derniers.length})
+              </button>
+              {voirTout && (
+                <div style={{ marginTop: 10, overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid #ECEAE7" }}>
+                        <th style={{ padding: "7px 10px 7px 0", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em" }}>Libellé</th>
+                        <th style={{ padding: "7px 10px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{bmceMoisCourt(dernierMois)}</th>
+                        <th style={{ padding: "7px 10px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em" }}>Part</th>
+                        <th style={{ padding: "7px 10px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em" }}>Variation</th>
+                        {avecVU && <th style={{ padding: "7px 0 7px 10px", textAlign: "right", fontSize: 10, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>VU cumul (FCFA/kg)</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {derniers.map(r => (
+                        <tr key={r.libelle} style={{ borderBottom: "1px solid #F6F4F3" }}>
+                          <td style={{ padding: "7px 10px 7px 0", color: "#4a5568", fontWeight: 500 }}>{r.libelle}</td>
+                          <td className="ds-donnee" style={{ padding: "7px 10px", textAlign: "right", fontWeight: 700, color: "#1a1a2e", whiteSpace: "nowrap" }}>{fmtFCFA(r.point.valeur_fcfa)}</td>
+                          <td className="ds-donnee" style={{ padding: "7px 10px", textAlign: "right", color: "#9aa5b4", whiteSpace: "nowrap" }}>
+                            {r.point.part_pct != null ? `${r.point.part_pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
+                          </td>
+                          <td style={{ padding: "7px 10px", textAlign: "right" }}><BmceVariation v={r.point.variation_pct} /></td>
+                          {avecVU && (
+                            <td className="ds-donnee" style={{ padding: "7px 0 7px 10px", textAlign: "right", color: "#4a5568", whiteSpace: "nowrap" }}>
+                              {r.vuCumul != null ? r.vuCumul.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) : "—"}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
