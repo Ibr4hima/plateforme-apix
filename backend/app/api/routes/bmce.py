@@ -87,12 +87,18 @@ async def importer_bmce(
         for ordre, (libelle, vals) in enumerate(bulletin.tables[num].items()):
             if libelle.upper() == "TOTAL":
                 continue
+            # T1/T2 : deux lignes (« Valeur FAB… » et « Poids Net… ») pour la
+            # même rubrique ENSEMBLE — chacune vise SON champ, jamais l'autre
+            if categorie == "ensemble":
+                porte_ligne = "valeur_fcfa" if libelle.startswith("Valeur") else "poids_kg"
+            else:
+                porte_ligne = porte
             lib = "ENSEMBLE" if categorie == "ensemble" else libelle
             cle = (categorie, sens, lib)
             lots.setdefault(cle, {})
             for m, v in zip(mois, vals[1:5]):
                 lots[cle].setdefault(m, {"ordre": ordre})
-                lots[cle][m][porte] = None if v is None else v * facteur
+                lots[cle][m][porte_ligne] = None if v is None else v * facteur
 
     for (categorie, sens, libelle), par_mois in lots.items():
         ordre = next(iter(par_mois.values()))["ordre"]
