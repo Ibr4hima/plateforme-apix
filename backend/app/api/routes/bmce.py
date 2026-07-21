@@ -143,3 +143,104 @@ async def lire_flux(categorie: str, sens: str, db: AsyncSession = Depends(get_db
         "WHERE r.categorie = :c AND r.sens = :s ORDER BY r.ordre, f.periode"),
         {"c": categorie, "s": sens})
     return [dict(r._mapping) for r in res]
+
+
+# ── Lecture publique : dérivés calculés selon les règles ANSD ────────────────
+# Variation depuis zéro/absence = indéfinie (null) ; -100 % légitime ;
+# VU = valeur/poids ; VU du cumul = Σ valeurs / Σ poids ; part = valeur/ensemble.
+
+def _variation(v, prec):
+    """Règles ANSD : prec nul ou absent → indéfinie (None) ; v absent → -100."""
+    if prec is None or prec == 0:
+        return None
+    if v is None:
+        v = 0.0
+    return round((float(v) - float(prec)) / abs(float(prec)) * 100.0, 2)
+
+
+@router.get("/apercu")
+async def apercu_bmce(db: AsyncSession = Depends(get_db)):
+    """KPIs du dernier mois (X FAB, M CAF, balance, taux de couverture) +
+    séries mensuelles de l'ensemble et cumuls de l'année en cours."""
+    res = await db.execute(text(
+        "SELECT r.sens, f.periode, f.valeur_fcfa, f.poids_kg "
+        "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+        "WHERE r.categorie = 'ensemble' ORDER BY f.periode"))
+    lignes = [dict(r._mapping) for r in res]
+    if not lignes:
+        return {"disponible": False}
+    par_mois: dict = {}
+    for l in lignes:
+        m = par_mois.setdefault(str(l["periode"]), {"periode": str(l["periode"])})
+        m[l["sens"]] = {"valeur": float(l["valeur_fcfa"]) if l["valeur_fcfa"] is not None else None,
+                        "poids": float(l["poids_kg"]) if l["poids_kg"] is not None else None}
+    serie = [par_mois[k] for k in sorted(par_mois)]
+    dernier, precedent = serie[-1], (serie[-2] if len(serie) > 1 else None)
+    x = (dernier.get("export") or {}).get("valeur")
+    m_ = (dernier.get("import") or {}).get("valeur")
+    annee = dernier["periode"][:4]
+    cumul_x = sum((p.get("export") or {}).get("valeur") or 0 for p in serie if p["periode"].startswith(annee))
+    cumul_m = sum((p.get("import") or {}).get("valeur") or 0 for p in serie if p["periode"].startswith(annee))
+    # Fraîcheur : quels mois sont encore révisables (couverts par le dernier bulletin) ?
+    res = await db.execute(text("SELECT mois_couverts FROM bmce_bulletins ORDER BY periode DESC LIMIT 1"))
+    couverts = res.scalar_one_or_none() or []
+    return {
+        "disponible": True,
+        "dernier_mois": dernier["periode"],
+        "exportations_fab": x, "importations_caf": m_,
+        "balance": (x - m_) if x is not None and m_ is not None else None,
+        "taux_couverture": round(x / m_ * 100.0, 2) if x and m_ else None,
+        "variation_export": _variation(x, (precedent.get("export") or {}).get("valeur") if precedent else None),
+        "variation_import": _variation(m_, (precedent.get("import") or {}).get("valeur") if precedent else None),
+        "cumul_annee": {"annee": annee, "exportations_fab": cumul_x, "importations_caf": cumul_m,
+                        "balance": cumul_x - cumul_m},
+        "mois_provisoires": [str(c) for c in couverts],
+        "serie": serie,
+    }
+
+
+@router.get("/series")
+async def series_bmce(categorie: str, sens: str, db: AsyncSession = Depends(get_db)):
+    """Séries mensuelles par rubrique avec dérivés ANSD : VU, variation
+    mensuelle (null si indéfinie), part du total du mois, VU du cumul."""
+    if categorie not in ("groupe_utilisation", "produit_regroupe", "chapitre", "pays"):
+        raise HTTPException(422, "catégorie inconnue")
+    if sens not in ("export", "import"):
+        raise HTTPException(422, "sens inconnu")
+    res = await db.execute(text(
+        "SELECT r.libelle, r.ordre, f.periode, f.valeur_fcfa, f.poids_kg "
+        "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+        "WHERE r.categorie = :c AND r.sens = :s ORDER BY r.ordre, f.periode"),
+        {"c": categorie, "s": sens})
+    lignes = [dict(r._mapping) for r in res]
+    # Ensemble du même sens : dénominateur des parts
+    res = await db.execute(text(
+        "SELECT f.periode, f.valeur_fcfa FROM bmce_flux f "
+        "JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+        "WHERE r.categorie = 'ensemble' AND r.sens = :s"), {"s": sens})
+    totaux = {str(r._mapping["periode"]): float(r._mapping["valeur_fcfa"])
+              for r in res if r._mapping["valeur_fcfa"] is not None}
+
+    rubriques: dict = {}
+    for l in lignes:
+        rub = rubriques.setdefault(l["libelle"], {"libelle": l["libelle"], "ordre": l["ordre"], "data": []})
+        v = float(l["valeur_fcfa"]) if l["valeur_fcfa"] is not None else None
+        k = float(l["poids_kg"]) if l["poids_kg"] is not None else None
+        total = totaux.get(str(l["periode"]))
+        rub["data"].append({
+            "periode": str(l["periode"]), "valeur_fcfa": v, "poids_kg": k,
+            "vu_fcfa_kg": round(v / k, 1) if v is not None and k else None,
+            "part_pct": round(v / total * 100.0, 2) if v is not None and total else None,
+        })
+    for rub in rubriques.values():
+        rub["data"].sort(key=lambda d: d["periode"])
+        prec = None
+        somme_v = somme_k = 0.0
+        for point in rub["data"]:
+            point["variation_pct"] = _variation(point["valeur_fcfa"], prec)
+            prec = point["valeur_fcfa"]
+            somme_v += point["valeur_fcfa"] or 0
+            somme_k += point["poids_kg"] or 0
+        # VU du cumul : rapport des cumuls (règle ANSD), jamais moyenne des VU
+        rub["vu_cumul_fcfa_kg"] = round(somme_v / somme_k, 1) if somme_k else None
+    return sorted(rubriques.values(), key=lambda r: r["ordre"])
