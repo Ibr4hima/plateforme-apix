@@ -155,8 +155,11 @@ class Bulletin:
             # Ligne illisible : fatale dans un tableau BRUT (donnée importée),
             # simple avertissement dans un tableau TÉMOIN (le témoin est perdu
             # pour cette rubrique, qui reste contrôlée par cumuls/parts/sommes
-            # — ex. cellules vides sur la ligne VU « OR NON MONETAIRE », juin 25)
-            sortie = self.anomalies if num in BRUTS else self.temoins_perdus
+            # — ex. cellules vides sur la ligne VU « OR NON MONETAIRE », juin 25).
+            # La ligne TOTAL d'un tableau brut est une dérivée jamais importée
+            # (souvent imprimée avec des cellules fusionnées) : témoin aussi.
+            derive = libelle.strip().upper() == "TOTAL"
+            sortie = self.anomalies if (num in BRUTS and not derive) else self.temoins_perdus
             # Invariant du bulletin : 5 mois + 2 cumuls (+ variations facultatives)
             if len(valeurs) < 7:
                 sortie.append(f"T{num} : ligne inattendue ({len(valeurs)} champs) : {t[:80]}")
