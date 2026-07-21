@@ -10,7 +10,7 @@ const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacin
 
 type ImportRes = {
   bulletin: string; mois_couverts: string[]; valeurs: number; revisions: number;
-  rapport: string; avertissements: string[];
+  rapport: string; avertissements: string[]; pays_a_rattacher?: string[];
 };
 type BulletinHist = {
   periode: string; fichier_nom: string; importe_le: string | null;
@@ -148,6 +148,22 @@ export default function AdminCommerceExterieurPage() {
                 {res.avertissements.map((a, i) => (
                   <div key={i} style={{ fontSize: 12.5, padding: "2px 0" }}>{a}</div>
                 ))}
+              </div>
+            )}
+            {(res.pays_a_rattacher?.length ?? 0) > 0 && (
+              <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 8, background: "#FFF9F0", border: "1px solid #FAD7A0", color: "#B7661B" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, marginBottom: 4 }}>
+                  <AlertTriangle size={14} /> {res.pays_a_rattacher!.length} libellé(s) pays sans correspondance au référentiel
+                </div>
+                <div style={{ fontSize: 12.5, lineHeight: 1.6 }}>
+                  Un libellé non rattaché n&apos;apparaît PAS dans le classement public par pays (ex. la Chine
+                  manquerait aux importations). Associez chaque vrai pays dans la section
+                  «&nbsp;Correspondance des pays&nbsp;» en bas de page — les regroupements ANSD
+                  («&nbsp;LES PAYS DE…&nbsp;») restent volontairement non rattachés.
+                </div>
+                <div style={{ fontSize: 12, marginTop: 6, color: "#8a5514" }}>
+                  {res.pays_a_rattacher!.join(" · ")}
+                </div>
               </div>
             )}
           </div>

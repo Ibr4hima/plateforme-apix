@@ -6,6 +6,7 @@ import re
 import tempfile
 import unicodedata
 from datetime import date
+from difflib import get_close_matches
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -48,12 +49,46 @@ def _normaliser_nom(nom: str) -> str:
     return re.sub(r"[^A-Z0-9]+", " ", t.upper()).strip()
 
 
+# Formes d'État et liaisons que les bulletins accolent aux noms de pays
+# (« REPUBLIQUE POPULAIRE DE CHINE », « ETATS UNIS D'AMERIQUE »…)
+FORMES_ETAT = {"REPUBLIQUE", "ROYAUME", "ETAT", "ETATS", "UNION", "SULTANAT",
+               "PRINCIPAUTE", "EMIRAT", "EMIRATS", "COMMONWEALTH", "FEDERATION",
+               "POPULAIRE", "DEMOCRATIQUE", "ISLAMIQUE", "ARABE", "FEDERALE",
+               "FEDERATIVE", "SOCIALISTE"}
+LIAISONS = {"D", "DE", "DU", "DES", "LA", "LE", "LES", "L"}
+
+
+def _correspondre_pays(libelle: str, index: dict[str, int]) -> int | None:
+    """Cherche le pays du référentiel correspondant à un libellé de bulletin.
+    `index` : nom normalisé (nom_fr et nom_cnuced) → id. Quatre passes, de la
+    plus sûre à la plus prudente ; None si aucune n'aboutit (association
+    manuelle dans l'admin). Les regroupements ANSD ne matchent jamais."""
+    n = _normaliser_nom(libelle)
+    if n in index:
+        return index[n]
+    # « REPUBLIQUE POPULAIRE DE CHINE » → « CHINE »
+    tokens = n.split()
+    while len(tokens) > 1 and tokens[0] in FORMES_ETAT | LIAISONS:
+        tokens.pop(0)
+    reduit = " ".join(tokens)
+    if reduit != n and reduit in index:
+        return index[reduit]
+    # « ETATS UNIS D AMERIQUE » : un nom du référentiel suivi d'une liaison
+    candidats = [r for r in index
+                 if n.startswith(r + " ") and n[len(r) + 1:].split()[0] in LIAISONS]
+    if candidats:
+        return index[max(candidats, key=len)]
+    # Coquilles du bulletin (« AFGANISTAN ») : rapprochement flou très serré
+    proches = get_close_matches(n, list(index), n=1, cutoff=0.9)
+    return index[proches[0]] if proches else None
+
+
 async def _rapprocher_pays(db: AsyncSession) -> None:
     """Rattache automatiquement les rubriques « pays » sans correspondance au
-    référentiel ref_pays (libellés normalisés). Les regroupements ANSD
-    (« LES PAYS DE L'AFRIQUE DE L'OUEST »…) ne matchent pas : ils restent
-    volontairement non rattachés et sont exclus de l'affichage public.
-    Les associations manuelles existantes ne sont jamais écrasées."""
+    référentiel ref_pays. Les regroupements ANSD (« LES PAYS DE L'AFRIQUE DE
+    L'OUEST »…) ne matchent pas : ils restent volontairement non rattachés et
+    sont exclus de l'affichage public. Les associations manuelles existantes
+    ne sont jamais écrasées."""
     res = await db.execute(text(
         "SELECT id, libelle FROM bmce_rubriques WHERE categorie = 'pays' AND pays_id IS NULL"))
     sans_pays = res.all()
@@ -67,7 +102,7 @@ async def _rapprocher_pays(db: AsyncSession) -> None:
             if nom:
                 index.setdefault(_normaliser_nom(nom), pid)
     for rid, lib in sans_pays:
-        pid = index.get(_normaliser_nom(lib))
+        pid = _correspondre_pays(lib, index)
         if pid:
             await db.execute(text(
                 "UPDATE bmce_rubriques SET pays_id = :p WHERE id = :i"), {"p": pid, "i": rid})
@@ -215,10 +250,17 @@ async def importer_bmce(
         {"v": nb_valeurs, "r": nb_revisions, "i": bulletin_id})
     await _rapprocher_pays(db)
     await db.commit()
+    # Libellés pays restés sans correspondance : à associer manuellement dans
+    # l'admin (les regroupements ANSD restent non rattachés volontairement)
+    res = await db.execute(text(
+        "SELECT DISTINCT libelle FROM bmce_rubriques "
+        "WHERE categorie = 'pays' AND pays_id IS NULL ORDER BY libelle"))
+    pays_a_rattacher = [r[0] for r in res]
     return {
         "bulletin": str(periode_bulletin), "mois_couverts": [str(m) for m in mois],
         "valeurs": nb_valeurs, "revisions": nb_revisions,
         "rapport": rapport[0], "avertissements": [l for l in rapport[1:] if l.startswith("⚠")],
+        "pays_a_rattacher": pays_a_rattacher,
     }
 
 
