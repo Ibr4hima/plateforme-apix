@@ -160,8 +160,10 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
   );
 }
 
-// ── Lanceur (navbar) ──────────────────────────────────────────────────────────
-export default function FichePaysLauncher({ textColor, textHover }: { textColor: string; textHover: string }) {
+// ── Sélecteur global (monté une fois dans Providers) ──────────────────────────
+// Écoute les événements d'ouverture, indépendamment de la navbar (retirée de la
+// plupart des pages). Le menu et la recherche ⌘K déclenchent ces événements.
+export function FichePaysPickerGlobal() {
   const [pays, setPays] = useState<Pays[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [monte, setMonte] = useState(false);
@@ -178,24 +180,28 @@ export default function FichePaysLauncher({ textColor, textHover }: { textColor:
     window.addEventListener("apix:fiche-pays", h);
     return () => window.removeEventListener("apix:fiche-pays", h);
   }, [senId]);
-  // Ouverture du sélecteur depuis le menu de la navbar
+  // Ouverture du sélecteur depuis le menu
   useEffect(() => {
     const open = () => setPickerOpen(true);
     window.addEventListener("apix:fiche-pays-picker", open);
     return () => window.removeEventListener("apix:fiche-pays-picker", open);
   }, []);
 
+  if (!monte || !pickerOpen) return null;
+  return createPortal(
+    <FichePaysPicker pays={pays} senId={senId} initial={senId ? [senId] : []} onClose={() => setPickerOpen(false)} />,
+    document.body);
+}
+
+// ── Lanceur (navbar) ──────────────────────────────────────────────────────────
+// Simple déclencheur : ouvre le sélecteur global via l'événement.
+export default function FichePaysLauncher({ textColor, textHover }: { textColor: string; textHover: string }) {
   return (
-    <>
-      <button onClick={() => setPickerOpen(true)}
-        style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
-        onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
-        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
-        Fiche Pays
-      </button>
-      {monte && pickerOpen && createPortal(
-        <FichePaysPicker pays={pays} senId={senId} initial={senId ? [senId] : []} onClose={() => setPickerOpen(false)} />,
-        document.body)}
-    </>
+    <button onClick={() => window.dispatchEvent(new Event("apix:fiche-pays-picker"))}
+      style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+      onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
+      Fiche Pays
+    </button>
   );
 }

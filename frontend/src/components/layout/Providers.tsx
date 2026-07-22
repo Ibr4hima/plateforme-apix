@@ -5,6 +5,7 @@ import ConfirmationHote from "@/components/shared/Confirmation";
 import FichesGlobales from "@/components/shared/FichesGlobales";
 import RechercheGlobale from "@/components/shared/RechercheGlobale";
 import ChatWidget from "@/components/shared/ChatWidget";
+import { FichePaysPickerGlobal } from "@/components/fiche-pays/FichePaysLauncher";
 import { SessionProvider } from "next-auth/react";
 import { useState } from "react";
 
@@ -27,6 +28,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <ConfirmationHote/>
         <RechercheGlobale/>
         <FichesGlobales/>
+        <FichePaysPickerGlobal/>
         <ChatWidget/>
       </QueryClientProvider>
     </SessionProvider>
