@@ -92,8 +92,9 @@ export default function CodeInvestissementsPage() {
   return (
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, #F7F6F5)", minHeight: "100vh" }}>
       <style>{`
-        .code-grille { display: grid; grid-template-columns: 288px 1fr; gap: 20px; align-items: start; }
+        .code-grille { display: grid; grid-template-columns: 288px minmax(0, 1fr); gap: 20px; align-items: start; }
         @media (max-width: 880px) { .code-grille { grid-template-columns: 1fr; } .code-somm { position: static !important; max-height: none !important; } }
+        [data-rte]{overflow-wrap:break-word;word-break:break-word}
         [data-rte] ul{padding-left:22px;list-style-type:disc;margin:8px 0}
         [data-rte] ul.dash-list{list-style-type:"— ";padding-left:24px}
         [data-rte] ol{padding-left:22px;list-style-type:decimal;margin:8px 0}
@@ -101,6 +102,9 @@ export default function CodeInvestissementsPage() {
         [data-rte] p{margin:10px 0}
         [data-rte] b,[data-rte] strong{font-weight:700}
         [data-rte] i,[data-rte] em{font-style:italic}
+        [data-rte] table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse}
+        [data-rte] img{max-width:100%;height:auto}
+        [data-rte] pre{white-space:pre-wrap;overflow-x:auto}
       `}</style>
 
       {/* ── Bandeau ── */}
