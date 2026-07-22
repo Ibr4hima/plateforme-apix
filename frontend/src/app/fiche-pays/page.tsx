@@ -178,7 +178,7 @@ function ContenuFichePays() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {items.map((it, i) => (
             <span key={i} title={it.title || it.label} onClick={it.onClick} role={it.onClick ? "button" : undefined}
-              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: it.onClick ? BLEU : "#2c3646", background: "rgba(255,255,255,0.7)", border: "1px solid rgba(0,79,145,0.20)", padding: "4px 11px", borderRadius: 999, cursor: it.onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: BLEU, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(0,79,145,0.20)", padding: "4px 11px", borderRadius: 999, cursor: it.onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s" }}
               onMouseEnter={ev => { if (it.onClick) { ev.currentTarget.style.background = "rgba(0,79,145,0.10)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; } }}
               onMouseLeave={ev => { if (it.onClick) { ev.currentTarget.style.background = "rgba(255,255,255,0.7)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.20)"; } }}>
               {it.label}{it.suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {it.suffixe}</span> : null}
