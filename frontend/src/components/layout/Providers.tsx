@@ -7,6 +7,7 @@ import RechercheGlobale from "@/components/shared/RechercheGlobale";
 import ChatWidget from "@/components/shared/ChatWidget";
 import { FichePaysPickerGlobal } from "@/components/fiche-pays/FichePaysLauncher";
 import TransitionPage from "@/components/layout/TransitionPage";
+import D3Tooltip from "@/components/charts/D3Tooltip";
 import { SessionProvider } from "next-auth/react";
 import { useState } from "react";
 
@@ -30,6 +31,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <RechercheGlobale/>
         <FichesGlobales/>
         <FichePaysPickerGlobal/>
+        <D3Tooltip/>
         <ChatWidget/>
       </QueryClientProvider>
     </SessionProvider>

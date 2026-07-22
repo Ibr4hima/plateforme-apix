@@ -4,9 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { d3 } from "@/lib/d3lazy";
 import { fmtMillionsUSD } from "@/lib/format";
 import { SkeletonRows } from "@/components/shared/Skeleton";
-
-// Palette de l'analyse comparative (page IDE)
-const COMP_PALETTE = ["#004f91","#ca631f","#188038","#6A1B9A"];
+import { COMP_PALETTE } from "@/lib/couleurs";
 
 // ── Barres horizontales Top 10 (vue Monde, page IDE) ──────────────────────────
 export function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {

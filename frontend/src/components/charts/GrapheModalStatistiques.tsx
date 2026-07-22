@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { downloadPNG } from "@/components/charts/outilsExport";
+import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
 // ── Modal graphe plein écran (page Statistiques) ──────────────────────────────
 export function GrapheModal({ open, onClose, titre, sous_titre, children, series, grapheId }: any) {
@@ -47,9 +48,7 @@ export function GrapheModal({ open, onClose, titre, sous_titre, children, series
                 )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                {series?.length > 0 && series.filter((s: any) => s.data.some((d: any) => d.valeur !== null)).map((s: any) => (
-                  <span key={s.nom} style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: s.couleur, background: `${s.couleur}12`, border: `1px solid ${s.couleur}30` }}>{s.nom}</span>
-                ))}
+                {series?.length > 0 && <LegendeGraphe series={series.filter((s: any) => s.data.some((d: any) => d.valeur !== null))} />}
                 {sous_titre && <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 500 }}>{sous_titre}</span>}
               </div>
             </div>

@@ -5,6 +5,7 @@ import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
+import { PALETTE_COMPARAISON as PALETTE } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,9 +20,6 @@ import { GrapheDonut } from "@/components/charts/GrapheDonut";
 import { GrapheConcentration } from "@/components/charts/GrapheConcentration";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-// Palette de couleurs par pays (analyse comparative / fiche)
-const PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca"];
 
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string; ordre: number; derive: boolean };
 type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };
@@ -1412,7 +1410,6 @@ export default function StatistiquesPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#F6F5F3", fontFamily: "var(--font-google-sans)" }}>
-      <div id="d3-tooltip" style={{ position: "fixed", pointerEvents: "none", background: "rgba(26,26,46,0.92)", color: "#fff", borderRadius: 8, padding: "8px 12px", fontSize: 12, lineHeight: 1.5, opacity: 0, zIndex: 9999, backdropFilter: "blur(4px)" }} />
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
 .drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}

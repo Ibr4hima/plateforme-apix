@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Maximize2 } from "lucide-react";
 import { GrapheModal } from "@/components/charts/GrapheModalIde";
+import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
 // ── Card graphe miniature (page IDE) ──────────────────────────────────────────
 export function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre }: any) {
@@ -23,13 +24,7 @@ export function GrapheCard({ titre, sous_titre, children, fullChildren, analyse,
               <h3 style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0, display:"inline-block" }}>{titre}</h3>
             </div>
             {!hideLegend && series?.length > 0 && (
-              <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:5 }}>
-                {series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null)).map((s:any) => (
-                  <span key={s.nom} style={{ display:"inline-flex", alignItems:"center", fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:999, color:s.couleur, background:`${s.couleur}12` }}>
-                    {s.nom}
-                  </span>
-                ))}
-              </div>
+              <LegendeGraphe series={series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))} style={{ marginTop: 5 }} />
             )}
             {!hideSousTitre && sous_titre && <p style={{ fontSize:10.5, color:"#9aa5b4", marginTop:4 }}>{sous_titre}</p>}
           </div>

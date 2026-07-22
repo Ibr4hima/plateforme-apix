@@ -9,7 +9,7 @@
 export const PALETTE_COMPARAISON = ["#004f91", "#ca631f", "#1b9e77", "#7b3294", "#2a8fb0", "#d6336c", "#b8860b", "#3b4cc0"] as const;
 
 // Sous-ensemble 4 séries (cas courant : IDE, BDEF, opportunités…)
-export const COMP_PALETTE = PALETTE_COMPARAISON.slice(0, 4) as unknown as readonly [string, string, string, string];
+export const COMP_PALETTE: readonly string[] = PALETTE_COMPARAISON.slice(0, 4);
 
 // Couleurs des pôles territoriaux (par nom normalisé) — alignées sur la carte
 export const POLE_COULEURS: Record<string, string> = {
