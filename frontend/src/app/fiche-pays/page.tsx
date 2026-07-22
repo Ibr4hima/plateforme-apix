@@ -160,33 +160,32 @@ function ContenuFichePays() {
     { l: "Échanges bilatéraux", txt: bilat && totalBilat > 0 ? fmtUSD(totalBilat) : "—", note: periodeBilat ? `cumul ${periodeBilat}` : "cumul des flux connus" },
   ];
 
-  // Élément listé : texte cliquable (ouvre le détail) ou simple texte
+  // Élément listé : badge cliquable (ouvre le détail) ou simple badge
   type Item = { label: string; suffixe?: string | null; title?: string; onClick?: () => void };
   // Bloc de contexte au même habillage que la Balance commerciale : fond bleu
-  // voilé, icône dans un carré arrondi, titre en capitales, éléments en flux
-  // de texte (les cliquables se soulignent au survol), compte à droite.
+  // voilé, icône dans un carré arrondi, titre en capitales avec le compte
+  // badgé à côté, éléments listés en badges assortis au fond.
   const BlocContexte = ({ Icone, titre, count, items }: { Icone: any; titre: string; count: number; items: Item[] }) => (
     <div className="ds-carte" style={{ padding: "16px 20px", background: "linear-gradient(180deg,rgba(0,79,145,0.06),rgba(0,79,145,0.02))", border: "1px solid rgba(0,79,145,0.16)", display: "flex", alignItems: "flex-start", gap: 14 }}>
       <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(0,79,145,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icone size={19} color={BLEU} />
       </span>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ ...TITRE_SEC, margin: "0 0 5px", fontSize: 9.5 }}>{titre}</div>
-        <div style={{ fontSize: 12.5, color: "#4a5568", lineHeight: 1.6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 11 }}>
+          <span style={{ ...TITRE_SEC, margin: 0, fontSize: 9.5 }}>{titre}</span>
+          <span style={{ fontSize: 10, fontWeight: 800, color: BLEU, background: "rgba(0,79,145,0.14)", padding: "1px 8px", borderRadius: 999 }}>{count}</span>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {items.map((it, i) => (
-            <Fragment key={i}>
-              {i > 0 && <span style={{ color: "#c5ccd8", margin: "0 3px" }}>·</span>}
-              <span title={it.title || it.label} onClick={it.onClick} role={it.onClick ? "button" : undefined}
-                style={{ fontWeight: 600, color: it.onClick ? BLEU : "#2c3646", cursor: it.onClick ? "pointer" : "default", whiteSpace: "nowrap" }}
-                onMouseEnter={ev => { if (it.onClick) ev.currentTarget.style.textDecoration = "underline"; }}
-                onMouseLeave={ev => { if (it.onClick) ev.currentTarget.style.textDecoration = "none"; }}>
-                {it.label}{it.suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}> {it.suffixe}</span> : null}
-              </span>
-            </Fragment>
+            <span key={i} title={it.title || it.label} onClick={it.onClick} role={it.onClick ? "button" : undefined}
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: it.onClick ? BLEU : "#2c3646", background: "rgba(255,255,255,0.7)", border: "1px solid rgba(0,79,145,0.20)", padding: "4px 11px", borderRadius: 999, cursor: it.onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s" }}
+              onMouseEnter={ev => { if (it.onClick) { ev.currentTarget.style.background = "rgba(0,79,145,0.10)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; } }}
+              onMouseLeave={ev => { if (it.onClick) { ev.currentTarget.style.background = "rgba(255,255,255,0.7)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.20)"; } }}>
+              {it.label}{it.suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {it.suffixe}</span> : null}
+            </span>
           ))}
         </div>
       </div>
-      <span className="ds-donnee" style={{ fontSize: 17, fontWeight: 800, color: BLEU, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{count}</span>
     </div>
   );
 
@@ -264,7 +263,7 @@ function ContenuFichePays() {
             )}
             {ents.length > 0 && (
               <BlocContexte Icone={Building2} titre={`Entreprises installées au Sénégal · siège ${nomDe(autreId)}`} count={entSiege.total}
-                items={ents.map((e: any) => ({ label: e.nom, suffixe: e.region, title: [e.nom, e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · "), onClick: () => ouvrirEntreprise(e.id) }))} />
+                items={ents.map((e: any) => ({ label: e.nom, title: [e.nom, e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · "), onClick: () => ouvrirEntreprise(e.id) }))} />
             )}
           </div>
         )}
