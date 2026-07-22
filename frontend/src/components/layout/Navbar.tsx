@@ -378,6 +378,24 @@ function CodeModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ── Ligne de menu (icône + titre + sous-titre) ────────────────────────────────
+function MenuLien({ href, onNav, icon, couleur, titre, sous }: { href: string; onNav: () => void; icon: string; couleur: string; titre: string; sous: string }) {
+  return (
+    <Link href={href} onClick={onNav}
+      style={{ display: "flex", alignItems: "center", gap: 11, padding: "8px 10px", borderRadius: 12, textDecoration: "none", transition: "background 0.12s" }}
+      onMouseEnter={e => { e.currentTarget.style.background = `${couleur}0f`; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+      <span style={{ width: 34, height: 34, borderRadius: 10, background: `${couleur}14`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 18, color: couleur, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{icon}</span>
+      </span>
+      <span style={{ minWidth: 0, flex: 1 }}>
+        <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: "#101a2e", lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>
+        <span style={{ display: "block", fontSize: 11, color: "#9aa5b4", lineHeight: 1.3, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sous}</span>
+      </span>
+    </Link>
+  );
+}
+
 // ── Navbar principale ─────────────────────────────────────────────────────────
 export default function Navbar() {
   const { data: session } = useSession();
@@ -491,14 +509,6 @@ export default function Navbar() {
 
 
             <FichePaysLauncher textColor={textColor} textHover={textHover} />
-
-            {/* Code des investissements */}
-            <Link href="/code-investissements"
-              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em", textDecoration: "none" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
-              Code des investissements
-            </Link>
           </nav>
 
           {/* ── CTA Connexion ── */}
@@ -517,45 +527,55 @@ export default function Navbar() {
                 <span className="material-symbols-outlined" style={{ fontSize: 20, color: userOpen ? "#004f91" : "#4a5568", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>{userOpen ? "menu_open" : "menu"}</span>
               </button>
               {userOpen && (
-                <>
-                  <div onMouseEnter={openUser} onMouseLeave={closeUser} style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 232, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 14, padding: 8, boxShadow: "0 16px 56px rgba(0,0,0,0.14)", zIndex: 50 }}>
-                    {session?.user && (
-                      <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
-                        {afficheNom !== session.user.email && <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</p>}
-                        <p style={{ margin: afficheNom !== session.user.email ? "3px 0 0" : 0, fontSize: 11.5, fontWeight: afficheNom !== session.user.email ? 500 : 700, color: afficheNom !== session.user.email ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</p>
-                        <span style={{ display: "inline-flex", marginTop: 5, fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</span>
+                <div onMouseEnter={openUser} onMouseLeave={closeUser}
+                  className="apix-menu-pop"
+                  style={{ position: "absolute", top: "calc(100% + 10px)", right: 0, width: 288, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 18, padding: 8, boxShadow: "0 24px 64px rgba(16,26,46,0.16), 0 4px 12px rgba(16,26,46,0.06)", zIndex: 50, transformOrigin: "top right" }}>
+
+                  {/* En-tête compte */}
+                  {session?.user ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "8px 10px 12px", borderBottom: "1px solid #F2F0EF", marginBottom: 6 }}>
+                      <span style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#004f91,#1a6ab0)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, flexShrink: 0, textTransform: "uppercase" }}>
+                        {(afficheNom || session.user.email || "?").trim().charAt(0)}
+                      </span>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#101a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom !== session.user.email ? afficheNom : session.user.email}</p>
+                        <span style={{ display: "inline-flex", marginTop: 4, fontSize: 9.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</span>
                       </div>
-                    )}
-                    {isAdminRole && (
-                      <Link href="/admin/evenements" onClick={() => setUserOpen(false)}
-                        style={{ display: "block", padding: "9px 12px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "#ca631f", textDecoration: "none", fontFamily: "var(--font-google-sans)" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.08)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                        Page Admin
-                      </Link>
-                    )}
-                    <Link href="/lexique" onClick={() => setUserOpen(false)}
-                      style={{ display: "block", padding: "9px 12px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "#1a1a2e", textDecoration: "none", fontFamily: "var(--font-google-sans)" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }}
+                    </div>
+                  ) : (
+                    <div style={{ padding: "6px 10px 9px", borderBottom: "1px solid #F2F0EF", marginBottom: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", letterSpacing: "0.14em", textTransform: "uppercase" }}>Menu</span>
+                    </div>
+                  )}
+
+                  {/* Liens rapides */}
+                  {isAdminRole && (
+                    <MenuLien href="/admin/evenements" onNav={() => setUserOpen(false)} icon="admin_panel_settings" couleur="#ca631f" titre="Page Admin" sous="Gestion & saisie" />
+                  )}
+                  <MenuLien href="/code-investissements" onNav={() => setUserOpen(false)} icon="gavel" couleur="#004f91" titre="Code des investissements" sous="Cadre légal" />
+                  <MenuLien href="/lexique" onNav={() => setUserOpen(false)} icon="language" couleur="#0e7490" titre="Lexique" sous="Termes clés de l'investissement" />
+
+                  <div style={{ borderTop: "1px solid #F2F0EF", margin: "6px 4px" }} />
+
+                  {session?.user ? (
+                    <button onClick={() => signOut({ callbackUrl: "/" })}
+                      style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 12, border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.12s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.06)"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                      Lexique
+                      <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(220,38,38,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#dc2626", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>logout</span>
+                      </span>
+                      <span style={{ fontSize: 13.5, fontWeight: 600, color: "#dc2626" }}>Se déconnecter</span>
+                    </button>
+                  ) : (
+                    <Link href="/login" onClick={() => setUserOpen(false)}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 12px", borderRadius: 12, fontSize: 13.5, fontWeight: 700, color: "#fff", background: "#ca631f", textAlign: "center", textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#b3551a"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "#ca631f"; }}>
+                      Connexion
                     </Link>
-                    <div style={{ borderTop: "1px solid #F2F0EF", margin: "4px 0" }} />
-                    {session?.user ? (
-                      <button onClick={() => signOut({ callbackUrl: "/" })}
-                        style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#dc2626", fontFamily: "var(--font-google-sans)" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.06)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                        Se déconnecter
-                      </button>
-                    ) : (
-                      <Link href="/login" onClick={() => setUserOpen(false)}
-                        style={{ display: "block", padding: "9px 12px", borderRadius: 9, fontSize: 13, fontWeight: 700, color: "#fff", background: "#ca631f", textAlign: "center", textDecoration: "none", fontFamily: "var(--font-google-sans)" }}>
-                        Connexion
-                      </Link>
-                    )}
-                  </div>
-                </>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -608,6 +628,8 @@ export default function Navbar() {
           .apix-nav-desktop, .apix-nav-cta { display: none !important; }
           .apix-nav-burger { display: flex !important; }
         }
+        .apix-menu-pop { animation: apixMenuPop 0.16s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes apixMenuPop { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
         mark { background: rgba(202,99,31,0.2); color: #ca631f; border-radius: 3px; padding: 0 2px; }
         [data-rte] ul{padding-left:20px;list-style-type:disc}
         [data-rte] ul.dash-list{list-style-type:"— ";padding-left:22px}
