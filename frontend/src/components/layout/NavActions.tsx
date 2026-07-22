@@ -72,7 +72,7 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
     const r = btnRef.current?.getBoundingClientRect();
     if (!r) return;
     // Bas du bandeau (section/header) : le voile ne floute que ce qui est en dessous
-    const bandeau = btnRef.current?.closest("section, header")?.getBoundingClientRect();
+    const bandeau = btnRef.current?.closest("section, header, [data-bandeau]")?.getBoundingClientRect();
     setPos({ top: r.bottom + 10, right: Math.max(8, window.innerWidth - r.right), voile: bandeau ? Math.max(0, bandeau.bottom) : r.bottom + 6 });
   };
   // Ouverture au survol ; fermeture quand on quitte le menu (grâce courte), au

@@ -5,9 +5,9 @@
 // par l'API /code-investissement et /modalites-application.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import NavActions from "@/components/layout/NavActions";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -108,7 +108,7 @@ export default function CodeInvestissementsPage() {
       `}</style>
 
       {/* ── Bandeau ── */}
-      <div style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "32px 40px 92px" }}>
+      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "32px 40px 92px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16, minWidth: 0 }}>
@@ -125,9 +125,9 @@ export default function CodeInvestissementsPage() {
                 </p>
               </div>
             </div>
-            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 18px 9px 12px", borderRadius: 999, background: "#fff", color: BLEU, fontSize: 12.5, fontWeight: 800, textDecoration: "none", flexShrink: 0 }}>
-              <ChevronLeft size={16} /> Accueil
-            </Link>
+            <div style={{ flexShrink: 0 }}>
+              <NavActions onDark flouFond />
+            </div>
           </div>
 
           {/* Onglets + recherche + PDF */}

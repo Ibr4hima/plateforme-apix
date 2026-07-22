@@ -6,9 +6,8 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
+import NavActions from "@/components/layout/NavActions";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
 import { drapeauEmoji } from "@/lib/drapeaux";
@@ -215,7 +214,7 @@ function ContenuRapport() {
       `}</style>
 
       {/* ── Bandeau exécutif ── */}
-      <div style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "34px 40px 88px" }}>
+      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "34px 40px 88px" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div>
@@ -246,10 +245,9 @@ function ContenuRapport() {
                 Échanges de biens · Exportations FAB · Importations CAF — <b style={{ color: "#fff" }}>{plage} {r.annee}</b>
               </p>
             </div>
-            <Link href="/statistiques?mode=exterieur" className="no-print"
-              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 18px 9px 12px", borderRadius: 999, background: "#fff", color: BLEU, fontSize: 12.5, fontWeight: 800, textDecoration: "none" }}>
-              <ChevronLeft size={16} /> Commerce extérieur
-            </Link>
+            <div className="no-print" style={{ flexShrink: 0 }}>
+              <NavActions onDark flouFond />
+            </div>
           </div>
         </div>
       </div>

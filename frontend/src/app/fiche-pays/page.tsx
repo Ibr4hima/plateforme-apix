@@ -7,8 +7,8 @@
 
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { ArrowRight, Building2, ChevronLeft, FileText, Landmark, Scale } from "lucide-react";
+import { ArrowRight, Building2, FileText, Landmark, Scale } from "lucide-react";
+import NavActions from "@/components/layout/NavActions";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import AccordVueModal from "@/components/shared/AccordVueModal";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
@@ -195,7 +195,7 @@ function ContenuFichePays() {
   return (
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, #F7F6F5)", minHeight: "100vh" }}>
       {/* ── Bandeau exécutif : titre + sélecteurs de pays ── */}
-      <div style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "34px 40px 88px" }}>
+      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "34px 40px 88px" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
@@ -225,10 +225,9 @@ function ContenuFichePays() {
                 </div>
               )}
             </div>
-            <Link href="/" className="no-print"
-              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 18px 9px 12px", borderRadius: 999, background: "#fff", color: BLEU, fontSize: 12.5, fontWeight: 800, textDecoration: "none", flexShrink: 0 }}>
-              <ChevronLeft size={16} /> Accueil
-            </Link>
+            <div className="no-print" style={{ flexShrink: 0 }}>
+              <NavActions onDark flouFond />
+            </div>
           </div>
         </div>
       </div>

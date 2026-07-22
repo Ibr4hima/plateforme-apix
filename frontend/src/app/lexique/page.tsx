@@ -5,10 +5,10 @@
 // contenu vient de src/lib/lexique.ts.
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { ChevronLeft, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { LEXIQUE } from "@/lib/lexique";
+import NavActions from "@/components/layout/NavActions";
 
 const BLEU = "#004f91", ORANGE = "#ca631f", ENCRE = "#101a2e";
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -42,7 +42,7 @@ export default function LexiquePage() {
   return (
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, #F7F6F5)", minHeight: "100vh" }}>
       {/* Bandeau */}
-      <div style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "32px 40px 92px" }}>
+      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "32px 40px 92px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16, minWidth: 0 }}>
@@ -59,9 +59,9 @@ export default function LexiquePage() {
                 </p>
               </div>
             </div>
-            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 18px 9px 12px", borderRadius: 999, background: "#fff", color: BLEU, fontSize: 12.5, fontWeight: 800, textDecoration: "none", flexShrink: 0 }}>
-              <ChevronLeft size={16} /> Accueil
-            </Link>
+            <div style={{ flexShrink: 0 }}>
+              <NavActions onDark flouFond />
+            </div>
           </div>
 
           {/* Recherche (à gauche) + index A-Z en pilules (à sa droite) */}
