@@ -22,9 +22,6 @@ const useIsoLayout = typeof window !== "undefined" ? useLayoutEffect : useEffect
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const COLORS = ["#ca631f","#004f91","#059669","#7c3aed","#0891b2","#d97706","#E35336","#188038","#dc2626","#65a30d","#f59e0b","#6366f1","#14b8a6","#f43f5e","#84cc16"];
-// En-tête de section commun (langage du rapport d'analyse : bleu, capitales, tracking)
-const TITRE_SEC: React.CSSProperties = { fontSize:11, fontWeight:800, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase", margin:"0 0 14px" };
-const ENCRE = "#101a2e";
 
 const ICON_MAP: Record<string, any> = {
   Building2, MapPin, Handshake, Calendar, TrendingUp, Layers, Target, DollarSign, Activity
@@ -1289,15 +1286,15 @@ function VizCard({ card, viz, onRemove }: {
 
   return (
     <>
-      <div className="ds-carte" onClick={()=>!loading&&data.length>0&&setOpen(true)}
-        style={{padding:"18px 20px",cursor:loading||data.length===0?"default":"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",minWidth:0}}
-        onMouseEnter={e=>{if(!loading&&data.length>0){e.currentTarget.style.boxShadow="0 14px 34px rgba(0,30,60,0.12)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}
+      <div onClick={()=>!loading&&data.length>0&&setOpen(true)}
+        style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",padding:"16px 18px",cursor:loading||data.length===0?"default":"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",minWidth:0}}
+        onMouseEnter={e=>{if(!loading&&data.length>0){e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; const d=sp.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; } });}}
-        onMouseLeave={e=>{e.currentTarget.style.boxShadow="";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="";
+        onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; });}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
           <div data-marquee style={{flex:1,minWidth:0,overflow:"hidden",whiteSpace:"nowrap" as const}}>
-            <p style={{...TITRE_SEC,margin:0,display:"inline-block"}}>{viz.titre}</p>
+            <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:0,display:"inline-block"}}>{viz.titre}</p>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0,marginLeft:8}}>
             <span style={{width:26,height:26,borderRadius:8,background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
@@ -1361,13 +1358,13 @@ function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any })
     : def.unit==="jours" ? `${nb} jours`
     : nb;
   return (
-    <div className="ds-carte" style={{ padding:"16px 18px", boxShadow:"0 10px 30px rgba(0,30,70,0.10)", minWidth:0, transition:"box-shadow 0.18s, transform 0.18s" }}
-      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 16px 36px rgba(0,30,60,0.15)";e.currentTarget.style.transform="translateY(-2px)";}}
-      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 10px 30px rgba(0,30,70,0.10)";e.currentTarget.style.transform="translateY(0)";}}>
-      <p style={{ fontSize:9.5, fontWeight:800, color:KPI_ACCENT, textTransform:"uppercase" as const, letterSpacing:"0.1em", margin:"0 0 10px", lineHeight:1.4 }}>{def.label}</p>
-      <p className="ds-donnee" style={{ fontSize:"1.55rem", fontWeight:800, color:ENCRE, margin:0, lineHeight:1.05, whiteSpace:"nowrap" as const }}>{display}</p>
-      <div style={{ marginTop:7, minHeight:14 }}>
-        {def.unit==="jours" && <span style={{ fontSize:10, color:"#9aa5b4" }}>moyenne premier contact → installation</span>}
+    <div style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";}}>
+      <p style={{ fontSize:9, fontWeight:800, color:KPI_ACCENT, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{def.label}</p>
+      <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
+        <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{display}</p>
+        {def.unit==="jours" && <span style={{ fontSize:8.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"1px 6px", borderRadius:5, textTransform:"uppercase" as const, letterSpacing:"0.04em" }}>moy.</span>}
       </div>
     </div>
   );
@@ -1772,20 +1769,20 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
 
   return (
     <>
-      <div className="ds-carte" onClick={()=>!loading&&colored.length>0&&setOpen(true)}
-        style={{ overflow:"hidden", cursor:loading||colored.length===0?"default":"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
-        onMouseEnter={e=>{ if(!loading&&colored.length>0){ e.currentTarget.style.boxShadow="0 14px 34px rgba(0,30,60,0.12)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }
+      <div onClick={()=>!loading&&colored.length>0&&setOpen(true)}
+        style={{ background:"#fff", borderRadius:14, border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", overflow:"hidden", cursor:loading||colored.length===0?"default":"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+        onMouseEnter={e=>{ if(!loading&&colored.length>0){ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; const d=sp.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; } }); }}
-        onMouseLeave={e=>{ e.currentTarget.style.boxShadow=""; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="";
+        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7";
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; }); }}>
-        <div style={{ padding:"18px 20px" }}>
+        <div style={{ padding:"16px 18px" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, marginBottom:14 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
               <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
-                <p style={{ ...TITRE_SEC, margin:0, display:"inline-block" }}>{ind.label}</p>
+                <p style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", margin:0, display:"inline-block" }}>{ind.label}</p>
               </span>
-              <span style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", background:"#EEF1F6", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>{dim.label}</span>
-              {isLong && <span style={{ fontSize:9, fontWeight:700, color:"#9aa5b4", background:"#EEF1F6", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>Top {cardN}</span>}
+              <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>{dim.label}</span>
+              {isLong && <span style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", background:"#F2F0EF", padding:"2px 8px", borderRadius:999, textTransform:"uppercase" as const, letterSpacing:"0.04em", flexShrink:0 }}>Top {cardN}</span>}
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
               <span style={{ width:26, height:26, borderRadius:8, background:"#F5F4F3", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
@@ -2012,10 +2009,10 @@ export default function TableauDeBordPage() {
 
   // d3 + Plot chargés dans un chunk séparé : garde avant tout rendu graphique
   const d3Pret = useD3Pret(true);
-  if (!d3Pret) return <div style={{minHeight:"100vh",background:"var(--ds-fond, #F7F6F5)"}}><Navbar/></div>;
+  if (!d3Pret) return <div style={{minHeight:"100vh",background:"#F6F5F3"}}><Navbar/></div>;
 
   return (
-    <div style={{minHeight:"100vh",background:"var(--ds-fond, #F7F6F5)",fontFamily:"var(--font-google-sans)"}}>
+    <div style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div id="d3-tooltip" style={{position:"fixed",pointerEvents:"none",background:"rgba(26,26,46,0.92)",color:"#fff",borderRadius:8,padding:"8px 12px",fontSize:12,lineHeight:1.5,opacity:0,zIndex:9999,backdropFilter:"blur(4px)"}}/>
       <Navbar/>
@@ -2037,38 +2034,37 @@ export default function TableauDeBordPage() {
 
           {/* ── Onglet Visualisation ─────────────────────────────────────────── */}
           {onglet==="viz" && (<>
-            {/* Indicateurs clés */}
-            <p style={TITRE_SEC}>Indicateurs clés</p>
+            {/* Indicateurs Global fixes */}
             {erreurKpis ? (
-              <div className="ds-carte" style={{marginBottom:30}}>
+              <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",marginBottom:28}}>
                 <ErreurChargement compact onRetry={()=>setTickKpis(t=>t+1)}/>
               </div>
             ) : (
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))",gap:14,marginBottom:30}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:28}}>
                 {GLOBAL_KPIS.map(def=><KPICard key={def.key} def={def} value={kpis[def.statKey]}/>)}
               </div>
             )}
 
-            {/* Répartition territoriale — deux cartes permanentes */}
-            <p style={TITRE_SEC}>Répartition territoriale</p>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(380px, 1fr))",gap:16,marginBottom:30,alignItems:"stretch"}}>
-              <div className="ds-carte" onClick={()=>setMapOpen(true)}
-                style={{padding:"20px 22px",cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s"}}
-                onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 14px 34px rgba(0,30,60,0.12)";e.currentTarget.style.transform="translateY(-2px)";}}
-                onMouseLeave={e=>{e.currentTarget.style.boxShadow="";e.currentTarget.style.transform="translateY(0)";}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,flexWrap:"wrap" as const}}>
-                  <p style={TITRE_SEC as any}>Densité des entreprises</p>
-                  <span style={{fontSize:9,fontWeight:700,color:"#9aa5b4",background:"#EEF1F6",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em",marginTop:-10}}>ent./100 km²</span>
+            {/* Visualisation permanente : Répartition des entreprises */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,marginBottom:28,alignItems:"stretch"}}>
+              <div onClick={()=>setMapOpen(true)}
+                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s"}}
+                onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
+                onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap" as const}}>
+                  <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:0}}>Répartition des entreprises</p>
+                  <span style={{fontSize:9.5,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em"}}>ent./100 km²</span>
                 </div>
-                <CarteSenegal height={220}/>
+                <CarteSenegal height={200}/>
               </div>
 
-              <div className="ds-carte" onClick={()=>setZoneEcoOpen(true)}
-                style={{padding:"20px 22px",cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s",display:"flex",flexDirection:"column" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 14px 34px rgba(0,30,60,0.12)";e.currentTarget.style.transform="translateY(-2px)";}}
-                onMouseLeave={e=>{e.currentTarget.style.boxShadow="";e.currentTarget.style.transform="translateY(0)";}}>
-                <p style={TITRE_SEC}>Entreprises par zone économique</p>
-                <div style={{flex:1,minHeight:220}}><GroupedBarZones height={220} fill/></div>
+              {/* Répartition par zones économiques (grouped bar) */}
+              <div onClick={()=>setZoneEcoOpen(true)}
+                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s",display:"flex",flexDirection:"column" as const}}
+                onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
+                onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
+                <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:"0 0 12px"}}>Répartition des entreprises par zone économique</p>
+                <div style={{flex:1,minHeight:200}}><GroupedBarZones height={200} fill/></div>
               </div>
             </div>
             <VizModal open={mapOpen} onClose={()=>setMapOpen(false)} titre="Répartition des entreprises" vizId="repartition-entreprises">
@@ -2079,17 +2075,14 @@ export default function TableauDeBordPage() {
             </VizModal>
 
             {/* Visualisations sélectionnées dans le filtre */}
-            <p style={TITRE_SEC}>Analyses détaillées</p>
             {config.kpisActifs.length===0 ? (
-              <div className="ds-carte" style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"60px 40px",textAlign:"center" as const,borderStyle:"dashed",borderColor:"var(--ds-bordure)"}}>
-                <div style={{width:52,height:52,borderRadius:14,background:"var(--ds-voile-bleu, #EEF1F6)",display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:14}}>
-                  <BarChart2 size={24} style={{color:"#004f91"}}/>
-                </div>
-                <p style={{fontSize:15,fontWeight:700,color:"#3a4553",marginBottom:6}}>Aucune analyse sélectionnée</p>
-                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:400,lineHeight:1.55}}>Choisissez un indicateur par dimension dans le panneau <b style={{color:"#6b7684"}}>Filtres</b> (Secteurs, Branches, Activités, Pays) pour afficher des visualisations détaillées.</p>
+              <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"64px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const}}>
+                <BarChart2 size={44} style={{color:"#E8E5E3",marginBottom:14}}/>
+                <p style={{fontSize:15,fontWeight:700,color:"#4a5568",marginBottom:6}}>Aucune visualisation sélectionnée</p>
+                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:380}}>Choisissez un indicateur par dimension dans le filtre (Global, Secteurs, Branches, Activités, Pays) pour afficher des visualisations.</p>
               </div>
             ) : (
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(380px, 1fr))",gap:16,alignItems:"start"}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,alignItems:"start"}}>
                 {config.kpisActifs.map(id=><IndicViz key={id} id={id} onRemove={()=>removeKPI(id)}/>)}
               </div>
             )}
@@ -2098,12 +2091,10 @@ export default function TableauDeBordPage() {
           {/* ── Onglet Tableaux analytiques ─────────────────────────────────── */}
           {onglet==="tables" && (
             config.tableCards.length===0?(
-              <div className="ds-carte" style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"72px 40px",textAlign:"center" as const,borderStyle:"dashed",borderColor:"var(--ds-bordure)"}}>
-                <div style={{width:52,height:52,borderRadius:14,background:"var(--ds-voile-bleu, #EEF1F6)",display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:14}}>
-                  <Table2 size={24} style={{color:"#004f91"}}/>
-                </div>
-                <p style={{fontSize:16,fontWeight:700,color:"#3a4553",marginBottom:8}}>Aucun tableau analytique</p>
-                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:380,lineHeight:1.55}}>Utilisez le panneau <b style={{color:"#6b7684"}}>Filtres</b> à gauche pour ajouter des tableaux analytiques croisés.</p>
+              <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"80px 40px",background:"#fff",borderRadius:20,border:"2px dashed #E8E5E3",textAlign:"center" as const,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+                <Table2 size={48} style={{color:"#E8E5E3",marginBottom:16}}/>
+                <p style={{fontSize:16,fontWeight:700,color:"#4a5568",marginBottom:8}}>Aucun tableau</p>
+                <p style={{fontSize:13,color:"#9aa5b4",maxWidth:360}}>Utilisez la barre latérale pour ajouter des tableaux analytiques.</p>
               </div>
             ):(
               <div style={{display:"grid",gridTemplateColumns:"1fr",gap:18}}>
