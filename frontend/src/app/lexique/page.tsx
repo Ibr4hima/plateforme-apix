@@ -60,7 +60,7 @@ export default function LexiquePage() {
               </div>
             </div>
             <div style={{ flexShrink: 0 }}>
-              <NavActions onDark flouFond />
+              <NavActions onDark flouTotal />
             </div>
           </div>
 

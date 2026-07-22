@@ -47,7 +47,8 @@ function boutonStyle(onDark: boolean, actif: boolean): React.CSSProperties {
   return { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: actif ? "rgba(0,79,145,0.28)" : "rgba(0,79,145,0.18)", background: actif ? "rgba(0,79,145,0.07)" : "transparent", cursor: "pointer", transition: "all 0.18s" };
 }
 
-export default function NavActions({ onDark = false, flouFond = false }: { onDark?: boolean; flouFond?: boolean }) {
+export default function NavActions({ onDark = false, flouFond = false, flouTotal = false }: { onDark?: boolean; flouFond?: boolean; flouTotal?: boolean }) {
+  const flou = flouFond || flouTotal;
   const { data: session } = useSession();
   const [userOpen, setUserOpen] = useState(false);
   const [menuModsOpen, setMenuModsOpen] = useState(false);
@@ -73,7 +74,7 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
     if (!r) return;
     // Bas du bandeau (section/header) : le voile ne floute que ce qui est en dessous
     const bandeau = btnRef.current?.closest("section, header, [data-bandeau]")?.getBoundingClientRect();
-    setPos({ top: r.bottom + 10, right: Math.max(8, window.innerWidth - r.right), voile: bandeau ? Math.max(0, bandeau.bottom) : r.bottom + 6 });
+    setPos({ top: r.bottom + 10, right: Math.max(8, window.innerWidth - r.right), voile: flouTotal ? 0 : (bandeau ? Math.max(0, bandeau.bottom) : r.bottom + 6) });
   };
   // Ouverture au survol ; fermeture quand on quitte le menu (grâce courte), au
   // clic-extérieur (voile) ou à Échap.
@@ -106,8 +107,10 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
         <span className="material-symbols-outlined" style={{ fontSize: 17, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
       </button>
 
-      {/* Menu hub (ouverture au survol / au clic) */}
-      <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={closeUser}>
+      {/* Menu hub (ouverture au survol / au clic). En flou total, le voile
+          recouvre le bouton : on n'attache pas la fermeture au mouseleave du
+          conteneur (sinon clignotement) — fermeture au clic-voile / Échap. */}
+      <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={flouTotal ? undefined : closeUser}>
         <button ref={btnRef} onClick={() => { majPos(); userOpen ? fermer() : setUserOpen(true); }} title="Menu" aria-label="Menu" style={boutonStyle(onDark, userOpen)}>
           <span className="material-symbols-outlined" style={{ fontSize: 20, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
         </button>
@@ -117,7 +120,7 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
       {mounted && userOpen && createPortal(
         <>
           <div onClick={fermer}
-            style={{ position: "fixed", top: pos.voile, left: 0, right: 0, bottom: 0, zIndex: 1000, background: flouFond ? "rgba(16,26,46,0.16)" : "transparent", backdropFilter: flouFond ? "blur(4px)" : "none", WebkitBackdropFilter: flouFond ? "blur(4px)" : "none", animation: flouFond ? "apixFadeIn 0.18s ease" : "none" }} />
+            style={{ position: "fixed", top: pos.voile, left: 0, right: 0, bottom: 0, zIndex: 1000, background: flou ? "rgba(16,26,46,0.16)" : "transparent", backdropFilter: flou ? "blur(4px)" : "none", WebkitBackdropFilter: flou ? "blur(4px)" : "none", animation: flou ? "apixFadeIn 0.18s ease" : "none" }} />
           <div className="apix-menu-pop" onMouseEnter={openUser} onMouseLeave={closeUser}
             style={{ position: "fixed", top: pos.top, right: pos.right, width: 280, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.22), 0 4px 12px rgba(16,26,46,0.10)", zIndex: 1001, transformOrigin: "top right" }}>
 

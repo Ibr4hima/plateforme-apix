@@ -226,7 +226,7 @@ function ContenuFichePays() {
               )}
             </div>
             <div className="no-print" style={{ flexShrink: 0 }}>
-              <NavActions onDark flouFond />
+              <NavActions onDark flouTotal />
             </div>
           </div>
         </div>
