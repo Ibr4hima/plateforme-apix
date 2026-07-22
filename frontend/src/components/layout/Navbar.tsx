@@ -566,27 +566,34 @@ export default function Navbar() {
                     </div>
                   )}
 
-                  {/* Modules (déploiement au survol) */}
-                  <div onMouseEnter={() => setMenuModsOpen(true)} onMouseLeave={() => setMenuModsOpen(false)}>
-                    <button style={{ ...MENU_ROW }} onMouseEnter={onEnterRow} onMouseLeave={onLeaveRow}
+                  {/* Modules (sous-menu déployé à gauche au survol) */}
+                  <div style={{ position: "relative" }} onMouseEnter={() => setMenuModsOpen(true)} onMouseLeave={() => setMenuModsOpen(false)}>
+                    <button style={{ ...MENU_ROW, background: menuModsOpen ? "rgba(0,79,145,0.07)" : "transparent" }} onMouseEnter={onEnterRow} onMouseLeave={e => { if (!menuModsOpen) onLeaveRow(e); }}
                       onClick={() => setMenuModsOpen(o => !o)}>
                       <MenuIcone icon="dashboard" />
                       <span style={{ fontSize: 13, fontWeight: 600, color: "#101a2e", flex: 1 }}>Modules</span>
-                      <ChevronDown size={14} style={{ color: "#9aa5b4", flexShrink: 0, transition: "transform 0.2s", transform: menuModsOpen ? "rotate(180deg)" : "rotate(0)" }} />
+                      <ChevronDown size={14} style={{ color: "#9aa5b4", flexShrink: 0, transform: "rotate(90deg)" }} />
                     </button>
-                    <div style={{ overflow: "hidden", maxHeight: menuModsOpen ? 460 : 0, transition: "max-height 0.28s ease" }}>
-                      <div style={{ margin: "1px 0 3px 20px", paddingLeft: 11, borderLeft: "1px solid #EDEAE6" }}>
+
+                    {menuModsOpen && (
+                      <div className="apix-menu-fly"
+                        style={{ position: "absolute", top: -7, right: "calc(100% + 10px)", width: 258, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.16), 0 4px 12px rgba(16,26,46,0.06)", transformOrigin: "top right" }}>
+                        <div style={{ padding: "4px 9px 7px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", letterSpacing: "0.14em", textTransform: "uppercase" }}>Modules de données</span>
+                        </div>
                         {modules.filter(m => visible(m.href)).map(m => (
-                          <Link key={m.href} href={m.href} onClick={() => setUserOpen(false)}
-                            style={{ display: "flex", alignItems: "center", gap: 9, padding: "5px 9px", borderRadius: 9, textDecoration: "none", transition: "background 0.12s" }}
+                          <Link key={m.href} href={m.href} onClick={() => { setUserOpen(false); setMenuModsOpen(false); }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 9px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s" }}
                             onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.06)"; }}
                             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0 }}>{m.icon}</span>
-                            <span style={{ fontSize: 12, fontWeight: 500, color: "#4a5568", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.label}</span>
+                            <span style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(0,79,145,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
+                            </span>
+                            <span style={{ fontSize: 12.5, fontWeight: 500, color: "#101a2e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.label}</span>
                           </Link>
                         ))}
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Liens */}
@@ -675,6 +682,8 @@ export default function Navbar() {
         }
         .apix-menu-pop { animation: apixMenuPop 0.16s cubic-bezier(0.16,1,0.3,1); }
         @keyframes apixMenuPop { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .apix-menu-fly { animation: apixMenuFly 0.16s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes apixMenuFly { from { opacity: 0; transform: translateX(8px) scale(0.98); } to { opacity: 1; transform: translateX(0) scale(1); } }
         mark { background: rgba(202,99,31,0.2); color: #ca631f; border-radius: 3px; padding: 0 2px; }
         [data-rte] ul{padding-left:20px;list-style-type:disc}
         [data-rte] ul.dash-list{list-style-type:"— ";padding-left:22px}
