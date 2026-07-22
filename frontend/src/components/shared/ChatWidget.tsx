@@ -379,29 +379,29 @@ export default function ChatWidget() {
   );
 }
 
-// Logo Claude — sunburst de rayons rayonnant du centre (SVG inline, hérite de
-// currentColor). Réutilisé dans la navbar. Rayons longs/courts alternés.
-const RAYONS_CLAUDE: [number, number, number, number][] = [
-  [14.7, 12, 22, 12],
-  [14.34, 10.65, 17.72, 8.7],
-  [13.35, 9.66, 17, 3.34],
-  [12, 9.3, 12, 5.4],
-  [10.65, 9.66, 7, 3.34],
-  [9.66, 10.65, 6.28, 8.7],
-  [9.3, 12, 2, 12],
-  [9.66, 13.35, 6.28, 15.3],
-  [10.65, 14.34, 7, 20.66],
-  [12, 14.7, 12, 18.6],
-  [13.35, 14.34, 17, 20.66],
-  [14.34, 13.35, 17.72, 15.3],
+// Logo Claude — éclat (sunburst) de rayons pleins en forme de capsules
+// rayonnant du centre. SVG inline, hérite de currentColor (par défaut ; passer
+// couleur="#D97757" pour la teinte corail de la marque). Réutilisé en navbar.
+// [angle en degrés, rayon extérieur] — longueurs alternées pour l'aspect organique.
+const RAYONS_CLAUDE: [number, number][] = [
+  [0, 9.4], [30, 7], [60, 9], [90, 9.8], [120, 8.7], [150, 7.1],
+  [180, 9.3], [210, 7], [240, 9], [270, 9.7], [300, 8.6], [330, 7.1],
 ];
 
-export function LogoClaude({ size = 22 }: { size?: number }) {
+export function LogoClaude({ size = 22, couleur }: { size?: number; couleur?: string }) {
+  const cx = 12, cy = 12, interieur = 2.3, largeur = 1.7;
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth={1.9} strokeLinecap="round">
-      {RAYONS_CLAUDE.map((r, i) => (
-        <line key={i} x1={r[0]} y1={r[1]} x2={r[2]} y2={r[3]} />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={couleur || "currentColor"}>
+      {RAYONS_CLAUDE.map(([angle, exterieur], i) => (
+        <rect
+          key={i}
+          x={cx - largeur / 2}
+          y={cy - exterieur}
+          width={largeur}
+          height={exterieur - interieur}
+          rx={largeur / 2}
+          transform={`rotate(${angle} ${cx} ${cy})`}
+        />
       ))}
     </svg>
   );
