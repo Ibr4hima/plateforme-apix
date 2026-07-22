@@ -6,13 +6,15 @@ import React from "react";
 // Bleu APIX, décor discret (trame, halos, liseré lumineux), point pulsant blanc,
 // emplacement pour des contrôles à côté du titre et des actions à droite.
 
-export default function BarreTitre({ titre, children, droite }: {
+export default function BarreTitre({ titre, children, droite, actions, compact }: {
   titre: React.ReactNode;
   children?: React.ReactNode;
   droite?: React.ReactNode;
+  actions?: React.ReactNode;   // cluster d'actions (recherche + menu) à l'extrême droite
+  compact?: boolean;           // pas de navbar au-dessus : réduit le padding haut
 }) {
   return (
-    <section style={{ padding: "82px 40px 18px", background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", position: "relative", overflow: "hidden" }}>
+    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", position: "relative", overflow: "hidden" }}>
       <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
@@ -28,7 +30,12 @@ export default function BarreTitre({ titre, children, droite }: {
         <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
         <h1 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#fff", lineHeight: 1.2, margin: 0, whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>{titre}</h1>
         {children}
-        {droite && <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>{droite}</div>}
+        {(droite || actions) && (
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            {droite}
+            {actions && <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>{actions}</div>}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
+import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -333,14 +333,13 @@ export default function EvenementsPage() {
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
 @keyframes pulseHalo{0%{box-shadow:0 0 0 0 rgba(0,79,145,0.45)}70%{box-shadow:0 0 0 9px rgba(0,79,145,0)}100%{box-shadow:0 0 0 0 rgba(0,79,145,0)}}
 @keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgba(24,128,56,0.45)}70%{box-shadow:0 0 0 9px rgba(24,128,56,0)}100%{box-shadow:0 0 0 0 rgba(24,128,56,0)}}`}</style>
-      <Navbar/>
-
       {/* Barre de titre */}
-      <BarreTitre titre="Événements"
+      <BarreTitre titre="Événements" compact actions={<NavActions onDark/>}
         droite={(()=>{
           const prochain = prochainId!=null ? tous.find(e=>e.id===prochainId) : null;
           if (!prochain) return null;
-          return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelec(prochain))}/>;
+          return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelec(prochain))}
+            icon={<span className="material-symbols-outlined" style={{fontSize:16,color:"#fff",fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
         })()}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
       </BarreTitre>
@@ -349,7 +348,7 @@ export default function EvenementsPage() {
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
           {/* Sidebar bande */}
-          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
+          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"100vh",overflowY:"auto" as const,position:"sticky" as const,top:0,display:"flex",flexDirection:"column" as const}}>
             <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
             {sidebarOpen&&<div onMouseDown={startResize} style={{position:"absolute" as const,right:0,top:0,bottom:0,width:4,cursor:"col-resize",zIndex:10,background:"transparent",transition:"background 0.15s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
             <div style={{padding:sidebarOpen?"14px 16px 10px":"12px 8px",borderBottom:"1px solid #F2F0EF",display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",flexShrink:0}}>
