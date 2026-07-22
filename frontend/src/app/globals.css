@@ -15,7 +15,7 @@
   --text-primary:       #1a1a2e;
   --text-secondary:     #4a5568;
   --text-muted:         #9aa5b4;
-  --font-display: var(--font-google-sans), sans-serif;
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, "Times New Roman", serif;
   --font-body: var(--font-google-sans), sans-serif;
 
   /* ── Design system v1 : jetons sémantiques ── */
@@ -73,6 +73,17 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  /* Chiffres tabulaires partout : alignement des colonnes de nombres,
+     lecture « rapport officiel ». Hérité par toute la page. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Police d'affichage sur les titres de page (bandeaux, lecteurs). Les titres
+   inline sans font-family héritent d'ici ; le corps reste en Google Sans. */
+h1, h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
 }
 
 ::-webkit-scrollbar { width: 6px; }
