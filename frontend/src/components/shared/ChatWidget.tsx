@@ -306,7 +306,7 @@ export default function ChatWidget() {
         }
       `}</style>
 
-      {/* Lanceur : le logo Claude posé directement (sans bulle) */}
+      {/* Lanceur : le même cadre orangé pulsant que l'accueil, un peu plus petit */}
       {!ouvert && (
         <button
           onClick={ouvrir}
@@ -315,23 +315,28 @@ export default function ChatWidget() {
             position: "fixed",
             right: 22,
             bottom: 22,
-            width: 52,
-            height: 52,
+            width: 54,
+            height: 54,
             padding: 0,
-            border: "none",
-            background: "transparent",
+            borderRadius: 17,
+            // fond voilé orange par-dessus une base crème → rendu identique à
+            // l'accueil quel que soit le contenu de la page derrière
+            background:
+              "linear-gradient(180deg, rgba(202,99,31,0.10), rgba(202,99,31,0.03)), #fdfaf7",
+            border: "1px solid rgba(202,99,31,0.16)",
             cursor: "pointer",
             zIndex: 60,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.22))",
+            animation: "apixHalo 2.6s ease-in-out infinite",
+            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.16))",
             transition: "transform 0.2s cubic-bezier(.34,1.56,.64,1)",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1) rotate(8deg)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1) rotate(0deg)")}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.07)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <LogoClaude size={48} />
+          <LogoClaude size={30} />
         </button>
       )}
 
