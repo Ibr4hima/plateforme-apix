@@ -507,48 +507,57 @@ export default function Navbar() {
               onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; e.currentTarget.style.borderColor = "#ECEAE7"; e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; (e.currentTarget.firstElementChild as any).style.color = "#4a5568"; }}>
               <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#4a5568", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>search</span>
             </button>
-            {/* Bouton temporaire vers l'espace d'administration */}
-            {isAdminRole && <Link href="/admin/evenements"
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", padding: "9px 18px", borderRadius: 10, border: "1.5px solid rgba(202,99,31,0.45)", textDecoration: "none", transition: "all 0.2s", fontFamily: "var(--font-google-sans)" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.15)"; e.currentTarget.style.borderColor = "#ca631f"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(202,99,31,0.08)"; e.currentTarget.style.borderColor = "rgba(202,99,31,0.45)"; }}>
-              Page Admin
-            </Link>}
-            {session?.user ? (
-              <div style={{ position: "relative" }}>
-                <button onClick={() => setUserOpen(o => !o)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "#1a1a2e", background: "#F5F4F3", padding: "7px 14px 7px 8px", borderRadius: 999, border: "1px solid #ECEAE7", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
-                  <span style={{ width: 26, height: 26, borderRadius: "50%", background: "#004f91", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>
-                    {(afficheNom || "?")[0].toUpperCase()}
-                  </span>
-                  <span style={{ maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</span>
-                </button>
-                {userOpen && (
-                  <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 230, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 14, padding: 8, boxShadow: "0 16px 56px rgba(0,0,0,0.12)" }}>
-                    <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
-                      {afficheNom !== session.user.email && <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</p>}
-                      <p style={{ margin: afficheNom !== session.user.email ? "3px 0 0" : 0, fontSize: 11.5, fontWeight: afficheNom !== session.user.email ? 500 : 700, color: afficheNom !== session.user.email ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</p>
-                      <span style={{ display: "inline-flex", marginTop: 5, fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</span>
-                    </div>
-                    <button onClick={() => signOut({ callbackUrl: "/" })}
-                      style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#dc2626", fontFamily: "var(--font-google-sans)", textAlign: "left" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.06)"; }}
+            {/* Menu : Page Admin · Lexique · Connexion */}
+            <div style={{ position: "relative" }}>
+              <button onClick={() => setUserOpen(o => !o)} title="Menu" aria-label="Menu"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid #ECEAE7", background: userOpen ? "#004f91" : "#F5F4F3", cursor: "pointer", transition: "all 0.18s", boxShadow: "0 1px 2px rgba(0,0,0,0.03)" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#004f91"; e.currentTarget.style.borderColor = "#004f91"; (e.currentTarget.firstElementChild as any).style.color = "#fff"; }}
+                onMouseLeave={e => { if (!userOpen) { e.currentTarget.style.background = "#F5F4F3"; e.currentTarget.style.borderColor = "#ECEAE7"; (e.currentTarget.firstElementChild as any).style.color = "#4a5568"; } }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: userOpen ? "#fff" : "#4a5568", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>menu</span>
+              </button>
+              {userOpen && (
+                <>
+                  <div onClick={() => setUserOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                  <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 232, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 14, padding: 8, boxShadow: "0 16px 56px rgba(0,0,0,0.14)", zIndex: 50 }}>
+                    {session?.user && (
+                      <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
+                        {afficheNom !== session.user.email && <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</p>}
+                        <p style={{ margin: afficheNom !== session.user.email ? "3px 0 0" : 0, fontSize: 11.5, fontWeight: afficheNom !== session.user.email ? 500 : 700, color: afficheNom !== session.user.email ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.user.email}</p>
+                        <span style={{ display: "inline-flex", marginTop: 5, fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</span>
+                      </div>
+                    )}
+                    {isAdminRole && (
+                      <Link href="/admin/evenements" onClick={() => setUserOpen(false)}
+                        style={{ display: "block", padding: "9px 12px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "#ca631f", textDecoration: "none", fontFamily: "var(--font-google-sans)" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(202,99,31,0.08)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                        Page Admin
+                      </Link>
+                    )}
+                    <Link href="/lexique" onClick={() => setUserOpen(false)}
+                      style={{ display: "block", padding: "9px 12px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "#1a1a2e", textDecoration: "none", fontFamily: "var(--font-google-sans)" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                      Se déconnecter
-                    </button>
+                      Lexique
+                    </Link>
+                    <div style={{ borderTop: "1px solid #F2F0EF", margin: "4px 0" }} />
+                    {session?.user ? (
+                      <button onClick={() => signOut({ callbackUrl: "/" })}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#dc2626", fontFamily: "var(--font-google-sans)" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.06)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                        Se déconnecter
+                      </button>
+                    ) : (
+                      <Link href="/login" onClick={() => setUserOpen(false)}
+                        style={{ display: "block", padding: "9px 12px", borderRadius: 9, fontSize: 13, fontWeight: 700, color: "#fff", background: "#ca631f", textAlign: "center", textDecoration: "none", fontFamily: "var(--font-google-sans)" }}>
+                        Connexion
+                      </Link>
+                    )}
                   </div>
-                )}
-              </div>
-            ) : (
-            <Link href="/login"
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#fff", background: "#ca631f", padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", boxShadow: "0 2px 12px rgba(202,99,31,0.35)", transition: "all 0.2s", letterSpacing: "0em", fontFamily: "var(--font-google-sans)", textDecoration: "none" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(202,99,31,0.45)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 12px rgba(202,99,31,0.35)"; }}>
-              Connexion
-            </Link>
-            )}
+                </>
+              )}
+            </div>
           </div>
 
           {/* ── Burger mobile ── */}
