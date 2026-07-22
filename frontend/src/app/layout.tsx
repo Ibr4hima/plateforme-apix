@@ -1,21 +1,12 @@
 import Providers from "@/components/layout/Providers";
 import type { Metadata } from "next";
-import { Google_Sans, Fraunces } from "next/font/google";
+import { Google_Sans } from "next/font/google";
 import "./globals.css";
 
 const googleSans = Google_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-google-sans",
-  display: "swap",
-});
-
-// Police d'affichage (titres) — serif institutionnel/premium, distinct du corps
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "900"],
-  style: ["normal"],
-  variable: "--font-fraunces",
   display: "swap",
 });
 
@@ -39,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${googleSans.variable} ${fraunces.variable}`}>
+    <html lang="fr" className={googleSans.variable}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
