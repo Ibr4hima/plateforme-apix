@@ -52,7 +52,7 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
   const [userOpen, setUserOpen] = useState(false);
   const [menuModsOpen, setMenuModsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [pos, setPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
+  const [pos, setPos] = useState<{ top: number; right: number; voile: number }>({ top: 0, right: 0, voile: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const userTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const modsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -70,15 +70,18 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
 
   const majPos = () => {
     const r = btnRef.current?.getBoundingClientRect();
-    if (r) setPos({ top: r.bottom + 10, right: Math.max(8, window.innerWidth - r.right) });
+    if (!r) return;
+    // Bas du bandeau (section/header) : le voile ne floute que ce qui est en dessous
+    const bandeau = btnRef.current?.closest("section, header")?.getBoundingClientRect();
+    setPos({ top: r.bottom + 10, right: Math.max(8, window.innerWidth - r.right), voile: bandeau ? Math.max(0, bandeau.bottom) : r.bottom + 6 });
   };
-  // Ouverture au survol ; fermeture par clic-extérieur (voile) ou Échap — pas de
-  // fermeture au mouseleave (le voile plein écran recouvre le bouton et ferait
-  // « sauter » le menu).
+  // Ouverture au survol ; fermeture quand on quitte le menu (grâce courte), au
+  // clic-extérieur (voile) ou à Échap.
   const openUser  = () => { if (userTimeoutRef.current) clearTimeout(userTimeoutRef.current); majPos(); setUserOpen(true); };
-  const fermer    = () => { setUserOpen(false); setMenuModsOpen(false); };
+  const closeUser = () => { userTimeoutRef.current = setTimeout(() => { setUserOpen(false); setMenuModsOpen(false); }, 180); };
+  const fermer    = () => { if (userTimeoutRef.current) clearTimeout(userTimeoutRef.current); setUserOpen(false); setMenuModsOpen(false); };
   const openMods  = () => { if (modsTimeoutRef.current) clearTimeout(modsTimeoutRef.current); setMenuModsOpen(true); };
-  const closeMods = () => { modsTimeoutRef.current = setTimeout(() => setMenuModsOpen(false), 130); };
+  const closeMods = () => { modsTimeoutRef.current = setTimeout(() => setMenuModsOpen(false), 150); };
 
   // Repositionne le panneau au défilement/redimensionnement, ferme à Échap
   useEffect(() => {
@@ -104,7 +107,7 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
       </button>
 
       {/* Menu hub (ouverture au survol / au clic) */}
-      <div style={{ position: "relative" }} onMouseEnter={openUser}>
+      <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={closeUser}>
         <button ref={btnRef} onClick={() => { majPos(); userOpen ? fermer() : setUserOpen(true); }} title="Menu" aria-label="Menu" style={boutonStyle(onDark, userOpen)}>
           <span className="material-symbols-outlined" style={{ fontSize: 20, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
         </button>
@@ -114,8 +117,8 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
       {mounted && userOpen && createPortal(
         <>
           <div onClick={fermer}
-            style={{ position: "fixed", inset: 0, zIndex: 1000, background: flouFond ? "rgba(16,26,46,0.18)" : "transparent", backdropFilter: flouFond ? "blur(4px)" : "none", WebkitBackdropFilter: flouFond ? "blur(4px)" : "none", animation: flouFond ? "apixFadeIn 0.18s ease" : "none" }} />
-          <div className="apix-menu-pop"
+            style={{ position: "fixed", top: pos.voile, left: 0, right: 0, bottom: 0, zIndex: 1000, background: flouFond ? "rgba(16,26,46,0.16)" : "transparent", backdropFilter: flouFond ? "blur(4px)" : "none", WebkitBackdropFilter: flouFond ? "blur(4px)" : "none", animation: flouFond ? "apixFadeIn 0.18s ease" : "none" }} />
+          <div className="apix-menu-pop" onMouseEnter={openUser} onMouseLeave={closeUser}
             style={{ position: "fixed", top: pos.top, right: pos.right, width: 280, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.22), 0 4px 12px rgba(16,26,46,0.10)", zIndex: 1001, transformOrigin: "top right" }}>
 
             {/* En-tête compte */}
@@ -145,8 +148,11 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
               </button>
 
               {menuModsOpen && (
+                <>
+                  {/* Pont invisible : comble l'espace entre la ligne et le flyout */}
+                  <div onMouseEnter={openMods} style={{ position: "absolute", top: -8, right: "100%", width: 14, height: "calc(100% + 16px)" }} />
                 <div className="apix-menu-fly" onMouseEnter={openMods} onMouseLeave={closeMods}
-                  style={{ position: "absolute", top: -7, right: "calc(100% + 10px)", width: 258, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.16), 0 4px 12px rgba(16,26,46,0.06)", transformOrigin: "top right" }}>
+                  style={{ position: "absolute", top: -7, right: "calc(100% + 8px)", width: 258, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.16), 0 4px 12px rgba(16,26,46,0.06)", transformOrigin: "top right" }}>
                   <div style={{ padding: "4px 9px 7px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
                     <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", letterSpacing: "0.14em", textTransform: "uppercase" }}>Modules de données</span>
                   </div>
@@ -160,6 +166,7 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
                     </Link>
                   ))}
                 </div>
+                </>
               )}
             </div>
 
