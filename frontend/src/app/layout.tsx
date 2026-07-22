@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   },
   description:
     "Plateforme numérique de promotion, d'attraction et de facilitation des investissements privés au Sénégal.",
+  icons: {
+    icon: "/logo_apix.png",
+    shortcut: "/logo_apix.png",
+    apple: "/logo_apix.png",
+  },
 };
 
 export default function RootLayout({
