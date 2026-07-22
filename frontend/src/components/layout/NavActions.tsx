@@ -72,18 +72,23 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
     const r = btnRef.current?.getBoundingClientRect();
     if (r) setPos({ top: r.bottom + 10, right: Math.max(8, window.innerWidth - r.right) });
   };
+  // Ouverture au survol ; fermeture par clic-extérieur (voile) ou Échap — pas de
+  // fermeture au mouseleave (le voile plein écran recouvre le bouton et ferait
+  // « sauter » le menu).
   const openUser  = () => { if (userTimeoutRef.current) clearTimeout(userTimeoutRef.current); majPos(); setUserOpen(true); };
-  const closeUser = () => { userTimeoutRef.current = setTimeout(() => { setUserOpen(false); setMenuModsOpen(false); }, 140); };
+  const fermer    = () => { setUserOpen(false); setMenuModsOpen(false); };
   const openMods  = () => { if (modsTimeoutRef.current) clearTimeout(modsTimeoutRef.current); setMenuModsOpen(true); };
   const closeMods = () => { modsTimeoutRef.current = setTimeout(() => setMenuModsOpen(false), 130); };
 
-  // Repositionne le panneau si l'on défile / redimensionne pendant l'ouverture
+  // Repositionne le panneau au défilement/redimensionnement, ferme à Échap
   useEffect(() => {
     if (!userOpen) return;
     const h = () => majPos();
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") fermer(); };
     window.addEventListener("scroll", h, true);
     window.addEventListener("resize", h);
-    return () => { window.removeEventListener("scroll", h, true); window.removeEventListener("resize", h); };
+    window.addEventListener("keydown", onKey);
+    return () => { window.removeEventListener("scroll", h, true); window.removeEventListener("resize", h); window.removeEventListener("keydown", onKey); };
   }, [userOpen]);
 
   const icoColor = onDark ? "#fff" : "#004f91";
@@ -98,9 +103,9 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
         <span className="material-symbols-outlined" style={{ fontSize: 17, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
       </button>
 
-      {/* Menu hub (déploiement au survol) */}
-      <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={closeUser}>
-        <button ref={btnRef} onClick={() => { majPos(); setUserOpen(o => !o); }} title="Menu" aria-label="Menu" style={boutonStyle(onDark, userOpen)}>
+      {/* Menu hub (ouverture au survol / au clic) */}
+      <div style={{ position: "relative" }} onMouseEnter={openUser}>
+        <button ref={btnRef} onClick={() => { majPos(); userOpen ? fermer() : setUserOpen(true); }} title="Menu" aria-label="Menu" style={boutonStyle(onDark, userOpen)}>
           <span className="material-symbols-outlined" style={{ fontSize: 20, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
         </button>
       </div>
@@ -108,9 +113,9 @@ export default function NavActions({ onDark = false, flouFond = false }: { onDar
       {/* Panneau du menu — via portal pour échapper à overflow/z-index du bandeau */}
       {mounted && userOpen && createPortal(
         <>
-          <div onClick={() => { setUserOpen(false); setMenuModsOpen(false); }}
+          <div onClick={fermer}
             style={{ position: "fixed", inset: 0, zIndex: 1000, background: flouFond ? "rgba(16,26,46,0.18)" : "transparent", backdropFilter: flouFond ? "blur(4px)" : "none", WebkitBackdropFilter: flouFond ? "blur(4px)" : "none", animation: flouFond ? "apixFadeIn 0.18s ease" : "none" }} />
-          <div onMouseEnter={openUser} onMouseLeave={closeUser} className="apix-menu-pop"
+          <div className="apix-menu-pop"
             style={{ position: "fixed", top: pos.top, right: pos.right, width: 280, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.22), 0 4px 12px rgba(16,26,46,0.10)", zIndex: 1001, transformOrigin: "top right" }}>
 
             {/* En-tête compte */}
