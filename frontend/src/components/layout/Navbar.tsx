@@ -378,20 +378,17 @@ function CodeModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── Ligne de menu (icône + titre + sous-titre) ────────────────────────────────
-function MenuLien({ href, onNav, icon, couleur, titre, sous }: { href: string; onNav: () => void; icon: string; couleur: string; titre: string; sous: string }) {
+// ── Ligne de menu (icône bleue + titre) ───────────────────────────────────────
+function MenuLien({ href, onNav, icon, titre }: { href: string; onNav: () => void; icon: string; titre: string }) {
   return (
     <Link href={href} onClick={onNav}
-      style={{ display: "flex", alignItems: "center", gap: 11, padding: "8px 10px", borderRadius: 12, textDecoration: "none", transition: "background 0.12s" }}
-      onMouseEnter={e => { e.currentTarget.style.background = `${couleur}0f`; }}
+      style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", borderRadius: 12, textDecoration: "none", transition: "background 0.12s" }}
+      onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; }}
       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-      <span style={{ width: 34, height: 34, borderRadius: 10, background: `${couleur}14`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 18, color: couleur, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{icon}</span>
+      <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(0,79,145,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{icon}</span>
       </span>
-      <span style={{ minWidth: 0, flex: 1 }}>
-        <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: "#101a2e", lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>
-        <span style={{ display: "block", fontSize: 11, color: "#9aa5b4", lineHeight: 1.3, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sous}</span>
-      </span>
+      <span style={{ fontSize: 13.5, fontWeight: 600, color: "#101a2e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>
     </Link>
   );
 }
@@ -499,6 +496,14 @@ export default function Navbar() {
               )}
             </div>
 
+            {/* Échanges commerciaux */}
+            {visible("/statistiques") && <Link href="/statistiques"
+              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
+              Échanges commerciaux
+            </Link>}
+
             {/* Tableau de bord */}
             {visible("/tableau-de-bord") && <Link href="/tableau-de-bord"
               style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, textDecoration: "none", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
@@ -515,16 +520,16 @@ export default function Navbar() {
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {/* Recherche globale (⌘K) */}
             <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
-              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid #ECEAE7", background: "#F5F4F3", cursor: "pointer", transition: "all 0.18s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.15)"; (e.currentTarget.firstElementChild as any).style.color = "#004f91"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; e.currentTarget.style.borderColor = "#ECEAE7"; (e.currentTarget.firstElementChild as any).style.color = "#4a5568"; }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#4a5568", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>search</span>
+              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid rgba(0,79,145,0.18)", background: "transparent", cursor: "pointer", transition: "all 0.18s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.28)"; (e.currentTarget.firstElementChild as any).style.color = "#004f91"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.18)"; (e.currentTarget.firstElementChild as any).style.color = "#004f91"; }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>search</span>
             </button>
             {/* Menu : Page Admin · Lexique · Connexion (déploiement au survol) */}
             <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={closeUser}>
               <button onClick={() => setUserOpen(o => !o)} title="Menu" aria-label="Menu"
-                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: userOpen ? "rgba(0,79,145,0.15)" : "#ECEAE7", background: userOpen ? "rgba(0,79,145,0.07)" : "#F5F4F3", cursor: "pointer", transition: "all 0.18s" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: userOpen ? "#004f91" : "#4a5568", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>{userOpen ? "menu_open" : "menu"}</span>
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: userOpen ? "rgba(0,79,145,0.28)" : "rgba(0,79,145,0.18)", background: userOpen ? "rgba(0,79,145,0.07)" : "transparent", cursor: "pointer", transition: "all 0.18s" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>{userOpen ? "menu_open" : "menu"}</span>
               </button>
               {userOpen && (
                 <div onMouseEnter={openUser} onMouseLeave={closeUser}
@@ -550,10 +555,10 @@ export default function Navbar() {
 
                   {/* Liens rapides */}
                   {isAdminRole && (
-                    <MenuLien href="/admin/evenements" onNav={() => setUserOpen(false)} icon="admin_panel_settings" couleur="#ca631f" titre="Page Admin" sous="Gestion & saisie" />
+                    <MenuLien href="/admin/evenements" onNav={() => setUserOpen(false)} icon="admin_panel_settings" titre="Page Admin" />
                   )}
-                  <MenuLien href="/code-investissements" onNav={() => setUserOpen(false)} icon="gavel" couleur="#004f91" titre="Code des investissements" sous="Cadre légal" />
-                  <MenuLien href="/lexique" onNav={() => setUserOpen(false)} icon="language" couleur="#0e7490" titre="Lexique" sous="Termes clés de l'investissement" />
+                  <MenuLien href="/code-investissements" onNav={() => setUserOpen(false)} icon="gavel" titre="Code des investissements" />
+                  <MenuLien href="/lexique" onNav={() => setUserOpen(false)} icon="language" titre="Lexique" />
 
                   <div style={{ borderTop: "1px solid #F2F0EF", margin: "6px 4px" }} />
 
