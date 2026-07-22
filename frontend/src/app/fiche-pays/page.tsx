@@ -21,7 +21,7 @@ const BLEU = "#004f91", ORANGE = "#ca631f", ENCRE = "#101a2e";
 const COULEURS = [BLEU, ORANGE];
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
 
-type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };
+type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | null; continent: string; region_geo: string | null };
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string };
 
 // La PLUS GRANDE valeur est colorée : vert (favorable) ou rouge (importations)
@@ -70,9 +70,14 @@ function SelectPays({ valeur, pays, exclure, onChange }: {
         if (ia === -1) return 1; if (ib === -1) return -1; return ia - ib;
       }).map(cont => (
         <optgroup key={cont} label={cont} style={{ color: "#1a1a2e" }}>
-          {parContinent[cont].map(p => (
-            <option key={p.id} value={p.id} disabled={p.id === exclure} style={{ color: "#1a1a2e" }}>{p.nom}</option>
-          ))}
+          {parContinent[cont].map(p => {
+            const emoji = drapeauEmoji(p.code_iso2);
+            return (
+              <option key={p.id} value={p.id} disabled={p.id === exclure} style={{ color: "#1a1a2e" }}>
+                {emoji ? `${emoji}  ${p.nom}` : p.nom}
+              </option>
+            );
+          })}
         </optgroup>
       ))}
     </select>
@@ -155,22 +160,33 @@ function ContenuFichePays() {
     { l: "Échanges bilatéraux", txt: bilat && totalBilat > 0 ? fmtUSD(totalBilat) : "—", note: periodeBilat ? `cumul ${periodeBilat}` : "cumul des flux connus" },
   ];
 
-  const Chip = ({ label, suffixe, title, onClick }: { label: string; suffixe?: string | null; title?: string; onClick?: () => void }) => (
-    <span title={title || label} onClick={onClick} role={onClick ? "button" : undefined}
-      style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#EEF1F6", border: "1px solid #E2E6EC", padding: "4px 11px", borderRadius: 999, cursor: onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s, color 0.15s" }}
-      onMouseEnter={ev => { if (onClick) { ev.currentTarget.style.background = "rgba(0,79,145,0.07)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; ev.currentTarget.style.color = BLEU; } }}
-      onMouseLeave={ev => { if (onClick) { ev.currentTarget.style.background = "#EEF1F6"; ev.currentTarget.style.borderColor = "#E2E6EC"; ev.currentTarget.style.color = "#4a5568"; } }}>
-      {label}{suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {suffixe}</span> : null}
-    </span>
-  );
-  const BlocContexte = ({ Icone, titre, count, children }: { Icone: any; titre: string; count: number; children: React.ReactNode }) => (
-    <div className="ds-carte" style={{ padding: "18px 22px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        <Icone size={13} style={{ color: BLEU, flexShrink: 0 }} />
-        <span style={{ ...TITRE_SEC, margin: 0 }}>{titre}</span>
-        <span style={{ fontSize: 10, fontWeight: 800, color: BLEU, background: "rgba(0,79,145,0.10)", padding: "1px 8px", borderRadius: 999 }}>{count}</span>
+  // Élément listé : texte cliquable (ouvre le détail) ou simple texte
+  type Item = { label: string; suffixe?: string | null; title?: string; onClick?: () => void };
+  // Bloc de contexte au même habillage que la Balance commerciale : fond bleu
+  // voilé, icône dans un carré arrondi, titre en capitales, éléments en flux
+  // de texte (les cliquables se soulignent au survol), compte à droite.
+  const BlocContexte = ({ Icone, titre, count, items }: { Icone: any; titre: string; count: number; items: Item[] }) => (
+    <div className="ds-carte" style={{ padding: "16px 20px", background: "linear-gradient(180deg,rgba(0,79,145,0.06),rgba(0,79,145,0.02))", border: "1px solid rgba(0,79,145,0.16)", display: "flex", alignItems: "flex-start", gap: 14 }}>
+      <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(0,79,145,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Icone size={19} color={BLEU} />
+      </span>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ ...TITRE_SEC, margin: "0 0 5px", fontSize: 9.5 }}>{titre}</div>
+        <div style={{ fontSize: 12.5, color: "#4a5568", lineHeight: 1.6 }}>
+          {items.map((it, i) => (
+            <Fragment key={i}>
+              {i > 0 && <span style={{ color: "#c5ccd8", margin: "0 3px" }}>·</span>}
+              <span title={it.title || it.label} onClick={it.onClick} role={it.onClick ? "button" : undefined}
+                style={{ fontWeight: 600, color: it.onClick ? BLEU : "#2c3646", cursor: it.onClick ? "pointer" : "default", whiteSpace: "nowrap" }}
+                onMouseEnter={ev => { if (it.onClick) ev.currentTarget.style.textDecoration = "underline"; }}
+                onMouseLeave={ev => { if (it.onClick) ev.currentTarget.style.textDecoration = "none"; }}>
+                {it.label}{it.suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}> {it.suffixe}</span> : null}
+              </span>
+            </Fragment>
+          ))}
+        </div>
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{children}</div>
+      <span className="ds-donnee" style={{ fontSize: 17, fontWeight: 800, color: BLEU, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{count}</span>
     </div>
   );
 
@@ -184,19 +200,13 @@ function ContenuFichePays() {
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "0 0 10px" }}>
-                Rapport d&apos;analyse · Fiche Pays
+                Fiche Pays
               </p>
-              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                {a && b ? (
-                  <>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Drapeau iso={a.code_iso2} nom={a.nom} taille={24} />{a.nom}</span>
-                    <span style={{ color: "rgba(255,255,255,0.45)", fontWeight: 600 }}>×</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Drapeau iso={b.code_iso2} nom={b.nom} taille={24} />{b.nom}</span>
-                  </>
-                ) : (ids ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : "Fiche Pays")}
+              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>
+                {ids ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : "Fiche Pays"}
               </h1>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "10px 0 0", fontWeight: 500 }}>
-                Analyse comparative · Indicateurs macroéconomiques · Échanges bilatéraux
+                Analyse comparative · Indicateurs économiques · Échanges bilatéraux
               </p>
               {/* Sélecteurs : changer les deux pays sans quitter la page */}
               {ids && pays.length > 0 && (
@@ -245,26 +255,16 @@ function ContenuFichePays() {
         {(grps.length > 0 || accs.length > 0 || ents.length > 0) && (
           <div style={{ display: "grid", gap: 16, marginTop: 18 }}>
             {grps.length > 0 && (
-              <BlocContexte Icone={Landmark} titre="Appartenances communes" count={grps.length}>
-                {grps.map((g: any) => <Chip key={g.code} label={g.code || g.nom} title={g.nom} />)}
-              </BlocContexte>
+              <BlocContexte Icone={Landmark} titre="Appartenances communes" count={grps.length}
+                items={grps.map((g: any) => ({ label: g.code || g.nom, title: g.nom }))} />
             )}
             {accs.length > 0 && (
-              <BlocContexte Icone={FileText} titre={accs.length > 1 ? "Accords signés" : "Accord signé"} count={accs.length}>
-                {accs.map((ac: any, i: number) => (
-                  <Chip key={i} label={ac.titre} suffixe={ac.date_signature ? ac.date_signature.slice(0, 4) : null} title={ac.reference || ac.titre}
-                    onClick={ac.id ? () => setAccordOuvert(ac) : undefined} />
-                ))}
-              </BlocContexte>
+              <BlocContexte Icone={FileText} titre={accs.length > 1 ? "Accords signés" : "Accord signé"} count={accs.length}
+                items={accs.map((ac: any) => ({ label: ac.titre, suffixe: ac.date_signature ? ac.date_signature.slice(0, 4) : null, title: ac.reference || ac.titre, onClick: ac.id ? () => setAccordOuvert(ac) : undefined }))} />
             )}
             {ents.length > 0 && (
-              <BlocContexte Icone={Building2} titre={`Entreprises installées au Sénégal · siège ${nomDe(autreId)}`} count={entSiege.total}>
-                {ents.map((e: any) => (
-                  <Chip key={e.id} label={e.nom} suffixe={e.region}
-                    title={[e.nom, e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · ")}
-                    onClick={() => ouvrirEntreprise(e.id)} />
-                ))}
-              </BlocContexte>
+              <BlocContexte Icone={Building2} titre={`Entreprises installées au Sénégal · siège ${nomDe(autreId)}`} count={entSiege.total}
+                items={ents.map((e: any) => ({ label: e.nom, suffixe: e.region, title: [e.nom, e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · "), onClick: () => ouvrirEntreprise(e.id) }))} />
             )}
           </div>
         )}
@@ -408,7 +408,7 @@ function ContenuFichePays() {
         {/* ── Pied méthodologique ── */}
         <div style={{ marginTop: 22, padding: "14px 4px 0", borderTop: "1px solid #E2E6EC", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <p style={{ fontSize: 10.5, color: "#8a93a3", margin: 0, lineHeight: 1.6, maxWidth: 760 }}>
-            Dernière année disponible par indicateur · la valeur la plus élevée est en <span style={{ color: "#188038", fontWeight: 700 }}>vert</span> (ou en <span style={{ color: "#dc2626", fontWeight: 700 }}>rouge</span> pour les importations).
+            APIX S.A — DIPE, Direction de l&apos;Intelligence et des Perspectives Économiques.
           </p>
           <p style={{ fontSize: 10.5, color: "#8a93a3", margin: 0, whiteSpace: "nowrap" }}>
             Mise à jour le {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
