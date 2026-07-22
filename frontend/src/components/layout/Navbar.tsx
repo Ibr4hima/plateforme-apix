@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { AUTH_ENFORCED, moduleAutorise, nomAffiche, ROLE_LABELS } from "@/lib/authGate";
 import FichePaysLauncher from "@/components/fiche-pays/FichePaysLauncher";
+import { LogoClaude } from "@/components/shared/ChatWidget";
 import { useEffect, useRef, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -512,7 +513,7 @@ export default function Navbar() {
               style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid #ECEAE7", background: "#F5F4F3", cursor: "pointer", transition: "all 0.18s", boxShadow: "0 1px 2px rgba(0,0,0,0.03)" }}
               onMouseEnter={e => { e.currentTarget.style.background = "#004f91"; e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,79,145,0.30)"; e.currentTarget.style.transform = "translateY(-1px)"; (e.currentTarget.firstElementChild as any).style.color = "#fff"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; e.currentTarget.style.borderColor = "#ECEAE7"; e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; (e.currentTarget.firstElementChild as any).style.color = "#4a5568"; }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#4a5568", fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>auto_awesome</span>
+              <span style={{ color: "#4a5568", display: "inline-flex", lineHeight: 1, transition: "color 0.18s" }}><LogoClaude size={19} /></span>
             </button>
             {/* Bouton temporaire vers l'espace d'administration */}
             {isAdminRole && <Link href="/admin/evenements"

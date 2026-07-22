@@ -157,7 +157,7 @@ export default function ChatWidget() {
             justifyContent: "center",
           }}
         >
-          <IconeEtincelle />
+          <LogoClaude size={26} />
         </button>
       )}
 
@@ -203,7 +203,7 @@ export default function ChatWidget() {
                 flexShrink: 0,
               }}
             >
-              <IconeEtincelle />
+              <LogoClaude size={22} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: 15 }}>Assistant APIX</div>
@@ -379,14 +379,30 @@ export default function ChatWidget() {
   );
 }
 
-function IconeEtincelle() {
+// Logo Claude — sunburst de rayons rayonnant du centre (SVG inline, hérite de
+// currentColor). Réutilisé dans la navbar. Rayons longs/courts alternés.
+const RAYONS_CLAUDE: [number, number, number, number][] = [
+  [14.7, 12, 22, 12],
+  [14.34, 10.65, 17.72, 8.7],
+  [13.35, 9.66, 17, 3.34],
+  [12, 9.3, 12, 5.4],
+  [10.65, 9.66, 7, 3.34],
+  [9.66, 10.65, 6.28, 8.7],
+  [9.3, 12, 2, 12],
+  [9.66, 13.35, 6.28, 15.3],
+  [10.65, 14.34, 7, 20.66],
+  [12, 14.7, 12, 18.6],
+  [13.35, 14.34, 17, 20.66],
+  [14.34, 13.35, 17.72, 15.3],
+];
+
+export function LogoClaude({ size = 22 }: { size?: number }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"
-        fill="currentColor"
-      />
-      <circle cx="18.5" cy="17.5" r="2" fill="currentColor" opacity="0.8" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={1.9} strokeLinecap="round">
+      {RAYONS_CLAUDE.map((r, i) => (
+        <line key={i} x1={r[0]} y1={r[1]} x2={r[2]} y2={r[3]} />
+      ))}
     </svg>
   );
 }
