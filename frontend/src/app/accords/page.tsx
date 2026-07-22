@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
+import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -158,10 +158,8 @@ export default function AccordsPage() {
   return (
     <main style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-      <Navbar/>
-
       {/* Hero */}
-      <BarreTitre titre={"Accords & Traités"}>
+      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark flouFond/>}>
         <BarreTitreSegment options={[
           {v:"tbi",   l:"Traités Bilatéraux d'Investissement"},
           {v:"inter", l:"Traités Internationaux", badge:"Bientôt"},
@@ -187,7 +185,7 @@ export default function AccordsPage() {
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
           {/* Sidebar bande */}
-          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
+          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"100vh",overflowY:"auto" as const,position:"sticky" as const,top:0,display:"flex",flexDirection:"column" as const}}>
             <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
             {/* Handle de resize */}
             {sidebarOpen&&<div onMouseDown={startResize}
