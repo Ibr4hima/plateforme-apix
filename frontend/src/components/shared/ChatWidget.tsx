@@ -239,7 +239,7 @@ export default function ChatWidget() {
             right: 20,
             bottom: 20,
             width: "min(410px, calc(100vw - 40px))",
-            height: "min(640px, calc(100vh - 40px))",
+            height: "min(600px, calc(100vh - 104px))",
             background: "#fff",
             borderRadius: 22,
             boxShadow: "0 24px 70px rgba(74,40,12,0.28), 0 4px 18px rgba(74,40,12,0.12)",
@@ -493,7 +493,18 @@ export default function ChatWidget() {
               }}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
-              <IconeEnvoi />
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 20,
+                  color: enCours || !saisie.trim() ? "rgba(202,99,31,0.5)" : "#fff",
+                  fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24",
+                  lineHeight: 1,
+                  transition: "color 0.18s",
+                }}
+              >
+                send
+              </span>
             </button>
           </div>
         </div>
@@ -511,14 +522,6 @@ export function LogoClaude({ size = 22, couleur = "#ca631f" }: { size?: number; 
   return (
     <svg width={size} height={size} viewBox="0 -0.01 39.5 39.53" fill={couleur}>
       <path d={CLAUDE_PATH} />
-    </svg>
-  );
-}
-
-function IconeEnvoi() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M4 12l16-8-5 16-3-6-8-2z" fill="currentColor" />
     </svg>
   );
 }
