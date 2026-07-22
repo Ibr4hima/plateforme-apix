@@ -59,54 +59,97 @@ _MAX_ITERATIONS = 9
 
 # ── Catalogue d'API décrit à Claude ───────────────────────────────────────────
 CATALOGUE = """\
-Modules interrogeables (chemins relatifs, méthode GET uniquement). Beaucoup
-d'endpoints ont besoin d'IDENTIFIANTS (id de pays, pays_id…) : commence toujours
-par les endpoints de « découverte » pour les récupérer, puis interroge le détail.
+Modules interrogeables (GET uniquement, chemins relatifs à /api/v1). Commence par
+un endpoint de « découverte » pour obtenir les identifiants, puis interroge le
+détail. Filtre par année (annee_min/annee_max/annees) pour des résultats compacts.
 
-INDICATEURS MACRO-ÉCONOMIQUES (Statistiques → Indicateurs économiques)
-  /statistiques/pays              → liste des pays disponibles avec leur id (le Sénégal est la référence)
-  /statistiques/indicateurs       → indicateurs disponibles (population, superficie, densité,
-                                     PIB prix courants, PIB par habitant, etc.)
-  /statistiques/donnees?pays=<id> → séries annuelles de TOUS ces indicateurs pour un pays
-                                     (ex. population par année 1948→2024, PIB…)
-  /statistiques/comparaison?pays=<id1,id2>       → comparaison multi-pays
-  /statistiques/ide_flux?pays=<id>&indicateur=flux|stock  → flux/stock d'IDE (CNUCED)
-  → Pour « population/PIB/superficie du Sénégal » : /statistiques/pays (trouver l'id du
-    Sénégal) puis /statistiques/donnees?pays=<id>, et lis l'année demandée dans la série.
+═ INDICATEURS MACRO (Statistiques → Indicateurs économiques) ═
+  /statistiques/pays                        → pays disponibles (id, nom, code_iso3)
+  /statistiques/indicateurs                 → indicateurs (population, superficie, densité, PIB, PIB/hab…)
+  /statistiques/donnees?pays=<id>[&annee_min=&annee_max=]   → séries annuelles d'un pays
+  /statistiques/comparaison?pays=<id1,id2>[&annee=]         → comparaison multi-pays
+  /statistiques/ide_flux?pays=<id>&indicateur=flux|stock    → IDE entrant/sortant (CNUCED)
 
-COMMERCE EXTÉRIEUR (Statistiques → Commerce extérieur ; données ANSD/BMSCE)
-  /bmce/rapport?annee=AAAA        → briefing : balance commerciale (FAB−CAF), taux de couverture,
-                                     évolution mensuelle, top produits, top pays, par continent
-  /bmce/bulletins                 → périodes/bulletins importés
-  /statistiques/commerce/filtres  → pays disponibles (avec pays_id), années, produits
-  /statistiques/commerce/kpis?pays_id=<id>&direction=exportateur|importateur[&annees=2024]
-  /statistiques/commerce/tops?pays_id=<id>&direction=…[&annees=…&limite=10]
-  /statistiques/commerce/balance?pays_id=<id>[&annees=…]
+═ COMMERCE EXTÉRIEUR (Statistiques → Commerce ; ANSD/BMSCE) ═
+  /bmce/rapport?annee=AAAA        → briefing annuel : balance (FAB−CAF), taux de couverture,
+                                    évolution mensuelle, tops produits/pays, par continent
+  /bmce/apercu                    → KPIs du dernier mois + séries de l'année courante
+  /bmce/bulletins                 → périodes importées
+  /bmce/flux?categorie=<c>&sens=export|import      (categorie: groupe_utilisation|produit_regroupe|chapitre|pays)
+  /bmce/series?categorie=<c>&sens=export|import    → séries mensuelles + dérivés (VU, variation, part)
+  /statistiques/commerce/filtres  → pays disponibles (pays_id), années, produits
+  /statistiques/commerce/kpis?pays_id=<id>&direction=exportateur|importateur[&annees=2024&ressources=]
+  /statistiques/commerce/tops?pays_id=<id>&direction=…[&annees=&limite=10]
+  /statistiques/commerce/balance?pays_id=<id>[&annees=]
   /statistiques/commerce/repartition?pays_id=<id>&direction=…
+  /statistiques/commerce/concentration?pays_id=<id>&direction=…
   /statistiques/commerce/bilateral?pays_a=<id>&pays_b=<id>&annee=AAAA
-  → direction=exportateur = exportations du pays, importateur = importations.
-    /statistiques/commerce/filtres donne les pays_id et années valides.
+  /statistiques/commerce/detail?pays_id=<id>&direction=…&annee=AAAA
+  (direction=exportateur = exportations ; importateur = importations)
 
-INVESTISSEMENTS DIRECTS ÉTRANGERS (IDE)
-  /ide/monde, /ide/secteurs, /ide/cnuced/annees, /ide/cnuced/pays-disponibles, /ide/cnuced/kpis-calcules
+═ IDE (Investissements Directs Étrangers) ═
+  /ide/cnuced/kpis-calcules       → KPIs IDE du Sénégal
+  /ide/cnuced[?direction=&indicateur=&annee_min=&annee_max=&annees=]   → séries CNUCED (défaut : Sénégal)
+  /ide/cnuced/annees · /ide/cnuced/pays-disponibles · /ide/cnuced/stats
+  /ide/secteurs                   → référentiel des secteurs IDE
+  /ide/cnuced-secteurs[?secteur_ids=&annees=]     → IDE par secteur
+  /ide/monde/groupements · /ide/monde[?codes_list=CEDEAO,G7&annees=]   → IDE Monde par groupement
+  /ide/analyses[?publie=true]     → analyses éditoriales IDE
 
-ACCORDS & TRAITÉS
-  /accords → liste ; /accords/{id} → détail
+═ ACCORDS & TRAITÉS ═
+  /accords[?statut=&reference=&parties_signataires=&page=&per_page=]
+  /accords/parties-distinctes · /accords/{id}
 
-ÉVÉNEMENTS
-  /evenements → liste ; /evenements/stats → statistiques ; /evenements/{id} → détail
+═ ÉVÉNEMENTS ═
+  /evenements[?statut_calcule=a_venir|en_cours|termine&pays_nom=&annee=&secteur=&page=]
+  /evenements/stats · /evenements/pays-hotes · /evenements/{id}
 
-ENTREPRISES & RÉFÉRENTIELS
-  /entreprises → liste (filtres secteur/région) ; /entreprises/{id} → détail
-  /entreprises/ref/secteurs, /entreprises/ref/regions, /entreprises/ref/poles
-  /ref-pays → référentiel des pays
+═ ENTREPRISES & RÉFÉRENTIELS ═
+  /entreprises[?search=&region=&pays=&secteur_nom=&branche_nom=&activite_nom=&pole_id=&page=&per_page=]
+  /entreprises/{id}
+  /entreprises/ref/secteurs · ref/branches?secteur_id= · ref/activites?branche_id=
+  /entreprises/ref/regions · ref/departements?region_id= · ref/arrondissements?departement_id=
+  /entreprises/ref/poles · ref/formes-juridiques · ref/pays
 
-OPPORTUNITÉS · PROSPECTS · PROJETS · ZONES
-  /opportunites → opportunités d'investissement ; /prospects → prospects ;
-  /projets → projets ; /zones-types → zones et pôles territoriaux
+═ OPPORTUNITÉS · PROSPECTS · PROJETS · ZONES ═
+  /opportunites/potentialites[?q=&pole_id=&region_id=&niveau=&page=] · /opportunites/potentialites/{id}
+  /opportunites/avantages[?q=&activite_id=&page=] · /opportunites/avantages/{id}
+  /prospects[?q=&contactes=&conclu=&page=] · /prospects/{id} · /prospects/{id}/echanges
+  /projets[?q=&page=] · /projets/devises · /suivi-projets/{projet_id}
+  /zones-types[?type_zone=ZES|ZAI|ZFI] · /zones-types/poles · /zones-types/{zone_id}/entreprises-eligibles
 
-CODE DES INVESTISSEMENTS
-  /code-investissement → chapitres, sections, articles (texte juridique)"""
+═ TABLEAU DE BORD — SYNTHÈSES & ANALYSES ═
+  /dashboard/stats   → tous les compteurs clés (entreprises, accords, événements, prospects,
+                       projets + montants, zones, pôles, indicateurs globaux)
+  /dashboard/indicateur?dimension=pays|secteurs|branches|activites&indicateur=installees|ciblees|contactees
+  /dashboard/tables/<nom>  → 50+ tableaux d'analyse prêts (sans paramètre). Noms disponibles :
+    entreprises-par-region, entreprises-par-pays, entreprises-par-continent, hierarchie-sectorielle,
+    evolution-creations, entreprises-multi-secteurs, top-departements, entreprises-par-arrondissement,
+    anciennete-entreprises, avant-apres-pivot, creations-par-decennie, tendances-recentes, activites-emergentes,
+    secteurs-investissement-classement, branches-classement, activites-classement-national,
+    activites-par-region, activites-par-departement, activites-par-arrondissement, activites-par-pole,
+    evolution-par-secteur, secteurs-par-region, branches-par-region, pays-par-region, secteur-x-pays-origine,
+    zones-detail, taux-occupation-zones, zones-vides, densite-zones, diversification-zones,
+    classement-zones-entreprises, activites-par-zone, matrice-region-zone, entreprises-par-zone-detail,
+    poles-detail, poles-sans-zones, vue-pole-zone-activite,
+    vue-region, classement-regions-complet, classement-departements-complet, classement-arrondissements-complet,
+    score-attractivite, concentration-sectorielle, densite-economique-departements,
+    local-vs-etranger, entreprises-etrangeres-localisation, activites-entreprises-etrangeres,
+    secteurs-etrangers-par-continent, etrangeres-par-pays-region, etrangeres-recentes-par-pays,
+    diversite-investisseurs-zones
+  (Aussi /dashboard/viz/<nom> pour des agrégats de graphes : entreprises-par-secteur,
+   entreprises-par-region, zones-par-type, entreprises-par-annee, entreprises-par-pays…)
+
+═ CODE DES INVESTISSEMENTS & TEXTES JURIDIQUES ═
+  /code-investissement            → arbre complet chapitres/sections/articles
+  /code-investissement/search?q=<mots>   → recherche full-text dans les articles
+  /modalites-application · /modalites-application/search?q=<mots>   → modalités d'application
+
+═ CLASSIFICATIONS & AUTRES RÉFÉRENTIELS ═
+  /classifications · /classifications/{code}/items?q=&niveau=&parent=   (CITI, NACE, NAEMA)
+  /ref-pays[?q=&continent=&region_geo=] · /ref-pays/meta · /ref-pays/groupements/liste
+  /ref-potentialites · /ref-avantages
+  /bdef/valeurs?niveau=global|secteur|groupe|macro_secteur[&cible_id=] · /bdef/secteurs · /bdef/verification"""
 
 
 SYSTEME_BASE = f"""\
@@ -259,9 +302,10 @@ def _client():
     return AsyncAnthropic(api_key=get_settings().ANTHROPIC_API_KEY)
 
 
-def construire_systeme(contexte_page: str | None, id_senegal: int | None = None) -> str:
-    """Prompt système, enrichi de l'id du Sénégal (résolu côté serveur) et du
-    contexte de la page courante si fournis."""
+def construire_systeme(id_senegal: int | None = None) -> str:
+    """Partie STABLE du prompt système (base + catalogue + id du Sénégal),
+    identique d'une requête à l'autre → mise en cache. Le contexte de page,
+    volatile, est ajouté séparément (bloc non caché) par stream_reponse."""
     systeme = SYSTEME_BASE
     if id_senegal is not None:
         systeme += (
@@ -272,12 +316,6 @@ def construire_systeme(contexte_page: str | None, id_senegal: int | None = None)
             f"/statistiques/commerce/kpis?pays_id={id_senegal}&direction=exportateur. "
             "Filtre toujours par année (annee_min/annee_max ou annees) pour garder "
             "des résultats compacts."
-        )
-    if contexte_page:
-        systeme += (
-            "\n\nCONTEXTE : l'utilisateur consulte actuellement la page suivante "
-            "de la plateforme. Utilise-le pour interpréter les demandes du type "
-            f"« résume-moi ça » ou « explique cette page ».\n{contexte_page.strip()}"
         )
     return systeme
 
@@ -295,7 +333,28 @@ async def stream_reponse(
     settings = get_settings()
     client = _client()
     id_senegal = await _resoudre_id_senegal()
-    systeme = construire_systeme(contexte_page, id_senegal)
+
+    # Prompt système en blocs : la partie stable (base + catalogue + id) est mise
+    # en cache d'une requête à l'autre ; le contexte de page (volatile) suit, non
+    # caché, pour ne pas casser le préfixe partagé.
+    systeme: list[dict] = [
+        {
+            "type": "text",
+            "text": construire_systeme(id_senegal),
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
+    if contexte_page:
+        systeme.append(
+            {
+                "type": "text",
+                "text": (
+                    "CONTEXTE : l'utilisateur consulte actuellement cette page de "
+                    "la plateforme. Utilise-le pour interpréter « résume/explique "
+                    f"cette page ».\n{contexte_page.strip()}"
+                ),
+            }
+        )
     conversation = list(messages)
 
     for _ in range(_MAX_ITERATIONS):
