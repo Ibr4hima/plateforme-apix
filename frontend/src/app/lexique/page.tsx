@@ -51,9 +51,12 @@ export default function LexiquePage() {
               </div>
               <div style={{ minWidth: 0 }}>
                 <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "2px 0 8px" }}>
-                  APIX S.A
+                  APIX S.A — DIPE
                 </p>
                 <h1 style={{ fontSize: "1.85rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>Lexique de l&apos;investissement</h1>
+                <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>
+                  {LEXIQUE.length} termes techniques expliqués
+                </p>
               </div>
             </div>
             <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 18px 9px 12px", borderRadius: 999, background: "#fff", color: BLEU, fontSize: 12.5, fontWeight: 800, textDecoration: "none", flexShrink: 0 }}>
@@ -71,14 +74,14 @@ export default function LexiquePage() {
                 onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; }} />
             </div>
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", flexWrap: "nowrap", gap: 4, flex: 1, minWidth: 0, justifyContent: "space-between" }}>
               {ALPHABET.map((L) => {
                 const present = lettresPresentes.has(L);
                 return (
                   <button key={L} onClick={() => present && goLettre(L)} disabled={!present}
                     aria-label={`Aller à ${L}`}
-                    style={{ width: 28, height: 28, borderRadius: 999, border: "1px solid", cursor: present ? "pointer" : "default",
-                      fontSize: 12, fontWeight: 800, fontFamily: "var(--font-google-sans)",
+                    style={{ width: 27, height: 27, borderRadius: 999, border: "1px solid", cursor: present ? "pointer" : "default",
+                      fontSize: 11.5, fontWeight: 800, fontFamily: "var(--font-google-sans)",
                       background: present ? "rgba(255,255,255,0.13)" : "transparent",
                       borderColor: present ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)",
                       color: present ? "#fff" : "rgba(255,255,255,0.28)",
