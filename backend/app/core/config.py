@@ -44,6 +44,15 @@ class Settings(BaseSettings):
     UNCTAD_CLIENT_ID: str = ""
     UNCTAD_CLIENT_SECRET: str = ""
 
+    # Assistant IA (API Claude / Anthropic) — clé côté serveur uniquement,
+    # jamais exposée au frontend. Laisser vide désactive l'assistant (la route
+    # renvoie 503). Modèle et plafonds réglables sans redéploiement.
+    ANTHROPIC_API_KEY: str = ""
+    ASSISTANT_MODELE: str = "claude-sonnet-5"
+    ASSISTANT_MAX_TOKENS: int = 1500          # plafond de sortie par réponse
+    ASSISTANT_RATE_LIMIT: int = 20            # requêtes/IP par fenêtre
+    ASSISTANT_RATE_FENETRE: int = 3600        # fenêtre du rate-limit (secondes)
+
     # Relais des imports vers la production (optionnel — environnement local
     # uniquement) : quand configuré, l'admin propose « Envoyer aussi en
     # production » et le backend relaie les fichiers importés vers l'API de

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ConfirmationHote from "@/components/shared/Confirmation";
 import FichesGlobales from "@/components/shared/FichesGlobales";
 import RechercheGlobale from "@/components/shared/RechercheGlobale";
+import ChatWidget from "@/components/shared/ChatWidget";
 import { SessionProvider } from "next-auth/react";
 import { useState } from "react";
 
@@ -26,6 +27,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <ConfirmationHote/>
         <RechercheGlobale/>
         <FichesGlobales/>
+        <ChatWidget/>
       </QueryClientProvider>
     </SessionProvider>
   );
