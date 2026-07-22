@@ -398,6 +398,7 @@ export default function Navbar() {
   const [modulesOpen, setModulesOpen] = useState(false);
   const [codeOpen,    setCodeOpen]    = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -407,6 +408,8 @@ export default function Navbar() {
 
   const openModules  = () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); setModulesOpen(true); };
   const closeModules = () => { timeoutRef.current = setTimeout(() => setModulesOpen(false), 120); };
+  const openUser  = () => { if (userTimeoutRef.current) clearTimeout(userTimeoutRef.current); setUserOpen(true); };
+  const closeUser = () => { userTimeoutRef.current = setTimeout(() => setUserOpen(false), 140); };
 
   const textColor = "#4a5568";
   const textHover = "#004f91";
@@ -502,23 +505,20 @@ export default function Navbar() {
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {/* Recherche globale (⌘K) */}
             <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
-              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid #ECEAE7", background: "#F5F4F3", cursor: "pointer", transition: "all 0.18s", boxShadow: "0 1px 2px rgba(0,0,0,0.03)" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#004f91"; e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,79,145,0.30)"; e.currentTarget.style.transform = "translateY(-1px)"; (e.currentTarget.firstElementChild as any).style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; e.currentTarget.style.borderColor = "#ECEAE7"; e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.03)"; e.currentTarget.style.transform = "translateY(0)"; (e.currentTarget.firstElementChild as any).style.color = "#4a5568"; }}>
+              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid #ECEAE7", background: "#F5F4F3", cursor: "pointer", transition: "all 0.18s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.15)"; (e.currentTarget.firstElementChild as any).style.color = "#004f91"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; e.currentTarget.style.borderColor = "#ECEAE7"; (e.currentTarget.firstElementChild as any).style.color = "#4a5568"; }}>
               <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#4a5568", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>search</span>
             </button>
-            {/* Menu : Page Admin · Lexique · Connexion */}
-            <div style={{ position: "relative" }}>
+            {/* Menu : Page Admin · Lexique · Connexion (déploiement au survol) */}
+            <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={closeUser}>
               <button onClick={() => setUserOpen(o => !o)} title="Menu" aria-label="Menu"
-                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid #ECEAE7", background: userOpen ? "#004f91" : "#F5F4F3", cursor: "pointer", transition: "all 0.18s", boxShadow: "0 1px 2px rgba(0,0,0,0.03)" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#004f91"; e.currentTarget.style.borderColor = "#004f91"; (e.currentTarget.firstElementChild as any).style.color = "#fff"; }}
-                onMouseLeave={e => { if (!userOpen) { e.currentTarget.style.background = "#F5F4F3"; e.currentTarget.style.borderColor = "#ECEAE7"; (e.currentTarget.firstElementChild as any).style.color = "#4a5568"; } }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: userOpen ? "#fff" : "#4a5568", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>menu</span>
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: userOpen ? "rgba(0,79,145,0.15)" : "#ECEAE7", background: userOpen ? "rgba(0,79,145,0.07)" : "#F5F4F3", cursor: "pointer", transition: "all 0.18s" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: userOpen ? "#004f91" : "#4a5568", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, transition: "color 0.18s" }}>{userOpen ? "menu_open" : "menu"}</span>
               </button>
               {userOpen && (
                 <>
-                  <div onClick={() => setUserOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
-                  <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 232, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 14, padding: 8, boxShadow: "0 16px 56px rgba(0,0,0,0.14)", zIndex: 50 }}>
+                  <div onMouseEnter={openUser} onMouseLeave={closeUser} style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 232, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 14, padding: 8, boxShadow: "0 16px 56px rgba(0,0,0,0.14)", zIndex: 50 }}>
                     {session?.user && (
                       <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
                         {afficheNom !== session.user.email && <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</p>}
