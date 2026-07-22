@@ -297,10 +297,10 @@ export default function ChatWidget() {
           0%,100% { box-shadow: 0 0 0 0 rgba(202,99,31,0); }
           50%     { box-shadow: 0 0 0 7px rgba(202,99,31,0.08); }
         }
-        @keyframes apixPing {
-          0%   { box-shadow: 0 0 0 0 rgba(202,99,31,0.45); }
-          70%  { box-shadow: 0 0 0 14px rgba(202,99,31,0); }
-          100% { box-shadow: 0 0 0 0 rgba(202,99,31,0); }
+        @keyframes apixOnde {
+          0%   { transform: scale(1);    opacity: 0.5; }
+          70%  { transform: scale(1.75); opacity: 0; }
+          100% { transform: scale(1.75); opacity: 0; }
         }
         .apix-chat-fil::-webkit-scrollbar { width: 5px; }
         .apix-chat-fil::-webkit-scrollbar-thumb { background: rgba(202,99,31,0.25); border-radius: 99px; }
@@ -311,38 +311,45 @@ export default function ChatWidget() {
         }
       `}</style>
 
-      {/* Lanceur : le même cadre orangé pulsant que l'accueil, un peu plus petit */}
+      {/* Lanceur : cadre orangé + onde composited (transform/opacity → pas de
+          repaint, scroll fluide) */}
       {!ouvert && (
-        <button
-          onClick={ouvrir}
-          aria-label="Ouvrir l'assistant"
-          style={{
-            position: "fixed",
-            right: 22,
-            bottom: 22,
-            width: 46,
-            height: 46,
-            padding: 0,
-            borderRadius: 14,
-            // fond voilé orange par-dessus une base crème → rendu identique à
-            // l'accueil quel que soit le contenu de la page derrière
-            background:
-              "linear-gradient(180deg, rgba(202,99,31,0.10), rgba(202,99,31,0.03)), #fdfaf7",
-            border: "1px solid rgba(202,99,31,0.16)",
-            cursor: "pointer",
-            zIndex: 60,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            animation: "apixPing 2.2s ease-out infinite",
-            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.16))",
-            transition: "transform 0.2s cubic-bezier(.34,1.56,.64,1)",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.07)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-        >
-          <LogoClaude size={25} />
-        </button>
+        <>
+          <span aria-hidden style={{
+            position: "fixed", right: 22, bottom: 22, width: 46, height: 46, borderRadius: 14,
+            background: "rgba(202,99,31,0.45)", zIndex: 59, pointerEvents: "none",
+            animation: "apixOnde 2.2s ease-out infinite", willChange: "transform, opacity",
+          }} />
+          <button
+            onClick={ouvrir}
+            aria-label="Ouvrir l'assistant"
+            style={{
+              position: "fixed",
+              right: 22,
+              bottom: 22,
+              width: 46,
+              height: 46,
+              padding: 0,
+              borderRadius: 14,
+              // fond voilé orange par-dessus une base crème → rendu identique à
+              // l'accueil quel que soit le contenu de la page derrière
+              background:
+                "linear-gradient(180deg, rgba(202,99,31,0.10), rgba(202,99,31,0.03)), #fdfaf7",
+              border: "1px solid rgba(202,99,31,0.16)",
+              cursor: "pointer",
+              zIndex: 60,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.16))",
+              transition: "transform 0.2s cubic-bezier(.34,1.56,.64,1)",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.07)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          >
+            <LogoClaude size={25} />
+          </button>
+        </>
       )}
 
       {/* Panneau */}
