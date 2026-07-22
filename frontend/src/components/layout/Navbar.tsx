@@ -438,6 +438,9 @@ export default function Navbar() {
   const openUser  = () => { if (userTimeoutRef.current) clearTimeout(userTimeoutRef.current); setUserOpen(true); };
   const closeUser = () => { userTimeoutRef.current = setTimeout(() => { setUserOpen(false); setMenuModsOpen(false); }, 140); };
   const [menuModsOpen, setMenuModsOpen] = useState(false);
+  const modsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openMods  = () => { if (modsTimeoutRef.current) clearTimeout(modsTimeoutRef.current); setMenuModsOpen(true); };
+  const closeMods = () => { modsTimeoutRef.current = setTimeout(() => setMenuModsOpen(false), 130); };
 
   const textColor = "#4a5568";
   const textHover = "#004f91";
@@ -567,7 +570,7 @@ export default function Navbar() {
                   )}
 
                   {/* Modules (sous-menu déployé à gauche au survol) */}
-                  <div style={{ position: "relative" }} onMouseEnter={() => setMenuModsOpen(true)} onMouseLeave={() => setMenuModsOpen(false)}>
+                  <div style={{ position: "relative" }} onMouseEnter={openMods} onMouseLeave={closeMods}>
                     <button style={{ ...MENU_ROW, background: menuModsOpen ? "rgba(0,79,145,0.07)" : "transparent" }} onMouseEnter={onEnterRow} onMouseLeave={e => { if (!menuModsOpen) onLeaveRow(e); }}
                       onClick={() => setMenuModsOpen(o => !o)}>
                       <MenuIcone icon="dashboard" />
@@ -576,19 +579,17 @@ export default function Navbar() {
                     </button>
 
                     {menuModsOpen && (
-                      <div className="apix-menu-fly"
+                      <div className="apix-menu-fly" onMouseEnter={openMods} onMouseLeave={closeMods}
                         style={{ position: "absolute", top: -7, right: "calc(100% + 10px)", width: 258, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.16), 0 4px 12px rgba(16,26,46,0.06)", transformOrigin: "top right" }}>
                         <div style={{ padding: "4px 9px 7px", borderBottom: "1px solid #F2F0EF", marginBottom: 4 }}>
                           <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", letterSpacing: "0.14em", textTransform: "uppercase" }}>Modules de données</span>
                         </div>
                         {modules.filter(m => visible(m.href)).map(m => (
                           <Link key={m.href} href={m.href} onClick={() => { setUserOpen(false); setMenuModsOpen(false); }}
-                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 9px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s" }}
+                            style={{ display: "flex", alignItems: "center", gap: 11, padding: "7px 10px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s" }}
                             onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.06)"; }}
                             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                            <span style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(0,79,145,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{m.icon}</span>
-                            </span>
+                            <span className="material-symbols-outlined" style={{ fontSize: 19, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 22, textAlign: "center" }}>{m.icon}</span>
                             <span style={{ fontSize: 12.5, fontWeight: 500, color: "#101a2e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.label}</span>
                           </Link>
                         ))}
