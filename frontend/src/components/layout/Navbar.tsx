@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Download, Menu, Search, X } from "lucide-rea
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { moduleAutorise } from "@/lib/authGate";
 import FichePaysLauncher from "@/components/fiche-pays/FichePaysLauncher";
 import NavActions from "@/components/layout/NavActions";
@@ -369,6 +370,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
 // ── Navbar principale ─────────────────────────────────────────────────────────
 export default function Navbar() {
   const { data: session } = useSession();
+  const pathname = usePathname();
   // Sans session, tous les liens restent visibles : cliquer sur un module
   // protégé redirige vers la connexion (middleware). Connecté, on filtre
   // selon les droits du profil.
@@ -485,7 +487,7 @@ export default function Navbar() {
 
           {/* ── Recherche + Menu ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-            <NavActions />
+            <NavActions flouFond={pathname !== "/"} />
           </div>
 
           {/* ── Burger mobile ── */}

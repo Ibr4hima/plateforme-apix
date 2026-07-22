@@ -6,8 +6,9 @@
 
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AUTH_ENFORCED, moduleAutorise, nomAffiche, ROLE_LABELS } from "@/lib/authGate";
 import { modules, PROTECTED_SLUGS } from "@/components/layout/navData";
 
@@ -46,12 +47,17 @@ function boutonStyle(onDark: boolean, actif: boolean): React.CSSProperties {
   return { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: actif ? "rgba(0,79,145,0.28)" : "rgba(0,79,145,0.18)", background: actif ? "rgba(0,79,145,0.07)" : "transparent", cursor: "pointer", transition: "all 0.18s" };
 }
 
-export default function NavActions({ onDark = false }: { onDark?: boolean }) {
+export default function NavActions({ onDark = false, flouFond = false }: { onDark?: boolean; flouFond?: boolean }) {
   const { data: session } = useSession();
   const [userOpen, setUserOpen] = useState(false);
   const [menuModsOpen, setMenuModsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [pos, setPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
   const userTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const modsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const visible = (href: string) => {
     const slug = PROTECTED_SLUGS[href];
@@ -62,10 +68,23 @@ export default function NavActions({ onDark = false }: { onDark?: boolean }) {
   const isAdminRole = !AUTH_ENFORCED || ["admin", "admin_plus", "dev"].includes(session?.user?.role || "");
   const afficheNom = nomAffiche(session?.user?.prenom, session?.user?.nom, session?.user?.email);
 
-  const openUser  = () => { if (userTimeoutRef.current) clearTimeout(userTimeoutRef.current); setUserOpen(true); };
+  const majPos = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setPos({ top: r.bottom + 10, right: Math.max(8, window.innerWidth - r.right) });
+  };
+  const openUser  = () => { if (userTimeoutRef.current) clearTimeout(userTimeoutRef.current); majPos(); setUserOpen(true); };
   const closeUser = () => { userTimeoutRef.current = setTimeout(() => { setUserOpen(false); setMenuModsOpen(false); }, 140); };
   const openMods  = () => { if (modsTimeoutRef.current) clearTimeout(modsTimeoutRef.current); setMenuModsOpen(true); };
   const closeMods = () => { modsTimeoutRef.current = setTimeout(() => setMenuModsOpen(false), 130); };
+
+  // Repositionne le panneau si l'on défile / redimensionne pendant l'ouverture
+  useEffect(() => {
+    if (!userOpen) return;
+    const h = () => majPos();
+    window.addEventListener("scroll", h, true);
+    window.addEventListener("resize", h);
+    return () => { window.removeEventListener("scroll", h, true); window.removeEventListener("resize", h); };
+  }, [userOpen]);
 
   const icoColor = onDark ? "#fff" : "#004f91";
 
@@ -81,13 +100,18 @@ export default function NavActions({ onDark = false }: { onDark?: boolean }) {
 
       {/* Menu hub (déploiement au survol) */}
       <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={closeUser}>
-        <button onClick={() => setUserOpen(o => !o)} title="Menu" aria-label="Menu" style={boutonStyle(onDark, userOpen)}>
+        <button ref={btnRef} onClick={() => { majPos(); setUserOpen(o => !o); }} title="Menu" aria-label="Menu" style={boutonStyle(onDark, userOpen)}>
           <span className="material-symbols-outlined" style={{ fontSize: 20, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
         </button>
+      </div>
 
-        {userOpen && (
+      {/* Panneau du menu — via portal pour échapper à overflow/z-index du bandeau */}
+      {mounted && userOpen && createPortal(
+        <>
+          <div onClick={() => { setUserOpen(false); setMenuModsOpen(false); }}
+            style={{ position: "fixed", inset: 0, zIndex: 1000, background: flouFond ? "rgba(16,26,46,0.18)" : "transparent", backdropFilter: flouFond ? "blur(4px)" : "none", WebkitBackdropFilter: flouFond ? "blur(4px)" : "none", animation: flouFond ? "apixFadeIn 0.18s ease" : "none" }} />
           <div onMouseEnter={openUser} onMouseLeave={closeUser} className="apix-menu-pop"
-            style={{ position: "absolute", top: "calc(100% + 10px)", right: 0, width: 280, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.16), 0 4px 12px rgba(16,26,46,0.06)", zIndex: 60, transformOrigin: "top right" }}>
+            style={{ position: "fixed", top: pos.top, right: pos.right, width: 280, background: "#fff", border: "1px solid rgba(16,26,46,0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgba(16,26,46,0.22), 0 4px 12px rgba(16,26,46,0.10)", zIndex: 1001, transformOrigin: "top right" }}>
 
             {/* En-tête compte */}
             {session?.user ? (
@@ -166,14 +190,16 @@ export default function NavActions({ onDark = false }: { onDark?: boolean }) {
               </Link>
             )}
           </div>
-        )}
-      </div>
+        </>,
+        document.body
+      )}
 
       <style>{`
         .apix-menu-pop { animation: apixMenuPop 0.16s cubic-bezier(0.16,1,0.3,1); }
         @keyframes apixMenuPop { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .apix-menu-fly { animation: apixMenuFly 0.16s cubic-bezier(0.16,1,0.3,1); }
         @keyframes apixMenuFly { from { opacity: 0; transform: translateX(8px) scale(0.98); } to { opacity: 1; transform: translateX(0) scale(1); } }
+        @keyframes apixFadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
     </div>
   );
