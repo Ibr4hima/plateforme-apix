@@ -1,11 +1,15 @@
 // Couleurs partagées de la plateforme — source unique de vérité pour les
 // palettes et les dérivations, à la place des copies locales par page.
 
-// Palette des vues comparatives (jusqu'à 4 séries : IDE, BDEF, opportunités…)
-export const COMP_PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A"] as const;
+// Palette catégorielle des graphes — validée CVD/contraste (skill dataviz :
+// séparation adjacente ΔE ≥ 8, plancher vision normale ≥ 15, contraste ≥ 3:1
+// sur surface claire). Bleu + orange de marque en tête (ancre identitaire),
+// séries 3-8 re-calées pour éviter les collisions vert↔orange et brun↔rouge.
+// L'ordre est FIXE : la couleur suit l'entité, jamais son rang.
+export const PALETTE_COMPARAISON = ["#004f91", "#ca631f", "#1b9e77", "#7b3294", "#2a8fb0", "#d6336c", "#b8860b", "#3b4cc0"] as const;
 
-// Palette longue des comparaisons multi-pays (fiche pays, statistiques)
-export const PALETTE_COMPARAISON = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca"] as const;
+// Sous-ensemble 4 séries (cas courant : IDE, BDEF, opportunités…)
+export const COMP_PALETTE = PALETTE_COMPARAISON.slice(0, 4) as unknown as readonly [string, string, string, string];
 
 // Couleurs des pôles territoriaux (par nom normalisé) — alignées sur la carte
 export const POLE_COULEURS: Record<string, string> = {
