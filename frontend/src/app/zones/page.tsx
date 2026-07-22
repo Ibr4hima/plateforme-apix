@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
+import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
@@ -384,16 +384,14 @@ export default function ZonesPage() {
   // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
   // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
   const d3Pret = useD3Pret();
-  if (!d3Pret) return <main style={{ minHeight:"100vh", background:"#F6F5F3" }}><Navbar/></main>;
+  if (!d3Pret) return <main style={{ minHeight:"100vh", background:"#F6F5F3" }}/>;
 
   return (
     <main style={{ minHeight:"100vh", background:"#F6F5F3", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
-      <Navbar/>
-
       {/* ── Hero ── */}
-      <BarreTitre titre={"Zones d'Investissement"}>
+      <BarreTitre titre={"Zones d'Investissement"} compact actions={<NavActions onDark flouFond/>}>
         <BarreTitreSegment options={[{v:"zones",l:"Zones d'investissement"},{v:"territoire",l:"Pôles territoires"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 

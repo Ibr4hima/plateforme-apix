@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
+import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import Badge from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -409,10 +409,8 @@ export default function OpportunitesPage() {
     <main style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
-      <Navbar/>
-
       {/* Hero */}
-      <BarreTitre titre={"Opportunités d'investissement"}>
+      <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions onDark flouFond/>}>
         <BarreTitreSegment options={[{v:"projets",l:"Banque de projets"},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
@@ -420,7 +418,7 @@ export default function OpportunitesPage() {
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
           {/* Sidebar (filtres uniquement sur la Banque de projets) */}
-          {onglet==="projets"&&<aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"calc(100vh - 64px)",overflowY:"auto" as const,position:"sticky" as const,top:64,display:"flex",flexDirection:"column" as const}}>
+          {onglet==="projets"&&<aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"100vh",overflowY:"auto" as const,position:"sticky" as const,top:0,display:"flex",flexDirection:"column" as const}}>
             <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
             <div style={{padding:sidebarOpen?"20px 16px":"10px 8px",flex:1}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",marginBottom:sidebarOpen?18:0}}>
