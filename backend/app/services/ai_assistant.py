@@ -31,11 +31,18 @@ _MODULES_AUTORISES = (
     "/evenements",
     "/entreprises",
     "/ref-pays",
+    "/ref-potentialites",
+    "/ref-avantages",
     "/code-investissement",
+    "/modalites-application",
     "/classifications",
     "/dashboard",
     "/zones-types",
     "/opportunites",
+    "/prospects",
+    "/projets",
+    "/suivi-projets",
+    "/bdef",
 )
 # Fragments interdits même sous un module autorisé (téléchargements de fichiers,
 # imports, opérations d'écriture qui pourraient exister en GET par mégarde).
@@ -45,78 +52,100 @@ _FRAGMENTS_INTERDITS = ("importer", "fichiers", "sync", "rafraichir", "associer"
 _MAX_RESULTAT = 8000
 
 # Nombre max d'allers-retours d'outils par réponse (évite les boucles).
-_MAX_ITERATIONS = 6
+# Plus élevé qu'avant : la recherche « en profondeur » enchaîne souvent
+# découverte des identifiants → détail → recoupement.
+_MAX_ITERATIONS = 9
 
 
 # ── Catalogue d'API décrit à Claude ───────────────────────────────────────────
 CATALOGUE = """\
-Modules interrogeables (chemins relatifs, méthode GET uniquement) :
+Modules interrogeables (chemins relatifs, méthode GET uniquement). Beaucoup
+d'endpoints ont besoin d'IDENTIFIANTS (id de pays, pays_id…) : commence toujours
+par les endpoints de « découverte » pour les récupérer, puis interroge le détail.
 
-COMMERCE EXTÉRIEUR (données ANSD/BMSCE)
-  /bmce/rapport?annee=AAAA   → briefing : balance commerciale, taux de couverture,
-                               évolution mensuelle, top produits, top pays, par continent
-  /bmce/bulletins            → liste des bulletins importés (périodes disponibles)
-  /bmce/apercu               → aperçu synthétique
-  /bmce/series               → séries temporelles
-  /statistiques/commerce/filtres      → valeurs de filtres disponibles (années, produits, pays)
-  /statistiques/commerce/kpis         → indicateurs clés
-  /statistiques/commerce/tops         → tops produits / pays
-  /statistiques/commerce/balance      → balance commerciale
-  /statistiques/commerce/bilateral    → échanges bilatéraux avec un pays
-  /statistiques/commerce/repartition  → répartition par rubrique
-  /statistiques/commerce/concentration→ concentration des échanges
+INDICATEURS MACRO-ÉCONOMIQUES (Statistiques → Indicateurs économiques)
+  /statistiques/pays              → liste des pays disponibles avec leur id (le Sénégal est la référence)
+  /statistiques/indicateurs       → indicateurs disponibles (population, superficie, densité,
+                                     PIB prix courants, PIB par habitant, etc.)
+  /statistiques/donnees?pays=<id> → séries annuelles de TOUS ces indicateurs pour un pays
+                                     (ex. population par année 1948→2024, PIB…)
+  /statistiques/comparaison?pays=<id1,id2>       → comparaison multi-pays
+  /statistiques/ide_flux?pays=<id>&indicateur=flux|stock  → flux/stock d'IDE (CNUCED)
+  → Pour « population/PIB/superficie du Sénégal » : /statistiques/pays (trouver l'id du
+    Sénégal) puis /statistiques/donnees?pays=<id>, et lis l'année demandée dans la série.
+
+COMMERCE EXTÉRIEUR (Statistiques → Commerce extérieur ; données ANSD/BMSCE)
+  /bmce/rapport?annee=AAAA        → briefing : balance commerciale (FAB−CAF), taux de couverture,
+                                     évolution mensuelle, top produits, top pays, par continent
+  /bmce/bulletins                 → périodes/bulletins importés
+  /statistiques/commerce/filtres  → pays disponibles (avec pays_id), années, produits
+  /statistiques/commerce/kpis?pays_id=<id>&direction=exportateur|importateur[&annees=2024]
+  /statistiques/commerce/tops?pays_id=<id>&direction=…[&annees=…&limite=10]
+  /statistiques/commerce/balance?pays_id=<id>[&annees=…]
+  /statistiques/commerce/repartition?pays_id=<id>&direction=…
+  /statistiques/commerce/bilateral?pays_a=<id>&pays_b=<id>&annee=AAAA
+  → direction=exportateur = exportations du pays, importateur = importations.
+    /statistiques/commerce/filtres donne les pays_id et années valides.
 
 INVESTISSEMENTS DIRECTS ÉTRANGERS (IDE)
-  /ide/monde                 → flux IDE par pays
-  /ide/secteurs              → flux IDE par secteur
-  /ide/cnuced/annees         → années disponibles
-  /ide/cnuced/pays-disponibles
-  /ide/cnuced/kpis-calcules  → KPIs IDE
+  /ide/monde, /ide/secteurs, /ide/cnuced/annees, /ide/cnuced/pays-disponibles, /ide/cnuced/kpis-calcules
 
 ACCORDS & TRAITÉS
-  /accords                   → liste des accords et traités
-  /accords/{id}              → détail d'un accord
+  /accords → liste ; /accords/{id} → détail
 
 ÉVÉNEMENTS
-  /evenements                → liste des événements
-  /evenements/stats          → statistiques
-  /evenements/{id}           → détail d'un événement
+  /evenements → liste ; /evenements/stats → statistiques ; /evenements/{id} → détail
 
 ENTREPRISES & RÉFÉRENTIELS
-  /entreprises               → liste des entreprises (filtres secteur/région possibles)
-  /entreprises/{id}          → détail d'une entreprise
+  /entreprises → liste (filtres secteur/région) ; /entreprises/{id} → détail
   /entreprises/ref/secteurs, /entreprises/ref/regions, /entreprises/ref/poles
-  /ref-pays                  → référentiel des pays
+  /ref-pays → référentiel des pays
+
+OPPORTUNITÉS · PROSPECTS · PROJETS · ZONES
+  /opportunites → opportunités d'investissement ; /prospects → prospects ;
+  /projets → projets ; /zones-types → zones et pôles territoriaux
 
 CODE DES INVESTISSEMENTS
-  /code-investissement       → chapitres, sections, articles (texte juridique)
-
-Astuce : pour le commerce extérieur, appelle d'abord /statistiques/commerce/filtres
-pour connaître les années et libellés valides avant d'interroger le détail."""
+  /code-investissement → chapitres, sections, articles (texte juridique)"""
 
 
 SYSTEME_BASE = f"""\
 Tu es l'assistant intelligent de la plateforme APIX Sénégal — la plateforme
 d'intelligence économique de l'APIX (Agence de Promotion des Investissements et
 des Grands Travaux du Sénégal). Tu aides les utilisateurs à naviguer dans la
-plateforme et à obtenir des réponses précises sur le commerce extérieur, les
-investissements directs étrangers (IDE), les accords, les événements, les
-entreprises et le code des investissements.
+plateforme et à obtenir des réponses PRÉCISES à partir de ses données.
 
-RÈGLES ABSOLUES
-- Réponds toujours en français, de façon claire, concise et professionnelle.
-- Ne réponds qu'aux questions en rapport avec la plateforme et ses données
-  (économie, investissement et commerce du Sénégal). Pour toute question hors
-  sujet, décline poliment et rappelle ton périmètre.
-- N'invente JAMAIS de chiffres. Pour toute donnée chiffrée, utilise l'outil
-  consulter_donnees et n'affirme que ce que les données renvoient réellement.
-  Si une donnée n'est pas disponible, dis-le simplement.
-- Cite les valeurs avec leur unité et leur année/période. Formate les grands
-  nombres lisiblement (milliards/millions de FCFA).
-- Sois synthétique : va à l'essentiel, puis propose d'approfondir si utile.
+La plateforme contient énormément de données publiques : indicateurs macro
+(population, superficie, densité, PIB, PIB/habitant, historiques depuis 1948),
+commerce extérieur (balance, imports/exports, produits, pays partenaires),
+investissements directs étrangers, accords et traités, événements, entreprises
+et référentiels, opportunités, prospects, projets, zones/pôles territoriaux, et
+le code des investissements.
 
-Tu disposes d'un seul outil, consulter_donnees, qui interroge l'API interne de
-la plateforme (lecture seule). {CATALOGUE}"""
+RÈGLE DE RECHERCHE (la plus importante)
+- Avant de dire que tu n'as pas une information, CHERCHE-LA avec l'outil
+  consulter_donnees. La plupart des questions économiques/statistiques sur le
+  Sénégal ONT une réponse dans la plateforme — y compris la démographie et le PIB
+  (indicateurs macro), pas seulement le commerce.
+- Procède par étapes : appelle d'abord un endpoint de découverte pour obtenir les
+  identifiants (/statistiques/pays pour l'id du Sénégal, /statistiques/commerce/filtres
+  pour les pays_id et années, /ide/cnuced/annees…), PUIS l'endpoint de détail.
+  Enchaîne plusieurs appels si nécessaire. Si un appel renvoie une erreur, corrige
+  le chemin ou les paramètres et réessaie.
+- Ne décline que si la question est vraiment sans rapport avec le Sénégal, son
+  économie, ses investissements ou la plateforme (ex. météo, culture générale
+  mondiale) — ou si, après avoir réellement cherché, la donnée n'existe pas.
+
+AUTRES RÈGLES
+- Réponds toujours en français, clair et concis.
+- N'invente JAMAIS de chiffres : n'affirme que ce que les endpoints renvoient
+  réellement. Cite les valeurs avec leur unité et leur année/période, et formate
+  les grands nombres lisiblement (milliards/millions).
+- Va droit au but : le chiffre d'abord, puis un court contexte si utile. Évite les
+  longues introductions.
+
+Tu disposes d'un seul outil, consulter_donnees, qui interroge l'API interne de la
+plateforme (lecture seule). {CATALOGUE}"""
 
 
 TOOLS = [
