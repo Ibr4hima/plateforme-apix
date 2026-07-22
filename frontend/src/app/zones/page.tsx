@@ -3,7 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
-import VueTerritorialeSenegal, { POLE_COULEURS, normPole } from "@/components/shared/VueTerritorialeSenegal";
+import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
 import ZoneDetailModal from "@/components/shared/ZoneDetailModal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -15,7 +15,7 @@ import { Building2, ChevronRight, FileText, X } from "lucide-react";
 import { useNaema, useRefPolesTerritoires } from "@/lib/referentiels";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
-import { foncerPastel } from "@/lib/couleurs";
+import { badgePole, poleAccent } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -300,8 +300,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
 // ── Grande card zone (ouvre le modal détail) ──────────────────────────────────
 function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:string; onClick:()=>void }) {
   const entreprises = (zone.entreprises||[]).length;
-  const cPole = (zone.pole_nom && POLE_COULEURS[normPole(zone.pole_nom)]) || "#C5BFBB";
-  const hoverC = zone.pole_nom ? cPole : `${color}55`;
+  const hoverC = zone.pole_nom ? poleAccent(zone.pole_nom) : `${color}55`;
   return (
     <div onClick={onClick}
       style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 2px rgba(0,0,0,0.03)", padding:"18px 20px 16px", display:"flex", flexDirection:"column" as const, gap:13 }}
@@ -330,7 +329,7 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
           {zone.superficie&&<div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginTop:3 }}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</div>}
         </div>
         {zone.pole_nom&&(
-          <span title={zone.pole_nom} style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:foncerPastel(cPole), background:`${cPole}40`, border:`1px solid ${cPole}90`, padding:"3px 11px", borderRadius:999, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis", flexShrink:1, minWidth:0 }}>
+          <span title={zone.pole_nom} style={{ ...badgePole(zone.pole_nom), whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis", flexShrink:1, minWidth:0 }}>
             {zone.pole_nom}
           </span>
         )}

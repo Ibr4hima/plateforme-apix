@@ -3,7 +3,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
-import VueTerritorialeSenegal, { POLE_COULEURS, normPole } from "@/components/shared/VueTerritorialeSenegal";
+import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import Badge from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
@@ -14,7 +14,7 @@ import { useGeoArbre, useNaemaArbre, useRefFormesJuridiques, useRefPolesEntrepri
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
-import { foncerPastel } from "@/lib/couleurs";
+import { badgePole, poleAccent } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
 import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
@@ -254,15 +254,12 @@ export default function EntreprisesPage() {
             ):(
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {entreprises.map(e=>{
-                  // Couleur du pôle : même table que la carte des pôles territoires.
-                  // Fond très léger (pastel transparent), texte dans une version
-                  // foncée et saturée de la même teinte pour rester lisible.
-                  const cPole = (e.pole_territoire_nom && POLE_COULEURS[normPole(e.pole_territoire_nom)]) || "#C5BFBB";
-                  const cPoleTxt = foncerPastel(cPole);
+                  // Couleur du pôle : jetons partagés du design system.
+                  const accentPole = poleAccent(e.pole_territoire_nom||"");
                   return (
                   <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                     style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=cPole;}}
+                    onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accentPole;}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
 
                     {/* Dénomination + forme juridique | badge pôle territoire */}
@@ -272,7 +269,7 @@ export default function EntreprisesPage() {
                         {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
                       </div>
                       {e.pole_territoire_nom&&(
-                        <span title={e.pole_territoire_nom} style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:cPoleTxt,background:`${cPole}40`,border:`1px solid ${cPole}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
+                        <span title={e.pole_territoire_nom} style={{...badgePole(e.pole_territoire_nom),whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
                           {e.pole_territoire_nom}
                         </span>
                       )}

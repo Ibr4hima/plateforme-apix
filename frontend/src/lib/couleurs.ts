@@ -106,6 +106,47 @@ export const fond_gris: CSSProperties = {
   border: `1px solid rgba(${GRIS},0.16)`,
 };
 
+// Constructeurs génériques pour une teinte libre (hors des 4 canoniques)
+export const badgeDe = (hex: string): CSSProperties => ({
+  display: "inline-flex", alignItems: "center", gap: 5,
+  fontSize: 11, fontWeight: 600, color: hex,
+  background: "rgba(255,255,255,0.7)", border: `1px solid rgba(${rgbDe(hex)},0.24)`,
+  padding: "4px 11px", borderRadius: 999,
+});
+export const fondDe = (hex: string): CSSProperties => ({
+  background: `linear-gradient(180deg, rgba(${rgbDe(hex)},0.06), rgba(${rgbDe(hex)},0.02))`,
+  border: `1px solid rgba(${rgbDe(hex)},0.16)`,
+});
+
+// 4 teintes supplémentaires assorties aux 4 canoniques (complètent le cercle
+// chromatique : sarcelle, indigo, rose, olive)
+export const badge_sarcelle = badgeDe("#0e7490");
+export const badge_indigo = badgeDe("#4338ca");
+export const badge_rose = badgeDe("#be185d");
+export const badge_olive = badgeDe("#4d7c0f");
+export const fond_sarcelle = fondDe("#0e7490");
+export const fond_indigo = fondDe("#4338ca");
+export const fond_rose = fondDe("#be185d");
+export const fond_olive = fondDe("#4d7c0f");
+
+// ── Pôles territoires : couleur unique partagée (entreprises, zones…) ─────────
+// Nom du pôle (normalisé) → teinte du badge et accent de survol.
+const POLE_HEX: Record<string, string> = {
+  "dakar": "#004f91",           // bleu
+  "thies": "#ca631f",           // orange
+  "centre": "#188038",          // vert
+  "sud": "#6A1B9A",             // violet
+  "nord": "#0e7490",            // sarcelle
+  "sud est": "#be185d",         // rose
+  "diourbel louga": "#4338ca",  // indigo
+  "nord est": "#4d7c0f",        // olive
+};
+export const poleAccent = (nom: string): string => POLE_HEX[normPole(nom)] || "#C5BFBB";
+export const badgePole = (nom: string): CSSProperties => {
+  const hex = POLE_HEX[normPole(nom)];
+  return hex ? badgeDe(hex) : badge_gris;
+};
+
 // Fond survolé d'un badge cliquable (bordure et fond renforcés) — à appliquer
 // dans onMouseEnter/Leave, ou via le composant <Badge> ci-dessous.
 export const badgeSurvol = (teinte: Teinte) => {
