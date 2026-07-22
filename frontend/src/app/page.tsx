@@ -93,7 +93,7 @@ export default function HomePage() {
       <Navbar/>
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{minHeight:"88vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 70px",position:"relative" as const,background:"#004f91",overflow:"hidden"}}>
+      <section className="lp-pad" style={{minHeight:"88vh",display:"flex",flexDirection:"column" as const,justifyContent:"center",padding:"120px 60px 70px",position:"relative" as const,background:"linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)",overflow:"hidden"}}>
 
         {/* Déco fond — même langage que les barres de titre */}
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
@@ -201,7 +201,7 @@ export default function HomePage() {
       </section>
 
       {/* ── TABLEAU DE BORD CTA ───────────────────────────────────────────────── */}
-      <section className="lp-pad" style={{background:"#004f91",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
+      <section className="lp-pad" style={{background:"linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
           <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 20% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 20% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)"}}/>
           <div style={{position:"absolute" as const,bottom:"-30%",left:"-8%",width:520,height:520,borderRadius:"50%",background:"radial-gradient(circle,rgba(26,106,176,0.5) 0%,transparent 65%)"}}/>
