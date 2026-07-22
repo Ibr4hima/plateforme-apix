@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
+import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { d3, Plot, useD3Pret } from "@/lib/d3lazy";
 import {
@@ -1864,7 +1864,7 @@ function Sidebar({ config, onToggleTable, onToggleKPI, onReset,
   const nbActifs = onglet==="tables" ? config.tableCards.length : config.kpisActifs.length+config.cards.length;
 
   return (
-    <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"calc(100vh - 64px)", position:"sticky" as const, top:64, display:"flex", flexDirection:"column" as const }}>
+    <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"100vh", position:"sticky" as const, top:0, display:"flex", flexDirection:"column" as const }}>
       <style>{`::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#E8E5E3;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}.sb-item:hover{background:#F8F7F6!important}`}</style>
 
       {/* Poignée de redimensionnement */}
@@ -2009,16 +2009,14 @@ export default function TableauDeBordPage() {
 
   // d3 + Plot chargés dans un chunk séparé : garde avant tout rendu graphique
   const d3Pret = useD3Pret(true);
-  if (!d3Pret) return <div style={{minHeight:"100vh",background:"#F6F5F3"}}><Navbar/></div>;
+  if (!d3Pret) return <div style={{minHeight:"100vh",background:"#F6F5F3"}}/>;
 
   return (
     <div style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div id="d3-tooltip" style={{position:"fixed",pointerEvents:"none",background:"rgba(26,26,46,0.92)",color:"#fff",borderRadius:8,padding:"8px 12px",fontSize:12,lineHeight:1.5,opacity:0,zIndex:9999,backdropFilter:"blur(4px)"}}/>
-      <Navbar/>
-
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <BarreTitre titre="Tableau de bord">
+      <BarreTitre titre="Tableau de bord" compact actions={<NavActions onDark flouFond/>}>
         <BarreTitreSegment options={[{v:"viz",l:"Visualisation de données"},{v:"tables",l:"Tableaux analytiques"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
