@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import NavActions from "@/components/layout/NavActions";
+import { Skeleton } from "@/components/shared/Skeleton";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -172,7 +173,14 @@ export default function CodeInvestissementsPage() {
           <aside className="ds-carte code-somm" style={{ position: "sticky", top: 20, maxHeight: "calc(100vh - 40px)", overflowY: "auto", padding: "16px 0", alignSelf: "start" }}>
             <p style={{ fontSize: 10, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.16em", padding: "0 20px", margin: "0 0 10px" }}>Sommaire</p>
             {loading ? (
-              <div style={{ padding: "16px 20px", color: "#9aa5b4", fontSize: 12.5 }}>Chargement…</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 13, padding: "8px 20px" }}>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                    <Skeleton w={16} h={11} r={4} />
+                    <Skeleton w={`${56 + ((i * 17) % 34)}%`} h={11} r={6} />
+                  </div>
+                ))}
+              </div>
             ) : chapitres.length === 0 ? (
               <div style={{ padding: "16px 20px", color: "#9aa5b4", fontSize: 12.5 }}>Aucun contenu.</div>
             ) : chapitres.map((c) => {
@@ -207,7 +215,22 @@ export default function CodeInvestissementsPage() {
           {/* Zone de lecture */}
           <section className="ds-carte" style={{ padding: "44px 52px 56px", minHeight: 420 }}>
             {loading ? (
-              <p style={{ color: "#9aa5b4", fontSize: 14, textAlign: "center", marginTop: 60 }}>Chargement du texte…</p>
+              <div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 44 }}>
+                  <Skeleton w={120} h={11} r={5} />
+                  <Skeleton w={360} h={26} r={8} />
+                  <Skeleton w={40} h={3} r={2} />
+                </div>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} style={{ marginBottom: 30 }}>
+                    <Skeleton w={210} h={15} r={6} style={{ marginBottom: 14 }} />
+                    <Skeleton w="100%" h={10} r={5} style={{ marginBottom: 9 }} />
+                    <Skeleton w="97%" h={10} r={5} style={{ marginBottom: 9 }} />
+                    <Skeleton w="90%" h={10} r={5} style={{ marginBottom: 9 }} />
+                    <Skeleton w="64%" h={10} r={5} />
+                  </div>
+                ))}
+              </div>
             ) : q.length >= 2 ? (
               /* Résultats de recherche */
               <div>

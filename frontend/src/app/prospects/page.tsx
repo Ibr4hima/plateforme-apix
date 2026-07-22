@@ -2,7 +2,8 @@
 
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import { Building2, ChevronDown, ChevronUp, Clock, FileText, Globe, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Phone, Search, Send, SlidersHorizontal, User, Video, X } from "lucide-react";
+import { Building2, ChevronDown, ChevronUp, Clock, FileText, Globe, Mail, MapPin, MessageCircle, MessageSquare, Phone, Search, Send, SlidersHorizontal, User, Video, X } from "lucide-react";
+import { SkeletonCards } from "@/components/shared/Skeleton";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useNaema } from "@/lib/referentiels";
@@ -258,9 +259,7 @@ export default function ProspectsPage() {
         {/* Grille */}
         <div style={{ flex: 1, minWidth: 0, padding: "36px 40px 80px" }}>
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 300, gap: 12, color: "#9aa5b4" }}>
-              <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} /><span style={{ fontSize: 14 }}>Chargement…</span>
-            </div>
+            <SkeletonCards n={9} cols={3} height={200} />
           ) : listeCourante.length === 0 ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
               <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
