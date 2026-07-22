@@ -28,24 +28,130 @@ const salutation = () => {
 };
 
 // Rendu léger : gras **…**, listes « - », retours à la ligne conservés.
+function inline(texte: string, cle: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const regex = /(\*\*[^*]+\*\*|`[^`]+`)/g;
+  let dernier = 0;
+  let m: RegExpExecArray | null;
+  let i = 0;
+  while ((m = regex.exec(texte)) !== null) {
+    if (m.index > dernier) parts.push(<span key={`${cle}t${i}`}>{texte.slice(dernier, m.index)}</span>);
+    const tok = m[0];
+    if (tok.startsWith("**")) {
+      parts.push(<strong key={`${cle}b${i}`} style={{ color: ENCRE }}>{tok.slice(2, -2)}</strong>);
+    } else {
+      parts.push(
+        <code key={`${cle}c${i}`} style={{ background: "rgba(202,99,31,0.08)", padding: "1px 5px", borderRadius: 5, fontSize: 12.5, fontFamily: "ui-monospace, SFMono-Regular, monospace" }}>
+          {tok.slice(1, -1)}
+        </code>,
+      );
+    }
+    dernier = m.index + tok.length;
+    i++;
+  }
+  if (dernier < texte.length) parts.push(<span key={`${cle}e`}>{texte.slice(dernier)}</span>);
+  return parts;
+}
+
+const estSepTable = (l: string) => {
+  const c = l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|");
+  return c.length > 0 && c.every((x) => /^\s*:?-+:?\s*$/.test(x));
+};
+const cellules = (l: string) => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+
 function formater(texte: string): React.ReactNode {
-  return texte.split("\n").map((ligne, i) => {
-    const puce = /^\s*[-•]\s+/.test(ligne);
-    const contenu = ligne.replace(/^\s*[-•]\s+/, "");
-    const morceaux = contenu.split(/(\*\*[^*]+\*\*)/g).map((m, j) =>
-      m.startsWith("**") && m.endsWith("**") ? (
-        <strong key={j} style={{ color: ENCRE }}>{m.slice(2, -2)}</strong>
-      ) : (
-        <span key={j}>{m}</span>
-      ),
-    );
-    return (
-      <div key={i} style={puce ? { display: "flex", gap: 7, paddingLeft: 2 } : undefined}>
-        {puce && <span style={{ color: ORANGE, flexShrink: 0, fontWeight: 700 }}>•</span>}
-        <span>{morceaux}</span>
-      </div>
-    );
-  });
+  const lignes = texte.split("\n");
+  const blocs: React.ReactNode[] = [];
+  let i = 0;
+  let k = 0;
+  while (i < lignes.length) {
+    const ligne = lignes[i];
+    const t = ligne.trim();
+
+    // Tableau : « | … | » suivi d'une ligne séparatrice « |---|---| »
+    if (t.startsWith("|") && i + 1 < lignes.length && estSepTable(lignes[i + 1])) {
+      const entete = cellules(ligne);
+      const rangs: string[][] = [];
+      i += 2;
+      while (i < lignes.length && lignes[i].trim().startsWith("|")) {
+        rangs.push(cellules(lignes[i]));
+        i++;
+      }
+      blocs.push(
+        <div key={`tb${k++}`} style={{ overflowX: "auto", margin: "6px 0" }}>
+          <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 12.5 }}>
+            <thead>
+              <tr>
+                {entete.map((hc, ci) => (
+                  <th key={ci} style={{ textAlign: "left", padding: "6px 9px", background: "rgba(202,99,31,0.10)", color: ENCRE, fontWeight: 700, borderBottom: "1px solid rgba(202,99,31,0.22)", whiteSpace: "nowrap" }}>
+                    {inline(hc, `th${k}${ci}`)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rangs.map((r, ri) => (
+                <tr key={ri}>
+                  {r.map((c, ci) => (
+                    <td key={ci} style={{ padding: "6px 9px", borderBottom: "1px solid rgba(0,0,0,0.06)", color: "#3d3128", verticalAlign: "top" }}>
+                      {inline(c, `td${k}${ri}${ci}`)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
+      continue;
+    }
+
+    // Titre  #..####
+    const h = t.match(/^(#{1,4})\s+(.*)$/);
+    if (h) {
+      blocs.push(<div key={`h${k++}`} style={{ fontWeight: 700, color: ENCRE, fontSize: 14.5, margin: "6px 0 2px" }}>{inline(h[2], `hh${k}`)}</div>);
+      i++;
+      continue;
+    }
+
+    // Liste numérotée
+    const num = ligne.match(/^\s*(\d+)\.\s+(.*)$/);
+    if (num) {
+      blocs.push(
+        <div key={`n${k++}`} style={{ display: "flex", gap: 7, paddingLeft: 2 }}>
+          <span style={{ color: ORANGE, fontWeight: 700, flexShrink: 0 }}>{num[1]}.</span>
+          <span>{inline(num[2], `nn${k}`)}</span>
+        </div>,
+      );
+      i++;
+      continue;
+    }
+
+    // Puce
+    const puce = ligne.match(/^\s*[-*•]\s+(.*)$/);
+    if (puce) {
+      blocs.push(
+        <div key={`p${k++}`} style={{ display: "flex", gap: 7, paddingLeft: 2 }}>
+          <span style={{ color: ORANGE, flexShrink: 0, fontWeight: 700 }}>•</span>
+          <span>{inline(puce[1], `pp${k}`)}</span>
+        </div>,
+      );
+      i++;
+      continue;
+    }
+
+    // Ligne vide → petit espace
+    if (t === "") {
+      blocs.push(<div key={`sp${k++}`} style={{ height: 3 }} />);
+      i++;
+      continue;
+    }
+
+    // Paragraphe
+    blocs.push(<div key={`par${k++}`}>{inline(ligne, `pr${k}`)}</div>);
+    i++;
+  }
+  return blocs;
 }
 
 export default function ChatWidget() {

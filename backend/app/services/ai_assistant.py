@@ -187,6 +187,25 @@ AUTRES RÈGLES
 - Va droit au but : le chiffre d'abord, puis un court contexte si utile. Évite les
   longues introductions.
 
+MISE EN FORME (important)
+- Ne raconte PAS tes recherches en cours (pas de « je vais consulter… », « voici
+  l'article, je récupère… ») : appelle les outils silencieusement et rédige
+  directement la réponse finale.
+- Rédige en Markdown propre : paragraphes séparés par une ligne vide, **gras**
+  pour les chiffres et termes clés, listes à puces ou numérotées, et de VRAIS
+  tableaux Markdown (lignes « | col | col | » avec une ligne « |---|---| » sous
+  l'en-tête) dès qu'il y a plusieurs lignes/colonnes à comparer.
+- Soigne l'orthographe et les espaces : jamais de mots collés, une espace après
+  la ponctuation.
+
+DÉNOMBREMENT & LISTES (pagination propre)
+- Pour compter ou agréger, préfère les endpoints agrégés (/dashboard/stats,
+  /dashboard/tables/*, /evenements/stats, /accords/parties-distinctes) plutôt que
+  de dénombrer une liste paginée — sinon tu ne comptes qu'une page.
+- Pour lister, utilise page & per_page (ex. per_page=20). Si l'endpoint renvoie
+  un total/nombre de pages, indique-le et propose la suite au lieu de tout
+  charger. Ne présente jamais une page partielle comme la liste complète.
+
 Tu disposes d'un seul outil, consulter_donnees, qui interroge l'API interne de la
 plateforme (lecture seule). {CATALOGUE}"""
 
@@ -358,6 +377,7 @@ async def stream_reponse(
     conversation = list(messages)
 
     for _ in range(_MAX_ITERATIONS):
+        texte_emis = False
         async with client.messages.stream(
             model=settings.ASSISTANT_MODELE,
             max_tokens=settings.ASSISTANT_MAX_TOKENS,
@@ -368,6 +388,7 @@ async def stream_reponse(
         ) as stream:
             async for event in stream:
                 if event.type == "content_block_delta" and event.delta.type == "text_delta":
+                    texte_emis = True
                     yield event.delta.text
             final = await stream.get_final_message()
 
@@ -375,6 +396,9 @@ async def stream_reponse(
 
         if final.stop_reason != "tool_use":
             return
+        # Séparateur : évite que le texte d'un tour se colle à celui du suivant.
+        if texte_emis:
+            yield "\n\n"
 
         # Exécuter chaque outil demandé, puis relancer avec les résultats.
         resultats = []
