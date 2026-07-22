@@ -148,16 +148,16 @@ export default function CodeInvestissementsPage() {
             <div style={{ position: "relative", width: "min(300px, 100%)" }}>
               <Search size={14} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.6)" }} />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" aria-label="Rechercher"
-                style={{ width: "100%", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, padding: "9px 12px 9px 36px", fontSize: 13, color: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" }}
+                style={{ width: "100%", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: "9px 14px 9px 38px", fontSize: 13, color: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" }}
                 onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; }}
                 onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; }} />
             </div>
             {pdfInfo && (
-              <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer" title="Télécharger le PDF officiel"
-                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, padding: "9px 15px", fontSize: 12.5, color: "#fff", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", transition: "background 0.15s" }}
+              <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer" title="Télécharger le PDF officiel" aria-label="Télécharger le PDF officiel"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: "50%", color: "#fff", textDecoration: "none", flexShrink: 0, transition: "background 0.15s" }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.22)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.13)"; }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>picture_as_pdf</span> PDF
+                <span className="material-symbols-outlined" style={{ fontSize: 19, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>picture_as_pdf</span>
               </a>
             )}
           </div>
