@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Download, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -94,6 +94,13 @@ export default function CodeInvestissementsPage() {
       <style>{`
         .code-grille { display: grid; grid-template-columns: 288px 1fr; gap: 20px; align-items: start; }
         @media (max-width: 880px) { .code-grille { grid-template-columns: 1fr; } .code-somm { position: static !important; max-height: none !important; } }
+        [data-rte] ul{padding-left:22px;list-style-type:disc;margin:8px 0}
+        [data-rte] ul.dash-list{list-style-type:"— ";padding-left:24px}
+        [data-rte] ol{padding-left:22px;list-style-type:decimal;margin:8px 0}
+        [data-rte] li{margin-bottom:5px}
+        [data-rte] p{margin:10px 0}
+        [data-rte] b,[data-rte] strong{font-weight:700}
+        [data-rte] i,[data-rte] em{font-style:italic}
       `}</style>
 
       {/* ── Bandeau ── */}
@@ -101,12 +108,12 @@ export default function CodeInvestissementsPage() {
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16, minWidth: 0 }}>
-              <div style={{ width: 46, height: 54, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.25))" }}>
-                <Image src="/armoiries_senegal.svg" alt="Armoiries du Sénégal" width={40} height={48} style={{ height: 48, width: "auto", objectFit: "contain" }} />
+              <div style={{ width: 54, height: 66, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.25))" }}>
+                <Image src="/armoiries_senegal.svg" alt="Armoiries du Sénégal" width={54} height={66} style={{ height: 64, width: "auto", objectFit: "contain" }} />
               </div>
               <div style={{ minWidth: 0 }}>
                 <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "2px 0 8px" }}>
-                  République du Sénégal · Textes juridiques
+                  République du Sénégal · Lois &amp; Règlementations
                 </p>
                 <h1 style={{ fontSize: "1.85rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>{titre}</h1>
                 <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>
@@ -136,7 +143,7 @@ export default function CodeInvestissementsPage() {
             <div style={{ flex: 1 }} />
             <div style={{ position: "relative", width: "min(300px, 100%)" }}>
               <Search size={14} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.6)" }} />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un article, un mot…" aria-label="Rechercher"
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" aria-label="Rechercher"
                 style={{ width: "100%", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, padding: "9px 12px 9px 36px", fontSize: 13, color: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" }}
                 onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; }}
                 onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; }} />
@@ -146,7 +153,7 @@ export default function CodeInvestissementsPage() {
                 style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, padding: "9px 15px", fontSize: 12.5, color: "#fff", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", transition: "background 0.15s" }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.22)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.13)"; }}>
-                <Download size={14} /> PDF
+                <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>picture_as_pdf</span> PDF
               </a>
             )}
           </div>
