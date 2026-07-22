@@ -14,6 +14,7 @@ import AccordVueModal from "@/components/shared/AccordVueModal";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 import { drapeauEmoji } from "@/lib/drapeaux";
+import { fond_bleu, badge_bleu, badgeSurvol } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -166,7 +167,7 @@ function ContenuFichePays() {
   // voilé, icône dans un carré arrondi, titre en capitales avec le compte
   // badgé à côté, éléments listés en badges assortis au fond.
   const BlocContexte = ({ Icone, titre, count, items }: { Icone: any; titre: string; count: number; items: Item[] }) => (
-    <div className="ds-carte" style={{ padding: "16px 20px", background: "linear-gradient(180deg,rgba(0,79,145,0.06),rgba(0,79,145,0.02))", border: "1px solid rgba(0,79,145,0.16)", display: "flex", alignItems: "flex-start", gap: 14 }}>
+    <div className="ds-carte" style={{ ...fond_bleu, padding: "16px 20px", display: "flex", alignItems: "flex-start", gap: 14 }}>
       <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(0,79,145,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icone size={19} color={BLEU} />
       </span>
@@ -178,9 +179,9 @@ function ContenuFichePays() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {items.map((it, i) => (
             <span key={i} title={it.title || it.label} onClick={it.onClick} role={it.onClick ? "button" : undefined}
-              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: BLEU, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(0,79,145,0.20)", padding: "4px 11px", borderRadius: 999, cursor: it.onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s" }}
-              onMouseEnter={ev => { if (it.onClick) { ev.currentTarget.style.background = "rgba(0,79,145,0.10)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; } }}
-              onMouseLeave={ev => { if (it.onClick) { ev.currentTarget.style.background = "rgba(255,255,255,0.7)"; ev.currentTarget.style.borderColor = "rgba(0,79,145,0.20)"; } }}>
+              style={{ ...badge_bleu, cursor: it.onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s" }}
+              onMouseEnter={ev => { if (it.onClick) { const s = badgeSurvol("bleu"); ev.currentTarget.style.background = s.background; ev.currentTarget.style.borderColor = s.borderColor; } }}
+              onMouseLeave={ev => { if (it.onClick) { ev.currentTarget.style.background = badge_bleu.background as string; ev.currentTarget.style.border = badge_bleu.border as string; } }}>
               {it.label}{it.suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {it.suffixe}</span> : null}
             </span>
           ))}

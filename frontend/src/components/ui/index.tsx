@@ -4,8 +4,9 @@
 // Chaque composant consomme les jetons de globals.css (couleurs
 // sémantiques, espacement, rayons, ombres, motion) et gère ses états
 // hover / focus / active / disabled en CSS — plus de onMouseEnter.
-import { ReactNode, ButtonHTMLAttributes } from "react";
+import { ReactNode, ButtonHTMLAttributes, CSSProperties } from "react";
 import Link from "next/link";
+import { fondVoile, badge as badgeStyle, badgeSurvol, type Teinte } from "@/lib/couleurs";
 
 // ── Bouton ───────────────────────────────────────────────────────────────────
 export function Bouton({ variante = "primaire", taille = "moyen", href, children, className = "", ...props }: {
@@ -155,5 +156,35 @@ export function EtatVide({ titre, sous, action }: {
       {sous ? <p style={{ font: "var(--typo-legende)", marginTop: 6 }}>{sous}</p> : null}
       {action ? <div style={{ marginTop: "var(--esp-4)" }}><Bouton variante="secondaire" taille="petit" onClick={action.onClick}>{action.label}</Bouton></div> : null}
     </div>
+  );
+}
+
+// ── Fond voilé (carte au dégradé teinté) ─────────────────────────────────────
+// <Voile couleur="vert" style={{ padding: 20 }}>…</Voile> — teinte parmi
+// bleu · orange · vert · violet ; s'appuie sur la carte du design system.
+export function Voile({ couleur = "bleu", style, className = "", children, ...props }: {
+  couleur?: Teinte; children?: ReactNode; className?: string;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`ds-carte ${className}`} style={{ ...fondVoile(couleur), ...style }} {...props}>
+      {children}
+    </div>
+  );
+}
+
+// ── Pastille (badge teinté 4 couleurs, style Fiche Pays) ─────────────────────
+// <Pastille couleur="orange">UEMOA</Pastille> ; cliquable (onClick) → survol
+// renforcé. Distincte du <Badge> de statut (sémantique succès/alerte/danger).
+export function Pastille({ couleur = "bleu", onClick, style, children, title }: {
+  couleur?: Teinte; onClick?: () => void; style?: CSSProperties; children: ReactNode; title?: string;
+}) {
+  const base = badgeStyle(couleur);
+  return (
+    <span title={title} onClick={onClick} role={onClick ? "button" : undefined}
+      style={{ ...base, cursor: onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s", ...style }}
+      onMouseEnter={onClick ? e => { const s = badgeSurvol(couleur); e.currentTarget.style.background = s.background; e.currentTarget.style.borderColor = s.borderColor; } : undefined}
+      onMouseLeave={onClick ? e => { e.currentTarget.style.background = base.background as string; e.currentTarget.style.border = base.border as string; } : undefined}>
+      {children}
+    </span>
   );
 }
