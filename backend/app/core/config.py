@@ -99,7 +99,11 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
 
     model_config = {
-        "env_file": "../.env",
+        # Lecture tolérante : le .env à la racine du dépôt (../.env quand on
+        # lance uvicorn depuis backend/) ET un éventuel backend/.env. Le second
+        # est prioritaire s'il définit la même variable. Un fichier absent est
+        # simplement ignoré.
+        "env_file": ("../.env", ".env"),
         "case_sensitive": True,
         "extra": "ignore",
     }
