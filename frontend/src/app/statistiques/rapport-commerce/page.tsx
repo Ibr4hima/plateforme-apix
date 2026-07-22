@@ -8,7 +8,6 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import NavActions from "@/components/layout/NavActions";
-import Sparkline from "@/components/shared/Sparkline";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
 import { drapeauEmoji } from "@/lib/drapeaux";
@@ -132,16 +131,11 @@ function ContenuRapport() {
   const solde = exp - imp;
   const taux = imp !== 0 ? (exp / imp) * 100 : null;
   const prec = r.precedent;
-  // Mini-tendances mensuelles pour les sparklines des cartes KPI
-  const sExp = (r.serie || []).map(p => p.export ?? null);
-  const sImp = (r.serie || []).map(p => p.import ?? null);
-  const sSolde = (r.serie || []).map(p => (p.export != null && p.import != null ? p.export - p.import : null));
-  const sTaux = (r.serie || []).map(p => (p.export != null && p.import ? (p.export / p.import) * 100 : null));
-  const kpis: { l: string; tag: string | null; txt: string; d: number | null; rouge?: boolean; serie: (number | null)[] }[] = [
-    { l: "Exportations", tag: "FAB", txt: `${fmtMd(exp)} FCFA`, d: varPct(exp, prec?.export), serie: sExp },
-    { l: "Importations", tag: "CAF", txt: `${fmtMd(imp)} FCFA`, d: varPct(imp, prec?.import), serie: sImp },
-    { l: "Balance commerciale", tag: "FAB − CAF", txt: `${fmtMd(solde)} FCFA`, d: null, rouge: solde < 0, serie: sSolde },
-    { l: "Taux de couverture", tag: null, txt: taux != null ? `${nf(taux)} %` : "—", d: null, serie: sTaux },
+  const kpis: { l: string; tag: string | null; txt: string; d: number | null; rouge?: boolean }[] = [
+    { l: "Exportations", tag: "FAB", txt: `${fmtMd(exp)} FCFA`, d: varPct(exp, prec?.export) },
+    { l: "Importations", tag: "CAF", txt: `${fmtMd(imp)} FCFA`, d: varPct(imp, prec?.import) },
+    { l: "Balance commerciale", tag: "FAB − CAF", txt: `${fmtMd(solde)} FCFA`, d: null, rouge: solde < 0 },
+    { l: "Taux de couverture", tag: null, txt: taux != null ? `${nf(taux)} %` : "—", d: null },
   ];
   // Séries mensuelles pour les deux graphes signature (x = numéro du mois)
   const serieDe = (s: "export" | "import") =>
@@ -267,12 +261,9 @@ function ContenuRapport() {
                 <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0 }}>{k.l}</p>
                 {k.tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap" }}>{k.tag}</span>}
               </div>
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
-                <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: k.rouge ? "#dc2626" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>
-                  {k.txt}
-                </p>
-                <Sparkline data={k.serie} largeur={72} hauteur={26} />
-              </div>
+              <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: k.rouge ? "#dc2626" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>
+                {k.txt}
+              </p>
               <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6 }}>
                 <Delta v={k.d} />
                 {k.d !== null && <span style={{ fontSize: 10, color: "#9aa5b4" }}>vs même période {r.annee! - 1}</span>}
