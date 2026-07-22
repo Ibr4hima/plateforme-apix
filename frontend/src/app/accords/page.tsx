@@ -12,7 +12,7 @@ import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/Acco
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
-import { foncerPastel } from "@/lib/couleurs";
+import { badge_vert, badge_bleu, badge_gris } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
@@ -319,12 +319,12 @@ export default function AccordsPage() {
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);
-                  // Pastels alignés sur les rôles des événements : en vigueur
-                  // vert tendre, signé bleu clair, expiré pêche
+                  // Badges du design system : en vigueur vert, signé bleu,
+                  // expiré gris ; l'accent de survol suit la couleur du statut
                   const ST: any = {
-                    en_vigueur: { label:"En vigueur",            p:"#B4DE9D" },
-                    signe:      { label:"Signé non en vigueur",  p:"#9DC3E6" },
-                    expire:     { label:"Expiré",                p:"#E6C79D" },
+                    en_vigueur: { label:"En vigueur",            badge:badge_vert, accent:"#188038" },
+                    signe:      { label:"Signé non en vigueur",  badge:badge_bleu, accent:"#004f91" },
+                    expire:     { label:"Expiré",                badge:badge_gris, accent:"#9aa5b4" },
                   };
                   const st = statut ? ST[statut] : null;
                   const estExpire = statut==="expire";
@@ -333,8 +333,8 @@ export default function AccordsPage() {
                   const dateSec = a.date_expiration
                     ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
                     : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
-                  // Accent du survol = pastel du statut
-                  const accent = st ? st.p : "#C5BFBB";
+                  // Accent du survol = couleur du statut
+                  const accent = st ? st.accent : "#C5BFBB";
                   return (
                   <div key={a.id} onClick={()=>gate(()=>setSelec(a))}
                     style={{background:estExpire?"#FBFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 2px rgba(0,0,0,0.03)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
@@ -354,7 +354,7 @@ export default function AccordsPage() {
                         })()}
                       </div>
                       {st&&(
-                        <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:foncerPastel(st.p),background:`${st.p}40`,border:`1px solid ${st.p}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>
+                        <span style={{...st.badge, whiteSpace:"nowrap" as const, flexShrink:0}}>
                           {st.label}
                         </span>
                       )}

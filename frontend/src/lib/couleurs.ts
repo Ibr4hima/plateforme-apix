@@ -80,6 +80,19 @@ export const badge_orange = badge("orange");
 export const badge_vert = badge("vert");
 export const badge_violet = badge("violet");
 
+// Badge neutre (états inactifs / expirés) : gris, même gabarit que les autres
+const GRIS = "108, 117, 125";  // #6b7280
+export const badge_gris: CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: 5,
+  fontSize: 11, fontWeight: 600, color: "#6b7280",
+  background: "rgba(255,255,255,0.7)", border: `1px solid rgba(${GRIS},0.28)`,
+  padding: "4px 11px", borderRadius: 999,
+};
+export const fond_gris: CSSProperties = {
+  background: `linear-gradient(180deg, rgba(${GRIS},0.06), rgba(${GRIS},0.02))`,
+  border: `1px solid rgba(${GRIS},0.16)`,
+};
+
 // Fond survolé d'un badge cliquable (bordure et fond renforcés) — à appliquer
 // dans onMouseEnter/Leave, ou via le composant <Badge> ci-dessous.
 export const badgeSurvol = (teinte: Teinte) => {
