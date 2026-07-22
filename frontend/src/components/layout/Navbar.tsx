@@ -490,12 +490,12 @@ export default function Navbar() {
             <FichePaysLauncher textColor={textColor} textHover={textHover} />
 
             {/* Code des investissements */}
-            <button onClick={() => setCodeOpen(true)}
-              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+            <Link href="/code-investissements"
+              style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em", textDecoration: "none" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
               Code des investissements
-            </button>
+            </Link>
           </nav>
 
           {/* ── CTA Connexion ── */}
@@ -577,10 +577,10 @@ export default function Navbar() {
                 style={{ display: "block", padding: "10px 14px", color: "#4a5568", textDecoration: "none", fontSize: 14, fontWeight: 500, borderRadius: 10 }}>
                 Tableau de bord
               </Link>
-              <button onClick={() => { setMenuOpen(false); setCodeOpen(true); }}
-                style={{ display: "block", width: "100%", textAlign: "left" as const, padding: "10px 14px", color: "#4a5568", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, borderRadius: 10 }}>
+              <Link href="/code-investissements" onClick={() => setMenuOpen(false)}
+                style={{ display: "block", padding: "10px 14px", color: "#4a5568", textDecoration: "none", fontSize: 14, fontWeight: 500, borderRadius: 10 }}>
                 Code des investissements
-              </button>
+              </Link>
               <Link href="/login" onClick={() => setMenuOpen(false)}
                 style={{ display: "block", width: "100%", textAlign: "center" as const, fontSize: 14, fontWeight: 700, color: "#fff", background: "#ca631f", padding: "12px", borderRadius: 12, border: "none", cursor: "pointer", marginTop: 4, textDecoration: "none" }}>
                 Connexion
