@@ -130,7 +130,7 @@ export default function UtilisateursAdminPage() {
           <Loader2 size={28} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }}/>
         </div>
       ) : (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", overflow: "visible", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", marginTop: 18 }}>
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", overflow: "visible", boxShadow: "var(--ombre-1)", marginTop: 18 }}>
           <div style={{ height: 3, background: "linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", borderRadius: "14px 14px 0 0" }} />
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>

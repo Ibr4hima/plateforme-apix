@@ -303,9 +303,9 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
   const hoverC = zone.pole_nom ? poleAccent(zone.pole_nom) : `${color}55`;
   return (
     <div onClick={onClick}
-      style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"0 1px 2px rgba(0,0,0,0.03)", padding:"18px 20px 16px", display:"flex", flexDirection:"column" as const, gap:13 }}
+      style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"var(--ombre-1)", padding:"18px 20px 16px", display:"flex", flexDirection:"column" as const, gap:13 }}
       onMouseEnter={e=>{
-        e.currentTarget.style.boxShadow="0 14px 32px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor=hoverC;
+        e.currentTarget.style.boxShadow="var(--ombre-2)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor=hoverC;
         // Contenus trop longs : glissent pour révéler la fin
         e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
           const span = box.firstElementChild as HTMLElement | null;
@@ -313,7 +313,7 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
         });
       }}
       onMouseLeave={e=>{
-        e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7";
+        e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7";
         e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
           const span = box.firstElementChild as HTMLElement | null;
           if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }

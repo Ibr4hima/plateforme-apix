@@ -37,7 +37,7 @@ function Badge({ label, color="#9aa5b4" }: { label:string; color?:string }) {
 function Confirm({ msg, onOui, onNon }: { msg:string; onOui:()=>void; onNon:()=>void }) {
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onNon(); }} style={{ position:"fixed" as const, inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#fff", borderRadius:20, maxWidth:420, width:"100%", overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div style={{ background:"#fff", borderRadius:20, maxWidth:420, width:"100%", overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#dc2626", flexShrink:0 }} />
         <div style={{ padding:"24px 28px 20px" }}>
           <div style={{ display:"flex", alignItems:"flex-start", gap:14 }}>
@@ -99,7 +99,7 @@ function ModalPays({ open, onClose, edit, meta, onSaved }: any) {
   if (!open) return null;
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed" as const, inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:640, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:640, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#004f91", flexShrink:0 }} />
 
         {/* En-tête */}
@@ -214,7 +214,7 @@ function ModalGroupement({ open, onClose, edit, onSaved }: any) {
   if (!open) return null;
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed" as const, inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:520, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:520, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#ca631f", flexShrink:0 }} />
 
         {/* En-tête */}
@@ -297,7 +297,7 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
 
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed" as const, inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:800, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:800, maxHeight:"90vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"#ca631f", flexShrink:0 }} />
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16, flexShrink:0 }}>
           <div style={{ minWidth:0 }}>
@@ -524,7 +524,7 @@ export default function RefPaysPage() {
           </div>
 
           {/* Tableau */}
-          <div style={{ background:"#fff", borderRadius:14, border:"1px solid #ECEAE7", overflow:"hidden", boxShadow:"0 1px 3px rgba(0,0,0,0.03)" }}>
+          <div style={{ background:"#fff", borderRadius:14, border:"1px solid #ECEAE7", overflow:"hidden", boxShadow:"var(--ombre-1)" }}>
             <div style={{ height:3, background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" }} />
             <table style={{ width:"100%", borderCollapse:"collapse" as const }}>
               <thead>
@@ -590,9 +590,9 @@ export default function RefPaysPage() {
         // ── ONGLET GROUPEMENTS ────────────────────────────────────────────────
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))", gap:14 }}>
           {grps.map(g=>(
-            <div key={g.id} style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, boxShadow:"0 1px 3px rgba(0,0,0,0.03)", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
-              onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="#ca631f40"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7"; }}>
+            <div key={g.id} style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, boxShadow:"var(--ombre-1)", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
+              onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-2)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="#ca631f40"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="#ECEAE7"; }}>
               <div style={{ height:3, background:"linear-gradient(90deg,#9c4a15 0%,#ca631f 60%,#e07a2e 100%)", flexShrink:0 }} />
               <div style={{ padding:"14px 16px 14px", flex:1 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:12 }}>

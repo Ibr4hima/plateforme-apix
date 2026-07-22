@@ -104,7 +104,7 @@ export default function AdminDashboard() {
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
+                  e.currentTarget.style.boxShadow = "var(--ombre-2)";
                   e.currentTarget.style.borderColor = m.color;
                 }}
                 onMouseLeave={e => {

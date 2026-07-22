@@ -173,7 +173,7 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
         @keyframes fuiIn{from{opacity:0; transform:translateY(10px) scale(0.985);}to{opacity:1; transform:none;}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
       `}</style>
-      <div role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "fuiIn 0.22s ease" }}>
+      <div role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "fuiIn 0.22s ease" }}>
         {/* Liseré d'accent */}
         <div style={{ height: 4, background: FORM_COLORS.primary, flexShrink: 0 }} />
 

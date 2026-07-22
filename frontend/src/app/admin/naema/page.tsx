@@ -150,7 +150,7 @@ export default function AdminNaema() {
             <div key={sec.id} style={{
               background: "#fff", border: "1px solid #C5BFBB",
               borderRadius: 16, overflow: "hidden",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+              boxShadow: "var(--ombre-1)",
             }}>
               {/* Header secteur */}
               <div
@@ -334,7 +334,7 @@ export default function AdminNaema() {
         >
           <div style={{
             background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 480,
-            border: "1px solid #C5BFBB", boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+            border: "1px solid #C5BFBB", boxShadow: "var(--ombre-2)",
             overflow: "hidden",
           }}>
             <div style={{ height: 4, background: "linear-gradient(90deg, #ca631f, #e07a3a)" }} />

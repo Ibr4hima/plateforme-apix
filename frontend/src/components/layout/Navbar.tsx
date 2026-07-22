@@ -226,7 +226,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
                       <div key={r.id}
                         onClick={() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setResults(null); setPendingArtId(r.id); if (contentRef.current) contentRef.current.scrollTop = 0; } }}
                         style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 16px", cursor:"pointer", transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(202,99,31,0.35)"; e.currentTarget.style.background="#fff"; e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 8px 20px rgba(0,30,60,0.07)"; }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(202,99,31,0.35)"; e.currentTarget.style.background="#fff"; e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="var(--ombre-2)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor="#F0EEEC"; e.currentTarget.style.background="#FAFAF9"; e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="none"; }}>
                         {chap && (
                           <p style={{ fontSize:9.5, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", margin:"0 0 5px" }}>
@@ -499,7 +499,7 @@ export default function Navbar() {
 
         {/* ── Menu mobile ── */}
         {menuOpen && (
-          <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "rgba(255,255,255,0.98)", borderBottom: "1px solid #E8E5E3", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", padding: "12px 16px 16px" }}>
+          <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "rgba(255,255,255,0.98)", borderBottom: "1px solid #E8E5E3", boxShadow: "var(--ombre-2)", padding: "12px 16px 16px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 12 }}>
               {modules.filter(m => visible(m.href)).map(m => (
                 <Link key={m.href} href={m.href} onClick={() => setMenuOpen(false)}

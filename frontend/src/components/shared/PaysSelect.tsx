@@ -76,7 +76,7 @@ export default function PaysSelect({
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100,
           background: "#fff", border: "1px solid #C5BFBB", borderRadius: 10,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.12)", maxHeight: 300, overflowY: "auto" }}>
+          boxShadow: "var(--ombre-2)", maxHeight: 300, overflowY: "auto" }}>
           <div style={{ padding: "8px 10px", borderBottom: "1px solid #F2F0EF", position: "sticky", top: 0, background: "#fff" }}>
             <div style={{ position: "relative" }}>
               <Search size={13} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />

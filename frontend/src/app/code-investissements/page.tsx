@@ -243,7 +243,7 @@ export default function CodeInvestissementsPage() {
                     return (
                       <div key={r.id} onClick={() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setResults(null); setPendingArtId(r.id); } }}
                         style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "14px 16px", cursor: "pointer", transition: "all 0.15s" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(202,99,31,0.35)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,30,60,0.07)"; }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(202,99,31,0.35)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "var(--ombre-2)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#F0EEEC"; e.currentTarget.style.background = "#FAFAF9"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
                         {chap && (
                           <p style={{ fontSize: 9.5, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 5px" }}>{chapLabel(chap.numero)} · {chap.titre}</p>

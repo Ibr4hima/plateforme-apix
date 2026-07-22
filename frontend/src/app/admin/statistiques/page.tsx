@@ -190,7 +190,7 @@ export default function AdminStatistiquesPage() {
       {tab === "transactions" ? <TransactionsPanel headers={headers} paysList={paysList} /> : (<>
 
       {/* ── Import ── */}
-      <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", marginTop: 20, marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+      <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", marginTop: 20, marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
         <div style={SEC}>Importer des données</div>
 
         {/* Sélecteur d'indicateur */}
@@ -272,7 +272,7 @@ export default function AdminStatistiquesPage() {
       ) : null}
 
       {/* ── Couverture ── */}
-      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", boxShadow: "var(--ombre-1)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingBottom: 10, borderBottom: "1px solid #E8E5E3" }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" }}>Données importées par pays</span>
           {!loading && <span style={{ background: "rgba(0,79,145,0.07)", color: "#004f91", borderRadius: 999, padding: "2px 11px", fontSize: 12, fontWeight: 700 }}>{couverture.length} pays</span>}
@@ -418,7 +418,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
   return (
     <>
       {/* Import */}
-      <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+      <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
         <div style={SEC}>Importer un fichier de transactions</div>
         <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 14 }}>
           Fichier resourcetrade.earth (colonnes Exporter ISO3, Importer ISO3, Resource, Year, Value 1000USD). Les pays sont résolus par code ISO3, la valeur convertie en dollars, les ressources enregistrées pour édition. Réimporter une année remplace ses données.
@@ -439,7 +439,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
 
       {/* Partenaires ajoutés automatiquement */}
       {res?.partenaires_crees?.length ? (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
           <div style={{ ...SEC, marginBottom: 10 }}>{res.partenaires_crees.length} partenaires ajoutés automatiquement</div>
           <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 12 }}>Ces exportateurs/importateurs étaient absents du référentiel (territoires, agrégats…). Ils ont été créés pour ne perdre aucune donnée et n&apos;apparaissent pas dans la liste des pays macro.</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -453,7 +453,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
       ) : null}
 
       {/* Années couvertes */}
-      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
         <div style={{ ...SEC, marginBottom: 12 }}>Années importées</div>
         {couv.length === 0 ? <div style={{ fontSize: 13, color: "#9aa5b4" }}>Aucune transaction importée.</div> : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -472,7 +472,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
 
       {/* Tableau des données importées */}
       {couv.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
             <div style={{ ...SEC, marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>Données transactionnelles importées</div>
             <span style={{ fontSize: 12, color: "#9aa5b4", fontWeight: 600 }}>{total.toLocaleString("fr-FR")} ligne{total > 1 ? "s" : ""}</span>
@@ -544,7 +544,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
       {partenaires.length > 0 && (() => {
         const filt = partenaires.filter(pa => !qPart || pa.nom_fr.toLowerCase().includes(qPart.toLowerCase()) || (pa.code_iso3 || "").toLowerCase().includes(qPart.toLowerCase()));
         return (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
             <div style={{ ...SEC, marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>Partenaires hors référentiel — noms éditables</div>
             <span style={{ fontSize: 12, color: "#9aa5b4" }}>{partenaires.length}</span>
@@ -568,7 +568,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
 
       {/* Ressources (éditables) */}
       {ressources.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", boxShadow: "var(--ombre-1)" }}>
           <div style={{ ...SEC, marginBottom: 12 }}>Ressources — libellés éditables</div>
           <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 12 }}>Traduisez ou renommez ; le libellé s&apos;applique partout où la ressource apparaît.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 10 }}>

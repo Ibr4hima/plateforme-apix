@@ -70,7 +70,7 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
   return (
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 600, maxHeight: "88vh", border: "1px solid #E8E5E3", boxShadow: "0 32px 80px rgba(0,0,0,0.2)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 600, maxHeight: "88vh", border: "1px solid #E8E5E3", boxShadow: "var(--ombre-2)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 4, background: `linear-gradient(90deg,${color},#ca631f)` }} />
         <div style={{ padding: "18px 22px 0" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>

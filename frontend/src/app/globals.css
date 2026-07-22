@@ -37,14 +37,20 @@
   --esp-1: 4px;  --esp-2: 8px;  --esp-3: 12px; --esp-4: 16px;
   --esp-5: 24px; --esp-6: 32px; --esp-7: 48px; --esp-8: 64px;
 
-  /* Rayons */
+  /* Rayons — échelle unique */
   --rayon-sm: 8px; --rayon-md: 12px; --rayon-lg: 16px; --rayon-xl: 22px; --rayon-pilule: 999px;
+  --rayon-carte: 16px;   /* rayon canonique des cartes */
 
-  /* Ombres : posé / carte / flottant / modal */
-  --ombre-subtile:   0 1px 3px rgba(0, 30, 60, 0.06);
-  --ombre-carte:     0 4px 16px rgba(0, 30, 60, 0.07);
-  --ombre-flottante: 0 8px 30px rgba(0, 30, 60, 0.12);
-  --ombre-modale:    0 16px 60px rgba(0, 30, 60, 0.22);
+  /* Ombres — 2 niveaux canoniques.
+     --ombre-1 : éléments posés (cartes, champs, boutons au repos)
+     --ombre-2 : éléments élevés (survol, menus, feuilles, modals)
+     Les noms sémantiques restent en alias pour ne rien casser. */
+  --ombre-1: 0 1px 3px rgba(0, 30, 60, 0.08);
+  --ombre-2: 0 14px 44px rgba(0, 30, 60, 0.16);
+  --ombre-subtile:   var(--ombre-1);
+  --ombre-carte:     var(--ombre-1);
+  --ombre-flottante: var(--ombre-2);
+  --ombre-modale:    var(--ombre-2);
 
   /* Typographie : display / titre / corps / légende / donnée */
   --typo-display: 700 clamp(30px, 4vw, 44px)/1.15 var(--font-display);
@@ -104,8 +110,8 @@ body {
 
 .shadow-orange     { box-shadow: 0 0 30px rgba(202, 99, 31, 0.2); }
 .shadow-blue       { box-shadow: 0 0 30px rgba(0, 79, 145, 0.15); }
-.shadow-card       { box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
-.shadow-card-hover { box-shadow: 0 8px 40px rgba(0,0,0,0.15); }
+.shadow-card       { box-shadow: var(--ombre-1); }
+.shadow-card-hover { box-shadow: var(--ombre-2); }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }

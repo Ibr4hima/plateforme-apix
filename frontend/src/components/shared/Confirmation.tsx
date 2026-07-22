@@ -56,7 +56,7 @@ export default function ConfirmationHote() {
       style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div onClick={e => e.stopPropagation()} role="alertdialog" aria-modal="true"
-        style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,30,60,0.28)", animation: "vueIn 0.18s ease" }}>
+        style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
         <div style={{ height: 4, background: "#dc2626", flexShrink: 0 }} />
         <div style={{ padding: "22px 26px 18px" }}>
           <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0, lineHeight: 1.3 }}>

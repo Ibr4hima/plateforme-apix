@@ -178,7 +178,7 @@ export default function HomePage() {
               Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
             </p>
           </div>
-          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#ECEAE7",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.03)"}}>
+          <div className="lp-modules-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:"#ECEAE7",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"var(--ombre-1)"}}>
             {MODULES.map((m,i)=>(
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"#fff",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,position:"relative" as const,"--mod-couleur":m.color} as React.CSSProperties}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>

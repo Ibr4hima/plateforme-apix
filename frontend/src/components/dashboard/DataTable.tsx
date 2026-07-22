@@ -214,7 +214,7 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
       background: "#fff", width: "100%",
       borderRadius: embedded ? 0 : 14,
       border: embedded ? "none" : "1px solid #ECEAE7",
-      boxShadow: embedded ? "none" : "0 1px 3px rgba(0,0,0,0.03)",
+      boxShadow: embedded ? "none" : "var(--ombre-1)",
       overflow: "hidden",
     }}>
 

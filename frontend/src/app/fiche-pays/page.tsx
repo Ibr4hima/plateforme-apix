@@ -239,7 +239,7 @@ function ContenuFichePays() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginTop: -52 }}>
             {kpis.map(k => (
-              <div key={k.l} className="ds-carte" style={{ padding: "18px 20px", boxShadow: "0 10px 30px rgba(0,30,70,0.13)" }}>
+              <div key={k.l} className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)" }}>
                 <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: "0 0 10px" }}>{k.l}</p>
                 <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>{k.txt}</p>
                 <div style={{ marginTop: 8, minHeight: 15 }}>

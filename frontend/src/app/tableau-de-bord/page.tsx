@@ -1237,7 +1237,7 @@ function VizModal({ open, onClose, titre, vizId, children }: { open:boolean; onC
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:32}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:1100,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",animation:"vueIn 0.22s ease"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:1100,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
         <div style={{height:4,background:"#004f91",flexShrink:0}}/>
 
         {/* En-tête fixe */}
@@ -1287,10 +1287,10 @@ function VizCard({ card, viz, onRemove }: {
   return (
     <>
       <div onClick={()=>!loading&&data.length>0&&setOpen(true)}
-        style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",padding:"16px 18px",cursor:loading||data.length===0?"default":"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",minWidth:0}}
-        onMouseEnter={e=>{if(!loading&&data.length>0){e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}
+        style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",padding:"16px 18px",cursor:loading||data.length===0?"default":"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",minWidth:0}}
+        onMouseEnter={e=>{if(!loading&&data.length>0){e.currentTarget.style.boxShadow="var(--ombre-2)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; const d=sp.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; } });}}
-        onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";
+        onMouseLeave={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; });}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
           <div data-marquee style={{flex:1,minWidth:0,overflow:"hidden",whiteSpace:"nowrap" as const}}>
@@ -1329,7 +1329,7 @@ function TableCard({ card, onRemove }: {
   if(!def) return null;
   return (
     <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",
-      boxShadow:"0 1px 3px rgba(0,0,0,0.03)",overflow:"hidden",
+      boxShadow:"var(--ombre-1)",overflow:"hidden",
       gridColumn:"span 2"}}>
       <AnalyticTable tableId={card.tableId} titre={def.titre} description={def.description} embedded onClose={onRemove}/>
     </div>
@@ -1358,9 +1358,9 @@ function KPICard({ def, value }: { def: typeof GLOBAL_KPIS[number]; value:any })
     : def.unit==="jours" ? `${nb} jours`
     : nb;
   return (
-    <div style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
-      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
-      onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";}}>
+    <div style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"var(--ombre-1)", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-2)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="#ECEAE7";}}>
       <p style={{ fontSize:9, fontWeight:800, color:KPI_ACCENT, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{def.label}</p>
       <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
         <p style={{ fontSize:"1.1rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{display}</p>
@@ -1535,7 +1535,7 @@ function CarteSenegal({ height=200, legend=true, legendVertical=false }: { heigh
 
       {/* Tooltip */}
       {tip && (
-        <div style={{ position:"absolute" as const, left:Math.min(tip.x+12, (ref.current?.clientWidth||300)-150), top:Math.max(tip.y-10,4), background:"#1a1a2e", color:"#fff", borderRadius:9, padding:"8px 11px", fontSize:12, lineHeight:1.5, pointerEvents:"none" as const, zIndex:20, boxShadow:"0 6px 20px rgba(0,0,0,0.25)", whiteSpace:"nowrap" as const }}>
+        <div style={{ position:"absolute" as const, left:Math.min(tip.x+12, (ref.current?.clientWidth||300)-150), top:Math.max(tip.y-10,4), background:"#1a1a2e", color:"#fff", borderRadius:9, padding:"8px 11px", fontSize:12, lineHeight:1.5, pointerEvents:"none" as const, zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
           <div style={{ fontWeight:700, marginBottom:2 }}>{tip.nom}</div>
           <div style={{ opacity:0.85 }}>{tip.valeur.toLocaleString("fr-FR")} entreprise{tip.valeur>1?"s":""}</div>
           <div style={{ opacity:0.85 }}>Densité : {fmtDens(tip.densite)} / 100 km²</div>
@@ -1635,7 +1635,7 @@ function GroupedBarZones({ height=200, fill=false }: { height?:number; fill?:boo
     <div ref={cRef} style={{ width:"100%", height: fill?"100%":undefined, position:"relative" as const }}>
       <svg ref={ref} style={{ width:"100%", height: fill?"100%":height, display:"block" }}/>
       {tip && (
-        <div style={{ position:"absolute" as const, left:Math.min(tip.x+12, (cRef.current?.clientWidth||300)-160), top:Math.max(tip.y-10,4), background:"#1a1a2e", color:"#fff", borderRadius:9, padding:"8px 11px", fontSize:12, lineHeight:1.5, pointerEvents:"none" as const, zIndex:20, boxShadow:"0 6px 20px rgba(0,0,0,0.25)", whiteSpace:"nowrap" as const }}>
+        <div style={{ position:"absolute" as const, left:Math.min(tip.x+12, (cRef.current?.clientWidth||300)-160), top:Math.max(tip.y-10,4), background:"#1a1a2e", color:"#fff", borderRadius:9, padding:"8px 11px", fontSize:12, lineHeight:1.5, pointerEvents:"none" as const, zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
           <div style={{ fontWeight:700, marginBottom:2 }}>{tip.nom}</div>
           <div style={{ opacity:0.85 }}>{tip.groupe} · {tip.valeur.toLocaleString("fr-FR")} entreprise{tip.valeur>1?"s":""}</div>
         </div>
@@ -1770,10 +1770,10 @@ function IndicViz({ id, onRemove }: { id:string; onRemove:()=>void }) {
   return (
     <>
       <div onClick={()=>!loading&&colored.length>0&&setOpen(true)}
-        style={{ background:"#fff", borderRadius:14, border:"1px solid #ECEAE7", boxShadow:"0 1px 3px rgba(0,0,0,0.03)", overflow:"hidden", cursor:loading||colored.length===0?"default":"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
-        onMouseEnter={e=>{ if(!loading&&colored.length>0){ e.currentTarget.style.boxShadow="0 12px 28px rgba(0,30,60,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }
+        style={{ background:"#fff", borderRadius:14, border:"1px solid #ECEAE7", boxShadow:"var(--ombre-1)", overflow:"hidden", cursor:loading||colored.length===0?"default":"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+        onMouseEnter={e=>{ if(!loading&&colored.length>0){ e.currentTarget.style.boxShadow="var(--ombre-2)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; const d=sp.scrollWidth-(box as HTMLElement).clientWidth; if(d>0){ sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; } }); }}
-        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.03)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7";
+        onMouseLeave={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7";
           e.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{ const sp=box.firstElementChild as HTMLElement|null; if(!sp) return; sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; }); }}>
         <div style={{ padding:"16px 18px" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, marginBottom:14 }}>
@@ -2034,7 +2034,7 @@ export default function TableauDeBordPage() {
           {onglet==="viz" && (<>
             {/* Indicateurs Global fixes */}
             {erreurKpis ? (
-              <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",boxShadow:"0 1px 3px rgba(0,0,0,0.03)",marginBottom:28}}>
+              <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEAE7",boxShadow:"var(--ombre-1)",marginBottom:28}}>
                 <ErreurChargement compact onRetry={()=>setTickKpis(t=>t+1)}/>
               </div>
             ) : (
@@ -2046,9 +2046,9 @@ export default function TableauDeBordPage() {
             {/* Visualisation permanente : Répartition des entreprises */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18,marginBottom:28,alignItems:"stretch"}}>
               <div onClick={()=>setMapOpen(true)}
-                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s"}}
-                onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
-                onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
+                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"var(--ombre-1)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s"}}
+                onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-2)";e.currentTarget.style.transform="translateY(-2px)";}}
+                onMouseLeave={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(0)";}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap" as const}}>
                   <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:0}}>Répartition des entreprises</p>
                   <span style={{fontSize:9.5,fontWeight:700,color:"#9aa5b4",background:"#F2F0EF",padding:"2px 8px",borderRadius:999,textTransform:"uppercase" as const,letterSpacing:"0.04em"}}>ent./100 km²</span>
@@ -2058,9 +2058,9 @@ export default function TableauDeBordPage() {
 
               {/* Répartition par zones économiques (grouped bar) */}
               <div onClick={()=>setZoneEcoOpen(true)}
-                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s",display:"flex",flexDirection:"column" as const}}
-                onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
-                onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.transform="translateY(0)";}}>
+                style={{background:"#fff",borderRadius:16,border:"1px solid #E8E5E3",boxShadow:"var(--ombre-1)",padding:"16px 18px",cursor:"pointer",transition:"all 0.18s",display:"flex",flexDirection:"column" as const}}
+                onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-2)";e.currentTarget.style.transform="translateY(-2px)";}}
+                onMouseLeave={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(0)";}}>
                 <p style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",margin:"0 0 12px"}}>Répartition des entreprises par zone économique</p>
                 <div style={{flex:1,minHeight:200}}><GroupedBarZones height={200} fill/></div>
               </div>

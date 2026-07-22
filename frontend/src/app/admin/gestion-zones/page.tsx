@@ -420,7 +420,7 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
       style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:720,maxHeight:"90vh",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,30,60,0.28)",overflow:"hidden",animation:"vueIn 0.22s ease"}}>
+      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:720,maxHeight:"90vh",display:"flex",flexDirection:"column",boxShadow:"var(--ombre-2)",overflow:"hidden",animation:"vueIn 0.22s ease"}}>
         <div style={{height:4,background:"#004f91",flexShrink:0}}/>
         {/* Header */}
         <div style={{padding:"18px 28px 14px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
@@ -726,7 +726,7 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={ev=>ev.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:680, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+      <div onClick={ev=>ev.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:680, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         {/* Liseré d'accent */}
         <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
 
@@ -1102,9 +1102,9 @@ export default function GestionZonesPage() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
                 {zDuT.map(z => (
                   <div key={z.id} onClick={() => setVueId(z.id)}
-                    style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+                    style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "var(--ombre-1)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
                     onMouseEnter={ev => {
-                      ev.currentTarget.style.boxShadow = "0 12px 28px rgba(0,30,60,0.10)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${t.color}40`;
+                      ev.currentTarget.style.boxShadow = "var(--ombre-2)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${t.color}40`;
                       // Contenus trop longs : glissent pour révéler la fin
                       ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
                         const span = box.firstElementChild as HTMLElement | null;
@@ -1112,7 +1112,7 @@ export default function GestionZonesPage() {
                       });
                     }}
                     onMouseLeave={ev => {
-                      ev.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7";
+                      ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7";
                       ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
                         const span = box.firstElementChild as HTMLElement | null;
                         if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }

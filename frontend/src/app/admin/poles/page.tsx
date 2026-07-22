@@ -41,7 +41,7 @@ function RegionsMultiSelect({
         }
       </div>
       {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200, background: "#fff", border: "1px solid rgba(124,58,237,0.3)", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", maxHeight: 260, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200, background: "#fff", border: "1px solid rgba(124,58,237,0.3)", borderRadius: 10, boxShadow: "var(--ombre-2)", maxHeight: 260, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <div style={{ padding: "8px 10px", borderBottom: "1px solid #F2F0EF" }}>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…"
               style={{ width: "100%", background: "#F2F0EF", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, outline: "none", boxSizing: "border-box" as const }} />

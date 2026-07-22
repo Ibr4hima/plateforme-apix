@@ -270,7 +270,7 @@ export default function AdminGeo() {
           const totalArr  = deps.reduce((acc, d) => acc + arrsDuDep(d.id).length, 0);
 
           return (
-            <div key={reg.id} style={{ background: "#fff", border: "1px solid #C5BFBB", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+            <div key={reg.id} style={{ background: "#fff", border: "1px solid #C5BFBB", borderRadius: 16, overflow: "hidden", boxShadow: "var(--ombre-1)" }}>
               {/* Header région */}
               <div onClick={() => setExpandedReg(isRegOpen ? null : reg.id)}
                 style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 20px", cursor: "pointer",
@@ -388,7 +388,7 @@ export default function AdminGeo() {
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)",
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 24 }}>
           <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 420,
-            border: "1px solid #C5BFBB", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden" }}>
+            border: "1px solid #C5BFBB", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
             <div style={{ height: 4, background: "linear-gradient(90deg,#ca631f,#e07a3a)" }}/>
             <div style={{ padding: "22px 26px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
@@ -431,7 +431,7 @@ export default function AdminGeo() {
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(6px)",
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 300, padding: 24 }}>
           <div style={{ background: "#FAFAF9", borderRadius: 20, width: "100%", maxWidth: 820, maxHeight: "92vh",
-            overflowY: "auto", border: "1px solid #C5BFBB", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+            overflowY: "auto", border: "1px solid #C5BFBB", boxShadow: "var(--ombre-2)" }}>
             <div style={{ height: 4, background: "linear-gradient(90deg,#ca631f,#e07a3a)", borderRadius: "20px 20px 0 0" }}/>
             <div style={{ padding: "24px 28px 28px" }}>
 

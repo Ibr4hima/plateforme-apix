@@ -258,7 +258,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
           <div ref={containerRef} style={{ width:"100%" }}/>
           {tooltip && !tooltip.pole && !tooltip.region && (
-            <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#fff", border:"1px solid #ECEAE7", borderRadius:10, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"0 8px 24px rgba(0,30,60,0.12)", whiteSpace:"nowrap" as const }}>
+            <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#fff", border:"1px solid #ECEAE7", borderRadius:10, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
               {tooltip.nom}
             </div>
           )}
@@ -275,7 +275,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             ];
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-200)), width:224, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"0 12px 28px rgba(0,30,60,0.14)" }}>
+              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-200)), width:224, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
                 {/* Nom */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:9 }}>
                   <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
@@ -335,7 +335,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             ];
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-235)), width:238, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"0 12px 28px rgba(0,30,60,0.14)" }}>
+              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-235)), width:238, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
                 {/* Nom + régions */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7 }}>
                   <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
@@ -413,7 +413,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         <div onClick={e=>{ if(e.target===e.currentTarget) setActivePole(null); }}
           style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
           <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-          <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+          <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
             {/* Liseré d'accent */}
             <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
 
@@ -552,7 +552,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
           <div onClick={e => { if (e.target === e.currentTarget) setActiveRegion(null); }}
             style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
             <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-            <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:480, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,30,60,0.28)", animation:"vueIn 0.22s ease" }}>
+            <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:480, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
               {/* Liseré d'accent */}
               <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
 
