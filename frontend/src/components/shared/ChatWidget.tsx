@@ -134,30 +134,32 @@ export default function ChatWidget() {
 
   return (
     <>
-      {/* Bulle flottante */}
+      {/* Lanceur : le logo Claude posé directement (sans bulle) */}
       {!ouvert && (
         <button
           onClick={() => setOuvert(true)}
           aria-label="Ouvrir l'assistant"
           style={{
             position: "fixed",
-            right: 20,
-            bottom: 20,
-            width: 58,
-            height: 58,
-            borderRadius: "50%",
+            right: 22,
+            bottom: 22,
+            width: 52,
+            height: 52,
+            padding: 0,
             border: "none",
+            background: "transparent",
             cursor: "pointer",
-            background: DEGRADE,
-            color: "#fff",
-            boxShadow: "0 8px 24px rgba(0,42,82,0.35)",
             zIndex: 60,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.22))",
+            transition: "transform 0.18s",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <LogoClaude size={26} />
+          <LogoClaude size={48} />
         </button>
       )}
 
@@ -379,30 +381,15 @@ export default function ChatWidget() {
   );
 }
 
-// Logo Claude — éclat (sunburst) de rayons pleins en forme de capsules
-// rayonnant du centre. SVG inline, hérite de currentColor (par défaut ; passer
-// couleur="#D97757" pour la teinte corail de la marque). Réutilisé en navbar.
-// [angle en degrés, rayon extérieur] — longueurs alternées pour l'aspect organique.
-const RAYONS_CLAUDE: [number, number][] = [
-  [0, 9.4], [30, 7], [60, 9], [90, 9.8], [120, 8.7], [150, 7.1],
-  [180, 9.3], [210, 7], [240, 9], [270, 9.7], [300, 8.6], [330, 7.1],
-];
+// Logo Claude officiel (tracé de frontend/public/claude_icon.svg), teinté en
+// orange APIX par défaut. `couleur` permet de surcharger la teinte.
+const CLAUDE_PATH =
+  "m7.75 26.27 7.77-4.36.13-.38-.13-.21h-.38l-1.3-.08-4.44-.12-3.85-.16-3.73-.2-.94-.2-.88-1.16.09-.58.79-.53 1.13.1 2.5.17 3.75.26 2.72.16 4.03.42h.64l.09-.26-.22-.16-.17-.16-3.88-2.63-4.2-2.78-2.2-1.6-1.19-.81-.6-.76-.26-1.66 1.08-1.19 1.45.1.37.1 1.47 1.13 3.14 2.43 4.1 3.02.6.5.24-.17.03-.12-.27-.45-2.23-4.03-2.38-4.1-1.06-1.7-.28-1.02c-.1-.42-.17-.77-.17-1.2l1.23-1.67.68-.22 1.64.22.69.6 1.02 2.33 1.65 3.67 2.56 4.99.75 1.48.4 1.37.15.42h.26v-.24l.21-2.81.39-3.45.38-4.44.13-1.25.62-1.5 1.23-.81.96.46.79 1.13-.11.73-.47 3.05-.92 4.78-.6 3.2h.35l.4-.4 1.62-2.15 2.72-3.4 1.2-1.35 1.4-1.49.9-.71h1.7l1.25 1.86-.56 1.92-1.75 2.22-1.45 1.88-2.08 2.8-1.3 2.24.12.18.31-.03 4.7-1 2.54-.46 3.03-.52 1.37.64.15.65-.54 1.33-3.24.8-3.8.76-5.66 1.34-.07.05.08.1 2.55.24 1.09.06h2.67l4.97.37 1.3.86.78 1.05-.13.8-2 1.02-2.7-.64-6.3-1.5-2.16-.54h-.3v.18l1.8 1.76 3.3 2.98 4.13 3.84.21.95-.53.75-.56-.08-3.63-2.73-1.4-1.23-3.17-2.67h-.21v.28l.73 1.07 3.86 5.8.2 1.78-.28.58-1 .35-1.1-.2-2.26-3.17-2.33-3.57-1.88-3.2-.23.13-1.11 11.95-.52.61-1.2.46-1-.76-.53-1.23.53-2.43.64-3.17.52-2.52.47-3.13.28-1.04-.02-.07-.23.03-2.36 3.24-3.59 4.85-2.84 3.04-.68.27-1.18-.61.11-1.09.66-.97 3.93-5 2.37-3.1 1.53-1.79-.01-.26h-.09l-10.44 6.78-1.86.24-.8-.75.1-1.23.38-.4 3.14-2.16z";
 
-export function LogoClaude({ size = 22, couleur }: { size?: number; couleur?: string }) {
-  const cx = 12, cy = 12, interieur = 2.3, largeur = 1.7;
+export function LogoClaude({ size = 22, couleur = "#ca631f" }: { size?: number; couleur?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={couleur || "currentColor"}>
-      {RAYONS_CLAUDE.map(([angle, exterieur], i) => (
-        <rect
-          key={i}
-          x={cx - largeur / 2}
-          y={cy - exterieur}
-          width={largeur}
-          height={exterieur - interieur}
-          rx={largeur / 2}
-          transform={`rotate(${angle} ${cx} ${cy})`}
-        />
-      ))}
+    <svg width={size} height={size} viewBox="0 -0.01 39.5 39.53" fill={couleur}>
+      <path d={CLAUDE_PATH} />
     </svg>
   );
 }
