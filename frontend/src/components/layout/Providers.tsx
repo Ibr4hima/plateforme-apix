@@ -6,6 +6,7 @@ import FichesGlobales from "@/components/shared/FichesGlobales";
 import RechercheGlobale from "@/components/shared/RechercheGlobale";
 import ChatWidget from "@/components/shared/ChatWidget";
 import { FichePaysPickerGlobal } from "@/components/fiche-pays/FichePaysLauncher";
+import TransitionPage from "@/components/layout/TransitionPage";
 import { SessionProvider } from "next-auth/react";
 import { useState } from "react";
 
@@ -24,7 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <TransitionPage>{children}</TransitionPage>
         <ConfirmationHote/>
         <RechercheGlobale/>
         <FichesGlobales/>

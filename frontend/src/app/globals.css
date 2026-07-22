@@ -132,6 +132,19 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .charge-in { animation: none; }
 }
+
+/* Transition de route : fondu + léger glissement à chaque changement de page.
+   fill-mode `backwards` (jamais `forwards`) : après l'animation, plus aucun
+   transform résiduel → pas de contexte d'empilement qui piégerait les modals
+   `position:fixed` internes aux pages (cf. note chargeIn ci-dessus). */
+@keyframes routeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.apix-route-in { animation: routeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+@media (prefers-reduced-motion: reduce) {
+  .apix-route-in { animation: none; }
+}
 .animate-delay-100 { animation-delay: 100ms; }
 .animate-delay-200 { animation-delay: 200ms; }
 .animate-delay-300 { animation-delay: 300ms; }
