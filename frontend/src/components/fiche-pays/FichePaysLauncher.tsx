@@ -6,12 +6,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 export default function FichePaysLauncher({ textColor, textHover }: { textColor: string; textHover: string }) {
-  const router = useRouter();
   const [senId, setSenId] = useState<number | null>(null);
   useEffect(() => {
     fetch(`${API}/statistiques/pays`).then(r => r.json())
@@ -23,11 +21,11 @@ export default function FichePaysLauncher({ textColor, textHover }: { textColor:
       const paysId = (e as CustomEvent).detail?.paysId;
       if (paysId == null) return;
       const ids = senId !== null && senId !== paysId ? [senId, paysId] : [paysId];
-      router.push(`/fiche-pays?pays=${ids.join(",")}`);
+      window.location.href = `/fiche-pays?pays=${ids.join(",")}`;
     };
     window.addEventListener("apix:fiche-pays", h);
     return () => window.removeEventListener("apix:fiche-pays", h);
-  }, [senId, router]);
+  }, [senId]);
   return (
     <Link href="/fiche-pays"
       style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em", textDecoration: "none" }}
