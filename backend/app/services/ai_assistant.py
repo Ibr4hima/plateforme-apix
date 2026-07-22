@@ -49,7 +49,7 @@ _MODULES_AUTORISES = (
 _FRAGMENTS_INTERDITS = ("importer", "fichiers", "sync", "rafraichir", "associer", "creer")
 
 # Taille max d'un résultat d'outil renvoyé à Claude (garde-fou de coût/latence).
-_MAX_RESULTAT = 8000
+_MAX_RESULTAT = 12000
 
 # Nombre max d'allers-retours d'outils par réponse (évite les boucles).
 # Plus élevé qu'avant : la recherche « en profondeur » enchaîne souvent
@@ -184,6 +184,21 @@ def _chemin_autorise(chemin: str) -> bool:
     return any(c == m or c.startswith(m + "/") for m in _MODULES_AUTORISES)
 
 
+async def _get_interne(chemin_clean: str, parametres: dict | None) -> tuple[int, str]:
+    """Appel GET interne (transport ASGI, sans réseau) — renvoie (status, texte
+    complet, non tronqué). Import tardif de `app` pour éviter l'import circulaire."""
+    settings = get_settings()
+    url = settings.API_PREFIX + chemin_clean
+    from app.main import app
+
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
+    async with httpx.AsyncClient(
+        transport=transport, base_url="http://assistant.interne", timeout=30.0
+    ) as client:
+        resp = await client.get(url, params=parametres or {})
+    return resp.status_code, resp.text
+
+
 async def _consulter_donnees(chemin: str, parametres: dict | None) -> str:
     """Exécute l'appel interne et renvoie une chaîne (JSON ou message d'erreur)
     destinée à Claude. Ne lève jamais : les erreurs sont renvoyées comme texte
@@ -193,31 +208,49 @@ async def _consulter_donnees(chemin: str, parametres: dict | None) -> str:
             "Erreur : chemin non autorisé ou hors périmètre. Utilise uniquement "
             "les chemins du catalogue (modules publics en lecture)."
         )
-    settings = get_settings()
     chemin_clean = "/" + chemin.split("?")[0].strip().lstrip("/")
-    url = settings.API_PREFIX + chemin_clean
     try:
-        # Import tardif : évite un import circulaire (main importe ce module).
-        from app.main import app
-
-        transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
-        async with httpx.AsyncClient(
-            transport=transport, base_url="http://assistant.interne", timeout=30.0
-        ) as client:
-            resp = await client.get(url, params=parametres or {})
+        status, texte = await _get_interne(chemin_clean, parametres)
     except Exception as exc:  # noqa: BLE001 — on renvoie l'erreur à Claude
         return f"Erreur lors de l'appel {chemin_clean} : {exc}"
 
-    if resp.status_code >= 400:
-        detail = resp.text[:500]
+    if status >= 400:
         return (
-            f"Erreur {resp.status_code} sur {chemin_clean}. Vérifie le chemin et les "
-            f"paramètres. Détail : {detail}"
+            f"Erreur {status} sur {chemin_clean}. Vérifie le chemin et les "
+            f"paramètres. Détail : {texte[:500]}"
         )
-    texte = resp.text
     if len(texte) > _MAX_RESULTAT:
-        texte = texte[:_MAX_RESULTAT] + "\n… (résultat tronqué, affine ta requête)"
+        texte = texte[:_MAX_RESULTAT] + (
+            "\n… (résultat tronqué — filtre par année ou par identifiant pour "
+            "réduire la taille)"
+        )
     return texte
+
+
+# Id du Sénégal (référentiel RefPays) résolu une fois puis mémorisé : il sert
+# de pays / pays_id pour /statistiques/donnees et /statistiques/commerce, ce qui
+# évite à Claude de le chercher dans une longue liste (qui serait tronquée).
+_ID_SENEGAL: int | None = None
+_ID_SENEGAL_RESOLU = False
+
+
+async def _resoudre_id_senegal() -> int | None:
+    global _ID_SENEGAL, _ID_SENEGAL_RESOLU
+    if _ID_SENEGAL_RESOLU:
+        return _ID_SENEGAL
+    try:
+        status, texte = await _get_interne("/statistiques/pays", None)
+        if status < 400:
+            for p in json.loads(texte):
+                iso = (p.get("code_iso3") or "").upper()
+                nom = (p.get("nom") or "").lower()
+                if iso == "SEN" or nom.startswith("séné") or nom.startswith("sene"):
+                    _ID_SENEGAL = p.get("id")
+                    break
+    except Exception:  # noqa: BLE001 — dégradation gracieuse
+        _ID_SENEGAL = None
+    _ID_SENEGAL_RESOLU = True
+    return _ID_SENEGAL
 
 
 def _client():
@@ -226,16 +259,27 @@ def _client():
     return AsyncAnthropic(api_key=get_settings().ANTHROPIC_API_KEY)
 
 
-def construire_systeme(contexte_page: str | None) -> str:
-    """Prompt système, enrichi du contexte de la page courante si fourni."""
+def construire_systeme(contexte_page: str | None, id_senegal: int | None = None) -> str:
+    """Prompt système, enrichi de l'id du Sénégal (résolu côté serveur) et du
+    contexte de la page courante si fournis."""
+    systeme = SYSTEME_BASE
+    if id_senegal is not None:
+        systeme += (
+            f"\n\nIDENTIFIANT DÉJÀ CONNU : l'id du Sénégal est {id_senegal}. "
+            "Utilise-le directement — NE le cherche PAS dans /statistiques/pays. "
+            f"Ex. population/PIB en 2014 : /statistiques/donnees?pays={id_senegal}"
+            "&annee_min=2014&annee_max=2014 ; commerce détaillé : "
+            f"/statistiques/commerce/kpis?pays_id={id_senegal}&direction=exportateur. "
+            "Filtre toujours par année (annee_min/annee_max ou annees) pour garder "
+            "des résultats compacts."
+        )
     if contexte_page:
-        return (
-            SYSTEME_BASE
-            + "\n\nCONTEXTE : l'utilisateur consulte actuellement la page suivante "
+        systeme += (
+            "\n\nCONTEXTE : l'utilisateur consulte actuellement la page suivante "
             "de la plateforme. Utilise-le pour interpréter les demandes du type "
             f"« résume-moi ça » ou « explique cette page ».\n{contexte_page.strip()}"
         )
-    return SYSTEME_BASE
+    return systeme
 
 
 async def stream_reponse(
@@ -250,7 +294,8 @@ async def stream_reponse(
     """
     settings = get_settings()
     client = _client()
-    systeme = construire_systeme(contexte_page)
+    id_senegal = await _resoudre_id_senegal()
+    systeme = construire_systeme(contexte_page, id_senegal)
     conversation = list(messages)
 
     for _ in range(_MAX_ITERATIONS):
