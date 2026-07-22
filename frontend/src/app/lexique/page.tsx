@@ -1,10 +1,10 @@
 "use client";
 
 // Lexique de l'investissement — page pleine page dans le style du Code des
-// investissements (bandeau dégradé, sommaire A-Z, recherche). Le contenu vient
-// de src/lib/lexique.ts.
+// investissements (bandeau dégradé, recherche + index A-Z en pilules). Le
+// contenu vient de src/lib/lexique.ts.
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, Search } from "lucide-react";
@@ -16,7 +16,6 @@ const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default function LexiquePage() {
   const [q, setQ] = useState("");
-  const contentRef = useRef<HTMLDivElement>(null);
 
   // Termes filtrés (recherche), triés puis groupés par 1ʳᵉ lettre
   const { groupes, lettresPresentes } = useMemo(() => {
@@ -42,15 +41,6 @@ export default function LexiquePage() {
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, #F7F6F5)", minHeight: "100vh" }}>
-      <style>{`
-        .lex-grille { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 20px; align-items: start; }
-        @media (max-width: 760px) { .lex-grille { grid-template-columns: 1fr; } .lex-az { position: static !important; max-height: none !important; } }
-        .lex-grille > * { min-width: 0; }
-        .lex-az { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
-        .lex-az::-webkit-scrollbar { width: 5px; }
-        .lex-az::-webkit-scrollbar-thumb { background: #e4e0db; border-radius: 999px; }
-      `}</style>
-
       {/* Bandeau */}
       <div style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "32px 40px 92px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
@@ -71,66 +61,63 @@ export default function LexiquePage() {
             </Link>
           </div>
 
-          {/* Recherche */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
-            <div style={{ flex: 1 }} />
-            <div style={{ position: "relative", width: "min(300px, 100%)" }}>
+          {/* Recherche (à gauche) + index A-Z en pilules (à sa droite) */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 22 }}>
+            <div style={{ position: "relative", width: "min(300px, 100%)", flexShrink: 0 }}>
               <Search size={14} style={{ position: "absolute", left: 15, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.6)" }} />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" aria-label="Rechercher un terme"
                 style={{ width: "100%", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: "9px 14px 9px 38px", fontSize: 13, color: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" }}
                 onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; }}
                 onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; }} />
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Corps */}
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 80px" }}>
-        <div className="lex-grille" style={{ marginTop: -52 }}>
-
-          {/* Index A-Z — zone de défilement indépendante */}
-          <aside className="ds-carte lex-az" style={{ position: "sticky", top: 20, maxHeight: "calc(100vh - 40px)", padding: "14px 8px", alignSelf: "start" }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, flex: 1, minWidth: 0 }}>
               {ALPHABET.map((L) => {
                 const present = lettresPresentes.has(L);
                 return (
                   <button key={L} onClick={() => present && goLettre(L)} disabled={!present}
-                    style={{ width: 30, height: 26, borderRadius: 8, border: "none", background: "transparent", cursor: present ? "pointer" : "default",
-                      fontSize: 12.5, fontWeight: 700, color: present ? BLEU : "#d7d3cf", fontFamily: "var(--font-google-sans)", transition: "background 0.12s" }}
-                    onMouseEnter={(e) => { if (present) e.currentTarget.style.background = "#FBF8F5"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+                    aria-label={`Aller à ${L}`}
+                    style={{ width: 28, height: 28, borderRadius: 999, border: "1px solid", cursor: present ? "pointer" : "default",
+                      fontSize: 12, fontWeight: 800, fontFamily: "var(--font-google-sans)",
+                      background: present ? "rgba(255,255,255,0.13)" : "transparent",
+                      borderColor: present ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)",
+                      color: present ? "#fff" : "rgba(255,255,255,0.28)",
+                      transition: "background 0.14s, border-color 0.14s", flexShrink: 0 }}
+                    onMouseEnter={(e) => { if (present) { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = BLEU; } }}
+                    onMouseLeave={(e) => { if (present) { e.currentTarget.style.background = "rgba(255,255,255,0.13)"; e.currentTarget.style.color = "#fff"; } }}>
                     {L}
                   </button>
                 );
               })}
             </div>
-          </aside>
-
-          {/* Termes */}
-          <section ref={contentRef} className="ds-carte" style={{ padding: "36px 44px 48px", minHeight: 420 }}>
-            {total === 0 ? (
-              <p style={{ color: "#9aa5b4", fontSize: 14, textAlign: "center", marginTop: 60 }}>Aucun terme ne correspond à votre recherche.</p>
-            ) : groupes.map(([lettre, termes]) => (
-              <div key={lettre} id={`lettre-${lettre}`} style={{ scrollMarginTop: 20, marginBottom: 30 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "0 0 16px" }}>
-                  <span style={{ fontSize: 26, fontWeight: 800, color: ORANGE, lineHeight: 1, minWidth: 30 }}>{lettre}</span>
-                  <div style={{ flex: 1, height: 1, background: "#EDEAE6" }} />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {termes.map((t) => (
-                    <div key={t.terme} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "15px 18px" }}>
-                      <div style={{ marginBottom: 7 }}>
-                        <span style={{ fontSize: 15.5, fontWeight: 700, color: ENCRE }}>{t.terme}</span>
-                      </div>
-                      <p style={{ fontSize: 13.5, color: "#4a5568", lineHeight: 1.7, margin: 0 }}>{t.definition}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </section>
+          </div>
         </div>
+      </div>
+
+      {/* Corps — pleine largeur */}
+      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 80px" }}>
+        <section className="ds-carte" style={{ marginTop: -52, padding: "36px 44px 48px", minHeight: 420 }}>
+          {total === 0 ? (
+            <p style={{ color: "#9aa5b4", fontSize: 14, textAlign: "center", marginTop: 60 }}>Aucun terme ne correspond à votre recherche.</p>
+          ) : groupes.map(([lettre, termes]) => (
+            <div key={lettre} id={`lettre-${lettre}`} style={{ scrollMarginTop: 20, marginBottom: 30 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "0 0 16px" }}>
+                <span style={{ fontSize: 26, fontWeight: 800, color: ORANGE, lineHeight: 1, minWidth: 30 }}>{lettre}</span>
+                <div style={{ flex: 1, height: 1, background: "#EDEAE6" }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {termes.map((t) => (
+                  <div key={t.terme} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "15px 18px" }}>
+                    <div style={{ marginBottom: 7 }}>
+                      <span style={{ fontSize: 15.5, fontWeight: 700, color: ENCRE }}>{t.terme}</span>
+                    </div>
+                    <p style={{ fontSize: 13.5, color: "#4a5568", lineHeight: 1.7, margin: 0 }}>{t.definition}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
       </div>
     </div>
   );
