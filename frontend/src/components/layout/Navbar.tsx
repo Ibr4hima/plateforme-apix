@@ -487,7 +487,7 @@ export default function Navbar() {
 
           {/* ── Recherche + Menu ── */}
           <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-            <NavActions flouFond={pathname !== "/"} />
+            <NavActions flouFond={pathname !== "/"} home={pathname !== "/"} />
           </div>
 
           {/* ── Burger mobile ── */}

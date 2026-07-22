@@ -2016,7 +2016,7 @@ export default function TableauDeBordPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div id="d3-tooltip" style={{position:"fixed",pointerEvents:"none",background:"rgba(26,26,46,0.92)",color:"#fff",borderRadius:8,padding:"8px 12px",fontSize:12,lineHeight:1.5,opacity:0,zIndex:9999,backdropFilter:"blur(4px)"}}/>
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <BarreTitre titre="Tableau de bord" compact actions={<NavActions onDark flouFond/>}>
+      <BarreTitre titre="Tableau de bord" compact actions={<NavActions onDark home flouFond/>}>
         <BarreTitreSegment options={[{v:"viz",l:"Visualisation de données"},{v:"tables",l:"Tableaux analytiques"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 

@@ -47,7 +47,7 @@ function boutonStyle(onDark: boolean, actif: boolean): React.CSSProperties {
   return { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: actif ? "rgba(0,79,145,0.28)" : "rgba(0,79,145,0.18)", background: actif ? "rgba(0,79,145,0.07)" : "transparent", cursor: "pointer", transition: "all 0.18s" };
 }
 
-export default function NavActions({ onDark = false, flouFond = false, flouTotal = false }: { onDark?: boolean; flouFond?: boolean; flouTotal?: boolean }) {
+export default function NavActions({ onDark = false, flouFond = false, flouTotal = false, home = false }: { onDark?: boolean; flouFond?: boolean; flouTotal?: boolean; home?: boolean }) {
   const flou = flouFond || flouTotal;
   const { data: session } = useSession();
   const [userOpen, setUserOpen] = useState(false);
@@ -99,6 +99,14 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+      {/* Accueil */}
+      {home && (
+        <Link href="/" title="Accueil" aria-label="Accueil" style={{ ...boutonStyle(onDark, false), textDecoration: "none" }}
+          onMouseEnter={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.20)" : "rgba(0,79,145,0.07)"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.55)" : "rgba(0,79,145,0.28)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.10)" : "transparent"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.30)" : "rgba(0,79,145,0.18)"; }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 18, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home_app_logo</span>
+        </Link>
+      )}
       {/* Recherche globale (⌘K) */}
       <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
         style={boutonStyle(onDark, false)}

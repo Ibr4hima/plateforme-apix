@@ -334,7 +334,7 @@ export default function EvenementsPage() {
 @keyframes pulseHalo{0%{box-shadow:0 0 0 0 rgba(0,79,145,0.45)}70%{box-shadow:0 0 0 9px rgba(0,79,145,0)}100%{box-shadow:0 0 0 0 rgba(0,79,145,0)}}
 @keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgba(24,128,56,0.45)}70%{box-shadow:0 0 0 9px rgba(24,128,56,0)}100%{box-shadow:0 0 0 0 rgba(24,128,56,0)}}`}</style>
       {/* Barre de titre */}
-      <BarreTitre titre="Événements" compact actions={<NavActions onDark flouFond/>}
+      <BarreTitre titre="Événements" compact actions={<NavActions onDark home flouFond/>}
         droite={(()=>{
           const prochain = prochainId!=null ? tous.find(e=>e.id===prochainId) : null;
           if (!prochain) return null;

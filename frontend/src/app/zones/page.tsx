@@ -391,7 +391,7 @@ export default function ZonesPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
       {/* ── Hero ── */}
-      <BarreTitre titre={"Zones d'Investissement"} compact actions={<NavActions onDark flouFond/>}>
+      <BarreTitre titre={"Zones d'Investissement"} compact actions={<NavActions onDark home flouFond/>}>
         <BarreTitreSegment options={[{v:"zones",l:"Zones d'investissement"},{v:"territoire",l:"Pôles territoires"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 

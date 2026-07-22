@@ -1419,7 +1419,7 @@ export default function StatistiquesPage() {
 .drs-thumb::-moz-range-track{background:transparent;height:4px}
 .drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
 .drs-thumb::-moz-range-thumb{background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
-      <BarreTitre titre="Échanges commerciaux" compact actions={<NavActions onDark flouFond/>}>
+      <BarreTitre titre="Échanges commerciaux" compact actions={<NavActions onDark home flouFond/>}>
         <BarreTitreSegment options={[
           { v: "indicateurs", l: "Indicateurs économiques" },
           { v: "commerce", l: "Flux bilatéraux" },
