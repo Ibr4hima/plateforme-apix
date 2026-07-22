@@ -382,14 +382,15 @@ export default function ChatWidget() {
                 >
                   <div
                     style={{
-                      background: `linear-gradient(150deg, ${ORANGE} 0%, #e0803c 130%)`,
-                      color: "#fff",
+                      background: "linear-gradient(180deg, rgba(202,99,31,0.12), rgba(202,99,31,0.05))",
+                      color: ORANGE_FONCE,
                       padding: "10px 14px",
                       borderRadius: "16px 16px 5px 16px",
                       fontSize: 13.5,
+                      fontWeight: 500,
                       lineHeight: 1.55,
                       whiteSpace: "pre-wrap",
-                      boxShadow: "0 3px 10px rgba(202,99,31,0.22)",
+                      border: "1px solid rgba(202,99,31,0.20)",
                     }}
                   >
                     {m.content}
