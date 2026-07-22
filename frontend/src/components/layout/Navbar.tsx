@@ -378,17 +378,29 @@ function CodeModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── Ligne de menu (icône bleue + titre) ───────────────────────────────────────
-function MenuLien({ href, onNav, icon, titre }: { href: string; onNav: () => void; icon: string; titre: string }) {
+// ── Ligne de menu (icône bleue + titre) — lien ou action ──────────────────────
+const MENU_ROW: React.CSSProperties = { display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", borderRadius: 12, textDecoration: "none", transition: "background 0.12s", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-google-sans)" };
+const onEnterRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; };
+const onLeaveRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style.background = "transparent"; };
+function MenuIcone({ icon }: { icon: string }) {
   return (
-    <Link href={href} onClick={onNav}
-      style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", borderRadius: 12, textDecoration: "none", transition: "background 0.12s" }}
-      onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; }}
-      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-      <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(0,79,145,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{icon}</span>
-      </span>
-      <span style={{ fontSize: 13.5, fontWeight: 600, color: "#101a2e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>
+    <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(0,79,145,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{icon}</span>
+    </span>
+  );
+}
+function MenuLien({ href, onNav, icon, titre, action }: { href?: string; onNav: () => void; icon: string; titre: string; action?: () => void }) {
+  const label = <span style={{ fontSize: 13.5, fontWeight: 600, color: "#101a2e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>;
+  if (action) {
+    return (
+      <button style={MENU_ROW} onMouseEnter={onEnterRow} onMouseLeave={onLeaveRow} onClick={() => { action(); onNav(); }}>
+        <MenuIcone icon={icon} />{label}
+      </button>
+    );
+  }
+  return (
+    <Link href={href!} onClick={onNav} style={MENU_ROW} onMouseEnter={onEnterRow} onMouseLeave={onLeaveRow}>
+      <MenuIcone icon={icon} />{label}
     </Link>
   );
 }
@@ -424,7 +436,8 @@ export default function Navbar() {
   const openModules  = () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); setModulesOpen(true); };
   const closeModules = () => { timeoutRef.current = setTimeout(() => setModulesOpen(false), 120); };
   const openUser  = () => { if (userTimeoutRef.current) clearTimeout(userTimeoutRef.current); setUserOpen(true); };
-  const closeUser = () => { userTimeoutRef.current = setTimeout(() => setUserOpen(false), 140); };
+  const closeUser = () => { userTimeoutRef.current = setTimeout(() => { setUserOpen(false); setMenuModsOpen(false); }, 140); };
+  const [menuModsOpen, setMenuModsOpen] = useState(false);
 
   const textColor = "#4a5568";
   const textHover = "#004f91";
@@ -553,12 +566,39 @@ export default function Navbar() {
                     </div>
                   )}
 
-                  {/* Liens rapides */}
+                  {/* Modules (déploiement au survol) */}
+                  <div onMouseEnter={() => setMenuModsOpen(true)} onMouseLeave={() => setMenuModsOpen(false)}>
+                    <button style={{ ...MENU_ROW }} onMouseEnter={onEnterRow} onMouseLeave={onLeaveRow}
+                      onClick={() => setMenuModsOpen(o => !o)}>
+                      <MenuIcone icon="dashboard" />
+                      <span style={{ fontSize: 13.5, fontWeight: 600, color: "#101a2e", flex: 1 }}>Modules</span>
+                      <ChevronDown size={15} style={{ color: "#9aa5b4", flexShrink: 0, transition: "transform 0.2s", transform: menuModsOpen ? "rotate(180deg)" : "rotate(0)" }} />
+                    </button>
+                    <div style={{ overflow: "hidden", maxHeight: menuModsOpen ? 520 : 0, transition: "max-height 0.28s ease" }}>
+                      <div style={{ margin: "2px 0 4px 22px", paddingLeft: 12, borderLeft: "1px solid #EDEAE6" }}>
+                        {modules.filter(m => visible(m.href)).map(m => (
+                          <Link key={m.href} href={m.href} onClick={() => setUserOpen(false)}
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s" }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.06)"; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0 }}>{m.icon}</span>
+                            <span style={{ fontSize: 12.5, fontWeight: 500, color: "#4a5568", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Liens */}
+                  {visible("/tableau-de-bord") && (
+                    <MenuLien href="/tableau-de-bord" onNav={() => setUserOpen(false)} icon="analytics" titre="Tableau de bord" />
+                  )}
+                  <MenuLien action={() => window.dispatchEvent(new Event("apix:fiche-pays-picker"))} onNav={() => setUserOpen(false)} icon="flag" titre="Fiche Pays" />
+                  <MenuLien href="/code-investissements" onNav={() => setUserOpen(false)} icon="gavel" titre="Code des investissements" />
+                  <MenuLien href="/lexique" onNav={() => setUserOpen(false)} icon="language" titre="Lexique" />
                   {isAdminRole && (
                     <MenuLien href="/admin/evenements" onNav={() => setUserOpen(false)} icon="admin_panel_settings" titre="Page Admin" />
                   )}
-                  <MenuLien href="/code-investissements" onNav={() => setUserOpen(false)} icon="gavel" titre="Code des investissements" />
-                  <MenuLien href="/lexique" onNav={() => setUserOpen(false)} icon="language" titre="Lexique" />
 
                   <div style={{ borderTop: "1px solid #F2F0EF", margin: "6px 4px" }} />
 

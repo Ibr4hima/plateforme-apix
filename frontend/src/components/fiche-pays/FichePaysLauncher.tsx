@@ -178,6 +178,12 @@ export default function FichePaysLauncher({ textColor, textHover }: { textColor:
     window.addEventListener("apix:fiche-pays", h);
     return () => window.removeEventListener("apix:fiche-pays", h);
   }, [senId]);
+  // Ouverture du sélecteur depuis le menu de la navbar
+  useEffect(() => {
+    const open = () => setPickerOpen(true);
+    window.addEventListener("apix:fiche-pays-picker", open);
+    return () => window.removeEventListener("apix:fiche-pays-picker", open);
+  }, []);
 
   return (
     <>
