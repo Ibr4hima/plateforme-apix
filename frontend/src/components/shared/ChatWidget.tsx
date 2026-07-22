@@ -320,10 +320,10 @@ export default function ChatWidget() {
             position: "fixed",
             right: 22,
             bottom: 22,
-            width: 54,
-            height: 54,
+            width: 46,
+            height: 46,
             padding: 0,
-            borderRadius: 17,
+            borderRadius: 14,
             // fond voilé orange par-dessus une base crème → rendu identique à
             // l'accueil quel que soit le contenu de la page derrière
             background:
@@ -341,7 +341,7 @@ export default function ChatWidget() {
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.07)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <LogoClaude size={30} />
+          <LogoClaude size={25} />
         </button>
       )}
 
