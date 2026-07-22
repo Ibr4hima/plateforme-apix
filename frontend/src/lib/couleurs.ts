@@ -80,6 +80,19 @@ export const badge_orange = badge("orange");
 export const badge_vert = badge("vert");
 export const badge_violet = badge("violet");
 
+// 5e teinte, distincte des 4 mais assortie : ambre / or (ex. Sponsor)
+const AMBRE = "161, 98, 7";  // #a16207
+export const badge_ambre: CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: 5,
+  fontSize: 11, fontWeight: 600, color: "#a16207",
+  background: "rgba(255,255,255,0.7)", border: `1px solid rgba(${AMBRE},0.24)`,
+  padding: "4px 11px", borderRadius: 999,
+};
+export const fond_ambre: CSSProperties = {
+  background: `linear-gradient(180deg, rgba(${AMBRE},0.07), rgba(${AMBRE},0.02))`,
+  border: `1px solid rgba(${AMBRE},0.16)`,
+};
+
 // Badge neutre (états inactifs / expirés) : gris, même gabarit que les autres
 const GRIS = "108, 117, 125";  // #6b7280
 export const badge_gris: CSSProperties = {

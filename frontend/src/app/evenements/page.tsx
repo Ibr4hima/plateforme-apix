@@ -12,7 +12,7 @@ import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
-import { foncerPastel } from "@/lib/couleurs";
+import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
 import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { computeStatutEvenement } from "@/lib/statuts";
@@ -21,21 +21,20 @@ import { useFicheUrl } from "@/lib/ficheUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-// Pilules teintées des rôles APIX sur les cards (palette du site)
-// Badges de rôle APIX — pastels dérivés de la carte des pôles territoires :
-// fond très clair, texte dans une version foncée et saturée de la même teinte
-const ROLE_PASTEL: Record<string,string> = {
-  "Organisateur":    "#B4DE9D", // vert tendre
-  "Co-organisateur": "#9DDEC2", // menthe
-  "Participant":     "#9DC3E6", // bleu clair
-  "Partenaire":      "#9DD3DE", // bleu-teal
-  "Sponsor":         "#E6C79D", // pêche
-  "Invité":          "#E6AC9D", // corail
+// Badges de rôle APIX sur les cards — jetons du design system :
+// organisation vert, participant orange, partenaire bleu, invité violet,
+// sponsor ambre (5e teinte assortie).
+const ROLE_BADGE: Record<string, React.CSSProperties> = {
+  "Organisateur":    badge_vert,
+  "Co-organisateur": badge_vert,
+  "Participant":     badge_orange,
+  "Partenaire":      badge_bleu,
+  "Invité":          badge_violet,
+  "Sponsor":         badge_ambre,
 };
 function BadgeRole({ role }: { role:string }) {
-  const c = ROLE_PASTEL[role] || "#C5BFBB";
   return (
-    <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:foncerPastel(c),background:`${c}40`,border:`1px solid ${c}90`,padding:"3px 11px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>
+    <span style={{...(ROLE_BADGE[role]||badge_gris), whiteSpace:"nowrap" as const, flexShrink:0}}>
       {ROLES_APIX[role]||role}
     </span>
   );
