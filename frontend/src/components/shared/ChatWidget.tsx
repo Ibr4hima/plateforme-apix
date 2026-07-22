@@ -297,6 +297,11 @@ export default function ChatWidget() {
           0%,100% { box-shadow: 0 0 0 0 rgba(202,99,31,0); }
           50%     { box-shadow: 0 0 0 7px rgba(202,99,31,0.08); }
         }
+        @keyframes apixPing {
+          0%   { box-shadow: 0 0 0 0 rgba(202,99,31,0.45); }
+          70%  { box-shadow: 0 0 0 14px rgba(202,99,31,0); }
+          100% { box-shadow: 0 0 0 0 rgba(202,99,31,0); }
+        }
         .apix-chat-fil::-webkit-scrollbar { width: 5px; }
         .apix-chat-fil::-webkit-scrollbar-thumb { background: rgba(202,99,31,0.25); border-radius: 99px; }
         .apix-chat-fil::-webkit-scrollbar-track { background: transparent; }
@@ -329,7 +334,7 @@ export default function ChatWidget() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            animation: "apixHalo 2.6s ease-in-out infinite",
+            animation: "apixPing 2.2s ease-out infinite",
             filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.16))",
             transition: "transform 0.2s cubic-bezier(.34,1.56,.64,1)",
           }}
