@@ -39,6 +39,13 @@ function BadgeRole({ role }: { role:string }) {
     </span>
   );
 }
+// Accent de survol des cards = couleur du rôle (assortie au badge)
+const ROLE_ACCENT: Record<string, string> = {
+  "Organisateur": "#188038", "Co-organisateur": "#188038",
+  "Participant": "#ca631f", "Partenaire": "#004f91",
+  "Invité": "#6A1B9A", "Sponsor": "#a16207",
+};
+const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "#004f91";
 
 const ROLE_VARIANT: Record<string, BadgeVariant> = {
   "Organisateur":    "green",
@@ -122,10 +129,8 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
       : e.prochain_mois||e.prochain_annee ? `${e.prochain_jour?e.prochain_jour+" ":""}${e.prochain_mois?MOIS[(e.prochain_mois||1)-1]+" ":""}${e.prochain_annee||""}`.trim() : null;
     const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
-    // Rôle APIX : bleu par défaut, vert quand l'événement est en cours, gris pour les passés
-    const roleC = estPasse ? { c:"#6b7280", bg:"#F2F0EF" } : estEnCours ? { c:"#188038", bg:"rgba(24,128,56,0.08)" } : { c:"#004f91", bg:"rgba(0,79,145,0.07)" };
     const txtC  = estPasse ? "#4a5568" : "#1a1a2e";
-    const hoverC = accent ? null : st ? st.c : "#004f91";
+    const hoverC = accent ? null : accentRole(e.role_apix);
     return (
       <div onClick={()=>onOpen(e)}
         onMouseEnter={ev=>{ hoverIn(ev); ev.currentTarget.style.borderColor = accent ? accent.b2 : `${hoverC}55`; }}
@@ -431,11 +436,9 @@ export default function EvenementsPage() {
                       : estEnCours
                       ? { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label:"Événement en cours", b:"rgba(24,128,56,0.45)", b2:"rgba(24,128,56,0.6)", sh:"0 4px 18px rgba(24,128,56,0.15)" }
                       : null;
-                    // Rôle APIX : bleu par défaut, vert quand l'événement est en cours, gris pour les passés
-                    const roleC  = estPasse ? { c:"#6b7280", bg:"#F2F0EF" } : estEnCours ? { c:"#188038", bg:"rgba(24,128,56,0.08)" } : { c:"#004f91", bg:"rgba(0,79,145,0.07)" };
                     const txtC   = estPasse ? "#4a5568" : "#1a1a2e";
-                    // Accent du survol = couleur du statut (à venir bleu, en cours vert, terminé gris)
-                    const hoverC = accent ? accent.c : st ? st.c : "#004f91";
+                    // Accent du survol = couleur du rôle (assortie au badge)
+                    const hoverC = accent ? accent.c : accentRole(e.role_apix);
                     return (
                       <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
                         style={{background:estPasse?"#FBFAF9":"#fff",border:accent?`1.5px solid ${accent.b}`:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"0 1px 2px rgba(0,0,0,0.03)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
