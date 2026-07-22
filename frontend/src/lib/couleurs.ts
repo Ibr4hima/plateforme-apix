@@ -124,6 +124,9 @@ export const badge_sarcelle = badgeDe("#0e7490");
 export const badge_indigo = badgeDe("#4338ca");
 export const badge_rose = badgeDe("#be185d");
 export const badge_olive = badgeDe("#4d7c0f");
+// Rouge (états critiques : inactif) — réservé aux alertes ailleurs
+export const badge_rouge = badgeDe("#dc2626");
+export const fond_rouge = fondDe("#dc2626");
 export const fond_sarcelle = fondDe("#0e7490");
 export const fond_indigo = fondDe("#4338ca");
 export const fond_rose = fondDe("#be185d");

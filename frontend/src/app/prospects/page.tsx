@@ -10,7 +10,7 @@ import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { foncerPastel } from "@/lib/couleurs";
+import { badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
 import { SideFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
@@ -39,17 +39,22 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         ? { label: "Décliné le", value: p.issue_conclu_le ? fmtDate(p.issue_conclu_le.slice(0, 10)) : null }
         : { label: "Conclusion", value: null });
 
-  // Statuts en pastels (fond très clair, texte foncé de la même teinte)
-  const PASTELS: Record<string, string> = {
-    "En cours":             "#B4DE9D", // vert tendre
-    "En attente":           "#D5D2CE", // gris chaud
-    "Inactif":              "#E6AC9D", // corail
-    "À recontacter":        "#9DC3E6", // bleu clair
-    "Installation à venir": "#B4DE9D", // vert tendre
-    "Décliné":              "#D5D2CE", // gris chaud
+  // Statuts sur les jetons du design system : progression → vert, inactif →
+  // rouge, décliné / en attente → gris ; l'accent de survol suit la couleur.
+  const STATUT_BADGE: Record<string, React.CSSProperties> = {
+    "En cours":             badge_vert,
+    "À recontacter":        badge_vert,
+    "Installation à venir": badge_vert,
+    "Inactif":              badge_rouge,
+    "Décliné":              badge_gris,
+    "En attente":           badge_gris,
   };
-  const pastel = badge ? (PASTELS[badge.label] || "#C5BFBB") : null;
-  const hoverC = pastel || "rgba(0,79,145,0.33)";
+  const STATUT_HEX: Record<string, string> = {
+    "En cours": "#188038", "À recontacter": "#188038", "Installation à venir": "#188038",
+    "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
+  };
+  const badgeStatut = badge ? (STATUT_BADGE[badge.label] || badge_gris) : null;
+  const hoverC = badge ? (STATUT_HEX[badge.label] || "#9aa5b4") : "rgba(0,79,145,0.33)";
 
   return (
     <div onClick={onOpen}
@@ -80,8 +85,8 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
               return sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{sousTitre}</div>;
             })()}
           </div>
-          {onglet !== "cibles" && badge && pastel && (
-            <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: foncerPastel(pastel), background: `${pastel}40`, border: `1px solid ${pastel}90`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" as const, flexShrink: 0 }}>
+          {onglet !== "cibles" && badge && badgeStatut && (
+            <span style={{ ...badgeStatut, whiteSpace: "nowrap" as const, flexShrink: 0 }}>
               {badge.label}
             </span>
           )}
