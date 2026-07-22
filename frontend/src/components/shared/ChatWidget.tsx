@@ -1,25 +1,31 @@
 "use client";
 
-// Assistant IA de la plateforme — bulle flottante + panneau de chat, monté
-// globalement (voir Providers.tsx) donc présent sur toutes les pages. Répond en
-// streaming ; connaît le contexte de la page courante pour « résume cette page ».
-// Composant client pur (fetch + DOM), sans API Next spécifique.
+// Assistant IA de la plateforme — lanceur (logo Claude) + panneau de chat,
+// monté globalement (voir Providers.tsx) donc présent sur toutes les pages.
+// Répond en streaming ; connaît le contexte de la page courante.
+// Charte : orange APIX (#ca631f) en couleur principale.
 
 import { useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const BLEU = "#004f91";
-const DEGRADE = "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)";
+const ORANGE = "#ca631f";
+const ORANGE_FONCE = "#a34e15";
+const DEGRADE = "linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%)";
+const ENCRE = "#2b2018";
 
 type Message = { role: "user" | "assistant"; content: string };
 
-const SUGGESTIONS = [
-  "Résume cette page",
-  "Top 5 des pays d'importation en 2025",
-  "Quelle est la balance commerciale récente ?",
-  "Explique le code des investissements",
+const ACCROCHES = [
+  "Comment puis-je vous être utile ?",
+  "Comment puis-je vous aider ?",
+  "Dites-moi ce dont vous avez besoin.",
 ];
+
+const salutation = () => {
+  const h = new Date().getHours();
+  return h >= 18 || h < 5 ? "Bonsoir" : "Bonjour";
+};
 
 // Rendu léger : gras **…**, listes « - », retours à la ligne conservés.
 function formater(texte: string): React.ReactNode {
@@ -28,14 +34,14 @@ function formater(texte: string): React.ReactNode {
     const contenu = ligne.replace(/^\s*[-•]\s+/, "");
     const morceaux = contenu.split(/(\*\*[^*]+\*\*)/g).map((m, j) =>
       m.startsWith("**") && m.endsWith("**") ? (
-        <strong key={j}>{m.slice(2, -2)}</strong>
+        <strong key={j} style={{ color: ENCRE }}>{m.slice(2, -2)}</strong>
       ) : (
         <span key={j}>{m}</span>
       ),
     );
     return (
-      <div key={i} style={puce ? { display: "flex", gap: 6, paddingLeft: 2 } : undefined}>
-        {puce && <span style={{ color: BLEU, flexShrink: 0 }}>•</span>}
+      <div key={i} style={puce ? { display: "flex", gap: 7, paddingLeft: 2 } : undefined}>
+        {puce && <span style={{ color: ORANGE, flexShrink: 0, fontWeight: 700 }}>•</span>}
         <span>{morceaux}</span>
       </div>
     );
@@ -44,18 +50,52 @@ function formater(texte: string): React.ReactNode {
 
 export default function ChatWidget() {
   const [ouvert, setOuvert] = useState(false);
+  const [sortie, setSortie] = useState(false); // animation de fermeture en cours
   const [messages, setMessages] = useState<Message[]>([]);
   const [saisie, setSaisie] = useState("");
   const [enCours, setEnCours] = useState(false);
+  const [accueil, setAccueil] = useState({ titre: "Bonjour", accroche: ACCROCHES[0] });
   const zoneRef = useRef<HTMLDivElement>(null);
+  const saisieRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Ouverture via l'entrée navbar (event window, comme apix:recherche).
+  function ouvrir() {
+    // Accueil recalculé à chaque ouverture : Bonjour/Bonsoir + accroche au hasard
+    setAccueil({
+      titre: salutation(),
+      accroche: ACCROCHES[Math.floor(Math.random() * ACCROCHES.length)],
+    });
+    setSortie(false);
+    setOuvert(true);
+  }
+
+  function fermer() {
+    abortRef.current?.abort();
+    setSortie(true);
+    window.setTimeout(() => { setOuvert(false); setSortie(false); }, 200);
+  }
+
+  // Ouverture via un éventuel event global (pattern apix:recherche).
   useEffect(() => {
-    const ouvrir = () => setOuvert(true);
-    window.addEventListener("apix:assistant", ouvrir);
-    return () => window.removeEventListener("apix:assistant", ouvrir);
+    const h = () => ouvrir();
+    window.addEventListener("apix:assistant", h);
+    return () => window.removeEventListener("apix:assistant", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Échap ferme le panneau.
+  useEffect(() => {
+    if (!ouvert) return;
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") fermer(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ouvert]);
+
+  // Focus sur la saisie à l'ouverture.
+  useEffect(() => {
+    if (ouvert && !sortie) window.setTimeout(() => saisieRef.current?.focus(), 220);
+  }, [ouvert, sortie]);
 
   // Défilement automatique en bas à chaque nouveau fragment.
   useEffect(() => {
@@ -127,17 +167,43 @@ export default function ChatWidget() {
     }
   }
 
-  function fermer() {
-    abortRef.current?.abort();
-    setOuvert(false);
-  }
-
   return (
     <>
+      <style>{`
+        @keyframes apixChatIn {
+          from { opacity: 0; transform: translateY(26px) scale(0.94); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes apixChatOut {
+          from { opacity: 1; transform: translateY(0) scale(1); }
+          to   { opacity: 0; transform: translateY(22px) scale(0.95); }
+        }
+        @keyframes apixMsgIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes apixAccueilIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes apixPulse { 0%,60%,100% { opacity: .25 } 30% { opacity: 1 } }
+        @keyframes apixHalo {
+          0%,100% { box-shadow: 0 0 0 0 rgba(202,99,31,0); }
+          50%     { box-shadow: 0 0 0 7px rgba(202,99,31,0.08); }
+        }
+        .apix-chat-fil::-webkit-scrollbar { width: 5px; }
+        .apix-chat-fil::-webkit-scrollbar-thumb { background: rgba(202,99,31,0.25); border-radius: 99px; }
+        .apix-chat-fil::-webkit-scrollbar-track { background: transparent; }
+        .apix-chat-saisie:focus {
+          border-color: rgba(202,99,31,0.55) !important;
+          box-shadow: 0 0 0 3px rgba(202,99,31,0.12);
+        }
+      `}</style>
+
       {/* Lanceur : le logo Claude posé directement (sans bulle) */}
       {!ouvert && (
         <button
-          onClick={() => setOuvert(true)}
+          onClick={ouvrir}
           aria-label="Ouvrir l'assistant"
           style={{
             position: "fixed",
@@ -154,10 +220,10 @@ export default function ChatWidget() {
             alignItems: "center",
             justifyContent: "center",
             filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.22))",
-            transition: "transform 0.18s",
+            transition: "transform 0.2s cubic-bezier(.34,1.56,.64,1)",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1) rotate(8deg)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1) rotate(0deg)")}
         >
           <LogoClaude size={48} />
         </button>
@@ -166,20 +232,24 @@ export default function ChatWidget() {
       {/* Panneau */}
       {ouvert && (
         <div
+          role="dialog"
+          aria-label="Assistant IA"
           style={{
             position: "fixed",
             right: 20,
             bottom: 20,
-            width: "min(400px, calc(100vw - 40px))",
-            height: "min(620px, calc(100vh - 40px))",
+            width: "min(410px, calc(100vw - 40px))",
+            height: "min(640px, calc(100vh - 40px))",
             background: "#fff",
-            borderRadius: 18,
-            boxShadow: "0 20px 60px rgba(0,42,82,0.30)",
+            borderRadius: 22,
+            boxShadow: "0 24px 70px rgba(74,40,12,0.28), 0 4px 18px rgba(74,40,12,0.12)",
             zIndex: 60,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            border: "1px solid rgba(0,79,145,0.10)",
+            border: "1px solid rgba(202,99,31,0.14)",
+            animation: `${sortie ? "apixChatOut" : "apixChatIn"} 0.24s cubic-bezier(.32,.72,.28,1.05) both`,
+            transformOrigin: "bottom right",
           }}
         >
           {/* En-tête */}
@@ -187,45 +257,58 @@ export default function ChatWidget() {
             style={{
               background: DEGRADE,
               color: "#fff",
-              padding: "14px 16px",
+              padding: "15px 16px",
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              gap: 11,
             }}
           >
             <div
               style={{
-                width: 34,
-                height: 34,
-                borderRadius: 10,
-                background: "rgba(255,255,255,0.15)",
+                width: 36,
+                height: 36,
+                borderRadius: 11,
+                background: "rgba(255,255,255,0.92)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.14)",
               }}
             >
-              <LogoClaude size={22} />
+              <LogoClaude size={23} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>Assistant APIX</div>
-              <div style={{ fontSize: 11.5, opacity: 0.85 }}>
-                Posez vos questions sur la plateforme
+              <div style={{ fontWeight: 700, fontSize: 15.5, letterSpacing: "0.01em" }}>
+                Assistant IA
               </div>
             </div>
             <button
               onClick={fermer}
-              aria-label="Fermer"
+              aria-label="Fermer (Échap)"
+              title="Fermer (Échap)"
               style={{
-                background: "rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.16)",
                 border: "none",
                 color: "#fff",
                 width: 30,
                 height: 30,
-                borderRadius: 8,
+                borderRadius: 9,
                 cursor: "pointer",
-                fontSize: 18,
+                fontSize: 17,
                 lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "background 0.15s, transform 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.30)";
+                e.currentTarget.style.transform = "rotate(90deg)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.16)";
+                e.currentTarget.style.transform = "rotate(0deg)";
               }}
             >
               ×
@@ -235,84 +318,108 @@ export default function ChatWidget() {
           {/* Fil de discussion */}
           <div
             ref={zoneRef}
+            className="apix-chat-fil"
             style={{
               flex: 1,
               overflowY: "auto",
-              padding: 16,
+              padding: "18px 16px",
               display: "flex",
               flexDirection: "column",
               gap: 12,
-              background: "#f7f9fc",
+              background: "linear-gradient(180deg,#fdfaf7 0%,#faf5f0 100%)",
             }}
           >
             {messages.length === 0 && (
-              <div style={{ margin: "auto 0", textAlign: "center", color: "#5b6b7d" }}>
-                <div style={{ fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>
-                  Bonjour 👋 Je peux chercher dans les données de la plateforme —
-                  commerce extérieur, IDE, accords, entreprises… ou résumer la
-                  page que vous consultez.
+              <div
+                style={{
+                  margin: "auto",
+                  textAlign: "center",
+                  animation: "apixAccueilIn 0.5s cubic-bezier(.22,.9,.35,1) 0.12s both",
+                }}
+              >
+                <div
+                  style={{
+                    width: 62,
+                    height: 62,
+                    margin: "0 auto 18px",
+                    borderRadius: 20,
+                    background: "linear-gradient(180deg, rgba(202,99,31,0.10), rgba(202,99,31,0.03))",
+                    border: "1px solid rgba(202,99,31,0.16)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    animation: "apixHalo 2.6s ease-in-out infinite",
+                  }}
+                >
+                  <LogoClaude size={34} />
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => envoyer(s)}
-                      style={{
-                        textAlign: "left",
-                        fontSize: 13,
-                        padding: "9px 12px",
-                        borderRadius: 10,
-                        border: "1px solid rgba(0,79,145,0.16)",
-                        background: "#fff",
-                        color: BLEU,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                <div
+                  style={{
+                    fontSize: 21,
+                    fontWeight: 700,
+                    color: ENCRE,
+                    letterSpacing: "-0.01em",
+                    fontFamily: "var(--font-google-sans)",
+                  }}
+                >
+                  {accueil.titre}
+                </div>
+                <div style={{ fontSize: 13.5, color: "#8a7563", marginTop: 6, lineHeight: 1.5 }}>
+                  {accueil.accroche}
                 </div>
               </div>
             )}
 
             {messages.map((m, i) =>
               m.role === "user" ? (
-                <div key={i} style={{ alignSelf: "flex-end", maxWidth: "85%" }}>
+                <div
+                  key={i}
+                  style={{
+                    alignSelf: "flex-end",
+                    maxWidth: "85%",
+                    animation: "apixMsgIn 0.25s ease-out both",
+                  }}
+                >
                   <div
                     style={{
-                      background: BLEU,
+                      background: `linear-gradient(150deg, ${ORANGE} 0%, #e0803c 130%)`,
                       color: "#fff",
-                      padding: "9px 13px",
-                      borderRadius: "14px 14px 4px 14px",
+                      padding: "10px 14px",
+                      borderRadius: "16px 16px 5px 16px",
                       fontSize: 13.5,
-                      lineHeight: 1.5,
+                      lineHeight: 1.55,
                       whiteSpace: "pre-wrap",
+                      boxShadow: "0 3px 10px rgba(202,99,31,0.22)",
                     }}
                   >
                     {m.content}
                   </div>
                 </div>
               ) : (
-                <div key={i} style={{ alignSelf: "flex-start", maxWidth: "90%" }}>
+                <div
+                  key={i}
+                  style={{
+                    alignSelf: "flex-start",
+                    maxWidth: "92%",
+                    animation: "apixMsgIn 0.25s ease-out both",
+                  }}
+                >
                   <div
                     style={{
                       background: "#fff",
-                      color: "#1a2733",
-                      padding: "10px 13px",
-                      borderRadius: "14px 14px 14px 4px",
+                      color: "#3d3128",
+                      padding: "11px 14px",
+                      borderRadius: "16px 16px 16px 5px",
                       fontSize: 13.5,
-                      lineHeight: 1.55,
-                      border: "1px solid rgba(0,0,0,0.06)",
+                      lineHeight: 1.6,
+                      border: "1px solid rgba(202,99,31,0.10)",
+                      boxShadow: "0 2px 8px rgba(74,40,12,0.05)",
                       display: "flex",
                       flexDirection: "column",
-                      gap: 3,
+                      gap: 4,
                     }}
                   >
-                    {m.content ? (
-                      formater(m.content)
-                    ) : (
-                      <Points />
-                    )}
+                    {m.content ? formater(m.content) : <Points />}
                   </div>
                 </div>
               ),
@@ -322,15 +429,17 @@ export default function ChatWidget() {
           {/* Saisie */}
           <div
             style={{
-              borderTop: "1px solid rgba(0,0,0,0.07)",
-              padding: 10,
+              borderTop: "1px solid rgba(202,99,31,0.10)",
+              padding: 12,
               display: "flex",
-              gap: 8,
+              gap: 9,
               alignItems: "flex-end",
               background: "#fff",
             }}
           >
             <textarea
+              ref={saisieRef}
+              className="apix-chat-saisie"
               value={saisie}
               onChange={(e) => setSaisie(e.target.value)}
               onKeyDown={(e) => {
@@ -345,13 +454,16 @@ export default function ChatWidget() {
                 flex: 1,
                 resize: "none",
                 maxHeight: 110,
-                border: "1px solid rgba(0,0,0,0.12)",
-                borderRadius: 12,
-                padding: "10px 12px",
+                border: "1px solid rgba(43,32,24,0.14)",
+                borderRadius: 13,
+                padding: "11px 13px",
                 fontSize: 13.5,
                 fontFamily: "inherit",
                 outline: "none",
                 lineHeight: 1.4,
+                color: ENCRE,
+                background: "#fdfbf9",
+                transition: "border-color 0.15s, box-shadow 0.15s",
               }}
             />
             <button
@@ -359,18 +471,27 @@ export default function ChatWidget() {
               disabled={enCours || !saisie.trim()}
               aria-label="Envoyer"
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
+                width: 42,
+                height: 42,
+                borderRadius: 13,
                 border: "none",
-                background: enCours || !saisie.trim() ? "#c9d4e0" : BLEU,
+                background:
+                  enCours || !saisie.trim()
+                    ? "rgba(202,99,31,0.18)"
+                    : `linear-gradient(150deg, ${ORANGE}, ${ORANGE_FONCE})`,
                 color: "#fff",
                 cursor: enCours || !saisie.trim() ? "default" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
+                boxShadow: enCours || !saisie.trim() ? "none" : "0 3px 10px rgba(202,99,31,0.32)",
+                transition: "all 0.18s",
               }}
+              onMouseEnter={(e) => {
+                if (!enCours && saisie.trim()) e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
               <IconeEnvoi />
             </button>
@@ -404,7 +525,7 @@ function IconeEnvoi() {
 
 function Points() {
   return (
-    <span style={{ display: "inline-flex", gap: 4, padding: "2px 0" }}>
+    <span style={{ display: "inline-flex", gap: 4, padding: "3px 0" }}>
       {[0, 1, 2].map((i) => (
         <span
           key={i}
@@ -412,13 +533,12 @@ function Points() {
             width: 6,
             height: 6,
             borderRadius: "50%",
-            background: "#9fb2c6",
+            background: ORANGE,
             animation: "apixPulse 1s infinite",
             animationDelay: `${i * 0.15}s`,
           }}
         />
       ))}
-      <style>{`@keyframes apixPulse{0%,60%,100%{opacity:.3}30%{opacity:1}}`}</style>
     </span>
   );
 }
