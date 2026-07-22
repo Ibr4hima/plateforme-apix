@@ -295,13 +295,24 @@ export default function CodeInvestissementsPage() {
                   if (!prev && !next) return null;
                   const NavBtn = ({ chap, dir }: { chap: any; dir: "prev" | "next" }) => (
                     <button onClick={() => goChap(chap.id)}
-                      style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, background: "transparent", border: "1px solid #EDEAE6", borderRadius: 12, padding: "14px 18px", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", textAlign: dir === "prev" ? "left" : "right" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = ORANGE; e.currentTarget.style.background = "#FBF8F5"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#EDEAE6"; e.currentTarget.style.background = "transparent"; }}>
+                      style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, background: "transparent", border: "1px solid #EDEAE6", borderRadius: 12, padding: "14px 18px", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "border-color 0.15s, background 0.15s", textAlign: dir === "prev" ? "left" : "right" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = ORANGE; e.currentTarget.style.background = "#FBF8F5";
+                        const box = e.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                        const span = box?.firstElementChild as HTMLElement | null;
+                        if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = "#EDEAE6"; e.currentTarget.style.background = "transparent";
+                        const span = (e.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                        if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                      }}>
                       {dir === "prev" && <ChevronLeft size={16} style={{ color: ORANGE, flexShrink: 0 }} />}
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 3 }}>{dir === "prev" ? "Chapitre précédent" : "Chapitre suivant"}</div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{chapLabel(chap.numero)} — {chap.titre}</div>
+                        <div data-marquee style={{ fontSize: 13, fontWeight: 700, color: ENCRE, overflow: "hidden", whiteSpace: "nowrap", textAlign: "left" }}>
+                          <span style={{ display: "inline-block" }}>{chapLabel(chap.numero)} — {chap.titre}</span>
+                        </div>
                       </div>
                       {dir === "next" && <ChevronRight size={16} style={{ color: ORANGE, flexShrink: 0 }} />}
                     </button>
