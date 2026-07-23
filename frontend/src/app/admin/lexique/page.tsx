@@ -23,9 +23,10 @@ function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: (
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  const [ajoutes, setAjoutes] = useState(0);
 
-  const enregistrer = async () => {
-    if (!form.terme.trim() || !form.definition.trim()) { setErr("Le terme et la définition sont requis."); return; }
+  const enregistrer = async (continuer = false) => {
+    if (!form.terme.trim()) { setErr("Le terme est requis."); return; }
     setSaving(true); setErr("");
     try {
       const url = edit ? `${API}/lexique/${edit.id}` : `${API}/lexique`;
@@ -35,7 +36,14 @@ function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: (
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error();
-      onSaved(); onClose();
+      onSaved();
+      if (!edit && continuer) {
+        // Ajout en série : on vide le formulaire et on garde le modal ouvert
+        setForm({ terme: "", definition: "", actif: true });
+        setAjoutes(n => n + 1);
+      } else {
+        onClose();
+      }
     } catch { setErr("Échec de l'enregistrement."); } finally { setSaving(false); }
   };
 
@@ -64,11 +72,19 @@ function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: (
           </label>
           {err && <p style={{ color: "#dc2626", fontSize: 12.5, margin: 0 }}>{err}</p>}
         </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 22px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA" }}>
-          <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid #E2E6EC", background: "#fff", color: "#4a5568", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Annuler</button>
-          <button onClick={enregistrer} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: BLEU, color: "#fff", fontSize: 13, fontWeight: 700, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgba(0,79,145,0.25)" }}>
-            {saving ? "Enregistrement…" : edit ? "Enregistrer" : "Ajouter"}
-          </button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "14px 22px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA" }}>
+          <span style={{ fontSize: 12, color: "#188038", fontWeight: 600 }}>{!edit && ajoutes > 0 ? `${ajoutes} terme${ajoutes > 1 ? "s" : ""} ajouté${ajoutes > 1 ? "s" : ""}` : ""}</span>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid #E2E6EC", background: "#fff", color: "#4a5568", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>{!edit && ajoutes > 0 ? "Terminer" : "Annuler"}</button>
+            {!edit && (
+              <button onClick={() => enregistrer(true)} disabled={saving} style={{ padding: "9px 18px", borderRadius: 10, border: `1px solid ${BLEU}`, background: "#fff", color: BLEU, fontSize: 13, fontWeight: 700, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, fontFamily: "var(--font-google-sans)" }}>
+                Ajouter &amp; continuer
+              </button>
+            )}
+            <button onClick={() => enregistrer(false)} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: BLEU, color: "#fff", fontSize: 13, fontWeight: 700, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgba(0,79,145,0.25)" }}>
+              {saving ? "Enregistrement…" : edit ? "Enregistrer" : "Ajouter"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -146,7 +162,7 @@ export default function AdminLexiquePage() {
             <span style={{ fontSize: 13.5, fontWeight: 700, color: ENCRE, paddingRight: 12 }}>
               {t.terme}{t.actif === false && <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", marginLeft: 7 }}>(masqué)</span>}
             </span>
-            <span style={{ fontSize: 12.5, color: "#6b7280", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", paddingRight: 12 }}>{t.definition}</span>
+            <span style={{ fontSize: 12.5, color: t.definition?.trim() ? "#6b7280" : "#c99a1e", fontStyle: t.definition?.trim() ? "normal" : "italic", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", paddingRight: 12 }}>{t.definition?.trim() || "Définition à compléter"}</span>
             <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
               <button onClick={() => { setEdit(t); setModal(true); }} title="Modifier"
                 style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E2E6EC", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: BLEU }}>

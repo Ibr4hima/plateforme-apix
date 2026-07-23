@@ -13,7 +13,7 @@ router = APIRouter(prefix="/lexique", tags=["lexique"])
 
 class TermeIn(BaseModel):
     terme: str
-    definition: str
+    definition: Optional[str] = ""   # la définition peut être ajoutée plus tard
     ordre: Optional[int] = 0
     actif: Optional[bool] = True
 
@@ -37,7 +37,7 @@ async def create_terme(body: TermeIn, db: AsyncSession = Depends(get_db), curren
     res = await db.execute(text(
         "INSERT INTO lexique (terme, definition, ordre, actif) "
         "VALUES (:t, :d, :o, :a) RETURNING id, terme, definition, ordre, actif"
-    ), {"t": body.terme.strip(), "d": body.definition.strip(), "o": body.ordre, "a": body.actif})
+    ), {"t": body.terme.strip(), "d": (body.definition or "").strip(), "o": body.ordre, "a": body.actif})
     await db.commit()
     return _row(res.fetchone())
 
@@ -47,7 +47,7 @@ async def update_terme(id: int, body: TermeIn, db: AsyncSession = Depends(get_db
     res = await db.execute(text(
         "UPDATE lexique SET terme=:t, definition=:d, ordre=:o, actif=:a, updated_at=NOW() "
         "WHERE id=:id RETURNING id, terme, definition, ordre, actif"
-    ), {"t": body.terme.strip(), "d": body.definition.strip(), "o": body.ordre, "a": body.actif, "id": id})
+    ), {"t": body.terme.strip(), "d": (body.definition or "").strip(), "o": body.ordre, "a": body.actif, "id": id})
     await db.commit()
     r = res.fetchone()
     if not r:
