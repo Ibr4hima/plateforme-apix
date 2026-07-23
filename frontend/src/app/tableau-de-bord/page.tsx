@@ -149,6 +149,39 @@ function TopTable({ rows, couleur = BLEU, fmt = (v: number) => nf(v), colNom = "
   );
 }
 
+// Matrice de valeurs partenaire × ressource (intensité = valeur)
+function MatriceRessources({ ressources, partenaires, fmt = (v: number) => nf(v), colPartenaire = "Partenaire" }: { ressources: string[]; partenaires: { nom: string; valeurs: number[] }[]; fmt?: (v: number) => string; colPartenaire?: string }) {
+  if (!partenaires.length || !ressources.length) return <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
+  const max = Math.max(1, ...partenaires.flatMap((p) => p.valeurs));
+  const thRes: React.CSSProperties = { padding: "6px 8px", textAlign: "center", fontSize: 9.5, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid #E6E9EF", verticalAlign: "bottom", minWidth: 74, maxWidth: 110, lineHeight: 1.15 };
+  return (
+    <div style={{ overflowX: "auto" }}>
+      <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 12 }}>
+        <thead><tr>
+          <th style={{ padding: "6px 10px 6px 4px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "2px solid #E6E9EF", position: "sticky", left: 0, background: "#fff", zIndex: 1 }}>{colPartenaire}</th>
+          {ressources.map((r) => <th key={r} style={thRes}>{r}</th>)}
+        </tr></thead>
+        <tbody>
+          {partenaires.map((p) => (
+            <tr key={p.nom}>
+              <td style={{ padding: "7px 10px 7px 4px", fontWeight: 700, color: ENCRE, whiteSpace: "nowrap", position: "sticky", left: 0, background: "#fff", borderBottom: "1px solid #F3F5F8" }}>{p.nom}</td>
+              {p.valeurs.map((v, i) => {
+                const t = v > 0 ? v / max : 0;
+                return (
+                  <td key={i} title={v > 0 ? `${p.nom} · ${ressources[i]} : ${fmt(v)}` : undefined}
+                    style={{ textAlign: "center", padding: "7px 8px", fontSize: 11, fontWeight: 650, whiteSpace: "nowrap", borderBottom: "1px solid #F3F5F8", background: v > 0 ? `rgba(0,79,145,${(0.06 + t * 0.52).toFixed(3)})` : "transparent", color: t > 0.5 ? "#fff" : "#5c6675" }}>
+                    {v > 0 ? fmt(v) : "·"}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function Carte({ titre, children, style }: { titre?: string; children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div className="ds-carte" style={{ padding: "22px 24px", minWidth: 0, ...style }}>
@@ -217,6 +250,7 @@ export default function TableauDeBordPage() {
   const [bilat, setBilat] = useState<any>(null);
   const [bilatTops, setBilatTops] = useState<any>(null);
   const [bilatBalance, setBilatBalance] = useState<any[]>([]);
+  const [bilatRepart, setBilatRepart] = useState<any>(null);
   const [bilatDir, setBilatDir] = useState<"exportateur" | "importateur">("exportateur");
   const [commCtx, setCommCtx] = useState<{ id: number; amin: number; amax: number } | null>(null);
   const [comExt, setComExt] = useState<any>(null);
@@ -266,6 +300,7 @@ export default function TableauDeBordPage() {
     const base = `pays_id=${id}&direction=${bilatDir}`;
     getJSON(`${API}/statistiques/commerce/kpis?${base}&annee_min=${amin}&annee_max=${amax}`).then(setBilat);
     getJSON(`${API}/statistiques/commerce/tops?${base}&annee_min=${amax}&annee_max=${amax}&limite=8`).then(setBilatTops);
+    getJSON(`${API}/statistiques/commerce/repartition?${base}&annee_min=${amax}&annee_max=${amax}&limite=6`).then(setBilatRepart);
   }, [commCtx, bilatDir]);
 
   // ── Dérivés socio-économiques ──
@@ -425,19 +460,38 @@ export default function TableauDeBordPage() {
                   refAnnee={bilat?.annee_prec}
                 />
               </div>
-              <div className="tdb-duo">
-                <Carte titre="Balance commerciale bilatérale">
-                  {serieBalance.length > 1 ? (
-                    <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[
-                      serie("Exportations", PALETTE_COMPARAISON[0], serieBalance.map((r) => ({ annee: r.annee, valeur: r.exportations }))),
-                      serie("Importations", PALETTE_COMPARAISON[1], serieBalance.map((r) => ({ annee: r.annee, valeur: r.importations }))),
-                    ]} />
-                  ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
-                </Carte>
-                <Carte titre={bilatDir === "exportateur" ? "Principaux clients" : "Principaux fournisseurs"}>
-                  <TopTable rows={(bilatTops?.partenaires || []).map((p: any) => ({ nom: p.nom, valeur: p.valeur }))} colNom="Pays" colVal="Valeur" fmt={(v) => fmtUSD(v)} />
-                </Carte>
-              </div>
+              {(() => {
+                const exp = bilatDir === "exportateur";
+                const evoKey = exp ? "exportations" : "importations";
+                const serieEvo = serieBalance.map((r: any) => ({ annee: r.annee, valeur: r[evoKey] }));
+                const resLabels = (bilatRepart?.ressources || []).slice(0, 7);
+                const parts = (bilatRepart?.partenaires || []).map((p: any) => ({ nom: p.nom, valeurs: (p.valeurs || []).slice(0, 7) }));
+                return (
+                  <>
+                    <div className="tdb-duo">
+                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"}>
+                        {serieEvo.length > 1 ? (
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], serieEvo)]} />
+                        ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
+                      </Carte>
+                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"}>
+                        <MiniBarres data={(bilatTops?.ressources || []).map((r: any) => ({ label: r.ressource, valeur: r.valeur }))} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtUSD(v)} max={7} />
+                      </Carte>
+                    </div>
+                    <Carte titre={exp ? "Valeurs des exportations par destination et ressource" : "Valeurs des importations par origine et ressource"} style={{ marginTop: 16 }}>
+                      <MatriceRessources ressources={resLabels} partenaires={parts} fmt={(v) => fmtUSD(v)} colPartenaire={exp ? "Destination" : "Origine"} />
+                    </Carte>
+                    <div className="tdb-duo" style={{ marginTop: 16 }}>
+                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"}>
+                        <TopTable rows={(bilatTops?.partenaires || []).map((p: any) => ({ nom: p.nom, valeur: p.valeur }))} colNom="Pays" colVal="Valeur" fmt={(v) => fmtUSD(v)} max={7} />
+                      </Carte>
+                      <Carte titre={exp ? "Valeurs des ressources exportées" : "Valeurs des ressources importées"}>
+                        <TopTable rows={(bilatTops?.ressources || []).map((r: any) => ({ nom: r.ressource, valeur: r.valeur }))} colNom="Ressource" colVal="Valeur" fmt={(v) => fmtUSD(v)} max={8} />
+                      </Carte>
+                    </div>
+                  </>
+                );
+              })()}
             </section>
 
             {/* ── 3. Commerce extérieur ── */}
