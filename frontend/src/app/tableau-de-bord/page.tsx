@@ -64,13 +64,33 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel }: { label: string; v
   );
 }
 
-// En-tête de section : pastille + titre puis filet fin sur la même ligne
-function SectionHead({ n, titre }: { n: number; titre: string }) {
+// En-tête de section : pastille + titre (+ contrôle) puis filet fin sur la même ligne
+function SectionHead({ n, titre, extra }: { n: number; titre: string; extra?: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
       <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(0,79,145,0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{String(n).padStart(2, "0")}</span>
       <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: ENCRE, letterSpacing: "-0.01em", whiteSpace: "nowrap", flexShrink: 0 }}>{titre}</h2>
+      {extra}
       <div style={{ flex: 1, height: 1, background: "rgba(16,26,46,0.12)" }} />
+    </div>
+  );
+}
+
+// Bascule segmentée compacte (ex. Exportations / Importations)
+function Segment<T extends string>({ value, options, onChange }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void }) {
+  return (
+    <div style={{ display: "inline-flex", background: "#EEF1F6", borderRadius: 999, padding: 3, gap: 2, flexShrink: 0 }}>
+      {options.map((o) => {
+        const actif = o.v === value;
+        return (
+          <button key={o.v} onClick={() => onChange(o.v)} style={{
+            border: "none", cursor: "pointer", padding: "5px 14px", borderRadius: 999,
+            fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+            background: actif ? "#fff" : "transparent", color: actif ? BLEU : "#6b7684",
+            boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s",
+          }}>{o.l}</button>
+        );
+      })}
     </div>
   );
 }
@@ -191,6 +211,8 @@ export default function TableauDeBordPage() {
   const [bilat, setBilat] = useState<any>(null);
   const [bilatTops, setBilatTops] = useState<any>(null);
   const [bilatBalance, setBilatBalance] = useState<any[]>([]);
+  const [bilatDir, setBilatDir] = useState<"exportateur" | "importateur">("exportateur");
+  const [commCtx, setCommCtx] = useState<{ id: number; amin: number; amax: number } | null>(null);
   const [comExt, setComExt] = useState<any>(null);
   const [socio, setSocio] = useState<any[]>([]);
   const [socioPays, setSocioPays] = useState<string>("Sénégal");
@@ -211,15 +233,14 @@ export default function TableauDeBordPage() {
     getJSON(`${API}/dashboard/viz/entreprises-par-secteur`).then((d) => setEntSecteur(Array.isArray(d) ? d : []));
     getJSON(`${API}/dashboard/indicateur?dimension=secteurs&indicateur=ciblees`).then((d) => setProspSecteur(Array.isArray(d) ? d : []));
 
-    // Flux bilatéraux : résoudre l'id du Sénégal puis charger KPIs/tops/balance
+    // Flux bilatéraux : résoudre l'id du Sénégal puis charger la balance ;
+    // KPIs/tops dépendent de la direction → effet dédié ci-dessous.
     getJSON(`${API}/statistiques/commerce/filtres`).then((f) => {
       const sen = (f?.pays || []).find((p: any) => p.code_iso3 === "SEN");
       const annees: number[] = (f?.annees || []).slice().sort((a: number, b: number) => a - b);
       if (!sen || annees.length === 0) return;
       const amax = annees[annees.length - 1], amin = Math.max(annees[0], amax - 6);
-      const base = `pays_id=${sen.id}&direction=exportateur`;
-      getJSON(`${API}/statistiques/commerce/kpis?${base}&annee_min=${amin}&annee_max=${amax}`).then(setBilat);
-      getJSON(`${API}/statistiques/commerce/tops?${base}&annee_min=${amax}&annee_max=${amax}&limite=8`).then(setBilatTops);
+      setCommCtx({ id: sen.id, amin, amax });
       getJSON(`${API}/statistiques/commerce/balance?pays_id=${sen.id}&annee_min=${amin}&annee_max=${amax}`).then((d) => setBilatBalance(Array.isArray(d) ? d : []));
     });
 
@@ -231,6 +252,15 @@ export default function TableauDeBordPage() {
       getJSON(`${API}/statistiques/donnees?pays=${sen.id}&annee_min=2005&annee_max=2030`).then((d) => setSocio(Array.isArray(d) ? d : []));
     });
   }, []);
+
+  // Flux bilatéraux : KPIs & tops rechargés à chaque changement de direction
+  useEffect(() => {
+    if (!commCtx) return;
+    const { id, amin, amax } = commCtx;
+    const base = `pays_id=${id}&direction=${bilatDir}`;
+    getJSON(`${API}/statistiques/commerce/kpis?${base}&annee_min=${amin}&annee_max=${amax}`).then(setBilat);
+    getJSON(`${API}/statistiques/commerce/tops?${base}&annee_min=${amax}&annee_max=${amax}&limite=8`).then(setBilatTops);
+  }, [commCtx, bilatDir]);
 
   // ── Dérivés socio-économiques ──
   const socioVal = (code: string) => {
@@ -248,6 +278,15 @@ export default function TableauDeBordPage() {
   const serieStockEnt = useMemo(() => toSerie(ideStock), [ideStock]);
   const serieStockSort = useMemo(() => toSerie(ideStockSort), [ideStockSort]);
   const serieBalance = useMemo(() => bilatBalance.slice().sort((a, b) => a.annee - b.annee), [bilatBalance]);
+
+  // Total (export ou import) sur la dernière année vs l'année précédente
+  const bilatTotalDelta = useMemo(() => {
+    const k = bilatDir === "exportateur" ? "exportations" : "importations";
+    const rows = serieBalance.filter((r) => r[k] != null && r[k] > 0);
+    const last = rows[rows.length - 1], prev = rows[rows.length - 2];
+    const delta = last && prev && prev[k] ? ((last[k] - prev[k]) / Math.abs(prev[k])) * 100 : null;
+    return { prev: prev || null, delta };
+  }, [serieBalance, bilatDir]);
 
   // Balance = entrant − sortant, uniquement sur les années où les deux existent
   const balanceSerie = (ent: { annee: number; valeur: number | null }[], sort: { annee: number; valeur: number | null }[]) => {
@@ -345,12 +384,20 @@ export default function TableauDeBordPage() {
 
             {/* ── 2. Flux bilatéraux ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={2} titre="Flux bilatéraux" />
+              <SectionHead n={2} titre="Flux bilatéraux" extra={
+                <Segment value={bilatDir} onChange={setBilatDir} options={[{ v: "exportateur", l: "Exportations" }, { v: "importateur", l: "Importations" }]} />
+              } />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="Total exporté" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={fmtUSD(bilat?.total)} />
-                <Kpi label="Partenaires" valeur={bilat ? nf(bilat.nb_partenaires) : "—"} sousLabel="pays destinataires" />
-                <Kpi label="1er partenaire" valeur={bilat?.top_partenaire?.nom || "—"} sousLabel={bilat?.top_partenaire ? fmtUSD(bilat.top_partenaire.valeur) : ""} />
-                <Kpi label="Concentration" valeur={bilat?.part_top_partenaire != null ? `${nf(bilat.part_top_partenaire, 1)} %` : "—"} sousLabel="part du 1er partenaire" />
+                <Kpi
+                  label={bilatDir === "exportateur" ? "Total exporté" : "Total importé"}
+                  tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
+                  valeur={fmtUSD(bilat?.total)}
+                  delta={bilatTotalDelta.delta}
+                  sousLabel={bilatTotalDelta.prev ? `par rapport à ${bilatTotalDelta.prev.annee}` : ""}
+                />
+                <Kpi label="1re ressource" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={bilat?.top_ressource?.ressource || "—"} sousLabel={bilat?.top_ressource ? fmtUSD(bilat.top_ressource.valeur) : ""} />
+                <Kpi label="1er partenaire" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={bilat?.top_partenaire?.nom || "—"} sousLabel={bilat?.top_partenaire ? fmtUSD(bilat.top_partenaire.valeur) : ""} />
+                <Kpi label="Concentration" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={bilat?.part_top_partenaire != null ? `${nf(bilat.part_top_partenaire, 1)} %` : "—"} sousLabel="part du 1er partenaire" />
               </div>
               <div className="tdb-duo">
                 <Carte titre="Balance commerciale bilatérale">
@@ -361,7 +408,7 @@ export default function TableauDeBordPage() {
                     ]} />
                   ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
                 </Carte>
-                <Carte titre="Principaux partenaires">
+                <Carte titre={bilatDir === "exportateur" ? "Principaux clients" : "Principaux fournisseurs"}>
                   <TopTable rows={(bilatTops?.partenaires || []).map((p: any) => ({ nom: p.nom, valeur: p.valeur }))} colNom="Pays" colVal="Valeur" fmt={(v) => fmtUSD(v)} />
                 </Carte>
               </div>
