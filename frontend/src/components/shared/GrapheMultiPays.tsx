@@ -13,9 +13,18 @@ import { fmtCompact, fmtAxe } from "@/lib/format";
 import { showD3Tooltip as montrerTooltip, hideD3Tooltip as cacherTooltip } from "@/components/charts/outilsTooltip";
 
 type Point = { annee: number; valeur: number | null };
-export type SerieGraphe = { nom: string; couleur: string; data: Point[] };
+export type SerieGraphe = {
+  nom: string;
+  couleur: string;
+  data: Point[];
+  /** Motif de tiret (ex. "6,4") — trace une courbe de référence en pointillés,
+      sans aire ni halo (ligne secondaire épurée). */
+  dash?: string;
+  /** Forcer / retirer l'aire dégradée sous la courbe (défaut : pleine sauf en pointillés). */
+  aire?: boolean;
+};
 
-export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, fmtX, showDots = true, lineWidth }: {
+export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, fmtX, showDots = true, lineWidth, dualAxis }: {
   series: SerieGraphe[];
   height?: number;
   type?: "line" | "bar";
@@ -26,6 +35,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
   fmtX?: (x: number) => string;
   showDots?: boolean;
   lineWidth?: number;
+  /** false = jamais de double axe (séries de même unité, échelle partagée). */
+  dualAxis?: boolean;
 }) {
   const pret = useD3Pret();
   const ref = useRef<SVGSVGElement>(null);
@@ -55,7 +66,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       return { mn, mx, span: mx - mn };
     });
     const spanRatio = Math.max(...serieRanges.map(r => r.span)) / Math.max(1, Math.min(...serieRanges.map(r => r.span)));
-    const useDual = type === "line" && series.length >= 2 && spanRatio > 4;
+    const useDual = dualAxis === false ? false : (type === "line" && series.length >= 2 && spanRatio > 4);
 
     const M = { top: 12, right: useDual ? 58 : 20, bottom: 34, left: 64 };
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
@@ -144,6 +155,10 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         const valid = s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[];
         if (!valid.length) return;
 
+        // Courbe en pointillés = ligne de référence épurée (ni aire, ni halo, ni glow)
+        const pointille = !!s.dash;
+        const montrerAire = s.aire ?? !pointille;
+
         const areaBase = ys(Math.max(ys.domain()[0], 0));
         const gid = `${uid}-a${si}`;
         const grad = defs.append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
@@ -156,41 +171,47 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         const dLigne = d3.line<{ annee: number; valeur: number }>()
           .x(d => xLin(d.annee)).y(d => ys(d.valeur)).curve(d3.curveMonotoneX)(valid) || "";
         // Aire en dégradé riche
-        svg.append("path").attr("fill", `url(#${gid})`).attr("d", dAire);
-        // Ombre portée de la ligne
-        svg.append("path").attr("fill", "none")
-          .attr("stroke", s.couleur).attr("stroke-width", epaisseur + 0.5)
-          .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
-          .attr("transform", "translate(0,6)").attr("filter", `url(#${idOmbre})`).attr("opacity", 0.22)
-          .attr("d", dLigne);
-        // Glow
-        svg.append("path").attr("fill", "none")
-          .attr("stroke", s.couleur).attr("stroke-width", epaisseur * 3.2)
-          .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
-          .attr("filter", `url(#${idGlow})`).attr("opacity", 0.14)
-          .attr("d", dLigne);
+        if (montrerAire) svg.append("path").attr("fill", `url(#${gid})`).attr("d", dAire);
+        if (!pointille) {
+          // Ombre portée de la ligne
+          svg.append("path").attr("fill", "none")
+            .attr("stroke", s.couleur).attr("stroke-width", epaisseur + 0.5)
+            .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
+            .attr("transform", "translate(0,6)").attr("filter", `url(#${idOmbre})`).attr("opacity", 0.22)
+            .attr("d", dLigne);
+          // Glow
+          svg.append("path").attr("fill", "none")
+            .attr("stroke", s.couleur).attr("stroke-width", epaisseur * 3.2)
+            .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
+            .attr("filter", `url(#${idGlow})`).attr("opacity", 0.14)
+            .attr("d", dLigne);
+        }
         // La ligne
         svg.append("path").attr("fill", "none")
-          .attr("stroke", s.couleur).attr("stroke-width", epaisseur)
-          .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
+          .attr("stroke", s.couleur).attr("stroke-width", pointille ? Math.max(1.6, epaisseur - 0.4) : epaisseur)
+          .attr("stroke-linejoin", "round").attr("stroke-linecap", pointille ? "butt" : "round")
+          .attr("stroke-dasharray", s.dash || null)
+          .attr("opacity", pointille ? 0.85 : 1)
           .attr("d", dLigne);
 
-        // Point terminal souligné d'un halo
-        const fin = valid[valid.length - 1];
-        const gFin = svg.append("g");
-        gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 7)
-          .attr("fill", s.couleur).attr("opacity", 0.3).attr("filter", `url(#${idGlow})`);
-        gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 3.6)
-          .attr("fill", s.couleur).attr("stroke", "#fff").attr("stroke-width", 1.6);
+        if (!pointille) {
+          // Point terminal souligné d'un halo
+          const fin = valid[valid.length - 1];
+          const gFin = svg.append("g");
+          gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 7)
+            .attr("fill", s.couleur).attr("opacity", 0.3).attr("filter", `url(#${idGlow})`);
+          gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 3.6)
+            .attr("fill", s.couleur).attr("stroke", "#fff").attr("stroke-width", 1.6);
 
-        // Points décoratifs
-        const nb = valid.length;
-        const rBase = nb > 25 ? 0 : nb > 18 ? 1.5 : nb > 10 ? 2 : 2.5;
-        if (showDots && rBase > 0) {
-          svg.selectAll(`.p${gid}`).data(valid).enter().append("circle")
-            .attr("cx", d => xLin(d.annee)).attr("cy", d => ys(d.valeur)).attr("r", rBase)
-            .attr("fill", "#fff").attr("stroke", s.couleur).attr("stroke-width", 1.5)
-            .style("pointer-events", "none");
+          // Points décoratifs
+          const nb = valid.length;
+          const rBase = nb > 25 ? 0 : nb > 18 ? 1.5 : nb > 10 ? 2 : 2.5;
+          if (showDots && rBase > 0) {
+            svg.selectAll(`.p${gid}`).data(valid).enter().append("circle")
+              .attr("cx", d => xLin(d.annee)).attr("cy", d => ys(d.valeur)).attr("r", rBase)
+              .attr("fill", "#fff").attr("stroke", s.couleur).attr("stroke-width", 1.5)
+              .style("pointer-events", "none");
+          }
         }
       });
 

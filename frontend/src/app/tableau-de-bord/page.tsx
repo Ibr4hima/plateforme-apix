@@ -64,23 +64,13 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel }: { label: string; v
   );
 }
 
-// En-tête de section : pastille + titre · source à droite · filet de séparation
-function SectionHead({ n, titre, source }: { n: number; titre: string; source?: string }) {
+// En-tête de section : pastille + titre puis filet fin sur la même ligne
+function SectionHead({ n, titre }: { n: number; titre: string }) {
   return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(0,79,145,0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{String(n).padStart(2, "0")}</span>
-          <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: ENCRE, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titre}</h2>
-        </div>
-        {source && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 5px 4px 13px", borderRadius: 999, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.12)", flexShrink: 0 }}>
-            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" }}>Source</span>
-            <span style={{ fontSize: 11.5, fontWeight: 800, color: BLEU, background: "#fff", padding: "3px 11px", borderRadius: 999, border: "1px solid rgba(0,79,145,0.12)", whiteSpace: "nowrap" }}>{source}</span>
-          </span>
-        )}
-      </div>
-      <div style={{ height: 1, marginTop: 14, background: "linear-gradient(90deg, rgba(16,26,46,0.16) 0%, rgba(16,26,46,0.05) 55%, transparent 100%)" }} />
+    <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+      <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(0,79,145,0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{String(n).padStart(2, "0")}</span>
+      <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: ENCRE, letterSpacing: "-0.01em", whiteSpace: "nowrap", flexShrink: 0 }}>{titre}</h2>
+      <div style={{ flex: 1, height: 1, background: "rgba(16,26,46,0.12)" }} />
     </div>
   );
 }
@@ -194,9 +184,10 @@ export default function TableauDeBordPage() {
 
   // Données
   const [stats, setStats] = useState<any>(null);
-  const [ide, setIde] = useState<any>(null);
   const [ideFlux, setIdeFlux] = useState<any[]>([]);
   const [ideStock, setIdeStock] = useState<any[]>([]);
+  const [ideFluxSort, setIdeFluxSort] = useState<any[]>([]);
+  const [ideStockSort, setIdeStockSort] = useState<any[]>([]);
   const [bilat, setBilat] = useState<any>(null);
   const [bilatTops, setBilatTops] = useState<any>(null);
   const [bilatBalance, setBilatBalance] = useState<any[]>([]);
@@ -210,9 +201,10 @@ export default function TableauDeBordPage() {
 
   useEffect(() => {
     getJSON(`${API}/dashboard/stats`).then(setStats);
-    getJSON(`${API}/ide/cnuced/kpis-calcules`).then(setIde);
     getJSON(`${API}/ide/cnuced?direction=entrant&indicateur=flux`).then((d) => setIdeFlux(Array.isArray(d) ? d : []));
     getJSON(`${API}/ide/cnuced?direction=entrant&indicateur=stock`).then((d) => setIdeStock(Array.isArray(d) ? d : []));
+    getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=flux`).then((d) => setIdeFluxSort(Array.isArray(d) ? d : []));
+    getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=stock`).then((d) => setIdeStockSort(Array.isArray(d) ? d : []));
     getJSON(`${API}/bmce/apercu`).then(setComExt);
     getJSON(`${API}/dashboard/viz/entreprises-par-annee`).then((d) => setEntAnnee(Array.isArray(d) ? d : []));
     getJSON(`${API}/dashboard/viz/entreprises-par-region`).then((d) => setEntRegion(Array.isArray(d) ? d : []));
@@ -250,11 +242,38 @@ export default function TableauDeBordPage() {
   const pib = socioVal("pib"), pop = socioVal("population"), pibHab = socioVal("pib_hab"), croiss = socioVal("croissance_pib");
   const seriePib = useMemo(() => socio.filter((r) => r.indicateur === "pib" && r.valeur != null).sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee, valeur: r.valeur })), [socio]);
 
-  const serieIdeFlux = useMemo(() => ideFlux.slice().sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee, valeur: r.valeur })), [ideFlux]);
-  const serieIdeStock = useMemo(() => ideStock.slice().sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee, valeur: r.valeur })), [ideStock]);
+  const toSerie = (rows: any[]) => rows.slice().sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee as number, valeur: r.valeur as number | null }));
+  const serieFluxEnt = useMemo(() => toSerie(ideFlux), [ideFlux]);
+  const serieFluxSort = useMemo(() => toSerie(ideFluxSort), [ideFluxSort]);
+  const serieStockEnt = useMemo(() => toSerie(ideStock), [ideStock]);
+  const serieStockSort = useMemo(() => toSerie(ideStockSort), [ideStockSort]);
   const serieBalance = useMemo(() => bilatBalance.slice().sort((a, b) => a.annee - b.annee), [bilatBalance]);
 
-  const ideV = (k: string) => (ide && ide[k] ? ide[k] : null);
+  // Balance = entrant − sortant, uniquement sur les années où les deux existent
+  const balanceSerie = (ent: { annee: number; valeur: number | null }[], sort: { annee: number; valeur: number | null }[]) => {
+    const m = new Map<number, { e?: number; s?: number }>();
+    ent.forEach((r) => { if (r.valeur != null) m.set(r.annee, { ...(m.get(r.annee) || {}), e: r.valeur }); });
+    sort.forEach((r) => { if (r.valeur != null) m.set(r.annee, { ...(m.get(r.annee) || {}), s: r.valeur }); });
+    return [...m.entries()]
+      .filter(([, o]) => o.e != null && o.s != null)
+      .map(([annee, o]) => ({ annee, valeur: (o.e as number) - (o.s as number) }))
+      .sort((a, b) => a.annee - b.annee);
+  };
+  const balanceFlux = useMemo(() => balanceSerie(serieFluxEnt, serieFluxSort), [serieFluxEnt, serieFluxSort]);
+  const balanceStock = useMemo(() => balanceSerie(serieStockEnt, serieStockSort), [serieStockEnt, serieStockSort]);
+
+  // Dernier point valide + précédent (pour la variation « par rapport à YYYY »)
+  const dernierPoint = (rows: { annee: number; valeur: number | null }[]) => {
+    const valid = rows.filter((r) => r.valeur != null);
+    const last = valid[valid.length - 1] || null;
+    const prev = valid[valid.length - 2] || null;
+    const delta = last && prev && prev.valeur ? ((last.valeur! - prev.valeur!) / Math.abs(prev.valeur!)) * 100 : null;
+    return { last, prev, delta };
+  };
+  const kFluxEnt = useMemo(() => dernierPoint(serieFluxEnt), [serieFluxEnt]);
+  const kFluxSort = useMemo(() => dernierPoint(serieFluxSort), [serieFluxSort]);
+  const kStockEnt = useMemo(() => dernierPoint(serieStockEnt), [serieStockEnt]);
+  const kStockSort = useMemo(() => dernierPoint(serieStockSort), [serieStockSort]);
 
   return (
     <main style={{ minHeight: "100vh", background: "var(--ds-fond, #F6F5F3)", fontFamily: "var(--font-google-sans)" }}>
@@ -295,23 +314,38 @@ export default function TableauDeBordPage() {
 
             {/* ── 1. IDE ── */}
             <section style={{ marginTop: 44 }}>
-              <SectionHead n={1} titre="Investissements Directs Étrangers" source="CNUCED" />
+              <SectionHead n={1} titre="Investissements Directs Étrangers" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="Flux entrant" tag="Dernière année" valeur={fmtMUSD(ideV("flux_entrant_dernier")?.valeur)} delta={ideV("flux_entrant_dernier")?.variation ?? null} sousLabel={ideV("flux_entrant_dernier")?.annee ? String(ideV("flux_entrant_dernier").annee) : ""} />
-                <Kpi label="Stock entrant" valeur={fmtMUSD(ideV("stock_entrant_dernier")?.valeur)} sousLabel={ideV("stock_entrant_dernier")?.annee ? String(ideV("stock_entrant_dernier").annee) : ""} />
-                <Kpi label="Flux sortant" valeur={fmtMUSD(ideV("flux_sortant_dernier")?.valeur)} delta={ideV("flux_sortant_dernier")?.variation ?? null} />
-                <Kpi label="Balance IDE" valeur={fmtMUSD(ideV("balance_derniere")?.valeur)} rouge={(ideV("balance_derniere")?.valeur ?? 0) < 0} sousLabel="entrant − sortant" />
+                <Kpi label="Flux entrant" tag={kFluxEnt.last ? String(kFluxEnt.last.annee) : undefined} valeur={fmtMUSD(kFluxEnt.last?.valeur)} delta={kFluxEnt.delta} sousLabel={kFluxEnt.prev ? `par rapport à ${kFluxEnt.prev.annee}` : ""} />
+                <Kpi label="Flux sortant" tag={kFluxSort.last ? String(kFluxSort.last.annee) : undefined} valeur={fmtMUSD(kFluxSort.last?.valeur)} delta={kFluxSort.delta} sousLabel={kFluxSort.prev ? `par rapport à ${kFluxSort.prev.annee}` : ""} />
+                <Kpi label="Stock entrant" tag={kStockEnt.last ? String(kStockEnt.last.annee) : undefined} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} sousLabel={kStockEnt.prev ? `par rapport à ${kStockEnt.prev.annee}` : ""} />
+                <Kpi label="Stock sortant" tag={kStockSort.last ? String(kStockSort.last.annee) : undefined} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} sousLabel={kStockSort.prev ? `par rapport à ${kStockSort.prev.annee}` : ""} />
               </div>
-              <Carte titre="Flux et stock entrants au fil des années">
-                {serieIdeFlux.length > 1 ? (
-                  <GrapheMultiPays height={240} type="line" fmt={(v) => fmtMUSD(v)} series={[serie("Flux entrant", PALETTE_COMPARAISON[0], serieIdeFlux), serie("Stock entrant", PALETTE_COMPARAISON[2], serieIdeStock)]} />
-                ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données IDE indisponibles.</p>}
-              </Carte>
+              <div className="tdb-duo">
+                <Carte titre="Balance des flux d'IDE">
+                  {balanceFlux.length > 1 ? (
+                    <GrapheMultiPays height={230} type="line" dualAxis={false} fmt={(v) => fmtMUSD(v)} series={[
+                      { nom: "Flux entrant", couleur: PALETTE_COMPARAISON[0], data: serieFluxEnt, dash: "6,4" },
+                      { nom: "Flux sortant", couleur: PALETTE_COMPARAISON[1], data: serieFluxSort, dash: "2,4" },
+                      { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balanceFlux },
+                    ]} />
+                  ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données IDE indisponibles.</p>}
+                </Carte>
+                <Carte titre="Balance des stocks d'IDE">
+                  {balanceStock.length > 1 ? (
+                    <GrapheMultiPays height={230} type="line" dualAxis={false} fmt={(v) => fmtMUSD(v)} series={[
+                      { nom: "Stock entrant", couleur: PALETTE_COMPARAISON[0], data: serieStockEnt, dash: "6,4" },
+                      { nom: "Stock sortant", couleur: PALETTE_COMPARAISON[1], data: serieStockSort, dash: "2,4" },
+                      { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balanceStock },
+                    ]} />
+                  ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données IDE indisponibles.</p>}
+                </Carte>
+              </div>
             </section>
 
             {/* ── 2. Flux bilatéraux ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={2} titre="Flux bilatéraux" source="Resource Trade Earth" />
+              <SectionHead n={2} titre="Flux bilatéraux" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Total exporté" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={fmtUSD(bilat?.total)} />
                 <Kpi label="Partenaires" valeur={bilat ? nf(bilat.nb_partenaires) : "—"} sousLabel="pays destinataires" />
@@ -335,7 +369,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 3. Commerce extérieur ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={3} titre="Commerce extérieur" source="ANSD" />
+              <SectionHead n={3} titre="Commerce extérieur" />
               <div className="tdb-kpis">
                 <Kpi label="Exportations" tag="FAB" valeur={fmtMd(comExt?.cumul_annee?.exportations_fab)} delta={comExt?.variation_export ?? null} sousLabel="FCFA" />
                 <Kpi label="Importations" tag="CAF" valeur={fmtMd(comExt?.cumul_annee?.importations_caf)} delta={comExt?.variation_import ?? null} sousLabel="FCFA" />
@@ -346,7 +380,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 4. Indicateurs socio-économiques ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={4} titre="Indicateurs socio-économiques" source="CNUCED" />
+              <SectionHead n={4} titre="Indicateurs socio-économiques" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="PIB" valeur={fmtUSD(pib?.valeur)} sousLabel={pib?.annee ? String(pib.annee) : ""} />
                 <Kpi label="Population" valeur={pop ? nf(pop.valeur) : "—"} sousLabel="habitants" />
@@ -362,7 +396,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 5. Entreprises installées ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={5} titre="Entreprises installées" source="APIX" />
+              <SectionHead n={5} titre="Entreprises installées" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Total installées" valeur={stats ? nf(stats.global_installees) : "—"} />
                 <Kpi label="Régions couvertes" valeur={entRegion.length ? nf(entRegion.length) : "—"} sousLabel="sur 14" />
@@ -381,7 +415,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 6. Entreprises / prospects ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={6} titre="Entreprises" source="APIX" />
+              <SectionHead n={6} titre="Entreprises" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Prospects suivis" valeur={stats ? nf(stats.prospects_total) : "—"} />
                 <Kpi label="Entreprises ciblées" valeur={stats ? nf(stats.global_ciblees) : "—"} sousLabel="sans échange" />
