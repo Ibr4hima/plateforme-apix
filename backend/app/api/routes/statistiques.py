@@ -1145,11 +1145,13 @@ async def commerce_tops(
         .group_by(partner_col).order_by(_sum.desc().nullslast()).limit(limite)
     )).all()
     noms = {}
+    iso2 = {}
     pids = [r.pid for r in prows]
     if pids:
-        rn = (await db.execute(select(RefPays.id, RefPays.nom_fr).where(RefPays.id.in_(pids)))).all()
-        noms = {rid: nom for rid, nom in rn}
-    partenaires = [{"id": r.pid, "nom": noms.get(r.pid) or "—", "valeur": float(r.v or 0)} for r in prows]
+        rn = (await db.execute(select(RefPays.id, RefPays.nom_fr, RefPays.code_iso2).where(RefPays.id.in_(pids)))).all()
+        noms = {rid: nom for rid, nom, _ in rn}
+        iso2 = {rid: c for rid, _, c in rn}
+    partenaires = [{"id": r.pid, "nom": noms.get(r.pid) or "—", "valeur": float(r.v or 0), "code_iso2": iso2.get(r.pid)} for r in prows]
 
     rrows = (await db.execute(
         select(StatTransaction.ressource.label("res"), _sum.label("v")).where(W)
