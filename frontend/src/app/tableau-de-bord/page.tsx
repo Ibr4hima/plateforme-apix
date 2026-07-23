@@ -18,7 +18,7 @@ const BLEU = "#004f91", ORANGE = "#ca631f", ENCRE = "#101a2e";
 
 // ── Formatage ─────────────────────────────────────────────────────────────────
 const nf = (v: number | null | undefined, d = 0) => (v != null && isFinite(v) ? v.toLocaleString("fr-FR", { maximumFractionDigits: d }) : "—");
-const fmtMd = (fcfa?: number | null) => (fcfa == null ? "—" : `${nf(fcfa / 1e9, 1)} Md`);
+const fmtMd = (fcfa?: number | null) => (fcfa == null ? "—" : `${nf(fcfa / 1e9, 1)} Md FCFA`);
 function fmtUSD(v?: number | null) {
   if (v == null || !isFinite(v)) return "—";
   if (Math.abs(v) >= 1e9) return `${nf(v / 1e9, 1)} Md$`;
@@ -514,12 +514,19 @@ export default function TableauDeBordPage() {
             {/* ── 3. Commerce extérieur ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={3} titre="Commerce extérieur" />
-              <div className="tdb-kpis">
-                <Kpi label="Exportations" tag="FAB" valeur={fmtMd(comExt?.cumul_annee?.exportations_fab)} delta={comExt?.variation_export ?? null} sousLabel="FCFA" />
-                <Kpi label="Importations" tag="CAF" valeur={fmtMd(comExt?.cumul_annee?.importations_caf)} delta={comExt?.variation_import ?? null} sousLabel="FCFA" />
-                <Kpi label="Balance commerciale" valeur={fmtMd(comExt?.cumul_annee?.balance)} rouge={(comExt?.cumul_annee?.balance ?? 0) < 0} sousLabel="FCFA" />
-                <Kpi label="Taux de couverture" valeur={comExt?.taux_couverture != null ? `${nf(comExt.taux_couverture, 1)} %` : "—"} sousLabel="export / import" />
-              </div>
+              {(() => {
+                const cy = comExt?.cumul_annee;
+                const an = cy?.annee ? String(cy.annee) : undefined;
+                const ap = cy?.annee_prec ? Number(cy.annee_prec) : null;
+                return (
+                  <div className="tdb-kpis">
+                    <Kpi label="Exportations" tag={an ? `FAB · ${an}` : "FAB"} valeur={fmtMd(cy?.exportations_fab)} delta={cy?.exportations_variation ?? null} refAnnee={ap} />
+                    <Kpi label="Importations" tag={an ? `CAF · ${an}` : "CAF"} valeur={fmtMd(cy?.importations_caf)} delta={cy?.importations_variation ?? null} refAnnee={ap} />
+                    <Kpi label="Balance commerciale" tag={an} valeur={fmtMd(cy?.balance)} rouge={(cy?.balance ?? 0) < 0} delta={cy?.balance_variation ?? null} refAnnee={ap} />
+                    <Kpi label="Taux de couverture" tag={an} valeur={cy?.taux_couverture != null ? `${nf(cy.taux_couverture, 1)} %` : "—"} delta={cy?.taux_couverture_variation ?? null} refAnnee={ap} sousLabel="export / import" />
+                  </div>
+                );
+              })()}
             </section>
 
             {/* ── 4. Indicateurs socio-économiques ── */}

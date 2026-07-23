@@ -363,6 +363,18 @@ async def apercu_bmce(db: AsyncSession = Depends(get_db)):
     annee = dernier["periode"][:4]
     cumul_x = sum((p.get("export") or {}).get("valeur") or 0 for p in serie if p["periode"].startswith(annee))
     cumul_m = sum((p.get("import") or {}).get("valeur") or 0 for p in serie if p["periode"].startswith(annee))
+    # Cumul de l'année précédente sur la MÊME période (glissement) pour des
+    # variations annuelles comparables même quand l'année courante est partielle.
+    annee_prec = str(int(annee) - 1)
+    mois_courants = {p["periode"][4:] for p in serie if p["periode"].startswith(annee)}
+    def _cumul(an: str, sens: str) -> float:
+        return sum((p.get(sens) or {}).get("valeur") or 0
+                   for p in serie if p["periode"].startswith(an) and p["periode"][4:] in mois_courants)
+    cumul_x_prec = _cumul(annee_prec, "export")
+    cumul_m_prec = _cumul(annee_prec, "import")
+    taux_c = round(cumul_x / cumul_m * 100.0, 2) if cumul_m else None
+    taux_c_prec = round(cumul_x_prec / cumul_m_prec * 100.0, 2) if cumul_m_prec else None
+    var_bal = _variation(cumul_x - cumul_m, (cumul_x_prec - cumul_m_prec) if (cumul_x_prec or cumul_m_prec) else None)
     # Fraîcheur : quels mois sont encore révisables (couverts par le dernier bulletin) ?
     res = await db.execute(text("SELECT mois_couverts FROM bmce_bulletins ORDER BY periode DESC LIMIT 1"))
     couverts = res.scalar_one_or_none() or []
@@ -374,8 +386,14 @@ async def apercu_bmce(db: AsyncSession = Depends(get_db)):
         "taux_couverture": round(x / m_ * 100.0, 2) if x and m_ else None,
         "variation_export": _variation(x, (precedent.get("export") or {}).get("valeur") if precedent else None),
         "variation_import": _variation(m_, (precedent.get("import") or {}).get("valeur") if precedent else None),
-        "cumul_annee": {"annee": annee, "exportations_fab": cumul_x, "importations_caf": cumul_m,
-                        "balance": cumul_x - cumul_m},
+        "cumul_annee": {"annee": annee, "annee_prec": annee_prec,
+                        "exportations_fab": cumul_x, "importations_caf": cumul_m,
+                        "balance": cumul_x - cumul_m,
+                        "taux_couverture": taux_c,
+                        "exportations_variation": _variation(cumul_x, cumul_x_prec or None),
+                        "importations_variation": _variation(cumul_m, cumul_m_prec or None),
+                        "balance_variation": var_bal,
+                        "taux_couverture_variation": _variation(taux_c, taux_c_prec)},
         "mois_provisoires": [str(c) for c in couverts],
         "serie": serie,
     }
