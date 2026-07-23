@@ -30,6 +30,7 @@ const MODULES: NavItem[] = [
   { type: "link", label: "Données BDEF",                   href: "/admin/bdef",               icon: "database",               disabled: true },
   { type: "link", label: "Commerce extérieur",             href: "/admin/commerce-exterieur", icon: "anchor", },
   { type: "link", label: "Code des investissements",       href: "/admin/code-investissement",icon: "gavel", },
+  { type: "link", label: "Lexique",                        href: "/admin/lexique",            icon: "language", },
 ];
 
 const W = 260;

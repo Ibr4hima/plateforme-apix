@@ -4,23 +4,33 @@
 // investissements (bandeau dégradé, recherche + index A-Z en pilules). Le
 // contenu vient de src/lib/lexique.ts.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Search } from "lucide-react";
-import { LEXIQUE } from "@/lib/lexique";
+import { type Terme } from "@/lib/lexique";
 import NavActions from "@/components/layout/NavActions";
 
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const BLEU = "#004f91", ORANGE = "#ca631f", ENCRE = "#101a2e";
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default function LexiquePage() {
   const [q, setQ] = useState("");
+  const [termes, setTermes] = useState<Terme[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API}/lexique`).then((r) => r.json())
+      .then((d) => setTermes(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   // Termes filtrés (recherche), triés puis groupés par 1ʳᵉ lettre
   const { groupes, lettresPresentes } = useMemo(() => {
     const nq = norm(q.trim());
-    const filtres = LEXIQUE
+    const filtres = termes
       .filter((t) => !nq || norm(t.terme).includes(nq) || norm(t.definition).includes(nq))
       .sort((a, b) => a.terme.localeCompare(b.terme, "fr"));
     const map = new Map<string, typeof filtres>();
@@ -31,7 +41,7 @@ export default function LexiquePage() {
       map.get(lettre)!.push(t);
     }
     return { groupes: [...map.entries()], lettresPresentes: new Set(map.keys()) };
-  }, [q]);
+  }, [q, termes]);
 
   const total = groupes.reduce((s, [, arr]) => s + arr.length, 0);
   const goLettre = (L: string) => {
@@ -55,7 +65,7 @@ export default function LexiquePage() {
                 </p>
                 <h1 style={{ fontSize: "1.85rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>Lexique de l&apos;investissement</h1>
                 <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>
-                  {LEXIQUE.length} termes techniques expliqués
+                  {termes.length} termes techniques expliqués
                 </p>
               </div>
             </div>
@@ -100,17 +110,27 @@ export default function LexiquePage() {
       {/* Corps — pleine largeur */}
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 80px" }}>
         <section className="ds-carte" style={{ marginTop: -52, padding: "36px 44px 48px", minHeight: 420 }}>
-          {total === 0 ? (
+          {loading ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "15px 18px" }}>
+                  <div style={{ width: `${30 + (i * 13) % 30}%`, height: 14, borderRadius: 6, background: "#ECEAE7", marginBottom: 10 }} />
+                  <div style={{ width: "92%", height: 10, borderRadius: 5, background: "#F0EEEC", marginBottom: 7 }} />
+                  <div style={{ width: "80%", height: 10, borderRadius: 5, background: "#F0EEEC" }} />
+                </div>
+              ))}
+            </div>
+          ) : total === 0 ? (
             <p style={{ color: "#9aa5b4", fontSize: 14, textAlign: "center", marginTop: 60 }}>Aucun terme ne correspond à votre recherche.</p>
-          ) : groupes.map(([lettre, termes]) => (
+          ) : groupes.map(([lettre, arr]) => (
             <div key={lettre} id={`lettre-${lettre}`} style={{ scrollMarginTop: 20, marginBottom: 30 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "0 0 16px" }}>
                 <span style={{ fontSize: 26, fontWeight: 800, color: ORANGE, lineHeight: 1, minWidth: 30 }}>{lettre}</span>
                 <div style={{ flex: 1, height: 1, background: "#EDEAE6" }} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {termes.map((t) => (
-                  <div key={t.terme} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "15px 18px" }}>
+                {arr.map((t) => (
+                  <div key={t.id} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "15px 18px" }}>
                     <div style={{ marginBottom: 7 }}>
                       <span style={{ fontSize: 15.5, fontWeight: 700, color: ENCRE }}>{t.terme}</span>
                     </div>

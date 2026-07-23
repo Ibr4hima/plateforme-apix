@@ -7,7 +7,7 @@ from app.api.routes import (
     projets, code_investissement, modalites_application, suivi_projets, classifications,
     ide, ref_pays, opportunites, ref_potentialites, ref_avantages,
     citi, dashboard, dashboard_tables, bdef, auth_users, statistiques, bmce,
-    assistant,
+    assistant, lexique,
 )
 from contextlib import asynccontextmanager
 import logging
@@ -118,6 +118,7 @@ app.include_router(ref_pays.router,            prefix=settings.API_PREFIX)
 app.include_router(opportunites.router,        prefix=settings.API_PREFIX)
 app.include_router(ref_potentialites.router,   prefix=settings.API_PREFIX)
 app.include_router(ref_avantages.router,       prefix=settings.API_PREFIX)
+app.include_router(lexique.router,             prefix=settings.API_PREFIX)
 app.include_router(citi.router,                prefix=settings.API_PREFIX)
 app.include_router(dashboard.router,           prefix=settings.API_PREFIX)
 app.include_router(dashboard_tables.router,    prefix=settings.API_PREFIX)
