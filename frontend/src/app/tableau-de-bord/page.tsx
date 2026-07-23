@@ -7,8 +7,6 @@
 // (toutes les tables détaillées). Style aligné sur le rapport commerce.
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import NavActions from "@/components/layout/NavActions";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
@@ -66,22 +64,23 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel }: { label: string; v
   );
 }
 
-// En-tête de section : pastille + titre + lien « voir la page »
-function SectionHead({ n, titre, sous, lien, lienLabel }: { n: number; titre: string; sous?: string; lien?: string; lienLabel?: string }) {
+// En-tête de section : pastille + titre · source à droite · filet de séparation
+function SectionHead({ n, titre, source }: { n: number; titre: string; source?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-        <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(0,79,145,0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{String(n).padStart(2, "0")}</span>
-        <div style={{ minWidth: 0 }}>
-          <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800, color: ENCRE, letterSpacing: "-0.01em" }}>{titre}</h2>
-          {sous && <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "#9aa5b4", fontWeight: 500 }}>{sous}</p>}
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(0,79,145,0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{String(n).padStart(2, "0")}</span>
+          <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: ENCRE, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titre}</h2>
         </div>
+        {source && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 5px 4px 13px", borderRadius: 999, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.12)", flexShrink: 0 }}>
+            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" }}>Source</span>
+            <span style={{ fontSize: 11.5, fontWeight: 800, color: BLEU, background: "#fff", padding: "3px 11px", borderRadius: 999, border: "1px solid rgba(0,79,145,0.12)", whiteSpace: "nowrap" }}>{source}</span>
+          </span>
+        )}
       </div>
-      {lien && (
-        <Link href={lien} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: BLEU, textDecoration: "none", background: "rgba(0,79,145,0.06)", padding: "7px 13px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0 }}>
-          {lienLabel || "Voir la page"} <ArrowRight size={13} />
-        </Link>
-      )}
+      <div style={{ height: 1, marginTop: 14, background: "linear-gradient(90deg, rgba(16,26,46,0.16) 0%, rgba(16,26,46,0.05) 55%, transparent 100%)" }} />
     </div>
   );
 }
@@ -296,7 +295,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 1. IDE ── */}
             <section style={{ marginTop: 44 }}>
-              <SectionHead n={1} titre="Investissements Directs Étrangers" sous="Flux et stocks (CNUCED) — Sénégal" lien="/ide" />
+              <SectionHead n={1} titre="Investissements Directs Étrangers" source="CNUCED" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Flux entrant" tag="Dernière année" valeur={fmtMUSD(ideV("flux_entrant_dernier")?.valeur)} delta={ideV("flux_entrant_dernier")?.variation ?? null} sousLabel={ideV("flux_entrant_dernier")?.annee ? String(ideV("flux_entrant_dernier").annee) : ""} />
                 <Kpi label="Stock entrant" valeur={fmtMUSD(ideV("stock_entrant_dernier")?.valeur)} sousLabel={ideV("stock_entrant_dernier")?.annee ? String(ideV("stock_entrant_dernier").annee) : ""} />
@@ -312,7 +311,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 2. Flux bilatéraux ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={2} titre="Flux bilatéraux" sous="Échanges de biens du Sénégal par partenaire (exportations)" lien="/statistiques" />
+              <SectionHead n={2} titre="Flux bilatéraux" source="Resource Trade Earth" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Total exporté" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={fmtUSD(bilat?.total)} />
                 <Kpi label="Partenaires" valeur={bilat ? nf(bilat.nb_partenaires) : "—"} sousLabel="pays destinataires" />
@@ -336,7 +335,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 3. Commerce extérieur ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={3} titre="Commerce extérieur" sous={comExt?.cumul_annee?.annee ? `Cumul ${comExt.cumul_annee.annee} · biens (ANSD)` : "Échanges de biens (ANSD)"} lien="/statistiques/rapport-commerce" lienLabel="Rapport complet" />
+              <SectionHead n={3} titre="Commerce extérieur" source="ANSD" />
               <div className="tdb-kpis">
                 <Kpi label="Exportations" tag="FAB" valeur={fmtMd(comExt?.cumul_annee?.exportations_fab)} delta={comExt?.variation_export ?? null} sousLabel="FCFA" />
                 <Kpi label="Importations" tag="CAF" valeur={fmtMd(comExt?.cumul_annee?.importations_caf)} delta={comExt?.variation_import ?? null} sousLabel="FCFA" />
@@ -347,7 +346,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 4. Indicateurs socio-économiques ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={4} titre="Indicateurs socio-économiques" sous={`${socioPays} — dernières valeurs disponibles`} lien="/statistiques" />
+              <SectionHead n={4} titre="Indicateurs socio-économiques" source="CNUCED" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="PIB" valeur={fmtUSD(pib?.valeur)} sousLabel={pib?.annee ? String(pib.annee) : ""} />
                 <Kpi label="Population" valeur={pop ? nf(pop.valeur) : "—"} sousLabel="habitants" />
@@ -363,7 +362,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 5. Entreprises installées ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={5} titre="Entreprises installées" sous="Répartition territoriale et sectorielle" lien="/entreprises" />
+              <SectionHead n={5} titre="Entreprises installées" source="APIX" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Total installées" valeur={stats ? nf(stats.global_installees) : "—"} />
                 <Kpi label="Régions couvertes" valeur={entRegion.length ? nf(entRegion.length) : "—"} sousLabel="sur 14" />
@@ -382,7 +381,7 @@ export default function TableauDeBordPage() {
 
             {/* ── 6. Entreprises / prospects ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={6} titre="Entreprises" sous="Pipeline de prospection des investisseurs" lien="/prospects" />
+              <SectionHead n={6} titre="Entreprises" source="APIX" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Prospects suivis" valeur={stats ? nf(stats.prospects_total) : "—"} />
                 <Kpi label="Entreprises ciblées" valeur={stats ? nf(stats.global_ciblees) : "—"} sousLabel="sans échange" />
