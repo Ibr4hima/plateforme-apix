@@ -375,12 +375,59 @@ async def apercu_bmce(db: AsyncSession = Depends(get_db)):
     taux_c = round(cumul_x / cumul_m * 100.0, 2) if cumul_m else None
     taux_c_prec = round(cumul_x_prec / cumul_m_prec * 100.0, 2) if cumul_m_prec else None
     var_bal = _variation(cumul_x - cumul_m, (cumul_x_prec - cumul_m_prec) if (cumul_x_prec or cumul_m_prec) else None)
+    # ── KPIs du DERNIER MOIS (et non du cumul) avec variation vs mois précédent ──
+    xprec = (precedent.get("export") or {}).get("valeur") if precedent else None
+    mprec = (precedent.get("import") or {}).get("valeur") if precedent else None
+    taux_mois = round(x / m_ * 100.0, 2) if x and m_ else None
+    taux_mois_prec = round(xprec / mprec * 100.0, 2) if xprec and mprec else None
+
+    def _pdate(s: str) -> date:
+        y, mo, d = s[:10].split("-")
+        return date(int(y), int(mo), int(d))
+
+    async def _top_mois(sens: str, total: float | None):
+        row = (await db.execute(text(
+            "SELECT p.nom_fr AS nom, p.code_iso2 AS iso, f.valeur_fcfa AS v "
+            "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+            "JOIN ref_pays p ON p.id = r.pays_id "
+            "WHERE r.categorie = 'pays' AND r.sens = :s AND f.periode = :per "
+            "ORDER BY f.valeur_fcfa DESC NULLS LAST LIMIT 1"),
+            {"s": sens, "per": _pdate(dernier["periode"])})).first()
+        if not row:
+            return None
+        v = float(row.v or 0)
+        part = round(v / total * 100.0, 2) if total else None
+        variation = part_variation = None
+        if precedent:
+            vp = (await db.execute(text(
+                "SELECT SUM(f.valeur_fcfa) FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+                "JOIN ref_pays p ON p.id = r.pays_id "
+                "WHERE r.categorie = 'pays' AND r.sens = :s AND f.periode = :per AND p.nom_fr = :nom"),
+                {"s": sens, "per": _pdate(precedent["periode"]), "nom": row.nom})).scalar_one_or_none()
+            vp = float(vp) if vp is not None else None
+            variation = _variation(v, vp)
+            totp = xprec if sens == "export" else mprec
+            partp = round(vp / totp * 100.0, 2) if (vp is not None and totp) else None
+            part_variation = _variation(part, partp)
+        return {"libelle": row.nom, "code_iso2": row.iso, "valeur": v,
+                "part_pct": part, "variation": variation, "part_variation": part_variation}
+
+    mois = {
+        "periode": dernier["periode"],
+        "periode_prec": precedent["periode"] if precedent else None,
+        "taux_couverture": taux_mois,
+        "taux_couverture_variation": _variation(taux_mois, taux_mois_prec),
+        "export": {"total": x, "variation": _variation(x, xprec), "top": await _top_mois("export", x)},
+        "import": {"total": m_, "variation": _variation(m_, mprec), "top": await _top_mois("import", m_)},
+    }
+
     # Fraîcheur : quels mois sont encore révisables (couverts par le dernier bulletin) ?
     res = await db.execute(text("SELECT mois_couverts FROM bmce_bulletins ORDER BY periode DESC LIMIT 1"))
     couverts = res.scalar_one_or_none() or []
     return {
         "disponible": True,
         "dernier_mois": dernier["periode"],
+        "mois": mois,
         "exportations_fab": x, "importations_caf": m_,
         "balance": (x - m_) if x is not None and m_ is not None else None,
         "taux_couverture": round(x / m_ * 100.0, 2) if x and m_ else None,
@@ -479,6 +526,8 @@ async def rapport_bmce(annee: int, db: AsyncSession = Depends(get_db)):
         "precedent": prec,
         "produits": {"export": await tops("produit_regroupe", "export", 7),
                      "import": await tops("produit_regroupe", "import", 7)},
+        "groupes": {"export": await tops("groupe_utilisation", "export", 8),
+                    "import": await tops("groupe_utilisation", "import", 8)},
         "pays": {"export": await tops("pays", "export", 10),
                  "import": await tops("pays", "import", 10)},
         "continents": sorted(continents.values(), key=lambda c: -(c["export"] + c["import"])),

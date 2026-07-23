@@ -41,6 +41,12 @@ const drapeau = (iso2?: string | null) => {
   return String.fromCodePoint(0x1f1e6 + cc.charCodeAt(0) - 65, 0x1f1e6 + cc.charCodeAt(1) - 65);
 };
 
+// Libellés de mois (les périodes BMCE sont datées « AAAA-MM-JJ »)
+const MOIS_FR = ["", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+const MOIS_COURT = ["", "Janv.", "Févr.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."];
+const moisLong = (p?: string | null) => { if (!p) return ""; const [y, m] = p.split("-"); return `${MOIS_FR[Number(m)] || ""} ${y}`.trim(); };
+const moisCourt = (p?: string | null) => { if (!p) return ""; const [y, m] = p.split("-"); return `${MOIS_COURT[Number(m)] || ""} ${y.slice(2)}`.trim(); };
+
 // ── Petits blocs de présentation ──────────────────────────────────────────────
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
 
@@ -55,7 +61,7 @@ function Delta({ v, surFonce = false }: { v: number | null; surFonce?: boolean }
   );
 }
 
-function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: { label: string; valeur: string; tag?: string; delta?: number | null; rouge?: boolean; sousLabel?: string; refAnnee?: number | null; texte?: boolean }) {
+function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: { label: string; valeur: string; tag?: string; delta?: number | null; rouge?: boolean; sousLabel?: string; refAnnee?: number | string | null; texte?: boolean }) {
   // Valeur textuelle longue (nom de ressource, de pays…) : police réduite,
   // retour à la ligne sur 2 lignes plutôt qu'un texte tronqué.
   const styleValeur: React.CSSProperties = texte
@@ -191,15 +197,16 @@ function MatriceRessources({ ressources, partenaires, fmt = (v: number) => nf(v)
   );
 }
 
-function Carte({ titre, tag, children, style }: { titre?: string; tag?: string | null; children: React.ReactNode; style?: React.CSSProperties }) {
+function Carte({ titre, tag, sousTitre, children, style }: { titre?: string; tag?: string | null; sousTitre?: string; children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div className="ds-carte" style={{ padding: "22px 24px", minWidth: 0, ...style }}>
       {titre && (
-        <p style={{ ...TITRE_SEC, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <p style={{ ...TITRE_SEC, marginBottom: sousTitre ? 3 : undefined, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span>{titre}</span>
           {tag && <span style={{ fontSize: 9, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 8px", borderRadius: 5, letterSpacing: "0.04em", textTransform: "none", fontVariantNumeric: "tabular-nums" }}>{tag}</span>}
         </p>
       )}
+      {sousTitre && <p style={{ margin: "0 0 14px", fontSize: 11, fontWeight: 600, color: "#9aa5b4", fontStyle: "italic" }}>{sousTitre}</p>}
       {children}
     </div>
   );
@@ -269,7 +276,6 @@ export default function TableauDeBordPage() {
   const [commCtx, setCommCtx] = useState<{ id: number; amin: number; amax: number } | null>(null);
   const [comExt, setComExt] = useState<any>(null);
   const [comRap, setComRap] = useState<any>(null);
-  const [comRapPrec, setComRapPrec] = useState<any>(null);
   const [comDir, setComDir] = useState<"export" | "import">("export");
   const [socio, setSocio] = useState<any[]>([]);
   const [socioPays, setSocioPays] = useState<string>("Sénégal");
@@ -326,7 +332,6 @@ export default function TableauDeBordPage() {
   useEffect(() => {
     if (!comAnnee) return;
     getJSON(`${API}/bmce/rapport?annee=${comAnnee}`).then(setComRap);
-    getJSON(`${API}/bmce/rapport?annee=${comAnnee - 1}`).then(setComRapPrec);
   }, [comAnnee]);
 
   // ── Dérivés socio-économiques ──
@@ -530,33 +535,61 @@ export default function TableauDeBordPage() {
               } />
               {(() => {
                 const exp = comDir === "export";
-                const an = comRap?.annee ? String(comRap.annee) : (comExt?.cumul_annee?.annee ? String(comExt.cumul_annee.annee) : undefined);
-                const ap = comAnnee ? comAnnee - 1 : null;
-                const cum = comRap?.cumul, prec = comRap?.precedent;
-                // Total (export ou import) + variation vs même période n-1
-                const totNow = cum?.[comDir] ?? null;
-                const totPrec = prec?.[comDir] ?? null;
-                const totDelta = totNow != null && totPrec ? (totNow - totPrec) / Math.abs(totPrec) * 100 : null;
-                // Taux de couverture (export / import) — indicateur croisé
-                const taux = cum?.import ? (cum.export / cum.import) * 100 : null;
-                const tauxPrec = prec?.import ? (prec.export / prec.import) * 100 : null;
-                const tauxDelta = taux != null && tauxPrec ? (taux - tauxPrec) / Math.abs(tauxPrec) * 100 : null;
-                // 1er partenaire (client/fournisseur) de l'année n + verrouillage sur n-1
-                const top = (comRap?.pays?.[comDir] || [])[0] || null;
-                const topPrec = top ? (comRapPrec?.pays?.[comDir] || []).find((p: any) =>
-                  (top.code_iso2 && p.code_iso2) ? p.code_iso2 === top.code_iso2 : p.libelle === top.libelle) : null;
-                const cliDelta = top && topPrec?.valeur ? (top.valeur - topPrec.valeur) / Math.abs(topPrec.valeur) * 100 : null;
-                const partDelta = top?.part_pct != null && topPrec?.part_pct ? (top.part_pct - topPrec.part_pct) / Math.abs(topPrec.part_pct) * 100 : null;
+                const mois = comExt?.mois;
+                const dir = mois?.[comDir];
+                const top = dir?.top || null;
+                const moisTag = mois?.periode ? moisLong(mois.periode) : undefined;   // « Mai 2026 »
+                const refMois = mois?.periode_prec ? moisLong(mois.periode_prec) : null; // « Avril 2026 »
                 return (
                   <div className="tdb-kpis">
-                    <Kpi label={exp ? "Exportations" : "Importations"} tag={an ? `${exp ? "FAB" : "CAF"} · ${an}` : undefined} valeur={fmtMd(totNow)} delta={totDelta} refAnnee={ap} />
-                    <Kpi texte label={exp ? "1er client" : "1er fournisseur"} tag={an}
-                      valeur={top ? `${drapeau(top.code_iso2)} ${top.libelle}` : "—"}
-                      sousLabel={top ? fmtMd(top.valeur) : ""} delta={cliDelta} refAnnee={ap} />
-                    <Kpi label={exp ? "Part du 1er client" : "Part du 1er fournisseur"} tag={an}
-                      valeur={top?.part_pct != null ? `${nf(top.part_pct, 1)} %` : "—"} delta={partDelta} refAnnee={ap} />
-                    <Kpi label="Taux de couverture" tag={an} valeur={taux != null ? `${nf(taux, 1)} %` : "—"} delta={tauxDelta} refAnnee={ap} sousLabel="export / import" />
+                    <Kpi label={exp ? "Exportations" : "Importations"} tag={moisTag ? `${exp ? "FAB" : "CAF"} · ${moisTag}` : undefined} valeur={fmtMd(dir?.total)} delta={dir?.variation ?? null} refAnnee={refMois} />
+                    <Kpi texte label={exp ? "1er client" : "1er fournisseur"} tag={moisTag}
+                      valeur={top?.libelle || "—"} sousLabel={top ? fmtMd(top.valeur) : ""} delta={top?.variation ?? null} refAnnee={refMois} />
+                    <Kpi label={exp ? "Part du 1er client" : "Part du 1er fournisseur"} tag={moisTag}
+                      valeur={top?.part_pct != null ? `${nf(top.part_pct, 1)} %` : "—"} delta={top?.part_variation ?? null} refAnnee={refMois} />
+                    <Kpi label="Taux de couverture" tag={moisTag} valeur={mois?.taux_couverture != null ? `${nf(mois.taux_couverture, 1)} %` : "—"} delta={mois?.taux_couverture_variation ?? null} refAnnee={refMois} sousLabel="export / import" />
                   </div>
+                );
+              })()}
+
+              {(() => {
+                const exp = comDir === "export";
+                // Séries mensuelles (3 dernières années) — évolution et balance
+                const serieMois = (comExt?.serie || []).slice(-36);
+                const evoData = serieMois.map((s: any, i: number) => ({ annee: i, valeur: (exp ? s.export : s.import)?.valeur ?? null }));
+                const balData = serieMois.map((s: any, i: number) => {
+                  const e = s.export?.valeur, im = s.import?.valeur;
+                  return { annee: i, valeur: e != null && im != null ? e - im : null };
+                });
+                const fmtMoisX = (i: number) => moisCourt(serieMois[i]?.periode);
+                const ans = serieMois.map((s: any) => s.periode?.slice(0, 4)).filter(Boolean);
+                const evoTag = ans.length ? (ans[0] === ans[ans.length - 1] ? ans[0] : `${ans[0]}–${ans[ans.length - 1]}`) : undefined;
+                const anRef = comRap?.annee ? String(comRap.annee) : undefined;
+                const paysList = comRap?.pays?.[comDir] || [];
+                const groupes = comRap?.groupes?.[comDir] || [];
+                return (
+                  <>
+                    <div className="tdb-duo" style={{ marginTop: 20 }}>
+                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={evoTag}>
+                        {evoData.length > 1 ? (
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtMd(v)} fmtX={fmtMoisX} showDots={false} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], evoData)]} />
+                        ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
+                      </Carte>
+                      <Carte titre="Balance commerciale" tag={evoTag}>
+                        {balData.length > 1 ? (
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtMd(v)} fmtX={fmtMoisX} showDots={false} series={[serie("Balance", PALETTE_COMPARAISON[1], balData)]} />
+                        ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
+                      </Carte>
+                    </div>
+                    <div className="tdb-duo" style={{ marginTop: 16 }}>
+                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={anRef}>
+                        <TopTable rows={paysList.map((p: any) => ({ nom: p.libelle, valeur: p.valeur, iso2: p.code_iso2 }))} colNom="Pays" colVal="Valeur" fmt={(v) => fmtMd(v)} max={7} drapeaux />
+                      </Carte>
+                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={anRef}>
+                        <MiniBarres data={groupes.map((g: any) => ({ label: g.libelle, valeur: g.valeur }))} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtMd(v)} max={7} />
+                      </Carte>
+                    </div>
+                  </>
                 );
               })()}
             </section>
