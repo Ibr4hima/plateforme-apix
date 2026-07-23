@@ -52,15 +52,15 @@ function Delta({ v, surFonce = false }: { v: number | null; surFonce?: boolean }
 
 function Kpi({ label, valeur, tag, delta, rouge, sousLabel }: { label: string; valeur: string; tag?: string; delta?: number | null; rouge?: boolean; sousLabel?: string }) {
   return (
-    <div className="ds-carte" style={{ padding: "16px 18px", boxShadow: "var(--ombre-2)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
-        <p style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0 }}>{label}</p>
-        {tag && <span style={{ fontSize: 8, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 6px", borderRadius: 4, whiteSpace: "nowrap" }}>{tag}</span>}
+    <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+        <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</p>
+        {tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
       </div>
-      <p className="ds-donnee" style={{ fontSize: "1.5rem", fontWeight: 800, color: rouge ? "#dc2626" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>{valeur}</p>
-      <div style={{ marginTop: 7, minHeight: 14, display: "flex", alignItems: "center", gap: 6 }}>
+      <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: rouge ? "#dc2626" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
+      <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6 }}>
         {delta != null && <Delta v={delta} />}
-        {sousLabel && <span style={{ fontSize: 10.5, color: "#9aa5b4" }}>{sousLabel}</span>}
+        {sousLabel && <span style={{ fontSize: 10.5, color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sousLabel}</span>}
       </div>
     </div>
   );
@@ -136,7 +136,7 @@ function TopTable({ rows, couleur = BLEU, fmt = (v: number) => nf(v), colNom = "
 
 function Carte({ titre, children, style }: { titre?: string; children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div className="ds-carte" style={{ padding: "20px 22px", border: "1px solid rgba(16,26,46,0.10)", boxShadow: "none", ...style }}>
+    <div className="ds-carte" style={{ padding: "22px 24px", minWidth: 0, ...style }}>
       {titre && <p style={TITRE_SEC}>{titre}</p>}
       {children}
     </div>
@@ -259,6 +259,12 @@ export default function TableauDeBordPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "var(--ds-fond, #F6F5F3)", fontFamily: "var(--font-google-sans)" }}>
+      <style>{`
+        .tdb-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
+        .tdb-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: stretch; }
+        @media (max-width: 980px) { .tdb-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .tdb-duo { grid-template-columns: 1fr; } }
+        @media (max-width: 560px) { .tdb-kpis { grid-template-columns: 1fr; } }
+      `}</style>
       <BarreTitre titre="Tableau de bord" compact actions={<NavActions onDark home flouFond />}>
         <BarreTitreSegment options={[{ v: "viz", l: "Visualisation de données" }, { v: "tables", l: "Tableaux analytiques" }]} value={onglet} onChange={setOnglet} />
       </BarreTitre>
@@ -268,19 +274,17 @@ export default function TableauDeBordPage() {
         {onglet === "viz" ? (
           <>
             {/* ── KPIs globaux (chevauchent le bandeau) ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginTop: -46 }}>
+            <div className="tdb-kpis" style={{ marginTop: -52 }}>
               <Kpi label="Entreprises" valeur={stats ? nf(stats.entreprises_total) : "—"} sousLabel="installées" />
               <Kpi label="Accords en vigueur" valeur={stats ? nf(stats.accords_vigueur) : "—"} sousLabel={stats ? `sur ${nf(stats.accords_total)}` : ""} />
               <Kpi label="Intentions d'investiss." valeur={stats ? fmtUSD(stats.intentions_usd) : "—"} sousLabel={stats ? `${nf(stats.intentions_total)} projets` : ""} />
               <Kpi label="Zones d'investissement" valeur={stats ? nf(stats.zones_total) : "—"} sousLabel={stats ? `${nf(stats.poles_total)} pôles` : ""} />
-              <Kpi label="Prospects" valeur={stats ? nf(stats.prospects_total) : "—"} sousLabel="investisseurs suivis" />
-              <Kpi label="Durée de transformation" valeur={stats?.global_duree ? `${nf(stats.global_duree)} j` : "—"} sousLabel="contact → installation" />
             </div>
 
             {/* ── 1. IDE ── */}
             <section style={{ marginTop: 44 }}>
               <SectionHead n={1} titre="Investissements Directs Étrangers" sous="Flux et stocks (CNUCED) — Sénégal" lien="/ide" />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 16 }}>
+              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Flux entrant" tag="Dernière année" valeur={fmtMUSD(ideV("flux_entrant_dernier")?.valeur)} delta={ideV("flux_entrant_dernier")?.variation ?? null} sousLabel={ideV("flux_entrant_dernier")?.annee ? String(ideV("flux_entrant_dernier").annee) : ""} />
                 <Kpi label="Stock entrant" valeur={fmtMUSD(ideV("stock_entrant_dernier")?.valeur)} sousLabel={ideV("stock_entrant_dernier")?.annee ? String(ideV("stock_entrant_dernier").annee) : ""} />
                 <Kpi label="Flux sortant" valeur={fmtMUSD(ideV("flux_sortant_dernier")?.valeur)} delta={ideV("flux_sortant_dernier")?.variation ?? null} />
@@ -296,13 +300,13 @@ export default function TableauDeBordPage() {
             {/* ── 2. Flux bilatéraux ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={2} titre="Flux bilatéraux" sous="Échanges de biens du Sénégal par partenaire (exportations)" lien="/statistiques" />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 16 }}>
+              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Total exporté" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={fmtUSD(bilat?.total)} />
                 <Kpi label="Partenaires" valeur={bilat ? nf(bilat.nb_partenaires) : "—"} sousLabel="pays destinataires" />
                 <Kpi label="1er partenaire" valeur={bilat?.top_partenaire?.nom || "—"} sousLabel={bilat?.top_partenaire ? fmtUSD(bilat.top_partenaire.valeur) : ""} />
                 <Kpi label="Concentration" valeur={bilat?.part_top_partenaire != null ? `${nf(bilat.part_top_partenaire, 1)} %` : "—"} sousLabel="part du 1er partenaire" />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.3fr) minmax(0,1fr)", gap: 16 }}>
+              <div className="tdb-duo">
                 <Carte titre="Balance commerciale bilatérale">
                   {serieBalance.length > 1 ? (
                     <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[
@@ -320,7 +324,7 @@ export default function TableauDeBordPage() {
             {/* ── 3. Commerce extérieur ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={3} titre="Commerce extérieur" sous={comExt?.cumul_annee?.annee ? `Cumul ${comExt.cumul_annee.annee} · biens (ANSD)` : "Échanges de biens (ANSD)"} lien="/statistiques/rapport-commerce" lienLabel="Rapport complet" />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
+              <div className="tdb-kpis">
                 <Kpi label="Exportations" tag="FAB" valeur={fmtMd(comExt?.cumul_annee?.exportations_fab)} delta={comExt?.variation_export ?? null} sousLabel="FCFA" />
                 <Kpi label="Importations" tag="CAF" valeur={fmtMd(comExt?.cumul_annee?.importations_caf)} delta={comExt?.variation_import ?? null} sousLabel="FCFA" />
                 <Kpi label="Balance commerciale" valeur={fmtMd(comExt?.cumul_annee?.balance)} rouge={(comExt?.cumul_annee?.balance ?? 0) < 0} sousLabel="FCFA" />
@@ -331,7 +335,7 @@ export default function TableauDeBordPage() {
             {/* ── 4. Indicateurs socio-économiques ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={4} titre="Indicateurs socio-économiques" sous={`${socioPays} — dernières valeurs disponibles`} lien="/statistiques" />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 16 }}>
+              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="PIB" valeur={fmtUSD(pib?.valeur)} sousLabel={pib?.annee ? String(pib.annee) : ""} />
                 <Kpi label="Population" valeur={pop ? nf(pop.valeur) : "—"} sousLabel="habitants" />
                 <Kpi label="PIB / habitant" valeur={fmtUSD(pibHab?.valeur)} sousLabel={pibHab?.annee ? String(pibHab.annee) : ""} />
@@ -347,13 +351,13 @@ export default function TableauDeBordPage() {
             {/* ── 5. Entreprises installées ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={5} titre="Entreprises installées" sous="Répartition territoriale et sectorielle" lien="/entreprises" />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 16 }}>
+              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Total installées" valeur={stats ? nf(stats.global_installees) : "—"} />
                 <Kpi label="Régions couvertes" valeur={entRegion.length ? nf(entRegion.length) : "—"} sousLabel="sur 14" />
                 <Kpi label="En zones économiques" valeur={stats ? nf(stats.zone_ent_total) : "—"} sousLabel="ZES · ZAI · ZFI" />
                 <Kpi label="Secteurs représentés" valeur={entSecteur.length ? nf(entSecteur.length) : "—"} />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.3fr) minmax(0,1fr)", gap: 16 }}>
+              <div className="tdb-duo">
                 <Carte titre="Créations d'entreprises par année">
                   {entAnnee.length > 1 ? (
                     <GrapheMultiPays height={220} type="line" fmt={(v) => nf(v)} series={[serie("Créations", PALETTE_COMPARAISON[0], entAnnee.map((r) => ({ annee: Number(r.label), valeur: r.valeur })))]} />
@@ -366,7 +370,7 @@ export default function TableauDeBordPage() {
             {/* ── 6. Entreprises / prospects ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={6} titre="Entreprises" sous="Pipeline de prospection des investisseurs" lien="/prospects" />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 16 }}>
+              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi label="Prospects suivis" valeur={stats ? nf(stats.prospects_total) : "—"} />
                 <Kpi label="Entreprises ciblées" valeur={stats ? nf(stats.global_ciblees) : "—"} sousLabel="sans échange" />
                 <Kpi label="En contact" valeur={stats ? nf(stats.global_contactees) : "—"} sousLabel="échange engagé" />
