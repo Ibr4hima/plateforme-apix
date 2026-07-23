@@ -205,10 +205,14 @@ function ContenuRapport() {
   return (
     <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, #F7F6F5)", minHeight: "100vh" }}>
       <style>{`
+        @keyframes anneeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .rapport-annee-in { animation: anneeIn 0.28s cubic-bezier(0.16,1,0.3,1) both; }
+        @media (prefers-reduced-motion: reduce) { .rapport-annee-in { animation: none; } }
         @media print {
           nav, header, footer, .no-print { display: none !important; }
           body { background: #fff !important; }
           .rapport-page { padding: 0 !important; }
+          .rapport-annee-in { animation: none !important; }
           .ds-carte { box-shadow: none !important; border: 1px solid #E2E6EC !important; }
         }
       `}</style>
@@ -252,7 +256,7 @@ function ContenuRapport() {
         </div>
       </div>
 
-      <div className="rapport-page" style={{ maxWidth: 1120, margin: "0 auto", padding: "0 40px 70px" }}>
+      <div key={annee} className="rapport-page rapport-annee-in" style={{ maxWidth: 1120, margin: "0 auto", padding: "0 40px 70px" }}>
         {/* ── KPIs chevauchant le bandeau ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginTop: -52 }}>
           {kpis.map(k => (
