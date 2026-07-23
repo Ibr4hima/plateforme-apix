@@ -494,9 +494,9 @@ export default function OpportunitesPage() {
                     {projetsFiltres.map(p=>{
                       return (
                       <div key={p.id} onClick={()=>setProjSel(p)}
-                        style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.33)";}}
-                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                        style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.33)";}}
+                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";
                             ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                               const span = box.firstElementChild as HTMLElement | null;
                               if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
@@ -549,9 +549,9 @@ export default function OpportunitesPage() {
                       const pct = total>0 ? Math.round(count/total*100) : 0;
                       return (
                         <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(selectedNiveau===n.key?null:n.key)}
-                          style={{background:"#fff",border:selectedNiveau===n.key?`1.5px solid ${n.color}88`:"1px solid #ECEAE7",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?`0 4px 18px ${n.color}26`:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}88`;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?`0 4px 18px ${n.color}26`:"var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${n.color}88`:"#ECEAE7";}}>
+                          style={{background:"#fff",border:selectedNiveau===n.key?`1.5px solid ${n.color}88`:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?`0 4px 18px ${n.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}88`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?`0 4px 18px ${n.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${n.color}88`:"rgba(16,26,46,0.12)";}}>
 
                           {/* Niveau */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -647,7 +647,7 @@ export default function OpportunitesPage() {
                           };
                           // Pôles : pas de regroupement pertinent → conteneur sans en-tête
                           if (selectedNiveau==="pole") return (
-                            <div style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,boxShadow:"var(--ombre-1)"}}>
+                            <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
                               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
                                 {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
                               </div>
@@ -673,7 +673,7 @@ export default function OpportunitesPage() {
                                   </div>
                                 </div>
                                 {/* Fiches du groupe */}
-                                <div style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,boxShadow:"var(--ombre-1)"}}>
+                                <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
                                   <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
                                     {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
                                   </div>
@@ -715,9 +715,9 @@ export default function OpportunitesPage() {
                       const pct = actCount>0 ? Math.round(count/actCount*100) : 0;
                       return (
                         <div key={s.key} onClick={()=>count>0&&setSelectedSecAvg(selectedSecAvg===s.key?null:s.key)}
-                          style={{background:"#fff",border:selectedSecAvg===s.key?`1.5px solid ${s.color}88`:"1px solid #ECEAE7",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedSecAvg===s.key?`0 4px 18px ${s.color}26`:"var(--ombre-1)",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}88`;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedSecAvg===s.key?`0 4px 18px ${s.color}26`:"var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${s.color}88`:"#ECEAE7";}}>
+                          style={{background:"#fff",border:selectedSecAvg===s.key?`1.5px solid ${s.color}88`:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedSecAvg===s.key?`0 4px 18px ${s.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}88`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedSecAvg===s.key?`0 4px 18px ${s.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${s.color}88`:"rgba(16,26,46,0.12)";}}>
 
                           {/* Secteur */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -774,7 +774,7 @@ export default function OpportunitesPage() {
                               </div>
                             </div>
                             {/* Activités de la branche */}
-                            <div style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:16,boxShadow:"var(--ombre-1)"}}>
+                            <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
                               <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSecAvg==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
                                 {bra.items.map((a:any)=>(
                                   <div key={a.id} onClick={()=>setAvgSel(a)}

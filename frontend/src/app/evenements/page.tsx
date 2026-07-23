@@ -100,14 +100,14 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
   avecDate.forEach(x=>{ const y=x.d.getFullYear(); let g=parAnnee.find(p=>p.annee===y); if(!g){g={annee:y,items:[]};parAnnee.push(g);} g.items.push(x); });
 
   const hoverIn = (ev:React.MouseEvent<HTMLDivElement>) => {
-    ev.currentTarget.style.boxShadow="var(--ombre-2)"; ev.currentTarget.style.transform="translateY(-2px)"; ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+    ev.currentTarget.style.boxShadow="var(--ombre-1)"; ev.currentTarget.style.transform="translateY(-2px)"; ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
     ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
       const span = box.firstElementChild as HTMLElement|null;
       if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d/40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
     });
   };
   const hoverOut = (ev:React.MouseEvent<HTMLDivElement>) => {
-    ev.currentTarget.style.boxShadow="var(--ombre-1)"; ev.currentTarget.style.transform="none"; ev.currentTarget.style.borderColor="#ECEAE7";
+    ev.currentTarget.style.boxShadow="none"; ev.currentTarget.style.transform="none"; ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";
     ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
       const span = box.firstElementChild as HTMLElement|null;
       if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
@@ -135,7 +135,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
       <div onClick={()=>onOpen(e)}
         onMouseEnter={ev=>{ hoverIn(ev); ev.currentTarget.style.borderColor = accent ? accent.b2 : `${hoverC}55`; }}
         onMouseLeave={ev=>{ hoverOut(ev); if(accent){ ev.currentTarget.style.borderColor=accent.b; ev.currentTarget.style.boxShadow=accent.sh; } }}
-        style={{background:estPasse?"#FBFAF9":"#fff",border:accent?`1.5px solid ${accent.b}`:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"var(--ombre-1)",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
+        style={{background:estPasse?"#FBFAF9":"#fff",border:accent?`1.5px solid ${accent.b}`:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"none",overflow:"hidden",minWidth:0,display:"flex",flexDirection:"column" as const}}>
         {/* Bande épaisse : événement en cours (vert) et prochain événement (bleu) */}
         {accent&&(
           <div style={{display:"flex",alignItems:"center",gap:7,background:accent.grad,padding:"6px 16px",flexShrink:0}}>
@@ -440,9 +440,9 @@ export default function EvenementsPage() {
                     const hoverC = accent ? accent.c : accentRole(e.role_apix);
                     return (
                       <div key={e.id} onClick={()=>gate(()=>setSelec(e))}
-                        style={{background:estPasse?"#FBFAF9":"#fff",border:accent?`1.5px solid ${accent.b}`:"1px solid #ECEAE7",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
+                        style={{background:estPasse?"#FBFAF9":"#fff",border:accent?`1.5px solid ${accent.b}`:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:accent?accent.sh:"none",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
                         onMouseEnter={ev=>{
-                          ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?accent.b2:`${hoverC}55`;
+                          ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?accent.b2:`${hoverC}55`;
                           // Contenus trop longs : glissent pour révéler la fin
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
@@ -450,7 +450,7 @@ export default function EvenementsPage() {
                           });
                         }}
                         onMouseLeave={ev=>{
-                          ev.currentTarget.style.boxShadow=accent?accent.sh:"var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=accent?accent.b:"#ECEAE7";
+                          ev.currentTarget.style.boxShadow=accent?accent.sh:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=accent?accent.b:"rgba(16,26,46,0.12)";
                           ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                             const span = box.firstElementChild as HTMLElement | null;
                             if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
