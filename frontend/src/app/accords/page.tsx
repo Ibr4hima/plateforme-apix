@@ -335,9 +335,9 @@ export default function AccordsPage() {
                   const accent = st ? st.accent : "#C5BFBB";
                   return (
                   <div key={a.id} onClick={()=>gate(()=>setSelec(a))}
-                    style={{background:estExpire?"#FBFAF9":"#fff",border:"1px solid rgba(16,26,46,0.09)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                    style={{background:estExpire?"#FBFAF9":"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent;}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.09)";}}>
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
 
                     {/* Titre + ancienneté du statut | badge pastel à droite */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
