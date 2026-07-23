@@ -266,7 +266,7 @@ export default function TableauDeBordPage() {
         @media (max-width: 560px) { .tdb-kpis { grid-template-columns: 1fr; } }
       `}</style>
       {/* ── Bandeau exécutif ── */}
-      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "30px 40px 36px", position: "relative", overflow: "hidden" }}>
+      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "30px 40px 78px", position: "relative", overflow: "hidden" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto", position: "relative", zIndex: 1 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
@@ -286,8 +286,8 @@ export default function TableauDeBordPage() {
 
         {onglet === "viz" ? (
           <>
-            {/* ── KPIs globaux ── */}
-            <div className="tdb-kpis" style={{ marginTop: 26 }}>
+            {/* ── KPIs globaux (chevauchent le bandeau) ── */}
+            <div className="tdb-kpis" style={{ marginTop: -48 }}>
               <Kpi label="Entreprises" valeur={stats ? nf(stats.entreprises_total) : "—"} sousLabel="installées" />
               <Kpi label="Accords en vigueur" valeur={stats ? nf(stats.accords_vigueur) : "—"} sousLabel={stats ? `sur ${nf(stats.accords_total)}` : ""} />
               <Kpi label="Intentions d'investiss." valeur={stats ? fmtUSD(stats.intentions_usd) : "—"} sousLabel={stats ? `${nf(stats.intentions_total)} projets` : ""} />
