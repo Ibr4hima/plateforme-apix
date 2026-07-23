@@ -189,6 +189,19 @@ export default function ChatWidget() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Raccourci clavier : ⌘I (Mac) / Ctrl+I (Windows) ouvre/ferme l'assistant.
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && (e.key === "i" || e.key === "I")) {
+        e.preventDefault();
+        ouvert ? fermer() : ouvrir();
+      }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ouvert]);
+
   // Échap ferme le panneau.
   useEffect(() => {
     if (!ouvert) return;
