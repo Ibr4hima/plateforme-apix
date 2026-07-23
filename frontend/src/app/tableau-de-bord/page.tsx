@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import NavActions from "@/components/layout/NavActions";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
 import { AnalyticTable } from "@/components/dashboard/DataTable";
@@ -265,16 +265,29 @@ export default function TableauDeBordPage() {
         @media (max-width: 980px) { .tdb-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .tdb-duo { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .tdb-kpis { grid-template-columns: 1fr; } }
       `}</style>
-      <BarreTitre titre="Tableau de bord" compact actions={<NavActions onDark home flouFond />}>
-        <BarreTitreSegment options={[{ v: "viz", l: "Visualisation de données" }, { v: "tables", l: "Tableaux analytiques" }]} value={onglet} onChange={setOnglet} />
-      </BarreTitre>
+      {/* ── Bandeau exécutif ── */}
+      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "30px 40px 36px", position: "relative", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 13 }}>
+                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: 0 }}>APIX S.A — DIPE</p>
+                <BarreTitreSegment options={[{ v: "viz", l: "Visualisation de données" }, { v: "tables", l: "Tableaux analytiques" }]} value={onglet} onChange={setOnglet} />
+              </div>
+              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>Tableau de bord</h1>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
+            </div>
+            <div style={{ flexShrink: 0 }}><NavActions onDark home flouFond /></div>
+          </div>
+        </div>
+      </div>
 
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px 90px" }}>
 
         {onglet === "viz" ? (
           <>
-            {/* ── KPIs globaux (chevauchent le bandeau) ── */}
-            <div className="tdb-kpis" style={{ marginTop: -52 }}>
+            {/* ── KPIs globaux ── */}
+            <div className="tdb-kpis" style={{ marginTop: 26 }}>
               <Kpi label="Entreprises" valeur={stats ? nf(stats.entreprises_total) : "—"} sousLabel="installées" />
               <Kpi label="Accords en vigueur" valeur={stats ? nf(stats.accords_vigueur) : "—"} sousLabel={stats ? `sur ${nf(stats.accords_total)}` : ""} />
               <Kpi label="Intentions d'investiss." valeur={stats ? fmtUSD(stats.intentions_usd) : "—"} sousLabel={stats ? `${nf(stats.intentions_total)} projets` : ""} />
