@@ -268,6 +268,9 @@ export default function TableauDeBordPage() {
   const [bilatDir, setBilatDir] = useState<"exportateur" | "importateur">("exportateur");
   const [commCtx, setCommCtx] = useState<{ id: number; amin: number; amax: number } | null>(null);
   const [comExt, setComExt] = useState<any>(null);
+  const [comRap, setComRap] = useState<any>(null);
+  const [comRapPrec, setComRapPrec] = useState<any>(null);
+  const [comDir, setComDir] = useState<"export" | "import">("export");
   const [socio, setSocio] = useState<any[]>([]);
   const [socioPays, setSocioPays] = useState<string>("Sénégal");
   const [entAnnee, setEntAnnee] = useState<{ label: string; valeur: number }[]>([]);
@@ -316,6 +319,15 @@ export default function TableauDeBordPage() {
     getJSON(`${API}/statistiques/commerce/tops?${base}&annee_min=${amax}&annee_max=${amax}&limite=8`).then(setBilatTops);
     getJSON(`${API}/statistiques/commerce/repartition?${base}&annee_min=${amax}&annee_max=${amax}&limite=6`).then(setBilatRepart);
   }, [commCtx, bilatDir]);
+
+  // Commerce extérieur (ANSD) : rapport de la dernière année + année précédente
+  // (variations verrouillées sur le 1er partenaire de l'année n).
+  const comAnnee = comExt?.cumul_annee?.annee ? Number(comExt.cumul_annee.annee) : null;
+  useEffect(() => {
+    if (!comAnnee) return;
+    getJSON(`${API}/bmce/rapport?annee=${comAnnee}`).then(setComRap);
+    getJSON(`${API}/bmce/rapport?annee=${comAnnee - 1}`).then(setComRapPrec);
+  }, [comAnnee]);
 
   // ── Dérivés socio-économiques ──
   const socioVal = (code: string) => {
@@ -513,17 +525,37 @@ export default function TableauDeBordPage() {
 
             {/* ── 3. Commerce extérieur ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={3} titre="Commerce extérieur" />
+              <SectionHead n={3} titre="Commerce extérieur" extra={
+                <Segment value={comDir} onChange={setComDir} options={[{ v: "export", l: "Exportations" }, { v: "import", l: "Importations" }]} />
+              } />
               {(() => {
-                const cy = comExt?.cumul_annee;
-                const an = cy?.annee ? String(cy.annee) : undefined;
-                const ap = cy?.annee_prec ? Number(cy.annee_prec) : null;
+                const exp = comDir === "export";
+                const an = comRap?.annee ? String(comRap.annee) : (comExt?.cumul_annee?.annee ? String(comExt.cumul_annee.annee) : undefined);
+                const ap = comAnnee ? comAnnee - 1 : null;
+                const cum = comRap?.cumul, prec = comRap?.precedent;
+                // Total (export ou import) + variation vs même période n-1
+                const totNow = cum?.[comDir] ?? null;
+                const totPrec = prec?.[comDir] ?? null;
+                const totDelta = totNow != null && totPrec ? (totNow - totPrec) / Math.abs(totPrec) * 100 : null;
+                // Taux de couverture (export / import) — indicateur croisé
+                const taux = cum?.import ? (cum.export / cum.import) * 100 : null;
+                const tauxPrec = prec?.import ? (prec.export / prec.import) * 100 : null;
+                const tauxDelta = taux != null && tauxPrec ? (taux - tauxPrec) / Math.abs(tauxPrec) * 100 : null;
+                // 1er partenaire (client/fournisseur) de l'année n + verrouillage sur n-1
+                const top = (comRap?.pays?.[comDir] || [])[0] || null;
+                const topPrec = top ? (comRapPrec?.pays?.[comDir] || []).find((p: any) =>
+                  (top.code_iso2 && p.code_iso2) ? p.code_iso2 === top.code_iso2 : p.libelle === top.libelle) : null;
+                const cliDelta = top && topPrec?.valeur ? (top.valeur - topPrec.valeur) / Math.abs(topPrec.valeur) * 100 : null;
+                const partDelta = top?.part_pct != null && topPrec?.part_pct ? (top.part_pct - topPrec.part_pct) / Math.abs(topPrec.part_pct) * 100 : null;
                 return (
                   <div className="tdb-kpis">
-                    <Kpi label="Exportations" tag={an ? `FAB · ${an}` : "FAB"} valeur={fmtMd(cy?.exportations_fab)} delta={cy?.exportations_variation ?? null} refAnnee={ap} />
-                    <Kpi label="Importations" tag={an ? `CAF · ${an}` : "CAF"} valeur={fmtMd(cy?.importations_caf)} delta={cy?.importations_variation ?? null} refAnnee={ap} />
-                    <Kpi label="Balance commerciale" tag={an} valeur={fmtMd(cy?.balance)} rouge={(cy?.balance ?? 0) < 0} delta={cy?.balance_variation ?? null} refAnnee={ap} />
-                    <Kpi label="Taux de couverture" tag={an} valeur={cy?.taux_couverture != null ? `${nf(cy.taux_couverture, 1)} %` : "—"} delta={cy?.taux_couverture_variation ?? null} refAnnee={ap} sousLabel="export / import" />
+                    <Kpi label={exp ? "Exportations" : "Importations"} tag={an ? `${exp ? "FAB" : "CAF"} · ${an}` : undefined} valeur={fmtMd(totNow)} delta={totDelta} refAnnee={ap} />
+                    <Kpi texte label={exp ? "1er client" : "1er fournisseur"} tag={an}
+                      valeur={top ? `${drapeau(top.code_iso2)} ${top.libelle}` : "—"}
+                      sousLabel={top ? fmtMd(top.valeur) : ""} delta={cliDelta} refAnnee={ap} />
+                    <Kpi label={exp ? "Part du 1er client" : "Part du 1er fournisseur"} tag={an}
+                      valeur={top?.part_pct != null ? `${nf(top.part_pct, 1)} %` : "—"} delta={partDelta} refAnnee={ap} />
+                    <Kpi label="Taux de couverture" tag={an} valeur={taux != null ? `${nf(taux, 1)} %` : "—"} delta={tauxDelta} refAnnee={ap} sousLabel="export / import" />
                   </div>
                 );
               })()}
