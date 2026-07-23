@@ -1023,6 +1023,13 @@ async def commerce_kpis(
         if lr:
             conds.append(StatTransaction.ressource.in_(lr))
     W = _and(*conds)
+    # Conditions hors période : pour comparer une année précise (n) à n-1 sans
+    # être bridé par annee_min/annee_max.
+    base_conds = [self_col == pays_id]
+    if ressources:
+        lr0 = [x for x in ressources.split(",") if x.strip()]
+        if lr0:
+            base_conds.append(StatTransaction.ressource.in_(lr0))
     _sum = _sqlfunc.sum(StatTransaction.valeur)
 
     # « Année record » = année au plus fort volume total, sur toute la période filtrée.
@@ -1066,6 +1073,27 @@ async def commerce_kpis(
         nb_partenaires = int((await db.execute(select(_sqlfunc.count(_sqlfunc.distinct(partner_col))).where(Wref))).scalar_one() or 0)
         part_top = (top_partenaire["valeur"] / total * 100) if (top_partenaire and total > 0) else None
 
+    # Variation n vs n-1 en VERROUILLANT le 1er partenaire de l'année n : on
+    # prend la valeur (et la part) de CE partenaire à n-1, peu importe qui était
+    # 1er cette année-là.
+    part_top_variation = None
+    annee_prec_ref = None
+    if annee_ref is not None and top_partenaire:
+        annee_prec = annee_ref - 1
+        Wprec = _and(*base_conds, StatTransaction.annee == annee_prec)
+        vp = float((await db.execute(
+            select(_sqlfunc.coalesce(_sum, 0)).where(_and(Wprec, partner_col == top_partenaire["id"]))
+        )).scalar_one() or 0)
+        total_prec = float((await db.execute(select(_sqlfunc.coalesce(_sum, 0)).where(Wprec))).scalar_one() or 0)
+        part_prec = (vp / total_prec * 100) if total_prec > 0 else None
+        top_partenaire["valeur_prec"] = vp
+        top_partenaire["variation"] = ((top_partenaire["valeur"] - vp) / abs(vp) * 100) if vp > 0 else None
+        if vp > 0 or (part_prec is not None):
+            annee_prec_ref = annee_prec
+        top_partenaire["annee_prec"] = annee_prec_ref
+        if part_top is not None and part_prec:
+            part_top_variation = (part_top - part_prec) / abs(part_prec) * 100
+
     return {
         "annee_ref": annee_ref,
         "total": total,
@@ -1074,6 +1102,8 @@ async def commerce_kpis(
         "top_ressource": top_ressource,
         "nb_partenaires": nb_partenaires,
         "part_top_partenaire": part_top,
+        "part_top_partenaire_variation": part_top_variation,
+        "annee_prec": annee_prec_ref,
     }
 
 

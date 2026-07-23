@@ -48,17 +48,23 @@ function Delta({ v, surFonce = false }: { v: number | null; surFonce?: boolean }
   );
 }
 
-function Kpi({ label, valeur, tag, delta, rouge, sousLabel }: { label: string; valeur: string; tag?: string; delta?: number | null; rouge?: boolean; sousLabel?: string }) {
+function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: { label: string; valeur: string; tag?: string; delta?: number | null; rouge?: boolean; sousLabel?: string; refAnnee?: number | null; texte?: boolean }) {
+  // Valeur textuelle longue (nom de ressource, de pays…) : police réduite,
+  // retour à la ligne sur 2 lignes plutôt qu'un texte tronqué.
+  const styleValeur: React.CSSProperties = texte
+    ? { fontSize: "1.15rem", fontWeight: 800, color: rouge ? "#dc2626" : ENCRE, margin: 0, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }
+    : { fontSize: "1.65rem", fontWeight: 800, color: rouge ? "#dc2626" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
   return (
     <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
         <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</p>
         {tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
       </div>
-      <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: rouge ? "#dc2626" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
-      <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6 }}>
-        {delta != null && <Delta v={delta} />}
+      <p className="ds-donnee" style={styleValeur}>{valeur}</p>
+      <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
         {sousLabel && <span style={{ fontSize: 10.5, color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sousLabel}</span>}
+        {delta != null && <Delta v={delta} />}
+        {refAnnee != null && <span style={{ fontSize: 10.5, color: "#9aa5b4", whiteSpace: "nowrap" }}>par rapport à {refAnnee}</span>}
       </div>
     </div>
   );
@@ -355,10 +361,10 @@ export default function TableauDeBordPage() {
             <section style={{ marginTop: 44 }}>
               <SectionHead n={1} titre="Investissements Directs Étrangers" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="Flux entrant" tag={kFluxEnt.last ? String(kFluxEnt.last.annee) : undefined} valeur={fmtMUSD(kFluxEnt.last?.valeur)} delta={kFluxEnt.delta} sousLabel={kFluxEnt.prev ? `par rapport à ${kFluxEnt.prev.annee}` : ""} />
-                <Kpi label="Flux sortant" tag={kFluxSort.last ? String(kFluxSort.last.annee) : undefined} valeur={fmtMUSD(kFluxSort.last?.valeur)} delta={kFluxSort.delta} sousLabel={kFluxSort.prev ? `par rapport à ${kFluxSort.prev.annee}` : ""} />
-                <Kpi label="Stock entrant" tag={kStockEnt.last ? String(kStockEnt.last.annee) : undefined} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} sousLabel={kStockEnt.prev ? `par rapport à ${kStockEnt.prev.annee}` : ""} />
-                <Kpi label="Stock sortant" tag={kStockSort.last ? String(kStockSort.last.annee) : undefined} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} sousLabel={kStockSort.prev ? `par rapport à ${kStockSort.prev.annee}` : ""} />
+                <Kpi label="Flux entrant" tag={kFluxEnt.last ? String(kFluxEnt.last.annee) : undefined} valeur={fmtMUSD(kFluxEnt.last?.valeur)} delta={kFluxEnt.delta} refAnnee={kFluxEnt.prev?.annee} />
+                <Kpi label="Flux sortant" tag={kFluxSort.last ? String(kFluxSort.last.annee) : undefined} valeur={fmtMUSD(kFluxSort.last?.valeur)} delta={kFluxSort.delta} refAnnee={kFluxSort.prev?.annee} />
+                <Kpi label="Stock entrant" tag={kStockEnt.last ? String(kStockEnt.last.annee) : undefined} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} refAnnee={kStockEnt.prev?.annee} />
+                <Kpi label="Stock sortant" tag={kStockSort.last ? String(kStockSort.last.annee) : undefined} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} refAnnee={kStockSort.prev?.annee} />
               </div>
               <div className="tdb-duo">
                 <Carte titre="Balance des flux d'IDE">
@@ -393,11 +399,31 @@ export default function TableauDeBordPage() {
                   tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
                   valeur={fmtUSD(bilat?.total)}
                   delta={bilatTotalDelta.delta}
-                  sousLabel={bilatTotalDelta.prev ? `par rapport à ${bilatTotalDelta.prev.annee}` : ""}
+                  refAnnee={bilatTotalDelta.prev?.annee}
                 />
-                <Kpi label="1re ressource" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={bilat?.top_ressource?.ressource || "—"} sousLabel={bilat?.top_ressource ? fmtUSD(bilat.top_ressource.valeur) : ""} />
-                <Kpi label="1er partenaire" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={bilat?.top_partenaire?.nom || "—"} sousLabel={bilat?.top_partenaire ? fmtUSD(bilat.top_partenaire.valeur) : ""} />
-                <Kpi label="Concentration" tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined} valeur={bilat?.part_top_partenaire != null ? `${nf(bilat.part_top_partenaire, 1)} %` : "—"} sousLabel="part du 1er partenaire" />
+                <Kpi
+                  texte
+                  label={bilatDir === "exportateur" ? "1re ressource exportée" : "1re ressource importée"}
+                  tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
+                  valeur={bilat?.top_ressource?.ressource || "—"}
+                  sousLabel={bilat?.top_ressource ? fmtUSD(bilat.top_ressource.valeur) : ""}
+                />
+                <Kpi
+                  texte
+                  label={bilatDir === "exportateur" ? "1er client" : "1er fournisseur"}
+                  tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
+                  valeur={bilat?.top_partenaire?.nom || "—"}
+                  sousLabel={bilat?.top_partenaire ? fmtUSD(bilat.top_partenaire.valeur) : ""}
+                  delta={bilat?.top_partenaire?.variation ?? null}
+                  refAnnee={bilat?.top_partenaire?.annee_prec}
+                />
+                <Kpi
+                  label={bilatDir === "exportateur" ? "Part du 1er client" : "Part du 1er fournisseur"}
+                  tag={bilat?.annee_ref ? String(bilat.annee_ref) : undefined}
+                  valeur={bilat?.part_top_partenaire != null ? `${nf(bilat.part_top_partenaire, 1)} %` : "—"}
+                  delta={bilat?.part_top_partenaire_variation ?? null}
+                  refAnnee={bilat?.annee_prec}
+                />
               </div>
               <div className="tdb-duo">
                 <Carte titre="Balance commerciale bilatérale">
