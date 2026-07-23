@@ -13,14 +13,13 @@ import { AUTH_ENFORCED, moduleAutorise, nomAffiche, ROLE_LABELS } from "@/lib/au
 import { modules, PROTECTED_SLUGS } from "@/components/layout/navData";
 
 // ── Ligne de menu (icône bleue + titre) — lien OU action ───────────────────────
-const MENU_ROW: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "6px 9px", borderRadius: 11, textDecoration: "none", transition: "background 0.12s", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-google-sans)" };
-const onEnterRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; };
+const MENU_ROW: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, padding: "8px 10px", borderRadius: 11, textDecoration: "none", transition: "background 0.12s", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-google-sans)" };
+const onEnterRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style.background = "rgba(0,79,145,0.06)"; };
 const onLeaveRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style.background = "transparent"; };
-function MenuIcone({ icon }: { icon: string }) {
+function MenuIcone({ icon, couleur = "#004f91" }: { icon: string; couleur?: string }) {
+  // Icône nue (pas de pastille), même épure que le flyout Modules
   return (
-    <span style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(0,79,145,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>{icon}</span>
-    </span>
+    <span className="material-symbols-outlined" style={{ fontSize: 20, color: couleur, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 24, textAlign: "center" }}>{icon}</span>
   );
 }
 function MenuLien({ href, onNav, icon, titre, action }: { href?: string; onNav: () => void; icon: string; titre: string; action?: () => void }) {
@@ -196,12 +195,10 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
 
             {session?.user ? (
               <button onClick={() => signOut({ callbackUrl: "/" })}
-                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "6px 9px", borderRadius: 11, border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.12s" }}
+                style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 11, border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.12s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.06)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                <span style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(220,38,38,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#dc2626", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20", lineHeight: 1 }}>logout</span>
-                </span>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#dc2626", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 24, textAlign: "center" }}>logout</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: "#dc2626" }}>Se déconnecter</span>
               </button>
             ) : (
