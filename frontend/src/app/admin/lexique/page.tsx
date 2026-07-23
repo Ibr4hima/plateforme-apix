@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
-import { CAT_COULEUR, CATEGORIES, type Terme } from "@/lib/lexique";
+import { type Terme } from "@/lib/lexique";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const BLEU = "#004f91", ENCRE = "#101a2e";
@@ -14,20 +14,10 @@ const BLEU = "#004f91", ENCRE = "#101a2e";
 const IS: React.CSSProperties = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E2E6EC", background: "#fff", fontSize: 13.5, color: ENCRE, outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
 const LS: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, display: "block" };
 
-function Pastille({ cat }: { cat: string }) {
-  const c = CAT_COULEUR[cat] || "#9aa5b4";
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: c, background: `${c}14`, border: `1px solid ${c}2e`, padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap" }}>
-      {cat}
-    </span>
-  );
-}
-
 // ── Modal ajout / édition ─────────────────────────────────────────────────────
 function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState({
     terme: edit?.terme || "",
-    categorie: edit?.categorie || CATEGORIES[0],
     definition: edit?.definition || "",
     actif: edit?.actif ?? true,
   });
@@ -65,14 +55,8 @@ function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: (
             <input style={IS} value={form.terme} onChange={e => setForm(f => ({ ...f, terme: e.target.value }))} placeholder="ex. Greenfield" autoFocus />
           </div>
           <div>
-            <label style={LS}>Catégorie</label>
-            <select style={IS} value={form.categorie} onChange={e => setForm(f => ({ ...f, categorie: e.target.value }))}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <div>
             <label style={LS}>Définition</label>
-            <textarea style={{ ...IS, minHeight: 110, resize: "vertical", lineHeight: 1.6 }} value={form.definition} onChange={e => setForm(f => ({ ...f, definition: e.target.value }))} placeholder="Définition claire et concise…" />
+            <textarea style={{ ...IS, minHeight: 120, resize: "vertical", lineHeight: 1.6 }} value={form.definition} onChange={e => setForm(f => ({ ...f, definition: e.target.value }))} placeholder="Définition claire et concise…" />
           </div>
           <label style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13, color: "#4a5568", cursor: "pointer" }}>
             <input type="checkbox" checked={form.actif} onChange={e => setForm(f => ({ ...f, actif: e.target.checked }))} style={{ width: 16, height: 16, accentColor: BLEU }} />
@@ -96,7 +80,6 @@ export default function AdminLexiquePage() {
   const [termes, setTermes] = useState<Terme[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
-  const [catFiltre, setCatFiltre] = useState<string>("");
   const [modal, setModal] = useState(false);
   const [edit, setEdit] = useState<Terme | null>(null);
   const [aSupprimer, setASupprimer] = useState<Terme | null>(null);
@@ -118,10 +101,11 @@ export default function AdminLexiquePage() {
   const liste = useMemo(() => {
     const nq = q.trim().toLowerCase();
     return termes
-      .filter(t => !catFiltre || t.categorie === catFiltre)
       .filter(t => !nq || t.terme.toLowerCase().includes(nq) || t.definition.toLowerCase().includes(nq))
       .sort((a, b) => a.terme.localeCompare(b.terme, "fr"));
-  }, [termes, q, catFiltre]);
+  }, [termes, q]);
+
+  const COLS = "1.2fr 2.6fr 88px";
 
   return (
     <div style={{ padding: "32px 40px 80px", maxWidth: 1100, margin: "0 auto", fontFamily: "var(--font-google-sans)" }}>
@@ -138,22 +122,18 @@ export default function AdminLexiquePage() {
         </button>
       </div>
 
-      {/* Filtres */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-        <div style={{ position: "relative", width: "min(320px, 100%)" }}>
+      {/* Recherche */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ position: "relative", width: "min(340px, 100%)" }}>
           <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
           <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un terme…" style={{ ...IS, paddingLeft: 34 }} />
         </div>
-        <select value={catFiltre} onChange={e => setCatFiltre(e.target.value)} style={{ ...IS, width: "auto", minWidth: 180 }}>
-          <option value="">Toutes les catégories</option>
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
       </div>
 
       {/* Tableau */}
       <div className="ds-carte" style={{ overflow: "hidden", border: "1px solid rgba(16,26,46,0.10)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.7fr 2fr 88px", gap: 0, padding: "11px 18px", borderBottom: "1px solid #F2F0EF", background: "#FAFAF9" }}>
-          {["Terme", "Catégorie", "Définition", ""].map((h, i) => (
+        <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 0, padding: "11px 18px", borderBottom: "1px solid #F2F0EF", background: "#FAFAF9" }}>
+          {["Terme", "Définition", ""].map((h, i) => (
             <span key={i} style={{ fontSize: 10, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</span>
           ))}
         </div>
@@ -162,11 +142,10 @@ export default function AdminLexiquePage() {
         ) : liste.length === 0 ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#9aa5b4", fontSize: 13.5 }}>Aucun terme.</div>
         ) : liste.map(t => (
-          <div key={t.id} style={{ display: "grid", gridTemplateColumns: "1.1fr 0.7fr 2fr 88px", gap: 0, padding: "13px 18px", borderBottom: "1px solid #F5F3F0", alignItems: "center", opacity: t.actif === false ? 0.5 : 1 }}>
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: ENCRE, paddingRight: 10 }}>
+          <div key={t.id} style={{ display: "grid", gridTemplateColumns: COLS, gap: 0, padding: "13px 18px", borderBottom: "1px solid #F5F3F0", alignItems: "center", opacity: t.actif === false ? 0.5 : 1 }}>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: ENCRE, paddingRight: 12 }}>
               {t.terme}{t.actif === false && <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", marginLeft: 7 }}>(masqué)</span>}
             </span>
-            <span><Pastille cat={t.categorie} /></span>
             <span style={{ fontSize: 12.5, color: "#6b7280", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", paddingRight: 12 }}>{t.definition}</span>
             <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
               <button onClick={() => { setEdit(t); setModal(true); }} title="Modifier"
