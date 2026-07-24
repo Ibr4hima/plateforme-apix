@@ -440,7 +440,7 @@ export default function TableauDeBordPage() {
                   {balanceFlux.length > 1 ? (
                     <GrapheMultiPays height={230} type="line" dualAxis={false} fmt={(v) => fmtMUSD(v)} series={[
                       { nom: "Flux entrant", couleur: PALETTE_COMPARAISON[0], data: serieFluxEnt, dash: "6,4" },
-                      { nom: "Flux sortant", couleur: PALETTE_COMPARAISON[1], data: serieFluxSort, dash: "2,4" },
+                      { nom: "Flux sortant", couleur: PALETTE_COMPARAISON[1], data: serieFluxSort, dash: "6,4" },
                       { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balanceFlux },
                     ]} />
                   ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données IDE indisponibles.</p>}
@@ -449,7 +449,7 @@ export default function TableauDeBordPage() {
                   {balanceStock.length > 1 ? (
                     <GrapheMultiPays height={230} type="line" dualAxis={false} fmt={(v) => fmtMUSD(v)} series={[
                       { nom: "Stock entrant", couleur: PALETTE_COMPARAISON[0], data: serieStockEnt, dash: "6,4" },
-                      { nom: "Stock sortant", couleur: PALETTE_COMPARAISON[1], data: serieStockSort, dash: "2,4" },
+                      { nom: "Stock sortant", couleur: PALETTE_COMPARAISON[1], data: serieStockSort, dash: "6,4" },
                       { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balanceStock },
                     ]} />
                   ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données IDE indisponibles.</p>}
@@ -626,18 +626,18 @@ export default function TableauDeBordPage() {
                       <Carte titre="Échanges de marchandises" tag={plage(expM.length ? expM : impM)}>
                         {(expM.length > 1 || impM.length > 1) ? (
                           <GrapheMultiPays height={220} type="line" dualAxis={false} fmt={(v) => fmtUSD(v)} series={[
-                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: expM, dash: "6,4" },
-                            { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: impM, dash: "2,4" },
-                            { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balM },
+                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[2], data: expM, dash: "6,4" },
+                            { nom: "Importations", couleur: PALETTE_COMPARAISON[0], data: impM, dash: "6,4" },
+                            { nom: "Balance", couleur: "#dc2626", data: balM },
                           ]} />
                         ) : vide}
                       </Carte>
                       <Carte titre="Échanges de services" tag={plage(expS.length ? expS : impS)}>
                         {(expS.length > 1 || impS.length > 1) ? (
                           <GrapheMultiPays height={220} type="line" dualAxis={false} fmt={(v) => fmtUSD(v)} series={[
-                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: expS, dash: "6,4" },
-                            { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: impS, dash: "2,4" },
-                            { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balS },
+                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[2], data: expS, dash: "6,4" },
+                            { nom: "Importations", couleur: PALETTE_COMPARAISON[0], data: impS, dash: "6,4" },
+                            { nom: "Balance", couleur: "#dc2626", data: balS },
                           ]} />
                         ) : vide}
                       </Carte>
