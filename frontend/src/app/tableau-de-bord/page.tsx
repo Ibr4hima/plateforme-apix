@@ -14,7 +14,7 @@ import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const BLEU = "#004f91", ORANGE = "#ca631f", ENCRE = "#101a2e";
+const BLEU = "#004f91", ENCRE = "#101a2e";
 
 // ── Formatage ─────────────────────────────────────────────────────────────────
 const nf = (v: number | null | undefined, d = 0) => (v != null && isFinite(v) ? v.toLocaleString("fr-FR", { maximumFractionDigits: d }) : "—");
@@ -279,10 +279,6 @@ export default function TableauDeBordPage() {
   const [comDir, setComDir] = useState<"export" | "import">("export");
   const [socio, setSocio] = useState<any[]>([]);
   const [socioPays, setSocioPays] = useState<string>("Sénégal");
-  const [entAnnee, setEntAnnee] = useState<{ label: string; valeur: number }[]>([]);
-  const [entRegion, setEntRegion] = useState<{ label: string; valeur: number }[]>([]);
-  const [entSecteur, setEntSecteur] = useState<{ label: string; valeur: number }[]>([]);
-  const [prospSecteur, setProspSecteur] = useState<{ label: string; valeur: number }[]>([]);
 
   useEffect(() => {
     getJSON(`${API}/dashboard/stats`).then(setStats);
@@ -291,10 +287,6 @@ export default function TableauDeBordPage() {
     getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=flux`).then((d) => setIdeFluxSort(Array.isArray(d) ? d : []));
     getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=stock`).then((d) => setIdeStockSort(Array.isArray(d) ? d : []));
     getJSON(`${API}/bmce/apercu`).then(setComExt);
-    getJSON(`${API}/dashboard/viz/entreprises-par-annee`).then((d) => setEntAnnee(Array.isArray(d) ? d : []));
-    getJSON(`${API}/dashboard/viz/entreprises-par-region`).then((d) => setEntRegion(Array.isArray(d) ? d : []));
-    getJSON(`${API}/dashboard/viz/entreprises-par-secteur`).then((d) => setEntSecteur(Array.isArray(d) ? d : []));
-    getJSON(`${API}/dashboard/indicateur?dimension=secteurs&indicateur=ciblees`).then((d) => setProspSecteur(Array.isArray(d) ? d : []));
 
     // Flux bilatéraux : résoudre l'id du Sénégal puis charger la balance ;
     // KPIs/tops dépendent de la direction → effet dédié ci-dessous.
@@ -647,36 +639,6 @@ export default function TableauDeBordPage() {
               })()}
             </section>
 
-            {/* ── 5. Entreprises installées ── */}
-            <section style={{ marginTop: 40 }}>
-              <SectionHead n={5} titre="Entreprises installées" />
-              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="Total installées" valeur={stats ? nf(stats.global_installees) : "—"} />
-                <Kpi label="Régions couvertes" valeur={entRegion.length ? nf(entRegion.length) : "—"} sousLabel="sur 14" />
-                <Kpi label="En zones économiques" valeur={stats ? nf(stats.zone_ent_total) : "—"} sousLabel="ZES · ZAI · ZFI" />
-                <Kpi label="Secteurs représentés" valeur={entSecteur.length ? nf(entSecteur.length) : "—"} />
-              </div>
-              <div className="tdb-duo">
-                <Carte titre="Créations d'entreprises par année">
-                  {entAnnee.length > 1 ? (
-                    <GrapheMultiPays height={220} type="line" fmt={(v) => nf(v)} series={[serie("Créations", PALETTE_COMPARAISON[0], entAnnee.map((r) => ({ annee: Number(r.label), valeur: r.valeur })))]} />
-                  ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
-                </Carte>
-                <Carte titre="Top régions"><MiniBarres data={entRegion} couleur={PALETTE_COMPARAISON[0]} /></Carte>
-              </div>
-            </section>
-
-            {/* ── 6. Entreprises / prospects ── */}
-            <section style={{ marginTop: 40 }}>
-              <SectionHead n={6} titre="Entreprises" />
-              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="Prospects suivis" valeur={stats ? nf(stats.prospects_total) : "—"} />
-                <Kpi label="Entreprises ciblées" valeur={stats ? nf(stats.global_ciblees) : "—"} sousLabel="sans échange" />
-                <Kpi label="En contact" valeur={stats ? nf(stats.global_contactees) : "—"} sousLabel="échange engagé" />
-                <Kpi label="Durée moy. transformation" valeur={stats?.global_duree ? `${nf(stats.global_duree)} j` : "—"} sousLabel="contact → installation" />
-              </div>
-              <Carte titre="Prospects ciblés par secteur"><MiniBarres data={prospSecteur} couleur={ORANGE} max={8} /></Carte>
-            </section>
           </>
         ) : (
           /* ── Onglet Tableaux analytiques ── */
