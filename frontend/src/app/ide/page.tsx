@@ -634,6 +634,15 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     ];
   })();
 
+  // Variation ▲/▼ % du KPI vs sa valeur de l'année précédente : on recalcule le
+  // même KPI sur les données tronquées avant son année de référence.
+  const getVariation = (k: KpiResult): { delta: number | null; ref: number | null } => {
+    if (k.annee == null || k.valeur == null) return { delta: null, ref: null };
+    const prev = calculerKpis(donnees.filter((d) => d.annee < (k.annee as number))).find((p) => p.id === k.id);
+    if (!prev || prev.valeur == null || prev.valeur === 0 || prev.annee == null) return { delta: null, ref: null };
+    return { delta: ((k.valeur - prev.valeur) / Math.abs(prev.valeur)) * 100, ref: prev.annee };
+  };
+
   // Indicatif grisé sous la valeur
   const getIndicatif = (k: KpiResult): string | null => {
     if (k.annee) return `en ${k.annee}`;
@@ -870,6 +879,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             )) : <>
             {kpisCards.map(k=>{
               const indicatif = getIndicatif(k);
+              const { delta, ref } = getVariation(k);
               return (
                 <div key={k.id} onClick={()=>setKpiActif(k)}
                   style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"var(--ombre-1)", minWidth:0 }}
@@ -877,12 +887,20 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   onMouseLeave={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7"; }}>
                   {(()=>{ const { main, suffix } = splitKpiTitre(k.label); return (
                     <div style={{ marginBottom:7 }}>
-                      <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{main}</p>
-                      {suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:"#9aa5b4", textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
+                      <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const }}>
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{main}</p>
+                        {k.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"#8a93a3", background:"#EEF1F6", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{k.annee}</span>}
+                      </div>
+                      {k.annee == null && suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:"#9aa5b4", textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
                     </div>
                   ); })()}
                   <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{fmtKpi(k)}</p>
-                  {indicatif && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{indicatif}</p>}
+                  <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
+                    {delta != null && ref != null ? (<>
+                      <span style={{ fontSize:10, fontWeight:800, color:delta>0?"#188038":delta<0?"#dc2626":"#9aa5b4", whiteSpace:"nowrap" as const }}>{delta>0?"▲":delta<0?"▼":"="}&nbsp;{Math.abs(delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
+                      <span style={{ fontSize:9.5, color:"#9aa5b4", whiteSpace:"nowrap" as const }}>par rapport à {ref}</span>
+                    </>) : (k.annee == null && indicatif ? <p style={{ fontSize:10, color:"#9aa5b4", lineHeight:1 }}>{indicatif}</p> : null)}
+                  </div>
                 </div>
               );
             })}
@@ -903,7 +921,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           ) : (
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>(
-                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id}
+                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                   <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
