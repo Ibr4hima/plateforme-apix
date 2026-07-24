@@ -344,7 +344,8 @@ export default function TableauDeBordPage() {
     return { valeur: last.valeur as number, annee: last.annee as number, prevAnnee: (prev?.annee as number) ?? null, delta };
   };
   const pib = socioVal("pib"), pop = socioVal("population"), pibHab = socioVal("pib_hab"), croiss = socioVal("croissance_pib");
-  const seriePib = useMemo(() => socio.filter((r) => r.indicateur === "pib" && r.valeur != null).sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee, valeur: r.valeur })), [socio]);
+  const serieSocio = (code: string) => socio.filter((r) => r.indicateur === code && r.valeur != null).sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee as number, valeur: r.valeur as number }));
+  const seriePib = useMemo(() => serieSocio("pib"), [socio]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toSerie = (rows: any[]) => rows.slice().sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee as number, valeur: r.valeur as number | null }));
   const serieFluxEnt = useMemo(() => toSerie(ideFlux), [ideFlux]);
@@ -605,11 +606,45 @@ export default function TableauDeBordPage() {
                 <Kpi label="PIB / habitant" tag={pibHab?.annee ? String(pibHab.annee) : undefined} valeur={pibHab ? `${nf(pibHab.valeur)} $` : "—"} delta={pibHab?.delta} refAnnee={pibHab?.prevAnnee} />
                 <Kpi label="Croissance du PIB" tag={croiss?.annee ? String(croiss.annee) : undefined} valeur={croiss ? `${nf(croiss.valeur, 1)} %` : "—"} delta={croiss?.delta} refAnnee={croiss?.prevAnnee} />
               </div>
-              <Carte titre="Évolution du PIB">
-                {seriePib.length > 1 ? (
-                  <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie("PIB", PALETTE_COMPARAISON[3], seriePib)]} />
-                ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
-              </Carte>
+              {(() => {
+                const seriePop = serieSocio("population");
+                const expM = serieSocio("exportations_marchandises"), impM = serieSocio("importations_marchandises"), balM = serieSocio("balance_marchandises");
+                const expS = serieSocio("exportations_services"), impS = serieSocio("importations_services"), balS = serieSocio("balance_services");
+                const plage = (s: { annee: number }[]) => (s.length ? (s[0].annee === s[s.length - 1].annee ? String(s[0].annee) : `${s[0].annee}–${s[s.length - 1].annee}`) : undefined);
+                const vide = <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>;
+                return (
+                  <>
+                    <div className="tdb-duo">
+                      <Carte titre="Évolution de la population" tag={plage(seriePop)}>
+                        {seriePop.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => `${nf(v)} hbts`} series={[serie("Population", PALETTE_COMPARAISON[2], seriePop)]} /> : vide}
+                      </Carte>
+                      <Carte titre="Évolution du PIB" tag={plage(seriePib)}>
+                        {seriePib.length > 1 ? <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie("PIB", PALETTE_COMPARAISON[3], seriePib)]} /> : vide}
+                      </Carte>
+                    </div>
+                    <div className="tdb-duo" style={{ marginTop: 16 }}>
+                      <Carte titre="Échanges de marchandises" tag={plage(expM.length ? expM : impM)}>
+                        {(expM.length > 1 || impM.length > 1) ? (
+                          <GrapheMultiPays height={220} type="line" dualAxis={false} fmt={(v) => fmtUSD(v)} series={[
+                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: expM, dash: "6,4" },
+                            { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: impM, dash: "2,4" },
+                            { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balM },
+                          ]} />
+                        ) : vide}
+                      </Carte>
+                      <Carte titre="Échanges de services" tag={plage(expS.length ? expS : impS)}>
+                        {(expS.length > 1 || impS.length > 1) ? (
+                          <GrapheMultiPays height={220} type="line" dualAxis={false} fmt={(v) => fmtUSD(v)} series={[
+                            { nom: "Exportations", couleur: PALETTE_COMPARAISON[0], data: expS, dash: "6,4" },
+                            { nom: "Importations", couleur: PALETTE_COMPARAISON[1], data: impS, dash: "2,4" },
+                            { nom: "Balance", couleur: PALETTE_COMPARAISON[2], data: balS },
+                          ]} />
+                        ) : vide}
+                      </Carte>
+                    </div>
+                  </>
+                );
+              })()}
             </section>
 
             {/* ── 5. Entreprises installées ── */}
