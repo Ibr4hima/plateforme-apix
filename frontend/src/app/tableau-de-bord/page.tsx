@@ -292,6 +292,9 @@ export default function TableauDeBordPage() {
   const [bilatRepart, setBilatRepart] = useState<any>(null);
   const [bilatDir, setBilatDir] = useState<"exportateur" | "importateur">("exportateur");
   const [commCtx, setCommCtx] = useState<{ id: number; amin: number; amax: number } | null>(null);
+  // Année sélectionnée au curseur de la section (null = dernière disponible)
+  const [bilatAnneeSel, setBilatAnneeSel] = useState<number | null>(null);
+  const bilatAnnee = bilatAnneeSel ?? commCtx?.amax ?? null;
   const [comExt, setComExt] = useState<any>(null);
   const [comRap, setComRap] = useState<any>(null);
   const [comDir, setComDir] = useState<"export" | "import">("export");
@@ -312,7 +315,7 @@ export default function TableauDeBordPage() {
       const sen = (f?.pays || []).find((p: any) => p.code_iso3 === "SEN");
       const annees: number[] = (f?.annees || []).slice().sort((a: number, b: number) => a - b);
       if (!sen || annees.length === 0) return;
-      const amax = annees[annees.length - 1], amin = Math.max(annees[0], amax - 6);
+      const amax = annees[annees.length - 1], amin = annees[0];
       setCommCtx({ id: sen.id, amin, amax });
       getJSON(`${API}/statistiques/commerce/balance?pays_id=${sen.id}&annee_min=${amin}&annee_max=${amax}`).then((d) => setBilatBalance(Array.isArray(d) ? d : []));
     });
@@ -326,15 +329,17 @@ export default function TableauDeBordPage() {
     });
   }, []);
 
-  // Flux bilatéraux : KPIs & tops rechargés à chaque changement de direction
+  // Flux bilatéraux : KPIs, tops et répartition rechargés à chaque changement
+  // de direction OU d'année au curseur (les variations n vs n-1 restent
+  // calculées côté backend, hors bornes de période).
   useEffect(() => {
-    if (!commCtx) return;
-    const { id, amin, amax } = commCtx;
-    const base = `pays_id=${id}&direction=${bilatDir}`;
-    getJSON(`${API}/statistiques/commerce/kpis?${base}&annee_min=${amin}&annee_max=${amax}`).then(setBilat);
-    getJSON(`${API}/statistiques/commerce/tops?${base}&annee_min=${amax}&annee_max=${amax}&limite=8`).then(setBilatTops);
-    getJSON(`${API}/statistiques/commerce/repartition?${base}&annee_min=${amax}&annee_max=${amax}&limite=6`).then(setBilatRepart);
-  }, [commCtx, bilatDir]);
+    if (!commCtx || bilatAnnee == null) return;
+    const base = `pays_id=${commCtx.id}&direction=${bilatDir}`;
+    const an = `annee_min=${bilatAnnee}&annee_max=${bilatAnnee}`;
+    getJSON(`${API}/statistiques/commerce/kpis?${base}&${an}`).then(setBilat);
+    getJSON(`${API}/statistiques/commerce/tops?${base}&${an}&limite=8`).then(setBilatTops);
+    getJSON(`${API}/statistiques/commerce/repartition?${base}&${an}&limite=6`).then(setBilatRepart);
+  }, [commCtx, bilatDir, bilatAnnee]);
 
   // Commerce extérieur (ANSD) : rapport de la dernière année + année précédente
   // (variations verrouillées sur le 1er partenaire de l'année n).
@@ -364,14 +369,17 @@ export default function TableauDeBordPage() {
   const serieStockSort = useMemo(() => toSerie(ideStockSort), [ideStockSort]);
   const serieBalance = useMemo(() => bilatBalance.slice().sort((a, b) => a.annee - b.annee), [bilatBalance]);
 
-  // Total (export ou import) sur la dernière année vs l'année précédente
+  // Total (export ou import) à l'année du curseur vs l'année disponible précédente
   const bilatTotalDelta = useMemo(() => {
     const k = bilatDir === "exportateur" ? "exportations" : "importations";
     const rows = serieBalance.filter((r) => r[k] != null && r[k] > 0);
-    const last = rows[rows.length - 1], prev = rows[rows.length - 2];
+    if (bilatAnnee == null) return { prev: null as any, delta: null as number | null };
+    const last = rows.find((r) => r.annee === bilatAnnee) || null;
+    const avant = rows.filter((r) => r.annee < bilatAnnee);
+    const prev = avant.length ? avant[avant.length - 1] : null;
     const delta = last && prev && prev[k] ? ((last[k] - prev[k]) / Math.abs(prev[k])) * 100 : null;
-    return { prev: prev || null, delta };
-  }, [serieBalance, bilatDir]);
+    return { prev, delta };
+  }, [serieBalance, bilatDir, bilatAnnee]);
 
   // Balance = entrant − sortant, uniquement sur les années où les deux existent
   const balanceSerie = (ent: { annee: number; valeur: number | null }[], sort: { annee: number; valeur: number | null }[]) => {
@@ -493,7 +501,10 @@ export default function TableauDeBordPage() {
             {/* ── 2. Flux bilatéraux ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={2} titre="Flux bilatéraux" extra={
-                <Segment value={bilatDir} onChange={setBilatDir} options={[{ v: "exportateur", l: "Exportations" }, { v: "importateur", l: "Importations" }]} />
+                <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+                  <Segment value={bilatDir} onChange={setBilatDir} options={[{ v: "exportateur", l: "Exportations" }, { v: "importateur", l: "Importations" }]} />
+                  {commCtx && bilatAnnee != null && <CurseurAnnee min={commCtx.amin} max={commCtx.amax} value={bilatAnnee} onChange={setBilatAnneeSel} />}
+                </div>
               } />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
                 <Kpi
