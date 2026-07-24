@@ -335,11 +335,13 @@ export default function TableauDeBordPage() {
   }, [comAnnee]);
 
   // ── Dérivés socio-économiques ──
+  // Dernière valeur uploadée + valeur précédente (pour la variation ▲/▼ %)
   const socioVal = (code: string) => {
-    const rows = socio.filter((r) => r.indicateur === code && r.valeur != null);
+    const rows = socio.filter((r) => r.indicateur === code && r.valeur != null).sort((a, b) => a.annee - b.annee);
     if (!rows.length) return null;
-    const last = rows.reduce((a, b) => (b.annee > a.annee ? b : a));
-    return { valeur: last.valeur as number, annee: last.annee as number };
+    const last = rows[rows.length - 1], prev = rows[rows.length - 2];
+    const delta = last && prev && prev.valeur ? ((last.valeur - prev.valeur) / Math.abs(prev.valeur)) * 100 : null;
+    return { valeur: last.valeur as number, annee: last.annee as number, prevAnnee: (prev?.annee as number) ?? null, delta };
   };
   const pib = socioVal("pib"), pop = socioVal("population"), pibHab = socioVal("pib_hab"), croiss = socioVal("croissance_pib");
   const seriePib = useMemo(() => socio.filter((r) => r.indicateur === "pib" && r.valeur != null).sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee, valeur: r.valeur })), [socio]);
@@ -598,10 +600,10 @@ export default function TableauDeBordPage() {
             <section style={{ marginTop: 40 }}>
               <SectionHead n={4} titre="Indicateurs socio-économiques" />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="PIB" valeur={fmtUSD(pib?.valeur)} sousLabel={pib?.annee ? String(pib.annee) : ""} />
-                <Kpi label="Population" valeur={pop ? nf(pop.valeur) : "—"} sousLabel="habitants" />
-                <Kpi label="PIB / habitant" valeur={fmtUSD(pibHab?.valeur)} sousLabel={pibHab?.annee ? String(pibHab.annee) : ""} />
-                <Kpi label="Croissance du PIB" valeur={croiss ? `${nf(croiss.valeur, 1)} %` : "—"} sousLabel={croiss?.annee ? String(croiss.annee) : ""} />
+                <Kpi label="PIB" tag={pib?.annee ? String(pib.annee) : undefined} valeur={fmtUSD(pib?.valeur)} delta={pib?.delta} refAnnee={pib?.prevAnnee} />
+                <Kpi label="Population" tag={pop?.annee ? String(pop.annee) : undefined} valeur={pop ? `${nf(pop.valeur)} hbts` : "—"} delta={pop?.delta} refAnnee={pop?.prevAnnee} />
+                <Kpi label="PIB / habitant" tag={pibHab?.annee ? String(pibHab.annee) : undefined} valeur={pibHab ? `${nf(pibHab.valeur)} $` : "—"} delta={pibHab?.delta} refAnnee={pibHab?.prevAnnee} />
+                <Kpi label="Croissance du PIB" tag={croiss?.annee ? String(croiss.annee) : undefined} valeur={croiss ? `${nf(croiss.valeur, 1)} %` : "—"} delta={croiss?.delta} refAnnee={croiss?.prevAnnee} />
               </div>
               <Carte titre="Évolution du PIB">
                 {seriePib.length > 1 ? (
