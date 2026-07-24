@@ -5,7 +5,7 @@ import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { COMP_PALETTE } from "@/lib/couleurs";
+import { COMP_PALETTE, badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe } from "@/lib/couleurs";
 import { X, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
@@ -32,6 +32,21 @@ function getPaysColor(nom: string, index: number): string {
 
 // Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, « Md $ / M $ »)
 const fmtVal = fmtMillionsUSD;
+
+// ── Pastilles d'en-tête (période + séries) — styles badge_* de la plateforme ──
+// Les 4 premières séries suivent les 4 teintes canoniques ; au-delà, badgeDe().
+const BADGES_4 = [badge_bleu, badge_orange, badge_vert, badge_violet];
+function BadgePeriode({ children }: { children: React.ReactNode }) {
+  return <span style={{ ...badge_gris, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>{children}</span>;
+}
+function BadgeSerie({ i, couleur, title, children }: { i: number; couleur: string; title?: string; children: React.ReactNode }) {
+  return (
+    <span title={title} style={{ ...(BADGES_4[i] ?? badgeDe(couleur)), fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>
+      <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, display: "inline-block", flexShrink: 0 }} />
+      {children}
+    </span>
+  );
+}
 
 // Séries par sous-type de données IDE (graphes, tableau de données, export).
 // entrant = destination/ventes, sortant = source/achats selon la catégorie.
@@ -611,26 +626,34 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     series: buildSerie(s.dir, s.ind),
   }));
 
-  // KPIs dédiés greenfield / M&A (les 25 KPIs épinglables ne concernent que flux & stocks)
+  // KPIs dédiés greenfield / M&A (les 25 KPIs épinglables ne concernent que
+  // flux & stocks) — même gabarit que les KPIs annuels : année en pastille +
+  // variation ▲/▼ % vs la valeur disponible précédente.
   const stCards = (() => {
     if (!stActif) return null;
     const serie = (dir: string, ind: string) => donnees
       .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur !== null)
       .sort((a: any, b: any) => a.annee - b.annee);
-    const last = (rs: any[]) => rs.length ? rs[rs.length - 1] : null;
-    const vE = last(serie("entrant", stActif[0].ind));
-    const vS = last(serie("sortant", stActif[1].ind));
-    const nE = last(serie("entrant", stActif[2].ind));
-    const record = serie("entrant", stActif[0].ind).reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
-    // Solde net : reçus − émis sur la dernière année commune
-    const solde = vE && vS && vE.annee === vS.annee ? vE.valeur - vS.valeur : null;
+    // Dernier point + précédent + Δ % (null si non calculable)
+    const pt = (rs: any[]) => {
+      const l = rs.length ? rs[rs.length - 1] : null, p = rs.length > 1 ? rs[rs.length - 2] : null;
+      const delta = l && p && p.valeur ? ((l.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+      return { l, delta, ref: l && p ? p.annee : null };
+    };
+    const sE = serie("entrant", stActif[0].ind), sS = serie("sortant", stActif[1].ind), sN = serie("entrant", stActif[2].ind);
+    const vE = pt(sE), vS = pt(sS), nE = pt(sN);
+    const record = sE.reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
+    // Solde net (reçus − émis) : série des années communes → dernier + Δ
+    const parAnneeS = new Map(sS.map((r: any) => [r.annee, r.valeur]));
+    const sSolde = sE.filter((r: any) => parAnneeS.has(r.annee)).map((r: any) => ({ annee: r.annee, valeur: r.valeur - (parAnneeS.get(r.annee) as number) }));
+    const solde = pt(sSolde);
     const gf = sousType === "greenfield";
     return [
-      { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales",  val: vE ? fmtVal(vE.valeur) : "N/A", ind: vE ? `en ${vE.annee}` : null },
-      { label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", val: vS ? fmtVal(vS.valeur) : "N/A", ind: vS ? `en ${vS.annee}` : null },
-      { label: gf ? "Nombre de projets reçus" : "Nombre de rachats locaux", val: nE ? fmtNombre(nE.valeur) : "N/A", ind: nE ? `en ${nE.annee}` : null },
-      { label: gf ? "Solde net · reçus − émis" : "Solde net · rachats − acquisitions", val: solde !== null ? `${solde > 0 ? "+" : ""}${fmtVal(solde)}` : "N/A", ind: vE && solde !== null ? `en ${vE.annee}` : null },
-      { label: gf ? "Année record · reçus" : "Année record · rachats", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
+      { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", val: vE.l ? fmtVal(vE.l.valeur) : "N/A", annee: vE.l?.annee ?? null, delta: vE.delta, ref: vE.ref, ind: null as string | null },
+      { label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", val: vS.l ? fmtVal(vS.l.valeur) : "N/A", annee: vS.l?.annee ?? null, delta: vS.delta, ref: vS.ref, ind: null },
+      { label: gf ? "Nombre de projets reçus" : "Nombre de rachats locaux", val: nE.l ? fmtNombre(nE.l.valeur) : "N/A", annee: nE.l?.annee ?? null, delta: nE.delta, ref: nE.ref, ind: null },
+      { label: gf ? "Solde net · reçus − émis" : "Solde net · rachats − acquisitions", val: solde.l !== null ? `${solde.l.valeur > 0 ? "+" : ""}${fmtVal(solde.l.valeur)}` : "N/A", annee: solde.l?.annee ?? null, delta: solde.delta, ref: solde.ref, ind: null },
+      { label: gf ? "Année record · reçus" : "Année record · rachats", val: record ? String(record.annee) : "N/A", annee: null, delta: null, ref: null, ind: record ? fmtVal(record.valeur) : null },
     ];
   })();
 
@@ -859,11 +882,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             <div style={{ display:"flex", alignItems:"center", gap:12 }}>
               <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
               <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
-              <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+              <BadgePeriode>
                 {modeAnnees==="specifiques"&&anneesSpec.length>0
                   ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                   : `${perMin} — ${perMax}`}
-              </span>
+              </BadgePeriode>
             </div>
           </div>
 
@@ -872,9 +895,17 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             {stCards ? stCards.map(c=>(
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"var(--ombre-1)", minWidth:0 }}>
-                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
+                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const }}>
+                  <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
+                  {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"#8a93a3", background:"#EEF1F6", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
+                </div>
                 <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
-                {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
+                <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
+                  {c.delta != null && c.ref != null ? (<>
+                    <span style={{ fontSize:10, fontWeight:800, color:c.delta>0?"#188038":c.delta<0?"#dc2626":"#9aa5b4", whiteSpace:"nowrap" as const }}>{c.delta>0?"▲":c.delta<0?"▼":"="}&nbsp;{Math.abs(c.delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
+                    <span style={{ fontSize:9.5, color:"#9aa5b4", whiteSpace:"nowrap" as const }}>par rapport à {c.ref}</span>
+                  </>) : (c.ind ? <p style={{ fontSize:10, color:"#9aa5b4", lineHeight:1 }}>{c.ind}</p> : null)}
+                </div>
               </div>
             )) : <>
             {kpisCards.map(k=>{
@@ -1073,6 +1104,11 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
       .filter((d: any) => d.secteur_id === sid && d.direction === dir && d.indicateur === ind)
       .sort((a: any, b: any) => a.annee - b.annee);
     const last = (rs: any[]) => rs.length ? rs[rs.length - 1] : null;
+    // Δ % du dernier point vs le précédent de la même série
+    const deltaDe = (rs: any[]) => {
+      const l = last(rs), p = rs.length > 1 ? rs[rs.length - 2] : null;
+      return l && p && p.valeur ? { delta: ((l.valeur - p.valeur) / Math.abs(p.valeur)) * 100, ref: p.annee } : { delta: null, ref: null };
+    };
     const dirV = st === "greenfield" ? "total" : "entrant";
     const indV = st === "greenfield" ? "greenfield_valeur" : "ma_valeur";
     const indN = st === "greenfield" ? "greenfield_nombre" : "ma_nombre";
@@ -1108,18 +1144,21 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
       const rs = sV.slice(-5);
       return rs.length ? rs.reduce((acc: number, r: any) => acc + r.valeur, 0) / rs.length : null;
     })();
+    const sN = serie(dirV, indN);
+    const sSf = !gf ? rowsSel.filter((d: any) => d.secteur_id === sid && d.direction === "sortant" && d.indicateur === "ma_valeur").sort((a: any, b: any) => a.annee - b.annee) : [];
+    const dV = deltaDe(sV), dN = deltaDe(sN), dSf = deltaDe(sSf);
     return [
-      { label: gf ? "Valeur des projets annoncés" : "Ventes nettes",  val: vD ? fmtVal(vD.valeur) : "N/A", ind: vD ? `en ${vD.annee}` : null },
+      { label: gf ? "Valeur des projets annoncés" : "Ventes nettes", val: vD ? fmtVal(vD.valeur) : "N/A", annee: vD?.annee ?? null, delta: dV.delta, ref: dV.ref, ind: null as string | null },
       gf
-        ? { label: "Nombre de projets annoncés", val: nD ? fmtNombre(nD.valeur) : "N/A", ind: nD ? `en ${nD.annee}` : null }
-        : { label: "Achats nets", val: vSf ? fmtVal(vSf.valeur) : "N/A", ind: vSf ? `en ${vSf.annee}` : null },
+        ? { label: "Nombre de projets annoncés", val: nD ? fmtNombre(nD.valeur) : "N/A", annee: nD?.annee ?? null, delta: dN.delta, ref: dN.ref, ind: null }
+        : { label: "Achats nets", val: vSf ? fmtVal(vSf.valeur) : "N/A", annee: vSf?.annee ?? null, delta: dSf.delta, ref: dSf.ref, ind: null },
       gf
-        ? { label: "Moyenne 5 ans · valeur", val: moy5 !== null ? fmtVal(moy5) : "N/A", ind: "5 dernières années" }
-        : { label: "Nombre de ventes", val: nD ? fmtNombre(nD.valeur) : "N/A", ind: nD ? `en ${nD.annee}` : null },
+        ? { label: "Moyenne 5 ans · valeur", val: moy5 !== null ? fmtVal(moy5) : "N/A", annee: null, delta: null, ref: null, ind: "5 dernières années" }
+        : { label: "Nombre de ventes", val: nD ? fmtNombre(nD.valeur) : "N/A", annee: nD?.annee ?? null, delta: dN.delta, ref: dN.ref, ind: null },
       sid === 0
-        ? { label: "Secteur dominant", val: dominant ? dominant.nom : "N/A", ind: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % en ${dominant.annee}` : null }
-        : { label: gf ? "Part du total · valeur" : "Part du total · ventes", val: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "N/A", ind: vD ? `en ${vD.annee}` : null },
-      { label: gf ? "Année record · valeur" : "Année record · ventes", val: record ? String(record.annee) : "N/A", ind: record ? fmtVal(record.valeur) : null },
+        ? { label: "Secteur dominant", val: dominant ? dominant.nom : "N/A", annee: dominant?.annee ?? null, delta: null, ref: null, ind: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % du total` : null }
+        : { label: gf ? "Part du total · valeur" : "Part du total · ventes", val: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "N/A", annee: vD?.annee ?? null, delta: null, ref: null, ind: null },
+      { label: gf ? "Année record · valeur" : "Année record · ventes", val: record ? String(record.annee) : "N/A", annee: null, delta: null, ref: null, ind: record ? fmtVal(record.valeur) : null },
     ];
   })();
 
@@ -1312,11 +1351,11 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         {/* Header */}
         {(() => {
           const badgePeriode = (
-            <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+            <BadgePeriode>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                 : `${perMin} — ${perMax}`}
-            </span>
+            </BadgePeriode>
           );
           return typeAnalyse === "secteur" ? (
             <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16, flexWrap:"wrap" as const }}>
@@ -1335,10 +1374,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" as const }}>
                 {selecIds.map((id, i) => (
-                  <span key={id} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${couleurDe(i)}0D`, border:`1px solid ${couleurDe(i)}2E`, fontSize:10.5, fontWeight:700, color:couleurDe(i) }}>
-                    <span style={{ width:7, height:7, borderRadius:"50%", background:couleurDe(i), display:"inline-block", flexShrink:0 }} />
-                    {nomById.get(id)}
-                  </span>
+                  <BadgeSerie key={id} i={i} couleur={couleurDe(i)}>{nomById.get(id)}</BadgeSerie>
                 ))}
                 {selecIds.length===0&&<span style={{ fontSize:12, color:"#9aa5b4" }}>Sélectionnez jusqu&apos;à 4 {compNiveau==="secteur"?"secteurs":"branches"} dans le filtre</span>}
               </div>
@@ -1352,9 +1388,17 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
             {stCards.map(c=>(
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"var(--ombre-1)", minWidth:0 }}>
-                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:accent, textTransform:"uppercase" as const, lineHeight:1.4, marginBottom:7 }}>{c.label}</p>
+                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const }}>
+                  <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:accent, textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
+                  {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"#8a93a3", background:"#EEF1F6", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
+                </div>
                 <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
-                {c.ind && <p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>{c.ind}</p>}
+                <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
+                  {c.delta != null && c.ref != null ? (<>
+                    <span style={{ fontSize:10, fontWeight:800, color:c.delta>0?"#188038":c.delta<0?"#dc2626":"#9aa5b4", whiteSpace:"nowrap" as const }}>{c.delta>0?"▲":c.delta<0?"▼":"="}&nbsp;{Math.abs(c.delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
+                    <span style={{ fontSize:9.5, color:"#9aa5b4", whiteSpace:"nowrap" as const }}>par rapport à {c.ref}</span>
+                  </>) : (c.ind ? <p style={{ fontSize:10, color:"#9aa5b4", lineHeight:1 }}>{c.ind}</p> : null)}
+                </div>
               </div>
             ))}
           </div>
@@ -1638,17 +1682,15 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             <SousTypeNav value={sousType} onChange={setSousType}/>
             <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec.join(",")}/>
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"nowrap" as const }}>
-            <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, flexWrap:"wrap" as const }}>
+            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative par pays</h2>
+            <BadgePeriode>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                 : `${perMin} — ${perMax}`}
-            </span>
-            {paysAvecCouleur.map(p=>(
-              <span key={p.nom} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:12, fontWeight:700, color:p.couleur, flexShrink:0, whiteSpace:"nowrap" as const }}>
-                <span style={{ width:7, height:7, borderRadius:"50%", background:p.couleur, display:"inline-block" }} />
-                {p.nom}
-              </span>
+            </BadgePeriode>
+            {paysAvecCouleur.map((p,i)=>(
+              <BadgeSerie key={p.nom} i={i} couleur={p.couleur}>{p.nom}</BadgeSerie>
             ))}
           </div>
 
@@ -1659,7 +1701,7 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
           ) : (
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES.map(g=>(
-                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Source CNUCED`} series={g.series} grapheId={g.id} hideLegend
+                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Source CNUCED`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                   <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
@@ -1983,17 +2025,15 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <SousTypeNav value={sousType} onChange={setSousType}/>
           {grpSelec.length>0 && <BoutonDonnees onClick={()=>setShowTable(true)} dep={grpSelec.join(",")}/>}
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, flexWrap:"nowrap" as const }}>
-          <span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"#ECEAE8", border:"1px solid #DFDBD7", fontSize:12, fontWeight:700, color:"#3a4452", letterSpacing:"0.02em", flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, flexWrap:"wrap" as const }}>
+          <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Vue Monde</h2>
+          <BadgePeriode>
             {modeAnnees==="specifiques"&&anneesSpec.length>0
               ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
               : `${perMin} — ${perMax}`}
-          </span>
-          {grpAvecCouleur.map(g=>(
-            <span key={g.nom} title={g.label} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${g.couleur}0D`, border:`1px solid ${g.couleur}2E`, fontSize:12, fontWeight:700, color:g.couleur, flexShrink:0, whiteSpace:"nowrap" as const }}>
-              <span style={{ width:7, height:7, borderRadius:"50%", background:g.couleur, display:"inline-block" }} />
-              {g.abrege}
-            </span>
+          </BadgePeriode>
+          {grpAvecCouleur.map((g,i)=>(
+            <BadgeSerie key={g.nom} i={i} couleur={g.couleur} title={g.label}>{g.abrege}</BadgeSerie>
           ))}
         </div>
 
@@ -2011,7 +2051,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <div className="charge-in">
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
-              <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Somme pays membres · CNUCED`} series={g.series} grapheId={g.id} hideLegend
+              <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Somme pays membres · CNUCED`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                 <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
               </GrapheCard>
@@ -2020,11 +2060,11 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
           {modeDetail && !stActif && (
             <div style={{ marginTop:28, display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-              <GrapheCard titre={`Flux entrant — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar"
+              <GrapheCard titre={`Flux entrant — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar" hideSousTitre
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
                 <HBarChart donnees={donneesDetail} mini/>
               </GrapheCard>
-              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar"
+              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar" hideSousTitre
                 fullChildren={<DivergingBars donnees={donneesDetail}/>}>
                 <DivergingBars donnees={donneesDetail} mini/>
               </GrapheCard>
