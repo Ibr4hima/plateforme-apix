@@ -116,18 +116,18 @@ function Segment<T extends string>({ value, options, onChange }: { value: T; opt
 
 // Curseur d'année pour les KPIs d'une section : défile de la première année
 // disponible à la dernière (défaut), les cartes s'adaptent.
-function CurseurAnnee({ min, max, value, onChange }: { min: number; max: number; value: number; onChange: (a: number) => void }) {
+function CurseurAnnee({ min, max, value, onChange, fmtMin, fmtVal }: { min: number; max: number; value: number; onChange: (a: number) => void; fmtMin?: (v: number) => string; fmtVal?: (v: number) => string }) {
   if (!(max > min)) return null;
   return (
     <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-      <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{min}</span>
+      <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtMin ? fmtMin(min) : min}</span>
       <input
         type="range" min={min} max={max} step={1} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="tdb-curseur" aria-label="Année affichée"
+        className="tdb-curseur" aria-label="Période affichée"
         style={{ width: 170 }}
       />
-      <span style={{ fontSize: 12, fontWeight: 800, color: BLEU, background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center" }}>{value}</span>
+      <span style={{ fontSize: 12, fontWeight: 800, color: BLEU, background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap" }}>{fmtVal ? fmtVal(value) : value}</span>
     </div>
   );
 }
@@ -296,7 +296,8 @@ export default function TableauDeBordPage() {
   const [bilatAnneeSel, setBilatAnneeSel] = useState<number | null>(null);
   const bilatAnnee = bilatAnneeSel ?? commCtx?.amax ?? null;
   const [comExt, setComExt] = useState<any>(null);
-  const [comRap, setComRap] = useState<any>(null);
+  const [comMois, setComMois] = useState<any>(null);
+  const [comMoisSel, setComMoisSel] = useState<number | null>(null);
   const [comDir, setComDir] = useState<"export" | "import">("export");
   const [socio, setSocio] = useState<any[]>([]);
   const [socioPays, setSocioPays] = useState<string>("Sénégal");
@@ -341,13 +342,14 @@ export default function TableauDeBordPage() {
     getJSON(`${API}/statistiques/commerce/repartition?${base}&${an}&limite=6`).then(setBilatRepart);
   }, [commCtx, bilatDir, bilatAnnee]);
 
-  // Commerce extérieur (ANSD) : rapport de la dernière année + année précédente
-  // (variations verrouillées sur le 1er partenaire de l'année n).
-  const comAnnee = comExt?.cumul_annee?.annee ? Number(comExt.cumul_annee.annee) : null;
+  // Commerce extérieur (ANSD) : mois sélectionné au curseur (index dans la
+  // liste des périodes disponibles ; défaut = dernier mois).
+  const comPeriodes: string[] = useMemo(() => (comExt?.serie || []).map((s: any) => s.periode as string), [comExt]);
+  const comIdx = comMoisSel ?? (comPeriodes.length ? comPeriodes.length - 1 : null);
   useEffect(() => {
-    if (!comAnnee) return;
-    getJSON(`${API}/bmce/rapport?annee=${comAnnee}`).then(setComRap);
-  }, [comAnnee]);
+    if (comIdx == null || !comPeriodes[comIdx]) return;
+    getJSON(`${API}/bmce/mois?periode=${comPeriodes[comIdx]}`).then(setComMois);
+  }, [comIdx, comPeriodes]);
 
   // ── Dérivés socio-économiques ──
   // Dernière valeur uploadée + valeur précédente (pour la variation ▲/▼ %)
@@ -578,11 +580,17 @@ export default function TableauDeBordPage() {
             {/* ── 3. Commerce extérieur ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={3} titre="Commerce extérieur" extra={
-                <Segment value={comDir} onChange={setComDir} options={[{ v: "export", l: "Exportations" }, { v: "import", l: "Importations" }]} />
+                <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+                  <Segment value={comDir} onChange={setComDir} options={[{ v: "export", l: "Exportations" }, { v: "import", l: "Importations" }]} />
+                  {comIdx != null && comPeriodes.length > 1 && (
+                    <CurseurAnnee min={0} max={comPeriodes.length - 1} value={comIdx} onChange={setComMoisSel}
+                      fmtMin={(i) => moisCourt(comPeriodes[i])} fmtVal={(i) => moisCourt(comPeriodes[i])} />
+                  )}
+                </div>
               } />
               {(() => {
                 const exp = comDir === "export";
-                const mois = comExt?.mois;
+                const mois = comMois?.disponible ? comMois : null;
                 const dir = mois?.[comDir];
                 const top = dir?.top || null;
                 const moisTag = mois?.periode ? moisLong(mois.periode) : undefined;   // « Mai 2026 »
@@ -611,9 +619,10 @@ export default function TableauDeBordPage() {
                 const fmtMoisX = (i: number) => moisCourt(serieMois[i]?.periode);
                 const ans = serieMois.map((s: any) => s.periode?.slice(0, 4)).filter(Boolean);
                 const evoTag = ans.length ? (ans[0] === ans[ans.length - 1] ? ans[0] : `${ans[0]}–${ans[ans.length - 1]}`) : undefined;
-                const anRef = comRap?.annee ? String(comRap.annee) : undefined;
-                const paysList = comRap?.pays?.[comDir] || [];
-                const groupes = comRap?.groupes?.[comDir] || [];
+                const mois = comMois?.disponible ? comMois : null;
+                const moisRef = mois?.periode ? moisLong(mois.periode) : undefined;
+                const paysList = mois?.[comDir]?.pays || [];
+                const groupes = mois?.[comDir]?.groupes || [];
                 return (
                   <>
                     <div className="tdb-duo" style={{ marginTop: 20 }}>
@@ -629,10 +638,10 @@ export default function TableauDeBordPage() {
                       </Carte>
                     </div>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
-                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={anRef}>
+                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={moisRef}>
                         <TopTable rows={paysList.map((p: any) => ({ nom: p.libelle, valeur: p.valeur, iso2: p.code_iso2 }))} colNom="Pays" colVal="Valeur" fmt={(v) => fmtMd(v)} max={7} drapeaux />
                       </Carte>
-                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={anRef}>
+                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={moisRef}>
                         <MiniBarres data={groupes.map((g: any) => ({ label: g.libelle, valeur: g.valeur }))} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtMd(v)} max={7} />
                       </Carte>
                     </div>

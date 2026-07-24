@@ -340,6 +340,12 @@ def _variation(v, prec):
     return round((float(v) - float(prec)) / abs(float(prec)) * 100.0, 2)
 
 
+def _pdate(s: str) -> date:
+    """« AAAA-MM-JJ » → date (les périodes BMCE sont stockées au 1er du mois)."""
+    y, mo, d = s[:10].split("-")
+    return date(int(y), int(mo), int(d))
+
+
 @router.get("/apercu")
 async def apercu_bmce(db: AsyncSession = Depends(get_db)):
     """KPIs du dernier mois (X FAB, M CAF, balance, taux de couverture) +
@@ -380,10 +386,6 @@ async def apercu_bmce(db: AsyncSession = Depends(get_db)):
     mprec = (precedent.get("import") or {}).get("valeur") if precedent else None
     taux_mois = round(x / m_ * 100.0, 2) if x and m_ else None
     taux_mois_prec = round(xprec / mprec * 100.0, 2) if xprec and mprec else None
-
-    def _pdate(s: str) -> date:
-        y, mo, d = s[:10].split("-")
-        return date(int(y), int(mo), int(d))
 
     async def _top_mois(sens: str, total: float | None):
         row = (await db.execute(text(
@@ -443,6 +445,79 @@ async def apercu_bmce(db: AsyncSession = Depends(get_db)):
                         "taux_couverture_variation": _variation(taux_c, taux_c_prec)},
         "mois_provisoires": [str(c) for c in couverts],
         "serie": serie,
+    }
+
+
+@router.get("/mois")
+async def mois_bmce(periode: str, db: AsyncSession = Depends(get_db)):
+    """KPIs et classements d'un mois précis (curseur du tableau de bord) :
+    totaux, taux de couverture, 1er partenaire, tops pays et groupes
+    d'utilisation — chacun avec variation vs le mois précédent disponible."""
+    res = await db.execute(text(
+        "SELECT r.sens, f.periode, f.valeur_fcfa "
+        "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+        "WHERE r.categorie = 'ensemble' ORDER BY f.periode"))
+    par_mois: dict[str, dict] = {}
+    for sens, per, v in res.all():
+        par_mois.setdefault(str(per), {})[sens] = float(v) if v is not None else None
+    periodes = sorted(par_mois)
+    if not periodes:
+        return {"disponible": False}
+    cible = periode[:10] if len(periode) >= 10 else f"{periode}-01"
+    if cible not in par_mois:
+        raise HTTPException(404, "Mois introuvable")
+    i = periodes.index(cible)
+    prec = periodes[i - 1] if i > 0 else None
+    x, m_ = par_mois[cible].get("export"), par_mois[cible].get("import")
+    xp = par_mois[prec].get("export") if prec else None
+    mp = par_mois[prec].get("import") if prec else None
+    taux = round(x / m_ * 100.0, 2) if x and m_ else None
+    taux_p = round(xp / mp * 100.0, 2) if xp and mp else None
+
+    async def _tops(categorie: str, sens: str, total, limite: int):
+        if categorie == "pays":
+            sql = ("SELECT p.nom_fr AS lib, p.code_iso2 AS iso, f.valeur_fcfa AS v "
+                   "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+                   "JOIN ref_pays p ON p.id = r.pays_id "
+                   "WHERE r.categorie = 'pays' AND r.sens = :s AND f.periode = :per "
+                   "ORDER BY f.valeur_fcfa DESC NULLS LAST LIMIT :n")
+        else:
+            sql = ("SELECT r.libelle AS lib, NULL AS iso, f.valeur_fcfa AS v "
+                   "FROM bmce_flux f JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+                   "WHERE r.categorie = :c AND r.sens = :s AND f.periode = :per "
+                   "ORDER BY f.valeur_fcfa DESC NULLS LAST LIMIT :n")
+        rows = (await db.execute(text(sql), {"c": categorie, "s": sens, "per": _pdate(cible), "n": limite})).all()
+        return [{"libelle": r.lib, "code_iso2": r.iso, "valeur": float(r.v or 0),
+                 "part_pct": round(float(r.v or 0) / total * 100.0, 2) if total else None}
+                for r in rows if r.v]
+
+    async def _sens(sens: str, total, total_prec):
+        pays = await _tops("pays", sens, total, 7)
+        groupes = await _tops("groupe_utilisation", sens, total, 8)
+        top = dict(pays[0]) if pays else None
+        if top:
+            top["variation"] = top["part_variation"] = None
+            if prec:
+                vp_raw = (await db.execute(text(
+                    "SELECT f.valeur_fcfa FROM bmce_flux f "
+                    "JOIN bmce_rubriques r ON r.id = f.rubrique_id "
+                    "JOIN ref_pays p ON p.id = r.pays_id "
+                    "WHERE r.categorie = 'pays' AND r.sens = :s AND f.periode = :per AND p.nom_fr = :nom"),
+                    {"s": sens, "per": _pdate(prec), "nom": top["libelle"]})).scalar_one_or_none()
+                vp = float(vp_raw) if vp_raw is not None else None
+                top["variation"] = _variation(top["valeur"], vp)
+                partp = round(vp / total_prec * 100.0, 2) if (vp is not None and total_prec) else None
+                top["part_variation"] = _variation(top["part_pct"], partp)
+        return {"total": total, "variation": _variation(total, total_prec),
+                "top": top, "pays": pays, "groupes": groupes}
+
+    return {
+        "disponible": True,
+        "periodes": periodes,
+        "periode": cible, "periode_prec": prec,
+        "taux_couverture": taux, "taux_couverture_variation": _variation(taux, taux_p),
+        "export": await _sens("export", x, xp),
+        "import": await _sens("import", m_, mp),
     }
 
 
