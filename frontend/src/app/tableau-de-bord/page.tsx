@@ -326,7 +326,7 @@ export default function TableauDeBordPage() {
       const sen = (pays || []).find((p: any) => p.code_iso3 === "SEN");
       if (!sen) return;
       setSocioPays(sen.nom || "Sénégal");
-      getJSON(`${API}/statistiques/donnees?pays=${sen.id}&annee_min=2005&annee_max=2030`).then((d) => setSocio(Array.isArray(d) ? d : []));
+      getJSON(`${API}/statistiques/donnees?pays=${sen.id}&annee_min=1960&annee_max=2100`).then((d) => setSocio(Array.isArray(d) ? d : []));
     });
   }, []);
 
@@ -352,13 +352,24 @@ export default function TableauDeBordPage() {
   }, [comIdx, comPeriodes]);
 
   // ── Dérivés socio-économiques ──
-  // Dernière valeur uploadée + valeur précédente (pour la variation ▲/▼ %)
+  // Bornes d'années couvertes par les 4 indicateurs des KPIs + curseur
+  const SOCIO_KPIS = ["pib", "population", "pib_hab", "croissance_pib"];
+  const socioBornes = useMemo(() => {
+    const ans = socio.filter((r) => SOCIO_KPIS.includes(r.indicateur) && r.valeur != null).map((r) => r.annee as number);
+    return ans.length ? { min: Math.min(...ans), max: Math.max(...ans) } : null;
+  }, [socio]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [socioAnneeSel, setSocioAnneeSel] = useState<number | null>(null);
+  const socioAnnee = socioAnneeSel ?? socioBornes?.max ?? null;
+
+  // Valeur à l'année du curseur + valeur disponible précédente (variation ▲/▼ %)
   const socioVal = (code: string) => {
     const rows = socio.filter((r) => r.indicateur === code && r.valeur != null).sort((a, b) => a.annee - b.annee);
-    if (!rows.length) return null;
-    const last = rows[rows.length - 1], prev = rows[rows.length - 2];
+    if (!rows.length || socioAnnee == null) return null;
+    const last = rows.find((r) => r.annee === socioAnnee) || null;
+    const avant = rows.filter((r) => r.annee < socioAnnee);
+    const prev = avant.length ? avant[avant.length - 1] : null;
     const delta = last && prev && prev.valeur ? ((last.valeur - prev.valeur) / Math.abs(prev.valeur)) * 100 : null;
-    return { valeur: last.valeur as number, annee: last.annee as number, prevAnnee: (prev?.annee as number) ?? null, delta };
+    return { valeur: (last?.valeur as number) ?? null, annee: socioAnnee, prevAnnee: last ? ((prev?.annee as number) ?? null) : null, delta };
   };
   const pib = socioVal("pib"), pop = socioVal("population"), pibHab = socioVal("pib_hab"), croiss = socioVal("croissance_pib");
   const serieSocio = (code: string) => socio.filter((r) => r.indicateur === code && r.valeur != null).sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee as number, valeur: r.valeur as number }));
@@ -652,12 +663,14 @@ export default function TableauDeBordPage() {
 
             {/* ── 4. Indicateurs socio-économiques ── */}
             <section style={{ marginTop: 40 }}>
-              <SectionHead n={4} titre="Indicateurs socio-économiques" />
+              <SectionHead n={4} titre="Indicateurs socio-économiques" extra={
+                socioBornes && socioAnnee != null ? <CurseurAnnee min={socioBornes.min} max={socioBornes.max} value={socioAnnee} onChange={setSocioAnneeSel} /> : undefined
+              } />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="PIB" tag={pib?.annee ? String(pib.annee) : undefined} valeur={fmtUSD(pib?.valeur)} delta={pib?.delta} refAnnee={pib?.prevAnnee} />
-                <Kpi label="Population" tag={pop?.annee ? String(pop.annee) : undefined} valeur={pop ? `${nf(pop.valeur)} hbts` : "—"} delta={pop?.delta} refAnnee={pop?.prevAnnee} />
-                <Kpi label="PIB / habitant" tag={pibHab?.annee ? String(pibHab.annee) : undefined} valeur={pibHab ? `${nf(pibHab.valeur)} $` : "—"} delta={pibHab?.delta} refAnnee={pibHab?.prevAnnee} />
-                <Kpi label="Croissance du PIB" tag={croiss?.annee ? String(croiss.annee) : undefined} valeur={croiss ? `${nf(croiss.valeur, 1)} %` : "—"} delta={croiss?.delta} refAnnee={croiss?.prevAnnee} />
+                <Kpi label="PIB" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={fmtUSD(pib?.valeur)} delta={pib?.delta} refAnnee={pib?.prevAnnee} />
+                <Kpi label="Population" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={pop?.valeur != null ? `${nf(pop.valeur)} hbts` : "—"} delta={pop?.delta} refAnnee={pop?.prevAnnee} />
+                <Kpi label="PIB / habitant" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={pibHab?.valeur != null ? `${nf(pibHab.valeur)} $` : "—"} delta={pibHab?.delta} refAnnee={pibHab?.prevAnnee} />
+                <Kpi label="Croissance du PIB" tag={socioAnnee != null ? String(socioAnnee) : undefined} valeur={croiss?.valeur != null ? `${nf(croiss.valeur, 1)} %` : "—"} delta={croiss?.delta} refAnnee={croiss?.prevAnnee} />
               </div>
               {(() => {
                 const seriePop = serieSocio("population");
