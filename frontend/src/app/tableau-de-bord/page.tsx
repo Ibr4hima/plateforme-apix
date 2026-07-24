@@ -114,6 +114,24 @@ function Segment<T extends string>({ value, options, onChange }: { value: T; opt
   );
 }
 
+// Curseur d'année pour les KPIs d'une section : défile de la première année
+// disponible à la dernière (défaut), les cartes s'adaptent.
+function CurseurAnnee({ min, max, value, onChange }: { min: number; max: number; value: number; onChange: (a: number) => void }) {
+  if (!(max > min)) return null;
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+      <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{min}</span>
+      <input
+        type="range" min={min} max={max} step={1} value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="tdb-curseur" aria-label="Année affichée"
+        style={{ width: 170 }}
+      />
+      <span style={{ fontSize: 12, fontWeight: 800, color: BLEU, background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center" }}>{value}</span>
+    </div>
+  );
+}
+
 // Barres horizontales top-N pour [{label, valeur}]
 function MiniBarres({ data, couleur = BLEU, fmt = (v: number) => nf(v), max = 6 }: { data: { label: string; valeur: number }[]; couleur?: string; fmt?: (v: number) => string; max?: number }) {
   const rows = (data || []).slice(0, max);
@@ -369,17 +387,30 @@ export default function TableauDeBordPage() {
   const balanceStock = useMemo(() => balanceSerie(serieStockEnt, serieStockSort), [serieStockEnt, serieStockSort]);
 
   // Dernier point valide + précédent (pour la variation « par rapport à YYYY »)
-  const dernierPoint = (rows: { annee: number; valeur: number | null }[]) => {
+  // Bornes d'années réellement couvertes par les 4 séries IDE
+  const ideBornes = useMemo(() => {
+    const ans = [...serieFluxEnt, ...serieFluxSort, ...serieStockEnt, ...serieStockSort]
+      .filter((r) => r.valeur != null).map((r) => r.annee);
+    return ans.length ? { min: Math.min(...ans), max: Math.max(...ans) } : null;
+  }, [serieFluxEnt, serieFluxSort, serieStockEnt, serieStockSort]);
+  // Année sélectionnée au curseur (null = dernière disponible)
+  const [ideAnneeSel, setIdeAnneeSel] = useState<number | null>(null);
+  const ideAnnee = ideAnneeSel ?? ideBornes?.max ?? null;
+
+  // Valeur d'une série à l'année choisie + valeur disponible précédente (Δ %)
+  const pointAnnee = (rows: { annee: number; valeur: number | null }[], annee: number | null) => {
     const valid = rows.filter((r) => r.valeur != null);
-    const last = valid[valid.length - 1] || null;
-    const prev = valid[valid.length - 2] || null;
+    if (annee == null || !valid.length) return { last: null as any, prev: null as any, delta: null as number | null };
+    const last = valid.find((r) => r.annee === annee) || null;
+    const avant = valid.filter((r) => r.annee < annee);
+    const prev = avant.length ? avant[avant.length - 1] : null;
     const delta = last && prev && prev.valeur ? ((last.valeur! - prev.valeur!) / Math.abs(prev.valeur!)) * 100 : null;
     return { last, prev, delta };
   };
-  const kFluxEnt = useMemo(() => dernierPoint(serieFluxEnt), [serieFluxEnt]);
-  const kFluxSort = useMemo(() => dernierPoint(serieFluxSort), [serieFluxSort]);
-  const kStockEnt = useMemo(() => dernierPoint(serieStockEnt), [serieStockEnt]);
-  const kStockSort = useMemo(() => dernierPoint(serieStockSort), [serieStockSort]);
+  const kFluxEnt = useMemo(() => pointAnnee(serieFluxEnt, ideAnnee), [serieFluxEnt, ideAnnee]);
+  const kFluxSort = useMemo(() => pointAnnee(serieFluxSort, ideAnnee), [serieFluxSort, ideAnnee]);
+  const kStockEnt = useMemo(() => pointAnnee(serieStockEnt, ideAnnee), [serieStockEnt, ideAnnee]);
+  const kStockSort = useMemo(() => pointAnnee(serieStockSort, ideAnnee), [serieStockSort, ideAnnee]);
 
   return (
     <main style={{ minHeight: "100vh", background: "var(--ds-fond, #F6F5F3)", fontFamily: "var(--font-google-sans)" }}>
@@ -388,6 +419,14 @@ export default function TableauDeBordPage() {
         .tdb-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: stretch; }
         @media (max-width: 980px) { .tdb-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .tdb-duo { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .tdb-kpis { grid-template-columns: 1fr; } }
+        .tdb-curseur { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px;
+          background: rgba(0,79,145,0.18); outline: none; cursor: pointer; }
+        .tdb-curseur::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
+          border-radius: 50%; background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+        .tdb-curseur::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
+        .tdb-curseur::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%;
+          background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+        .tdb-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: rgba(0,79,145,0.18); }
       `}</style>
       {/* ── Bandeau exécutif ── */}
       <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "30px 40px 78px" }}>
@@ -420,12 +459,14 @@ export default function TableauDeBordPage() {
 
             {/* ── 1. IDE ── */}
             <section style={{ marginTop: 44 }}>
-              <SectionHead n={1} titre="Investissements Directs Étrangers" />
+              <SectionHead n={1} titre="Investissements Directs Étrangers" extra={
+                ideBornes && ideAnnee != null ? <CurseurAnnee min={ideBornes.min} max={ideBornes.max} value={ideAnnee} onChange={setIdeAnneeSel} /> : undefined
+              } />
               <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                <Kpi label="Flux entrant" tag={kFluxEnt.last ? String(kFluxEnt.last.annee) : undefined} valeur={fmtMUSD(kFluxEnt.last?.valeur)} delta={kFluxEnt.delta} refAnnee={kFluxEnt.prev?.annee} />
-                <Kpi label="Flux sortant" tag={kFluxSort.last ? String(kFluxSort.last.annee) : undefined} valeur={fmtMUSD(kFluxSort.last?.valeur)} delta={kFluxSort.delta} refAnnee={kFluxSort.prev?.annee} />
-                <Kpi label="Stock entrant" tag={kStockEnt.last ? String(kStockEnt.last.annee) : undefined} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} refAnnee={kStockEnt.prev?.annee} />
-                <Kpi label="Stock sortant" tag={kStockSort.last ? String(kStockSort.last.annee) : undefined} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} refAnnee={kStockSort.prev?.annee} />
+                <Kpi label="Flux entrant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kFluxEnt.last?.valeur)} delta={kFluxEnt.delta} refAnnee={kFluxEnt.last ? kFluxEnt.prev?.annee : null} />
+                <Kpi label="Flux sortant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kFluxSort.last?.valeur)} delta={kFluxSort.delta} refAnnee={kFluxSort.last ? kFluxSort.prev?.annee : null} />
+                <Kpi label="Stock entrant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} refAnnee={kStockEnt.last ? kStockEnt.prev?.annee : null} />
+                <Kpi label="Stock sortant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} refAnnee={kStockSort.last ? kStockSort.prev?.annee : null} />
               </div>
               <div className="tdb-duo">
                 <Carte titre="Balance des flux d'IDE">
