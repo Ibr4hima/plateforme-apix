@@ -461,7 +461,7 @@ export default function TableauDeBordPage() {
               <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>Tableau de bord</h1>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
             </div>
-            <div style={{ flexShrink: 0 }}><NavActions onDark home flouFond /></div>
+            <div style={{ flexShrink: 0 }}><NavActions onDark home flouTotal /></div>
           </div>
         </div>
       </div>
