@@ -242,16 +242,15 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
     ? (isValid === false ? "0 0 0 3px rgba(220,38,38,0.08)" : isValid === true ? "0 0 0 3px rgba(24,128,56,0.08)" : "0 0 0 3px rgba(0,79,145,0.10)")
     : "none";
 
-  // Largeur du champ calée sur l'exemple national du pays (le bloc s'ajuste au numéro attendu)
+  // Exemple national du pays (sert de placeholder au champ numéro)
   const exempleNational = (() => {
     if (!iso2) return "";
     try { const ex = getExampleNumber(iso2 as CountryCode, examples); return ex ? ex.formatNational() : ""; } catch { return ""; }
   })();
-  const inputCh = Math.max(exempleNational.length || 14, 10);
 
   return (
     <div style={{ maxWidth:"100%" }}>
-      <div ref={ref} style={{ position:"relative", width:"fit-content", maxWidth:"100%" }}>
+      <div ref={ref} style={{ position:"relative", width:"100%", maxWidth:"100%" }}>
 
         {/* ── Bloc unique : pays (ISO3) · indicatif · numéro ── */}
         <div style={{ display:"flex", alignItems:"center", height:42, background:"#fff",
@@ -264,7 +263,9 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
               padding: iso2 ? "0 11px" : "0 14px", fontFamily:"var(--font-google-sans)",
               background: iso2 ? "rgba(0,79,145,0.07)" : "transparent",
               borderRight: iso2 ? "1px solid rgba(0,79,145,0.15)" : "none",
-              flexShrink:0, transition:"background 0.15s" }}
+              flexShrink:0, transition:"background 0.15s",
+              // Sans pays choisi, le bouton occupe tout le bloc (même gabarit que les autres champs)
+              ...(iso2 ? {} : { flex:1, justifyContent:"space-between" }) }}
             onMouseEnter={e => { e.currentTarget.style.background = iso2 ? "rgba(0,79,145,0.12)" : "#F8F7F6"; }}
             onMouseLeave={e => { e.currentTarget.style.background = iso2 ? "rgba(0,79,145,0.07)" : "transparent"; }}>
             {iso2 ? (
@@ -291,7 +292,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
               onFocus={() => setFocused(true)}
               onBlur={() => { setFocused(false); setTouched(true); }}
               placeholder={exempleNational || placeholder}
-              style={{ width:`${inputCh + 2}ch`, minWidth:110, background:"transparent", border:"none", outline:"none",
+              style={{ flex:1, minWidth:110, background:"transparent", border:"none", outline:"none",
                 padding:"0 10px 0 8px", fontSize:13, color:"#1a1a2e",
                 fontFamily:"var(--font-google-sans)", height:"100%" }} />
           )}

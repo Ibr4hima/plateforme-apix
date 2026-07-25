@@ -366,7 +366,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         <div><FLabel>Site web</FLabel>
           <FInput value={form.siteweb} onChange={e=>update("siteweb",e.target.value)}
             onBlur={()=>{ const v=form.siteweb?.trim(); if(v){ const d=extraireDomaine(v); if(d) update("siteweb",d); } }}
-            placeholder="exemple.com" style={errStyle("siteweb")}/>
+            placeholder="www.exemple.com" style={errStyle("siteweb")}/>
           <Err f="siteweb"/>
         </div>
       </FSection>
@@ -400,7 +400,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                   </div>
                   <div><FLabel>Nom *</FLabel><FInput value={pf.nom} onChange={e=>updFocal(i,"nom",e.target.value)} placeholder="Nom"/></div>
                   <div><FLabel>Prénom *</FLabel><FInput value={pf.prenom} onChange={e=>updFocal(i,"prenom",e.target.value)} placeholder="Prénom"/></div>
-                  <div><FLabel>Poste</FLabel><FInput value={pf.poste} onChange={e=>updFocal(i,"poste",e.target.value)} placeholder="DG, Dir…"/></div>
+                  <div><FLabel>Poste</FLabel><FInput value={pf.poste} onChange={e=>updFocal(i,"poste",e.target.value)} /></div>
                 </FGrid>
 
                 {/* Contacts du focal : téléphones et emails côte à côte */}
