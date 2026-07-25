@@ -224,9 +224,18 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
 
   const errStyle = (f: string) => errors[f] ? { borderColor: "#dc2626" } : undefined;
   const Err = ({ f }: { f: string }) => errors[f] ? <span style={{ fontSize: 11, color: "#dc2626", marginTop: 3, display: "block" }}>{errors[f]}</span> : null;
-  const btnAjout: any = { fontSize: 11, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontFamily: "var(--font-google-sans)" };
-  // Ajouter n'est possible que si toutes les entrées existantes sont complètes et valides
-  const btnAjoutOff = (ok: boolean): any => ok ? btnAjout : { ...btnAjout, opacity: 0.35, cursor: "not-allowed" };
+  // Bouton « + » rond en pointillés — ajout d'une entrée (grisé tant que la
+  // précédente n'est pas complète et valide)
+  const BtnPlus = ({ ok, onClick, title }: { ok: boolean; onClick: () => void; title?: string }) => (
+    <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?(title||"Ajouter"):(title||"Complétez d'abord l'entrée précédente")}
+      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgba(0,79,145,0.35)":"#D8D4D0"}`,
+        background:"rgba(255,255,255,0.7)", color:ok?"#004f91":"#C5BFBB", cursor:ok?"pointer":"not-allowed",
+        display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="rgba(0,79,145,0.08)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgba(0,79,145,0.35)":"#D8D4D0"; e.currentTarget.style.background="rgba(255,255,255,0.7)"; }}>
+      <Plus size={13}/>
+    </button>
+  );
 
   const nbErreurs = Object.keys(errors).length;
 
@@ -300,60 +309,58 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         <div style={{marginTop:14}}><FLabel>Adresse complète *</FLabel><FInput value={form.adresse} onChange={e=>update("adresse",e.target.value)} placeholder="Adresse physique" style={errStyle("adresse")}/><Err f="adresse"/></div>
       </FSection>
 
-      {/* Contact */}
+      {/* Contact : téléphones et emails côte à côte */}
       <FSection title="Contact">
-        {/* Téléphones */}
-        <div style={{marginBottom:14}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-            <FLabel>Téléphone(s) *</FLabel>
-            {(()=>{ const ok=listePreteAjout(form.telephones, isPhoneComplete, normPhone); return (
-              <button onClick={()=>ok&&update("telephones",[...form.telephones,""])} disabled={!ok}
-                title={ok?undefined:"Saisissez d'abord un numéro valide"} style={btnAjoutOff(ok)}><Plus size={11}/> Ajouter</button>
-            ); })()}
-          </div>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
-            {form.telephones.map((tel:string, i:number) => (
-              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6}}>
-                <div style={{flex:1}}>
-                  <PhoneInput value={tel} onChange={v=>{const arr=[...form.telephones];arr[i]=v;update("telephones",arr);}} placeholder="Numéro" />
+        <FGrid cols={2} style={{marginBottom:14, alignItems:"start"}}>
+          {/* Téléphones */}
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+              <FLabel>Téléphone(s) *</FLabel>
+              <BtnPlus ok={listePreteAjout(form.telephones, isPhoneComplete, normPhone)}
+                onClick={()=>update("telephones",[...form.telephones,""])} title="Ajouter un numéro"/>
+            </div>
+            <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+              {form.telephones.map((tel:string, i:number) => (
+                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <PhoneInput value={tel} onChange={v=>{const arr=[...form.telephones];arr[i]=v;update("telephones",arr);}} placeholder="Numéro" />
+                  </div>
+                  {form.telephones.length > 1 && (
+                    <button onClick={()=>update("telephones",form.telephones.filter((_:any,idx:number)=>idx!==i))}
+                      style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0,marginTop:1}}>
+                      <X size={12} style={{color:"#dc2626"}}/>
+                    </button>
+                  )}
                 </div>
-                {form.telephones.length > 1 && (
-                  <button onClick={()=>update("telephones",form.telephones.filter((_:any,idx:number)=>idx!==i))}
-                    style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0,marginTop:1}}>
-                    <X size={12} style={{color:"#dc2626"}}/>
-                  </button>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
+            <Err f="telephone"/>
           </div>
-          <Err f="telephone"/>
-        </div>
 
-        {/* Emails */}
-        <div style={{marginBottom:14}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-            <FLabel>Email(s) *</FLabel>
-            {(()=>{ const ok=listePreteAjout(form.mails, isEmailComplete, normEmail); return (
-              <button onClick={()=>ok&&update("mails",[...form.mails,""])} disabled={!ok}
-                title={ok?undefined:"Saisissez d'abord un email valide"} style={btnAjoutOff(ok)}><Plus size={11}/> Ajouter</button>
-            ); })()}
+          {/* Emails */}
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+              <FLabel>Email(s) *</FLabel>
+              <BtnPlus ok={listePreteAjout(form.mails, isEmailComplete, normEmail)}
+                onClick={()=>update("mails",[...form.mails,""])} title="Ajouter un email"/>
+            </div>
+            <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
+              {form.mails.map((mail:string, i:number) => (
+                <div key={i} style={{display:"flex",gap:6}}>
+                  <FInput type="email" value={mail} onChange={e=>{const arr=[...form.mails];arr[i]=e.target.value;update("mails",arr);}}
+                    placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||form.mails.slice(0,i).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"#dc2626"}:{})}} />
+                  {form.mails.length > 1 && (
+                    <button onClick={()=>update("mails",form.mails.filter((_:any,idx:number)=>idx!==i))}
+                      style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0}}>
+                      <X size={12} style={{color:"#dc2626"}}/>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <Err f="mail"/>
           </div>
-          <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-            {form.mails.map((mail:string, i:number) => (
-              <div key={i} style={{display:"flex",gap:6}}>
-                <FInput type="email" value={mail} onChange={e=>{const arr=[...form.mails];arr[i]=e.target.value;update("mails",arr);}}
-                  placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||form.mails.slice(0,i).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"#dc2626"}:{})}} />
-                {form.mails.length > 1 && (
-                  <button onClick={()=>update("mails",form.mails.filter((_:any,idx:number)=>idx!==i))}
-                    style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0}}>
-                    <X size={12} style={{color:"#dc2626"}}/>
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-          <Err f="mail"/>
-        </div>
+        </FGrid>
 
         {/* Site web — normalisé au domaine de base dès la sortie du champ */}
         <div><FLabel>Site web</FLabel>
@@ -396,46 +403,42 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                   <div><FLabel>Poste</FLabel><FInput value={pf.poste} onChange={e=>updFocal(i,"poste",e.target.value)} placeholder="DG, Dir…"/></div>
                 </FGrid>
 
-                {/* Téléphones du focal */}
-                <div style={{marginBottom:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <FLabel>Téléphone(s)</FLabel>
-                    {(()=>{ const ok=listePreteAjout(pf.telephones, isPhoneComplete, normPhone); return (
-                      <button onClick={()=>ok&&updFocal(i,"telephones",[...pf.telephones,""])} disabled={!ok}
-                        title={ok?undefined:"Saisissez d'abord un numéro valide"} style={btnAjoutOff(ok)}><Plus size={10}/> Ajouter</button>
-                    ); })()}
-                  </div>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
-                    {pf.telephones.map((tel:string, ti:number)=>(
-                      <div key={ti} style={{display:"flex",alignItems:"flex-start",gap:6}}>
-                        <div style={{flex:1}}>
-                          <PhoneInput value={tel} onChange={v=>{const arr=[...pf.telephones];arr[ti]=v;updFocal(i,"telephones",arr);}} placeholder="Numéro"/>
+                {/* Contacts du focal : téléphones et emails côte à côte */}
+                <FGrid cols={2} style={{alignItems:"start"}}>
+                  <div>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                      <FLabel>Téléphone(s)</FLabel>
+                      <BtnPlus ok={listePreteAjout(pf.telephones, isPhoneComplete, normPhone)}
+                        onClick={()=>updFocal(i,"telephones",[...pf.telephones,""])} title="Ajouter un numéro"/>
+                    </div>
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                      {pf.telephones.map((tel:string, ti:number)=>(
+                        <div key={ti} style={{display:"flex",alignItems:"flex-start",gap:6}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <PhoneInput value={tel} onChange={v=>{const arr=[...pf.telephones];arr[ti]=v;updFocal(i,"telephones",arr);}} placeholder="Numéro"/>
+                          </div>
+                          {pf.telephones.length>1&&<button onClick={()=>updFocal(i,"telephones",pf.telephones.filter((_:any,idx:number)=>idx!==ti))} style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px",marginTop:1}}><X size={11} style={{color:"#dc2626"}}/></button>}
                         </div>
-                        {pf.telephones.length>1&&<button onClick={()=>updFocal(i,"telephones",pf.telephones.filter((_:any,idx:number)=>idx!==ti))} style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px",marginTop:1}}><X size={11} style={{color:"#dc2626"}}/></button>}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                {/* Emails du focal */}
-                <div>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <FLabel>Email(s)</FLabel>
-                    {(()=>{ const ok=listePreteAjout(pf.mails, isEmailComplete, normEmail); return (
-                      <button onClick={()=>ok&&updFocal(i,"mails",[...pf.mails,""])} disabled={!ok}
-                        title={ok?undefined:"Saisissez d'abord un email valide"} style={btnAjoutOff(ok)}><Plus size={10}/> Ajouter</button>
-                    ); })()}
+                  <div>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                      <FLabel>Email(s)</FLabel>
+                      <BtnPlus ok={listePreteAjout(pf.mails, isEmailComplete, normEmail)}
+                        onClick={()=>updFocal(i,"mails",[...pf.mails,""])} title="Ajouter un email"/>
+                    </div>
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                      {pf.mails.map((mail:string, mi:number)=>(
+                        <div key={mi} style={{display:"flex",gap:6}}>
+                          <FInput type="email" value={mail} onChange={e=>{const arr=[...pf.mails];arr[mi]=e.target.value;updFocal(i,"mails",arr);}}
+                            placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||pf.mails.slice(0,mi).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"#dc2626"}:{})}}/>
+                          {pf.mails.length>1&&<button onClick={()=>updFocal(i,"mails",pf.mails.filter((_:any,idx:number)=>idx!==mi))} style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px"}}><X size={11} style={{color:"#dc2626"}}/></button>}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
-                    {pf.mails.map((mail:string, mi:number)=>(
-                      <div key={mi} style={{display:"flex",gap:6}}>
-                        <FInput type="email" value={mail} onChange={e=>{const arr=[...pf.mails];arr[mi]=e.target.value;updFocal(i,"mails",arr);}}
-                          placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||pf.mails.slice(0,mi).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"#dc2626"}:{})}}/>
-                        {pf.mails.length>1&&<button onClick={()=>updFocal(i,"mails",pf.mails.filter((_:any,idx:number)=>idx!==mi))} style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px"}}><X size={11} style={{color:"#dc2626"}}/></button>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                </FGrid>
               </FPanel>
             ))}
           </div>
