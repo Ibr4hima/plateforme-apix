@@ -309,9 +309,9 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         <div style={{marginTop:14}}><FLabel>Adresse complète *</FLabel><FInput value={form.adresse} onChange={e=>update("adresse",e.target.value)} placeholder="Adresse physique" style={errStyle("adresse")}/><Err f="adresse"/></div>
       </FSection>
 
-      {/* Contact : téléphones et emails côte à côte */}
+      {/* Contact : téléphones, emails et site web sur la même ligne */}
       <FSection title="Contact">
-        <FGrid cols={2} style={{marginBottom:14, alignItems:"start"}}>
+        <FGrid cols={3} style={{alignItems:"start"}}>
           {/* Téléphones */}
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
@@ -360,15 +360,19 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             </div>
             <Err f="mail"/>
           </div>
-        </FGrid>
 
-        {/* Site web — normalisé au domaine de base dès la sortie du champ */}
-        <div><FLabel>Site web</FLabel>
-          <FInput value={form.siteweb} onChange={e=>update("siteweb",e.target.value)}
-            onBlur={()=>{ const v=form.siteweb?.trim(); if(v){ const d=extraireDomaine(v); if(d) update("siteweb",d); } }}
-            placeholder="www.exemple.com" style={errStyle("siteweb")}/>
-          <Err f="siteweb"/>
-        </div>
+          {/* Site web — normalisé au domaine de base dès la sortie du champ */}
+          <div>
+            {/* même hauteur d'en-tête que les colonnes voisines (bouton +) */}
+            <div style={{display:"flex",alignItems:"center",minHeight:24,marginBottom:6}}>
+              <FLabel>Site web</FLabel>
+            </div>
+            <FInput value={form.siteweb} onChange={e=>update("siteweb",e.target.value)}
+              onBlur={()=>{ const v=form.siteweb?.trim(); if(v){ const d=extraireDomaine(v); if(d) update("siteweb",d); } }}
+              placeholder="www.exemple.com" style={errStyle("siteweb")}/>
+            <Err f="siteweb"/>
+          </div>
+        </FGrid>
       </FSection>
 
       {/* NAEMA */}
