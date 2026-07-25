@@ -596,7 +596,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const toggleEpingle = (id: string) => {
     setKpisEpingles(prev => {
       if (prev.includes(id)) return prev.filter(k=>k!==id);
-      if (prev.length >= 5) return prev;
+      if (prev.length >= 4) return prev;
       return [...prev, id];
     });
   };
@@ -642,7 +642,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     };
     const sE = serie("entrant", stActif[0].ind), sS = serie("sortant", stActif[1].ind), sN = serie("entrant", stActif[2].ind);
     const vE = pt(sE), vS = pt(sS), nE = pt(sN);
-    const record = sE.reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
     // Solde net (reçus − émis) : série des années communes → dernier + Δ
     const parAnneeS = new Map(sS.map((r: any) => [r.annee, r.valeur]));
     const sSolde = sE.filter((r: any) => parAnneeS.has(r.annee)).map((r: any) => ({ annee: r.annee, valeur: r.valeur - (parAnneeS.get(r.annee) as number) }));
@@ -653,7 +652,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
       { label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", val: vS.l ? fmtVal(vS.l.valeur) : "N/A", annee: vS.l?.annee ?? null, delta: vS.delta, ref: vS.ref, ind: null },
       { label: gf ? "Nombre de projets reçus" : "Nombre de rachats locaux", val: nE.l ? fmtNombre(nE.l.valeur) : "N/A", annee: nE.l?.annee ?? null, delta: nE.delta, ref: nE.ref, ind: null },
       { label: gf ? "Solde net · reçus − émis" : "Solde net · rachats − acquisitions", val: solde.l !== null ? `${solde.l.valeur > 0 ? "+" : ""}${fmtVal(solde.l.valeur)}` : "N/A", annee: solde.l?.annee ?? null, delta: solde.delta, ref: solde.ref, ind: null },
-      { label: gf ? "Année record · reçus" : "Année record · rachats", val: record ? String(record.annee) : "N/A", annee: null, delta: null, ref: null, ind: record ? fmtVal(record.valeur) : null },
     ];
   })();
 
@@ -846,12 +844,12 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               {!stActif && <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
-                  <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#004f91":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
+                  <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=4?"#004f91":"#9aa5b4", background:kpisEpingles.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/4</span>
                 </div>
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:2, maxHeight:200, overflowY:"auto" as const }}>
                   {kpisSidebar.map((k,i)=>{
                     const epingle = kpisEpingles.includes(k.id);
-                    const disabled = !epingle && kpisEpingles.length >= 5;
+                    const disabled = !epingle && kpisEpingles.length >= 4;
                     return (
                       <div key={k.id}
                         title={k.description}
@@ -890,8 +888,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             </div>
           </div>
 
-          {/* KPI cards */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          {/* KPI cards — 4 colonnes (cartes mieux dimensionnées) */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"var(--ombre-1)", minWidth:0 }}>
@@ -935,7 +933,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 </div>
               );
             })}
-            {Array.from({length:Math.max(0,5-kpisCards.length)}).map((_,i)=>(
+            {Array.from({length:Math.max(0,4-kpisCards.length)}).map((_,i)=>(
               <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
                 <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
                 <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
@@ -1115,7 +1113,6 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
     const sV = serie(dirV, indV);
     const vD = last(sV);
     const nD = last(serie(dirV, indN));
-    const record = sV.reduce((m: any, r: any) => (m === null || r.valeur > m.valeur) ? r : m, null);
     const part = (() => {
       if (!vD || sid === 0) return null;
       let total = 0, trouve = false;
@@ -1158,7 +1155,6 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
       sid === 0
         ? { label: "Secteur dominant", val: dominant ? dominant.nom : "N/A", annee: dominant?.annee ?? null, delta: null, ref: null, ind: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % du total` : null }
         : { label: gf ? "Part du total · valeur" : "Part du total · ventes", val: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "N/A", annee: vD?.annee ?? null, delta: null, ref: null, ind: null },
-      { label: gf ? "Année record · valeur" : "Année record · ventes", val: record ? String(record.annee) : "N/A", annee: null, delta: null, ref: null, ind: record ? fmtVal(record.valeur) : null },
     ];
   })();
 
@@ -1382,9 +1378,9 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           );
         })()}
 
-        {/* KPI cards (analyse par secteur) */}
+        {/* KPI cards (analyse par secteur) — 4 colonnes */}
         {stCards && (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards.map(c=>(
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"var(--ombre-1)", minWidth:0 }}>

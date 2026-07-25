@@ -342,7 +342,8 @@ export function calculerKpis(donnees: DonneesIDE[]): KpiResult[] {
 }
 
 // ── KPIs affichés par défaut ──────────────────────────────────────────────────
-export const KPI_DEFAUT = ["fe_last","fs_last","se_last","ss_last","fn_last"];
+// 4 KPIs épinglés par défaut (le nombre max de cartes affichées)
+export const KPI_DEFAUT = ["fe_last","fs_last","se_last","ss_last"];
 
 // ── Formater une valeur KPI ───────────────────────────────────────────────────
 export function fmtKpi(kpi: KpiResult): string {
