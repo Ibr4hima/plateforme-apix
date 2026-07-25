@@ -3,6 +3,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Kit de formulaire APIX — design unique pour tous les modals de saisie du site.
 // Palette : #004f91 (principal) · #ca631f (accent) · #188038 (succès) · #6A1B9A.
+// Principe : le corps du modal est un fond doux, chaque FSection est une carte
+// blanche à filet fin — les groupes de champs sont bornés, pas d'espaces morts.
 // Usage :
 //   <FModal open onClose title="…" subtitle="…" footer={<><FButtonGhost/><FButton/></>}>
 //     <FSection title="Identification">
@@ -14,7 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React from "react";
-import { Check, Loader2, X } from "lucide-react";
+import { AlertCircle, Check, Loader2, X } from "lucide-react";
 
 export const FORM_COLORS = { primary: "#004f91", accent: "#ca631f", success: "#188038", extra: "#6A1B9A" };
 
@@ -23,11 +25,11 @@ export const fuiInput: React.CSSProperties = {
   // Bordure en propriétés séparées (pas le raccourci `border`) : les appelants
   // surchargent borderColor conditionnellement, et React interdit de mélanger
   // raccourci et propriété détaillée sur la même valeur entre deux rendus.
-  width: "100%", background: "#fff",
-  borderWidth: 1, borderStyle: "solid", borderColor: "#E4E1DE", borderRadius: 10,
+  width: "100%", background: "#FCFCFB",
+  borderWidth: 1, borderStyle: "solid", borderColor: "#E2E1DE", borderRadius: 10,
   padding: "10px 13px", fontSize: 13.5, color: "#1a1a2e", outline: "none",
   fontFamily: "var(--font-google-sans)", boxSizing: "border-box",
-  transition: "border-color 0.15s, box-shadow 0.15s",
+  transition: "border-color 0.15s, box-shadow 0.15s, background 0.15s",
 };
 export const fuiLabel: React.CSSProperties = {
   fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 5, display: "block",
@@ -47,13 +49,14 @@ export function FLabel({ children, hint }: { children: React.ReactNode; hint?: s
 }
 
 // ── Structure ─────────────────────────────────────────────────────────────────
+// Chaque section est une carte blanche : titre en overline + contenu borné.
 export function FSection({ title, extra, children, style }: {
   title: string; extra?: React.ReactNode; children: React.ReactNode; style?: React.CSSProperties;
 }) {
   return (
-    <section style={style}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <p style={{ fontSize: 10.5, fontWeight: 700, color: FORM_COLORS.primary, letterSpacing: "0.14em", textTransform: "uppercase" as const }}>{title}</p>
+    <section style={{ background: "#fff", border: "1px solid rgba(16,26,46,0.10)", borderRadius: 14, padding: "16px 18px 18px", ...style }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, minHeight: 20 }}>
+        <p style={{ fontSize: 10.5, fontWeight: 800, color: FORM_COLORS.primary, letterSpacing: "0.14em", textTransform: "uppercase" as const, margin: 0 }}>{title}</p>
         {extra}
       </div>
       {children}
@@ -64,12 +67,24 @@ export function FSection({ title, extra, children, style }: {
 export function FGrid({ cols = 2, gap = 14, children, style }: {
   cols?: number | string; gap?: number; children: React.ReactNode; style?: React.CSSProperties;
 }) {
-  return <div style={{ display: "grid", gridTemplateColumns: typeof cols === "number" ? `repeat(${cols},1fr)` : cols, gap, ...style }}>{children}</div>;
+  // .fui-grid : passe en 1 colonne sous 640px (media query dans FModal)
+  return <div className="fui-grid" style={{ display: "grid", gridTemplateColumns: typeof cols === "number" ? `repeat(${cols},minmax(0,1fr))` : cols, gap, ...style }}>{children}</div>;
 }
 
 // Encadré doux (sous-formulaires conditionnels, ex. récurrence)
 export function FPanel({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return <div style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: 16, ...style }}>{children}</div>;
+  return <div style={{ background: "#F8F8F6", border: "1px solid #ECEAE7", borderRadius: 12, padding: 16, ...style }}>{children}</div>;
+}
+
+// Filet de séparation à l'intérieur d'une carte (sous-groupes d'une section)
+export function FDivider({ label, style }: { label?: string; style?: React.CSSProperties }) {
+  if (!label) return <div style={{ height: 1, background: "rgba(16,26,46,0.07)", margin: "14px 0", ...style }} />;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "14px 0", ...style }}>
+      <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", letterSpacing: "0.1em", textTransform: "uppercase" as const, whiteSpace: "nowrap" }}>{label}</span>
+      <div style={{ flex: 1, height: 1, background: "rgba(16,26,46,0.07)" }} />
+    </div>
+  );
 }
 
 // ── Contrôles ─────────────────────────────────────────────────────────────────
@@ -133,8 +148,13 @@ export function FButtonGhost({ children, style, ...rest }: React.ButtonHTMLAttri
 }
 
 // ── Bandeaux ──────────────────────────────────────────────────────────────────
-export function FError({ children }: { children: React.ReactNode }) {
-  return <div style={{ background: "#fee2e2", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: 13 }}>{children}</div>;
+export function FError({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div role="alert" style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.22)", color: "#b91c1c", padding: "9px 13px", borderRadius: 10, fontSize: 12.5, lineHeight: 1.5, ...style }}>
+      <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 2 }} />
+      <span style={{ minWidth: 0 }}>{children}</span>
+    </div>
+  );
 }
 
 export function FInfo({ children }: { children: React.ReactNode }) {
@@ -163,19 +183,28 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
     };
   }, [open, onClose]);
 
+  // Robustesse : ne fermer sur le fond que si le CLIC A COMMENCÉ dessus.
+  // (Sélectionner du texte dans un champ puis relâcher hors du modal ne doit
+  // pas fermer et perdre la saisie.)
+  const downSurFond = React.useRef(false);
+
   if (!open) return null;
   return (
-    <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    <div
+      onMouseDown={e => { downSurFond.current = e.target === e.currentTarget; }}
+      onMouseUp={e => { if (downSurFond.current && e.target === e.currentTarget) onClose(); downSurFond.current = false; }}
       style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`
-        .fui-input:focus{border-color:${FORM_COLORS.primary} !important; box-shadow:0 0 0 3px rgba(0,79,145,0.10);}
+        .fui-input:focus{border-color:${FORM_COLORS.primary} !important; box-shadow:0 0 0 3px rgba(0,79,145,0.10); background:#fff;}
+        .fui-input:hover:not(:focus){border-color:#CFCDC9;}
         .fui-input::placeholder{color:#b3bcc9;}
+        @media (max-width:640px){ .fui-grid{ grid-template-columns:1fr !important; } }
         @keyframes fuiIn{from{opacity:0; transform:translateY(10px) scale(0.985);}to{opacity:1; transform:none;}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
       `}</style>
       <div role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "fuiIn 0.22s ease" }}>
         {/* Liseré d'accent */}
-        <div style={{ height: 4, background: FORM_COLORS.primary, flexShrink: 0 }} />
+        <div style={{ height: 4, background: "linear-gradient(90deg,#002a52 0%,#004f91 55%,#1a6ab0 100%)", flexShrink: 0 }} />
 
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "18px 28px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
@@ -191,14 +220,14 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
           </button>
         </div>
 
-        {/* Corps */}
-        <div style={{ padding: "24px 28px", overflowY: "auto" as const, flex: 1, display: "flex", flexDirection: "column" as const, gap: 24 }}>
+        {/* Corps — fond doux, les FSection sont des cartes blanches */}
+        <div style={{ padding: "18px 22px 22px", overflowY: "auto" as const, flex: 1, display: "flex", flexDirection: "column" as const, gap: 12, background: "#F7F6F4" }}>
           {children}
         </div>
 
         {/* Pied */}
         {footer && (
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end", padding: "14px 22px", borderTop: "1px solid #ECEAE7", background: "#fff", flexShrink: 0 }}>
             {footer}
           </div>
         )}
