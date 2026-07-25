@@ -263,9 +263,12 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
               padding: iso2 ? "0 11px" : "0 14px", fontFamily:"var(--font-google-sans)",
               background: iso2 ? "rgba(0,79,145,0.07)" : "transparent",
               borderRight: iso2 ? "1px solid rgba(0,79,145,0.15)" : "none",
-              flexShrink:0, transition:"background 0.15s",
-              // Sans pays choisi, le bouton occupe tout le bloc (même gabarit que les autres champs)
-              ...(iso2 ? {} : { flex:1, justifyContent:"space-between" }) }}
+              transition:"background 0.15s",
+              // Sans pays choisi, le bouton occupe tout le bloc (même gabarit que les
+              // autres champs) — propriétés longhand uniquement (pas de raccourci
+              // `flex` conditionnel : React interdit le mélange avec flexShrink)
+              flexGrow: iso2 ? 0 : 1, flexShrink:0, flexBasis:"auto",
+              justifyContent: iso2 ? "flex-start" : "space-between" }}
             onMouseEnter={e => { e.currentTarget.style.background = iso2 ? "rgba(0,79,145,0.12)" : "#F8F7F6"; }}
             onMouseLeave={e => { e.currentTarget.style.background = iso2 ? "rgba(0,79,145,0.07)" : "transparent"; }}>
             {iso2 ? (
