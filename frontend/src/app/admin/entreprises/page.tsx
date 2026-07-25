@@ -216,7 +216,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
       if (!editItem) payload.points_focaux = pf;
 
       const url = editItem?`${API_BASE}/entreprises/${editItem.id}`:`${API_BASE}/entreprises`;
-      const res = await fetch(url,{method:editItem?"PATCH":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      const res = await fetch(url,{method:editItem?"PATCH":"POST",headers:{"Content-Type":"application/json", ...(await authHeaders())},body:JSON.stringify(payload)});
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
       setSaveOk(true); setTimeout(()=>{ onClose(); onSaved(); },700);
     } catch(err:any){ setErrors({global:err.message||"Erreur"}); } finally { setSaving(false); }
@@ -228,10 +228,18 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
   // Ajouter n'est possible que si toutes les entrées existantes sont complètes et valides
   const btnAjoutOff = (ok: boolean): any => ok ? btnAjout : { ...btnAjout, opacity: 0.35, cursor: "not-allowed" };
 
+  const nbErreurs = Object.keys(errors).length;
+
   return (
     <FModal open={open} onClose={onClose} maxWidth={900}
       title={editItem ? "Modifier l'entreprise" : "Nouvelle entreprise"}
+      subtitle={editItem ? editItem.nom : "Les champs marqués * sont obligatoires"}
       footer={<>
+        {(errors.global || nbErreurs > 0) && (
+          <FError style={{ flex:1, minWidth:0 }}>
+            {errors.global || "Corrigez les champs signalés en rouge avant d'enregistrer."}
+          </FError>
+        )}
         <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
         <FButton onClick={handleSave} disabled={saving || saveOk} loading={saving} success={saveOk}>
           {saveOk ? "Enregistré !" : saving ? "Sauvegarde…" : editItem ? "Modifier" : "Créer l'entreprise"}
@@ -252,33 +260,33 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         </FGrid>
       </FSection>
 
-      {/* Siège social */}
-      <FSection title="Siège social">
-        <FLabel>Pays du siège social</FLabel>
-        <PaysSelect
-          value={form.siege_pays_nom}
-          onChange={nom => update("siege_pays_nom", nom)}
-          onChangeId={id => update("siege_pays_id", id)}
-          placeholder="Sélectionner le pays du siège social"
-        />
-      </FSection>
-
-      {/* Localisation Sénégal */}
-      <FSection title="Localisation au Sénégal">
-        <div style={{marginBottom:14}}>
-          <FLabel>Pôle territorial *</FLabel>
-          <FSelect value={poleId||""} onChange={e=>{
-            const id = e.target.value ? parseInt(e.target.value) : null;
-            setPoleId(id);
-            // Le pôle change : la localisation repart de zéro, restreinte à ses régions
-            update("region_id",null); update("departement_id",null); update("arrondissement_id",null);
-          }}>
-            <option value="">— Sélectionner un pôle d&apos;abord —</option>
-            {poles.map((p:any)=>(
-              <option key={p.id} value={p.id}>{p.pole_territoire}{p.localisation?` — ${p.localisation}`:""}</option>
-            ))}
-          </FSelect>
-        </div>
+      {/* Siège & localisation au Sénégal */}
+      <FSection title="Siège & localisation">
+        <FGrid cols={2} style={{marginBottom:14}}>
+          <div>
+            <FLabel>Pays du siège social</FLabel>
+            <PaysSelect
+              value={form.siege_pays_nom}
+              onChange={nom => update("siege_pays_nom", nom)}
+              onChangeId={id => update("siege_pays_id", id)}
+              placeholder="Sélectionner le pays du siège social"
+            />
+          </div>
+          <div>
+            <FLabel>Pôle territorial *</FLabel>
+            <FSelect value={poleId||""} onChange={e=>{
+              const id = e.target.value ? parseInt(e.target.value) : null;
+              setPoleId(id);
+              // Le pôle change : la localisation repart de zéro, restreinte à ses régions
+              update("region_id",null); update("departement_id",null); update("arrondissement_id",null);
+            }}>
+              <option value="">— Sélectionner un pôle d&apos;abord —</option>
+              {poles.map((p:any)=>(
+                <option key={p.id} value={p.id}>{p.pole_territoire}{p.localisation?` — ${p.localisation}`:""}</option>
+              ))}
+            </FSelect>
+          </div>
+        </FGrid>
         {(()=>{ const poleRegionIds: number[] = poles.find((p:any)=>p.id===poleId)?.region_ids || []; return (
         <div style={{opacity: poleId?1:0.45, pointerEvents: poleId?"auto":"none", transition:"opacity 0.2s"}}>
           <GeoCascadeSelect
@@ -443,8 +451,6 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         </button>
         ); })()}
       </FSection>
-
-      {errors.global && <FError>{errors.global}</FError>}
     </FModal>
   );
 }

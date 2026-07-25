@@ -179,19 +179,27 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
   return (
     <FModal open={open} onClose={onClose} maxWidth={820}
       title={editItem ? "Modifier l'accord" : "Nouvel accord / traité"}
+      subtitle={editItem ? editItem.titre : "Les champs marqués * sont obligatoires"}
       footer={<>
+        {error && <FError style={{ flex:1, minWidth:0 }}>{error}</FError>}
         <FButtonGhost onClick={onClose}>Annuler</FButtonGhost>
         <FButton onClick={handleSave} disabled={saving || saveOk} loading={saving} success={saveOk}>
           {saveOk ? "Enregistré !" : saving ? "Sauvegarde…" : editItem ? "Modifier" : "Créer l'accord"}
         </FButton>
       </>}>
 
-      {/* Type d'accord — détermine l'onglet public et les champs proposés */}
+      {/* Type d'accord + identification (le titre TBI est dérivé des deux pays) */}
       <FSection title="Type d'accord">
         <FSegmented options={[
           {value:"tbi",   label:"Traité Bilatéral d'Investissement"},
           {value:"inter", label:"Traité International"},
         ]} value={form.type_accord} onChange={v=>update("type_accord",v)} />
+        {form.type_accord !== "tbi" && (
+          <FGrid cols="2fr 1fr" style={{ marginTop:14 }}>
+            <div><FLabel>Titre *</FLabel><FInput value={form.titre} onChange={e=>update("titre",e.target.value)} placeholder="Intitulé complet de l'accord" /></div>
+            <div><FLabel>Référence *</FLabel><FInput value={form.reference} onChange={e=>update("reference",e.target.value)} placeholder="Ex : APIX/2024/ACC-001" /></div>
+          </FGrid>
+        )}
       </FSection>
 
       {form.type_accord === "tbi" ? (
@@ -240,14 +248,6 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         {tbiTitre&&<p style={{fontSize:12,color:"#9aa5b4",marginTop:10}}>Titre de l&apos;accord : <strong style={{color:"#1a1a2e"}}>{tbiTitre}</strong></p>}
       </FSection>
       ) : (<>
-      {/* Identification */}
-      <FSection title="Identification">
-        <FGrid cols="2fr 1fr">
-          <div><FLabel>Titre *</FLabel><FInput value={form.titre} onChange={e=>update("titre",e.target.value)} placeholder="Intitulé complet de l'accord" /></div>
-          <div><FLabel>Référence *</FLabel><FInput value={form.reference} onChange={e=>update("reference",e.target.value)} placeholder="Ex : APIX/2024/ACC-001" /></div>
-        </FGrid>
-      </FSection>
-
       {/* Parties signataires */}
       <FSection title="Parties signataires">
         <div style={{ marginBottom:14 }}>
@@ -396,8 +396,6 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
           </div>
         )}
       </FSection>
-
-      {error && <FError>{error}</FError>}
     </FModal>
   );
 }
