@@ -6,6 +6,7 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
+import { badge_bleu } from "@/lib/couleurs";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import { fmtDate as fmtDateLib } from "@/lib/format";
@@ -19,6 +20,82 @@ const SENEGAL = "Sénégal";
 const APIX    = "APIX S.A";
 
 const fmtDate = (d: string) => fmtDateLib(d) || "—";
+
+// ── Pastille pays (badge_bleu) avec suppression optionnelle ───────────────────
+function PillPays({ nom, onRemove }: { nom: string; onRemove?: () => void }) {
+  return (
+    <span style={{ ...badge_bleu, fontWeight: 700 }}>
+      {nom}
+      {onRemove && (
+        <button onClick={onRemove} aria-label={`Retirer ${nom}`}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: "inherit" }}>
+          <X size={11} />
+        </button>
+      )}
+    </span>
+  );
+}
+
+// ── Bouton « + » d'ajout de pays : popover avec recherche et liste groupée ────
+// fermerApresChoix : true = sélection unique (TBI), false = on enchaîne les ajouts.
+function BoutonAjoutPays({ allPays, exclusIds, onPick, fermerApresChoix = false }: {
+  allPays: any[]; exclusIds: number[]; onPick: (p: any) => void; fermerApresChoix?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setQ(""); } };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
+
+  const dispo = allPays.filter((p: any) => p.nom_fr !== SENEGAL && !exclusIds.includes(p.id)
+    && (!q || p.nom_fr.toLowerCase().includes(q.toLowerCase())));
+  const groupes = Object.entries(
+    dispo.reduce((acc: any, p: any) => { const c = p.region_monde || "Autre"; (acc[c] ||= []).push(p); return acc; }, {})
+  ).sort(([a], [b]) => a.localeCompare(b));
+
+  return (
+    <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
+      <button onClick={() => setOpen(o => !o)} aria-label="Ajouter un pays" title="Ajouter un pays"
+        style={{ width: 28, height: 28, borderRadius: 999, border: `1.5px dashed ${open ? "#004f91" : "rgba(0,79,145,0.35)"}`,
+          background: open ? "rgba(0,79,145,0.08)" : "rgba(255,255,255,0.7)", color: "#004f91", cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s", flexShrink: 0 }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.background = "rgba(0,79,145,0.08)"; }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; e.currentTarget.style.background = "rgba(255,255,255,0.7)"; } }}>
+        <Plus size={14} />
+      </button>
+      {open && (
+        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 220, width: 300,
+          border: "1px solid #E4E1DE", borderRadius: 12, background: "#fff", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
+          <div style={{ padding: 8, borderBottom: "1px solid #F2F0EF" }}>
+            <input ref={inputRef} className="fui-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
+              style={{ width: "100%", boxSizing: "border-box" as const, background: "#FCFCFB", borderWidth: 1, borderStyle: "solid", borderColor: "#E2E1DE", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)" }} />
+          </div>
+          <div style={{ maxHeight: 240, overflowY: "auto" as const }}>
+            {groupes.map(([continent, pays]: any) => (
+              <div key={continent}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
+                {pays.map((p: any) => (
+                  <button key={p.id} onClick={() => { onPick(p); setQ(""); if (fermerApresChoix) setOpen(false); else inputRef.current?.focus(); }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 14px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, borderBottom: "1px solid #F2F0EF", transition: "background 0.1s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <span style={{ fontSize: 12, color: "#1a1a2e", fontWeight: 500 }}>{p.nom_fr}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            {dispo.length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Modal formulaire accord ───────────────────────────────────────────────────
 function AccordModal({ open, onClose, editItem, onSaved }: {
@@ -34,16 +111,6 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     commentaires:"",
   });
   const [saisieOrg,  setSaisieOrg]  = useState("");
-  const [searchPays, setSearchPays] = useState("");
-  const [paysOpen,   setPaysOpen]   = useState(false);
-  const paysRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (paysRef.current && !paysRef.current.contains(e.target as Node)) { setPaysOpen(false); setSearchPays(""); }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
   const [fichiers,   setFichiers]   = useState<any[]>([]);
   const [pdfQueue,  setPdfQueue]  = useState<{file:File;titre:string}[]>([]);
   const [saving,    setSaving]    = useState(false);
@@ -59,7 +126,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
 
   useEffect(()=>{
     if (!open) return;
-    setPdfQueue([]); setError(""); setSaveOk(false); setSearchPays("");
+    setPdfQueue([]); setError(""); setSaveOk(false);
     if (editItem) {
       const mode = editItem.parties_pays_ids?.length > 0 ? "pays" : "organisation";
       const pays_ids = editItem.parties_pays_ids || [];
@@ -205,47 +272,15 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
       {form.type_accord === "tbi" ? (
       /* TBI : Sénégal + un pays — le titre de l'accord est dérivé (ex. Sénégal - Maroc) */
       <FSection title="Pays signataires">
-        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
-          <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(0,79,145,0.1)",color:"#004f91",border:"1px solid rgba(0,79,145,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>Sénégal</span>
+        <div style={{display:"flex",alignItems:"center",flexWrap:"wrap" as const,gap:6}}>
+          <PillPays nom="Sénégal" />
           {tbiAutreId&&(()=>{const p=allPays.find((r:any)=>r.id===tbiAutreId); return p?(
-            <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.1)",color:"#ca631f",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
-              {p.nom_fr}
-              <button onClick={()=>update("pays_ids",senIdRef?[senIdRef]:[])} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>
-            </span>
+            <PillPays nom={p.nom_fr} onRemove={()=>update("pays_ids",senIdRef?[senIdRef]:[])} />
           ):null;})()}
+          <BoutonAjoutPays allPays={allPays} exclusIds={[senIdRef, tbiAutreId].filter(Boolean) as number[]} fermerApresChoix
+            onPick={p=>update("pays_ids",senIdRef?[senIdRef,p.id]:[p.id])} />
         </div>
-        <div ref={paysRef} style={{position:"relative"}}>
-          <FInput value={searchPays} onChange={e=>setSearchPays(e.target.value)} onFocus={()=>setPaysOpen(true)}
-            placeholder={tbiAutreId?"Remplacer le pays signataire…":"Rechercher le pays signataire…"} style={{ padding:"10px 13px 10px 32px" }} />
-          <svg style={{position:"absolute",left:11,top:20,transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          {paysOpen && (
-          <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,zIndex:210,border:"1px solid #E4E1DE",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff",boxShadow:"var(--ombre-2)"}}>
-          {Object.entries(
-            allPays
-              .filter((p:any)=>p.nom_fr!==SENEGAL && p.id!==tbiAutreId && (!searchPays||p.nom_fr.toLowerCase().includes(searchPays.toLowerCase())))
-              .reduce((acc:any,p:any)=>{
-                const cont=p.region_monde||"Autre";
-                if(!acc[cont]) acc[cont]=[];
-                acc[cont].push(p);
-                return acc;
-              },{})
-          ).sort(([a],[b])=>a.localeCompare(b)).map(([continent,pays]:any)=>(
-            <div key={continent}>
-              <div style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.04)",padding:"5px 12px",letterSpacing:"0.1em",textTransform:"uppercase" as const,position:"sticky" as const,top:0}}>{continent}</div>
-              {pays.map((p:any)=>(
-                <button key={p.id} onClick={()=>{ update("pays_ids",senIdRef?[senIdRef,p.id]:[p.id]); setPaysOpen(false); setSearchPays(""); }}
-                  style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 14px",background:"transparent",border:"none",cursor:"pointer",textAlign:"left" as const,borderBottom:"1px solid #F2F0EF",transition:"background 0.1s"}}
-                  onMouseEnter={e=>e.currentTarget.style.background="rgba(0,79,145,0.05)"}
-                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <span style={{fontSize:12,color:"#1a1a2e",fontWeight:500}}>{p.nom_fr}</span>
-                </button>
-              ))}
-            </div>
-          ))}
-          </div>
-          )}
-        </div>
-        {tbiTitre&&<p style={{fontSize:12,color:"#9aa5b4",marginTop:10}}>Titre de l&apos;accord : <strong style={{color:"#1a1a2e"}}>{tbiTitre}</strong></p>}
+        {tbiTitre&&<p style={{fontSize:12,color:"#9aa5b4",marginTop:12}}>Titre de l&apos;accord : <strong style={{color:"#1a1a2e"}}>{tbiTitre}</strong></p>}
       </FSection>
       ) : (<>
       {/* Parties signataires */}
@@ -261,53 +296,16 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
             }} />
         </div>
         {form.mode_signataire==="pays" ? (
-          <>
-            {/* Tags des pays sélectionnés */}
-            <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
-              {(form.pays_ids as number[]).map((id:number)=>{
-                const p=allPays.find((r:any)=>r.id===id);
-                const isSen=p?.nom_fr===SENEGAL;
-                return p?<span key={id} style={{display:"inline-flex",alignItems:"center",gap:5,background:isSen?"rgba(0,79,145,0.1)":"rgba(202,99,31,0.1)",color:isSen?"#004f91":"#ca631f",border:`1px solid ${isSen?"rgba(0,79,145,0.2)":"rgba(202,99,31,0.2)"}`,borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
-                  {p.nom_fr}
-                  {!isSen&&<button onClick={()=>update("pays_ids",(form.pays_ids as number[]).filter((x:number)=>x!==id))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>}
-                </span>:null;
-              })}
-            </div>
-            {/* Recherche + liste en popover (replié par défaut) */}
-            <div ref={paysRef} style={{position:"relative"}}>
-              <FInput value={searchPays} onChange={e=>setSearchPays(e.target.value)} onFocus={()=>setPaysOpen(true)}
-                placeholder="Rechercher et ajouter un pays…" style={{ padding:"10px 13px 10px 32px" }} />
-              <svg style={{position:"absolute",left:11,top:20,transform:"translateY(-50%)"}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa5b4" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              {paysOpen && (
-              <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,zIndex:210,border:"1px solid #E4E1DE",borderRadius:10,overflow:"hidden",maxHeight:260,overflowY:"auto" as const,background:"#fff",boxShadow:"var(--ombre-2)"}}>
-              {Object.entries(
-                allPays
-                  .filter((p:any)=>!(form.pays_ids as number[]).includes(p.id) && (!searchPays||p.nom_fr.toLowerCase().includes(searchPays.toLowerCase())))
-                  .reduce((acc:any,p:any)=>{
-                    const cont=p.region_monde||"Autre";
-                    if(!acc[cont]) acc[cont]=[];
-                    acc[cont].push(p);
-                    return acc;
-                  },{})
-              ).sort(([a],[b])=>a.localeCompare(b)).map(([continent,pays]:any)=>(
-                <div key={continent}>
-                  <div style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.04)",padding:"5px 12px",letterSpacing:"0.1em",textTransform:"uppercase" as const,position:"sticky" as const,top:0}}>{continent}</div>
-                  {pays.map((p:any)=>{
-                    return (
-                      <button key={p.id} onClick={()=>update("pays_ids",[...(form.pays_ids as number[]),p.id])}
-                        style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 14px",background:"transparent",border:"none",cursor:"pointer",textAlign:"left" as const,borderBottom:"1px solid #F2F0EF",transition:"background 0.1s"}}
-                        onMouseEnter={e=>e.currentTarget.style.background="rgba(0,79,145,0.05)"}
-                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <span style={{fontSize:12,color:"#1a1a2e",fontWeight:500}}>{p.nom_fr}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-              </div>
-              )}
-            </div>
-          </>
+          <div style={{display:"flex",alignItems:"center",flexWrap:"wrap" as const,gap:6}}>
+            {(form.pays_ids as number[]).map((id:number)=>{
+              const p=allPays.find((r:any)=>r.id===id);
+              if (!p) return null;
+              const isSen=p.nom_fr===SENEGAL;
+              return <PillPays key={id} nom={p.nom_fr} onRemove={isSen?undefined:()=>update("pays_ids",(form.pays_ids as number[]).filter((x:number)=>x!==id))} />;
+            })}
+            <BoutonAjoutPays allPays={allPays} exclusIds={form.pays_ids as number[]}
+              onPick={p=>update("pays_ids",[...(form.pays_ids as number[]),p.id])} />
+          </div>
         ) : (
           <>
             <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:8}}>
