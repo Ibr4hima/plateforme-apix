@@ -1682,16 +1682,20 @@ function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOngl
             <SousTypeNav value={sousType} onChange={setSousType}/>
             <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec.join(",")}/>
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, flexWrap:"wrap" as const }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative par pays</h2>
-            <BadgePeriode>
-              {modeAnnees==="specifiques"&&anneesSpec.length>0
-                ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                : `${perMin} — ${perMax}`}
-            </BadgePeriode>
-            {paysAvecCouleur.map((p,i)=>(
-              <BadgeSerie key={p.nom} i={i} couleur={p.couleur}>{p.nom}</BadgeSerie>
-            ))}
+          <div style={{ marginBottom:20 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
+              <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative par pays</h2>
+              <BadgePeriode>
+                {modeAnnees==="specifiques"&&anneesSpec.length>0
+                  ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                  : `${perMin} — ${perMax}`}
+              </BadgePeriode>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" as const }}>
+              {paysAvecCouleur.map((p,i)=>(
+                <BadgeSerie key={p.nom} i={i} couleur={p.couleur}>{p.nom}</BadgeSerie>
+              ))}
+            </div>
           </div>
 
           {loading ? (
@@ -2025,16 +2029,22 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <SousTypeNav value={sousType} onChange={setSousType}/>
           {grpSelec.length>0 && <BoutonDonnees onClick={()=>setShowTable(true)} dep={grpSelec.join(",")}/>}
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, flexWrap:"wrap" as const }}>
-          <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Vue Monde</h2>
-          <BadgePeriode>
-            {modeAnnees==="specifiques"&&anneesSpec.length>0
-              ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-              : `${perMin} — ${perMax}`}
-          </BadgePeriode>
-          {grpAvecCouleur.map((g,i)=>(
-            <BadgeSerie key={g.nom} i={i} couleur={g.couleur} title={g.label}>{g.abrege}</BadgeSerie>
-          ))}
+        <div style={{ marginBottom:20 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
+            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Vue Monde</h2>
+            <BadgePeriode>
+              {modeAnnees==="specifiques"&&anneesSpec.length>0
+                ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                : `${perMin} — ${perMax}`}
+            </BadgePeriode>
+          </div>
+          {grpAvecCouleur.length>0 && (
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" as const }}>
+              {grpAvecCouleur.map((g,i)=>(
+                <BadgeSerie key={g.nom} i={i} couleur={g.couleur} title={g.label}>{g.abrege}</BadgeSerie>
+              ))}
+            </div>
+          )}
         </div>
 
         {grpSelec.length===0 ? (
