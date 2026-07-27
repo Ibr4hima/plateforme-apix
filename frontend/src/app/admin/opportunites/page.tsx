@@ -1019,7 +1019,9 @@ export default function OpportunitesAdminPage() {
   const chargerPots = useCallback(async()=>{
     setPotsLoad(true);
     try {
-      const res=await fetch(`${API}/opportunites/potentialites?admin=true&per_page=50`);
+      // per_page large : les compteurs par niveau sont calculés sur la liste
+      // complète (50 tronquait les fiches et faussait les « n/total »)
+      const res=await fetch(`${API}/opportunites/potentialites?admin=true&per_page=1000`);
       const d=await res.json();
       setPots(d.data||[]);
     } finally{setPotsLoad(false);}
@@ -1028,7 +1030,9 @@ export default function OpportunitesAdminPage() {
   const chargerAvgs = useCallback(async()=>{
     setAvgsLoad(true);
     try {
-      const p=new URLSearchParams({admin:"true",per_page:"50"});
+      // per_page large : les cards secteurs comptent sur la liste complète —
+      // à 50, le Secteur primaire affichait 0/17 (fiches au-delà de la page 1)
+      const p=new URLSearchParams({admin:"true",per_page:"1000"});
       if(avgsQ)p.set("q",avgsQ);
       const res=await fetch(`${API}/opportunites/avantages?${p}`);
       const d=await res.json();
