@@ -6,7 +6,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { COMP_PALETTE, badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe } from "@/lib/couleurs";
-import { X, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
+import { X, Plus, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -96,9 +96,11 @@ function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
   vueP: string; setVueP: (v: "pays"|"secteurs") => void;
   typeAnalyse: string; setTypeAnalyse: (v: any) => void;
 }) {
+  // Vue Pays : la comparaison se fait directement depuis l'en-tête (« + » à côté
+  // du pays) — plus d'entrée « Analyse comparative » dédiée.
   const types = vueP === "secteurs"
     ? [{ v: "secteur",     l: "Analyse par secteur" }, { v: "comparative", l: "Analyse comparative" }]
-    : [{ v: "pays",        l: "Analyse par pays" },    { v: "comparative", l: "Analyse comparative" }, { v: "monde", l: "Monde" }];
+    : [{ v: "pays",        l: "Analyse par pays" },    { v: "monde", l: "Monde" }];
   const btn = (actif: boolean): React.CSSProperties => ({
     textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12,
     fontWeight: actif ? 700 : 500, background: actif ? "rgba(0,79,145,0.08)" : "transparent",
@@ -123,6 +125,71 @@ function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
         </div>
       </div>
     </>
+  );
+}
+
+// ── Bouton « + » d'ajout de pays à comparer (vue Pays) ───────────────────────
+// Rond en pointillés à côté du pays de référence : popover avec recherche et
+// liste groupée par continent ; jusqu'à 3 pays en plus (4 séries max). Le
+// popover reste ouvert pour enchaîner les ajouts.
+function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick }: {
+  paysDispo: any[]; exclus: string[]; plein: boolean; onPick: (nom: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setQ(""); } };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
+
+  const dispo = paysDispo.filter((p: any) => !exclus.includes(p.nom)
+    && (!q || p.nom.toLowerCase().includes(q.toLowerCase())));
+  const groupes = Object.entries(
+    dispo.reduce((acc: any, p: any) => { const c = p.continent || "Autre"; (acc[c] ||= []).push(p); return acc; }, {})
+  ).sort(([a], [b]) => (a as string).localeCompare(b as string));
+
+  return (
+    <div ref={ref} style={{ position:"relative", display:"inline-flex" }}>
+      <button onClick={() => !plein && setOpen(o => !o)} disabled={plein}
+        aria-label="Comparer avec d'autres pays" title={plein ? "4 pays maximum" : "Comparer avec d'autres pays"}
+        style={{ width:28, height:28, borderRadius:999, border:`1.5px dashed ${plein ? "#D8D4D0" : open ? "#004f91" : "rgba(0,79,145,0.35)"}`,
+          background: open ? "rgba(0,79,145,0.08)" : "rgba(255,255,255,0.7)", color: plein ? "#C5BFBB" : "#004f91",
+          cursor: plein ? "not-allowed" : "pointer",
+          display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
+        onMouseEnter={e => { if (!plein) { e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.background = "rgba(0,79,145,0.08)"; } }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = plein ? "#D8D4D0" : "rgba(0,79,145,0.35)"; e.currentTarget.style.background = "rgba(255,255,255,0.7)"; } }}>
+        <Plus size={14}/>
+      </button>
+      {open && (
+        <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:60, width:300,
+          border:"1px solid #E4E1DE", borderRadius:12, background:"#fff", boxShadow:"var(--ombre-2)", overflow:"hidden" }}>
+          <div style={{ padding:8, borderBottom:"1px solid #F2F0EF" }}>
+            <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
+              style={{ width:"100%", boxSizing:"border-box" as const, background:"#FCFCFB", borderWidth:1, borderStyle:"solid", borderColor:"#E2E1DE", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)" }} />
+          </div>
+          <div style={{ maxHeight:240, overflowY:"auto" as const }}>
+            {groupes.map(([continent, pays]: any) => (
+              <div key={continent}>
+                <div style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0 }}>{continent}</div>
+                {pays.map((p: any) => (
+                  <button key={p.nom} onClick={() => { onPick(p.nom); setQ(""); inputRef.current?.focus(); }}
+                    style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 14px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid #F2F0EF", transition:"background 0.1s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <span style={{ fontSize:12, color:"#1a1a2e", fontWeight:500 }}>{p.nom}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            {dispo.length === 0 && <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"14px 0" }}>Aucun pays trouvé</p>}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -543,6 +610,9 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
 
 function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [paysSelec,   setPaysSelec]   = useState<string>("Sénégal");
+  // Pays ajoutés via le « + » de l'en-tête (3 max) : dès qu'il y en a un, la
+  // vue bascule en analyse comparative (graphes multi-séries, KPIs masqués)
+  const [paysComp,    setPaysComp]    = useState<string[]>([]);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [borneMin, borneMax] = useBornesCnuced(sousType);
@@ -574,18 +644,25 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
     try {
-      const params = new URLSearchParams({ pays_list: paysSelec });
+      const params = new URLSearchParams({ pays_list: [paysSelec, ...paysComp].join(",") });
       if (modeAnnees==="specifiques" && anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
       else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
       const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
       setDonnees(dataR||[]);
     } catch(e){ console.error(e); setErreur(true); }
     finally { setLoading(false); }
-  }, [paysSelec, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees, tick]);
+  }, [paysSelec, paysComp, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees, tick]);
 
   useEffect(() => { charger(); }, [charger]);
 
-  const tousKpis    = calculerKpis(donnees);
+  // Mode comparatif : au moins un pays ajouté via le « + » de l'en-tête
+  const estComparatif = paysComp.length > 0;
+  const paysAvecCouleur = [paysSelec, ...paysComp].map((nom, i) => ({ nom, couleur: COMP_PALETTE[i] ?? COMP_PALETTE[COMP_PALETTE.length - 1] }));
+  // KPIs toujours calculés sur le seul pays de référence (les données chargées
+  // peuvent contenir plusieurs pays en mode comparatif)
+  const donneesRef = estComparatif ? donnees.filter((d: any) => d.pays === paysSelec) : donnees;
+
+  const tousKpis    = calculerKpis(donneesRef);
   const kpisSidebar = kpisOrdre.map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
   const kpisCards   = kpisEpingles.map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
 
@@ -603,10 +680,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 
   // Drag & drop handlers
 
-  const buildSerie = (dir: string, ind: string) => [{
-    nom: paysSelec, couleur,
-    data: donnees.filter(d=>d.direction===dir && d.indicateur===ind)
-  }];
+  // Une série par pays sélectionné (1 seule en mode simple, jusqu'à 4 en comparatif)
+  const buildSerie = (dir: string, ind: string) => paysAvecCouleur.map(p => ({
+    nom: p.nom, couleur: p.couleur,
+    data: donnees.filter(d => d.pays === p.nom && d.direction === dir && d.indicateur === ind),
+  }));
 
   // Sous-type actif (greenfield / fusion) : graphes et KPIs basculent dessus
   const stActif = sousType !== "fluxstock" && SERIES_TYPES[sousType] ? SERIES_TYPES[sousType] : null;
@@ -631,7 +709,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   // variation ▲/▼ % vs la valeur disponible précédente.
   const stCards = (() => {
     if (!stActif) return null;
-    const serie = (dir: string, ind: string) => donnees
+    const serie = (dir: string, ind: string) => donneesRef
       .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur !== null)
       .sort((a: any, b: any) => a.annee - b.annee);
     // Dernier point + précédent + Δ % (null si non calculable)
@@ -659,7 +737,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   // même KPI sur les données tronquées avant son année de référence.
   const getVariation = (k: KpiResult): { delta: number | null; ref: number | null } => {
     if (k.annee == null || k.valeur == null) return { delta: null, ref: null };
-    const prev = calculerKpis(donnees.filter((d) => d.annee < (k.annee as number))).find((p) => p.id === k.id);
+    const prev = calculerKpis(donneesRef.filter((d) => d.annee < (k.annee as number))).find((p) => p.id === k.id);
     if (!prev || prev.valeur == null || prev.valeur === 0 || prev.annee == null) return { delta: null, ref: null };
     return { delta: ((k.valeur - prev.valeur) / Math.abs(prev.valeur)) * 100, ref: prev.annee };
   };
@@ -678,9 +756,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     return null;
   };
 
-  const hasFilter = paysSelec!=="Sénégal" || (modeAnnees==="specifiques"&&anneesSpec.length>0) || (modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax));
-  const nbFiltres = (paysSelec!=="Sénégal"?1:0) + ((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax))?1:0);
-  const reinit = () => { setPaysSelec("Sénégal"); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); setKpisEpingles(KPI_DEFAUT); };
+  const hasFilter = paysSelec!=="Sénégal" || paysComp.length>0 || (modeAnnees==="specifiques"&&anneesSpec.length>0) || (modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax));
+  const nbFiltres = (paysSelec!=="Sénégal"||paysComp.length>0?1:0) + ((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax))?1:0);
+  const reinit = () => { setPaysSelec("Sénégal"); setPaysComp([]); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); setKpisEpingles(KPI_DEFAUT); };
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start" }}>
@@ -725,7 +803,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   const col = "#004f91";
                   return (
                     <div style={{ marginBottom:8, marginLeft:6 }}>
-                      <button onClick={()=>setPaysSelec("Sénégal")}
+                      <button onClick={()=>{ setPaysSelec("Sénégal"); setPaysComp(prev=>prev.filter(n=>n!=="Sénégal")); }}
                         style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%" }}
                         onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
                         onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
@@ -765,7 +843,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                                 </div>
                               );
                               return (
-                                <button key={p.nom} onClick={()=>setPaysSelec(p.nom)}
+                                <button key={p.nom} onClick={()=>{ setPaysSelec(p.nom); setPaysComp(prev=>prev.filter(n=>n!==p.nom)); }}
                                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%" }}
                                   onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
                                   onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
@@ -840,8 +918,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 )}
               </div>
               <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-              {/* KPI — épinglage réservé aux Flux & Stocks (KPIs fixes pour greenfield/M&A) */}
-              {!stActif && <div style={{ marginBottom:18 }}>
+              {/* KPI — épinglage réservé aux Flux & Stocks (KPIs fixes pour
+                  greenfield/M&A) et masqué en mode comparatif (pas de KPIs) */}
+              {!stActif && !estComparatif && <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
                   <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=4?"#004f91":"#9aa5b4", background:kpisEpingles.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/4</span>
@@ -885,11 +964,28 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                   : `${perMin} — ${perMax}`}
               </BadgePeriode>
+              {/* Pays comparés (le « + » bascule la vue en analyse comparative) */}
+              {paysComp.map((nom,i)=>(
+                <BadgeSerie key={nom} i={i+1} couleur={COMP_PALETTE[i+1] ?? COMP_PALETTE[COMP_PALETTE.length-1]}>
+                  {nom}
+                  <button onClick={()=>setPaysComp(prev=>prev.filter(n=>n!==nom))} aria-label={`Retirer ${nom}`}
+                    style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", color:"inherit" }}>
+                    <X size={11}/>
+                  </button>
+                </BadgeSerie>
+              ))}
+              <BtnAjoutPaysComp
+                paysDispo={paysDispo}
+                exclus={[paysSelec, ...paysComp]}
+                plein={paysComp.length>=3}
+                onPick={nom=>setPaysComp(prev=>prev.includes(nom)||prev.length>=3?prev:[...prev,nom])}
+              />
             </div>
           </div>
 
-          {/* KPI cards — 4 colonnes (cartes mieux dimensionnées) */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
+          {/* KPI cards — 4 colonnes ; masquées en mode comparatif (les KPIs
+              ne concernent que le pays de référence) */}
+          {!estComparatif && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
               <div key={c.label}
                 style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid rgba(16,26,46,0.12)", boxShadow:"none", transition:"border-color 0.18s", minWidth:0 }}
@@ -942,9 +1038,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               </div>
             ))}
             </>}
-          </div>
+          </div>}
 
-          {/* Graphes */}
+          {/* Graphes — multi-séries dès qu'un pays est ajouté à la comparaison */}
           {loading ? (
             <SkeletonChartGrid n={4} cols={2} height={230}/>
           ) : erreur ? (
@@ -953,8 +1049,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>(
                 <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
-                  fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
+                  fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={estComparatif?1.6:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
+                  <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={!estComparatif} lineWidth={estComparatif?1.4:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
               ))}
             </div>
@@ -962,7 +1058,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
         </div>
       </div>
 
-      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={[{nom:paysSelec,couleur}]} sousType={sousType} />
+      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} sousType={sousType} />
       <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} onClose={()=>setKpiActif(null)} />
     </div>
   );
@@ -1430,290 +1526,6 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         donnees={rowsSel.map((d: any) => ({ ...d, pays: d.secteur }))}
         paysSelectionnes={selecIds.map((id, i) => ({ nom: nomById.get(id) || "?", couleur: couleurDe(i) }))}
         sousType={`secteur_${st}`} entite={selecIds.length > 1 ? "secteurs" : "secteur"} />
-    </div>
-  );
-}
-
-// ── Onglet Analyse comparative ────────────────────────────────────────────────
-function OngletAnalyseComparative({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
-  const [paysSelec,   setPaysSelec]   = useState<string[]>(["Sénégal"]);
-  const [donnees,     setDonnees]     = useState<any[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [borneMin, borneMax] = useBornesCnuced(sousType);
-  const [anneeMin,    setAnneeMin]    = useState(borneMin);
-  const [anneeMax,    setAnneeMax]    = useState(borneMax);
-  const [anneesSpec,  setAnneesSpec]  = useState<number[]>([]);
-  const [modeAnnees,  setModeAnnees]  = useState<"plage"|"specifiques">("plage");
-  // Période stabilisée : le fetch attend la fin du drag des sliders
-  const anneeMinD   = useDebounced(anneeMin, 300);
-  const anneeMaxD   = useDebounced(anneeMax, 300);
-  const anneesSpecD = useDebounced(anneesSpec, 300);
-  // Alignement sur les bornes réelles dès qu'elles sont connues
-  useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
-  const [sidebarOpen,  setSidebarOpen]  = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
-  const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
-  const [searchPays,  setSearchPays]  = useState("");
-  const [openConts,   setOpenConts]   = useState<Set<string>>(new Set());
-
-  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
-  const [erreur, setErreur] = useState(false);
-  const [tick, setTick] = useState(0);
-  const charger = useCallback(async () => {
-    if (!paysSelec.length) return;
-    setLoading(true); setErreur(false);
-    try {
-      const params = new URLSearchParams();
-      params.set("pays_list", paysSelec.join(","));
-      if (modeAnnees==="specifiques" && anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
-      else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
-      const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
-      setDonnees(dataR||[]);
-    } catch(e){ console.error(e); setErreur(true); }
-    finally { setLoading(false); }
-  }, [paysSelec, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees, tick]);
-
-  useEffect(() => { charger(); }, [charger]);
-
-  const paysAvecCouleur = paysSelec.map((nom,i) => ({ nom, couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] }));
-
-  const buildSeries = (dir: string, ind: string) =>
-    paysAvecCouleur.map(p=>({ nom:p.nom, couleur:p.couleur, data:donnees.filter(d=>d.pays===p.nom&&d.direction===dir&&d.indicateur===ind) }));
-
-  // Graphes selon le sous-type actif (Flux & Stocks / Greenfield / M&A)
-  const stActif = sousType !== "fluxstock" && SERIES_TYPES[sousType] ? SERIES_TYPES[sousType] : null;
-  const GRAPHES = stActif
-    ? stActif.map((s, i) => ({ id:`${sousType}-${i}`, titre:s.label, unite:s.unite, series: buildSeries(s.dir, s.ind) }))
-    : [
-      { id:"fe", titre:"Flux d'IDE entrants",  unite:"musd" as const, series: buildSeries("entrant","flux") },
-      { id:"fs", titre:"Flux d'IDE sortants",  unite:"musd" as const, series: buildSeries("sortant","flux") },
-      { id:"se", titre:"Stock d'IDE entrant",  unite:"musd" as const, series: buildSeries("entrant","stock") },
-      { id:"ss", titre:"Stock d'IDE sortant",  unite:"musd" as const, series: buildSeries("sortant","stock") },
-    ];
-
-  // Période réellement couverte par le sous-type (ex. greenfield : 2003+)
-  const stBornes = (() => {
-    if (!stActif) return null;
-    const inds = new Set(stActif.map(s => s.ind));
-    const ys = donnees.filter((d: any) => inds.has(d.indicateur) && d.valeur !== null).map((d: any) => d.annee);
-    return ys.length ? [Math.min(...ys), Math.max(...ys)] as [number, number] : null;
-  })();
-  const perMin = stBornes ? Math.max(anneeMin, stBornes[0]) : anneeMin;
-  const perMax = stBornes ? Math.min(anneeMax, stBornes[1]) : anneeMax;
-
-  const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
-  const groupedPays  = groupByContinent(filteredPays);
-  const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
-
-  const hasFilter = paysSelec.length>1||paysSelec[0]!=="Sénégal"||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax));
-  const nbFiltres = (paysSelec.length>1||paysSelec[0]!=="Sénégal"?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax))?1:0);
-  const reinit = () => { setPaysSelec(["Sénégal"]); setModeAnnees("plage"); setAnneeMin(borneMin); setAnneeMax(borneMax); setAnneesSpec([]); };
-
-  return (
-    <div style={{ display:"flex", alignItems:"flex-start" }}>
-
-        {/* Sidebar bande */}
-        <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"100vh", overflowY:"auto" as const, position:"sticky" as const, top:0, display:"flex", flexDirection:"column" as const }}>
-          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
-          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
-          <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
-            {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-                <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
-                {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
-              </button>
-              {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgba(220,38,38,0.08)", border:"1px solid rgba(220,38,38,0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(220,38,38,0.15)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="rgba(220,38,38,0.08)";}}>
-                <span className="material-symbols-outlined" style={{ fontSize:15, color:"#dc2626", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
-              </button>}
-            </div>
-          </div>
-          {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-              {/* Sélecteurs Vue + Type d'analyse */}
-              <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet}/>
-              <div style={{ position:"relative" as const, marginBottom:18 }}>
-                <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
-                <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
-                  style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-                {searchPays&&<button onClick={()=>setSearchPays("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
-              </div>
-              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-              {/* Pays */}
-              <div style={{ marginBottom:18 }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                    <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
-                  </div>
-                  <span style={{ fontSize:11, fontWeight:700, color:paysSelec.length>=4?"#004f91":"#9aa5b4", background:paysSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{paysSelec.length}/4</span>
-                </div>
-                {/* Sénégal épinglé */}
-                {(()=>{
-                  const sel = paysSelec.includes("Sénégal");
-                  const col = COMP_PALETTE[paysSelec.indexOf("Sénégal")] ?? COMP_PALETTE[0];
-                  const canAdd = !sel && paysSelec.length < 4;
-                  return (
-                    <div style={{ marginBottom:8, marginLeft:6 }}>
-                      <button onClick={()=>{ if(sel){if(paysSelec.length>1)setPaysSelec(prev=>prev.filter(n=>n!=="Sénégal"));}else if(canAdd){setPaysSelec(prev=>[...prev,"Sénégal"]);} }}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:sel||canAdd?"pointer":"not-allowed", background:"transparent", textAlign:"left" as const, width:"100%", opacity:!sel&&!canAdd?0.4:1 }}
-                        onMouseEnter={e=>{if(sel||canAdd)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
-                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                          
-                        </div>
-                        <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400 }}>Sénégal</span>
-                        <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
-                      </button>
-                    </div>
-                  );
-                })()}
-                <div style={{ height:1, background:"#F2F0EF", marginBottom:8 }}/>
-                <div style={{ maxHeight:200, overflowY:"auto" as const }}>
-                  {sortContinents(Object.keys(groupedPays)).map(continent => {
-                    const isOpen = openConts.has(continent);
-                    const zones  = groupedPays[continent];
-                    return (
-                      <div key={continent} style={{ marginBottom:6 }}>
-                        <button onClick={()=>toggleCont(continent)}
-                          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", marginBottom:3 }}>
-                          <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
-                          <ChevronDown size={11} style={{ color:"#004f91", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
-                        </button>
-                        {isOpen&&Object.entries(zones).sort(([a],[b])=>a.localeCompare(b,"fr")).map(([zone,paysInZone]) => (
-                          <div key={zone} style={{ marginLeft:6, marginBottom:4 }}>
-                            <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:2 }}>{zone}</p>
-                            {(paysInZone as any[]).map((p:any) => {
-                              const sel = paysSelec.includes(p.nom);
-                              const col = sel ? COMP_PALETTE[paysSelec.indexOf(p.nom)] : "#C5BFBB";
-                              const canAdd = !sel && paysSelec.length < 4;
-                              const disabled = !sel && !canAdd;
-                              if (p.nom==="Sénégal") return (
-                                <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
-                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    
-                                  </div>
-                                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
-                                  <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4" }}>Réf.</span>
-                                </div>
-                              );
-                              return (
-                                <button key={p.nom} onClick={()=>{ if(sel&&paysSelec.length>1) setPaysSelec(prev=>prev.filter(n=>n!==p.nom)); else if(canAdd) setPaysSelec(prev=>[...prev,p.nom]); }}
-                                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1 }}
-                                  onMouseEnter={e=>{if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
-                                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
-                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"#C5BFBB"}`, background:sel?col:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    
-                                  </div>
-                                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                  {Object.keys(groupedPays).length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>}
-                </div>
-              </div>
-              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-              {/* Période */}
-              <div style={{ marginBottom:18 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
-                </div>
-                <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
-                  {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
-                    <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
-                      {m.l}
-                    </button>
-                  ))}
-                </div>
-                {modeAnnees==="plage" ? (
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                    <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
-                      <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-borneMin)/(borneMax-borneMin))*100}%`, width:`${Math.max(0,((anneeMax-borneMin)/(borneMax-borneMin))*100-((anneeMin-borneMin)/(borneMax-borneMin))*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <input type="range" min={borneMin} max={borneMax} value={anneeMin}
-                        onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
-                        className="drs-thumb"
-                        style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
-                      <input type="range" min={borneMin} max={borneMax} value={anneeMax}
-                        onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
-                        className="drs-thumb"
-                        style={{zIndex:3} as React.CSSProperties}/>
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                      <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
-                    </div>
-                    <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
-                  </div>
-                ) : (
-                  <div>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3, marginBottom:8 }}>
-                      {Array.from({length:borneMax-borneMin+1},(_,i)=>borneMin+i).map(a=>{
-                        const sel=anneesSpec.includes(a);
-                        return (
-                          <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#004f91":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
-                            {a}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between" }}>
-                      <span style={{ fontSize:11, color:"#4a5568" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
-                      {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"#9aa5b4", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
-                    </div>
-                  </div>
-                )}
-              </div>
-          </div>}
-        </aside>
-
-        {/* Zone graphes */}
-        <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:22 }}>
-            <SousTypeNav value={sousType} onChange={setSousType}/>
-            <BoutonDonnees onClick={()=>setShowTable(true)} dep={paysSelec.join(",")}/>
-          </div>
-          <div style={{ marginBottom:20 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Analyse comparative par pays</h2>
-              <BadgePeriode>
-                {modeAnnees==="specifiques"&&anneesSpec.length>0
-                  ? anneesSpec.length===1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                  : `${perMin} — ${perMax}`}
-              </BadgePeriode>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" as const }}>
-              {paysAvecCouleur.map((p,i)=>(
-                <BadgeSerie key={p.nom} i={i} couleur={p.couleur}>{p.nom}</BadgeSerie>
-              ))}
-            </div>
-          </div>
-
-          {loading ? (
-            <SkeletonChartGrid n={4} cols={2} height={230}/>
-          ) : erreur ? (
-            <ErreurChargement onRetry={() => setTick(t => t + 1)} />
-          ) : (
-            <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-              {GRAPHES.map(g=>(
-                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Source CNUCED`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
-                  fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
-                </GrapheCard>
-              ))}
-            </div>
-          )}
-        </div>
-      <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} sousType={sousType} />
     </div>
   );
 }
@@ -3189,8 +3001,9 @@ export default function IdePage() {
           {/* Investissements réalisés (CNUCED) */}
           {section === "realises" && vueP === "pays" && (
             <>
-              {sousOnglet === "pays"        && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
-              {sousOnglet === "comparative" && <OngletAnalyseComparative paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
+              {/* « comparative » (anciennes URLs) est absorbé par la vue Pays :
+                  la comparaison se déclenche via le « + » de l'en-tête */}
+              {sousOnglet !== "monde"       && <OngletPays paysDispo={paysDispo} showTable={showTable} setShowTable={setShowTable} sousOnglet="pays" setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
               {sousOnglet === "monde"       && <OngletMonde showTable={showTable} setShowTable={setShowTable} sousOnglet={sousOnglet} setSousOnglet={setSousOnglet} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP}/>}
             </>
           )}
