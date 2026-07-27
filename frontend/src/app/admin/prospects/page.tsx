@@ -220,6 +220,21 @@ const EMPTY_FORM = {
   objet_commentaires:             "",
 };
 
+// ── Bouton « + » rond en pointillés (ajout d'un téléphone / email) ────────────
+// Grisé tant que l'entrée précédente n'est pas complète et valide.
+function BtnPlus({ ok, onClick, title }: { ok: boolean; onClick: () => void; title?: string }) {
+  return (
+    <button type="button" onClick={()=>ok&&onClick()} disabled={!ok} title={ok?(title||"Ajouter"):(title||"Complétez d'abord l'entrée précédente")}
+      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgba(0,79,145,0.35)":"#D8D4D0"}`,
+        background:"rgba(255,255,255,0.7)", color:ok?"#004f91":"#C5BFBB", cursor:ok?"pointer":"not-allowed",
+        display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="rgba(0,79,145,0.08)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgba(0,79,145,0.35)":"#D8D4D0"; e.currentTarget.style.background="rgba(255,255,255,0.7)"; }}>
+      <Plus size={13}/>
+    </button>
+  );
+}
+
 // ── Multi-téléphones ──────────────────────────────────────────────────────────
 function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string[])=>void }) {
   const ok = listePreteAjout(values, isPhoneComplete, normPhone);
@@ -227,11 +242,7 @@ function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
         <label style={{ ...fuiLabel, marginBottom:0 }}>Téléphone(s) *</label>
-        <button type="button" onClick={()=>ok&&onChange([...values,""])} disabled={!ok}
-          title={ok?undefined:"Saisissez d'abord un numéro valide"}
-          style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:6, padding:"3px 9px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, display:"flex", alignItems:"center", gap:4, fontFamily:"var(--font-google-sans)" }}>
-          <Plus size={11}/> Ajouter
-        </button>
+        <BtnPlus ok={ok} onClick={()=>onChange([...values,""])} title="Ajouter un numéro"/>
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
         {values.map((tel,i) => (
@@ -259,16 +270,12 @@ function MultiMails({ values, onChange }: { values:string[]; onChange:(v:string[
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
         <label style={{ ...fuiLabel, marginBottom:0 }}>Email(s) *</label>
-        <button type="button" onClick={()=>ok&&onChange([...values,""])} disabled={!ok}
-          title={ok?undefined:"Saisissez d'abord un email valide"}
-          style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", border:"none", borderRadius:6, padding:"3px 9px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, display:"flex", alignItems:"center", gap:4, fontFamily:"var(--font-google-sans)" }}>
-          <Plus size={11}/> Ajouter
-        </button>
+        <BtnPlus ok={ok} onClick={()=>onChange([...values,""])} title="Ajouter un email"/>
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
         {values.map((mail,i) => (
           <div key={i} style={{ display:"flex", gap:6 }}>
-            <FInput type="email" value={mail} placeholder="contact@exemple.com"
+            <FInput type="email" value={mail} placeholder="email@domaine.sn"
               onChange={e=>{ const a=[...values]; a[i]=e.target.value; onChange(a); }}
               style={{ flex:1 }}/>
             {values.length > 1 && (
@@ -318,10 +325,10 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove }: {
           <FInput value={pf.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom"/>
         </div>
       </div>
-      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+      <FGrid cols={2} style={{ alignItems:"start" }}>
         <MultiPhones values={pf.telephones} onChange={v=>upd("telephones",v)}/>
         <MultiMails  values={pf.mails}      onChange={v=>upd("mails",v)}/>
-      </div>
+      </FGrid>
     </div>
   );
 }
@@ -485,7 +492,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
           <div>
             <FLabel>Dénomination sociale *</FLabel>
-            <FInput value={form.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom de l'entreprise / organisation" style={{ fontSize:14, fontWeight:600 }}/>
+            <FInput value={form.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom de l'investisseur"/>
           </div>
           <div>
             <FLabel>Pays du siège social</FLabel>
@@ -494,21 +501,22 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         </div>
       </FSection>
 
-      {/* Contact */}
+      {/* Contact : téléphones, emails et site web sur la même ligne */}
       <FSection title="Contact">
-        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+        <FGrid cols={3} style={{ alignItems:"start", marginBottom:14 }}>
           <MultiPhones values={form.telephones} onChange={v=>upd("telephones",v)}/>
           <MultiMails  values={form.mails}      onChange={v=>upd("mails",v)}/>
-          <FGrid cols={2}>
-            <div>
-              <FLabel>Site web</FLabel>
-              <FInput value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="ex. exemple.com"/>
+          <div>
+            {/* même hauteur d'en-tête que les colonnes voisines (bouton +) */}
+            <div style={{ display:"flex", alignItems:"center", minHeight:24, marginBottom:8 }}>
+              <label style={{ ...fuiLabel, marginBottom:0 }}>Site web</label>
             </div>
-            <div>
-              <FLabel>LinkedIn</FLabel>
-              <FInput value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)} placeholder="linkedin.com/company/…"/>
-            </div>
-          </FGrid>
+            <FInput value={form.siteweb} onChange={e=>upd("siteweb",e.target.value)} placeholder="www.exemple.com"/>
+          </div>
+        </FGrid>
+        <div>
+          <FLabel>LinkedIn</FLabel>
+          <FInput value={form.linkedin} onChange={e=>upd("linkedin",e.target.value)}/>
         </div>
       </FSection>
 
