@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronUp, Clock, FileText, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, Upload, User, Video, X } from "lucide-react";
+import { Building2, Check, ChevronDown, ChevronUp, Clock, FileText, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, Upload, User, Video, X } from "lucide-react";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, doublonsDans, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -10,6 +10,10 @@ import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FBut
 import { parsePhoneNumber } from "libphonenumber-js";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import AdminMenu from "@/components/admin/AdminMenu";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import { badge_bleu, badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -176,14 +180,19 @@ function estFige(p:any) {
   return !!p?.issue;
 }
 
-// Accents des cartes (liseré haut + point pulsant), alignés sur la page publique.
-const CARD_ACCENTS: Record<string, { c:string; grad:string }> = {
-  "En cours":      { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)" },
-  "En attente":    { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
-  "Inactif":       { c:"#dc2626", grad:"linear-gradient(90deg,#991b1b 0%,#dc2626 60%,#ef4444 100%)" },
-  "À recontacter": { c:"#004f91", grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)" },
-  "Installation à venir": { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)" },
-  "Décliné":       { c:"#6b7280", grad:"linear-gradient(90deg,#4b5563 0%,#6b7280 60%,#9ca3af 100%)" },
+// Statuts des cartes — mêmes jetons que la page publique : progression vert,
+// re-contact bleu, inactif rouge, décliné / en attente gris.
+const STATUT_BADGE: Record<string, React.CSSProperties> = {
+  "En cours":             badge_vert,
+  "À recontacter":        badge_bleu,
+  "Installation à venir": badge_vert,
+  "Inactif":              badge_rouge,
+  "Décliné":              badge_gris,
+  "En attente":           badge_gris,
+};
+const STATUT_HEX: Record<string, string> = {
+  "En cours": "#188038", "À recontacter": "#004f91", "Installation à venir": "#188038",
+  "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
 };
 
 type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string[]; est_principal:boolean };
@@ -1807,9 +1816,10 @@ export default function ProspectsPage() {
   };
 
   return (
-    <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
+    <div style={{ fontFamily:"var(--font-google-sans)" }}>
       <style>{`
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
         @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
         [data-rte] ul{padding-left:20px;list-style-type:disc}
         [data-rte] ol{padding-left:20px;list-style-type:decimal}
@@ -1819,44 +1829,34 @@ export default function ProspectsPage() {
         [data-rte] *{font-family:var(--font-google-sans);font-size:13px}
       `}</style>
 
-      <div style={{ marginBottom:8 }}>
-        <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Prospects</h1>
-      </div>
-
-      {/* Onglets */}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#fff", borderBottom:"1px solid #E8E5E3", marginBottom:24 }}>
-        <div style={{ display:"flex" }}>
-          {([["cibles","Investisseurs ciblés"],["historique","Investisseurs en contact"],["precedents","Investisseurs transformés"]] as const).map(([key,label])=>{
-            const actif = onglet===key;
-            return (
-            <button key={key} onClick={()=>setOnglet(key)}
-              style={{ padding:"14px 22px", border:"none", borderBottom:`2px solid ${actif?"#004f91":"transparent"}`, background:"transparent", color:actif?"#004f91":"#9aa5b4", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s" }}>
-              {label}
-              {counts[key]>0 && <span style={{ marginLeft:7, fontSize:11, fontWeight:700, color:actif?"#004f91":"#9aa5b4", background:actif?"rgba(0,79,145,0.1)":"#F2F0EF", padding:"1px 7px", borderRadius:999 }}>{counts[key]}</span>}
-            </button>
-            );
-          })}
-        </div>
-        {onglet!=="precedents" && (
+      {/* ── Bandeau orange (espace d'administration) ── */}
+      <BarreTitre titre="Prospects" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+        droite={onglet!=="precedents" ? (
           <button className="ro-w" onClick={()=>{ setEdit(null); setModal(true); }}
-            style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(0,79,145,0.3)", marginBottom:4 }}>
+            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#fff", color:"#ca631f", fontWeight:700, fontSize:13, padding:"9px 18px", borderRadius:999, border:"none", cursor:"pointer", boxShadow:"0 3px 12px rgba(0,0,0,0.16)", fontFamily:"var(--font-google-sans)", transition:"background 0.15s, transform 0.15s", flexShrink:0, whiteSpace:"nowrap" as const }}
+            onMouseEnter={ev=>{ev.currentTarget.style.background="#FFF6EF";ev.currentTarget.style.transform="translateY(-1px)";}}
+            onMouseLeave={ev=>{ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="none";}}>
             <Plus size={15}/> Nouveau prospect
           </button>
-        )}
-      </div>
+        ) : undefined}>
+        <BarreTitreSegment
+          options={([["cibles","Investisseurs ciblés"],["historique","Investisseurs en contact"],["precedents","Investisseurs transformés"]] as const)
+            .map(([v,l])=>({ v, l, count: counts[v] }))}
+          value={onglet} onChange={v=>setOnglet(v)} />
+      </BarreTitre>
 
+      <div style={{ padding:"28px 40px 80px" }}>
       {loading ? (
-        <div style={{ display:"flex", justifyContent:"center", padding:60 }}>
-          <Loader2 size={28} style={{ color:"#9aa5b4", animation:"spin 1s linear infinite" }}/>
-        </div>
+        <SkeletonCards n={6} cols={3} height={190}/>
       ) : prospects.length === 0 ? (
-        <div style={{ textAlign:"center" as const, padding:"80px 0", color:"#9aa5b4" }}>
-          <p style={{ fontSize:16, fontWeight:600 }}>Aucun prospect</p>
-          <p style={{ fontSize:13, marginTop:4 }}>{onglet==="cibles"?"Ajoutez votre premier prospect ciblé":onglet==="historique"?"Aucun échange enregistré pour l'instant":"Aucune prospection conclue pour l'instant"}</p>
+        <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"#9aa5b4" }}>
+          <Building2 size={48} style={{ marginBottom:16, opacity:0.3 }}/>
+          <p style={{ fontSize:16, fontWeight:600, color:"#4a5568" }}>Aucun prospect</p>
+          <p style={{ fontSize:14, marginTop:6 }}>{onglet==="cibles"?"Cliquez sur « Nouveau prospect » pour commencer.":onglet==="historique"?"Aucun échange enregistré pour l'instant.":"Aucune prospection conclue pour l'instant."}</p>
         </div>
       ) : (
         <>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))", gap:14 }}>
+          <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:14 }}>
             {prospects.map(p=>{
               const activite = badgeProspect(p);
               const fmtJour = (d:string) => new Date(d).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});
@@ -1875,59 +1875,46 @@ export default function ProspectsPage() {
                     ? { label:"Décliné le", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
                     : { label:"Conclusion", value: null })
                 : { label:"Téléphone", value: p.telephones?.[0] ? fmtPhone(p.telephones[0]) : null };
-              // Bloc « Activités spécialisées » (onglet ciblés) : juste le nombre
-              const nbActs = (p.activite_ids||[]).length;
-              // Accent visuel (liseré + teintes), même logique que la page publique
-              const accent = (onglet==="historique"||onglet==="precedents") && activite ? (CARD_ACCENTS[activite.label]||null) : null;
-              const blocC  = accent ? accent.c : "#004f91";
-              const blocBg = accent ? `${accent.c}0A` : "rgba(0,79,145,0.04)";
-              const blocBd = accent ? `${accent.c}1F` : "rgba(0,79,145,0.10)";
+              // Accent de survol = couleur du statut (comme la page publique)
+              const hoverC = activite ? (STATUT_HEX[activite.label] || "#9aa5b4") : "rgba(0,79,145,0.33)";
+              const badgeStatut = activite ? (STATUT_BADGE[activite.label] || badge_gris) : null;
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
-                  style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"var(--ombre-1)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
-                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?`${accent.c}40`:"rgba(0,79,145,0.25)";}}
-                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+                  style={{ background:"#fff", border:"1px solid rgba(16,26,46,0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
+                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=hoverC;}}
+                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
 
-                  {accent ? <div style={{ height:3, background:accent.grad, flexShrink:0 }}/>
-                    : <div style={{ height:3, background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}/>}
-                  <div style={{ padding:"14px 16px 14px", flex:1 }}>
-                    {/* Statut / email + siège */}
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:12 }}>
-                      {onglet==="cibles" ? (
-                        <span style={{ display:"flex", alignItems:"center", gap:6, minWidth:0 }}>
-                          {p.nb_echanges > 0 && (
-                            <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999, flexShrink:0 }}>Contacté</span>
-                          )}
-                          {p.mails?.[0] && (
-                            <span style={{ display:"inline-block", fontSize:10.5, fontWeight:700, color:"#6b7280", background:"#F2F0EF", padding:"3px 10px", borderRadius:999, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, minWidth:0 }}>{p.mails[0]}</span>
-                          )}
-                        </span>
-                      ) : activite ? (
-                        <span style={{ display:"inline-flex", alignItems:"center", gap:accent?7:0, fontSize:10.5, fontWeight:700, color:activite.color, background:activite.bg, padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
-                          {accent && <span style={{ width:6, height:6, borderRadius:"50%", background:activite.color, ["--pc" as any]:activite.color+"66", animation:"pulseDotC 1.6s ease-out infinite", flexShrink:0 }}/>}
-                          {activite.label}
-                        </span>
-                      ) : <span/>}
-                      {p.siege_nom && <span style={{ display:"inline-block", fontSize:10.5, fontWeight:700, color:accent?accent.c:"#004f91", background:accent?`${accent.c}0D`:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, maxWidth:"45%", flexShrink:0 }}>{p.siege_nom}</span>}
+                  <div style={{ padding:"18px 20px 16px", flex:1, display:"flex", flexDirection:"column" as const, gap:13 }}>
+                    {/* Dénomination + repère temporel | badge de statut */}
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
+                      <div style={{ minWidth:0, flex:1 }}>
+                        <div style={{ fontWeight:800, fontSize:15.5, color:"#1a1a2e", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</div>
+                        {(()=>{
+                          const sousTitre = onglet==="cibles"
+                            ? (p.nb_echanges>0 ? "Déjà contacté" : null)
+                            : onglet==="precedents" && p.issue_conclu_le
+                            ? `${p.issue==="decline"?"Décliné":"Conclu"} le ${fmtJour(p.issue_conclu_le)}`
+                            : null;
+                          return sousTitre && <div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginTop:3 }}>{sousTitre}</div>;
+                        })()}
+                      </div>
+                      {onglet!=="cibles" && activite && badgeStatut && (
+                        <span style={{ ...badgeStatut, whiteSpace:"nowrap" as const, flexShrink:0 }}>{activite.label}</span>
+                      )}
                     </div>
 
-                    {/* Dénomination */}
-                    <div style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", lineHeight:1.35, overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.nom}</div>
-
-                    {/* Infos libellées */}
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
-                      <div style={{ background:blocBg, border:`1px solid ${blocBd}`, borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                        {onglet==="cibles" ? <>
-                          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:blocC, textTransform:"uppercase" as const, marginBottom:3 }}>Activités spécialisées</p>
-                          <p style={{ fontSize:12, fontWeight:600, color:nbActs>0?"#1a1a2e":"#9aa5b4" }}>{nbActs||"—"}</p>
-                        </> : <>
-                          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:blocC, textTransform:"uppercase" as const, marginBottom:3 }}>Email</p>
-                          <p style={{ fontSize:12, fontWeight:600, color:p.mails?.length?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.mails?.[0]||"—"}</p>
-                        </>}
+                    {/* Pays · info contextuelle en rangée épurée */}
+                    <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #F2F0EF", paddingTop:13, marginTop:"auto" }}>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>{onglet==="cibles"?"Pays":"Email"}</p>
+                        <p style={{ fontSize:12.5, fontWeight:700, color:(onglet==="cibles"?p.siege_nom:p.mails?.[0])?"#1a1a2e":"#C5BFBB", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
+                          {(onglet==="cibles" ? p.siege_nom : p.mails?.[0]) || "—"}
+                        </p>
                       </div>
-                      <div style={{ background:blocBg, border:`1px solid ${blocBd}`, borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:blocC, textTransform:"uppercase" as const, marginBottom:3 }}>{info2.label}</p>
-                        <p style={{ fontSize:12, fontWeight:600, color:info2.value?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{info2.value||"—"}</p>
+                      <div style={{ width:1, alignSelf:"stretch", background:"#F2F0EF", margin:"0 18px" }}/>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>{info2.label}</p>
+                        <p style={{ fontSize:12.5, fontWeight:700, color:info2.value?"#1a1a2e":"#C5BFBB", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, fontVariantNumeric:"tabular-nums" }}>{info2.value||"—"}</p>
                       </div>
                     </div>
                   </div>
@@ -2053,6 +2040,7 @@ export default function ProspectsPage() {
           </div>
         </>
       )}
+      </div>
 
       <ProspectModal open={modal} onClose={()=>setModal(false)} edit={edit} onSaved={charger}/>
       {vue && <ProspectVue p={vue} onClose={()=>setVue(null)}
