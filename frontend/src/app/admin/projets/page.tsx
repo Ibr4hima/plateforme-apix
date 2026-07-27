@@ -64,10 +64,25 @@ function FieldErr({ msg }: { msg: string }) {
 function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:9, border:"2px dashed #C5BFBB", background:"transparent", color:"#9aa5b4", fontSize:12, fontWeight:600, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)" }}
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:9, border:"2px dashed #C5BFBB", background:"transparent", color:"#9aa5b4", fontSize:12, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)" }}
       onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.color="#ca631f"; } }}
       onMouseLeave={e=>{ e.currentTarget.style.borderColor="#C5BFBB"; e.currentTarget.style.color="#9aa5b4"; }}>
       <Plus size={13} /> {label}
+    </button>
+  );
+}
+
+// ── Bouton « + » rond en pointillés (ajout d'un téléphone / email) ────────────
+// Grisé tant que l'entrée précédente n'est pas complète et valide.
+function BtnPlus({ ok, onClick, title }: { ok: boolean; onClick: () => void; title?: string }) {
+  return (
+    <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?(title||"Ajouter"):(title||"Complétez d'abord l'entrée précédente")}
+      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgba(0,79,145,0.35)":"#D8D4D0"}`,
+        background:"rgba(255,255,255,0.7)", color:ok?"#004f91":"#C5BFBB", cursor:ok?"pointer":"not-allowed",
+        display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="rgba(0,79,145,0.08)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgba(0,79,145,0.35)":"#D8D4D0"; e.currentTarget.style.background="rgba(255,255,255,0.7)"; }}>
+      <Plus size={13}/>
     </button>
   );
 }
@@ -126,7 +141,10 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
 
       {/* Téléphones */}
       <div style={{ marginBottom:10 }}>
-        <label style={LS}>Téléphones</label>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
+          <label style={LS}>Téléphones</label>
+          <BtnPlus ok={listePreteAjout(pf.telephones||[], isPhoneComplete, normPhone)} onClick={addTel} title="Ajouter un téléphone"/>
+        </div>
         {(pf.telephones||[]).map((tel: string, i: number) => (
           <div key={i} style={{ display:"flex", gap:6, marginBottom:5 }}>
             <div style={{ flex:1 }}>
@@ -139,17 +157,14 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
             </button>
           </div>
         ))}
-        {(()=>{ const ok=listePreteAjout(pf.telephones||[], isPhoneComplete, normPhone); return (
-        <button onClick={()=>ok&&addTel()} disabled={!ok} title={ok?undefined:"Saisissez d'abord un numéro valide"}
-          style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#004f91", background:"rgba(0,79,145,0.06)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:7, padding:"5px 10px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, fontFamily:"var(--font-google-sans)" }}>
-          <Plus size={10}/> Ajouter un téléphone
-        </button>
-        ); })()}
       </div>
 
       {/* Mails */}
       <div>
-        <label style={LS}>Emails</label>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
+          <label style={LS}>Emails</label>
+          <BtnPlus ok={listePreteAjout(pf.mails||[], isEmailComplete, normEmail)} onClick={addMail} title="Ajouter un email"/>
+        </div>
         {(pf.mails||[]).map((mail: string, i: number) => (
           <div key={i} style={{ display:"flex", gap:6, marginBottom:5 }}>
             <div style={{ flex:1 }}>
@@ -162,12 +177,6 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
             </button>
           </div>
         ))}
-        {(()=>{ const ok=listePreteAjout(pf.mails||[], isEmailComplete, normEmail); return (
-        <button onClick={()=>ok&&addMail()} disabled={!ok} title={ok?undefined:"Saisissez d'abord un email valide"}
-          style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#004f91", background:"rgba(0,79,145,0.06)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:7, padding:"5px 10px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, fontFamily:"var(--font-google-sans)" }}>
-          <Plus size={10}/> Ajouter un email
-        </button>
-        ); })()}
       </div>
     </div>
   );
@@ -188,19 +197,15 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
       </div>
       <div style={{ marginBottom:10 }}>
         <label style={LS}>Nom / Organisation</label>
-        <input value={porteur.nom||""} onChange={e=>upd("nom",e.target.value)} placeholder="Ex : Ministère des Finances" style={IS}/>
+        <input value={porteur.nom||""} onChange={e=>upd("nom",e.target.value)} style={IS}/>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
         {/* Téléphones */}
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Téléphone(s)</label>
-            {(()=>{ const ok=listePreteAjout(porteur.telephones||[""], isPhoneComplete, normPhone); return (
-            <button onClick={()=>ok&&upd("telephones",[...(porteur.telephones||[""]), ""])} disabled={!ok} title={ok?undefined:"Saisissez d'abord un numéro valide"}
-              style={{ fontSize:10, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:5, padding:"2px 7px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35 }}>
-              + Ajouter
-            </button>
-            ); })()}
+            <BtnPlus ok={listePreteAjout(porteur.telephones||[""], isPhoneComplete, normPhone)}
+              onClick={()=>upd("telephones",[...(porteur.telephones||[""]), ""])} title="Ajouter un téléphone"/>
           </div>
           {(porteur.telephones||[""]).map((tel:string, ti:number)=>(
             <div key={ti} style={{ display:"flex", alignItems:"flex-start", gap:5, marginBottom:6 }}>
@@ -221,12 +226,8 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
             <label style={LS}>Mail(s)</label>
-            {(()=>{ const ok=listePreteAjout(porteur.mails||[""], isEmailComplete, normEmail); return (
-            <button onClick={()=>ok&&upd("mails",[...(porteur.mails||[""]), ""])} disabled={!ok} title={ok?undefined:"Saisissez d'abord un email valide"}
-              style={{ fontSize:10, fontWeight:600, color:"#ca631f", background:"rgba(202,99,31,0.08)", border:"none", borderRadius:5, padding:"2px 7px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35 }}>
-              + Ajouter
-            </button>
-            ); })()}
+            <BtnPlus ok={listePreteAjout(porteur.mails||[""], isEmailComplete, normEmail)}
+              onClick={()=>upd("mails",[...(porteur.mails||[""]), ""])} title="Ajouter un email"/>
           </div>
           {(porteur.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
@@ -409,7 +410,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
             <div style={{ marginBottom:10 }}>
               <label style={LS}>Intitulé du projet *</label>
               <input value={form.titre_projet} onChange={e=>upd("titre_projet",e.target.value)}
-                placeholder="Intitulé du projet" style={{...IS,fontSize:14,fontWeight:600}}/>
+                placeholder="Intitulé du projet" style={IS}/>
             </div>
             <div style={{ marginBottom:10 }}>
               <label style={LS}>Description</label>
