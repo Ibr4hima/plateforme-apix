@@ -162,6 +162,11 @@ export default function ProspectsPage() {
     : onglet === "termines"
     ? ["Installation à venir", "Décliné"]
     : [];
+  // Chaque statut affiche sa couleur de badge (vert / rouge / gris) une fois coché.
+  const STATUT_COULEUR: Record<string, string> = {
+    "En cours": "#188038", "À recontacter": "#188038", "Installation à venir": "#188038",
+    "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
+  };
   // Le jeu de statuts change d'un onglet à l'autre : on repart à zéro au switch.
   useEffect(() => { setStatutSel([]); }, [onglet]);
 
@@ -263,7 +268,7 @@ export default function ProspectsPage() {
                 {recherche && <button onClick={() => setRecherche("")} aria-label="Effacer la recherche" style={{ position: "absolute" as const, right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
               </div>
               <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
-              {statutOpts.length > 0 && <><SideFilter label="Statut" color="#004f91" items={statutOpts} selected={statutSel} onToggle={toggleStatut} /><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /></>}
+              {statutOpts.length > 0 && <><SideFilter label="Statut" color="#004f91" colorOf={v => STATUT_COULEUR[v] || "#004f91"} items={statutOpts} selected={statutSel} onToggle={toggleStatut} /><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /></>}
               {paysOpts.length > 0 && <SideFilter label="Pays / Siège" color="#004f91" items={paysOpts} selected={paysSel} onToggle={togglePays} listMaxHeight={180} />}
               {secteurOpts.length > 0 && <><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /><SideFilter label="Secteur" color="#004f91" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} listMaxHeight={180} /></>}
             </div>

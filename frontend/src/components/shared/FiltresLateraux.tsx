@@ -41,7 +41,7 @@ function LigneOption({ sel, couleur, texte, onClick }: {
       onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
       onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
       <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?couleur:"#C5BFBB"}`,background:sel?couleur:"transparent",flexShrink:0}}/>
-      <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{texte}</span>
+      <span style={{fontSize:12,color:sel?couleur:"#4a5568",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{texte}</span>
     </button>
   );
 }
@@ -49,8 +49,9 @@ function LigneOption({ sel, couleur, texte, onClick }: {
 const badgeCompte = (n: number, couleur: string, fond?: string) =>
   n > 0 ? <span style={{fontSize:10,fontWeight:700,color:couleur,background:fond||couleur+"18",padding:"1px 6px",borderRadius:999}}>{n}</span> : null;
 
-export function SideFilter({ label, items, selected, onToggle, color, searchable = false, format, listMaxHeight, marginBottom = 18 }: {
+export function SideFilter({ label, items, selected, onToggle, color, colorOf, searchable = false, format, listMaxHeight, marginBottom = 18 }: {
   label: string; items: Item[]; selected: string[]; onToggle: (v: string) => void; color: string;
+  colorOf?: (value: string) => string;
   searchable?: boolean; format?: (v: string) => string; listMaxHeight?: number; marginBottom?: number;
 }) {
   const [open, setOpen]     = useState(true);
@@ -71,7 +72,7 @@ export function SideFilter({ label, items, selected, onToggle, color, searchable
           </div>}
           <div id={idContenu} style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:listMaxHeight,overflowY:listMaxHeight?"auto" as const:undefined}}>
             {filtered.map(item=>(
-              <LigneOption key={item.value} sel={selected.includes(item.value)} couleur={color}
+              <LigneOption key={item.value} sel={selected.includes(item.value)} couleur={colorOf?colorOf(item.value):color}
                 texte={item.label} onClick={()=>onToggle(item.value)}/>
             ))}
           </div>
