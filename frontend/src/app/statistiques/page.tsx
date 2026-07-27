@@ -837,18 +837,6 @@ function CommercePanel() {
           </div>
         </div>
         {sidebarOpen && <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
-          {/* Vue */}
-          <div style={{ marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid #F2F0EF" }}>
-            <p style={{ ...LBL, marginBottom: 8 }}>Vue</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {VUES_COM.map(o => (
-                <button key={o.v} onClick={() => setVue(o.v)}
-                  style={{ textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: vue === o.v ? 700 : 500, background: vue === o.v ? "rgba(0,79,145,0.08)" : "transparent", color: vue === o.v ? "#004f91" : "#4a5568", fontFamily: "var(--font-google-sans)" }}>
-                  {o.l}
-                </button>
-              ))}
-            </div>
-          </div>
           {/* Recherche pays */}
           <div style={{ position: "relative", marginBottom: 18 }}>
             <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
@@ -979,12 +967,24 @@ function CommercePanel() {
 
       {/* ── Zone principale ── */}
       <div style={{ flex: 1, minWidth: 0, padding: "32px 40px 80px" }}>
-        {/* Header */}
+        {/* Header : pays → bascule Exportations/Importations → période */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#004f91", flexShrink: 0 }} />
           <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>{selPays?.nom || "—"}</h2>
-          <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "rgba(0,79,145,0.08)", fontSize: 12, fontWeight: 700, color: "#004f91", flexShrink: 0 }}>{vue === "exportateur" ? "Exportations" : "Importations"}</span>
-          <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
+          <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3, flexShrink: 0 }}>
+            {VUES_COM.map(o => {
+              const actif = vue === o.v;
+              return (
+                <button key={o.v} onClick={() => setVue(o.v)}
+                  style={{ padding: "5px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" as const,
+                    background: actif ? "#fff" : "transparent", color: actif ? "#004f91" : "#9aa5b4",
+                    boxShadow: actif ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s", fontFamily: "var(--font-google-sans)" }}>
+                  {o.v === "exportateur" ? "Exportations" : "Importations"}
+                </button>
+              );
+            })}
+          </div>
+          <BadgePeriode>{perLabel}</BadgePeriode>
           <button onClick={() => setShowTable(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
             onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
             <Table size={14} /> Tableau de données
@@ -998,13 +998,12 @@ function CommercePanel() {
           const enRef = ref ? `en ${ref}` : "";
           const cards = [
             { label: expDir ? "Total exportations" : "Total importations", sub: "Dernière année", value: fmtUSD(kpis?.total ?? null), indicatif: enRef, text: false },
-            { label: "Année record", sub: "", value: kpis?.annee_record ? String(kpis.annee_record.annee) : "—", indicatif: kpis?.annee_record ? fmtUSD(kpis.annee_record.valeur) : "", text: false },
             { label: expDir ? `1er client · ${ref ?? "—"}` : `1er fournisseur · ${ref ?? "—"}`, sub: "", value: kpis?.top_partenaire?.nom || "—", indicatif: kpis?.top_partenaire ? `${fmtUSD(kpis.top_partenaire.valeur)} ${enRef}` : "", text: true },
             { label: `1re ressource · ${ref ?? "—"}`, sub: "", value: kpis?.top_ressource?.ressource || "—", indicatif: kpis?.top_ressource ? `${fmtUSD(kpis.top_ressource.valeur)} ${enRef}` : "", text: true },
-            { label: expDir ? "Part du 1er débouché" : "Part du 1er fournisseur", sub: `Concentration · ${ref ?? "—"}`, value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
+            { label: expDir ? "Part du 1er client" : "Part du 1er fournisseur", sub: `Concentration · ${ref ?? "—"}`, value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
           ];
           return (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
               {cards.map((c, i) => (
                 <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid rgba(16,26,46,0.12)", boxShadow: "none", transition: "border-color 0.18s", minWidth: 0 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
@@ -1024,18 +1023,17 @@ function CommercePanel() {
         {/* Graphes */}
         {balance.length > 0 && (() => {
           const expDir = vue === "exportateur";
-          const a0 = balance[0].annee, a1 = balance[balance.length - 1].annee;
           const balSerie = [{ nom: "Balance commerciale", couleur: "#004f91", data: balance.map(b => ({ annee: b.annee, valeur: b.balance })) }];
           const fluxSerie = [{ nom: expDir ? "Exportations" : "Importations", couleur: "#004f91", data: balance.map(b => ({ annee: b.annee, valeur: expDir ? b.exportations : b.importations })) }];
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
               {/* 1. Évolution du total exporté / importé */}
-              <GrapheCard titre={expDir ? "Évolution des exportations" : "Évolution des importations"} sous_titre={`Total · ${a0}–${a1}`} series={fluxSerie} grapheId={`stat_flux_${vue}_${selId}`} hideLegend
+              <GrapheCard titre={expDir ? "Évolution des exportations" : "Évolution des importations"} series={fluxSerie} grapheId={`stat_flux_${vue}_${selId}`} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={fluxSerie} height={340} type="line" fmt={(v: number | null) => fmtUSD(v)} />}>
                 <GrapheMultiPays series={fluxSerie} height={160} type="line" fmt={(v: number | null) => fmtUSD(v)} />
               </GrapheCard>
               {/* Balance commerciale (partagée) */}
-              <GrapheCard titre="Balance commerciale" sous_titre={`Exportations − importations · ${a0}–${a1}`} series={balSerie} grapheId={`stat_balance_${selId}`} hideLegend
+              <GrapheCard titre="Balance commerciale" series={balSerie} grapheId={`stat_balance_${selId}`} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={balSerie} height={340} type="line" fmt={(v: number | null) => fmtUSD(v)} />}>
                 <GrapheMultiPays series={balSerie} height={160} type="line" fmt={(v: number | null) => fmtUSD(v)} />
               </GrapheCard>
@@ -1048,8 +1046,6 @@ function CommercePanel() {
           const expDir = vue === "exportateur";
           const dataPart = tops.partenaires.map(p => ({ label: p.nom, valeur: p.valeur }));
           const dataRes = tops.ressources.map(r => ({ label: r.ressource, valeur: r.valeur }));
-          const periode = modeAnnees === "specifiques" && anneesSpec.length > 0
-            ? `${anneesSpec[0]}–${anneesSpec[anneesSpec.length - 1]}` : `${anneeMin}–${anneeMax}`;
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
               <GrapheCard titre={expDir ? "Répartition des exportations par pays de destination" : "Répartition des importations par pays d'origine"} grapheId={`stat_top_part_${vue}_${selId}`} hideLegend
@@ -1067,8 +1063,6 @@ function CommercePanel() {
         {/* 4 & 5. Poids des ressources & Concentration */}
         {(() => {
           const expDir = vue === "exportateur";
-          const periode = modeAnnees === "specifiques" && anneesSpec.length > 0
-            ? `${anneesSpec[0]}–${anneesSpec[anneesSpec.length - 1]}` : `${anneeMin}–${anneeMax}`;
           // Poids des ressources : top 8 + « Autres »
           let donutData: { label: string; valeur: number }[] = [];
           if (tops && tops.ressources.length) {
@@ -1089,7 +1083,7 @@ function CommercePanel() {
                 </GrapheCard>
               )}
               {parts.length > 0 && (
-                <GrapheCard titre={expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"} sous_titre={`Cumul ${periode}`} grapheId={`stat_repart_${vue}_${selId}`} hideLegend
+                <GrapheCard titre={expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"} grapheId={`stat_repart_${vue}_${selId}`} hideLegend hideSousTitre
                   fullChildren={<GrapheBarresEmpilees partenaires={parts} ressources={resLabels} fmt={(v) => fmtUSD(v)} rowH={42} />}>
                   <GrapheBarresEmpilees partenaires={parts.slice(0, 5)} ressources={resLabels} fmt={(v) => fmtUSD(v)} showLegend={false} />
                 </GrapheCard>
@@ -1700,12 +1694,14 @@ export default function StatistiquesPage() {
                 const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
                   ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)
                   : `${anneeMin} — ${anneeMax}`;
-                // Graphes : indicateurs épinglés (hors superficie) + les 4 flux de
-                // commerce extérieur, dès qu'un pays sélectionné a des données.
+                // Graphes : indicateurs épinglés (hors superficie) + densité de
+                // population et les 4 flux de commerce extérieur, toujours présents
+                // dès qu'un pays sélectionné a des données (même hors KPIs épinglés).
                 const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
+                const GRAPHES_SUP = ["densite", ...TRADE_CODES];
                 const aDesDonnees = (code: string) => selection.some(id => anneesActives.some(a => valeur(id, code, a) !== null));
                 const baseCodes = indicateursAffiches.filter(i => i.code !== "superficie").map(i => i.code);
-                const codesGraphes = [...baseCodes, ...TRADE_CODES.filter(c => !baseCodes.includes(c) && aDesDonnees(c))];
+                const codesGraphes = [...baseCodes, ...GRAPHES_SUP.filter(c => !baseCodes.includes(c) && aDesDonnees(c))];
                 const graphIndics = codesGraphes.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
                 return (
                 <>
