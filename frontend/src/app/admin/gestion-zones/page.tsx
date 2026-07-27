@@ -989,26 +989,14 @@ export default function GestionZonesPage() {
     finally { setDeletingEnt(null); }
   };
 
-  // Type visé par le bouton du bandeau : celui affiché, sinon le premier.
-  const typeAjout = selectedType ?? TYPE_ZONES[0].key;
-
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
 
       {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Pôles & Zones d'investissement" compact ton="orange" pleineLargeur actions={<AdminMenu />}
-        droite={onglet === "zones" ? (
-          // Le type est explicite dans le libellé : aucune ambiguïté sur ce qui
-          // sera créé (les pôles, eux, sont un référentiel fixe).
-          <button className="ro-w" onClick={() => openAjouterZone(typeAjout)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
-            onMouseEnter={ev => { ev.currentTarget.style.background = "#FFF6EF"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={ev => { ev.currentTarget.style.background = "#fff"; ev.currentTarget.style.transform = "none"; }}>
-            <Plus size={15} /> Ajouter une zone {typeAjout}
-          </button>
-        ) : undefined}>
+      {/* La création se fait depuis la carte du type concerné (« Ajouter une ZES »…) */}
+      <BarreTitre titre="Pôles & Zones d'investissement" compact ton="orange" pleineLargeur actions={<AdminMenu />}>
         <BarreTitreSegment
           options={[
             { v: "zones", l: "Zones d'investissement", count: zones.length },
@@ -1093,7 +1081,7 @@ export default function GestionZonesPage() {
                       style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: c, fontWeight: 700, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
                       onMouseEnter={ev => ev.currentTarget.style.background = `${c}0D`}
                       onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-                      <Plus size={13} /> Zone
+                      <Plus size={13} /> Ajouter une {t.code}
                     </button>
                   </div>
                 </div>
@@ -1109,7 +1097,7 @@ export default function GestionZonesPage() {
               <div style={{ textAlign: "center", padding: "60px 24px", color: "#9aa5b4" }}>
                 <Building2 size={44} style={{ marginBottom: 14, opacity: 0.3 }} />
                 <p style={{ fontSize: 15, fontWeight: 600, color: "#4a5568" }}>Aucune zone {t.code}</p>
-                <p style={{ fontSize: 13.5, marginTop: 6 }}>Utilisez « Ajouter une zone {t.key} » pour en créer une.</p>
+                <p style={{ fontSize: 13.5, marginTop: 6 }}>Utilisez « Ajouter une {t.code} » sur la carte du type pour en créer une.</p>
               </div>
             ) : (
               <>
