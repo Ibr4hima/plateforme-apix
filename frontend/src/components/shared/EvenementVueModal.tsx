@@ -25,7 +25,8 @@ export const ROLES_APIX: Record<string,string> = { "Organisateur":"Organisateur"
 export function ordinal(n: number) { return n === 1 ? "1ère édition" : `${n}ème édition`; }
 
 // ── Modal vue événement ───────────────────────────────────────────────────────
-export default function EvenementVueModal({ ev:e, onClose }: { ev:any; onClose:()=>void }) {
+// `actions` : boutons additionnels dans le pied (ex. « Modifier » en admin).
+export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; onClose:()=>void; actions?:React.ReactNode }) {
   if (!e) return null;
   const dateStr = e.date_debut
     ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
@@ -190,11 +191,12 @@ export default function EvenementVueModal({ ev:e, onClose }: { ev:any; onClose:(
         </div>
 
         {/* Pied */}
-        <div style={{display:"flex",justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
           <button onClick={onClose}
             style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
+          {actions}
         </div>
       </div>
     </div>

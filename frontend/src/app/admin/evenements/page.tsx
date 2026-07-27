@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, Check, Calendar } from "lucide-react";
-import Badge, { BadgeVariant } from "@/components/shared/Badge";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays, Search, SlidersHorizontal } from "lucide-react";
 import { api } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
+import BarreTitre from "@/components/shared/BarreTitre";
+import AdminMenu from "@/components/admin/AdminMenu";
+import EvenementVueModal from "@/components/shared/EvenementVueModal";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import ErreurChargement from "@/components/shared/ErreurChargement";
+import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
+import { useNaemaArbre } from "@/lib/referentiels";
+import { demarrerRedimension } from "@/lib/redimension";
+import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris } from "@/lib/couleurs";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import PaysSelect from "@/components/shared/PaysSelect";
@@ -15,13 +23,6 @@ import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement as computeStatut } from "@/lib/statuts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-function formatDate(dateStr: string, opts?: Intl.DateTimeFormatOptions): string {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const d = new Date(year, month - 1, day);
-  return d.toLocaleDateString("fr-FR", opts ?? { day: "numeric", month: "short", year: "numeric" });
-}
 
 function ordinalEdition(n: number): string {
   return n === 1 ? "1ère édition" : `${n}ème édition`;
@@ -38,23 +39,8 @@ const ROLES_APIX = [
 
 const MOIS_VIEW = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const ROLES_APIX_LABELS: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
-const ROLE_VARIANT: Record<string, BadgeVariant> = { "Organisateur":"green","Co-organisateur":"yellow","Participant":"orange","Partenaire":"teal","Sponsor":"lavender","Invité":"gray" };
-// Pilules teintées des rôles APIX sur les cards (palette du site)
-const ROLE_PILL: Record<string,{c:string;bg:string}> = {
-  "Organisateur":    { c:"#188038", bg:"rgba(24,128,56,0.08)"  },
-  "Co-organisateur": { c:"#188038", bg:"rgba(24,128,56,0.08)"  },
-  "Participant":     { c:"#004f91", bg:"rgba(0,79,145,0.07)"   },
-  "Partenaire":      { c:"#6A1B9A", bg:"rgba(106,27,154,0.07)" },
-  "Sponsor":         { c:"#ca631f", bg:"rgba(202,99,31,0.08)"  },
-  "Invité":          { c:"#6b7280", bg:"#F2F0EF"               },
-};
-
 
 const fmtDateFR = fmtDate;
-
-const LBL = ({children}:{children:string}) => (
-  <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
-);
 
 const EMPTY_FORM = {
   nom_event: "", edition: "" as string,
@@ -516,24 +502,217 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
   );
 }
 
-// ── Page principale ────────────────────────────────────────────────────────────
-export default function EvenementsPage() {
-  const [evenements, setEvenements] = useState<any[]>([]);
-  const [total,      setTotal]      = useState(0);
+// ── Cartes & filtres (mêmes jetons que la page publique) ──────────────────────
+
+// Badges de rôle APIX : organisation vert, participant orange, partenaire bleu,
+// invité violet, sponsor ambre — identiques à la page publique.
+const ROLE_BADGE: Record<string, React.CSSProperties> = {
+  "Organisateur":    badge_vert,
+  "Co-organisateur": badge_vert,
+  "Participant":     badge_orange,
+  "Partenaire":      badge_bleu,
+  "Invité":          badge_violet,
+  "Sponsor":         badge_ambre,
+};
+const ROLE_ACCENT: Record<string, string> = {
+  "Organisateur": "#188038", "Co-organisateur": "#188038",
+  "Participant": "#ca631f", "Partenaire": "#004f91",
+  "Invité": "#6A1B9A", "Sponsor": "#a16207",
+};
+const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "#004f91";
+
+// Échéance d'un événement à venir : « Dans 2 ans », « Dans 3 mois », « Dans 12 jours »
+function dansCombien(e: any): string | null {
+  const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
+    : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
+  if (!d) return null;
+  const now = new Date();
+  const jours = Math.ceil((d.getTime() - now.getTime()) / 86400000);
+  if (jours <= 0) return null;
+  let mois = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+  if (d.getDate() < now.getDate()) mois -= 1;
+  const ans = Math.floor(mois / 12);
+  if (ans >= 1) return `Dans ${ans} an${ans > 1 ? "s" : ""}`;
+  if (mois >= 1) return `Dans ${mois} mois`;
+  return `Dans ${jours} jour${jours > 1 ? "s" : ""}`;
+}
+
+const STATUT_OPTS = [
+  { value: "",         label: "Tous",     c: "#4a5568" },
+  { value: "a_venir",  label: "À venir",  c: "#004f91" },
+  { value: "en_cours", label: "En cours", c: "#188038" },
+  { value: "termine",  label: "Terminés", c: "#6b7280" },
+];
+const PUB_OPTS = [
+  { value: "",          label: "Tous",        c: "#4a5568" },
+  { value: "publie",    label: "Publiés",     c: "#188038" },
+  { value: "brouillon", label: "Non publiés", c: "#ca631f" },
+];
+
+// Groupe de choix exclusifs de la barre de filtre (statut, publication)
+function FiltreRadio({ label, options, value, onChange }: {
+  label: string; options: { value: string; label: string; c: string }[]; value: string; onChange: (v: string) => void;
+}) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <p style={{ fontSize: 11, fontWeight: 700, color: value ? "#004f91" : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 8 }}>{label}</p>
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
+        {options.map(o => {
+          const actif = value === o.value;
+          return (
+            <button key={o.value} onClick={() => onChange(o.value)}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", textAlign: "left" as const, fontSize: 12, fontWeight: actif ? 700 : 400, color: actif ? o.c : "#4a5568", fontFamily: "var(--font-google-sans)" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+              <div style={{ width: 7, height: 7, borderRadius: "50%", background: o.c, opacity: actif ? 1 : 0.3, flexShrink: 0 }} />{o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Carte événement (gabarit public + barre d'actions d'administration) ────────
+function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
+  e: any; estProchain: boolean;
+  onVoir: () => void; onEditer: () => void; onPublier: () => void; onSupprimer: () => void;
+  publiant: boolean; supprimant: boolean;
+}) {
+  const statut = computeStatut(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
+  const estEnCours = statut === "en_cours";
+  const estPasse   = statut === "termine";
+  const accent = estProchain
+    ? { c: "#004f91", grad: "linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", label: "Prochain événement", b: "rgba(0,79,145,0.45)", b2: "rgba(0,79,145,0.6)", sh: "0 4px 18px rgba(0,79,145,0.15)" }
+    : estEnCours
+    ? { c: "#188038", grad: "linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label: "Événement en cours", b: "rgba(24,128,56,0.45)", b2: "rgba(24,128,56,0.6)", sh: "0 4px 18px rgba(24,128,56,0.15)" }
+    : null;
+  const dateStr = e.date_debut
+    ? (e.date_debut === e.date_fin || !e.date_fin ? fmtDateFR(e.date_debut) : `${fmtDateFR(e.date_debut)} → ${fmtDateFR(e.date_fin)}`)
+    : e.prochain_mois ? `${e.prochain_jour ? e.prochain_jour + " " : ""}${MOIS_VIEW[(e.prochain_mois || 1) - 1]} ${e.prochain_annee || ""}`.trim() : null;
+  const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
+  const txtC = estPasse ? "#4a5568" : "#1a1a2e";
+  const hoverC = accent ? accent.c : accentRole(e.role_apix);
+  const sousTitre = statut === "a_venir"
+    ? (dansCombien(e) ?? (e.edition != null ? ordinalEdition(e.edition) : null))
+    : (e.edition != null ? ordinalEdition(e.edition) : null);
+
+  const marquee = (ev: React.MouseEvent, reset: boolean) => {
+    ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
+      const span = box.firstElementChild as HTMLElement | null;
+      if (!span) return;
+      if (reset) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; return; }
+      const d = span.scrollWidth - (box as HTMLElement).clientWidth;
+      if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; }
+    });
+  };
+
+  return (
+    <div onClick={onVoir}
+      style={{ background: estPasse ? "#FBFAF9" : "#fff", border: accent ? `1.5px solid ${accent.b}` : "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: accent ? accent.sh : "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
+      onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accent ? accent.b2 : `${hoverC}55`; marquee(ev, false); }}
+      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = accent ? accent.sh : "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = accent ? accent.b : "rgba(16,26,46,0.12)"; marquee(ev, true); }}>
+
+      {/* Bande d'accent : prochain événement (bleu) / en cours (vert) */}
+      {accent && (
+        <div style={{ display: "flex", alignItems: "center", gap: 7, background: accent.grad, padding: "6px 16px", flexShrink: 0 }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{accent.label}</span>
+        </div>
+      )}
+
+      <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
+        {/* Titre + échéance | publication & rôle APIX */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 15.5, color: txtC, lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom_event}</div>
+            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{sousTitre}</div>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            {e.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
+            {e.role_apix && <span style={{ ...(ROLE_BADGE[e.role_apix] || badge_gris), whiteSpace: "nowrap" as const, flexShrink: 0 }}>{ROLES_APIX_LABELS[e.role_apix] || e.role_apix}</span>}
+          </div>
+        </div>
+
+        {/* Date · Lieu en rangée épurée */}
+        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Date</p>
+            <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: dateStr ? txtC : "#C5BFBB", fontVariantNumeric: "tabular-nums", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+              <span style={{ display: "inline-block" }}>{dateStr || "—"}</span>
+            </p>
+          </div>
+          <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Lieu</p>
+            <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: lieu ? txtC : "#C5BFBB", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+              <span style={{ display: "inline-block" }}>{lieu || "—"}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions d'administration */}
+      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
+        <button onClick={onEditer}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          <Pencil size={12} /> Modifier
+        </button>
+        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <button onClick={onPublier} disabled={publiant}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "#188038" : "#ca631f", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgba(24,128,56,0.05)" : "rgba(202,99,31,0.06)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : e.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
+        </button>
+        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
+          style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(220,38,38,0.05)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          {supprimant ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Page principale ───────────────────────────────────────────────────────────
+export default function EvenementsAdminPage() {
+  const [tous,       setTous]       = useState<any[]>([]);
   const [loading,    setLoading]    = useState(true);
+  const [erreur,     setErreur]     = useState(false);
   const [modal,      setModal]      = useState(false);
   const [editItem,   setEditItem]   = useState<any>(null);
-  const [deleting,   setDeleting]   = useState<string | null>(null);
   const [vue,        setVue]        = useState<any>(null);
-  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deleting,   setDeleting]   = useState<any>(null);
+  const [togglingId, setTogglingId] = useState<any>(null);
+
+  // Filtres
+  const [recherche,    setRecherche]    = useState("");
+  const [statutFiltre, setStatutFiltre] = useState("");
+  const [pubFiltre,    setPubFiltre]    = useState("");
+  const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
+  const [secteursSel,  setSecteursSel]  = useState<string[]>([]);
+  const [branchesSel,  setBranchesSel]  = useState<string[]>([]);
+  const [activitesSel, setActivitesSel] = useState<string[]>([]);
+
+  // Barre de filtre redimensionnable (comme les pages publiques)
+  const [sidebarOpen,  setSidebarOpen]  = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const isResizing = useRef(false);
+  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
+
+  const { arbre: secteurs } = useNaemaArbre();
 
   const charger = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
-      const data = await api.evenements.liste("per_page=100&admin=true");
-      setEvenements(data.data || []);
-      setTotal(data.total || 0);
-    } catch (e) { console.error(e); }
+      const data = await api.evenements.liste("per_page=1000&admin=true");
+      setTous(data.data || []);
+    } catch (e) { console.error(e); setErreur(true); }
     finally { setLoading(false); }
   }, []);
 
@@ -542,7 +721,7 @@ export default function EvenementsPage() {
   const openCreate = () => { setEditItem(null); setModal(true); };
   const openEdit   = (e: any) => { setEditItem(e); setModal(true); };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: any) => {
     if (!(await confirmer("Supprimer cet événement ?"))) return;
     setDeleting(id);
     try { await api.evenements.supprimer(id); charger(); }
@@ -552,345 +731,158 @@ export default function EvenementsPage() {
   const handleTogglePublie = async (e: any) => {
     setTogglingId(e.id);
     try {
-      await fetch(`${API_BASE}/evenements/${e.id}`, { method:"PATCH", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({est_publie:!e.est_publie}) });
+      await fetch(`${API_BASE}/evenements/${e.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ est_publie: !e.est_publie }) });
       charger();
     } finally { setTogglingId(null); }
   };
 
+  // Pays hôtes présents dans les données (publiés ET brouillons)
+  const paysHotes = useMemo(
+    () => [...new Set(tous.map(e => e.pays_hote_nom).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), "fr")) as string[],
+    [tous]);
+
+  const evenements = useMemo(() => tous.filter(e => {
+    if (recherche) {
+      const q = recherche.toLowerCase();
+      if (!e.nom_event?.toLowerCase().includes(q) && !e.organisateur?.toLowerCase().includes(q)
+        && !e.ville?.toLowerCase().includes(q) && !e.pays_hote_nom?.toLowerCase().includes(q)) return false;
+    }
+    if (pubFiltre === "publie"    && e.est_publie === false) return false;
+    if (pubFiltre === "brouillon" && e.est_publie !== false) return false;
+    if (statutFiltre) {
+      const statut = computeStatut(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
+      if (statut !== statutFiltre) return false;
+    }
+    if (paysFiltres.length > 0 && !paysFiltres.includes(e.pays_hote_nom || "")) return false;
+    if (secteursSel.length  > 0 && !secteursSel.some(s => (e.secteur_noms  || []).includes(s))) return false;
+    if (branchesSel.length  > 0 && !branchesSel.some(b => (e.branche_noms  || []).includes(b))) return false;
+    if (activitesSel.length > 0 && !activitesSel.some(a => (e.activite_noms || []).includes(a))) return false;
+    return true;
+  }), [tous, recherche, pubFiltre, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel]);
+
+  // Prochain événement à venir (date la plus proche dans le futur)
+  const prochainId = useMemo(() => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    let best: any = null, bestD: Date | null = null;
+    evenements.forEach(e => {
+      const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
+        : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
+      if (d && d > today && (!bestD || d < bestD)) { bestD = d; best = e; }
+    });
+    return best?.id ?? null;
+  }, [evenements]);
+
+  const nbFiltres = (recherche ? 1 : 0) + (statutFiltre ? 1 : 0) + (pubFiltre ? 1 : 0)
+    + paysFiltres.length + secteursSel.length + branchesSel.length + activitesSel.length;
+  const hasFilter = nbFiltres > 0;
+  const reinit = () => { setRecherche(""); setStatutFiltre(""); setPubFiltre(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
+
+  const togglePays     = (v: string) => setPaysFiltres(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
+  const toggleSecteur  = (v: string) => { setSecteursSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]); setBranchesSel([]); setActivitesSel([]); };
+  const toggleBranche  = (v: string) => { setBranchesSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]); setActivitesSel([]); };
+  const toggleActivite = (v: string) => setActivitesSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
+
   return (
-    <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
+    <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
 
-      {/* Header */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:32 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Événements</h1>
-          <span style={{ fontSize:14, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.1)", padding:"3px 12px", borderRadius:999 }}>{total}</span>
+      {/* ── Bandeau ── */}
+      <BarreTitre titre="Événements" compact actions={<AdminMenu />}>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.22)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{tous.length}</span>
+      </BarreTitre>
+
+      {/* ── Corps : barre de filtre + grille ── */}
+      <div style={{ display: "flex", alignItems: "flex-start" }}>
+        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "100vh", overflowY: "auto" as const, position: "sticky" as const, top: 0, display: "flex", flexDirection: "column" as const }}>
+          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
+          {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute" as const, right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent", transition: "background 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
+          <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
+            {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Filtres</span>}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <button onClick={() => setSidebarOpen(o => !o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
+                <SlidersHorizontal size={14} style={{ color: "#004f91" }} />
+                {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
+              </button>
+              {sidebarOpen && hasFilter && <button onClick={reinit} title="Tout réinitialiser"
+                style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.20)", cursor: "pointer", borderRadius: 999, padding: "5px", display: "flex", alignItems: "center", transition: "background 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.15)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(220,38,38,0.08)"; }}>
+                <X size={13} style={{ color: "#dc2626" }} />
+              </button>}
+            </div>
+          </div>
+          {sidebarOpen && <div style={{ padding: "16px", overflowY: "auto" as const, flex: 1 }}>
+            <div style={{ position: "relative" as const, marginBottom: 18 }}>
+              <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+              <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher…"
+                style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+              {recherche && <button onClick={() => setRecherche("")} aria-label="Effacer la recherche" style={{ position: "absolute" as const, right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+            </div>
+            <FiltreRadio label="Statut" options={STATUT_OPTS} value={statutFiltre} onChange={setStatutFiltre} />
+            <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
+            <FiltreRadio label="Publication" options={PUB_OPTS} value={pubFiltre} onChange={setPubFiltre} />
+            {paysHotes.length > 0 && <>
+              <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
+              <SideFilter label="Pays hôte" color="#004f91" marginBottom={20} items={paysHotes} selected={paysFiltres} onToggle={togglePays} listMaxHeight={200} />
+            </>}
+            {secteurs.length > 0 && <>
+              <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
+              <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
+                onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite} />
+            </>}
+          </div>}
+        </aside>
+
+        {/* Grille */}
+        <div style={{ flex: 1, minWidth: 0, padding: "28px 40px 80px" }}>
+          {/* Barre d'action */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 18, flexWrap: "wrap" as const }}>
+            <span style={{ fontSize: 12.5, color: "#9aa5b4", fontWeight: 600 }}>
+              {hasFilter ? `${evenements.length} sur ${tous.length} événement${tous.length > 1 ? "s" : ""}` : `${tous.length} événement${tous.length > 1 ? "s" : ""}`}
+            </span>
+            <button className="ro-w" onClick={openCreate}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#004f91", color: "#fff", fontWeight: 700, fontSize: 13, padding: "10px 20px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,79,145,0.30)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#013e73"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#004f91"; }}>
+              <Plus size={15} /> Ajouter un événement
+            </button>
+          </div>
+
+          {loading ? (
+            <SkeletonCards n={6} cols={2} height={220} />
+          ) : erreur ? (
+            <ErreurChargement onRetry={() => charger()} />
+          ) : evenements.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
+              <CalendarDays size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
+              <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun événement {hasFilter ? "trouvé" : "enregistré"}</p>
+              <p style={{ fontSize: 14, marginTop: 6 }}>{hasFilter ? "Modifiez vos filtres pour affiner la recherche." : "Cliquez sur « Ajouter un événement » pour commencer."}</p>
+              {hasFilter && <BoutonEffacerFiltres onClick={reinit} />}
+            </div>
+          ) : (
+            <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
+              {evenements.map(e => (
+                <CarteEvenement key={e.id} e={e} estProchain={prochainId != null && e.id === prochainId}
+                  onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
+                  onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
+                  publiant={togglingId === e.id} supprimant={deleting === e.id} />
+              ))}
+            </div>
+          )}
         </div>
-        <button className="ro-w" onClick={openCreate} style={{ display:"flex", alignItems:"center", gap:8, background:"#004f91", color:"#fff", fontWeight:700, fontSize:13, padding:"11px 20px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:"0 4px 14px rgba(0,79,145,0.3)" }}>
-          <Plus size={15} /> Ajouter un événement
-        </button>
       </div>
 
-      {/* Cards */}
-      {loading ? (
-        <div style={{ display:"flex", justifyContent:"center", alignItems:"center", height:200, gap:10, color:"#9aa5b4" }}>
-          <Loader2 size={22} style={{ animation:"spin 1s linear infinite" }} />
-        </div>
-      ) : evenements.length===0 ? (
-        <div style={{ textAlign:"center", padding:"80px 24px", color:"#9aa5b4" }}>
-          <Calendar size={44} style={{ marginBottom:14, opacity:0.25 }} />
-          <p style={{ fontSize:14 }}>Aucun événement — cliquez sur "+ Ajouter" pour commencer.</p>
-        </div>
-      ) : (
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))", gap:14 }}>
-          {(()=>{
-            // Prochain événement à venir (date la plus proche dans le futur) — même logique que la page publique
-            const today = new Date(); today.setHours(0,0,0,0);
-            let prochainId: number|null = null; let bestD: Date|null = null;
-            evenements.forEach(e=>{
-              const d = e.date_debut ? new Date(e.date_debut+"T00:00:00")
-                : e.prochain_annee ? new Date(e.prochain_annee,(e.prochain_mois||1)-1,e.prochain_jour||1) : null;
-              if (d && d>today && (!bestD || d<bestD)) { bestD=d; prochainId=e.id; }
-            });
-            return evenements.map(e => {
-            const dateStr = e.date_debut
-              ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDateFR(e.date_debut) : `${fmtDateFR(e.date_debut)} → ${fmtDateFR(e.date_fin)}`)
-              : e.prochain_mois ? `${e.prochain_jour?e.prochain_jour+" ":""}${MOIS_VIEW[(e.prochain_mois||1)-1]} ${e.prochain_annee||""}` : null;
-            const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
-            const statut = computeStatut(e);
-            // Récurrents sans date fixe : la prochaine occurrence est à venir
-            const statutAff = statut ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
-            const ST: any = {
-              a_venir:  { label:"À venir",  c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
-              en_cours: { label:"En cours", c:"#188038", bg:"rgba(24,128,56,0.08)" },
-              termine:  { label:"Terminé",  c:"#6b7280", bg:"#F2F0EF"              },
-            };
-            const st = statutAff ? ST[statutAff] : null;
-            const estProchain = prochainId!=null && e.id===prochainId;
-            const estEnCours = statutAff==="en_cours";
-            const estPasse = statutAff==="termine";
-            const accent = estProchain
-              ? { c:"#004f91", grad:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", label:"Prochain événement", bg:"rgba(0,79,145,0.07)" }
-              : estEnCours
-              ? { c:"#188038", grad:"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label:"Événement en cours", bg:"rgba(24,128,56,0.08)" }
-              : null;
-            const blocC  = estPasse ? "#6b7280" : estEnCours ? "#188038" : "#004f91";
-            const blocBg = estPasse ? "#F5F4F3" : estEnCours ? "rgba(24,128,56,0.05)" : "rgba(0,79,145,0.04)";
-            const blocBd = estPasse ? "#E8E5E3" : estEnCours ? "rgba(24,128,56,0.12)" : "rgba(0,79,145,0.10)";
-            // Rôle APIX : bleu par défaut, vert quand l'événement est en cours, gris pour les passés
-            const roleC  = estPasse ? { c:"#6b7280", bg:"#F2F0EF" } : estEnCours ? { c:"#188038", bg:"rgba(24,128,56,0.08)" } : { c:"#004f91", bg:"rgba(0,79,145,0.07)" };
-            const txtC   = estPasse ? "#4a5568" : "#1a1a2e";
-            return (
-              <div key={e.id} onClick={()=>setVue(e)}
-                style={{background:estPasse?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
-                onMouseEnter={ev=>{
-                  ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent?`${accent.c}40`:estPasse?"#D8D4D0":"rgba(0,79,145,0.25)";
-                  // Contenus trop longs : glissent pour révéler la fin
-                  ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                    const span = box.firstElementChild as HTMLElement | null;
-                    if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                  });
-                }}
-                onMouseLeave={ev=>{
-                  ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
-                  ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                    const span = box.firstElementChild as HTMLElement | null;
-                    if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                  });
-                }}>
+      {/* Fiche (même modal que la page publique) + raccourci de modification */}
+      <EvenementVueModal ev={vue} onClose={() => setVue(null)} actions={vue ? (
+        <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgba(0,79,145,0.25)" }}>
+          <Pencil size={13} /> Modifier
+        </button>
+      ) : null} />
 
-                <div style={{height:3,background:accent?accent.grad:estPasse?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-                <div style={{padding:"14px 16px 14px",flex:1}}>
-                  {/* Statut + rôle de l'APIX */}
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                    {accent ? (
-                      <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:accent.c,background:accent.bg,padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const}}>
-                        <span style={{width:6,height:6,borderRadius:"50%",background:accent.c,["--pc" as any]:accent.c+"66",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                        {accent.label}
-                      </span>
-                    ) : st ? (
-                      <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
-                    ) : <span/>}
-                    {e.role_apix ? (
-                      <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:roleC.c,background:roleC.bg,padding:"3px 10px",borderRadius:999}}>
-                        {ROLES_APIX_LABELS[e.role_apix]||e.role_apix}
-                      </span>
-                    ) : <span/>}
-                  </div>
-
-                  {/* Titre + édition */}
-                  <div style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
-                  {e.edition!=null&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:2}}>{ordinalEdition(e.edition)}</div>}
-
-                  {/* Infos libellées */}
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                    <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Date</p>
-                      <p data-marquee style={{fontSize:12,fontWeight:600,color:dateStr?txtC:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                        <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
-                      </p>
-                    </div>
-                    <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Lieu</p>
-                      <p data-marquee style={{fontSize:12,fontWeight:600,color:lieu?txtC:"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                        <span style={{display:"inline-block"}}>{lieu||"—"}</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="ro-w" style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
-                  <button onClick={()=>openEdit(e)}
-                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
-                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                    <Pencil size={12}/> Modifier
-                  </button>
-                  <div style={{width:1,background:"#F2F0EF"}}/>
-                  <button onClick={()=>handleTogglePublie(e)} disabled={togglingId===e.id}
-                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:e.est_publie?"#188038":"#6b7280",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                    onMouseEnter={ev=>ev.currentTarget.style.background=e.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
-                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                    {togglingId===e.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:e.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
-                  </button>
-                  <div style={{width:1,background:"#F2F0EF"}}/>
-                  <button onClick={()=>handleDelete(e.id)} disabled={deleting===e.id}
-                    style={{width:46,display:"flex",alignItems:"center",justifyContent:"center",background:"none",border:"none",cursor:"pointer",transition:"background 0.15s"}}
-                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
-                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                    {deleting===e.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
-                  </button>
-                </div>
-              </div>
-            );
-          });
-          })()}
-        </div>
-      )}
-
-      {vue&&(()=>{
-        const statutV = computeStatut(vue) ?? ((vue.prochain_annee || vue.prochain_mois) ? "a_venir" : null);
-        const STV: any = {
-          a_venir:  { label:"À venir",  c:"#004f91", bg:"rgba(0,79,145,0.07)"  },
-          en_cours: { label:"En cours", c:"#188038", bg:"rgba(24,128,56,0.08)" },
-          termine:  { label:"Terminé",  c:"#6b7280", bg:"#F2F0EF"              },
-        };
-        const stV = statutV ? STV[statutV] : null;
-        const roleV = vue.role_apix ? (ROLE_PILL[vue.role_apix]||ROLE_PILL["Invité"]) : null;
-        const dateV = vue.date_debut
-          ? (vue.date_debut===vue.date_fin||!vue.date_fin ? fmtDateFR(vue.date_debut) : `${fmtDateFR(vue.date_debut)} → ${fmtDateFR(vue.date_fin)}`)
-          : vue.prochain_mois ? `${vue.prochain_jour?vue.prochain_jour+" ":""}${MOIS_VIEW[(vue.prochain_mois||1)-1]} ${vue.prochain_annee||""}` : null;
-        const Pill = ({c,bg,children}:{c:string;bg:string;children:React.ReactNode}) => (
-          <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:c,background:bg,padding:"3px 10px",borderRadius:999}}>{children}</span>
-        );
-        const SecTitle = ({children}:{children:string}) => (
-          <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
-        );
-        const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
-          <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
-            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
-            {children}
-          </div>
-        );
-        return (
-        <div onClick={()=>setVue(null)} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-          <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-          <div onClick={ev=>ev.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
-            {/* Liseré d'accent */}
-            <div style={{height:4,background:"#004f91",flexShrink:0}}/>
-
-            {/* En-tête */}
-            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
-              <div style={{minWidth:0}}>
-                <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{vue.nom_event}</h2>
-                <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-                  {stV&&<Pill c={stV.c} bg={stV.bg}>{stV.label}</Pill>}
-                  {vue.edition!=null&&<Pill c="#004f91" bg="rgba(0,79,145,0.07)">{ordinalEdition(vue.edition)}</Pill>}
-                  {roleV&&<Pill c={roleV.c} bg={roleV.bg}>{ROLES_APIX_LABELS[vue.role_apix]||vue.role_apix}</Pill>}
-                </div>
-              </div>
-              <button onClick={()=>setVue(null)}
-                style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-                onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-                onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-                <X size={15} color="#4a5568"/>
-              </button>
-            </div>
-
-            {/* Corps */}
-            <div style={{padding:"22px 28px",overflowY:"auto" as const,flex:1,display:"flex",flexDirection:"column" as const,gap:22}}>
-
-              {/* Informations */}
-              <section>
-                <SecTitle>Informations</SecTitle>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                  {dateV&&(
-                    <Bloc label="Date">
-                      <p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{dateV}</p>
-                      {vue.duree_jours&&<p style={{fontSize:10.5,color:"#9aa5b4",marginTop:2}}>{vue.duree_jours} jour{vue.duree_jours>1?"s":""}</p>}
-                    </Bloc>
-                  )}
-                  {(vue.ville||vue.pays_hote_nom)&&(
-                    <Bloc label="Lieu"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{[vue.ville,vue.pays_hote_nom].filter(Boolean).join(", ")}</p></Bloc>
-                  )}
-                  {vue.organisateur&&(
-                    <Bloc label="Organisateur"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{vue.organisateur}</p></Bloc>
-                  )}
-                  {vue.est_recurrent&&(
-                    <Bloc label="Récurrence"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>Tous les {vue.frequence_valeur} {vue.frequence_type==="mois"?"mois":`an${vue.frequence_valeur>1?"s":""}`}</p></Bloc>
-                  )}
-                </div>
-              </section>
-
-              {/* Description */}
-              {vue.description&&(
-                <section>
-                  <SecTitle>Description</SecTitle>
-                  <div style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"13px 15px"}}>
-                    <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-                    <div data-rte dangerouslySetInnerHTML={{__html:vue.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
-                  </div>
-                </section>
-              )}
-
-              {/* Thématiques */}
-              {vue.thematiques_tree&&Object.keys(vue.thematiques_tree).length>0&&(
-                <section>
-                  <SecTitle>Thématiques</SecTitle>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
-                    {Object.entries(vue.thematiques_tree).map(([sec,branches]:any)=>(
-                      <div key={sec}>
-                        <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:Object.keys(branches).length?5:0}}>
-                          <div style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                          <span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>{sec}</span>
-                        </div>
-                        {Object.entries(branches).map(([bra,acts]:any)=>(
-                          <div key={bra} style={{paddingLeft:20,borderLeft:"2px solid rgba(0,79,145,0.15)"}}>
-                            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:acts.length?4:0}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-                              <span style={{fontSize:11,fontWeight:600,color:"#ca631f"}}>{bra}</span>
-                            </div>
-                            {acts.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>{acts.map((act:string)=>(
-                              <div key={act} style={{display:"flex",alignItems:"center",gap:6}}>
-                                <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act}</span>
-                              </div>
-                            ))}</div>}
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Participants */}
-              {(vue.pays_invites_noms||vue.entreprises_invitees)&&(
-                <section>
-                  <SecTitle>Participants</SecTitle>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:10}}>
-                    {vue.pays_invites_noms&&(
-                      <div>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:5}}>Pays invités</p>
-                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
-                          {vue.pays_invites_noms.split(",").map((p:string)=>p.trim()).filter(Boolean).map((p:string)=>(
-                            <span key={p} style={{fontSize:11,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999,fontWeight:600}}>{p}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {vue.entreprises_invitees&&(
-                      <div>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:5}}>Entreprises invitées</p>
-                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
-                          {vue.entreprises_invitees.split(",").map((ent:string)=>ent.trim()).filter(Boolean).map((ent:string)=>(
-                            <span key={ent} style={{fontSize:11,color:"#ca631f",background:"rgba(202,99,31,0.07)",padding:"3px 10px",borderRadius:999,fontWeight:600}}>{ent}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </section>
-              )}
-
-              {/* Documents */}
-              {(vue.fichiers||[]).length>0&&(
-                <section>
-                  <SecTitle>Documents</SecTitle>
-                  <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
-                    {vue.fichiers.map((f:any)=>(
-                      <a key={f.id} href={`${API_BASE}/evenements/${vue.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                        style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
-                        <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
-                        <span style={{fontSize:12.5,color:"#004f91",fontWeight:600}}>{f.titre||"Document"}</span>
-                      </a>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-            </div>
-
-            {/* Pied */}
-            <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
-              <button onClick={()=>setVue(null)}
-                style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
-                Fermer
-              </button>
-              <button className="ro-w" onClick={()=>{setVue(null);openEdit(vue);}}
-                style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
-                <Pencil size={13}/> Modifier
-              </button>
-            </div>
-          </div>
-        </div>
-        );
-      })()}
-
-      <EvenementModal open={modal} onClose={()=>setModal(false)} editItem={editItem} onSaved={charger} />
+      <EvenementModal open={modal} onClose={() => setModal(false)} editItem={editItem} onSaved={charger} />
     </div>
   );
 }
