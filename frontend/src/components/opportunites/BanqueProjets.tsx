@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Pencil, Trash2, Loader2, X, Check, Eye, EyeOff, FileText, Upload, Plus } from "lucide-react";
+import { Pencil, Trash2, Loader2, X, Check, Eye, EyeOff, FileText, Upload, Plus, Layers } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 
 import GeoCascadeSelect from "@/components/shared/GeoCascadeSelect";
@@ -11,6 +11,8 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 import { confirmer } from "@/components/shared/Confirmation";
 import { fmtPhone } from "@/lib/telephone";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import { badge_gris, poleAccent } from "@/lib/couleurs";
 
 // Bouton « + » rond en pointillés d'une liste de contacts : actif seulement si
 // toutes les entrées existantes sont complètes et valides.
@@ -774,44 +776,44 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       {loading ? (
-        <div style={{ display:"flex", justifyContent:"center", padding:60 }}>
-          <Loader2 size={28} style={{ color:"#9aa5b4", animation:"spin 1s linear infinite" }}/>
-        </div>
+        <SkeletonCards n={6} cols={3} height={190}/>
       ) : projets.length===0 ? (
-        <div style={{ textAlign:"center" as const, padding:"80px 0", color:"#9aa5b4" }}>
-          <p style={{ fontSize:16, fontWeight:600 }}>Aucun projet</p>
-          <p style={{ fontSize:13 }}>Créez votre premier projet d'investissement</p>
+        <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"#9aa5b4" }}>
+          <Layers size={48} style={{ marginBottom:16, opacity:0.3 }}/>
+          <p style={{ fontSize:16, fontWeight:600, color:"#4a5568" }}>Aucun projet enregistré</p>
+          <p style={{ fontSize:14, marginTop:6 }}>Cliquez sur « Nouveau projet » pour commencer.</p>
         </div>
       ) : (
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:14 }}>
+        <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:14 }}>
           {projets.map(p=>{
+            // Accent de survol = couleur du pôle territoire (comme la page publique)
+            const hoverC = p.pole_nom ? poleAccent(p.pole_nom) : "rgba(0,79,145,0.33)";
             return (
             <div key={p.id} onClick={()=>setVue(p)}
-              style={{ background:"#fff", border:"1px solid #ECEAE7", borderRadius:14, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"var(--ombre-1)", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+              style={{ background:"#fff", border:"1px solid rgba(16,26,46,0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden", opacity:p.est_publie===false?0.85:1 }}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=hoverC;}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
 
-              <div style={{ height:3, background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", flexShrink:0 }}/>
-              <div style={{ padding:"14px 16px 14px", flex:1 }}>
-                {/* Pôle territoire */}
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                  {p.pole_nom ? (
-                    <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{p.pole_nom}</span>
-                  ) : <span/>}
+              <div style={{ padding:"18px 20px 16px", flex:1, display:"flex", flexDirection:"column" as const, gap:13 }}>
+                {/* Titre + pôle en sous-titre | publication */}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
+                  <div style={{ minWidth:0, flex:1 }}>
+                    <div style={{ fontWeight:800, fontSize:15.5, color:"#1a1a2e", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.titre_projet}</div>
+                    {p.pole_nom&&<div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginTop:3 }}>{p.pole_nom}</div>}
+                  </div>
+                  {p.est_publie===false&&<span style={{ ...badge_gris, whiteSpace:"nowrap" as const, flexShrink:0 }}>Non publié</span>}
                 </div>
 
-                {/* Titre */}
-                <div style={{ fontWeight:700, fontSize:13.5, color:"#1a1a2e", lineHeight:1.35, overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.titre_projet}</div>
-
-                {/* Infos libellées */}
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
-                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Région</p>
-                    <p style={{ fontSize:12, fontWeight:600, color:p.region_nom?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.region_nom||"—"}</p>
+                {/* Région · Département en rangée épurée */}
+                <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #F2F0EF", paddingTop:13, marginTop:"auto" }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>Région</p>
+                    <p style={{ fontSize:12.5, fontWeight:700, color:p.region_nom?"#1a1a2e":"#C5BFBB", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.region_nom||"—"}</p>
                   </div>
-                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Département</p>
-                    <p style={{ fontSize:12, fontWeight:600, color:p.departement_nom?"#1a1a2e":"#9aa5b4", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.departement_nom||"—"}</p>
+                  <div style={{ width:1, alignSelf:"stretch", background:"#F2F0EF", margin:"0 18px" }}/>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>Département</p>
+                    <p style={{ fontSize:12.5, fontWeight:700, color:p.departement_nom?"#1a1a2e":"#C5BFBB", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.departement_nom||"—"}</p>
                   </div>
                 </div>
               </div>
@@ -826,10 +828,10 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
                 </button>
                 <div style={{ width:1, background:"#F2F0EF" }}/>
                 <button className="ro-w" onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:p.est_publie?"#188038":"#6b7280", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                  onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:p.est_publie?"#188038":"#ca631f", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgba(24,128,56,0.05)":"rgba(202,99,31,0.06)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                  {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
+                  {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Retirer</>:<><Eye size={12}/> Publier</>}
                 </button>
                 <div style={{ width:1, background:"#F2F0EF" }}/>
                 <button className="ro-w" onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}

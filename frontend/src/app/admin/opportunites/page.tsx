@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp, ArrowLeft, Award } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FSegmented, FInfo, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
@@ -9,6 +9,10 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import AdminMenu from "@/components/admin/AdminMenu";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import { badge_gris } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -1098,115 +1102,88 @@ export default function OpportunitesAdminPage() {
     .replace(/^[Pp]otentialités?\s+(de\s+l[''']|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
     .replace(/^(.)/, (_:string,c:string) => c.toUpperCase());
 
+  // Action principale du bandeau, propre à l'onglet affiché
+  const actionOnglet = onglet==="projets"
+    ? { label:"Nouveau projet",  onClick:()=>openNewProjet.current?.() }
+    : onglet==="potentialites"
+    ? { label:"Nouvelle fiche",  onClick:()=>{setPotEdit(null);setPotModal(true);} }
+    : { label:"Nouvel avantage", onClick:()=>{setAvgEdit(null);setAvgModal(true);} };
+
   return (
-    <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
+    <div style={{fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
 
-      <div style={{marginBottom:12}}>
-        <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Opportunités d'investissement</h1>
-      </div>
+      {/* ── Bandeau orange (espace d'administration) ── */}
+      <BarreTitre titre="Opportunités d'investissement" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+        droite={
+          <button className="ro-w" onClick={actionOnglet.onClick}
+            style={{display:"inline-flex",alignItems:"center",gap:8,background:"#fff",color:"#ca631f",fontWeight:700,fontSize:13,padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",boxShadow:"0 3px 12px rgba(0,0,0,0.16)",fontFamily:"var(--font-google-sans)",transition:"background 0.15s, transform 0.15s",flexShrink:0,whiteSpace:"nowrap" as const}}
+            onMouseEnter={ev=>{ev.currentTarget.style.background="#FFF6EF";ev.currentTarget.style.transform="translateY(-1px)";}}
+            onMouseLeave={ev=>{ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="none";}}>
+            <Plus size={15}/> {actionOnglet.label}
+          </button>
+        }>
+        <BarreTitreSegment
+          options={TABS.map(t=>({
+            v: t.key,
+            l: t.label,
+            count: t.key==="projets" ? projetsCount : t.key==="potentialites" ? pots.length : avgsTotal,
+          }))}
+          value={onglet} onChange={v=>setOnglet(v)} />
+      </BarreTitre>
 
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",borderBottom:"1px solid #E8E5E3",marginBottom:28}}>
-        <div style={{display:"flex"}}>
-          {TABS.map(t=>{
-            const actif = onglet===t.key;
-            return (
-            <button key={t.key} onClick={()=>setOnglet(t.key)}
-              style={{padding:"14px 22px",border:"none",borderBottom:`2px solid ${actif?"#004f91":"transparent"}`,background:"transparent",color:actif?"#004f91":"#9aa5b4",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",transition:"all 0.15s"}}>
-              {t.label}
-              {t.key==="projets" && projetsCount>0 && <span style={{marginLeft:7,fontSize:11,fontWeight:700,color:actif?"#004f91":"#9aa5b4",background:actif?"rgba(0,79,145,0.1)":"#F2F0EF",padding:"1px 7px",borderRadius:999}}>{projetsCount}</span>}
-            </button>
-            );
-          })}
-        </div>
-        {onglet==="projets"&&(
-          <button className="ro-w" onClick={()=>openNewProjet.current?.()}
-            style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
-            <Plus size={15}/> Nouveau projet
-          </button>
-        )}
-        {onglet==="potentialites"&&(
-          <button className="ro-w" onClick={()=>{setPotEdit(null);setPotModal(true);}}
-            style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
-            <Plus size={15}/> Nouvelle fiche
-          </button>
-        )}
-        {onglet==="avantages"&&(
-          <button className="ro-w" onClick={()=>{setAvgEdit(null);setAvgModal(true);}}
-            style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
-            <Plus size={15}/> Nouvel avantage
-          </button>
-        )}
-      </div>
-
+      <div style={{padding:"28px 40px 80px"}}>
       {onglet==="projets" && <BanqueProjets registerOpenNew={fn=>{ openNewProjet.current=fn; }}/>}
 
       {onglet==="potentialites" && (
         <div>
           {potsLoad ? (
-            <div style={{display:"flex",justifyContent:"center",padding:60}}><Loader2 size={28} style={{color:"#9aa5b4",animation:"spin 1s linear infinite"}}/></div>
+            <SkeletonCards n={4} cols={4} height={190}/>
           ) : selectedNiveau===null ? (
-            /* ── Vue 4 cards de sélection ── */
-            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
+            /* ── Sélecteur de niveau territorial (gabarit public) ── */
+            <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:14}}>
               {([
-                {key:"pole",           label:"Pôles territoires", unit:"Pôles",           color:"#004f91"},
-                {key:"region",         label:"Régions",           unit:"Régions",         color:"#ca631f"},
-                {key:"departement",    label:"Départements",      unit:"Départements",    color:"#188038"},
-                {key:"arrondissement", label:"Arrondissements",   unit:"Arrondissements", color:"#6A1B9A"},
+                {key:"pole",           label:"Pôles territoires", unit:"Pôle",          color:"#004f91"},
+                {key:"region",         label:"Régions",           unit:"Région",        color:"#ca631f"},
+                {key:"departement",    label:"Départements",      unit:"Département",   color:"#188038"},
+                {key:"arrondissement", label:"Arrondissements",   unit:"Arrondissement",color:"#6A1B9A"},
               ] as const).map(n=>{
-                const items = pots.filter((p:any)=>p.niveau===n.key);
-                const count = items.length;
+                const count = pots.filter((p:any)=>p.niveau===n.key).length;
                 const total = n.key==="pole" ? poles.length
                   : n.key==="region" ? geoTotaux.regions
                   : n.key==="departement" ? geoTotaux.departements
                   : geoTotaux.arrondissements;
+                const pct = total>0 ? Math.round(count/total*100) : 0;
                 return (
                   <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
-                    style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}40`;}
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                            });
-                          }}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                            });
-                          }}>
+                    style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}88`;}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
 
-                    <div style={{height:3,background:`linear-gradient(90deg,${n.color}CC 0%,${n.color} 50%,${n.color}99 100%)`,flexShrink:0}}/>
-                    <div style={{padding:"14px 16px 14px",flex:1}}>
-                      {/* Niveau */}
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:n.color,background:`${n.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>
-                          <span style={{width:6,height:6,borderRadius:"50%",background:n.color,["--pc" as any]:`${n.color}66`,animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                          {n.label}
-                        </span>
-                      </div>
-
-                      {/* Compteurs libellés */}
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                        <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{n.unit}</p>
-                          <p style={{fontSize:14,fontWeight:800,color:total>0?"#1a1a2e":"#9aa5b4"}}>{total||"—"}</p>
-                        </div>
-                        <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
-                          <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Fiches définies</span></p>
-                          <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{total>0?`${count}/${total}`:count}</p>
-                        </div>
-                      </div>
+                    {/* Niveau */}
+                    <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                      <span style={{width:7,height:7,borderRadius:"50%",background:n.color,flexShrink:0}}/>
+                      <span style={{fontSize:10.5,fontWeight:800,color:n.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{n.label}</span>
                     </div>
 
-                    {/* Action */}
-                    <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
-                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:n.color,fontWeight:600,opacity:count>0?1:0.45,transition:"background 0.15s"}}
-                        onMouseEnter={ev=>{if(count>0)ev.currentTarget.style.background=`${n.color}0D`;}}
-                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        Voir les détails →
+                    {/* Compteur principal */}
+                    <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                      <span style={{fontSize:"2rem",fontWeight:800,color:total>0?"#1a1a2e":"#C5BFBB",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
+                      <span style={{fontSize:12,fontWeight:600,color:"#9aa5b4"}}>{n.unit}{total>1?"s":""}</span>
+                    </div>
+
+                    {/* Couverture des fiches */}
+                    <div style={{marginTop:"auto"}}>
+                      <div style={{height:6,background:"#F2F0EF",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                        <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:n.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                       </div>
+                      <p style={{fontSize:11,fontWeight:600,color:count>0?"#4a5568":"#9aa5b4"}}>
+                        {count>0
+                          ? <>{count} fiche{count>1?"s":""} définie{count>1?"s":""}{total>0?<span style={{color:"#9aa5b4",fontWeight:500}}> · {pct} %</span>:null}</>
+                          : "Aucune fiche définie"}
+                      </p>
                     </div>
                   </div>
                 );
@@ -1216,8 +1193,10 @@ export default function OpportunitesAdminPage() {
             /* ── Fiches du niveau sélectionné ── */
             <>
               <button onClick={()=>setSelectedNiveau(null)}
-                style={{display:"flex",alignItems:"center",gap:6,marginBottom:24,background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontSize:13,fontWeight:600,padding:0}}>
-                <ArrowLeft size={14}/> Retour aux zones
+                style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:24,background:"#fff",border:"1px solid #E4E1DE",borderRadius:999,cursor:"pointer",color:"#4a5568",fontSize:12.5,fontWeight:600,padding:"8px 16px",boxShadow:"var(--ombre-1)",transition:"border-color 0.15s, color 0.15s, box-shadow 0.15s",fontFamily:"var(--font-google-sans)"}}
+                onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.35)";ev.currentTarget.style.color="#004f91";ev.currentTarget.style.boxShadow="var(--ombre-2)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="translateX(-3px)";}}
+                onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E4E1DE";ev.currentTarget.style.color="#4a5568";ev.currentTarget.style.boxShadow="var(--ombre-1)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="none";}}>
+                <ArrowLeft size={14} style={{transition:"transform 0.18s"}}/> Retour aux zones
               </button>
               {(()=>{
                 const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
@@ -1233,7 +1212,7 @@ export default function OpportunitesAdminPage() {
                 };
                 const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
                 return (
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
                     {items.map((p:any)=>{
                       const nbActs = (p.activite_ids||[]).length;
                       // Premier bloc contextuel selon le niveau
@@ -1246,9 +1225,9 @@ export default function OpportunitesAdminPage() {
                         : { label:"Département", value: p.departement_nom||deptDeArr(p.arrondissement_nom||"") };
                       return (
                         <div key={p.id} onClick={()=>setPotVue(p)}
-                          style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden",minWidth:0}}
+                          style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",display:"flex",flexDirection:"column" as const,overflow:"hidden",minWidth:0,opacity:p.est_publie===false?0.85:1}}
                           onMouseEnter={ev=>{
-                            ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";
+                            ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.33)";
                             // Contenus trop longs : glissent pour révéler la fin
                             ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                               const span = box.firstElementChild as HTMLElement | null;
@@ -1256,31 +1235,34 @@ export default function OpportunitesAdminPage() {
                             });
                           }}
                           onMouseLeave={ev=>{
-                            ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
+                            ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";
                             ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
                               const span = box.firstElementChild as HTMLElement | null;
                               if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                             });
                           }}>
 
-                          <div style={{height:3,background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-                          <div style={{padding:"14px 16px 14px",flex:1}}>
-                            {/* Titre (défile au survol si trop long) */}
-                            <div data-marquee style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                              <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                          <div style={{padding:"18px 20px 16px",flex:1,display:"flex",flexDirection:"column" as const,gap:13}}>
+                            {/* Titre (défile au survol si trop long) | publication */}
+                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
+                              <div data-marquee style={{flex:1,minWidth:0,fontWeight:800,fontSize:15.5,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                              </div>
+                              {p.est_publie===false&&<span style={{...badge_gris,whiteSpace:"nowrap" as const,flexShrink:0}}>Non publié</span>}
                             </div>
 
-                            {/* Infos libellées */}
-                            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                              <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{info1.label}</p>
-                                <p data-marquee style={{fontSize:12,fontWeight:600,color:info1.value?"#1a1a2e":"#9aa5b4",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                            {/* Rattachement · Activités porteuses en rangée épurée */}
+                            <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
+                              <div style={{flex:1,minWidth:0}}>
+                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>{info1.label}</p>
+                                <p data-marquee style={{fontSize:12.5,fontWeight:700,color:info1.value?"#1a1a2e":"#C5BFBB",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{info1.value||"—"}</span>
                                 </p>
                               </div>
-                              <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                                <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Activités porteuses</span></p>
-                                <p style={{fontSize:14,fontWeight:800,color:nbActs>0?"#1a1a2e":"#9aa5b4"}}>{nbActs||"—"}</p>
+                              <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 18px"}}/>
+                              <div style={{flex:1,minWidth:0}}>
+                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Activité{nbActs>1?"s":""} porteuse{nbActs>1?"s":""}</p>
+                                <p style={{fontSize:12.5,fontWeight:700,color:nbActs>0?"#1a1a2e":"#C5BFBB",fontVariantNumeric:"tabular-nums"}}>{nbActs||"—"}</p>
                               </div>
                             </div>
                           </div>
@@ -1295,10 +1277,10 @@ export default function OpportunitesAdminPage() {
                             </button>
                             <div style={{width:1,background:"#F2F0EF"}}/>
                             <button onClick={()=>togglePot(p)} disabled={potToggle===p.id}
-                              style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:p.est_publie?"#188038":"#6b7280",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                              onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
+                              style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:p.est_publie?"#188038":"#ca631f",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
+                              onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgba(24,128,56,0.05)":"rgba(202,99,31,0.06)"}
                               onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                              {potToggle===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Publié</>:<><Eye size={12}/> Publier</>}
+                              {potToggle===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Retirer</>:<><Eye size={12}/> Publier</>}
                             </button>
                             <div style={{width:1,background:"#F2F0EF"}}/>
                             <button className="ro-w" onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
@@ -1324,74 +1306,55 @@ export default function OpportunitesAdminPage() {
       {onglet==="avantages" && (
         <div>
           {avgsLoad ? (
-            <div style={{display:"flex",justifyContent:"center",padding:60}}>
-              <Loader2 size={28} style={{color:"#9aa5b4",animation:"spin 1s linear infinite"}}/>
-            </div>
+            <SkeletonCards n={3} cols={3} height={190}/>
           ) : avgs.length===0 ? (
-            <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}>
-              <p style={{fontSize:16,fontWeight:600}}>Aucune fiche</p>
-              <p style={{fontSize:13}}>Créez votre premier avantage ou incitation</p>
+            <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+              <Award size={48} style={{marginBottom:16,opacity:0.3}}/>
+              <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun avantage enregistré</p>
+              <p style={{fontSize:14,marginTop:6}}>Cliquez sur « Nouvel avantage » pour commencer.</p>
             </div>
           ) : selectedSec===null ? (
-            /* ── Vue secteurs : 3 cards ── */
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+            /* ── Sélecteur de secteur (gabarit public) ── */
+            <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
               {([
                 {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
-                {key:"secondaire", label:"Secteur Secondaire", color:"#004f91"},
-                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#004f91"},
+                {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
+                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#188038"},
               ] as const).map(s=>{
-                const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
-                const count = items.length;
+                const count = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key)).length;
                 const sec = refSecteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
                 const branches = sec ? refBranches.filter((b:any)=>b.secteur_id===sec.id) : [];
                 const branchIds = new Set(branches.map((b:any)=>b.id));
                 const actCount = refActivites.filter((a:any)=>branchIds.has(a.branche_id)).length;
+                const pct = actCount>0 ? Math.round(count/actCount*100) : 0;
                 return (
                   <div key={s.key} onClick={()=>count>0&&setSelectedSec(s.key)}
-                    style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden",opacity:count>0?1:0.6}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}40`;}
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                            });
-                          }}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                            });
-                          }}>
+                    style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}88`;}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
 
-                    <div style={{height:3,background:`linear-gradient(90deg,${s.color}CC 0%,${s.color} 50%,${s.color}99 100%)`,flexShrink:0}}/>
-                    <div style={{padding:"14px 16px 14px",flex:1}}>
-                      {/* Secteur */}
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:s.color,background:`${s.color}12`,padding:"3px 10px",borderRadius:999,overflow:"hidden",whiteSpace:"nowrap" as const,maxWidth:"100%"}}>
-                          <span style={{width:6,height:6,borderRadius:"50%",background:s.color,["--pc" as any]:`${s.color}66`,animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                          {s.label}
-                        </span>
-                      </div>
-
-                      {/* Compteurs libellés */}
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                        <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                          <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Activités</p>
-                          <p style={{fontSize:14,fontWeight:800,color:actCount>0?"#1a1a2e":"#9aa5b4"}}>{actCount||"—"}</p>
-                        </div>
-                        <div style={{background:"rgba(24,128,56,0.04)",border:"1px solid rgba(24,128,56,0.12)",borderRadius:10,padding:"8px 11px"}}>
-                          <p data-marquee style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#188038",textTransform:"uppercase" as const,marginBottom:3,overflow:"hidden",whiteSpace:"nowrap" as const}}><span style={{display:"inline-block"}}>Avantages définis</span></p>
-                          <p style={{fontSize:14,fontWeight:800,color:count>0?"#1a1a2e":"#9aa5b4"}}>{actCount>0?`${count}/${actCount}`:count}</p>
-                        </div>
-                      </div>
+                    {/* Secteur */}
+                    <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                      <span style={{width:7,height:7,borderRadius:"50%",background:s.color,flexShrink:0}}/>
+                      <span style={{fontSize:10.5,fontWeight:800,color:s.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{s.label}</span>
                     </div>
 
-                    {/* Action */}
-                    <div style={{display:"flex",borderTop:"1px solid #F2F0EF"}}>
-                      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"10px 0",fontSize:11.5,color:s.color,fontWeight:600,opacity:count>0?1:0.45,transition:"background 0.15s"}}
-                        onMouseEnter={ev=>{if(count>0)ev.currentTarget.style.background=`${s.color}0D`;}}
-                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        Voir les détails →
+                    {/* Compteur principal */}
+                    <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                      <span style={{fontSize:"2rem",fontWeight:800,color:actCount>0?"#1a1a2e":"#C5BFBB",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
+                      <span style={{fontSize:12,fontWeight:600,color:"#9aa5b4"}}>activité{actCount>1?"s":""}</span>
+                    </div>
+
+                    {/* Couverture des avantages */}
+                    <div style={{marginTop:"auto"}}>
+                      <div style={{height:6,background:"#F2F0EF",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                        <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:s.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                       </div>
+                      <p style={{fontSize:11,fontWeight:600,color:count>0?"#4a5568":"#9aa5b4"}}>
+                        {count>0
+                          ? <>{count} avantage{count>1?"s":""} défini{count>1?"s":""}{actCount>0?<span style={{color:"#9aa5b4",fontWeight:500}}> · {pct} %</span>:null}</>
+                          : "Aucun avantage défini"}
+                      </p>
                     </div>
                   </div>
                 );
@@ -1430,7 +1393,7 @@ export default function OpportunitesAdminPage() {
                     {/* Une card par branche */}
                     <div style={{display:"flex",flexDirection:"column" as const,gap:16}}>
                       {bras.map(bra=>(
-                        <div key={bra.id} style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,overflow:"hidden",boxShadow:"var(--ombre-1)"}}>
+                        <div key={bra.id} style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,overflow:"hidden",boxShadow:"none"}}>
                           {/* En-tête de branche */}
                           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,padding:"12px 18px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA"}}>
                             <div style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}>
@@ -1481,6 +1444,7 @@ export default function OpportunitesAdminPage() {
           {avgVue&&<AvantageVueModal avg={avgVue} onClose={()=>setAvgVue(null)} onEdit={a=>{setAvgVue(null);setAvgEdit(a);setAvgModal(true);}} onSaved={chargerAvgs}/>}
         </div>
       )}
+      </div>
     </div>
   );
 }
