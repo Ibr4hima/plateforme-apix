@@ -1,14 +1,15 @@
 "use client";
 
-// Modal vue prospect + helpers du cycle de prospection — partagés entre la
+// Fiche prospect + helpers du cycle de prospection — partagés entre la
 // page Prospects et la recherche globale (⌘K), qui l'ouvre depuis n'importe
-// quelle page.
+// quelle page. Bâtie sur la fiche modale commune (FicheModal).
 
-import { Building2, ChevronDown, ChevronUp, Clock, FileText, Globe, Mail, MapPin, MessageCircle, MessageSquare, Phone, Send, User, Video, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, FileText, Mail, MapPin, MessageCircle, MessageSquare, Phone, Send, User, Video } from "lucide-react";
 import { useState } from "react";
 import { useNaema } from "@/lib/referentiels";
-import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
+import { badge_bleu, badge_gris, badge_rouge, badge_vert } from "@/lib/couleurs";
+import FicheModal, { FicheArbreNaema, FicheBloc, FicheCarteNeutre, FicheContacts, FicheGrille, FicheLien, FicheSection, FicheValeur } from "@/components/shared/FicheModal";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -44,6 +45,16 @@ export function badgeProspect(p: any) {
   if (jours <= 120) return { label: "En attente", color: "#6b7280", bg: "#F2F0EF" };
   return                   { label: "Inactif",    color: "#dc2626", bg: "rgba(220,38,38,0.07)" };
 }
+
+// Jetons du design system par statut (fiche) — alignés sur les cards
+const STATUT_BADGE: Record<string, React.CSSProperties> = {
+  "En cours":             badge_vert,
+  "À recontacter":        badge_bleu,
+  "Installation à venir": badge_vert,
+  "Inactif":              badge_rouge,
+  "Décliné":              badge_gris,
+  "En attente":           badge_gris,
+};
 
 // Début du cycle de prospection courant : date du dernier re-contact.
 export function cycleCourantDebut(p:any): string|null {
@@ -98,9 +109,7 @@ export function canalContactDisplay(canal: string, contact: string): string {
   return contact;
 }
 
-
-// ── Filtre latéral générique ──────────────────────────────────────────────────
-
+// ── Fiche prospect ────────────────────────────────────────────────────────────
 export default function ProspectVueModal({ p, onglet, onClose }: { p: any; onglet: "cibles" | "historique" | "termines"; onClose: () => void }) {
   const [openCycles, setOpenCycles] = useState<Set<number>>(new Set());
   const toggleCycle = (id:number) => setOpenCycles(prev=>{ const st=new Set(prev); st.has(id)?st.delete(id):st.add(id); return st; });
@@ -116,23 +125,11 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
   const tels = (p.telephones || []).filter(Boolean);
   const mails = (p.mails || []).filter(Boolean);
 
-  const SecTitle = ({ children, count }: { children: string; count?: number }) => (
-    <p style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", letterSpacing: "0.14em", textTransform: "uppercase" as const, marginBottom: 10 }}>
-      {children}{typeof count === "number" ? <span style={{ color: "#C5BFBB", fontWeight: 700, marginLeft: 7 }}>{count}</span> : null}
-    </p>
-  );
-  const Bloc = ({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) => (
-    <div style={{ background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.10)", borderRadius: 10, padding: "9px 12px", minWidth: 0, gridColumn: full ? "1/-1" : undefined }}>
-      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, marginBottom: 3 }}>{label}</p>
-      {children}
-    </div>
-  );
-
   // Carte d'échange (lecture seule), même design que l'admin
   const EchangeCard = ({ e }: { e: any }) => (
     <div style={{ paddingLeft: 22, position: "relative" as const }}>
       <div style={{ position: "absolute" as const, left: 1, top: 16, width: 9, height: 9, borderRadius: "50%", background: "#004f91", border: "2px solid #fff", boxShadow: "0 0 0 1px rgba(0,79,145,0.27)" }}/>
-      <div style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "13px 15px" }}>
+      <FicheCarteNeutre style={{ padding: "13px 15px" }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: "#1a1a2e" }}>
           {new Date(e.date_echange).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
         </div>
@@ -162,7 +159,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
               <a key={f.id}
                 href={`${API_BASE}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                 target="_blank" rel="noopener noreferrer"
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 11px", borderRadius: 999, background: "rgba(0,79,145,0.06)", textDecoration: "none", fontSize: 11, color: "#004f91", fontWeight: 600 }}>
+                style={{ ...badge_bleu, textDecoration: "none" }}>
                 <FileText size={11} style={{ flexShrink: 0 }}/>{f.titre}
               </a>
             ))}
@@ -172,7 +169,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
           <Clock size={11} style={{ flexShrink: 0 }}/>
           <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}</span>
         </div>
-      </div>
+      </FicheCarteNeutre>
     </div>
   );
 
@@ -244,193 +241,102 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
   const cyclesTries = [...(p.cycles || [])].sort((a: any, b: any) => b.cycle_num - a.cycle_num);
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}\n.cr-rte, .cr-rte *{font-size:12px !important; line-height:1.6 !important;}`}</style>
-      <div onClick={ev => ev.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 720, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
-        {/* Liseré d'accent */}
-        <div style={{ height: 4, background: "#004f91", flexShrink: 0 }}/>
+    <FicheModal titre={p.nom} onClose={onClose} zIndex={500} maxWidth={720}
+      badges={<>
+        {onglet !== "cibles" && badge && <span style={STATUT_BADGE[badge.label] || badge_gris}>{badge.label}</span>}
+        {p.siege_nom && <span style={badge_bleu}>{p.siege_nom}</span>}
+      </>}>
+      <style>{`.cr-rte, .cr-rte *{font-size:12px !important; line-height:1.6 !important;}`}</style>
 
-        {/* En-tête */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
-          <div style={{ minWidth: 0 }}>
-            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", lineHeight: 1.3 }}>{p.nom}</h2>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const, marginTop: 8 }}>
-              {onglet !== "cibles" && badge && (
-                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: badge.color, background: badge.bg, padding: "3px 10px", borderRadius: 999 }}>{badge.label}</span>
-              )}
-              {p.siege_nom && (
-                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999 }}>{p.siege_nom}</span>
-              )}
-            </div>
-          </div>
-          <button onClick={onClose}
-            style={{ background: "#F5F4F3", border: "none", cursor: "pointer", borderRadius: 99, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-            onMouseEnter={ev => (ev.currentTarget.style.background = "#ECEAE8")}
-            onMouseLeave={ev => (ev.currentTarget.style.background = "#F5F4F3")}>
-            <X size={15} color="#4a5568"/>
-          </button>
-        </div>
+      {/* ── Onglet ciblés : fiche ── */}
+      {onglet === "cibles" && <>
 
-        {/* Corps */}
-        <div style={{ padding: "22px 28px", overflowY: "auto" as const, flex: 1, display: "flex", flexDirection: "column" as const, gap: 22 }}>
-
-          {/* ── Onglet ciblés : fiche ── */}
-          {onglet === "cibles" && <>
-
-          {/* Contact */}
-          {(tels.length > 0 || mails.length > 0 || p.siteweb || p.linkedin) && (
-            <section>
-              <SecTitle>Contact</SecTitle>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {tels.length > 0 && (
-                  <Bloc label={tels.length > 1 ? "Téléphones" : "Téléphone"}>
-                    {tels.map((t: string, i: number) => <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e" }}>{fmtPhone(t)}</p>)}
-                  </Bloc>
-                )}
-                {mails.length > 0 && (
-                  <Bloc label={mails.length > 1 ? "Emails" : "Email"}>
-                    {mails.map((m: string, i: number) => <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e", wordBreak: "break-all" as const }}>{m}</p>)}
-                  </Bloc>
-                )}
-                {p.siteweb && (
-                  <Bloc label="Site web"><a href={p.siteweb.startsWith("http") ? p.siteweb : `https://${p.siteweb}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, fontWeight: 600, color: "#004f91", textDecoration: "none", wordBreak: "break-all" as const }}>{p.siteweb}</a></Bloc>
-                )}
-                {p.linkedin && (
-                  <Bloc label="LinkedIn"><a href={p.linkedin.startsWith("http") ? p.linkedin : `https://${p.linkedin}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, fontWeight: 600, color: "#004f91", textDecoration: "none", wordBreak: "break-all" as const }}>{p.linkedin}</a></Bloc>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Activités spécialisées */}
-          {hasNaema && secteurs.length > 0 && (
-            <section>
-              <SecTitle>Activités spécialisées</SecTitle>
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                {secIds.map((secId: number) => {
-                  const sec = secteurs.find((sx: any) => sx.id === secId); if (!sec) return null;
-                  const brasDuSec = branches.filter((b: any) => b.secteur_id === secId && braIds.includes(b.id));
-                  return (
-                    <div key={secId}>
-                      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: brasDuSec.length ? 5 : 0 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#004f91", flexShrink: 0 }}/>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: "#004f91" }}>{sec.nom}</span>
-                      </div>
-                      {brasDuSec.length > 0 && (
-                        <div style={{ paddingLeft: 20, borderLeft: "2px solid rgba(0,79,145,0.15)", display: "flex", flexDirection: "column" as const, gap: 5 }}>
-                          {brasDuSec.map((bra: any) => {
-                            const actsDeBra = activites.filter((a: any) => a.branche_id === bra.id && actIds.includes(a.id));
-                            return (
-                              <div key={bra.id}>
-                                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: actsDeBra.length ? 4 : 0 }}>
-                                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ca631f", flexShrink: 0 }}/>
-                                  <span style={{ fontSize: 11, fontWeight: 600, color: "#ca631f" }}>{bra.nom}</span>
-                                </div>
-                                {actsDeBra.length > 0 && (
-                                  <div style={{ paddingLeft: 18, display: "flex", flexDirection: "column" as const, gap: 3 }}>
-                                    {actsDeBra.map((act: any) => (
-                                      <div key={act.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                        <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#188038", flexShrink: 0 }}/>
-                                        <span style={{ fontSize: 11, color: "#188038", fontWeight: 500 }}>{act.nom}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {/* Points focaux */}
-          {p.points_focaux?.length > 0 && (
-            <section>
-              <SecTitle>Points focaux</SecTitle>
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                {p.points_focaux.map((pf: any, i: number) => {
-                  const pfTels = (pf.telephones || []).filter(Boolean);
-                  const pfMails = (pf.mails || []).filter(Boolean);
-                  return (
-                    <div key={i} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "11px 14px", fontSize: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-                        <span style={{ fontWeight: 700, color: "#1a1a2e" }}>{[pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
-                        {pf.est_principal && <span style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", borderRadius: 999, padding: "2px 8px" }}>Principal</span>}
-                      </div>
-                      {(pfTels.length > 0 || pfMails.length > 0) && (
-                        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 5, marginTop: 7 }}>
-                          {pfTels.map((t: string, ti: number) => (
-                            <span key={`t${ti}`} style={{ fontSize: 11, fontWeight: 600, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999 }}>{fmtPhone(t)}</span>
-                          ))}
-                          {pfMails.map((m: string, mi: number) => (
-                            <span key={`m${mi}`} style={{ fontSize: 11, fontWeight: 600, color: "#188038", background: "rgba(24,128,56,0.07)", padding: "3px 10px", borderRadius: 999 }}>{m}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          </>}
-
-          {/* ── Onglet en contact : compte rendu des échanges ── */}
-          {onglet === "historique" && <>
-            {(echsCourant.length > 0 || contrCourant.length > 0) && (
-              <section>
-                <SecTitle count={echsCourant.length}>Compte rendu des échanges</SecTitle>
-                {echsCourant.length > 0 && <Timeline echanges={echsCourant}/>}
-                {contrCourant.length > 0 && (
-                  <div style={{ marginTop: echsCourant.length ? 18 : 0, paddingTop: echsCourant.length ? 16 : 0, borderTop: echsCourant.length ? "1px solid #F2F0EF" : "none" }}>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: "#004f91", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
-                      {contrCourant.length === 1 ? "Contrainte exprimée" : "Contraintes exprimées"}
-                    </p>
-                    <Contraintes items={contrCourant}/>
-                  </div>
-                )}
-              </section>
+      {/* Contact */}
+      {(tels.length > 0 || mails.length > 0 || p.siteweb || p.linkedin) && (
+        <FicheSection titre="Contact">
+          <FicheGrille>
+            {tels.length > 0 && (
+              <FicheBloc label={tels.length > 1 ? "Téléphones" : "Téléphone"}>
+                {tels.map((t: string, i: number) => <FicheValeur key={i}>{fmtPhone(t)}</FicheValeur>)}
+              </FicheBloc>
             )}
-            {cyclesTries.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                {cyclesTries.map((cy: any) => (
-                  <CycleBloc key={cy.id} id={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le}
-                    commentaire={cy.issue_commentaire} echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)}/>
+            {mails.length > 0 && (
+              <FicheBloc label={mails.length > 1 ? "Emails" : "Email"}>
+                {mails.map((m: string, i: number) => (
+                  <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e", wordBreak: "break-all" }}>{m}</p>
                 ))}
+              </FicheBloc>
+            )}
+            {p.siteweb && <FicheBloc label="Site web"><FicheLien href={p.siteweb}>{p.siteweb}</FicheLien></FicheBloc>}
+            {p.linkedin && <FicheBloc label="LinkedIn"><FicheLien href={p.linkedin}>{p.linkedin}</FicheLien></FicheBloc>}
+          </FicheGrille>
+        </FicheSection>
+      )}
+
+      {/* Activités spécialisées */}
+      {hasNaema && secteurs.length > 0 && (
+        <FicheSection titre="Activités spécialisées">
+          <FicheArbreNaema secteurs={secteurs} branches={branches} activites={activites} secIds={secIds} braIds={braIds} actIds={actIds} />
+        </FicheSection>
+      )}
+
+      {/* Points focaux */}
+      {p.points_focaux?.length > 0 && (
+        <FicheSection titre="Points focaux">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {p.points_focaux.map((pf: any, i: number) => (
+              <FicheCarteNeutre key={i} style={{ padding: "11px 14px", fontSize: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 700, color: "#1a1a2e" }}>{[pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
+                  {pf.est_principal && <span style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", borderRadius: 999, padding: "2px 8px" }}>Principal</span>}
+                </div>
+                <FicheContacts tels={(pf.telephones || []).filter(Boolean)} mails={(pf.mails || []).filter(Boolean)} />
+              </FicheCarteNeutre>
+            ))}
+          </div>
+        </FicheSection>
+      )}
+
+      </>}
+
+      {/* ── Onglet en contact : compte rendu des échanges ── */}
+      {onglet === "historique" && <>
+        {(echsCourant.length > 0 || contrCourant.length > 0) && (
+          <FicheSection titre="Compte rendu des échanges" count={echsCourant.length}>
+            {echsCourant.length > 0 && <Timeline echanges={echsCourant}/>}
+            {contrCourant.length > 0 && (
+              <div style={{ marginTop: echsCourant.length ? 18 : 0, paddingTop: echsCourant.length ? 16 : 0, borderTop: echsCourant.length ? "1px solid #F2F0EF" : "none" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#004f91", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                  {contrCourant.length === 1 ? "Contrainte exprimée" : "Contraintes exprimées"}
+                </p>
+                <Contraintes items={contrCourant}/>
               </div>
             )}
-          </>}
+          </FicheSection>
+        )}
+        {cyclesTries.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+            {cyclesTries.map((cy: any) => (
+              <CycleBloc key={cy.id} id={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le}
+                commentaire={cy.issue_commentaire} echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)}/>
+            ))}
+          </div>
+        )}
+      </>}
 
-          {/* ── Onglet transformés : cycles ── */}
-          {onglet === "termines" && (
-            <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-              {p.issue && (
-                <CycleBloc id={-1} num={(p.cycles?.length || 0) + 1} issue={p.issue} concluLe={p.issue_conclu_le}
-                  commentaire={p.issue_commentaire} echanges={echsCourant} contraintes={contrCourant}/>
-              )}
-              {cyclesTries.map((cy: any) => (
-                <CycleBloc key={cy.id} id={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le}
-                  commentaire={cy.issue_commentaire} echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)}/>
-              ))}
-            </div>
+      {/* ── Onglet transformés : cycles ── */}
+      {onglet === "termines" && (
+        <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+          {p.issue && (
+            <CycleBloc id={-1} num={(p.cycles?.length || 0) + 1} issue={p.issue} concluLe={p.issue_conclu_le}
+              commentaire={p.issue_commentaire} echanges={echsCourant} contraintes={contrCourant}/>
           )}
-
+          {cyclesTries.map((cy: any) => (
+            <CycleBloc key={cy.id} id={cy.id} num={cy.cycle_num} issue={cy.issue} concluLe={cy.conclu_le}
+              commentaire={cy.issue_commentaire} echanges={echangesDuCycle(p, cy)} contraintes={contraintesDuCycle(p, cy)}/>
+          ))}
         </div>
-
-        {/* Pied */}
-        <div style={{ display: "flex", justifyContent: "flex-end", padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", flexShrink: 0 }}>
-          <button onClick={onClose}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)" }}>
-            Fermer
-          </button>
-        </div>
-      </div>
-    </div>
+      )}
+    </FicheModal>
   );
 }
