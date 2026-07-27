@@ -2001,7 +2001,7 @@ const defBdef = (code:string, libelle:string) =>
   BDEF_DEFINITIONS[code] || `${libelle} — indicateur issu de la Banque de Données Économiques et Financières (BDEF).`;
 
 // KPIs affichés par défaut (onglet national)
-const BDEF_KPI_DEFAUT = ["act_ca", "inv_tx_autofin", "sf_pression_fisc", "sf_autonomie", "rent_ebe"];
+const BDEF_KPI_DEFAUT = ["act_ca", "inv_tx_autofin", "sf_pression_fisc", "rent_ebe"];
 // Graphes affichés par défaut (onglet national), dans cet ordre
 const BDEF_GRAPHES_DEFAUT = [
   "act_ca", "eff_vetuste", "inv_actif_immo", "inv_tx_autofin",
@@ -2739,7 +2739,7 @@ function OngletNational() {
           <div style={{ marginBottom:8 }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
               <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
-              <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=5?"#004f91":"#9aa5b4", background:kpisEpingles.length>=5?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/5</span>
+              <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=4?"#004f91":"#9aa5b4", background:kpisEpingles.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/4</span>
             </div>
             {parCategorie.length===0 && !loading && (
               <p style={{ fontSize:12, color:"#C5BFBB", textAlign:"center" as const, padding:"8px 0", lineHeight:1.5 }}>Importez des données BDEF<br/>pour voir les indicateurs.</p>
@@ -2760,7 +2760,7 @@ function OngletNational() {
                     <div style={{ paddingLeft:8, display:"flex", flexDirection:"column" as const, gap:1, marginTop:2 }}>
                       {inds.map(ind=>{
                         const epingle = kpisEpingles.includes(ind.code);
-                        const disabled = !epingle && kpisEpingles.length>=5;
+                        const disabled = !epingle && kpisEpingles.length>=4;
                         return (
                           <div key={ind.code}
                             style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
@@ -2875,7 +2875,7 @@ function OngletNational() {
 
         {/* KPI cards */}
         {kpisEpingles.length>0&&(
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {kpisEpingles.map(code=>{
               const ind = indicateurs.find(i=>i.code===code);
               const lastA = anneesAffichees.length ? anneesAffichees[anneesAffichees.length-1] : null;
@@ -2891,7 +2891,7 @@ function OngletNational() {
                 </div>
               );
             })}
-            {Array.from({length:Math.max(0,5-kpisEpingles.length)}).map((_,i)=>(
+            {Array.from({length:Math.max(0,4-kpisEpingles.length)}).map((_,i)=>(
               <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
                 <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
                 <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
