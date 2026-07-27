@@ -153,6 +153,17 @@ export default function ProspectsPage() {
   const [paysSel,     setPaysSel]     = useState<string[]>([]);
   const [secteurOpts, setSecteurOpts] = useState<string[]>([]);
   const [secteursSel, setSecteursSel] = useState<string[]>([]);
+  const [statutSel,   setStatutSel]   = useState<string[]>([]);
+
+  // Statuts filtrables selon l'onglet (issus de badgeProspect) :
+  // « en contact » → progression du cycle ; « transformés » → issue finale.
+  const statutOpts = onglet === "historique"
+    ? ["En cours", "À recontacter", "Inactif"]
+    : onglet === "termines"
+    ? ["Installation à venir", "Décliné"]
+    : [];
+  // Le jeu de statuts change d'un onglet à l'autre : on repart à zéro au switch.
+  useEffect(() => { setStatutSel([]); }, [onglet]);
 
   // Sidebar
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
@@ -193,16 +204,18 @@ export default function ProspectsPage() {
       }
       if (paysSel.length > 0 && !paysSel.includes(p.siege_nom || "")) return false;
       if (secteursSel.length > 0 && !secteursSel.some((s: string) => (p.secteur_noms || []).includes(s))) return false;
+      if (statutSel.length > 0) { const st = badgeProspect(p)?.label; if (!st || !statutSel.includes(st)) return false; }
       return true;
     });
-  }, [onglet, cibles, enContact, termines, recherche, paysSel, secteursSel]);
+  }, [onglet, cibles, enContact, termines, recherche, paysSel, secteursSel, statutSel]);
 
   const togglePays    = (v: string) => setPaysSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
   const toggleSecteur = (v: string) => setSecteursSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
+  const toggleStatut  = (v: string) => setStatutSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
 
-  const hasFilter = !!recherche || paysSel.length > 0 || secteursSel.length > 0;
-  const reinit = () => { setRecherche(""); setPaysSel([]); setSecteursSel([]); };
-  const nbFiltres = (recherche ? 1 : 0) + paysSel.length + secteursSel.length;
+  const hasFilter = !!recherche || paysSel.length > 0 || secteursSel.length > 0 || statutSel.length > 0;
+  const reinit = () => { setRecherche(""); setPaysSel([]); setSecteursSel([]); setStatutSel([]); };
+  const nbFiltres = (recherche ? 1 : 0) + paysSel.length + secteursSel.length + statutSel.length;
 
   const total = cibles.length + enContact.length + termines.length;
 
@@ -250,6 +263,7 @@ export default function ProspectsPage() {
                 {recherche && <button onClick={() => setRecherche("")} aria-label="Effacer la recherche" style={{ position: "absolute" as const, right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
               </div>
               <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
+              {statutOpts.length > 0 && <><SideFilter label="Statut" color="#004f91" items={statutOpts} selected={statutSel} onToggle={toggleStatut} /><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /></>}
               {paysOpts.length > 0 && <SideFilter label="Pays / Siège" color="#004f91" items={paysOpts} selected={paysSel} onToggle={togglePays} listMaxHeight={180} />}
               {secteurOpts.length > 0 && <><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /><SideFilter label="Secteur" color="#004f91" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} listMaxHeight={180} /></>}
             </div>
