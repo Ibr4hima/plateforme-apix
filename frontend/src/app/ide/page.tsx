@@ -92,15 +92,22 @@ const SOUS_TYPE_NAV = [
 ] as const;
 
 // ── Sélecteur VUE (Pays / Secteurs) + TYPE D'ANALYSE (barre de filtre) ────────
-function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
+function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse, allerAnalyse }: {
   vueP: string; setVueP: (v: "pays"|"secteurs") => void;
   typeAnalyse: string; setTypeAnalyse: (v: any) => void;
+  // Depuis la vue Secteurs, aller à Pays/Monde règle le sousOnglet du parent
+  allerAnalyse?: (v: "pays"|"monde") => void;
 }) {
-  // Vue Pays : la comparaison se fait directement depuis l'en-tête (« + » à côté
-  // du pays) — plus d'entrée « Analyse comparative » dédiée.
-  const types = vueP === "secteurs"
-    ? [{ v: "secteur",     l: "Analyse par secteur" }, { v: "comparative", l: "Analyse comparative" }]
-    : [{ v: "pays",        l: "Analyse par pays" },    { v: "monde", l: "Monde" }];
+  // VUE unifiée : Pays · Monde · Secteurs. Le « Type d'analyse » dédié a
+  // disparu (la comparaison Pays se fait via le « + » de l'en-tête) ; seule la
+  // vue Secteurs garde sa bascule Analyse par secteur / comparative.
+  const vueActive = vueP === "secteurs" ? "secteurs" : typeAnalyse; // "pays" | "monde" | "secteurs"
+  const choisir = (v: "pays"|"monde"|"secteurs") => {
+    if (v === "secteurs") { setVueP("secteurs"); return; }
+    setVueP("pays");
+    if (vueP === "secteurs") allerAnalyse?.(v);
+    else setTypeAnalyse(v); // ici typeAnalyse EST le sousOnglet (pays/monde)
+  };
   const btn = (actif: boolean): React.CSSProperties => ({
     textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12,
     fontWeight: actif ? 700 : 500, background: actif ? "rgba(0,79,145,0.08)" : "transparent",
@@ -111,19 +118,21 @@ function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
       <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
         <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
         <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
-          {([{ v:"pays", l:"Pays" }, { v:"secteurs", l:"Secteurs" }] as const).map(o => (
-            <button key={o.v} onClick={() => setVueP(o.v)} style={btn(vueP === o.v)}>{o.l}</button>
+          {([{ v:"pays", l:"Pays" }, { v:"monde", l:"Monde" }, { v:"secteurs", l:"Secteurs" }] as const).map(o => (
+            <button key={o.v} onClick={() => choisir(o.v)} style={btn(vueActive === o.v)}>{o.l}</button>
           ))}
         </div>
       </div>
-      <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
-        <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;analyse</p>
-        <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
-          {types.map(o => (
-            <button key={o.v} onClick={() => setTypeAnalyse(o.v)} style={btn(typeAnalyse === o.v)}>{o.l}</button>
-          ))}
+      {vueP === "secteurs" && (
+        <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
+          <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;analyse</p>
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
+            {[{ v: "secteur", l: "Analyse par secteur" }, { v: "comparative", l: "Analyse comparative" }].map(o => (
+              <button key={o.v} onClick={() => setTypeAnalyse(o.v)} style={btn(typeAnalyse === o.v)}>{o.l}</button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
@@ -1107,11 +1116,12 @@ const SECTEUR_NAV = [
   { v: "fusion",     l: "Fusion & Acquisition" },
 ] as const;
 
-function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
+function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, setVueP, typeAnalyse, setTypeAnalyse, setSousOnglet }: {
   showTable: boolean; setShowTable: (v:boolean)=>void;
   sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void;
   vueP: string; setVueP: (v:"pays"|"secteurs")=>void;
   typeAnalyse: string; setTypeAnalyse: (v:"secteur"|"comparative")=>void;
+  setSousOnglet: (v:"pays"|"comparative"|"monde")=>void;
 }) {
   // Flux & Stocks n'existe pas par secteur : la vue force greenfield par défaut
   const st = sousType === "fusion" ? "fusion" : "greenfield";
@@ -1316,7 +1326,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           </div>
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-          <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={typeAnalyse} setTypeAnalyse={setTypeAnalyse}/>
+          <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={typeAnalyse} setTypeAnalyse={setTypeAnalyse} allerAnalyse={v=>setSousOnglet(v)}/>
           {typeAnalyse==="secteur" ? (
           /* Secteurs / branches — même présentation que l'analyse sectorielle
              des Investissements nationaux (BdefRow : secteurs en bleu,
@@ -3042,7 +3052,7 @@ export default function IdePage() {
             </>
           )}
           {section === "realises" && vueP === "secteurs" && (
-            <OngletSecteurs showTable={showTable} setShowTable={setShowTable} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP} typeAnalyse={typeSecteurs} setTypeAnalyse={setTypeSecteurs}/>
+            <OngletSecteurs showTable={showTable} setShowTable={setShowTable} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP} typeAnalyse={typeSecteurs} setTypeAnalyse={setTypeSecteurs} setSousOnglet={setSousOnglet}/>
           )}
           {/* Investissements projetés (FDI Markets) */}
           {section === "projetes" && (
