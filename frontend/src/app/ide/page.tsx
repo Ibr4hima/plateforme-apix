@@ -892,7 +892,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
               <div key={c.label}
-                style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", boxShadow:"var(--ombre-1)", minWidth:0 }}>
+                style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid rgba(16,26,46,0.12)", boxShadow:"none", transition:"border-color 0.18s", minWidth:0 }}
+                onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.borderColor="rgba(16,26,46,0.12)"; }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const }}>
                   <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
                   {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"#8a93a3", background:"#EEF1F6", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
@@ -911,9 +913,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const { delta, ref } = getVariation(k);
               return (
                 <div key={k.id} onClick={()=>setKpiActif(k)}
-                  style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid #ECEAE7", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"var(--ombre-1)", minWidth:0 }}
-                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-2)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.25)"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="#ECEAE7"; }}>
+                  style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid rgba(16,26,46,0.12)", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0 }}
+                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="#004f91"; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="rgba(16,26,46,0.12)"; }}>
                   {(()=>{ const { main, suffix } = splitKpiTitre(k.label); return (
                     <div style={{ marginBottom:7 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const }}>
