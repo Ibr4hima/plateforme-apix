@@ -11,7 +11,7 @@ import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
+import { badge_bleu, badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
 import { demarrerRedimension } from "@/lib/redimension";
 import { SideFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
@@ -44,14 +44,14 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
   // rouge, décliné / en attente → gris ; l'accent de survol suit la couleur.
   const STATUT_BADGE: Record<string, React.CSSProperties> = {
     "En cours":             badge_vert,
-    "À recontacter":        badge_vert,
+    "À recontacter":        badge_bleu,
     "Installation à venir": badge_vert,
     "Inactif":              badge_rouge,
     "Décliné":              badge_gris,
     "En attente":           badge_gris,
   };
   const STATUT_HEX: Record<string, string> = {
-    "En cours": "#188038", "À recontacter": "#188038", "Installation à venir": "#188038",
+    "En cours": "#188038", "À recontacter": "#004f91", "Installation à venir": "#188038",
     "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
   };
   const badgeStatut = badge ? (STATUT_BADGE[badge.label] || badge_gris) : null;
@@ -164,7 +164,7 @@ export default function ProspectsPage() {
     : [];
   // Chaque statut affiche sa couleur de badge (vert / rouge / gris) une fois coché.
   const STATUT_COULEUR: Record<string, string> = {
-    "En cours": "#188038", "À recontacter": "#188038", "Installation à venir": "#188038",
+    "En cours": "#188038", "À recontacter": "#004f91", "Installation à venir": "#188038",
     "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
   };
   // Le jeu de statuts change d'un onglet à l'autre : on repart à zéro au switch.
