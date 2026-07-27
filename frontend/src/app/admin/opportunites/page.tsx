@@ -201,45 +201,64 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
               value={form.niveau}
               onChange={v=>{ upd("niveau",v); upd("pole_id",""); upd("region_id",""); upd("departement_id",""); upd("arrondissement_id",""); }} />
           </div>
+          {(()=>{
+            // Note « n déjà défini(s) » commune aux 4 niveaux (les entrées
+            // restent visibles dans les listes, grisées et non sélectionnables)
+            const NoteDefinis = ({ n, libelle, fem }: { n:number; libelle:string; fem?:boolean }) => n>0 ? (
+              <p style={{fontSize:11,color:"#9aa5b4",marginTop:4}}>
+                {n} {libelle}{n>1?"s":""} déjà défini{fem?"e":""}{n>1?"s":""} — modifiable{n>1?"s":""} depuis la liste
+              </p>
+            ) : null;
+            return (<>
           {form.niveau==="pole" && (
             <div>
               <FSelect value={form.pole_id||""} onChange={e=>upd("pole_id",e.target.value?parseInt(e.target.value):"")}>
                 <option value="">— Sélectionner un pôle —</option>
-                {poles.filter((p:any)=>!usedGeo.pole_ids.includes(p.id)).map((p:any)=><option key={p.id} value={p.id}>{p.pole_territoire}</option>)}
+                {poles.map((p:any)=>{
+                  const off = usedGeo.pole_ids.includes(p.id);
+                  return <option key={p.id} value={p.id} disabled={off}>{p.pole_territoire}{off?" (déjà défini)":""}</option>;
+                })}
               </FSelect>
-              {usedGeo.pole_ids.length>0 && (
-                <p style={{fontSize:11,color:"#9aa5b4",marginTop:4}}>
-                  {usedGeo.pole_ids.length} pôle{usedGeo.pole_ids.length>1?"s":""} déjà défini{usedGeo.pole_ids.length>1?"s":""} — modifiables depuis la liste
-                </p>
-              )}
+              <NoteDefinis n={usedGeo.pole_ids.length} libelle="pôle"/>
             </div>
           )}
           {form.niveau==="region" && (
-            <RegionSelect value={form.region_id} onChange={v=>upd("region_id",v)} />
+            <div>
+              <RegionSelect value={form.region_id} onChange={v=>upd("region_id",v)} disabledIds={usedGeo.region_ids} />
+              <NoteDefinis n={usedGeo.region_ids.length} libelle="région" fem/>
+            </div>
           )}
           {form.niveau==="departement" && (
-            <FGrid cols={2} gap={10}>
-              <div><FLabel>Région</FLabel>
-                <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); }} />
-              </div>
-              <div><FLabel>Département</FLabel>
-                <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>upd("departement_id",v)} />
-              </div>
-            </FGrid>
+            <div>
+              <FGrid cols={2} gap={10}>
+                <div><FLabel>Région</FLabel>
+                  <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); }} />
+                </div>
+                <div><FLabel>Département</FLabel>
+                  <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>upd("departement_id",v)} disabledIds={usedGeo.departement_ids} />
+                </div>
+              </FGrid>
+              <NoteDefinis n={usedGeo.departement_ids.length} libelle="département"/>
+            </div>
           )}
           {form.niveau==="arrondissement" && (
-            <FGrid cols={3} gap={10}>
-              <div><FLabel>Région</FLabel>
-                <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); upd("arrondissement_id",""); }} />
-              </div>
-              <div><FLabel>Département</FLabel>
-                <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>{ upd("departement_id",v); upd("arrondissement_id",""); }} />
-              </div>
-              <div><FLabel>Arrondissement</FLabel>
-                <ArrondissementSelect departementId={form.departement_id} value={form.arrondissement_id} onChange={v=>upd("arrondissement_id",v)} />
-              </div>
-            </FGrid>
+            <div>
+              <FGrid cols={3} gap={10}>
+                <div><FLabel>Région</FLabel>
+                  <RegionSelect value={form.region_id} onChange={v=>{ upd("region_id",v); upd("departement_id",""); upd("arrondissement_id",""); }} />
+                </div>
+                <div><FLabel>Département</FLabel>
+                  <DepartementSelect regionId={form.region_id} value={form.departement_id} onChange={v=>{ upd("departement_id",v); upd("arrondissement_id",""); }} />
+                </div>
+                <div><FLabel>Arrondissement</FLabel>
+                  <ArrondissementSelect departementId={form.departement_id} value={form.arrondissement_id} onChange={v=>upd("arrondissement_id",v)} disabledIds={usedGeo.arrondissement_ids} />
+                </div>
+              </FGrid>
+              <NoteDefinis n={usedGeo.arrondissement_ids.length} libelle="arrondissement"/>
+            </div>
           )}
+            </>);
+          })()}
           {(form.pole_id || form.region_id || form.departement_id || form.arrondissement_id) && (
             <div style={{ marginTop:12 }}>
               <FInfo>Titre généré : <strong>{titreAuto()}</strong></FInfo>

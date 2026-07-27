@@ -12,13 +12,14 @@ const SELECT_STYLE = {
 };
 
 // value = ID (number | "") — onChange retourne (id, nom)
-// value = ID (number | "") — onChange retourne (id, nom)
 // filterIds : si fourni, affiche seulement les régions dans cette liste
-export function RegionSelect({ value, onChange, required, filterIds }: {
+// disabledIds : entrées affichées mais grisées et non sélectionnables (« déjà défini »)
+export function RegionSelect({ value, onChange, required, filterIds, disabledIds }: {
   value: number | string;
   onChange: (id: number | null, nom: string) => void;
   required?: boolean;
   filterIds?: number[];
+  disabledIds?: number[];
 }) {
   const [regions, setRegions] = useState<any[]>([]);
   useEffect(() => {
@@ -41,16 +42,20 @@ export function RegionSelect({ value, onChange, required, filterIds }: {
       style={{ ...SELECT_STYLE, borderColor: required && !value ? "#dc2626" : "#C5BFBB" }}
     >
       <option value="">{filterIds && filterIds.length > 0 ? `— ${filterIds.length} région${filterIds.length>1?"s":""} disponible${filterIds.length>1?"s":""} —` : "— Sélectionner —"}</option>
-      {displayed.map(r => <option key={r.id} value={r.id}>{r.nom}</option>)}
+      {displayed.map(r => {
+        const off = (disabledIds || []).includes(r.id);
+        return <option key={r.id} value={r.id} disabled={off}>{r.nom}{off ? " (déjà défini)" : ""}</option>;
+      })}
     </select>
   );
 }
 
-export function DepartementSelect({ regionId, value, onChange, required }: {
+export function DepartementSelect({ regionId, value, onChange, required, disabledIds }: {
   regionId: number | null;
   value:    number | string;
   onChange: (id: number | null, nom: string) => void;
   required?: boolean;
+  disabledIds?: number[];
 }) {
   const [departements, setDepartements] = useState<any[]>([]);
   useEffect(() => {
@@ -71,16 +76,20 @@ export function DepartementSelect({ regionId, value, onChange, required }: {
       style={{ ...SELECT_STYLE, opacity: departements.length ? 1 : 0.5, cursor: departements.length ? "pointer" : "not-allowed", borderColor: required && !value && regionId ? "#dc2626" : "#C5BFBB" }}
     >
       <option value="">— Sélectionner —</option>
-      {departements.map(d => <option key={d.id} value={d.id}>{d.nom}</option>)}
+      {departements.map(d => {
+        const off = (disabledIds || []).includes(d.id);
+        return <option key={d.id} value={d.id} disabled={off}>{d.nom}{off ? " (déjà défini)" : ""}</option>;
+      })}
     </select>
   );
 }
 
-export function ArrondissementSelect({ departementId, value, onChange, required }: {
+export function ArrondissementSelect({ departementId, value, onChange, required, disabledIds }: {
   departementId: number | null;
   value:         number | string;
   onChange:      (id: number | null, nom: string) => void;
   required?:     boolean;
+  disabledIds?:  number[];
 }) {
   const [arrondissements, setArrondissements] = useState<any[]>([]);
   useEffect(() => {
@@ -101,7 +110,10 @@ export function ArrondissementSelect({ departementId, value, onChange, required 
       style={{ ...SELECT_STYLE, opacity: arrondissements.length ? 1 : 0.5, cursor: arrondissements.length ? "pointer" : "not-allowed" }}
     >
       <option value="">— Sélectionner —</option>
-      {arrondissements.map(a => <option key={a.id} value={a.id}>{a.nom}</option>)}
+      {arrondissements.map(a => {
+        const off = (disabledIds || []).includes(a.id);
+        return <option key={a.id} value={a.id} disabled={off}>{a.nom}{off ? " (déjà défini)" : ""}</option>;
+      })}
     </select>
   );
 }
