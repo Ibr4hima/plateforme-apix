@@ -36,8 +36,46 @@ const NAME_MAP: Record<string, string> = {
 
 // Couleurs des pôles : centralisées dans lib/couleurs (ré-exportées ici pour
 // ne pas casser les imports existants des pages)
-import { POLE_COULEURS, normPole } from "@/lib/couleurs";
+import { POLE_COULEURS, normPole, badge_bleu, badge_orange, badgePole } from "@/lib/couleurs";
+import FicheModal, { FicheBloc, FicheDocs, FicheSection } from "@/components/shared/FicheModal";
 export { POLE_COULEURS, normPole };
+
+type Compteurs = { primaire: number; secondaire: number; tertiaire: number };
+
+// Barres primaire/secondaire/tertiaire — partagées entre tooltips (compact) et fiches
+function BarresSecteurs({ counts, compact }: { counts: Compteurs; compact?: boolean }) {
+  const total = counts.primaire + counts.secondaire + counts.tertiaire || 1;
+  const rows = [
+    { label: compact ? "Primaire"   : "Secteur primaire",   val: counts.primaire,   color: "#004f91" },
+    { label: compact ? "Secondaire" : "Secteur secondaire", val: counts.secondaire, color: "#ca631f" },
+    { label: compact ? "Tertiaire"  : "Secteur tertiaire",  val: counts.tertiaire,  color: "#188038" },
+  ];
+  return (
+    <div style={{ display:"flex", flexDirection:"column" as const, gap: compact ? 6 : 10 }}>
+      {rows.map(r => {
+        const pct = Math.round(r.val / total * 100);
+        return (
+          <div key={r.label}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: compact ? 2 : 4, fontSize: compact ? 10.5 : 12 }}>
+              <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
+              <span style={{ fontWeight:700, color:r.color }}>{pct}%</span>
+            </div>
+            <div style={{ height: compact ? 4 : 6, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
+              <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99, transition: compact ? undefined : "width 0.4s ease" }}/>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Position du tooltip : au-dessus du curseur dans la moitié basse de la carte,
+// sinon en dessous — évite qu'il soit coupé sur les pôles/régions du sud.
+const posTooltip = (x: number, y: number, ch: number): React.CSSProperties =>
+  y > ch * 0.55
+    ? { left: Math.min(x + 14, 320), bottom: Math.max(6, ch - y + 14) }
+    : { left: Math.min(x + 14, 320), top: Math.max(6, y + 14) };
 
 export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleClick, onRegionClick }: { zones: any[]; mode?: "pole" | "region"; onPoleClick?: (pole: any) => void; onRegionClick?: (regionNom: string) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -246,7 +284,6 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
     return acc;
   }, []);
   const nbInst = poleEnts.filter((ze: any) => ze.statut === "installee").length;
-  const activeColor = activePole ? getPoleColor(activePole.id) : "#E8E5E3";
 
   return (
     <>
@@ -267,15 +304,9 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             const color = REGION_PALETTE[nom] || "#E8E5E3";
             const stats = regionStats[nom];
             const total = stats ? stats.total : 0;
-            const base = (stats ? stats.primaire + stats.secondaire + stats.tertiaire : 0) || 1;
-            const rows = [
-              { label: "Primaire",   val: stats?.primaire ?? 0,   color: "#004f91" },
-              { label: "Secondaire", val: stats?.secondaire ?? 0, color: "#ca631f" },
-              { label: "Tertiaire",  val: stats?.tertiaire ?? 0,  color: "#188038" },
-            ];
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-200)), width:224, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
+              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:224, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
                 {/* Nom */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:9 }}>
                   <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
@@ -288,22 +319,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                 </div>
                 {/* Répartition sectorielle */}
                 <p style={{ fontSize:9, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-                  {rows.map(r => {
-                    const pct = Math.round(r.val / base * 100);
-                    return (
-                      <div key={r.label}>
-                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:2, fontSize:10.5 }}>
-                          <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
-                          <span style={{ fontWeight:700, color:r.color }}>{pct}%</span>
-                        </div>
-                        <div style={{ height:4, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
-                          <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99 }}/>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <BarresSecteurs compact counts={{ primaire: stats?.primaire ?? 0, secondaire: stats?.secondaire ?? 0, tertiaire: stats?.tertiaire ?? 0 }}/>
               </div>
             );
           })()}
@@ -327,15 +343,9 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
               if (!s) return;
               counts.primaire += s.primaire; counts.secondaire += s.secondaire; counts.tertiaire += s.tertiaire;
             });
-            const total = counts.primaire + counts.secondaire + counts.tertiaire || 1;
-            const rows = [
-              { label: "Primaire",   val: counts.primaire,   color: "#004f91" },
-              { label: "Secondaire", val: counts.secondaire, color: "#ca631f" },
-              { label: "Tertiaire",  val: counts.tertiaire,  color: "#188038" },
-            ];
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", left:Math.min(tooltip.x+14, 320), top:Math.max(6, Math.min(tooltip.y-20, ch-235)), width:238, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
+              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:238, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
                 {/* Nom + régions */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7 }}>
                   <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
@@ -353,22 +363,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                 </div>
                 {/* Répartition sectorielle */}
                 <p style={{ fontSize:9, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-                  {rows.map(r => {
-                    const pct = Math.round(r.val / total * 100);
-                    return (
-                      <div key={r.label}>
-                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:2, fontSize:10.5 }}>
-                          <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
-                          <span style={{ fontWeight:700, color:r.color }}>{pct}%</span>
-                        </div>
-                        <div style={{ height:4, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
-                          <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99 }}/>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <BarresSecteurs compact counts={counts}/>
               </div>
             );
           })()}
@@ -408,215 +403,77 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
 
     </div>
 
-      {/* Modal pôle */}
-      {!onPoleClick && activePole && (
-        <div onClick={e=>{ if(e.target===e.currentTarget) setActivePole(null); }}
-          style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-          <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-          <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
-            {/* Liseré d'accent */}
-            <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
+      {/* Fiche pôle — bâtie sur la fiche modale commune */}
+      {!onPoleClick && activePole && (() => {
+        const regions = splitLocalisation(activePole.localisation);
+        const counts = { primaire:0, secondaire:0, tertiaire:0 };
+        regions.forEach(r => {
+          const s = regionStats[r];
+          if (!s) return;
+          counts.primaire += s.primaire; counts.secondaire += s.secondaire; counts.tertiaire += s.tertiaire;
+        });
+        return (
+          <FicheModal titre={activePole.pole_territoire} onClose={()=>setActivePole(null)} maxWidth={560}
+            badges={<>
+              <span style={badgePole(activePole.pole_territoire)}>Pôle territorial</span>
+              {regions.map((r:string) => <span key={r} style={badge_bleu}>{r}</span>)}
+            </>}>
 
-            {/* En-tête */}
-            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
-              <div style={{ minWidth:0 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
-                  <div style={{ width:12, height:12, borderRadius:3, background:activeColor, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
-                  <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Pôle territorial</span>
+            {/* Entreprises installées */}
+            <FicheBloc label={`Entreprise${nbInst!==1?"s":""} installée${nbInst!==1?"s":""}`}>
+              <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{nbInst}</p>
+            </FicheBloc>
+
+            {/* Zones d'investissement */}
+            {poleZones.length>0 && (
+              <FicheSection titre="Zones d'investissement" count={poleZones.length}>
+                <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
+                  {poleZones.map((z:any)=>{
+                    const tc=z.type_zone==="ZES"?"#004f91":z.type_zone==="ZAI"?"#ca631f":"#188038";
+                    const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
+                    return (
+                      <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC", fontSize:12 }}>
+                        <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:tc+"12", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
+                        <span style={{ color:"#1a1a2e", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
+                        <span style={{ fontSize:11, fontWeight:700, color:tc, background:tc+"12", padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
+                      </div>
+                    );
+                  })}
                 </div>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3 }}>{activePole.pole_territoire}</h2>
-                <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
-                  {splitLocalisation(activePole.localisation).map((r:string) => (
-                    <span key={r} style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{r}</span>
-                  ))}
-                </div>
-              </div>
-              <button onClick={()=>setActivePole(null)}
-                style={{ background:"#F5F4F3", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-                onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-                onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-                <span style={{ fontSize:14, color:"#4a5568", lineHeight:1 }}>✕</span>
-              </button>
-            </div>
+              </FicheSection>
+            )}
 
-            {/* Corps */}
-            <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
+            {/* Répartition sectorielle */}
+            <FicheSection titre="Répartition sectorielle">
+              <BarresSecteurs counts={counts}/>
+            </FicheSection>
 
-              {/* Entreprises installées */}
-              <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"12px 14px" }}>
-                <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{nbInst!==1?"s":""} installée{nbInst!==1?"s":""}</p>
-                <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{nbInst}</p>
-              </div>
+            {/* Fichiers PDF du pôle */}
+            <FicheDocs fichiers={activePole.fichiers || []} hrefDe={f => `${API_BASE}/zones-types/poles/${activePole.id}/fichiers/${f.id}/download`}/>
+          </FicheModal>
+        );
+      })()}
 
-              {/* Zones d'investissement */}
-              {poleZones.length>0 && (
-                <section>
-                  <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>Zones d&apos;investissement</p>
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
-                    {poleZones.map((z:any)=>{
-                      const tc=z.type_zone==="ZES"?"#004f91":z.type_zone==="ZAI"?"#ca631f":"#188038";
-                      const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
-                      return (
-                        <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC", fontSize:12 }}>
-                          <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:tc+"12", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
-                          <span style={{ color:"#1a1a2e", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
-                          <span style={{ fontSize:11, fontWeight:700, color:tc, background:tc+"12", padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
-
-              {/* Répartition sectorielle */}
-              {(()=>{
-                const regions = splitLocalisation(activePole.localisation);
-                const counts = { primaire:0, secondaire:0, tertiaire:0 };
-                regions.forEach(r => {
-                  const s = regionStats[r];
-                  if (!s) return;
-                  counts.primaire   += s.primaire;
-                  counts.secondaire += s.secondaire;
-                  counts.tertiaire  += s.tertiaire;
-                });
-                const total = counts.primaire + counts.secondaire + counts.tertiaire || 1;
-                const rows=[
-                  {label:"Secteur primaire",    key:"primaire",   color:"#004f91"},
-                  {label:"Secteur secondaire",  key:"secondaire", color:"#ca631f"},
-                  {label:"Secteur tertiaire",   key:"tertiaire",  color:"#188038"},
-                ] as const;
-                return (
-                  <section>
-                    <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>Répartition sectorielle</p>
-                    <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
-                      {rows.map(r=>{
-                        const pct=Math.round(counts[r.key]/total*100);
-                        return (
-                          <div key={r.key}>
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
-                              <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
-                              <span style={{ fontWeight:700, color:r.color, fontSize:12 }}>{pct}%</span>
-                            </div>
-                            <div style={{ height:6, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
-                              <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99, transition:"width 0.4s ease" }}/>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                );
-              })()}
-
-              {/* Fichiers PDF du pôle */}
-              {(activePole.fichiers || []).length > 0 && (
-                <section>
-                  <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{activePole.fichiers.length>1?"Documents":"Document"}</p>
-                  <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
-                    {activePole.fichiers.map((fi: any) => (
-                      <a key={fi.id} href={`${API_BASE}/zones-types/poles/${activePole.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
-                        style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"9px 12px", fontSize:12.5, fontWeight:600, color:"#004f91", textDecoration:"none" }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        {fi.titre}
-                      </a>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-            </div>
-
-            {/* Pied */}
-            <div style={{ display:"flex", justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
-              <button onClick={()=>setActivePole(null)}
-                style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal région */}
+      {/* Fiche région — bâtie sur la fiche modale commune */}
       {!onRegionClick && mode === "region" && activeRegion && (() => {
         const stats = regionStats[activeRegion];
-        const regionColor = REGION_PALETTE[activeRegion] || "#E8E5E3";
         const total = stats?.total || 0;
-        const rows = [
-          { label: "Secteur primaire",   key: "primaire",   color: "#004f91" },
-          { label: "Secteur secondaire", key: "secondaire", color: "#ca631f" },
-          { label: "Secteur tertiaire",  key: "tertiaire",  color: "#188038" },
-        ] as const;
-        const base = (stats ? stats.primaire + stats.secondaire + stats.tertiaire : 0) || 1;
         return (
-          <div onClick={e => { if (e.target === e.currentTarget) setActiveRegion(null); }}
-            style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:400, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-            <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-            <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:480, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
-              {/* Liseré d'accent */}
-              <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
+          <FicheModal titre={activeRegion} onClose={()=>setActiveRegion(null)} maxWidth={480}
+            badges={<span style={badge_orange}>Région</span>}>
 
-              {/* En-tête */}
-              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
-                <div style={{ minWidth:0 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
-                    <div style={{ width:12, height:12, borderRadius:3, background:regionColor, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
-                    <span style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em" }}>Région</span>
-                  </div>
-                  <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3 }}>{activeRegion}</h2>
-                </div>
-                <button onClick={() => setActiveRegion(null)}
-                  style={{ background:"#F5F4F3", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-                  onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-                  onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-                  <span style={{ fontSize:14, color:"#4a5568", lineHeight:1 }}>✕</span>
-                </button>
-              </div>
+            {/* Total entreprises */}
+            <FicheBloc label={`Entreprise${total!==1?"s":""} formalisée${total!==1?"s":""}`}>
+              <p style={{ fontSize:26, fontWeight:800, color:total>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{total}</p>
+            </FicheBloc>
 
-              {/* Corps */}
-              <div style={{ padding:"22px 28px", overflowY:"auto" as const, flex:1, display:"flex", flexDirection:"column" as const, gap:22 }}>
-
-                {/* Total entreprises */}
-                <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"12px 14px" }}>
-                  <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</p>
-                  <p style={{ fontSize:26, fontWeight:800, color:total>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{total}</p>
-                </div>
-
-                {/* Répartition sectorielle */}
-                {stats && (
-                  <section>
-                    <p style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>Répartition sectorielle</p>
-                    <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
-                      {rows.map(r => {
-                        const count = stats[r.key];
-                        const pct = Math.round(count / base * 100);
-                        return (
-                          <div key={r.key}>
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
-                              <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
-                              <span style={{ fontWeight:700, color:r.color, fontSize:12 }}>{pct}%</span>
-                            </div>
-                            <div style={{ height:6, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
-                              <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99, transition:"width 0.4s ease" }}/>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                )}
-
-              </div>
-
-              {/* Pied */}
-              <div style={{ display:"flex", justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
-                <button onClick={() => setActiveRegion(null)}
-                  style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
-                  Fermer
-                </button>
-              </div>
-            </div>
-          </div>
+            {/* Répartition sectorielle */}
+            {stats && (
+              <FicheSection titre="Répartition sectorielle">
+                <BarresSecteurs counts={stats}/>
+              </FicheSection>
+            )}
+          </FicheModal>
         );
       })()}
     </>
