@@ -2808,27 +2808,14 @@ function OngletNational() {
               </button>}
             </div>
             {compSelec.length>0&&(
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, minWidth:0 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, minWidth:0, flexWrap:"wrap" as const }}>
                 {compSelec.map((id,ci)=>{
                   const node = nodeDe(id);
                   const col = BDEF_MACRO_COULEURS[ci%BDEF_MACRO_COULEURS.length];
-                  const marquee = (e:React.MouseEvent, reset:boolean) => {
-                    const box = e.currentTarget.querySelector("[data-marquee]") as HTMLElement|null;
-                    const sp = box?.firstElementChild as HTMLElement|null;
-                    if (!box || !sp) return;
-                    if (reset) { sp.style.transition="transform 0.4s ease"; sp.style.transform="translateX(0)"; return; }
-                    const d = sp.scrollWidth - box.clientWidth;
-                    if (d>0) { sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; }
-                  };
                   return (
-                    <span key={id} title={node?.libelle}
-                      onMouseEnter={e=>marquee(e,false)} onMouseLeave={e=>marquee(e,true)}
-                      style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"5px 13px", borderRadius:999, background:`${col}0D`, border:`1px solid ${col}2E`, fontSize:12, fontWeight:700, color:col, minWidth:0 }}>
-                      <span style={{ width:7, height:7, borderRadius:"50%", background:col, display:"inline-block", flexShrink:0 }} />
-                      <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
-                        <span style={{ display:"inline-block" }}>{node?.libelle}</span>
-                      </span>
-                    </span>
+                    <BadgeSerie key={id} i={ci} couleur={col} title={node?.libelle}>
+                      <span style={{ maxWidth:260, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{node?.libelle}</span>
+                    </BadgeSerie>
                   );
                 })}
               </div>
@@ -2896,9 +2883,8 @@ function OngletNational() {
               return (
                 <div key={code} onClick={()=>ind&&setKpiActif(ind)}
                   style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid rgba(16,26,46,0.12)", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, overflow:"hidden" }}
-                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.35)"; if(ind) montrerTip(e, defBdef(ind.code, ind.libelle));}}
-                  onMouseMove={e=>{ if(ind) montrerTip(e, defBdef(ind.code, ind.libelle)); }}
-                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="rgba(16,26,46,0.12)"; setTip(null);}}>
+                  onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.35)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
                   <p style={{ fontSize:9, fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4 }}>{ind?.libelle??code}</p>
                   <p style={{ fontSize:"1.05rem", fontWeight:800, color:"#1a1a2e", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
                   {lastA&&<p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>en {lastA}</p>}
@@ -2941,7 +2927,7 @@ function OngletNational() {
                   series = [{ nom:ind.libelle, couleur, data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
                 }
                 return (
-                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend={!isGlobal} hideSousTitre
+                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
                     fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt} lineWidth={isGlobal?1.6:undefined}/>}>
                     <GrapheMultiPays series={series} height={130} type="line" fmt={fmt} showDots={false} lineWidth={isGlobal?1.4:undefined}/>
                   </GrapheCard>
