@@ -4,9 +4,14 @@ import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X 
 import { useCallback, useEffect, useRef, useState } from "react";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
-import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
-import { badge_bleu } from "@/lib/couleurs";
+import BarreTitre from "@/components/shared/BarreTitre";
+import AdminMenu from "@/components/admin/AdminMenu";
+import AccordVueModal from "@/components/shared/AccordVueModal";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import ErreurChargement from "@/components/shared/ErreurChargement";
+import { fetchTous } from "@/lib/fetchTous";
+import { badge_bleu, badge_vert, badge_gris } from "@/lib/couleurs";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import { fmtDate as fmtDateLib } from "@/lib/format";
@@ -14,8 +19,6 @@ import { computeStatutAccord as computeStatut } from "@/lib/statuts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const STATUT_LABELS:  Record<string,string>      = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé non en vigueur" };
-const STATUT_VARIANT: Record<string,BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"orange" };
 const SENEGAL = "Sénégal";
 const APIX    = "APIX S.A";
 
@@ -397,183 +400,100 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     </FModal>
   );
 }
+// ── Carte accord (gabarit public + barre d'actions d'administration) ──────────
 
-// ── Modal vue accord ──────────────────────────────────────────────────────────
-function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>void; onEdit:(a:any)=>void }) {
-  const [fichiers, setFichiers] = useState<any[]>([]);
-  const [secteurs, setSecteurs] = useState<any[]>([]);
-  const [branches, setBranches] = useState<any[]>([]);
-  const [activites,setActivites]= useState<any[]>([]);
-  const [allPays,  setAllPays]  = useState<any[]>([]);
+// Durée écoulée depuis une date : « 3 ans », « 1 an », « 7 mois »…
+const dureeDepuis = (dstr: string): string => {
+  const d = new Date(dstr + "T00:00:00"), now = new Date();
+  let mois = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+  if (now.getDate() < d.getDate()) mois -= 1;
+  if (mois < 1) return "moins d'un mois";
+  const ans = Math.floor(mois / 12);
+  if (ans >= 1) return `${ans} an${ans > 1 ? "s" : ""}`;
+  return `${mois} mois`;
+};
 
-  useEffect(()=>{
-    fetch(`${API_BASE}/accords/${a.id}/fichiers`).then(r=>r.json()).then(setFichiers).catch(()=>{});
-    fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()).then(setAllPays).catch(()=>{});
-    Promise.all([
-      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
-    ]).then(([s,b,ac])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(ac||[]); }).catch(()=>{});
-  },[a.id]);
+// Statuts sur les jetons du design system : en vigueur vert, signé bleu,
+// expiré gris ; l'accent de survol suit la couleur du statut.
+const STATUT_CARTE: Record<string, { label: string; badge: React.CSSProperties; accent: string }> = {
+  en_vigueur: { label: "En vigueur",           badge: badge_vert, accent: "#188038" },
+  signe:      { label: "Signé non en vigueur", badge: badge_bleu, accent: "#004f91" },
+  expire:     { label: "Expiré",               badge: badge_gris, accent: "#9aa5b4" },
+};
 
-  // Construire arborescence depuis les IDs
-  const secIds:number[]  = a.secteur_ids  || [];
-  const braIds:number[]  = a.branche_ids  || [];
-  const actIds:number[]  = a.activite_ids || [];
-  const hasNaema = secIds.length>0||braIds.length>0||actIds.length>0;
+function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
+  a: any; onVoir: () => void; onEditer: () => void; onPublier: () => void; onSupprimer: () => void;
+  publiant: boolean; supprimant: boolean;
+}) {
+  const statut = computeStatut(a);
+  const st = statut ? STATUT_CARTE[statut] : null;
+  const estExpire = statut === "expire";
+  const txtC = estExpire ? "#4a5568" : "#1a1a2e";
+  const accent = st ? st.accent : "#C5BFBB";
+  // Date secondaire : expiration si renseignée, sinon entrée en vigueur
+  const dateSec = a.date_expiration
+    ? { label: "Expiration", val: fmtDate(a.date_expiration), vide: false }
+    : { label: "Entrée en vigueur", val: a.date_entree_vigueur ? fmtDate(a.date_entree_vigueur) : "Non définie", vide: !a.date_entree_vigueur };
+  const sousTitre = statut === "en_vigueur" && a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
+    : statut === "signe" && a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
+    : statut === "expire" && a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
+    : a.reference || null;
 
-  const st = computeStatut(a);
-  const ST_VUE: any = {
-    en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
-    signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-    expire:     { label:"Expiré", c:"#ca631f", bg:"rgba(202,99,31,0.08)" },
-  };
-  const stV = st ? ST_VUE[st] : null;
-  const SecTitle = ({children}:{children:string}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
-  );
-  const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
-    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
-      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
-      {children}
-    </div>
-  );
   return (
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
-        {/* Liseré d'accent */}
-        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
+    <div onClick={onVoir}
+      style={{ background: estExpire ? "#FBFAF9" : "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: a.est_publie === false ? 0.85 : 1 }}
+      onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accent; }}
+      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
 
-        {/* En-tête */}
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
-          <div style={{minWidth:0}}>
-            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{a.titre}</h2>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-              {stV&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:stV.c,background:stV.bg,padding:"3px 10px",borderRadius:999}}>{stV.label}</span>}
-              {a.reference&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{a.reference}</span>}
-            </div>
+      <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
+        {/* Titre + ancienneté du statut | publication & statut */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 15.5, color: txtC, lineHeight: 1.35, letterSpacing: "-0.01em" }}>{a.titre}</div>
+            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{sousTitre}</div>}
           </div>
-          <button onClick={onClose}
-            style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-            <X size={15} color="#4a5568"/>
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "wrap" as const, justifyContent: "flex-end" }}>
+            {a.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
+            {st && <span style={{ ...st.badge, whiteSpace: "nowrap" as const, flexShrink: 0 }}>{st.label}</span>}
+          </div>
         </div>
 
-        {/* Corps */}
-        <div style={{padding:"22px 28px",overflowY:"auto" as const,flex:1,display:"flex",flexDirection:"column" as const,gap:22}}>
-
-          {/* Dates */}
-          <section>
-            <SecTitle>Dates</SecTitle>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <Bloc label="Signature"><p style={{fontSize:12.5,fontWeight:600,color:a.date_signature?"#1a1a2e":"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p></Bloc>
-              {a.date_entree_vigueur&&<Bloc label="Entrée en vigueur"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{fmtDate(a.date_entree_vigueur)}</p></Bloc>}
-              <Bloc label="Expiration"><p style={{fontSize:12.5,fontWeight:600,color:a.date_expiration?"#1a1a2e":"#9aa5b4"}}>{a.date_expiration?fmtDate(a.date_expiration):"Non définie"}</p></Bloc>
-            </div>
-          </section>
-
-          {/* Résumé */}
-          {a.commentaires&&(
-            <section>
-              <SecTitle>Résumé</SecTitle>
-              <div style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"13px 15px"}}>
-                <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-                <div data-rte dangerouslySetInnerHTML={{__html:a.commentaires}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
-              </div>
-            </section>
-          )}
-
-          {/* Parties signataires */}
-          {(a.parties_pays_ids?.length>0||a.parties_signataires)&&(
-            <section>
-              <SecTitle>Parties signataires</SecTitle>
-              <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
-                {(a.parties_pays_ids||[]).map((id:number)=>{
-                  const p=allPays.find((r:any)=>r.id===id);
-                  return <span key={id} style={{fontSize:11,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{p?.nom_fr||`Pays #${id}`}</span>;
-                })}
-                {a.parties_signataires&&a.parties_signataires.split(", ").filter(Boolean).map((p:string)=>(
-                  <span key={p} style={{fontSize:11,fontWeight:600,color:"#ca631f",background:"rgba(202,99,31,0.07)",padding:"3px 10px",borderRadius:999}}>{p}</span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Thématiques */}
-          {hasNaema&&(
-            <section>
-              <SecTitle>Thématiques</SecTitle>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
-                {secIds.map((secId:number)=>{
-                  const secNom = secteurs.find(s=>s.id===secId)?.nom;
-                  if (!secNom) return null;
-                  const brasDuSec = branches.filter(b=>b.secteur_id===secId&&braIds.includes(b.id));
-                  return (
-                    <div key={secId}>
-                      <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                        <span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>{secNom}</span>
-                      </div>
-                      {brasDuSec.length>0&&<div style={{paddingLeft:20,borderLeft:"2px solid rgba(0,79,145,0.15)",display:"flex",flexDirection:"column" as const,gap:5}}>
-                        {brasDuSec.map((bra:any)=>{
-                          const actsDeBra = activites.filter(ac=>ac.branche_id===bra.id&&actIds.includes(ac.id));
-                          return (
-                            <div key={bra.id}>
-                              <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?4:0}}>
-                                <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-                                <span style={{fontSize:11,fontWeight:600,color:"#ca631f"}}>{bra.nom}</span>
-                              </div>
-                              {actsDeBra.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
-                                {actsDeBra.map((act:any)=>(
-                                  <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                                    <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                    <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
-                                  </div>
-                                ))}
-                              </div>}
-                            </div>
-                          );
-                        })}
-                      </div>}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {/* Documents */}
-          {fichiers.length>0&&(
-            <section>
-              <SecTitle>{fichiers.length>1?"Documents":"Document"}</SecTitle>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
-                {fichiers.map((f:any)=>(
-                  <a key={f.id} href={`${API_BASE}/accords/${a.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
-                    <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
-                    <span style={{fontSize:12.5,color:"#004f91",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
-                  </a>
-                ))}
-              </div>
-            </section>
-          )}
-
+        {/* Dates en rangée épurée */}
+        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Signature</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: a.date_signature ? txtC : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{a.date_signature ? fmtDate(a.date_signature) : "—"}</p>
+          </div>
+          <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>{dateSec.label}</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: dateSec.vide ? "#C5BFBB" : txtC, fontVariantNumeric: "tabular-nums" }}>{dateSec.val}</p>
+          </div>
         </div>
+      </div>
 
-        {/* Pied */}
-        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
-          <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
-            Fermer
-          </button>
-          <button className="ro-w" onClick={()=>{onClose();onEdit(a);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
-            <Pencil size={13}/> Modifier
-          </button>
-        </div>
+      {/* Actions d'administration */}
+      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
+        <button onClick={onEditer}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          <Pencil size={12} /> Modifier
+        </button>
+        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <button onClick={onPublier} disabled={publiant}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: a.est_publie ? "#188038" : "#ca631f", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = a.est_publie ? "rgba(24,128,56,0.05)" : "rgba(202,99,31,0.06)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : a.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
+        </button>
+        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
+          style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(220,38,38,0.05)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          {supprimant ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+        </button>
       </div>
     </div>
   );
@@ -582,174 +502,101 @@ function AccordVue({ accord: a, onClose, onEdit }: { accord:any; onClose:()=>voi
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AdminAccords() {
   const [accords,    setAccords]    = useState<any[]>([]);
-  const [total,      setTotal]      = useState(0);
   const [loading,    setLoading]    = useState(true);
+  const [erreur,     setErreur]     = useState(false);
   const [modal,      setModal]      = useState(false);
   const [editItem,   setEditItem]   = useState<any>(null);
   const [vue,        setVue]        = useState<any>(null);
   const [deleting,   setDeleting]   = useState<number|null>(null);
   const [togglingId, setTogglingId] = useState<number|null>(null);
-  const [allPays,    setAllPays]    = useState<any[]>([]);
 
-  useEffect(()=>{
-    fetch(`${API_BASE}/entreprises/ref/pays`).then(r=>r.json()).then(setAllPays).catch(()=>{});
-  },[]);
-
-  const getPaysNoms = (a:any, max=2) => {
-    let noms: string[] = [];
-    if (a.parties_pays_ids?.length>0) {
-      noms = (a.parties_pays_ids as number[])
-        .map((id:number)=>{ const p=allPays.find((r:any)=>r.id===id); return p?.nom_fr||null; })
-        .filter(Boolean) as string[];
-    } else if (a.parties_signataires) {
-      noms = a.parties_signataires.split(", ").filter(Boolean);
-    }
-    if (max && noms.length > max) return noms.slice(0, max).join(", ") + `, +${noms.length - max}`;
-    return noms.join(", ");
-  };
-
-  const charger = useCallback(async()=>{
-    setLoading(true);
+  const charger = useCallback(async () => {
+    setLoading(true); setErreur(false);
     try {
-      const res  = await fetch(`${API_BASE}/accords?per_page=100&admin=true`);
-      const data = await res.json();
-      const sorted = (data.data||[]).slice().sort((a:any,b:any)=>{
+      // Pagination complète : `per_page` est plafonné à 100 côté API.
+      const data = await fetchTous(`${API_BASE}/accords?admin=true`);
+      // Les échéances les plus proches d'abord ; sans expiration en dernier.
+      setAccords(data.slice().sort((a: any, b: any) => {
         if (!a.date_expiration && !b.date_expiration) return 0;
         if (!a.date_expiration) return 1;
         if (!b.date_expiration) return -1;
         return a.date_expiration.localeCompare(b.date_expiration);
-      });
-      setAccords(sorted); setTotal(data.total||0);
-    } catch {} finally { setLoading(false); }
-  },[]);
+      }));
+    } catch (e) { console.error(e); setErreur(true); }
+    finally { setLoading(false); }
+  }, []);
 
-  useEffect(()=>{ charger(); },[charger]);
+  useEffect(() => { charger(); }, [charger]);
 
   const openCreate = () => { setEditItem(null); setModal(true); };
-  const openEdit   = (a:any) => { setEditItem(a); setModal(true); };
+  const openEdit   = (a: any) => { setEditItem(a); setModal(true); };
 
-  const handleDelete = async (id:number) => {
+  const handleDelete = async (id: number) => {
     if (!(await confirmer("Supprimer cet accord ?"))) return;
     setDeleting(id);
-    try { await fetch(`${API_BASE}/accords/${id}`,{method:"DELETE",headers:await authHeaders()}); charger(); }
+    try { await fetch(`${API_BASE}/accords/${id}`, { method: "DELETE", headers: await authHeaders() }); charger(); }
     finally { setDeleting(null); }
   };
 
-  const handleTogglePublie = async (a:any) => {
+  const handleTogglePublie = async (a: any) => {
     setTogglingId(a.id);
     try {
-      await fetch(`${API_BASE}/accords/${a.id}`,{ method:"PATCH", headers:{"Content-Type":"application/json", ...(await authHeaders())}, body:JSON.stringify({est_publie:!a.est_publie}) });
+      await fetch(`${API_BASE}/accords/${a.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ est_publie: !a.est_publie }) });
       charger();
     } finally { setTogglingId(null); }
   };
 
   return (
-    <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Accords &amp; Traités</h1>
-          <span style={{fontSize:14,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"3px 12px",borderRadius:999}}>{total}</span>
-        </div>
-        <button className="ro-w" onClick={openCreate} style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
-          <Plus size={15}/> Ajouter un accord
-        </button>
+    <div style={{ fontFamily: "var(--font-google-sans)" }}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
+
+      {/* ── Bandeau orange (espace d'administration) ── */}
+      <BarreTitre titre="Accords & Traités" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+        droite={
+          <button className="ro-w" onClick={openCreate}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#FFF6EF"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "none"; }}>
+            <Plus size={15} /> Ajouter un accord
+          </button>
+        }>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{accords.length}</span>
+      </BarreTitre>
+
+      {/* ── Grille pleine largeur (3 colonnes) ── */}
+      <div style={{ padding: "28px 40px 80px" }}>
+        {loading ? (
+          <SkeletonCards n={6} cols={3} height={200} />
+        ) : erreur ? (
+          <ErreurChargement onRetry={() => charger()} />
+        ) : accords.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
+            <FileText size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
+            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun accord enregistré</p>
+            <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter un accord » pour commencer.</p>
+          </div>
+        ) : (
+          <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
+            {accords.map(a => (
+              <CarteAccord key={a.id} a={a}
+                onVoir={() => setVue(a)} onEditer={() => openEdit(a)}
+                onPublier={() => handleTogglePublie(a)} onSupprimer={() => handleDelete(a.id)}
+                publiant={togglingId === a.id} supprimant={deleting === a.id} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:200,gap:10,color:"#9aa5b4"}}>
-          <Loader2 size={22} style={{animation:"spin 1s linear infinite"}}/>
-        </div>
-      ) : accords.length===0 ? (
-        <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
-          <FileText size={40} style={{marginBottom:12,opacity:0.25}}/>
-          <p style={{fontSize:14,color:"#4a5568"}}>Aucun accord — cliquez sur "Ajouter un accord" pour commencer.</p>
-        </div>
-      ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))",gap:14}}>
-          {accords.map(a=>{
-            const statut = computeStatut(a);
-            const ST: any = {
-              en_vigueur: { label:"En vigueur", c:"#188038", bg:"rgba(24,128,56,0.08)" },
-              signe:      { label:"Signé non en vigueur", c:"#004f91", bg:"rgba(0,79,145,0.07)" },
-              expire:     { label:"Expiré", c:"#ca631f", bg:"rgba(202,99,31,0.08)" },
-            };
-            const st = statut ? ST[statut] : null;
-            const estExpire = statut==="expire";
-            const blocC  = estExpire ? "#6b7280" : "#004f91";
-            const blocBg = estExpire ? "#F5F4F3" : "rgba(0,79,145,0.04)";
-            const blocBd = estExpire ? "#E8E5E3" : "rgba(0,79,145,0.10)";
-            const txtC   = estExpire ? "#4a5568" : "#1a1a2e";
-            return (
-              <div key={a.id} onClick={()=>setVue(a)}
-                style={{background:estExpire?"#FAFAF9":"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
-                onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=estExpire?"#D8D4D0":"rgba(0,79,145,0.25)";}}
-                onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+      {/* Fiche (même modal que la page publique) + raccourci de modification */}
+      {vue && <AccordVueModal accord={vue} onClose={() => setVue(null)} actions={
+        <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgba(0,79,145,0.25)" }}>
+          <Pencil size={13} /> Modifier
+        </button>
+      } />}
 
-                <div style={{height:3,background:estExpire?"linear-gradient(90deg,#DDD9D5 0%,#C5BFBB 50%,#DDD9D5 100%)":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-                <div style={{padding:"14px 16px 14px",flex:1}}>
-                  {/* Statut + référence */}
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                    {st ? (
-                      <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:st.c,background:st.bg,padding:"3px 10px",borderRadius:999}}>{st.label}</span>
-                    ) : <span/>}
-                    {a.reference && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:estExpire?"#6b7280":"#004f91",background:estExpire?"#F2F0EF":"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{a.reference}</span>}
-                  </div>
-
-                  {/* Titre */}
-                  <div style={{fontWeight:700,fontSize:13.5,color:txtC,lineHeight:1.35}}>{a.titre}</div>
-
-                  {/* Dates libellées */}
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                    <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
-                      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Signature</p>
-                      <p style={{fontSize:12,fontWeight:600,color:a.date_signature?txtC:"#9aa5b4"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
-                    </div>
-                    {a.date_expiration ? (
-                      <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Expiration</p>
-                        <p style={{fontSize:12,fontWeight:600,color:txtC}}>{fmtDate(a.date_expiration)}</p>
-                      </div>
-                    ) : (
-                      <div style={{background:blocBg,border:`1px solid ${blocBd}`,borderRadius:10,padding:"8px 11px"}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:blocC,textTransform:"uppercase" as const,marginBottom:3}}>Entrée en vigueur</p>
-                        <p style={{fontSize:12,fontWeight:600,color:a.date_entree_vigueur?txtC:"#9aa5b4"}}>{a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie"}</p>
-                      </div>
-                    )}
-                  </div>
-
-                </div>
-
-                {/* Actions */}
-                <div className="ro-w" style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
-                  <button onClick={()=>openEdit(a)}
-                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
-                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                    <Pencil size={12}/> Modifier
-                  </button>
-                  <div style={{width:1,background:"#F2F0EF"}}/>
-                  <button onClick={()=>handleTogglePublie(a)} disabled={togglingId===a.id}
-                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:a.est_publie?"#188038":"#6b7280",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                    onMouseEnter={ev=>ev.currentTarget.style.background=a.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
-                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                    {togglingId===a.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:a.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
-                  </button>
-                  <div style={{width:1,background:"#F2F0EF"}}/>
-                  <button onClick={()=>handleDelete(a.id)} disabled={deleting===a.id}
-                    style={{width:46,display:"flex",alignItems:"center",justifyContent:"center",background:"none",border:"none",cursor:"pointer",transition:"background 0.15s"}}
-                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
-                    onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                    {deleting===a.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {vue&&<AccordVue accord={vue} onClose={()=>setVue(null)} onEdit={a=>{ setVue(null); openEdit(a); }}/>}
-      <AccordModal open={modal} onClose={()=>setModal(false)} editItem={editItem} onSaved={charger}/>
+      <AccordModal open={modal} onClose={() => setModal(false)} editItem={editItem} onSaved={charger} />
     </div>
   );
 }

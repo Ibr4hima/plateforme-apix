@@ -14,7 +14,8 @@ export { fmtDate } from "@/lib/format";
 export { computeStatutAccord as computeStatut } from "@/lib/statuts";
 
 // ── Modal vue accord (partagé : page Accords, Fiche Pays…) ────────────────────
-export default function AccordVueModal({ accord:a, onClose, zIndex = 400 }: { accord:any; onClose:()=>void; zIndex?:number }) {
+// `actions` : boutons additionnels dans le pied (ex. « Modifier » en admin).
+export default function AccordVueModal({ accord:a, onClose, zIndex = 400, actions }: { accord:any; onClose:()=>void; zIndex?:number; actions?:React.ReactNode }) {
   const [fichiers,  setFichiers]  = useState<any[]>([]);
   // Référentiels servis par le cache partagé ; seuls les fichiers dépendent de l'accord
   const { secteurs, branches, activites } = useNaema();
@@ -172,11 +173,12 @@ export default function AccordVueModal({ accord:a, onClose, zIndex = 400 }: { ac
         </div>
 
         {/* Pied */}
-        <div style={{display:"flex",justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
           <button onClick={onClose}
             style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
+          {actions}
         </div>
       </div>
     </div>
