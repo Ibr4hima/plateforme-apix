@@ -132,8 +132,9 @@ function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse }: {
 // Rond en pointillés à côté du pays de référence : popover avec recherche et
 // liste groupée par continent ; jusqu'à 3 pays en plus (4 séries max). Le
 // popover reste ouvert pour enchaîner les ajouts.
-function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick }: {
+function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick, onOpenChange }: {
   paysDispo: any[]; exclus: string[]; plein: boolean; onPick: (nom: string) => void;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -145,6 +146,10 @@ function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick }: {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
   useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
+  // Le parent floute le contenu derrière le popover
+  useEffect(() => { onOpenChange?.(open); }, [open, onOpenChange]);
+  // Sélection au complet (4 pays) : fermeture automatique
+  useEffect(() => { if (plein && open) { setOpen(false); setQ(""); } }, [plein, open]);
 
   const dispo = paysDispo.filter((p: any) => !exclus.includes(p.nom)
     && (!q || p.nom.toLowerCase().includes(q.toLowerCase())));
@@ -613,6 +618,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   // Pays ajoutés via le « + » de l'en-tête (3 max) : dès qu'il y en a un, la
   // vue bascule en analyse comparative (graphes multi-séries, KPIs masqués)
   const [paysComp,    setPaysComp]    = useState<string[]>([]);
+  // Popover d'ajout ouvert → le contenu (KPIs + graphes) est flouté derrière
+  const [compOpen,    setCompOpen]    = useState(false);
   const [donnees,     setDonnees]     = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [borneMin, borneMax] = useBornesCnuced(sousType);
@@ -957,32 +964,58 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           {/* Header */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
             <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
-              <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
-              <BadgePeriode>
-                {modeAnnees==="specifiques"&&anneesSpec.length>0
-                  ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
-                  : `${perMin} — ${perMax}`}
-              </BadgePeriode>
-              {/* Pays comparés (le « + » bascule la vue en analyse comparative) */}
-              {paysComp.map((nom,i)=>(
-                <BadgeSerie key={nom} i={i+1} couleur={COMP_PALETTE[i+1] ?? COMP_PALETTE[COMP_PALETTE.length-1]}>
-                  {nom}
-                  <button onClick={()=>setPaysComp(prev=>prev.filter(n=>n!==nom))} aria-label={`Retirer ${nom}`}
+              {(()=>{
+                // Retrait d'un pays (✕) — il en reste toujours au moins un :
+                // retirer le pays de référence promeut le premier comparé.
+                const retirer = (nom: string) => {
+                  if (nom === paysSelec) {
+                    if (paysComp.length === 0) return;
+                    setPaysSelec(paysComp[0]);
+                    setPaysComp(prev => prev.slice(1));
+                  } else {
+                    setPaysComp(prev => prev.filter(n => n !== nom));
+                  }
+                };
+                const BoutonX = ({ nom }: { nom: string }) => (
+                  <button onClick={()=>retirer(nom)} aria-label={`Retirer ${nom}`}
                     style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", color:"inherit" }}>
                     <X size={11}/>
                   </button>
-                </BadgeSerie>
-              ))}
+                );
+                return estComparatif ? (
+                  <>
+                    {/* Tous les pays en pastilles badge, référence comprise */}
+                    {paysAvecCouleur.map((p, i) => (
+                      <BadgeSerie key={p.nom} i={i} couleur={p.couleur}>
+                        {p.nom}
+                        <BoutonX nom={p.nom}/>
+                      </BadgeSerie>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
+                    <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
+                  </>
+                );
+              })()}
               <BtnAjoutPaysComp
                 paysDispo={paysDispo}
                 exclus={[paysSelec, ...paysComp]}
                 plein={paysComp.length>=3}
                 onPick={nom=>setPaysComp(prev=>prev.includes(nom)||prev.length>=3?prev:[...prev,nom])}
+                onOpenChange={setCompOpen}
               />
+              <BadgePeriode>
+                {modeAnnees==="specifiques"&&anneesSpec.length>0
+                  ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
+                  : `${perMin} — ${perMax}`}
+              </BadgePeriode>
             </div>
           </div>
 
+          {/* KPIs + graphes — floutés tant que le popover d'ajout de pays est ouvert */}
+          <div style={{ filter: compOpen ? "blur(4px)" : "none", opacity: compOpen ? 0.6 : 1, pointerEvents: compOpen ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
           {/* KPI cards — 4 colonnes ; masquées en mode comparatif (les KPIs
               ne concernent que le pays de référence) */}
           {!estComparatif && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
@@ -1055,6 +1088,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
 
