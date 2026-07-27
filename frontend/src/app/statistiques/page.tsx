@@ -5,12 +5,12 @@ import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
-import { PALETTE_COMPARAISON as PALETTE } from "@/lib/couleurs";
+import { PALETTE_COMPARAISON as PALETTE, badge_gris, badgeDe } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { ChevronDown, FileSpreadsheet, Loader2, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ChevronDown, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
@@ -26,13 +26,9 @@ type Pays = { id: number; nom: string; code_iso3: string; continent: string; reg
 type Donnee = { pays_id: number; pays: string; annee: number; indicateur: string; valeur: number | null };
 
 // ── Regroupement des pays par continent ───────────────────────────────────────
-const VUES: { v: "pays" | "comparative"; l: string }[] = [
-  { v: "pays", l: "Pays" },
-  { v: "comparative", l: "Analyse comparative" },
-];
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
-const MAX_KPI = 5;
-const KPI_DEFAUT = ["population", "superficie", "densite", "pib", "pib_hab"];
+const MAX_KPI = 4;
+const KPI_DEFAUT = ["population", "superficie", "pib", "pib_hab"];
 function sortContinents(conts: string[]) {
   return [...conts].sort((a, b) => {
     const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);
@@ -40,6 +36,84 @@ function sortContinents(conts: string[]) {
     if (ia === -1) return 1; if (ib === -1) return -1;
     return ia - ib;
   });
+}
+
+// ── Pastilles (pays / période) ────────────────────────────────────────────────
+function BadgePeriode({ children }: { children: React.ReactNode }) {
+  return <span style={{ ...badge_gris, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>{children}</span>;
+}
+function BadgeSerie({ couleur, children }: { couleur: string; children: React.ReactNode }) {
+  return (
+    <span style={{ ...badgeDe(couleur), fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>
+      <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, display: "inline-block", flexShrink: 0 }} />
+      {children}
+    </span>
+  );
+}
+
+// Bouton « + » rond en pointillés → popover de sélection de pays (par continent,
+// recherche à focus auto, reste ouvert pour ajouter plusieurs pays d'affilée).
+function BtnAjoutPays({ pays, exclus, plein, onPick, onOpenChange }: {
+  pays: Pays[]; exclus: number[]; plein: boolean; onPick: (id: number) => void;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setQ(""); } };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
+  useEffect(() => { onOpenChange?.(open); }, [open, onOpenChange]);
+  useEffect(() => { if (plein && open) { setOpen(false); setQ(""); } }, [plein, open]);
+
+  const dispo = pays.filter(p => !exclus.includes(p.id)
+    && (!q || p.nom.toLowerCase().includes(q.toLowerCase())));
+  const groupes = sortContinents([...new Set(dispo.map(p => p.continent || "Autre"))])
+    .map(c => [c, dispo.filter(p => (p.continent || "Autre") === c).sort((a, b) => a.nom.localeCompare(b.nom, "fr"))] as [string, Pays[]]);
+
+  return (
+    <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
+      <button onClick={() => !plein && setOpen(o => !o)} disabled={plein}
+        aria-label="Comparer avec d'autres pays" title={plein ? "4 pays maximum" : "Comparer avec d'autres pays"}
+        style={{ width: 28, height: 28, borderRadius: 999, border: `1.5px dashed ${plein ? "#D8D4D0" : open ? "#004f91" : "rgba(0,79,145,0.35)"}`,
+          background: open ? "rgba(0,79,145,0.08)" : "rgba(255,255,255,0.7)", color: plein ? "#C5BFBB" : "#004f91",
+          cursor: plein ? "not-allowed" : "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s", flexShrink: 0 }}
+        onMouseEnter={e => { if (!plein) { e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.background = "rgba(0,79,145,0.08)"; } }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = plein ? "#D8D4D0" : "rgba(0,79,145,0.35)"; e.currentTarget.style.background = "rgba(255,255,255,0.7)"; } }}>
+        <Plus size={14} />
+      </button>
+      {open && (
+        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 60, width: 300,
+          border: "1px solid #E4E1DE", borderRadius: 12, background: "#fff", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
+          <div style={{ padding: 8, borderBottom: "1px solid #F2F0EF" }}>
+            <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
+              style={{ width: "100%", boxSizing: "border-box" as const, background: "#FCFCFB", borderWidth: 1, borderStyle: "solid", borderColor: "#E2E1DE", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)" }} />
+          </div>
+          <div style={{ maxHeight: 240, overflowY: "auto" as const }}>
+            {groupes.map(([continent, liste]) => (
+              <div key={continent}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
+                {liste.map(p => (
+                  <button key={p.id} onClick={() => { onPick(p.id); setQ(""); inputRef.current?.focus(); }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 14px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, borderBottom: "1px solid #F2F0EF", transition: "background 0.1s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <span style={{ fontSize: 12, color: "#1a1a2e", fontWeight: 500 }}>{p.nom}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            {dispo.length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── Panneau Commerce extérieur (Sénégal uniquement) ──────────────────────────
@@ -1277,7 +1351,6 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
   const [mode, setMode] = useEtatUrl<"indicateurs" | "commerce" | "exterieur">("mode", "indicateurs", ["indicateurs","commerce","exterieur"]);
-  const [vue, setVue] = useEtatUrl<"pays" | "comparative">("vue", "pays", ["pays","comparative"]);
   const [pays, setPays] = useState<Pays[]>([]);
   const [indicateurs, setIndicateurs] = useState<Indicateur[]>([]);
   const [selection, setSelection] = useState<number[]>([]);
@@ -1299,9 +1372,12 @@ export default function StatistiquesPage() {
   const [periodeTouchee, setPeriodeTouchee] = useState(false);
   // KPI (indicateurs épinglés)
   const [kpisEpingles, setKpisEpingles] = useState<string[]>([]);
+  // Popover d'ajout de pays ouvert → floute la zone KPIs + graphes derrière lui
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const MAX_SEL = 4; // 4 pays au plus en comparaison (comme la page IDE)
-  const multi = vue !== "pays";
+  // La vue bascule d'elle-même en comparatif dès qu'un 2ᵉ pays est ajouté.
+  const estComparatif = selection.length > 1;
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
 
   const isResizing = useRef(false);
@@ -1344,22 +1420,19 @@ export default function StatistiquesPage() {
     if (!periodeTouchee) { setAnneeMin(mn); setAnneeMax(mx); }
   }, [anneesDispo, periodeTouchee]);
 
-  // en passant de comparative→pays, ne garder qu'un pays (Sénégal en priorité)
-  useEffect(() => {
-    if (!multi && selection.length > 1) setSelection([selection.includes(senId as number) ? (senId as number) : selection[0]]);
-  }, [multi]);
-
   const toggleCont = (c: string) => setOpenConts(s => { const n = new Set(s); n.has(c) ? n.delete(c) : n.add(c); return n; });
   const toggleEpingle = (code: string) => setKpisEpingles(prev => prev.includes(code) ? prev.filter(c => c !== code) : (prev.length >= MAX_KPI ? prev : [...prev, code]));
 
+  // Ajout/retrait d'un pays : bascule automatiquement en comparatif au 2ᵉ pays ;
+  // il en reste toujours au moins un ; plafond à MAX_SEL séries.
   const clickPays = (id: number) => {
-    if (!multi) { setSelection([id]); return; }
     setSelection(prev => {
       if (prev.includes(id)) return prev.length > 1 ? prev.filter(x => x !== id) : prev;
       if (prev.length >= MAX_SEL) return prev;
       return [...prev, id];
     });
   };
+  const retirerPays = (id: number) => setSelection(prev => prev.length > 1 ? prev.filter(x => x !== id) : prev);
 
   const groupedPays = useMemo(() => {
     const g: Record<string, Record<string, Pays[]>> = {};
@@ -1391,7 +1464,7 @@ export default function StatistiquesPage() {
     donnees.find(d => d.pays_id === paysId && d.indicateur === code && d.annee === annee)?.valeur ?? null;
 
   // État des filtres (pour badge + réinitialisation)
-  const paysChange = multi ? (selection.length > 1 || selection[0] !== senId) : selection[0] !== senId;
+  const paysChange = selection.length > 1 || selection[0] !== senId;
   const periodeChange = modeAnnees === "specifiques" ? anneesSpec.length > 0 : (anneeMin !== bornes[0] || anneeMax !== bornes[1]);
   const kpiDefautSet = KPI_DEFAUT.filter(c => indicateurs.some(i => i.code === c)).slice(0, MAX_KPI);
   const kpiChange = kpisEpingles.length !== kpiDefautSet.length || kpisEpingles.some(c => !kpiDefautSet.includes(c));
@@ -1451,18 +1524,6 @@ export default function StatistiquesPage() {
             </div>
           </div>
           {sidebarOpen && <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
-            {/* Vue */}
-            <div style={{ marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid #F2F0EF" }}>
-              <p style={{ ...LBL, marginBottom: 8 }}>Vue</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {VUES.map(o => (
-                  <button key={o.v} onClick={() => setVue(o.v)}
-                    style={{ textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: vue === o.v ? 700 : 500, background: vue === o.v ? "rgba(0,79,145,0.08)" : "transparent", color: vue === o.v ? "#004f91" : "#4a5568", fontFamily: "var(--font-google-sans)" }}>
-                    {o.l}
-                  </button>
-                ))}
-              </div>
-            </div>
             {/* Recherche pays */}
             <div style={{ position: "relative", marginBottom: 18 }}>
               <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
@@ -1475,17 +1536,15 @@ export default function StatistiquesPage() {
             <div style={{ marginBottom: 18 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <span style={LBL}>Pays</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: multi && selection.length >= MAX_SEL ? "#004f91" : "#004f91", background: "rgba(0,79,145,0.18)", padding: "1px 6px", borderRadius: 999 }}>{multi ? `${selection.length}/${MAX_SEL}` : "1"}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.18)", padding: "1px 6px", borderRadius: 999 }}>{`${selection.length}/${MAX_SEL}`}</span>
               </div>
               {/* Sénégal épinglé (référence) */}
               {senId !== null && (() => {
                 const sel = selection.includes(senId);
                 const col = sel ? couleurPays(senId) : "#C5BFBB";
-                const removable = multi && sel && selection.length > 1;
-                const canAdd = multi && !sel && selection.length < MAX_SEL;
                 return (
                   <div style={{ marginBottom: 8, marginLeft: 6 }}>
-                    <button onClick={() => { if (!multi) setSelection([senId]); else if (removable) setSelection(prev => prev.filter(x => x !== senId)); else if (canAdd) setSelection(prev => [...prev, senId]); }}
+                    <button onClick={() => clickPays(senId)}
                       style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: "pointer", background: "transparent", textAlign: "left", width: "100%" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
@@ -1514,7 +1573,7 @@ export default function StatistiquesPage() {
                           {paysInZone.map(p => {
                             const sel = selection.includes(p.id);
                             const col = sel ? couleurPays(p.id) : "#C5BFBB";
-                            const disabled = multi && !sel && selection.length >= MAX_SEL;
+                            const disabled = !sel && selection.length >= MAX_SEL;
                             if (p.id === senId) return (
                               <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
                                 <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
@@ -1637,80 +1696,12 @@ export default function StatistiquesPage() {
             </div>
           ) : (
             <div className="charge-in">
-              {/* ── Analyse par pays ── */}
-              {vue === "pays" && (() => {
-                const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
-                  ? `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`
-                  : `${anneeMin} — ${anneeMax}`;
-                // Graphes : indicateurs épinglés (hors superficie) + les 4 flux de
-                // commerce extérieur, toujours présents s'ils ont des données.
-                const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
-                const aDesDonnees = (code: string) => anneesActives.some(a => valeur(selection[0], code, a) !== null);
-                const baseCodes = indicateursAffiches.filter(i => i.code !== "superficie").map(i => i.code);
-                const codesGraphes = [...baseCodes, ...TRADE_CODES.filter(c => !baseCodes.includes(c) && aDesDonnees(c))];
-                const graphIndics = codesGraphes.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
-                return (
-                <>
-                  {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#004f91", flexShrink: 0 }} />
-                      <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e" }}>{paysNom(selection[0])}</h2>
-                      <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", borderRadius: 999, background: "linear-gradient(160deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
-                    </div>
-                    <BoutonDonnees onClick={() => setShowTable(true)} dep={selection[0]} />
-                  </div>
-
-                  {/* KPI cards */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20 }}>
-                    {indicateursAffiches.map(ind => {
-                      const v = valeur(selection[0], ind.code, refAnnee);
-                      const prec = valeur(selection[0], ind.code, refAnnee - 1);
-                      return (
-                        <div key={ind.code} onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
-                          style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid rgba(16,26,46,0.12)", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0 }}
-                          onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
-                          <div style={{ marginBottom: 7 }}>
-                            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
-                            <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
-                          </div>
-                          <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "#dc2626" : "#1a1a2e", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
-                          <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
-                        </div>
-                      );
-                    })}
-                    {Array.from({ length: Math.max(0, MAX_KPI - indicateursAffiches.length) }).map((_, i) => (
-                      <div key={`empty-${i}`} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1.5px dashed #E8E5E3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90 }}>
-                        <span style={{ fontSize: 20, color: "#C5BFBB", lineHeight: 1 }}>+</span>
-                        <span style={{ fontSize: 10, color: "#C5BFBB", textAlign: "center", lineHeight: 1.5 }}>Choisir dans<br />le filtre</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Graphes */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
-                    {graphIndics.map(ind => {
-                      const serie = [{ nom: paysNom(selection[0]), couleur: "#004f91", data: anneesActives.map(a => ({ annee: a, valeur: valeur(selection[0], ind.code, a) })) }];
-                      return (
-                        <GrapheCard key={ind.code} titre={ind.libelle} sous_titre={`${ind.unite} · ${anneesActives[0] ?? anneeMin}–${refAnnee}`} series={serie} grapheId={`stat_${ind.code}`}
-                          fullChildren={<GrapheMultiPays series={serie} height={340} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} />}>
-                          <GrapheMultiPays series={serie} height={145} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} />
-                        </GrapheCard>
-                      );
-                    })}
-                  </div>
-                </>
-                );
-              })()}
-
-              {/* ── Analyse comparative ── */}
-              {vue === "comparative" && (() => {
+              {(() => {
                 const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
                   ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)
                   : `${anneeMin} — ${anneeMax}`;
-                // Mêmes graphes que la vue Pays : indicateurs épinglés (hors superficie)
-                // + les 4 flux de commerce extérieur, dès qu'un pays sélectionné a des données.
+                // Graphes : indicateurs épinglés (hors superficie) + les 4 flux de
+                // commerce extérieur, dès qu'un pays sélectionné a des données.
                 const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
                 const aDesDonnees = (code: string) => selection.some(id => anneesActives.some(a => valeur(id, code, a) !== null));
                 const baseCodes = indicateursAffiches.filter(i => i.code !== "superficie").map(i => i.code);
@@ -1718,27 +1709,74 @@ export default function StatistiquesPage() {
                 const graphIndics = codesGraphes.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
                 return (
                 <>
-                  {/* Header : période + pastilles pays */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "nowrap" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 13px", borderRadius: 999, background: "#ECEAE8", border: "1px solid #DFDBD7", fontSize: 12, fontWeight: 700, color: "#3a4452", letterSpacing: "0.02em", flexShrink: 0 }}>{perLabel}</span>
-                    {selection.map(id => (
-                      <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 13px", borderRadius: 999, background: `${couleurPays(id)}0D`, border: `1px solid ${couleurPays(id)}2E`, fontSize: 12, fontWeight: 700, color: couleurPays(id), flexShrink: 0, whiteSpace: "nowrap" }}>
-                        <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleurPays(id), display: "inline-block" }} />{paysNom(id)}
-                      </span>
-                    ))}
+                  {/* Header : pays (ou pastilles en comparatif) → « + » → période */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12, flexWrap: "wrap" as const }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, minWidth: 0 }}>
+                      {estComparatif ? (
+                        selection.map(id => (
+                          <BadgeSerie key={id} couleur={couleurPays(id)}>
+                            {paysNom(id)}
+                            <button onClick={() => retirerPays(id)} aria-label={`Retirer ${paysNom(id)}`}
+                              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: "inherit" }}>
+                              <X size={11} />
+                            </button>
+                          </BadgeSerie>
+                        ))
+                      ) : (
+                        <>
+                          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#004f91", flexShrink: 0 }} />
+                          <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>{paysNom(selection[0])}</h2>
+                        </>
+                      )}
+                      <BtnAjoutPays pays={pays} exclus={selection} plein={selection.length >= MAX_SEL} onPick={clickPays} onOpenChange={setPopoverOpen} />
+                      <BadgePeriode>{perLabel}</BadgePeriode>
+                    </div>
                     <BoutonDonnees onClick={() => setShowTable(true)} dep={selection.join(",")} />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
-                    {graphIndics.map(ind => {
-                      const series = selection.map(id => ({ nom: paysNom(id), couleur: couleurPays(id), data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })) }));
-                      return (
-                        <GrapheCard key={ind.code} titre={ind.libelle} sous_titre={`${ind.unite} · ${anneesActives[0] ?? anneeMin}–${refAnnee}`} series={series} grapheId={`stat_cmp_${ind.code}`} hideLegend
-                          fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} lineWidth={1.6} />}>
-                          <GrapheMultiPays series={series} height={145} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} showDots={false} lineWidth={1.4} />
-                        </GrapheCard>
-                      );
-                    })}
+                  {/* KPIs + graphes — floutés tant que le popover d'ajout de pays est ouvert */}
+                  <div style={{ filter: popoverOpen ? "blur(4px)" : "none", opacity: popoverOpen ? 0.6 : 1, pointerEvents: popoverOpen ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
+                    {/* KPI cards — uniquement en vue pays (les KPIs ne concernent que le pays de référence) */}
+                    {!estComparatif && (
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20 }}>
+                        {indicateursAffiches.map(ind => {
+                          const v = valeur(selection[0], ind.code, refAnnee);
+                          const prec = valeur(selection[0], ind.code, refAnnee - 1);
+                          return (
+                            <div key={ind.code} onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
+                              style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid rgba(16,26,46,0.12)", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0 }}
+                              onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
+                              onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
+                              <div style={{ marginBottom: 7 }}>
+                                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
+                                <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
+                              </div>
+                              <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "#dc2626" : "#1a1a2e", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
+                              <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
+                            </div>
+                          );
+                        })}
+                        {Array.from({ length: Math.max(0, MAX_KPI - indicateursAffiches.length) }).map((_, i) => (
+                          <div key={`empty-${i}`} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1.5px dashed #E8E5E3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90 }}>
+                            <span style={{ fontSize: 20, color: "#C5BFBB", lineHeight: 1 }}>+</span>
+                            <span style={{ fontSize: 10, color: "#C5BFBB", textAlign: "center", lineHeight: 1.5 }}>Choisir dans<br />le filtre</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Graphes */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+                      {graphIndics.map(ind => {
+                        const series = selection.map(id => ({ nom: paysNom(id), couleur: couleurPays(id), data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })) }));
+                        return (
+                          <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={`stat_${estComparatif ? "cmp_" : ""}${ind.code}`} hideLegend hideSousTitre
+                            fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} lineWidth={estComparatif ? 1.6 : undefined} />}>
+                            <GrapheMultiPays series={series} height={145} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} showDots={!estComparatif} lineWidth={estComparatif ? 1.4 : undefined} />
+                          </GrapheCard>
+                        );
+                      })}
+                    </div>
                   </div>
                 </>
                 );
