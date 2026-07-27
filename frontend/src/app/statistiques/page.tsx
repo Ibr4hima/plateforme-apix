@@ -932,7 +932,9 @@ function CommercePanel() {
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
               {cards.map((c, i) => (
-                <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid #ECEAE7", boxShadow: "var(--ombre-1)", minWidth: 0 }}>
+                <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid rgba(16,26,46,0.12)", boxShadow: "none", transition: "border-color 0.18s", minWidth: 0 }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
                   <div style={{ marginBottom: 7 }}>
                     <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
                     {c.sub && <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>{c.sub}</p>}
@@ -1666,9 +1668,9 @@ export default function StatistiquesPage() {
                       const prec = valeur(selection[0], ind.code, refAnnee - 1);
                       return (
                         <div key={ind.code} onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
-                          style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid #ECEAE7", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "var(--ombre-1)", minWidth: 0 }}
-                          onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-2)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.25)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "#ECEAE7"; }}>
+                          style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid rgba(16,26,46,0.12)", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0 }}
+                          onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
                           <div style={{ marginBottom: 7 }}>
                             <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
                             <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
