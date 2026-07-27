@@ -70,13 +70,18 @@ export function useNaema() {
 //    filtres thématiques des pages publiques) ─────────────────────────────────
 export function useNaemaArbre() {
   const { secteurs, branches, activites, isLoading } = useNaema();
-  const arbre = useMemo(() => (secteurs || []).map((s: any) => ({
-    ...s,
-    branches: (branches || []).filter((b: any) => b.secteur_id === s.id).map((b: any) => ({
-      ...b,
-      activites: (activites || []).filter((a: any) => a.branche_id === b.id),
-    })),
-  })), [secteurs, branches, activites]);
+  // Une réponse inattendue (erreur servie en objet, référentiel absent) ne doit
+  // pas planter la page : on retombe sur des listes vides.
+  const arbre = useMemo(() => {
+    const liste = (v: any): any[] => Array.isArray(v) ? v : [];
+    return liste(secteurs).map((s: any) => ({
+      ...s,
+      branches: liste(branches).filter((b: any) => b.secteur_id === s.id).map((b: any) => ({
+        ...b,
+        activites: liste(activites).filter((a: any) => a.branche_id === b.id),
+      })),
+    }));
+  }, [secteurs, branches, activites]);
   return { arbre, isLoading };
 }
 

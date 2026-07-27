@@ -53,6 +53,19 @@ async function getClientToken(): Promise<string | null> {
   }
 }
 
+// Message lisible depuis un corps d'erreur FastAPI : `detail` est soit une
+// chaîne (erreur métier), soit la liste d'objets de la validation Pydantic —
+// sans mise à plat, celle-ci s'affiche « [object Object] ».
+function messageErreur(err: any, statut: number): string {
+  const d = err?.detail;
+  if (typeof d === "string" && d) return d;
+  if (Array.isArray(d) && d.length) {
+    return d.map((x: any) => x?.msg ? `${(x.loc || []).slice(1).join(".")} : ${x.msg}` : String(x)).join(" · ");
+  }
+  if (d) return JSON.stringify(d);
+  return `Erreur ${statut}`;
+}
+
 /**
  * Appel API avec auth automatique.
  *
@@ -89,7 +102,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Erreur ${res.status}`);
+    throw new Error(messageErreur(err, res.status));
   }
   // 204 No Content — pas de corps JSON
   if (res.status === 204) return undefined as T;
@@ -123,7 +136,7 @@ export async function apiCall<T>(path: string, options?: RequestInit): Promise<T
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Erreur ${res.status}`);
+    throw new Error(messageErreur(err, res.status));
   }
   if (res.status === 204) return undefined as T;
   return res.json();

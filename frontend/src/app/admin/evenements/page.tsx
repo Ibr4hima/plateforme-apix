@@ -11,6 +11,7 @@ import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useNaemaArbre } from "@/lib/referentiels";
+import { fetchTous } from "@/lib/fetchTous";
 import { demarrerRedimension } from "@/lib/redimension";
 import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris } from "@/lib/couleurs";
 import NaemaSelect from "@/components/shared/NaemaSelect";
@@ -710,8 +711,9 @@ export default function EvenementsAdminPage() {
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
     try {
-      const data = await api.evenements.liste("per_page=1000&admin=true");
-      setTous(data.data || []);
+      // Pagination complète : `per_page` est plafonné à 100 côté API, on suit
+      // les pages pour ne rien tronquer au-delà de 100 événements.
+      setTous(await fetchTous(`${API_BASE}/evenements?admin=true`));
     } catch (e) { console.error(e); setErreur(true); }
     finally { setLoading(false); }
   }, []);
