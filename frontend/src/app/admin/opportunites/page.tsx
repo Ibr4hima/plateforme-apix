@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp, ArrowLeft, Award } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, X, Check, Search, Eye, EyeOff, Upload, FileText, ChevronDown, ChevronUp, Award } from "lucide-react";
 import { RegionSelect, DepartementSelect, ArrondissementSelect } from "@/components/shared/GeoSelect";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FSegmented, FInfo, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
@@ -1141,8 +1141,9 @@ export default function OpportunitesAdminPage() {
         <div>
           {potsLoad ? (
             <SkeletonCards n={4} cols={4} height={190}/>
-          ) : selectedNiveau===null ? (
-            /* ── Sélecteur de niveau territorial (gabarit public) ── */
+          ) : (
+            <>
+            {/* ── Sélecteur de niveau territorial (gabarit public) ── */}
             <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:14}}>
               {([
                 {key:"pole",           label:"Pôles territoires", unit:"Pôle",          color:"#004f91"},
@@ -1156,11 +1157,13 @@ export default function OpportunitesAdminPage() {
                   : n.key==="departement" ? geoTotaux.departements
                   : geoTotaux.arrondissements;
                 const pct = total>0 ? Math.round(count/total*100) : 0;
+                const actif = selectedNiveau===n.key;
                 return (
-                  <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(n.key)}
-                    style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                  // Clic = bascule : les fiches se déplient sous les cards
+                  <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(actif?null:n.key)}
+                    style={{background:"#fff",border:actif?`1.5px solid ${n.color}88`:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${n.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
                     onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}88`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${n.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${n.color}88`:"rgba(16,26,46,0.12)";}}>
 
                     {/* Niveau */}
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -1189,18 +1192,32 @@ export default function OpportunitesAdminPage() {
                 );
               })}
             </div>
-          ) : (
-            /* ── Fiches du niveau sélectionné ── */
-            <>
-              <button onClick={()=>setSelectedNiveau(null)}
-                style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:24,background:"#fff",border:"1px solid #E4E1DE",borderRadius:999,cursor:"pointer",color:"#4a5568",fontSize:12.5,fontWeight:600,padding:"8px 16px",boxShadow:"var(--ombre-1)",transition:"border-color 0.15s, color 0.15s, box-shadow 0.15s",fontFamily:"var(--font-google-sans)"}}
-                onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.35)";ev.currentTarget.style.color="#004f91";ev.currentTarget.style.boxShadow="var(--ombre-2)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="translateX(-3px)";}}
-                onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E4E1DE";ev.currentTarget.style.color="#4a5568";ev.currentTarget.style.boxShadow="var(--ombre-1)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="none";}}>
-                <ArrowLeft size={14} style={{transition:"transform 0.18s"}}/> Retour aux zones
-              </button>
+
+            {/* ── Fiches du niveau sélectionné, dépliées sous les cards ── */}
+            {selectedNiveau!==null && (
+              <div className="charge-in">
               {(()=>{
+                const meta = ([
+                  {key:"pole",           label:"Pôles territoires", color:"#004f91"},
+                  {key:"region",         label:"Régions",           color:"#ca631f"},
+                  {key:"departement",    label:"Départements",      color:"#188038"},
+                  {key:"arrondissement", label:"Arrondissements",   color:"#6A1B9A"},
+                ] as const).find(x=>x.key===selectedNiveau)!;
                 const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
-                if (items.length===0) return <div style={{textAlign:"center",padding:"80px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div>;
+                const bandeau = (
+                  <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:16,
+                    background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
+                    border:`1px solid ${meta.color}22`}}>
+                    <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                      <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
+                    </div>
+                    <div style={{minWidth:0,flex:1}}>
+                      <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
+                      <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
+                    </div>
+                  </div>
+                );
+                if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
                 // Rattachements géographiques via le référentiel déjà chargé
                 const regionDuDept = (nom:string) => {
                   const dep = geoRef.departements.find((d:any)=>d.nom===nom);
@@ -1212,7 +1229,9 @@ export default function OpportunitesAdminPage() {
                 };
                 const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
                 return (
-                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
+                  <>
+                  {bandeau}
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
                     {items.map((p:any)=>{
                       const nbActs = (p.activite_ids||[]).length;
                       // Premier bloc contextuel selon le niveau
@@ -1294,8 +1313,11 @@ export default function OpportunitesAdminPage() {
                       );
                     })}
                   </div>
+                  </>
                 );
               })()}
+              </div>
+            )}
             </>
           )}
           <PotentialiteModal open={potModal} onClose={()=>setPotModal(false)} edit={potEdit} poles={poles} onSaved={chargerPots}/>
@@ -1313,8 +1335,9 @@ export default function OpportunitesAdminPage() {
               <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun avantage enregistré</p>
               <p style={{fontSize:14,marginTop:6}}>Cliquez sur « Nouvel avantage » pour commencer.</p>
             </div>
-          ) : selectedSec===null ? (
-            /* ── Sélecteur de secteur (gabarit public) ── */
+          ) : (
+            <>
+            {/* ── Sélecteur de secteur (gabarit public) ── */}
             <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
               {([
                 {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
@@ -1327,11 +1350,13 @@ export default function OpportunitesAdminPage() {
                 const branchIds = new Set(branches.map((b:any)=>b.id));
                 const actCount = refActivites.filter((a:any)=>branchIds.has(a.branche_id)).length;
                 const pct = actCount>0 ? Math.round(count/actCount*100) : 0;
+                const actif = selectedSec===s.key;
                 return (
-                  <div key={s.key} onClick={()=>count>0&&setSelectedSec(s.key)}
-                    style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                  // Clic = bascule : les branches se déplient sous les cards
+                  <div key={s.key} onClick={()=>count>0&&setSelectedSec(actif?null:s.key)}
+                    style={{background:"#fff",border:actif?`1.5px solid ${s.color}88`:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${s.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
                     onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}88`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${s.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${s.color}88`:"rgba(16,26,46,0.12)";}}>
 
                     {/* Secteur */}
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -1360,34 +1385,37 @@ export default function OpportunitesAdminPage() {
                 );
               })}
             </div>
-          ) : (
-            /* ── Vue du secteur sélectionné : une card par branche ── */
-            <>
-              <button onClick={()=>setSelectedSec(null)}
-                style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:24,background:"#fff",border:"1px solid #E4E1DE",borderRadius:999,cursor:"pointer",color:"#4a5568",fontSize:12.5,fontWeight:600,padding:"8px 16px",boxShadow:"var(--ombre-1)",transition:"border-color 0.15s, color 0.15s, box-shadow 0.15s",fontFamily:"var(--font-google-sans)"}}
-                onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.35)";ev.currentTarget.style.color="#004f91";ev.currentTarget.style.boxShadow="var(--ombre-2)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="translateX(-3px)";}}
-                onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#E4E1DE";ev.currentTarget.style.color="#4a5568";ev.currentTarget.style.boxShadow="var(--ombre-1)";const ic=ev.currentTarget.querySelector("svg") as SVGElement|null;if(ic)ic.style.transform="none";}}>
-                <ArrowLeft size={14} style={{transition:"transform 0.18s"}}/> Retour aux secteurs
-              </button>
+
+            {/* ── Branches du secteur sélectionné, dépliées sous les cards ── */}
+            {selectedSec!==null && (
+              <div className="charge-in">
               {(()=>{
+                const meta = ([
+                  {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
+                  {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
+                  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#188038"},
+                ] as const).find(x=>x.key===selectedSec)!;
                 const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSec!));
-                const secNom = filtered[0]?.secteur_nom || "";
                 const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
                 filtered.forEach((a:any)=>{
                   const bid=a.branche_id||0;
                   if(!braMap.has(bid)) braMap.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
                   braMap.get(bid)!.items.push(a);
                 });
-                const bras=Array.from(braMap.values());
+                const bras=Array.from(braMap.values()).sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
                 return (
                   <div>
-                    {/* En-tête du secteur */}
-                    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-                      <span style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:11,fontWeight:800,color:"#1a1a2e",background:"#fff",border:"1px solid #ECEAE7",boxShadow:"var(--ombre-1)",padding:"5px 14px",borderRadius:999,whiteSpace:"nowrap" as const}}>
-                        <span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",["--pc" as any]:"rgba(0,79,145,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                        {secNom}
-                      </span>
-                      <span style={{flex:1,height:1,background:"#ECEAE7"}}/>
+                    {/* En-tête du secteur — même bandeau que la page publique */}
+                    <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:16,
+                      background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
+                      border:`1px solid ${meta.color}22`}}>
+                      <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                        <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{filtered.length}</span>
+                      </div>
+                      <div style={{minWidth:0,flex:1}}>
+                        <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Secteur d&apos;activité</p>
+                        <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{filtered[0]?.secteur_nom || meta.label}</div>
+                      </div>
                     </div>
 
                     {/* Une card par branche */}
@@ -1437,6 +1465,8 @@ export default function OpportunitesAdminPage() {
                   </div>
                 );
               })()}
+              </div>
+            )}
             </>
           )}
 
