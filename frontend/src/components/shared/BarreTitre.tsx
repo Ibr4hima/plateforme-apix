@@ -6,15 +6,25 @@ import React from "react";
 // Bleu APIX, décor discret (trame, halos, liseré lumineux), point pulsant blanc,
 // emplacement pour des contrôles à côté du titre et des actions à droite.
 
-export default function BarreTitre({ titre, children, droite, actions, compact }: {
+// Dégradés du bandeau : bleu pour les pages publiques, orange pour
+// l'administration (distinction immédiate entre les deux espaces).
+const DEGRADES = {
+  bleu:   "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)",
+  orange: "linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%)",
+};
+const HALOS = { bleu: "rgba(26,106,176,0.45)", orange: "rgba(226,143,70,0.45)" };
+
+export default function BarreTitre({ titre, children, droite, actions, compact, ton = "bleu", pleineLargeur }: {
   titre: React.ReactNode;
   children?: React.ReactNode;
   droite?: React.ReactNode;
   actions?: React.ReactNode;   // cluster d'actions (recherche + menu) à l'extrême droite
   compact?: boolean;           // pas de navbar au-dessus : réduit le padding haut
+  ton?: "bleu" | "orange";     // orange = espace d'administration
+  pleineLargeur?: boolean;     // aligne le contenu sur une page pleine largeur (sans colonne de filtres)
 }) {
   return (
-    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", position: "relative", overflow: "hidden" }}>
+    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: DEGRADES[ton], position: "relative", overflow: "hidden" }}>
       <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
@@ -22,11 +32,11 @@ export default function BarreTitre({ titre, children, droite, actions, compact }
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)", WebkitMaskImage: "radial-gradient(ellipse at 75% 0%,rgba(0,0,0,0.9) 0%,transparent 72%)" }} />
         {/* Halos lumineux */}
         <div style={{ position: "absolute", top: "-140%", right: "-6%", width: 580, height: 580, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)" }} />
-        <div style={{ position: "absolute", bottom: "-160%", left: "-8%", width: 460, height: 460, borderRadius: "50%", background: "radial-gradient(circle,rgba(26,106,176,0.45) 0%,transparent 65%)" }} />
+        <div style={{ position: "absolute", bottom: "-160%", left: "-8%", width: 460, height: 460, borderRadius: "50%", background: `radial-gradient(circle,${HALOS[ton]} 0%,transparent 65%)` }} />
         {/* Liseré lumineux en bas */}
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 1, background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)" }} />
       </div>
-      <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+      <div style={{ maxWidth: pleineLargeur ? "none" : 1280, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
         <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
         <h1 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#fff", lineHeight: 1.2, margin: 0, whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>{titre}</h1>
         {children}

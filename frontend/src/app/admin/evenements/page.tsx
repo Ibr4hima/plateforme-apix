@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays, Search, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays } from "lucide-react";
 import { api } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
 import BarreTitre from "@/components/shared/BarreTitre";
@@ -9,10 +9,7 @@ import AdminMenu from "@/components/admin/AdminMenu";
 import EvenementVueModal from "@/components/shared/EvenementVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
-import { useNaemaArbre } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
-import { demarrerRedimension } from "@/lib/redimension";
 import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris } from "@/lib/couleurs";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -538,42 +535,6 @@ function dansCombien(e: any): string | null {
   return `Dans ${jours} jour${jours > 1 ? "s" : ""}`;
 }
 
-const STATUT_OPTS = [
-  { value: "",         label: "Tous",     c: "#4a5568" },
-  { value: "a_venir",  label: "À venir",  c: "#004f91" },
-  { value: "en_cours", label: "En cours", c: "#188038" },
-  { value: "termine",  label: "Terminés", c: "#6b7280" },
-];
-const PUB_OPTS = [
-  { value: "",          label: "Tous",        c: "#4a5568" },
-  { value: "publie",    label: "Publiés",     c: "#188038" },
-  { value: "brouillon", label: "Non publiés", c: "#ca631f" },
-];
-
-// Groupe de choix exclusifs de la barre de filtre (statut, publication)
-function FiltreRadio({ label, options, value, onChange }: {
-  label: string; options: { value: string; label: string; c: string }[]; value: string; onChange: (v: string) => void;
-}) {
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: value ? "#004f91" : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 8 }}>{label}</p>
-      <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
-        {options.map(o => {
-          const actif = value === o.value;
-          return (
-            <button key={o.value} onClick={() => onChange(o.value)}
-              style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", textAlign: "left" as const, fontSize: 12, fontWeight: actif ? 700 : 400, color: actif ? o.c : "#4a5568", fontFamily: "var(--font-google-sans)" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-              <div style={{ width: 7, height: 7, borderRadius: "50%", background: o.c, opacity: actif ? 1 : 0.3, flexShrink: 0 }} />{o.label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ── Carte événement (gabarit public + barre d'actions d'administration) ────────
 function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
   e: any; estProchain: boolean;
@@ -691,23 +652,6 @@ export default function EvenementsAdminPage() {
   const [deleting,   setDeleting]   = useState<any>(null);
   const [togglingId, setTogglingId] = useState<any>(null);
 
-  // Filtres
-  const [recherche,    setRecherche]    = useState("");
-  const [statutFiltre, setStatutFiltre] = useState("");
-  const [pubFiltre,    setPubFiltre]    = useState("");
-  const [paysFiltres,  setPaysFiltres]  = useState<string[]>([]);
-  const [secteursSel,  setSecteursSel]  = useState<string[]>([]);
-  const [branchesSel,  setBranchesSel]  = useState<string[]>([]);
-  const [activitesSel, setActivitesSel] = useState<string[]>([]);
-
-  // Barre de filtre redimensionnable (comme les pages publiques)
-  const [sidebarOpen,  setSidebarOpen]  = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
-  const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
-
-  const { arbre: secteurs } = useNaemaArbre();
-
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
     try {
@@ -738,51 +682,17 @@ export default function EvenementsAdminPage() {
     } finally { setTogglingId(null); }
   };
 
-  // Pays hôtes présents dans les données (publiés ET brouillons)
-  const paysHotes = useMemo(
-    () => [...new Set(tous.map(e => e.pays_hote_nom).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), "fr")) as string[],
-    [tous]);
-
-  const evenements = useMemo(() => tous.filter(e => {
-    if (recherche) {
-      const q = recherche.toLowerCase();
-      if (!e.nom_event?.toLowerCase().includes(q) && !e.organisateur?.toLowerCase().includes(q)
-        && !e.ville?.toLowerCase().includes(q) && !e.pays_hote_nom?.toLowerCase().includes(q)) return false;
-    }
-    if (pubFiltre === "publie"    && e.est_publie === false) return false;
-    if (pubFiltre === "brouillon" && e.est_publie !== false) return false;
-    if (statutFiltre) {
-      const statut = computeStatut(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
-      if (statut !== statutFiltre) return false;
-    }
-    if (paysFiltres.length > 0 && !paysFiltres.includes(e.pays_hote_nom || "")) return false;
-    if (secteursSel.length  > 0 && !secteursSel.some(s => (e.secteur_noms  || []).includes(s))) return false;
-    if (branchesSel.length  > 0 && !branchesSel.some(b => (e.branche_noms  || []).includes(b))) return false;
-    if (activitesSel.length > 0 && !activitesSel.some(a => (e.activite_noms || []).includes(a))) return false;
-    return true;
-  }), [tous, recherche, pubFiltre, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel]);
-
   // Prochain événement à venir (date la plus proche dans le futur)
   const prochainId = useMemo(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     let best: any = null, bestD: Date | null = null;
-    evenements.forEach(e => {
+    tous.forEach(e => {
       const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
         : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
       if (d && d > today && (!bestD || d < bestD)) { bestD = d; best = e; }
     });
     return best?.id ?? null;
-  }, [evenements]);
-
-  const nbFiltres = (recherche ? 1 : 0) + (statutFiltre ? 1 : 0) + (pubFiltre ? 1 : 0)
-    + paysFiltres.length + secteursSel.length + branchesSel.length + activitesSel.length;
-  const hasFilter = nbFiltres > 0;
-  const reinit = () => { setRecherche(""); setStatutFiltre(""); setPubFiltre(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
-
-  const togglePays     = (v: string) => setPaysFiltres(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
-  const toggleSecteur  = (v: string) => { setSecteursSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]); setBranchesSel([]); setActivitesSel([]); };
-  const toggleBranche  = (v: string) => { setBranchesSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]); setActivitesSel([]); };
-  const toggleActivite = (v: string) => setActivitesSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
+  }, [tous]);
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
@@ -790,90 +700,41 @@ export default function EvenementsAdminPage() {
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
 
-      {/* ── Bandeau ── */}
-      <BarreTitre titre="Événements" compact actions={<AdminMenu />}>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.22)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{tous.length}</span>
+      {/* ── Bandeau orange (espace d'administration) ── */}
+      <BarreTitre titre="Événements" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+        droite={
+          <button className="ro-w" onClick={openCreate}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#FFF6EF"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "none"; }}>
+            <Plus size={15} /> Ajouter un événement
+          </button>
+        }>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{tous.length}</span>
       </BarreTitre>
 
-      {/* ── Corps : barre de filtre + grille ── */}
-      <div style={{ display: "flex", alignItems: "flex-start" }}>
-        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "100vh", overflowY: "auto" as const, position: "sticky" as const, top: 0, display: "flex", flexDirection: "column" as const }}>
-          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
-          {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute" as const, right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent", transition: "background 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
-          <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
-            {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Filtres</span>}
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <button onClick={() => setSidebarOpen(o => !o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
-                <SlidersHorizontal size={14} style={{ color: "#004f91" }} />
-                {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
-              </button>
-              {sidebarOpen && hasFilter && <button onClick={reinit} title="Tout réinitialiser"
-                style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.20)", cursor: "pointer", borderRadius: 999, padding: "5px", display: "flex", alignItems: "center", transition: "background 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.15)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(220,38,38,0.08)"; }}>
-                <X size={13} style={{ color: "#dc2626" }} />
-              </button>}
-            </div>
+      {/* ── Grille pleine largeur (3 colonnes) ── */}
+      <div style={{ padding: "28px 40px 80px" }}>
+        {loading ? (
+          <SkeletonCards n={6} cols={3} height={220} />
+        ) : erreur ? (
+          <ErreurChargement onRetry={() => charger()} />
+        ) : tous.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
+            <CalendarDays size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
+            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun événement enregistré</p>
+            <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter un événement » pour commencer.</p>
           </div>
-          {sidebarOpen && <div style={{ padding: "16px", overflowY: "auto" as const, flex: 1 }}>
-            <div style={{ position: "relative" as const, marginBottom: 18 }}>
-              <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-              <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher…"
-                style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
-              {recherche && <button onClick={() => setRecherche("")} aria-label="Effacer la recherche" style={{ position: "absolute" as const, right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
-            </div>
-            <FiltreRadio label="Statut" options={STATUT_OPTS} value={statutFiltre} onChange={setStatutFiltre} />
-            <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
-            <FiltreRadio label="Publication" options={PUB_OPTS} value={pubFiltre} onChange={setPubFiltre} />
-            {paysHotes.length > 0 && <>
-              <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
-              <SideFilter label="Pays hôte" color="#004f91" marginBottom={20} items={paysHotes} selected={paysFiltres} onToggle={togglePays} listMaxHeight={200} />
-            </>}
-            {secteurs.length > 0 && <>
-              <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
-              <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
-                onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite} />
-            </>}
-          </div>}
-        </aside>
-
-        {/* Grille */}
-        <div style={{ flex: 1, minWidth: 0, padding: "28px 40px 80px" }}>
-          {/* Barre d'action */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 18, flexWrap: "wrap" as const }}>
-            <span style={{ fontSize: 12.5, color: "#9aa5b4", fontWeight: 600 }}>
-              {hasFilter ? `${evenements.length} sur ${tous.length} événement${tous.length > 1 ? "s" : ""}` : `${tous.length} événement${tous.length > 1 ? "s" : ""}`}
-            </span>
-            <button className="ro-w" onClick={openCreate}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#004f91", color: "#fff", fontWeight: 700, fontSize: 13, padding: "10px 20px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,79,145,0.30)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#013e73"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#004f91"; }}>
-              <Plus size={15} /> Ajouter un événement
-            </button>
+        ) : (
+          <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
+            {tous.map(e => (
+              <CarteEvenement key={e.id} e={e} estProchain={prochainId != null && e.id === prochainId}
+                onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
+                onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
+                publiant={togglingId === e.id} supprimant={deleting === e.id} />
+            ))}
           </div>
-
-          {loading ? (
-            <SkeletonCards n={6} cols={2} height={220} />
-          ) : erreur ? (
-            <ErreurChargement onRetry={() => charger()} />
-          ) : evenements.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
-              <CalendarDays size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-              <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun événement {hasFilter ? "trouvé" : "enregistré"}</p>
-              <p style={{ fontSize: 14, marginTop: 6 }}>{hasFilter ? "Modifiez vos filtres pour affiner la recherche." : "Cliquez sur « Ajouter un événement » pour commencer."}</p>
-              {hasFilter && <BoutonEffacerFiltres onClick={reinit} />}
-            </div>
-          ) : (
-            <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
-              {evenements.map(e => (
-                <CarteEvenement key={e.id} e={e} estProchain={prochainId != null && e.id === prochainId}
-                  onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
-                  onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
-                  publiant={togglingId === e.id} supprimant={deleting === e.id} />
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
